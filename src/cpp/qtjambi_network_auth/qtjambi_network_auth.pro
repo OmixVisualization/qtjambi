@@ -1,7 +1,7 @@
 QTJAMBILIB = QtJambiNetworkAuth
 TARGET = $$QTJAMBILIB
 
-VERSION = $$QT_VERSION
+VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
 include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)

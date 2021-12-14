@@ -165,6 +165,8 @@ public class QMakeTask extends Task {
             else
                 parameters.add("QT_CONFIG+=" + qtconfig);
         }
+        
+        parameters.add("QTJAMBI_PATCH_VERSION=" + getProject().getProperty("qtjambi.patchversion"));
 
         String macSdk = getProject().getProperty(Constants.QTJAMBI_MACOSX_MAC_SDK);
         if(macSdk != null && macSdk.length() > 0)

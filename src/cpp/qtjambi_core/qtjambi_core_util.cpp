@@ -18,6 +18,11 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core_qhashes.h"
 #include "qtjambi_stringutil.h"
 #include <QtCore/private/qcoreapplication_p.h>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+#include <QtCore/qcoreapplication_platform.h>
+#endif
+
 #include <qtjambi/qtjambi_cast.h>
 
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
@@ -1915,6 +1920,19 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_enumerator)
         exn.raiseInJava(env);
     }
     return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_connectSlotsByName)
+    (JNIEnv * env, jclass, QtJambiNativeID native_id)
+{
+    try{
+        QObject *object = qtjambi_object_from_nativeId<QObject>(native_id);
+        qtjambi_check_resource(env, object);
+        QMetaObject::connectSlotsByName(object);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
 }
 
 extern "C" Q_DECL_EXPORT jint JNICALL
@@ -4779,6 +4797,57 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_nativeinterface_QAndroidApplication_runOnAndroidMainThread__Ljava_util_function_Supplier_2Lio_qt_core_QDeadlineTimer_2)
+(JNIEnv * env, jclass, jobject runnable, jobject timer)
+{
+    try{
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+        QDeadlineTimer deadlineTimer = qtjambi_cast<QDeadlineTimer>(env, timer);
+        JObjectWrapper _runnable(env, runnable);
+        return qtjambi_cast<jobject>(env, QAndroidApplication::runOnAndroidMainThread([_runnable]()->QVariant{
+            if(JNIEnv * _env = qtjambi_current_environment()){
+                jobject value = Java::Runtime::Supplier::get(_env, _runnable.object());
+                return qtjambi_cast<QVariant>(_env, value);
+            }else{
+                return QVariant();
+            }
+        }, timer));
+#else
+        Q_UNUSED(runnable)
+        Q_UNUSED(timer)
+        JavaException::raiseQNoImplementationException(env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_nativeinterface_QAndroidApplication_runOnAndroidMainThread__Ljava_lang_Runnable_2Lio_qt_core_QDeadlineTimer_2)
+(JNIEnv * env, jclass, jobject runnable, jobject timer)
+{
+    try{
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+        QDeadlineTimer deadlineTimer = qtjambi_cast<QDeadlineTimer>(env, timer);
+        JObjectWrapper _runnable(env, runnable);
+        return qtjambi_cast<jobject>(env, QAndroidApplication::runOnAndroidMainThread([_runnable](){
+            if(JNIEnv * _env = qtjambi_current_environment()){
+                Java::Runtime::Runnable::run(_env, _runnable.object());
+            }
+        }, timer));
+#else
+        Q_UNUSED(runnable)
+        Q_UNUSED(timer)
+        JavaException::raiseQNoImplementationException(env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+
 #endif
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFunctionPointer_invoke_1native__Lio_qt_QtObjectInterface_2Ljava_lang_Object_2_3Ljava_lang_Object_2)
@@ -4920,154 +4989,176 @@ void initialize_meta_info_QtCore(){
             }
         };
         const std::type_info& typeId = typeid(QUntypedBindable);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.id()==QMetaType::Bool;
-                }
-                return false;
-            }, "io/qt/core/QBooleanBindable", registerValueTypeInfo<QBindable<bool>>("QBindable<bool>", "io/qt/core/QBooleanBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==1
-                            && (metaType.id()==QMetaType::SChar
-                                || metaType.id()==QMetaType::Char
-                                || metaType.id()==QMetaType::UChar);
-                }
-                return false;
-            }, "io/qt/core/QByteBindable", registerValueTypeInfo<QBindable<qint8>>("QBindable<qint8>", "io/qt/core/QByteBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==2
-                            && (metaType.id()==QMetaType::QChar);
-                }
-                return false;
-            }, "io/qt/core/QCharBindable", registerValueTypeInfo<QBindable<QChar>>("QBindable<QChar>", "io/qt/core/QCharBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==2
-                            && (metaType.id()==QMetaType::Char16);
-                }
-                return false;
-            }, "io/qt/core/QCharBindable", registerValueTypeInfo<QBindable<char16_t>>("QBindable<char16_t>", "io/qt/core/QCharBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==2
-                            && (metaType.id()==QMetaType::Short
-                                || metaType.id()==QMetaType::UShort);
-                }
-                return false;
-            }, "io/qt/core/QShortBindable", registerValueTypeInfo<QBindable<qint16>>("QBindable<qint16>", "io/qt/core/QShortBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==4
-                            && (metaType.id()==QMetaType::Int
-                                || metaType.id()==QMetaType::UInt
-                                || metaType.id()==QMetaType::Long
-                                || metaType.id()==QMetaType::ULong
-                                || metaType.id()==QMetaType::Char32);
-                }
-                return false;
-            }, "io/qt/core/QIntBindable", registerValueTypeInfo<QBindable<qint32>>("QBindable<qint32>", "io/qt/core/QIntBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==8
-                            && (metaType.id()==QMetaType::Long
-                                || metaType.id()==QMetaType::LongLong
-                                || metaType.id()==QMetaType::ULong
-                                || metaType.id()==QMetaType::ULongLong);
-                }
-                return false;
-            }, "io/qt/core/QLongBindable", registerValueTypeInfo<QBindable<qint64>>("QBindable<qint64>", "io/qt/core/QLongBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType==QMetaType::fromType<char32_t>();
-                }
-                return false;
-            }, "io/qt/core/QIntBindable", registerValueTypeInfo<QBindable<char32_t>>("QBindable<char32_t>", "io/qt/core/QIntBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==4
-                            && (metaType.id()==QMetaType::Float
-                                || metaType.id()==QMetaType::Double);
-                }
-                return false;
-            }, "io/qt/core/QFloatBindable", registerValueTypeInfo<QBindable<float>>("QBindable<float>", "io/qt/core/QFloatBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return metaType.sizeOf()==8
-                            && (metaType.id()==QMetaType::Float
-                                || metaType.id()==QMetaType::Double);
-                }
-                return false;
-            }, "io/qt/core/QDoubleBindable", registerValueTypeInfo<QBindable<double>>("QBindable<double>", "io/qt/core/QDoubleBindable"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
-                Q_ASSERT(bindable);
-                if(bindable->iface()
-                        && bindable->iface()->metaType){
-                    QMetaType metaType = bindable->iface()->metaType();
-                    return !(metaType.id()==QMetaType::SChar
-                             || metaType.id()==QMetaType::Char
-                             || metaType.id()==QMetaType::UChar
-                             || metaType.id()==QMetaType::QChar
-                             || metaType.id()==QMetaType::Char16
-                             || metaType.id()==QMetaType::Short
-                             || metaType.id()==QMetaType::UShort
-                             || metaType.id()==QMetaType::Int
-                             || metaType.id()==QMetaType::UInt
-                             || metaType.id()==QMetaType::Char32
-                             || metaType.id()==QMetaType::Long
-                             || metaType.id()==QMetaType::LongLong
-                             || metaType.id()==QMetaType::ULong
-                             || metaType.id()==QMetaType::ULongLong
-                             || metaType.id()==QMetaType::Float
-                             || metaType.id()==QMetaType::Double
-                             || metaType.id()==QMetaType::Bool
-                             || metaType.id()==QMetaType::Void
-                             || metaType.id()==QMetaType::UnknownType);
-                }
-                return false;
-            }, "io/qt/core/QBindable", registerValueTypeInfo<QBindable<QVariant>>("QBindable<QVariant>", "io/qt/core/QBindable"), false);
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<bool>>("QBindable<bool>", "io/qt/core/QBooleanBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.id()==QMetaType::Bool;
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<qint8>>("QBindable<qint8>", "io/qt/core/QByteBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==1
+                                                    && (metaType.id()==QMetaType::SChar
+                                                        || metaType.id()==QMetaType::Char
+                                                        || metaType.id()==QMetaType::UChar);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<QChar>>("QBindable<QChar>", "io/qt/core/QCharBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==2
+                                                    && (metaType.id()==QMetaType::QChar);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<char16_t>>("QBindable<char16_t>", "io/qt/core/QCharBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==2
+                                                    && (metaType.id()==QMetaType::Char16);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<qint16>>("QBindable<qint16>", "io/qt/core/QShortBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==2
+                                                    && (metaType.id()==QMetaType::Short
+                                                        || metaType.id()==QMetaType::UShort);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<qint32>>("QBindable<qint32>", "io/qt/core/QIntBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==4
+                                                    && (metaType.id()==QMetaType::Int
+                                                        || metaType.id()==QMetaType::UInt
+                                                        || metaType.id()==QMetaType::Long
+                                                        || metaType.id()==QMetaType::ULong
+                                                        || metaType.id()==QMetaType::Char32);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<qint64>>("QBindable<qint64>", "io/qt/core/QLongBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==8
+                                                    && (metaType.id()==QMetaType::Long
+                                                        || metaType.id()==QMetaType::LongLong
+                                                        || metaType.id()==QMetaType::ULong
+                                                        || metaType.id()==QMetaType::ULongLong);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<char32_t>>("QBindable<char32_t>", "io/qt/core/QIntBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType==QMetaType::fromType<char32_t>();
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<float>>("QBindable<float>", "io/qt/core/QFloatBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==4
+                                                    && (metaType.id()==QMetaType::Float
+                                                        || metaType.id()==QMetaType::Double);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<double>>("QBindable<double>", "io/qt/core/QDoubleBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return metaType.sizeOf()==8
+                                                    && (metaType.id()==QMetaType::Float
+                                                        || metaType.id()==QMetaType::Double);
+                                        }
+                                        return false;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QBindable<QVariant>>("QBindable<QVariant>", "io/qt/core/QBindable"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        AccessBindable *bindable = reinterpret_cast<AccessBindable *>(ptr);
+                                        Q_ASSERT(bindable);
+                                        offset = 0;
+                                        if(bindable->iface()
+                                                && bindable->iface()->metaType){
+                                            QMetaType metaType = bindable->iface()->metaType();
+                                            return !(metaType.id()==QMetaType::SChar
+                                                     || metaType.id()==QMetaType::Char
+                                                     || metaType.id()==QMetaType::UChar
+                                                     || metaType.id()==QMetaType::QChar
+                                                     || metaType.id()==QMetaType::Char16
+                                                     || metaType.id()==QMetaType::Short
+                                                     || metaType.id()==QMetaType::UShort
+                                                     || metaType.id()==QMetaType::Int
+                                                     || metaType.id()==QMetaType::UInt
+                                                     || metaType.id()==QMetaType::Char32
+                                                     || metaType.id()==QMetaType::Long
+                                                     || metaType.id()==QMetaType::LongLong
+                                                     || metaType.id()==QMetaType::ULong
+                                                     || metaType.id()==QMetaType::ULongLong
+                                                     || metaType.id()==QMetaType::Float
+                                                     || metaType.id()==QMetaType::Double
+                                                     || metaType.id()==QMetaType::Bool
+                                                     || metaType.id()==QMetaType::Void
+                                                     || metaType.id()==QMetaType::UnknownType);
+                                        }
+                                        return false;
+                                    });
         registerMetaType<QBindable<bool>>("QBindable<bool>");
         registerMetaType<QBindable<qint8>>("QBindable<qint8>");
         registerMetaType<QBindable<qint16>>("QBindable<qint16>");
@@ -5083,97 +5174,115 @@ void initialize_meta_info_QtCore(){
 
     {
         const std::type_info& typeId = typeid(QUntypedPropertyBinding);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.id()==QMetaType::Bool;
-            }, "io/qt/core/QBooleanPropertyBinding", registerValueTypeInfo<QPropertyBinding<bool>>("QPropertyBinding<bool>", "io/qt/core/QBooleanPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==1
-                        && (metaType.id()==QMetaType::SChar
-                            || metaType.id()==QMetaType::Char
-                            || metaType.id()==QMetaType::UChar);
-            }, "io/qt/core/QBytePropertyBinding", registerValueTypeInfo<QPropertyBinding<qint8>>("QPropertyBinding<qint8>", "io/qt/core/QBytePropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==2
-                        && (metaType.id()==QMetaType::QChar
-                            || metaType.id()==QMetaType::Char16);
-            }, "io/qt/core/QCharPropertyBinding", registerValueTypeInfo<QPropertyBinding<QChar>>("QPropertyBinding<QChar>", "io/qt/core/QCharPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==2
-                        && (metaType.id()==QMetaType::Short
-                            || metaType.id()==QMetaType::UShort);
-            }, "io/qt/core/QShortPropertyBinding", registerValueTypeInfo<QPropertyBinding<qint16>>("QPropertyBinding<qint16>", "io/qt/core/QShortPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==4
-                        && (metaType.id()==QMetaType::Int
-                            || metaType.id()==QMetaType::UInt
-                            || metaType.id()==QMetaType::Long
-                            || metaType.id()==QMetaType::ULong
-                            || metaType.id()==QMetaType::Char32);
-            }, "io/qt/core/QIntPropertyBinding", registerValueTypeInfo<QPropertyBinding<qint32>>("QPropertyBinding<qint32>", "io/qt/core/QIntPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==8
-                        && (metaType.id()==QMetaType::Long
-                            || metaType.id()==QMetaType::LongLong
-                            || metaType.id()==QMetaType::ULong
-                            || metaType.id()==QMetaType::ULongLong);
-            }, "io/qt/core/QLongPropertyBinding", registerValueTypeInfo<QPropertyBinding<qint64>>("QPropertyBinding<qint64>", "io/qt/core/QLongPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==4
-                        && (metaType.id()==QMetaType::Float
-                            || metaType.id()==QMetaType::Double);
-            }, "io/qt/core/QFloatPropertyBinding", registerValueTypeInfo<QPropertyBinding<float>>("QPropertyBinding<float>", "io/qt/core/QFloatPropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return metaType.sizeOf()==8
-                        && (metaType.id()==QMetaType::Float
-                            || metaType.id()==QMetaType::Double);
-            }, "io/qt/core/QDoublePropertyBinding", registerValueTypeInfo<QPropertyBinding<double>>("QPropertyBinding<double>", "io/qt/core/QDoublePropertyBinding"), false);
-        registerPolymorphyHandler(typeId, [](void *ptr) -> bool {
-                QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
-                Q_ASSERT(binding);
-                QMetaType metaType = binding->valueMetaType();
-                return !(metaType.id()==QMetaType::SChar
-                         || metaType.id()==QMetaType::Char
-                         || metaType.id()==QMetaType::UChar
-                         || metaType.id()==QMetaType::QChar
-                         || metaType.id()==QMetaType::Char16
-                         || metaType.id()==QMetaType::Short
-                         || metaType.id()==QMetaType::UShort
-                         || metaType.id()==QMetaType::Int
-                         || metaType.id()==QMetaType::UInt
-                         || metaType.id()==QMetaType::Char32
-                         || metaType.id()==QMetaType::Long
-                         || metaType.id()==QMetaType::LongLong
-                         || metaType.id()==QMetaType::ULong
-                         || metaType.id()==QMetaType::ULongLong
-                         || metaType.id()==QMetaType::Float
-                         || metaType.id()==QMetaType::Double
-                         || metaType.id()==QMetaType::Void
-                         || metaType.id()==QMetaType::UnknownType);
-            }, "io/qt/core/QPropertyBinding", registerValueTypeInfo<QPropertyBinding<QVariant>>("QPropertyBinding<QVariant>", "io/qt/core/QPropertyBinding"), false);
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<bool>>("QPropertyBinding<bool>", "io/qt/core/QBooleanPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.id()==QMetaType::Bool;
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<qint8>>("QPropertyBinding<qint8>", "io/qt/core/QBytePropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==1
+                                                && (metaType.id()==QMetaType::SChar
+                                                    || metaType.id()==QMetaType::Char
+                                                    || metaType.id()==QMetaType::UChar);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<QChar>>("QPropertyBinding<QChar>", "io/qt/core/QCharPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==2
+                                                && (metaType.id()==QMetaType::QChar
+                                                    || metaType.id()==QMetaType::Char16);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<qint16>>("QPropertyBinding<qint16>", "io/qt/core/QShortPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==2
+                                                && (metaType.id()==QMetaType::Short
+                                                    || metaType.id()==QMetaType::UShort);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<qint32>>("QPropertyBinding<qint32>", "io/qt/core/QIntPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==4
+                                                && (metaType.id()==QMetaType::Int
+                                                    || metaType.id()==QMetaType::UInt
+                                                    || metaType.id()==QMetaType::Long
+                                                    || metaType.id()==QMetaType::ULong
+                                                    || metaType.id()==QMetaType::Char32);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<qint64>>("QPropertyBinding<qint64>", "io/qt/core/QLongPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==8
+                                                && (metaType.id()==QMetaType::Long
+                                                    || metaType.id()==QMetaType::LongLong
+                                                    || metaType.id()==QMetaType::ULong
+                                                    || metaType.id()==QMetaType::ULongLong);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<float>>("QPropertyBinding<float>", "io/qt/core/QFloatPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==4
+                                                && (metaType.id()==QMetaType::Float
+                                                    || metaType.id()==QMetaType::Double);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<double>>("QPropertyBinding<double>", "io/qt/core/QDoublePropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return metaType.sizeOf()==8
+                                                && (metaType.id()==QMetaType::Float
+                                                    || metaType.id()==QMetaType::Double);
+                                    });
+        registerPolymorphyHandler(typeId, registerValueTypeInfo<QPropertyBinding<QVariant>>("QPropertyBinding<QVariant>", "io/qt/core/QPropertyBinding"),
+                                  [](void *ptr, qintptr& offset) -> bool {
+                                        QUntypedPropertyBinding *binding = reinterpret_cast<QUntypedPropertyBinding *>(ptr);
+                                        Q_ASSERT(binding);
+                                        offset = 0;
+                                        QMetaType metaType = binding->valueMetaType();
+                                        return !(metaType.id()==QMetaType::SChar
+                                                 || metaType.id()==QMetaType::Char
+                                                 || metaType.id()==QMetaType::UChar
+                                                 || metaType.id()==QMetaType::QChar
+                                                 || metaType.id()==QMetaType::Char16
+                                                 || metaType.id()==QMetaType::Short
+                                                 || metaType.id()==QMetaType::UShort
+                                                 || metaType.id()==QMetaType::Int
+                                                 || metaType.id()==QMetaType::UInt
+                                                 || metaType.id()==QMetaType::Char32
+                                                 || metaType.id()==QMetaType::Long
+                                                 || metaType.id()==QMetaType::LongLong
+                                                 || metaType.id()==QMetaType::ULong
+                                                 || metaType.id()==QMetaType::ULongLong
+                                                 || metaType.id()==QMetaType::Float
+                                                 || metaType.id()==QMetaType::Double
+                                                 || metaType.id()==QMetaType::Void
+                                                 || metaType.id()==QMetaType::UnknownType);
+                                    });
         registerMetaType<QPropertyBinding<bool>>("QPropertyBinding<bool>");
         registerMetaType<QPropertyBinding<qint8>>("QPropertyBinding<qint8>");
         registerMetaType<QPropertyBinding<QChar>>("QPropertyBinding<QChar>");

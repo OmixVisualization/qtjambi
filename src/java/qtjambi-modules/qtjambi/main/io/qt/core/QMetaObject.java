@@ -473,8 +473,11 @@ public final class QMetaObject {
     
     @QtUninvokable
     public static void connectSlotsByName(QObject object) {
-        io.qt.internal.QtJambiInternal.connectSlotsByName(object);
+        connectSlotsByName(QtJambi_LibraryUtilities.internal.checkedNativeId(object));
     }
+    
+    @QtUninvokable
+    private static native void connectSlotsByName(long object);
             
     @QtUninvokable
     static native QMetaObject.Connection connect(QObject sender, String signal, QObject receiver, String slot, byte connection);
@@ -504,10 +507,15 @@ public final class QMetaObject {
     	if(name==null)
     		return null;
         QMetaMethod method;
-        if(parameterTypes.length==0 && name.contains("(")) {
-            method = method(metaObjectPointer, cppNormalizedSignature(name));
+        int idx = name.indexOf('(');
+        if(parameterTypes.length==0 && idx>0) {
+        	int spacePos = name.substring(0, idx).trim().lastIndexOf(' ');
+			if (idx > spacePos && spacePos > 0)
+				throw new RuntimeException(String.format("Do not specify return type in slot signature: '%1$s'", name));
+        	String cppNormalizedSignature = cppNormalizedSignature(name, this.type());
+            method = method(metaObjectPointer, cppNormalizedSignature);
             if(method==null)
-                method = method(metaObjectPointer, cppNormalizedSignature(name)+"const");
+                method = method(metaObjectPointer, cppNormalizedSignature+"const");
         }else {
             StringBuilder args = new StringBuilder();
             for(int i=0; i<parameterTypes.length; ++i) {
@@ -523,9 +531,21 @@ public final class QMetaObject {
         }
         if(method==null || !method.isValid()) {
             for(QMetaMethod m : methods(metaObjectPointer)) {
-                if(m.name().toString().equals(name) && m.parameterClassTypes().equals(Arrays.asList(parameterTypes))) {
-                    method = m;
-                    break;
+                if(m.name().toString().equals(name)) {
+                	if(m.parameterClassTypes().equals(Arrays.asList(parameterTypes))) {
+	                    method = m;
+	                    break;
+                	}else if(idx<0 && m.parameterClassTypes().size()==parameterTypes.length) {
+                		method = null;
+                		for(int i=0; i<parameterTypes.length; ++i) {
+                			if(m.parameterClassTypes().get(i).isAssignableFrom(parameterTypes[i])) {
+        	                    method = m;
+        	                    break;                				
+                			}
+                		}
+                		if(method!=null)
+                			break;
+                	}
                 }
             }
         }
@@ -794,7 +814,7 @@ public final class QMetaObject {
                     
     @QtUninvokable
     public static boolean checkConnectArgs(String signal, String method) {
-        return checkConnectArgsString(io.qt.internal.QtJambiInternal.SignalPrefix+cppNormalizedSignature(signal), io.qt.internal.QtJambiInternal.SlotPrefix+cppNormalizedSignature(method));
+        return checkConnectArgsString(io.qt.internal.QtJambiInternal.SignalPrefix+cppNormalizedSignature(signal, null), io.qt.internal.QtJambiInternal.SlotPrefix+cppNormalizedSignature(method, null));
     }
     @QtUninvokable
     private native static boolean checkConnectArgsString(String signal, String method);
@@ -2267,8 +2287,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2399,8 +2419,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2540,8 +2560,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2682,8 +2702,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2829,8 +2849,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2981,8 +3001,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -3137,8 +3157,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -3299,8 +3319,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -3466,8 +3486,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -3638,8 +3658,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -4258,11 +4278,10 @@ public final class QMetaObject {
     
     private final static class SignalAccess extends QtJambiSignals {
         static abstract class AbstractSignal extends QtJambiSignals.AbstractSignal {
-            
             AbstractSignal(){}
         
-            AbstractSignal(Class<?>... types) {
-                super(types);
+            AbstractSignal(boolean isGeneric, Class<?>... types) {
+                super(isGeneric, types);
             }
             
             AbstractSignal(Class<?> declaringClass, boolean isStatic) {
@@ -4274,16 +4293,9 @@ public final class QMetaObject {
             }
         }
         
-        static abstract class AbstractMultiSignal extends QtJambiSignals.MultiSignal {
-            AbstractMultiSignal(SignalConfiguration signal1, SignalConfiguration signal2,
-                    SignalConfiguration[] furtherSignals) {
-                super(signal1, signal2, furtherSignals);
-            }
-        }
-        
-        static abstract class SignalConfiguration extends QtJambiSignals.SignalConfiguration {
-            SignalConfiguration(io.qt.core.QMetaObject.AbstractSignal signal, Class<?>[] types) {
-                super(signal, types);
+        static abstract class AbstractMultiSignal extends QtJambiSignals.AbstractMultiSignal<AbstractSignal> {
+            AbstractMultiSignal() {
+                super();
             }
         }
         
@@ -4300,7 +4312,7 @@ public final class QMetaObject {
         }
         
         static void _emitNativeSignal(QObject sender, int methodIndex, Object args[]) {
-        	QtJambiSignals.emitNativeSignal(sender, methodIndex, args);
+        	QtJambiSignals.emitNativeSignal(sender, methodIndex, 0, args);
         }
         
         static Class<?> _signalDeclaringClass(AbstractSignal signal){
@@ -4316,22 +4328,12 @@ public final class QMetaObject {
         }
         
         private static void initialize() {}
-        static {
-            QtJambiSignals.registerDisposedSignalFactory(DisposedSignal::new);
-        }
-    }
-    
-    static abstract class SignalConfiguration extends SignalAccess.SignalConfiguration {
-        SignalConfiguration(io.qt.core.QMetaObject.AbstractSignal signal, Class<?>... types) {
-            super(signal, types);
-        }
     }
     
     static abstract class AbstractMultiSignal extends SignalAccess.AbstractMultiSignal {
-        AbstractMultiSignal(SignalConfiguration signal1, SignalConfiguration signal2,
-                SignalConfiguration[] furtherSignals) {
-            super(signal1, signal2, furtherSignals);
-        }
+        AbstractMultiSignal(){
+        	super();
+    	}
     }
     
     static {
@@ -4344,7 +4346,6 @@ public final class QMetaObject {
      * @see QtObjectInterface#dispose()
      */
     public static final class DisposedSignal extends AbstractSignal {
-        
         private DisposedSignal(Class<?> declaringClass) {
             super(declaringClass, true);
         }
@@ -4371,7 +4372,7 @@ public final class QMetaObject {
         }
     
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -4379,942 +4380,17 @@ public final class QMetaObject {
         public final boolean disconnect(Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
-    
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType      One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType      One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType      One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType      One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType      One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
     }
     
     /**
      * Supertype of all signals in QtJambi.
      */
-    public static abstract class AbstractSignal extends SignalAccess.AbstractSignal {
+    public static abstract class AbstractSignal extends SignalAccess.AbstractSignal implements Signal {
         
         AbstractSignal(){}
     
-        AbstractSignal(Class<?>... types) {
-            super(types);
+        AbstractSignal(boolean isGeneric, Class<?>... types) {
+            super(isGeneric, types);
         }
         
         AbstractSignal(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -5358,7 +4434,11 @@ public final class QMetaObject {
                 throw new IllegalArgumentException("Receiver cannot be null if you specify a method");
             if (receiver == null && this instanceof DisposedSignal)
             	return false;
-            return removeConnection(receiver, method);
+            if(receiver instanceof QMetaObject.Connection && method==null){
+                return removeConnection((QMetaObject.Connection)receiver);
+            }else{
+            	return removeConnection(receiver, method);
+            }
         }
     
         /**
@@ -5371,11 +4451,7 @@ public final class QMetaObject {
          *  @see #disconnect(Object, String)
          **/
         public final boolean disconnect(Object receiver) {
-            if(receiver instanceof QMetaObject.Connection){
-                return disconnect((QMetaObject.Connection)receiver);
-            }else{
-                return disconnect(receiver, null);
-            }
+            return disconnect(receiver, null);
         }
     
         /**
@@ -5566,6 +4642,240 @@ public final class QMetaObject {
         public void invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
     }
     
+    public static interface Signal{
+    	String name();
+    	String fullName();
+    	QtSignalEmitterInterface containingObject();
+    	int methodIndex();
+    	List<Class<?>> argumentTypes();
+    }
+    
+    /**
+     * An interface to a generic signal.
+     */
+    public static interface GenericConnectable extends Signal{
+    }
+
+    /**
+     * An interface to signal callable without parameters.
+     */
+    public static interface Connectable0 extends Signal{
+    }
+
+    /**
+     * An interface for anything connectable to a signal with one parameter.
+     * @param <A> The type of the first parameter.
+     */
+    public static interface Connectable1<A> extends Signal{
+    }
+
+    /**
+     * An interface for anything connectable to a signal with two parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     */
+    public static interface Connectable2<A,B> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with three parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     */
+    public static interface Connectable3<A,B,C> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with four parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     */
+    public static interface Connectable4<A,B,C,D> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with five parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     */
+    public static interface Connectable5<A,B,C,D,E> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with six parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     */
+    public static interface Connectable6<A,B,C,D,E,F> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with seven parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     */
+    public static interface Connectable7<A,B,C,D,E,F,G> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with eight parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     * @param <H> The type of the eighth parameter.
+     */
+    public static interface Connectable8<A,B,C,D,E,F,G,H> extends Signal{
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with nine parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     * @param <H> The type of the eighth parameter.
+     * @param <I> The type of the ninth parameter.
+     */
+    public static interface Connectable9<A,B,C,D,E,F,G,H,I> extends Signal{
+    }
+    
+    /**
+     * An interface to parameterless signal.
+     */
+    public static interface Emitable0 extends Signal{
+        public void emit();
+    }
+
+    /**
+     * An interface for anything connectable to a signal with one parameter.
+     * @param <A> The type of the first parameter.
+     */
+    public static interface Emitable1<A> extends Signal{
+        public void emit(A a);
+    }
+
+    /**
+     * An interface for anything connectable to a signal with two parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     */
+    public static interface Emitable2<A,B> extends Signal{
+        public void emit(A a, B b);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with three parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     */
+    public static interface Emitable3<A,B,C> extends Signal{
+        public void emit(A a, B b, C c);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with four parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     */
+    public static interface Emitable4<A,B,C,D> extends Signal{
+        public void emit(A a, B b, C c, D d);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with five parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     */
+    public static interface Emitable5<A,B,C,D,E> extends Signal{
+        public void emit(A a, B b, C c, D d, E e);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with six parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     */
+    public static interface Emitable6<A,B,C,D,E,F> extends Signal{
+        public void emit(A a, B b, C c, D d, E e, F f);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with seven parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     */
+    public static interface Emitable7<A,B,C,D,E,F,G> extends Signal{
+        public void emit(A a, B b, C c, D d, E e, F f, G g);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with eight parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     * @param <H> The type of the eighth parameter.
+     */
+    public static interface Emitable8<A,B,C,D,E,F,G,H> extends Signal{
+        public void emit(A a, B b, C c, D d, E e, F f, G g, H h);
+    }
+    
+    /**
+     * An interface for anything connectable to a signal with nine parameters.
+     * @param <A> The type of the first parameter.
+     * @param <B> The type of the second parameter.
+     * @param <C> The type of the third parameter.
+     * @param <D> The type of the fourth parameter.
+     * @param <E> The type of the fifth parameter.
+     * @param <F> The type of the sixth parameter.
+     * @param <G> The type of the seventh parameter.
+     * @param <H> The type of the eighth parameter.
+     * @param <I> The type of the ninth parameter.
+     */
+    public static interface Emitable9<A,B,C,D,E,F,G,H,I> extends Signal{
+        public void emit(A a, B b, C c, D d, E e, F f, G g, H h, I i);
+    }
+    
     /**
      * A generic slot handle to a method of variadic arguments with return value.
      * @param <R> The type of the return value of the method.
@@ -5714,7 +5024,6 @@ public final class QMetaObject {
      * Supertype for parameterless signals.
      */
     public static abstract class AbstractPrivateSignal0 extends AbstractSignal {
-        
         AbstractPrivateSignal0(){super();}
         
         AbstractPrivateSignal0(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -5722,7 +5031,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal0(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal0(String signalName, Class<?>... types) {
@@ -5743,7 +5052,7 @@ public final class QMetaObject {
         }
     
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -5753,900 +5062,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>signal</i>.
+         * 
+         * @param signal the signal to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
-         */
-        public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable0 signal, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
     
         /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal1Default1<?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal2Default2<?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable0 signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -6663,7 +5097,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal1(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal1(String signalName, Class<?>... types) {
@@ -6697,7 +5131,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -6707,7 +5141,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -6717,243 +5151,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>signal</i>.
+         * 
+         * @param signal the signal to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable1<? super A> signal, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal2Default1<A,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal3Default2<A,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal4Default3<A,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal5Default4<A,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal6Default5<A,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default6<A,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default7<A,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default8<A,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal2Default1<A,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal3Default2<A,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal4Default3<A,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal5Default4<A,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal6Default5<A,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default6<A,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default7<A,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default8<A,?,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable1<? super A> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -6963,6 +5179,7 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      */
     public static abstract class AbstractPrivateSignal2<A, B> extends AbstractSignal {
+        
         AbstractPrivateSignal2(){super();}
     
         AbstractPrivateSignal2(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -6970,7 +5187,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal2(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal2(String signalName, Class<?>... types) {
@@ -7017,7 +5234,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7027,7 +5244,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7037,7 +5254,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7047,243 +5264,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>signal</i>.
+         * 
+         * @param signal the signal to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable2<? super A,? super B> signal, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal3Default1<A,B,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal4Default2<A,B,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal5Default3<A,B,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal6Default4<A,B,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default5<A,B,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default6<A,B,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default7<A,B,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal3Default1<A,B,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal4Default2<A,B,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal5Default3<A,B,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal6Default4<A,B,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default5<A,B,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default6<A,B,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default7<A,B,?,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable2<? super A,? super B> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -7295,6 +5294,7 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal3<A, B, C> extends AbstractSignal {
         
+
         AbstractPrivateSignal3(){super();}
         
         AbstractPrivateSignal3(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -7302,7 +5302,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal3(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal3(String signalName, Class<?>... types) {
@@ -7362,7 +5362,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7372,7 +5372,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7382,7 +5382,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7392,7 +5392,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7400,245 +5400,27 @@ public final class QMetaObject {
         public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal4Default1<A,B,C,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal5Default2<A,B,C,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal6Default3<A,B,C,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default4<A,B,C,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default5<A,B,C,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default6<A,B,C,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
     
         /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+         * Initializes a connection to the <i>signal</i>.
+         * 
+         * @param signal the signal to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
+        public final QMetaObject.Connection connect(Connectable3<? super A,? super B,? super C> signal, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
         /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal4Default1<A,B,C,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal5Default2<A,B,C,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal6Default3<A,B,C,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default4<A,B,C,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default5<A,B,C,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default6<A,B,C,?,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable3<? super A,? super B,? super C> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -7651,6 +5433,7 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal4<A, B, C, D> extends AbstractSignal {
         
+        
         AbstractPrivateSignal4(){super();}
         
         AbstractPrivateSignal4(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -7658,7 +5441,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal4(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal4(String signalName, Class<?>... types) {
@@ -7731,7 +5514,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7741,7 +5524,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7751,7 +5534,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7761,7 +5544,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7771,7 +5554,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -7781,243 +5564,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>signal</i>.
+         * 
+         * @param signal the signal to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable4<? super A,? super B,? super C,? super D> signal, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal5Default1<A,B,C,D,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal6Default2<A,B,C,D,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default3<A,B,C,D,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default4<A,B,C,D,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default5<A,B,C,D,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal5Default1<A,B,C,D,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal6Default2<A,B,C,D,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default3<A,B,C,D,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default4<A,B,C,D,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default5<A,B,C,D,?,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable4<? super A,? super B,? super C,? super D> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -8030,6 +5595,7 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal5<A, B, C, D, E> extends AbstractSignal {
         
+        
         AbstractPrivateSignal5(){super();}
         
         AbstractPrivateSignal5(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -8037,7 +5603,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal5(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal5(String signalName, Class<?>... types) {
@@ -8123,7 +5689,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8133,7 +5699,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8143,7 +5709,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8153,7 +5719,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8163,7 +5729,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8173,7 +5739,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8183,243 +5749,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>slot</i>.
+         * 
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal6Default1<A,B,C,D,E,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default2<A,B,C,D,E,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default3<A,B,C,D,E,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default4<A,B,C,D,E,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal6Default1<A,B,C,D,E,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default2<A,B,C,D,E,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default3<A,B,C,D,E,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default4<A,B,C,D,E,?,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable5<? super A,? super B,? super C,? super D,? super E> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -8434,6 +5782,7 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal6<A, B, C, D, E, F> extends AbstractSignal {
         
+        
         AbstractPrivateSignal6(){super();}
         
         AbstractPrivateSignal6(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -8441,7 +5790,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal6(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal6(String signalName, Class<?>... types) {
@@ -8540,7 +5889,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8550,7 +5899,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8560,7 +5909,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8570,7 +5919,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8580,7 +5929,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8590,7 +5939,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8600,7 +5949,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8610,243 +5959,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>slot</i>.
+         * 
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal7Default1<A,B,C,D,E,F,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default2<A,B,C,D,E,F,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default3<A,B,C,D,E,F,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal7Default1<A,B,C,D,E,F,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default2<A,B,C,D,E,F,?,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default3<A,B,C,D,E,F,?,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -8862,6 +5993,7 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal7<A, B, C, D, E, F, G> extends AbstractSignal {
         
+        
         AbstractPrivateSignal7(){super();}
         
         AbstractPrivateSignal7(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -8869,7 +6001,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal7(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal7(String signalName, Class<?>... types) {
@@ -8981,7 +6113,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -8991,7 +6123,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9001,7 +6133,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9011,7 +6143,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9021,7 +6153,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9031,7 +6163,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9041,7 +6173,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9051,7 +6183,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9061,243 +6193,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>slot</i>.
+         * 
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal8Default1<A,B,C,D,E,F,G,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default2<A,B,C,D,E,F,G,?,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal8Default1<A,B,C,D,E,F,G,?> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default2<A,B,C,D,E,F,G,?,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -9313,6 +6227,7 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      */
     public static abstract class AbstractPrivateSignal8<A, B, C, D, E, F, G, H> extends AbstractSignal {
+        
         AbstractPrivateSignal8(){super();}
         
         AbstractPrivateSignal8(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -9320,7 +6235,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal8(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal8(String signalName, Class<?>... types) {
@@ -9445,7 +6360,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9455,7 +6370,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9465,7 +6380,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9475,7 +6390,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9485,7 +6400,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9495,7 +6410,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9505,7 +6420,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9515,7 +6430,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9525,7 +6440,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9535,243 +6450,25 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>slot</i>.
+         * 
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractSignal9Default1<A,B,C,D,E,F,G,H,?> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractSignal9Default1<A,B,C,D,E,F,G,H,?> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
@@ -9788,6 +6485,7 @@ public final class QMetaObject {
      * @param <I> The type of the ninth parameter of the signal.
      */
     public static abstract class AbstractPrivateSignal9<A, B, C, D, E, F, G, H, I> extends AbstractSignal {
+        
         AbstractPrivateSignal9(){super();}
         
         AbstractPrivateSignal9(Class<?> declaringClass, boolean isDisposedSignal) {
@@ -9795,7 +6493,7 @@ public final class QMetaObject {
         }
         
         AbstractPrivateSignal9(Class<?>... types) {
-            super(types);
+            super(false, types);
         }
         
         AbstractPrivateSignal9(String signalName, Class<?>... types) {
@@ -9933,7 +6631,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9943,7 +6641,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9953,7 +6651,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9963,7 +6661,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9973,7 +6671,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9983,7 +6681,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -9993,7 +6691,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -10003,7 +6701,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -10013,7 +6711,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -10023,7 +6721,7 @@ public final class QMetaObject {
         }
         
         /**
-         * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+         * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -10033,251 +6731,45 @@ public final class QMetaObject {
         }
     
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
+         * Initializes a connection to the <i>slot</i>.
+         * 
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
+        public final QMetaObject.Connection connect(Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... type) {
+            return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
         /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * Removes the connection to the given <i>signal</i>.
+         * 
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-        
-        /**
-         * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
-         * signal to be emitted as well.
-         *
-         * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-         * @param connectionType One of the connection types defined in the Qt interface.
-         * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         */
-        public final QMetaObject.Connection connect(AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signalOut, Qt.ConnectionType... connectionType) {
-            return connect(signalOut::emit, connectionType);
-        }
-    
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal0 signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut) {
-            return disconnect(signalOut::emit);
-        }
-        
-        /**
-         * Disconnects a signal from another signal if the two were previously connected by a call to connect.
-         * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
-         *
-         * @param signalOut The second signal.
-         * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
-         */
-        public final boolean disconnect(AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signalOut) {
-            return disconnect(signalOut::emit);
+        public final boolean disconnect(Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> signal) {
+            return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
 
     /**
      * Supertype for all public parameterless signals.
      */
-    public static abstract class AbstractPublicSignal0 extends AbstractPrivateSignal0 {
-        AbstractPublicSignal0(){super();}
+    public static abstract class AbstractPublicSignal0 extends AbstractPrivateSignal0 implements    Emitable0,
+																								    Connectable0,
+																								    Connectable1<Object>,
+																								    Connectable2<Object,Object>,
+																								    Connectable3<Object,Object,Object>,
+																								    Connectable4<Object,Object,Object,Object>,
+																								    Connectable5<Object,Object,Object,Object,Object>,
+																									Connectable6<Object,Object,Object,Object,Object,Object>,
+																									Connectable7<Object,Object,Object,Object,Object,Object,Object>,
+																									Connectable8<Object,Object,Object,Object,Object,Object,Object,Object>,
+																									Connectable9<Object,Object,Object,Object,Object,Object,Object,Object,Object>,
+																									GenericConnectable
+    {
+		AbstractPublicSignal0(){super();}
         
         AbstractPublicSignal0(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10294,6 +6786,7 @@ public final class QMetaObject {
         /**
          * Emits the signal.
          */
+        @Override
         public final void emit() {
             emitSignal();
         }
@@ -10303,8 +6796,19 @@ public final class QMetaObject {
      * Supertype for all public signals with one parameter.
      * @param <A> The type of the first parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal1<A> extends AbstractPrivateSignal1<A> {
-        AbstractPublicSignal1(){}
+    public static abstract class AbstractPublicSignal1<A> extends AbstractPrivateSignal1<A> implements  Emitable1<A>,
+																									    Connectable1<A>,
+																									    Connectable2<A,Object>,
+																									    Connectable3<A,Object,Object>,
+																									    Connectable4<A,Object,Object,Object>,
+																									    Connectable5<A,Object,Object,Object,Object>,
+																										Connectable6<A,Object,Object,Object,Object,Object>,
+																										Connectable7<A,Object,Object,Object,Object,Object,Object>,
+																										Connectable8<A,Object,Object,Object,Object,Object,Object,Object>,
+																										Connectable9<A,Object,Object,Object,Object,Object,Object,Object,Object>,
+																										GenericConnectable
+    {
+		AbstractPublicSignal1(){}
         
         AbstractPublicSignal1(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10322,6 +6826,7 @@ public final class QMetaObject {
          * Emits the signal.
          * @param arg1
          */
+        @Override
         public final void emit(A arg1) {
             emitSignal(arg1);
         }
@@ -10332,8 +6837,18 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal2<A,B> extends AbstractPrivateSignal2<A,B> {
-        AbstractPublicSignal2(){super();}
+    public static abstract class AbstractPublicSignal2<A,B> extends AbstractPrivateSignal2<A,B> implements  Emitable2<A,B>,
+																										    Connectable2<A,B>,
+																										    Connectable3<A,B,Object>,
+																										    Connectable4<A,B,Object,Object>,
+																										    Connectable5<A,B,Object,Object,Object>,
+																											Connectable6<A,B,Object,Object,Object,Object>,
+																											Connectable7<A,B,Object,Object,Object,Object,Object>,
+																											Connectable8<A,B,Object,Object,Object,Object,Object,Object>,
+																											Connectable9<A,B,Object,Object,Object,Object,Object,Object,Object>,
+																											GenericConnectable
+    {
+		AbstractPublicSignal2(){super();}
         
         AbstractPublicSignal2(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10352,6 +6867,7 @@ public final class QMetaObject {
          * @param arg1
          * @param arg2
          */
+        @Override
         public final void emit(A arg1, B arg2) {
             emitSignal(arg1, arg2);
         }
@@ -10363,8 +6879,17 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal3<A,B,C> extends AbstractPrivateSignal3<A,B,C> {
-        AbstractPublicSignal3(){super();}
+    public static abstract class AbstractPublicSignal3<A,B,C> extends AbstractPrivateSignal3<A,B,C> implements  Emitable3<A,B,C>,
+																											    Connectable3<A,B,C>,
+																											    Connectable4<A,B,C,Object>,
+																											    Connectable5<A,B,C,Object,Object>,
+																												Connectable6<A,B,C,Object,Object,Object>,
+																												Connectable7<A,B,C,Object,Object,Object,Object>,
+																												Connectable8<A,B,C,Object,Object,Object,Object,Object>,
+																												Connectable9<A,B,C,Object,Object,Object,Object,Object,Object>,
+																												GenericConnectable
+    {
+		AbstractPublicSignal3(){super();}
         
         AbstractPublicSignal3(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10384,6 +6909,7 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3) {
             emitSignal(arg1, arg2, arg3);
         }
@@ -10396,8 +6922,16 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal4<A,B,C,D> extends AbstractPrivateSignal4<A,B,C,D> {
-        AbstractPublicSignal4(){super();}
+    public static abstract class AbstractPublicSignal4<A,B,C,D> extends AbstractPrivateSignal4<A,B,C,D> implements  Emitable4<A,B,C,D>,
+																												    Connectable4<A,B,C,D>,
+																												    Connectable5<A,B,C,D,Object>,
+																													Connectable6<A,B,C,D,Object,Object>,
+																													Connectable7<A,B,C,D,Object,Object,Object>,
+																													Connectable8<A,B,C,D,Object,Object,Object,Object>,
+																													Connectable9<A,B,C,D,Object,Object,Object,Object,Object>,
+																													GenericConnectable
+    {
+		AbstractPublicSignal4(){super();}
         
         AbstractPublicSignal4(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10418,6 +6952,7 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4) {
             emitSignal(arg1, arg2, arg3, arg4);
         }
@@ -10431,8 +6966,15 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal5<A,B,C,D,E> extends AbstractPrivateSignal5<A,B,C,D,E> {
-        AbstractPublicSignal5(){super();}
+    public static abstract class AbstractPublicSignal5<A,B,C,D,E> extends AbstractPrivateSignal5<A,B,C,D,E> implements  Emitable5<A,B,C,D,E>,
+																													    Connectable5<A,B,C,D,E>,
+																														Connectable6<A,B,C,D,E,Object>,
+																														Connectable7<A,B,C,D,E,Object,Object>,
+																														Connectable8<A,B,C,D,E,Object,Object,Object>,
+																														Connectable9<A,B,C,D,E,Object,Object,Object,Object>,
+																														GenericConnectable
+    {
+		AbstractPublicSignal5(){super();}
         
         AbstractPublicSignal5(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10454,6 +6996,7 @@ public final class QMetaObject {
          * @param arg4
          * @param arg5
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
             emitSignal(arg1, arg2, arg3, arg4, arg5);
         }
@@ -10468,8 +7011,14 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal6<A,B,C,D,E,F> extends AbstractPrivateSignal6<A,B,C,D,E,F> {
-        AbstractPublicSignal6(){super();}
+    public static abstract class AbstractPublicSignal6<A,B,C,D,E,F> extends AbstractPrivateSignal6<A,B,C,D,E,F> implements  Emitable6<A,B,C,D,E,F>,
+    																														Connectable6<A,B,C,D,E,F>,
+																															Connectable7<A,B,C,D,E,F,Object>,
+																															Connectable8<A,B,C,D,E,F,Object,Object>,
+																															Connectable9<A,B,C,D,E,F,Object,Object,Object>,
+																															GenericConnectable
+	{
+		AbstractPublicSignal6(){super();}
         
         AbstractPublicSignal6(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10492,6 +7041,7 @@ public final class QMetaObject {
          * @param arg5
          * @param arg6
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6);
         }
@@ -10507,8 +7057,13 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal7<A,B,C,D,E,F,G> extends AbstractPrivateSignal7<A,B,C,D,E,F,G> {
-        AbstractPublicSignal7(){super();}
+    public static abstract class AbstractPublicSignal7<A,B,C,D,E,F,G> extends AbstractPrivateSignal7<A,B,C,D,E,F,G> implements  Emitable7<A,B,C,D,E,F,G>,
+																																Connectable7<A,B,C,D,E,F,G>,
+																																Connectable8<A,B,C,D,E,F,G,Object>,
+																																Connectable9<A,B,C,D,E,F,G,Object,Object>,
+																																GenericConnectable
+    {
+		AbstractPublicSignal7(){super();}
         
         AbstractPublicSignal7(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10532,6 +7087,7 @@ public final class QMetaObject {
          * @param arg6
          * @param arg7
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
@@ -10548,8 +7104,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal8<A,B,C,D,E,F,G,H> extends AbstractPrivateSignal8<A,B,C,D,E,F,G,H> {
-        AbstractPublicSignal8(){super();}
+    public static abstract class AbstractPublicSignal8<A,B,C,D,E,F,G,H> extends AbstractPrivateSignal8<A,B,C,D,E,F,G,H> implements  Emitable8<A,B,C,D,E,F,G,H>,
+    																																Connectable8<A,B,C,D,E,F,G,H>,
+    																																Connectable9<A,B,C,D,E,F,G,H,Object>,
+    																																GenericConnectable
+	{
+		AbstractPublicSignal8(){super();}
         
         AbstractPublicSignal8(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10574,6 +7134,7 @@ public final class QMetaObject {
          * @param arg7
          * @param arg8
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
@@ -10591,8 +7152,11 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> extends AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> {
-        AbstractPublicSignal9(){super();}
+    public static abstract class AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> extends AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> implements  Emitable9<A,B,C,D,E,F,G,H,I>, 
+    																																   Connectable9<A,B,C,D,E,F,G,H,I>,
+    																																   GenericConnectable 
+    {
+		AbstractPublicSignal9(){super();}
         
         AbstractPublicSignal9(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
@@ -10618,6 +7182,7 @@ public final class QMetaObject {
          * @param arg8
          * @param arg9
          */
+        @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
@@ -10628,9 +7193,12 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      */
-    public static abstract class AbstractSignal2Default1<A, B> extends AbstractPublicSignal2<A, B> {
-        
-        AbstractSignal2Default1(Supplier<B> arg2Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal2Default1<A, B> extends AbstractPublicSignal2<A, B> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal2Default1() {
+    		this.arg2Default = null;
+    	}
+    	
+    	AbstractSignal2Default1(Supplier<? extends B> arg2Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10639,7 +7207,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(Supplier<B> arg2Default){
+        AbstractSignal2Default1(Supplier<? extends B> arg2Default){
             super();
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10648,7 +7216,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(Supplier<B> arg2Default, Class<?>... types) {
+        AbstractSignal2Default1(Supplier<? extends B> arg2Default, Class<?>... types) {
             super(types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10657,7 +7225,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(String signalName, Supplier<B> arg2Default){
+        AbstractSignal2Default1(String signalName, Supplier<? extends B> arg2Default){
             super(signalName);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10666,7 +7234,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(String signalName, Supplier<B> arg2Default, Class<?>... types) {
+        AbstractSignal2Default1(String signalName, Supplier<? extends B> arg2Default, Class<?>... types) {
             super(signalName, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10675,14 +7243,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
 
@@ -10692,9 +7266,12 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      */
-    public static abstract class AbstractSignal3Default1<A, B, C> extends AbstractPublicSignal3<A, B, C> {
-        
-        AbstractSignal3Default1(Supplier<C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal3Default1<A, B, C> extends AbstractPublicSignal3<A, B, C> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal3Default1() {
+    		this.arg3Default = null;
+    	}
+    	
+    	AbstractSignal3Default1(Supplier<? extends C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10703,7 +7280,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(Supplier<C> arg3Default){
+        AbstractSignal3Default1(Supplier<? extends C> arg3Default){
             super();
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10712,7 +7289,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(Supplier<C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default1(Supplier<? extends C> arg3Default, Class<?>... types) {
             super(types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10721,7 +7298,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(String signalName, Supplier<C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default1(String signalName, Supplier<? extends C> arg3Default, Class<?>... types) {
             super(signalName, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10730,15 +7307,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+        	emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
 
@@ -10748,9 +7337,12 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      */
-    public static abstract class AbstractSignal3Default2<A, B, C> extends AbstractSignal3Default1<A, B, C> {
-        
-        AbstractSignal3Default2(Supplier<B> arg2Default, Supplier<C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal3Default2<A, B, C> extends AbstractSignal3Default1<A, B, C> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal3Default2() {
+    		this.arg2Default = null;
+    	}
+    	
+    	AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, declaringClass, isDisposedSignal);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10759,7 +7351,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(Supplier<B> arg2Default, Supplier<C> arg3Default){
+        AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default){
             super(arg3Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10768,7 +7360,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(Supplier<B> arg2Default, Supplier<C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
             super(arg3Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10777,7 +7369,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default2(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
             super(signalName, arg3Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10786,14 +7378,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+            super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
 
@@ -10804,9 +7402,12 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      */
-    public static abstract class AbstractSignal4Default1<A, B, C, D> extends AbstractPublicSignal4<A, B, C, D> {
-        
-        AbstractSignal4Default1(Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal4Default1<A, B, C, D> extends AbstractPublicSignal4<A, B, C, D> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal4Default1() {
+    		this.arg4Default = null;
+    	}
+    	
+    	AbstractSignal4Default1(Supplier<? extends D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -10815,7 +7416,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(Supplier<D> arg4Default){
+        AbstractSignal4Default1(Supplier<? extends D> arg4Default){
             super();
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -10824,7 +7425,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default1(Supplier<? extends D> arg4Default, Class<?>... types) {
             super(types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -10833,7 +7434,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(String signalName, Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default1(String signalName, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -10842,7 +7443,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -10850,8 +7451,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
+        @Override
         public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        	super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
 
@@ -10862,9 +7480,12 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      */
-    public static abstract class AbstractSignal4Default2<A, B, C, D> extends AbstractSignal4Default1<A, B, C, D> {
-        
-        AbstractSignal4Default2(Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal4Default2<A, B, C, D> extends AbstractSignal4Default1<A, B, C, D> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal4Default2() {
+    		this.arg3Default = null;
+    	}
+    	
+    	AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, declaringClass, isDisposedSignal);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10873,7 +7494,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(Supplier<C> arg3Default, Supplier<D> arg4Default){
+        AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
             super(arg4Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10882,7 +7503,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(arg4Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10891,7 +7512,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default2(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, arg4Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -10900,15 +7521,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
 
@@ -10919,9 +7552,12 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      */
-    public static abstract class AbstractSignal4Default3<A, B, C, D> extends AbstractSignal4Default2<A, B, C, D> {
-        
-        AbstractSignal4Default3(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal4Default3<A, B, C, D> extends AbstractSignal4Default2<A, B, C, D> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal4Default3() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, declaringClass, isDisposedSignal);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10930,7 +7566,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default3(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default){
+        AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
             super(arg3Default, arg4Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -10939,7 +7575,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default3(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(arg3Default, arg4Default, types);
             if(arg3Default!=null){
                 this.arg2Default = arg2Default;
@@ -10948,7 +7584,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default3(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default3(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, types);
             if(arg3Default!=null){
                 this.arg2Default = arg2Default;
@@ -10957,14 +7593,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
 
@@ -10976,9 +7618,12 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public static abstract class AbstractSignal5Default1<A, B, C, D, E> extends AbstractPublicSignal5<A, B, C, D, E> {
-        
-        AbstractSignal5Default1(Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal5Default1<A, B, C, D, E> extends AbstractPublicSignal5<A, B, C, D, E> implements  Emitable4<A,B,C,D>, Connectable4<A,B,C,D> {
+    	AbstractSignal5Default1() {
+    		this.arg5Default = null;
+    	}
+    	
+		AbstractSignal5Default1(Supplier<? extends E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -10987,7 +7632,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(Supplier<E> arg5Default){
+        AbstractSignal5Default1(Supplier<? extends E> arg5Default){
             super();
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -10996,7 +7641,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default1(Supplier<? extends E> arg5Default, Class<?>... types) {
             super(types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11005,7 +7650,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(String signalName, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default1(String signalName, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11014,7 +7659,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<E> arg5Default;
+        private final Supplier<? extends E> arg5Default;
         
         /**
          * Emits the signal with default value for arg5.
@@ -11023,8 +7668,30 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4) {
-            emit(arg1, arg2, arg3, arg4, arg5Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
         }
     }
 
@@ -11036,9 +7703,12 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public static abstract class AbstractSignal5Default2<A, B, C, D, E> extends AbstractSignal5Default1<A, B, C, D, E> {
-        
-        AbstractSignal5Default2(Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal5Default2<A, B, C, D, E> extends AbstractSignal5Default1<A, B, C, D, E> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal5Default2() {
+    		this.arg4Default = null;
+    	}
+    	
+		AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg5Default, declaringClass, isDisposedSignal);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11047,7 +7717,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(Supplier<D> arg4Default, Supplier<E> arg5Default){
+        AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg5Default);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11056,7 +7726,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(arg5Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11065,7 +7735,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(String signalName, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default2(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg5Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11074,7 +7744,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -11082,8 +7752,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
-        public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
 
@@ -11095,9 +7782,12 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public static abstract class AbstractSignal5Default3<A, B, C, D, E> extends AbstractSignal5Default2<A, B, C, D, E> {
-        
-        AbstractSignal5Default3(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal5Default3<A, B, C, D, E> extends AbstractSignal5Default2<A, B, C, D, E> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal5Default3() {
+    		this.arg3Default = null;
+    	}
+    	
+		AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, arg5Default, declaringClass, isDisposedSignal);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11106,7 +7796,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default){
+        AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg4Default, arg5Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11115,7 +7805,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(arg4Default, arg5Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11124,7 +7814,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default3(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11133,15 +7823,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
 
@@ -11153,9 +7855,12 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public static abstract class AbstractSignal5Default4<A, B, C, D, E> extends AbstractSignal5Default3<A, B, C, D, E> {
-        
-        AbstractSignal5Default4(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal5Default4<A, B, C, D, E> extends AbstractSignal5Default3<A, B, C, D, E> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal5Default4() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, arg5Default, declaringClass, isDisposedSignal);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11164,7 +7869,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default){
+        AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg3Default, arg4Default, arg5Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11173,7 +7878,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(arg3Default, arg4Default, arg5Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11182,7 +7887,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default4(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11191,14 +7896,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
 
@@ -11211,9 +7922,12 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractSignal6Default1<A, B, C, D, E, F> extends AbstractPublicSignal6<A, B, C, D, E, F> {
-        
-        AbstractSignal6Default1(Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal6Default1<A, B, C, D, E, F> extends AbstractPublicSignal6<A, B, C, D, E, F> implements  Emitable5<A,B,C,D,E>, Connectable5<A,B,C,D,E> {
+    	AbstractSignal6Default1() {
+    		this.arg6Default = null;
+    	}
+
+		AbstractSignal6Default1(Supplier<? extends F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
@@ -11222,7 +7936,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(Supplier<F> arg6Default){
+        AbstractSignal6Default1(Supplier<? extends F> arg6Default){
             super();
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
@@ -11231,7 +7945,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default1(Supplier<? extends F> arg6Default, Class<?>... types) {
             super(types);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
@@ -11240,7 +7954,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(String signalName, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default1(String signalName, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, types);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
@@ -11249,7 +7963,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<F> arg6Default;
+        private final Supplier<? extends F> arg6Default;
         
         /**
          * Emits the signal with default value for arg6.
@@ -11259,8 +7973,35 @@ public final class QMetaObject {
          * @param arg4
          * @param arg5
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
     }
 
@@ -11273,9 +8014,12 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractSignal6Default2<A, B, C, D, E, F> extends AbstractSignal6Default1<A, B, C, D, E, F> {
-        
-        AbstractSignal6Default2(Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal6Default2<A, B, C, D, E, F> extends AbstractSignal6Default1<A, B, C, D, E, F> implements  Emitable4<A,B,C,D>, Connectable4<A,B,C,D> {
+    	AbstractSignal6Default2() {
+    		this.arg5Default = null;
+    	}
+    	
+		AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg6Default, declaringClass, isDisposedSignal);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11284,7 +8028,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(Supplier<E> arg5Default, Supplier<F> arg6Default){
+        AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg6Default);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11293,7 +8037,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(arg6Default, types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11302,7 +8046,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(String signalName, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default2(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg6Default, types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -11311,7 +8055,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<E> arg5Default;
+        private final Supplier<? extends E> arg5Default;
         
         /**
          * Emits the signal with default value for arg5.
@@ -11320,8 +8064,30 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4) {
-            emit(arg1, arg2, arg3, arg4, arg5Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
         }
     }
     
@@ -11334,9 +8100,12 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractSignal6Default3<A, B, C, D, E, F> extends AbstractSignal6Default2<A, B, C, D, E, F> {
-        
-        AbstractSignal6Default3(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal6Default3<A, B, C, D, E, F> extends AbstractSignal6Default2<A, B, C, D, E, F> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal6Default3() {
+    		this.arg4Default = null;
+    	}
+    	
+		AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg5Default, arg6Default, declaringClass, isDisposedSignal);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11345,7 +8114,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+        AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg5Default, arg6Default);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11354,7 +8123,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(arg5Default, arg6Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11363,7 +8132,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(String signalName, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default3(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -11372,7 +8141,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -11380,8 +8149,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
-        public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
     
@@ -11394,9 +8180,12 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractSignal6Default4<A, B, C, D, E, F> extends AbstractSignal6Default3<A, B, C, D, E, F> {
-        
-        AbstractSignal6Default4(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal6Default4<A, B, C, D, E, F> extends AbstractSignal6Default3<A, B, C, D, E, F> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal6Default4() {
+    		this.arg3Default = null;
+    	}
+    	
+		AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, arg5Default, arg6Default, declaringClass, isDisposedSignal);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11405,7 +8194,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+        AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg4Default, arg5Default, arg6Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11414,7 +8203,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(arg4Default, arg5Default, arg6Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11423,7 +8212,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default4(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -11432,15 +8221,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+            super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
     
@@ -11453,9 +8254,12 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public static abstract class AbstractSignal6Default5<A, B, C, D, E, F> extends AbstractSignal6Default4<A, B, C, D, E, F> {
-        
-        AbstractSignal6Default5(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal6Default5<A, B, C, D, E, F> extends AbstractSignal6Default4<A, B, C, D, E, F> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal6Default5() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, arg5Default, arg6Default, declaringClass, isDisposedSignal);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11464,7 +8268,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+        AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11473,7 +8277,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(arg3Default, arg4Default, arg5Default, arg6Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11482,7 +8286,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default5(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -11491,14 +8295,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+            super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
 
@@ -11512,9 +8322,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default1<A, B, C, D, E, F, G> extends AbstractPublicSignal7<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default1(Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default1<A, B, C, D, E, F, G> extends AbstractPublicSignal7<A, B, C, D, E, F, G> implements  Emitable6<A,B,C,D,E,F>, Connectable6<A,B,C,D,E,F> {
+    	AbstractSignal7Default1() {
+    		this.arg7Default = null;
+    	}
+
+		AbstractSignal7Default1(Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
@@ -11523,7 +8336,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(Supplier<G> arg7Default){
+        AbstractSignal7Default1(Supplier<? extends G> arg7Default){
             super();
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
@@ -11532,7 +8345,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default1(Supplier<? extends G> arg7Default, Class<?>... types) {
             super(types);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
@@ -11541,7 +8354,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(String signalName, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default1(String signalName, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, types);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
@@ -11550,7 +8363,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<G> arg7Default;
+        private final Supplier<? extends G> arg7Default;
         
         /**
          * Emits the signal with default value for arg7.
@@ -11561,8 +8374,46 @@ public final class QMetaObject {
          * @param arg5
          * @param arg6
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+            super.emitDefaultSignal(arg7Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
     }
     
@@ -11576,9 +8427,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default2<A, B, C, D, E, F, G> extends AbstractSignal7Default1<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default2(Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default2<A, B, C, D, E, F, G> extends AbstractSignal7Default1<A, B, C, D, E, F, G> implements  Emitable5<A,B,C,D,E>, Connectable5<A,B,C,D,E> {
+    	AbstractSignal7Default2() {
+    		this.arg6Default = null;
+    	}
+
+		AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg7Default, declaringClass, isDisposedSignal);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -11586,7 +8440,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default2(Supplier<F> arg6Default, Supplier<G> arg7Default){
+        AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg7Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -11594,7 +8448,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default2(Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(arg7Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -11602,7 +8456,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default2(String signalName, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default2(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg7Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -11610,7 +8464,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<F> arg6Default;
+        private final Supplier<? extends F> arg6Default;
         
         /**
          * Emits the signal with default value for arg6.
@@ -11620,8 +8474,35 @@ public final class QMetaObject {
          * @param arg4
          * @param arg5
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
+            super.emitDefaultSignal(arg6Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
     }
     
@@ -11635,9 +8516,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default3<A, B, C, D, E, F, G> extends AbstractSignal7Default2<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default3(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default3<A, B, C, D, E, F, G> extends AbstractSignal7Default2<A, B, C, D, E, F, G> implements  Emitable4<A,B,C,D>, Connectable4<A,B,C,D> {
+    	AbstractSignal7Default3() {
+    		this.arg5Default = null;
+    	}
+    	
+		AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg6Default, arg7Default, declaringClass, isDisposedSignal);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -11645,7 +8529,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default3(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg6Default, arg7Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -11653,7 +8537,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default3(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(arg6Default, arg7Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -11661,7 +8545,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default3(String signalName, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default3(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -11669,7 +8553,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<E> arg5Default;
+        private final Supplier<? extends E> arg5Default;
         
         /**
          * Emits the signal with default value for arg5.
@@ -11678,8 +8562,30 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4) {
-            emit(arg1, arg2, arg3, arg4, arg5Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4) {
+            super.emitDefaultSignal(arg5Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
         }
     }
     
@@ -11693,9 +8599,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default4<A, B, C, D, E, F, G> extends AbstractSignal7Default3<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default4(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default4<A, B, C, D, E, F, G> extends AbstractSignal7Default3<A, B, C, D, E, F, G> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal7Default4() {
+    		this.arg4Default = null;
+    	}
+    	
+		AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg5Default, arg6Default, arg7Default, declaringClass, isDisposedSignal);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -11703,7 +8612,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default4(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg5Default, arg6Default, arg7Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -11711,7 +8620,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default4(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(arg5Default, arg6Default, arg7Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -11719,7 +8628,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default4(String signalName, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default4(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -11727,7 +8636,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -11735,8 +8644,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
-        public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3) {
+            super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
     
@@ -11750,9 +8676,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default5<A, B, C, D, E, F, G> extends AbstractSignal7Default4<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default5(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default5<A, B, C, D, E, F, G> extends AbstractSignal7Default4<A, B, C, D, E, F, G> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal7Default5() {
+    		this.arg3Default = null;
+    	}
+    	
+		AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, arg5Default, arg6Default, arg7Default, declaringClass, isDisposedSignal);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -11760,7 +8689,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default5(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+        AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -11768,7 +8697,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default5(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -11776,7 +8705,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default5(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default5(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -11784,15 +8713,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+            super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
     
@@ -11806,9 +8747,12 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public static abstract class AbstractSignal7Default6<A, B, C, D, E, F, G> extends AbstractSignal7Default5<A, B, C, D, E, F, G> {
-        
-        AbstractSignal7Default6(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal7Default6<A, B, C, D, E, F, G> extends AbstractSignal7Default5<A, B, C, D, E, F, G> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal7Default6() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, declaringClass, isDisposedSignal);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -11816,7 +8760,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default6(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+        AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -11824,7 +8768,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default6(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -11832,7 +8776,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default6(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default6(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -11840,14 +8784,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+            super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
     
@@ -11862,9 +8812,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default1<A, B, C, D, E, F, G, H> extends AbstractPublicSignal8<A, B, C, D, E, F, G, H> {
+    public static abstract class AbstractSignal8Default1<A, B, C, D, E, F, G, H> extends AbstractPublicSignal8<A, B, C, D, E, F, G, H> implements  Emitable7<A,B,C,D,E,F,G>, Connectable7<A,B,C,D,E,F,G> {
+    	AbstractSignal8Default1() {
+    		this.arg8Default = null;
+    	}
         
-        AbstractSignal8Default1(Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+		AbstractSignal8Default1(Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -11872,7 +8825,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default1(Supplier<H> arg8Default){
+        AbstractSignal8Default1(Supplier<? extends H> arg8Default){
             super();
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -11880,7 +8833,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default1(Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default1(Supplier<? extends H> arg8Default, Class<?>... types) {
             super(types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -11888,7 +8841,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default1(String signalName, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default1(String signalName, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -11896,7 +8849,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<H> arg8Default;
+        private final Supplier<? extends H> arg8Default;
         
         /**
          * Emits the signal with default value for arg8.
@@ -11908,8 +8861,51 @@ public final class QMetaObject {
          * @param arg6
          * @param arg7
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
+            super.emitDefaultSignal(arg8Default, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+        	super.emitDefaultSignal(arg7Default, arg8Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg8Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
     }
     
@@ -11924,9 +8920,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default2<A, B, C, D, E, F, G, H> extends AbstractSignal8Default1<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default2(Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal8Default2<A, B, C, D, E, F, G, H> extends AbstractSignal8Default1<A, B, C, D, E, F, G, H> implements  Emitable6<A,B,C,D,E,F>, Connectable6<A,B,C,D,E,F> {
+    	AbstractSignal8Default2() {
+    		this.arg7Default = null;
+    	}
+
+		AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg8Default, declaringClass, isDisposedSignal);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -11934,7 +8933,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default2(Supplier<G> arg7Default, Supplier<H> arg8Default){
+        AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg8Default);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -11942,7 +8941,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default2(Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg8Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -11950,7 +8949,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default2(String signalName, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default2(String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg8Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -11958,7 +8957,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<G> arg7Default;
+        private final Supplier<? extends G> arg7Default;
         
         /**
          * Emits the signal with default value for arg7.
@@ -11969,8 +8968,46 @@ public final class QMetaObject {
          * @param arg5
          * @param arg6
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+            super.emitDefaultSignal(arg7Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
     }
     
@@ -11985,9 +9022,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default3<A, B, C, D, E, F, G, H> extends AbstractSignal8Default2<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default3(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal8Default3<A, B, C, D, E, F, G, H> extends AbstractSignal8Default2<A, B, C, D, E, F, G, H> implements  Emitable5<A,B,C,D,E>, Connectable5<A,B,C,D,E> {
+    	AbstractSignal8Default3() {
+    		this.arg6Default = null;
+    	}
+    	
+		AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg7Default, arg8Default, declaringClass, isDisposedSignal);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -11995,7 +9035,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default3(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+        AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg7Default, arg8Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12003,7 +9043,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default3(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg7Default, arg8Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12011,7 +9051,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default3(String signalName, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default3(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg7Default, arg8Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12019,7 +9059,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<F> arg6Default;
+        private final Supplier<? extends F> arg6Default;
         
         /**
          * Emits the signal with default value for arg6.
@@ -12029,8 +9069,35 @@ public final class QMetaObject {
          * @param arg4
          * @param arg5
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
+            super.emitDefaultSignal(arg6Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
     }
     
@@ -12045,9 +9112,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default4<A, B, C, D, E, F, G, H> extends AbstractSignal8Default3<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default4(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    public static abstract class AbstractSignal8Default4<A, B, C, D, E, F, G, H> extends AbstractSignal8Default3<A, B, C, D, E, F, G, H> implements  Emitable4<A,B,C,D>, Connectable4<A,B,C,D> {
+    	AbstractSignal8Default4() {
+    		this.arg5Default = null;
+    	}
+    	
+		AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg6Default, arg7Default, arg8Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12055,7 +9125,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default4(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg6Default, arg7Default, arg8Default, declaringClass, isDisposedSignal);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12063,7 +9133,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default4(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg6Default, arg7Default, arg8Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12071,7 +9141,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default4(String signalName, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default4(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, arg8Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12079,7 +9149,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<E> arg5Default;
+        private final Supplier<? extends E> arg5Default;
         
         /**
          * Emits the signal with default value for arg5.
@@ -12088,8 +9158,30 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4) {
-            emit(arg1, arg2, arg3, arg4, arg5Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4) {
+            super.emitDefaultSignal(arg5Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
         }
     }
     
@@ -12104,9 +9196,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default5<A, B, C, D, E, F, G, H> extends AbstractSignal8Default4<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default5(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal8Default5<A, B, C, D, E, F, G, H> extends AbstractSignal8Default4<A, B, C, D, E, F, G, H> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal8Default5() {
+    		this.arg4Default = null;
+    	}
+    	
+		AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg5Default, arg6Default, arg7Default, arg8Default, declaringClass, isDisposedSignal);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12114,7 +9209,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default5(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+        AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12122,7 +9217,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default5(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12130,7 +9225,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default5(String signalName, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default5(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12138,7 +9233,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -12146,8 +9241,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
-        public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3) {
+            super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
     
@@ -12162,9 +9274,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default6<A, B, C, D, E, F, G, H> extends AbstractSignal8Default5<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default6(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+    public static abstract class AbstractSignal8Default6<A, B, C, D, E, F, G, H> extends AbstractSignal8Default5<A, B, C, D, E, F, G, H> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal8Default6() {
+    		this.arg3Default = null;
+    	}
+    	
+		AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass, isDisposedSignal);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12172,7 +9287,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default6(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+        AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12180,7 +9295,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default6(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12188,7 +9303,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default6(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default6(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12196,15 +9311,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+            super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
     
@@ -12219,9 +9346,12 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public static abstract class AbstractSignal8Default7<A, B, C, D, E, F, G, H> extends AbstractSignal8Default6<A, B, C, D, E, F, G, H> {
-        
-        AbstractSignal8Default7(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    public static abstract class AbstractSignal8Default7<A, B, C, D, E, F, G, H> extends AbstractSignal8Default6<A, B, C, D, E, F, G, H> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal8Default7() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12229,7 +9359,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default7(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass, isDisposedSignal);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12237,7 +9367,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default7(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12245,7 +9375,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default7(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default7(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12253,14 +9383,15 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+            super.emitDefaultSignal(arg2Default, arg1);
         }
     }
     
@@ -12276,9 +9407,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> extends AbstractPublicSignal9<A, B, C, D, E, F, G, H, I> {
+    public static abstract class AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> extends AbstractPublicSignal9<A, B, C, D, E, F, G, H, I> implements  Emitable8<A,B,C,D,E,F,G,H>, Connectable8<A,B,C,D,E,F,G,H> {
+    	AbstractSignal9Default1() {
+    		this.arg9Default = null;
+    	}
         
-        AbstractSignal9Default1(Supplier<I> arg9Default){
+		AbstractSignal9Default1(Supplier<? extends I> arg9Default){
             super();
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
@@ -12286,7 +9420,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default1(Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default1(Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(declaringClass, isDisposedSignal);
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
@@ -12294,7 +9428,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default1(Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default1(Supplier<? extends I> arg9Default, Class<?>... types) {
             super(types);
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
@@ -12302,7 +9436,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default1(String signalName, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default1(String signalName, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, types);
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
@@ -12310,7 +9444,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<I> arg9Default;
+        private final Supplier<? extends I> arg9Default;
         
         /**
          * Emits the signal with default value for arg9.
@@ -12323,8 +9457,62 @@ public final class QMetaObject {
          * @param arg7
          * @param arg8
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
+            super.emitDefaultSignal(arg9Default, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends H> arg8Default, 
+        		A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
+        	super.emitDefaultSignal(arg8Default, arg9Default, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, 
+        		A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+        	super.emitDefaultSignal(arg7Default, arg8Default, arg9Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg8Default, arg9Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, 
+        		A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, 
+        		Supplier<? extends H> arg8Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default,
+        		Supplier<? extends H> arg8Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default,
+        		Supplier<? extends H> arg8Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
     }
     
@@ -12340,9 +9528,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default2(Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> implements  Emitable7<A,B,C,D,E,F,G>, Connectable7<A,B,C,D,E,F,G> {
+    	AbstractSignal9Default2() {
+    		this.arg8Default = null;
+    	}
+
+		AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg9Default);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -12350,7 +9541,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default2(Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg9Default, declaringClass, isDisposedSignal);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -12358,7 +9549,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default2(Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg9Default, types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -12366,7 +9557,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default2(String signalName, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default2(String signalName, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg9Default, types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -12374,7 +9565,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<H> arg8Default;
+        private final Supplier<? extends H> arg8Default;
         
         /**
          * Emits the signal with default value for arg8.
@@ -12386,8 +9577,51 @@ public final class QMetaObject {
          * @param arg6
          * @param arg7
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
+            super.emitDefaultSignal(arg8Default, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+        	super.emitDefaultSignal(arg7Default, arg8Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg8Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
     }
     
@@ -12403,9 +9637,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default3(Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> implements  Emitable6<A,B,C,D,E,F>, Connectable6<A,B,C,D,E,F> {
+    	AbstractSignal9Default3() {
+    		this.arg7Default = null;
+    	}
+
+		AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg8Default, arg9Default);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -12413,7 +9650,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default3(Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -12421,7 +9658,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default3(Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg8Default, arg9Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -12429,7 +9666,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default3(String signalName, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default3(String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg8Default, arg9Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -12437,7 +9674,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<G> arg7Default;
+        private final Supplier<? extends G> arg7Default;
         
         /**
          * Emits the signal with default value for arg7.
@@ -12448,8 +9685,46 @@ public final class QMetaObject {
          * @param arg5
          * @param arg6
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
+            super.emitDefaultSignal(arg7Default, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4, E arg5) {
+        	super.emitDefaultSignal(arg6Default, arg7Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, 
+        		A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg7Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, 
+        		Supplier<? extends F> arg6Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, 
+        		Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
     }
     
@@ -12465,9 +9740,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default4(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> implements  Emitable5<A,B,C,D,E>, Connectable5<A,B,C,D,E> {
+    	AbstractSignal9Default4() {
+    		this.arg6Default = null;
+    	}
+    	
+		AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg7Default, arg8Default, arg9Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12475,7 +9753,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default4(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg7Default, arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12483,7 +9761,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default4(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg7Default, arg8Default, arg9Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12491,7 +9769,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default4(String signalName, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default4(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg7Default, arg8Default, arg9Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -12499,7 +9777,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<F> arg6Default;
+        private final Supplier<? extends F> arg6Default;
         
         /**
          * Emits the signal with default value for arg6.
@@ -12509,8 +9787,35 @@ public final class QMetaObject {
          * @param arg4
          * @param arg5
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
-            emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
+            super.emitDefaultSignal(arg6Default, arg1, arg2, arg3, arg4, arg5);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3, D arg4) {
+        	super.emitDefaultSignal(arg5Default, arg6Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg6Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg6Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
     }
     
@@ -12526,9 +9831,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default5(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> implements  Emitable4<A,B,C,D>, Connectable4<A,B,C,D> {        
+    	AbstractSignal9Default5() {
+    		this.arg5Default = null;
+    	}
+    	
+		AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12536,7 +9844,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default5(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg6Default, arg7Default, arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12544,7 +9852,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default5(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12552,7 +9860,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default5(String signalName, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default5(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -12560,7 +9868,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<E> arg5Default;
+        private final Supplier<? extends E> arg5Default;
         
         /**
          * Emits the signal with default value for arg5.
@@ -12569,8 +9877,30 @@ public final class QMetaObject {
          * @param arg3
          * @param arg4
          */
-        public void emit(A arg1, B arg2, C arg3, D arg4) {
-            emit(arg1, arg2, arg3, arg4, arg5Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3, D arg4) {
+            super.emitDefaultSignal(arg5Default, arg1, arg2, arg3, arg4);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends D> arg4Default, A arg1, B arg2, C arg3) {
+        	super.emitDefaultSignal(arg4Default, arg5Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg5Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg5Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
         }
     }
     
@@ -12586,9 +9916,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> {
+    public static abstract class AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> implements  Emitable3<A,B,C>, Connectable3<A,B,C> {
+    	AbstractSignal9Default6() {
+    		this.arg4Default = null;
+    	}
         
-        AbstractSignal9Default6(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+		AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12596,7 +9929,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default6(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12604,7 +9937,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default6(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12612,7 +9945,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default6(String signalName, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default6(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -12620,7 +9953,7 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<D> arg4Default;
+        private final Supplier<? extends D> arg4Default;
         
         /**
          * Emits the signal with default value for arg4.
@@ -12628,8 +9961,25 @@ public final class QMetaObject {
          * @param arg2
          * @param arg3
          */
-        public void emit(A arg1, B arg2, C arg3) {
-            emit(arg1, arg2, arg3, arg4Default.get());
+        @Override
+        public final void emit(A arg1, B arg2, C arg3) {
+            super.emitDefaultSignal(arg4Default, arg1, arg2, arg3);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends C> arg3Default, A arg1, B arg2) {
+        	super.emitDefaultSignal(arg3Default, arg4Default, arg1, arg2);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg4Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default, arg4Default);
         }
     }
     
@@ -12645,9 +9995,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default7(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> implements  Emitable2<A,B>, Connectable2<A,B> {
+    	AbstractSignal9Default7() {
+    		this.arg3Default = null;
+    	}
+    	
+		AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12655,7 +10008,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default7(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12663,7 +10016,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default7(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12671,7 +10024,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default7(String signalName, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default7(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -12679,15 +10032,27 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<C> arg3Default;
+        private final Supplier<? extends C> arg3Default;
         
         /**
          * Emits the signal with default value for arg3.
          * @param arg1
          * @param arg2
          */
-        public void emit(A arg1, B arg2) {
-            emit(arg1, arg2, arg3Default.get());
+        @Override
+        public final void emit(A arg1, B arg2) {
+            super.emitDefaultSignal(arg3Default, arg1, arg2);
+        }
+
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends B> arg2Default, A arg1) {
+        	super.emitDefaultSignal(arg2Default, arg3Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default,
+        		Supplier<? extends B> arg2Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default, arg3Default);
         }
     }
     
@@ -12703,9 +10068,12 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public static abstract class AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> {
-        
-        AbstractSignal9Default8(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    public static abstract class AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> implements  Emitable1<A>, Connectable1<A> {
+    	AbstractSignal9Default8() {
+    		this.arg2Default = null;
+    	}
+    	
+		AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12713,7 +10081,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default8(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
+        AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass, boolean isDisposedSignal){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass, isDisposedSignal);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12721,7 +10089,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default8(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12729,7 +10097,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default8(String signalName, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default8(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -12737,14 +10105,20 @@ public final class QMetaObject {
             }
         }
         
-        private final Supplier<B> arg2Default;
+        private final Supplier<? extends B> arg2Default;
         
         /**
          * Emits the signal with default value for arg2.
          * @param arg1
          */
-        public void emit(A arg1) {
-            emit(arg1, arg2Default.get());
+        @Override
+        public final void emit(A arg1) {
+            super.emitDefaultSignal(arg2Default, arg1);
+        }
+        
+        @io.qt.QtUninvokable
+        final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
+        	super.emitDefaultSignal(arg1Default, arg2Default);
         }
     }
     

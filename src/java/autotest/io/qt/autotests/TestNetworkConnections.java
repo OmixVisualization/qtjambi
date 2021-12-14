@@ -54,13 +54,35 @@ public class TestNetworkConnections extends QApplicationTest
 			authenticator.setPassword("PW");
 			this.authenticator = authenticator;
 		}
+		
+		void onAuthenticationRequired2(QNetworkReply reply, QAuthenticator authenticator)
+		{
+			authenticator.setUser("TEST");
+			authenticator.setPassword("PW");
+			this.authenticator = authenticator;
+		}
 	}
     
 	@Test
     public void testAuthenticatorPointerJavaCall() {
 		Auth auth = new Auth();
+		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
     	QNetworkAccessManager accessManager = new QNetworkAccessManager();
-    	accessManager.authenticationRequired.connect(auth::onAuthenticationRequired);
+    	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired)!=null);
+    	QAuthenticator authenticator = new QAuthenticator();
+    	assertEquals("", authenticator.user());
+    	assertEquals("", authenticator.password());
+    	accessManager.authenticationRequired.emit(null, authenticator);
+    	assertEquals("TEST", authenticator.user());
+    	assertEquals("PW", authenticator.password());
+    }
+	
+	@Test
+    public void testAuthenticatorJavaCall() {
+		Auth auth = new Auth();
+		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+    	QNetworkAccessManager accessManager = new QNetworkAccessManager();
+    	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired2)!=null);
     	QAuthenticator authenticator = new QAuthenticator();
     	assertEquals("", authenticator.user());
     	assertEquals("", authenticator.password());
@@ -73,7 +95,22 @@ public class TestNetworkConnections extends QApplicationTest
     public void testAuthenticatorPointerCppCall() {
 		Auth auth = new Auth();
     	QNetworkAccessManager accessManager = new QNetworkAccessManager();
-    	accessManager.authenticationRequired.connect(auth::onAuthenticationRequired);
+    	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired)!=null);
+    	List<String> result = AbstractSocketSubclass.emitAuthenticationRequired(accessManager, null);
+    	assertEquals(4, result.size());
+    	assertEquals("", result.get(0));
+    	assertEquals("", result.get(1));
+    	assertEquals("TEST", result.get(2));
+    	assertEquals("PW", result.get(3));
+    	assertTrue(auth.authenticator!=null);
+    	assertTrue(auth.authenticator.isDisposed());
+    }
+	
+	@Test
+    public void testAuthenticatorCppCall() {
+		Auth auth = new Auth();
+    	QNetworkAccessManager accessManager = new QNetworkAccessManager();
+    	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired2)!=null);
     	List<String> result = AbstractSocketSubclass.emitAuthenticationRequired(accessManager, null);
     	assertEquals(4, result.size());
     	assertEquals("", result.get(0));

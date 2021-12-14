@@ -191,6 +191,7 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getInterfaces)
                       QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getModifiers)
                       QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getComponentType)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getTypeParameters)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isArray)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPrimitive)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isInterface))
@@ -236,7 +237,8 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Method,
             QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
-            QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName))
+            QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+            QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getReturnType))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Constructor,
             QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
@@ -244,7 +246,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Executable,
                       QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getModifiers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getParameterTypes))
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getParameterTypes))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Field,
                       QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
@@ -407,7 +409,6 @@ namespace Java{
     namespace QtJambi
     {
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiInternal,
-            QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findEmitMethod)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(findGeneratedSuperclass)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isImplementedInJava)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findQmlAttachedProperties)
@@ -457,25 +458,34 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$AbstractSignal,
-                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setInCppEmission)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(addConnectionFromCpp)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(removeConnectionFromCpp)
-                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeSignal)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(inJavaEmission)
-                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeExtraSignal))
+                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeSignal))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$SignalInfo,
+                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$SignalParameterType,
+                      QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(type))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectTools,
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(buildMetaData)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(methodTypes)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECTARRAY_METHOD(signalTypes)
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(getEnumForQFlags))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectTools$SignalInfo,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(field)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(signalTypes)
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(signalClass)
+                                         QTJAMBI_REPOSITORY_DECLARE_INTARRAY_FIELD(signalMetaTypes)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(methodId)
+                                         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectTools$MetaData,
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(metaData)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(stringData)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(signalFields)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(signalInfos)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(methods)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(methodMetaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(constructors)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(constructorMetaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyReaders)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyWriters)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyResetters)
@@ -488,6 +498,8 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyUserResolvers)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(propertyQPropertyFields)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(propertyBindables)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyMetaTypes)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyClassTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(metaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(relatedMetaObjects)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasStaticMembers))
@@ -534,7 +546,8 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtPrivateOverride)
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals,
-                                         QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(NativeConnectionPolicy))
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveSignal)
+                                         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$NativeConnection,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
@@ -542,7 +555,7 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$AbstractConnection,
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$MultiSignal,
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiSignals$AbstractMultiSignal,
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeSignals)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(signal))
 

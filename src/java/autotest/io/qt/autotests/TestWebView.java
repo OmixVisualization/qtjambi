@@ -34,73 +34,89 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtEnumerator;
 import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
-import io.qt.core.QDir;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaObject;
-import io.qt.core.QMetaObject.AbstractPrivateSignal1;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPluginLoader;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
+import io.qt.qml.QQmlApplicationEngine;
 import io.qt.qml.QQmlComponent;
-import io.qt.qml.QQmlEngine;
 import io.qt.quick.QQuickItem;
+import io.qt.quick.QQuickWindow;
 import io.qt.webview.QtWebView;
+import io.qt.widgets.QApplication;
 
 public class TestWebView extends QApplicationTest {
     @BeforeClass
     public static void testInitialize() throws Exception {
     	if(QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.MacOS)
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-    	boolean found = false;
+		QtWebView.initialize();
+		QtUtilities.initializePackage("io.qt.quick");
+		QtUtilities.initializePackage("io.qt.quick.controls");
+		if(QLibraryInfo.version().majorVersion()>=6) {
+			io.qt.QtUtilities.loadQtLibrary("QuickControls2Impl");
+			io.qt.QtUtilities.loadQtLibrary("QuickLayouts");
+			io.qt.QtUtilities.loadQtLibrary("WebViewQuick");
+		}
         QApplicationTest.testInitialize();
         assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
-        try {
-    		QtUtilities.initializePackage("io.qt.quick");
-    		QtUtilities.initializePackage("io.qt.webengine");
-    		QtUtilities.initializePackage("io.qt.webengine.core");
-    		QtUtilities.initializePackage("io.qt.webchannel");
-    		io.qt.QtUtilities.loadQtLibrary("QtPositioning");
-    		QtWebView.initialize();
-    		QPluginLoader pluginLoader = new QPluginLoader("webview/qtwebview_webengine");
-    		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    			pluginLoader = new QPluginLoader("webview/qtwebview_webengined");
-    		}
-    		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    			pluginLoader = new QPluginLoader("webview/qtwebview_webengine_debug");
-    		}
-    		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    			pluginLoader = new QPluginLoader("webview/qtwebview_darwin");
-    		}
-    		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    			pluginLoader = new QPluginLoader("webview/qtwebview_darwin_debug");
-    			pluginLoader.load();
-    		}
-			found = pluginLoader.isLoaded();
-		} catch (Throwable e) {
-		}
-        assumeTrue(found);
     }
 
     @Test
     public void test() {
-    	QQmlEngine engine = new QQmlEngine();
+    	QQmlApplicationEngine engine = new QQmlApplicationEngine();
 		QQmlComponent component = new QQmlComponent(engine);
 	    component.setData(
-	                "import QtQuick 2.5\n"+
-                	"import QtWebView 1.1\n"+
-	                "WebView {}",
+	                  "import QtQuick 2.5;"
+	                + "import QtQuick.Controls 2.0;"
+	                + "import QtQuick.Layouts 1.1;"
+	                + "import QtWebView 1.1;"
+	                + "ApplicationWindow {"
+	                + "visible: true;"
+	                + "WebView {"
+	                + "anchors.fill: parent;"
+	                + "url: \"http://www.qt.io\";"
+	                + "}"
+	                + "}",
 	                new QUrl());
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-	    QQuickItem object = component.create(QQuickItem.class);
-	    Assert.assertTrue(object!=null);
-	    AbstractPrivateSignal1<QObject> loadingChanged = QMetaObject.findSignal(object, "loadingChanged", QObject.class);
-	    loadingChanged.connect(o->{System.out.println(o);});
-	    object.setProperty("url", new QUrl("http://www.qt.io"));
+		QQuickWindow window = component.create(QQuickWindow.class);
+	    Assert.assertTrue(window!=null);
+	    try {
+		    QQuickItem rootItem = window.contentItem();
+		    QQuickItem applicationWindow = rootItem.findChild(QQuickItem.class, "ApplicationWindow");
+		    QQuickItem webview = applicationWindow.childItems().first();
+		    Assert.assertTrue(webview!=null);
+		    QMetaObject.AbstractPrivateSignal1<QObject> signal = QMetaObject.findSignal(webview, "loadingChanged", QObject.class);
+		    Assert.assertTrue(signal!=null);
+		    Object[] status = {null, null};
+		    signal.connect(request -> {
+		    	status[0] = request.property("errorString");
+		    	status[1] = request.property("status");
+		    	if(status[0] instanceof String && !((String)status[0]).isEmpty()) {
+		    		QApplication.exit();
+		    	}else {
+		    		QTimer.singleShot(5000, window::close);
+		    	}
+		    });
+		    QTimer.singleShot(30000, QApplication::exit);
+		    QApplication.exec();
+		    if(status[0] instanceof String && !((String)status[0]).isEmpty()) {
+		    	Assert.fail(((QtEnumerator)status[1]).name()+": "+status[0]);
+		    }else if(status[1] instanceof QtEnumerator){
+		    	System.out.println(((QtEnumerator)status[1]).name());
+		    }
+	    }finally {
+	    	window.dispose();
+	    }
     }
     
     public static void main(String args[]) {

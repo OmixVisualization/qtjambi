@@ -107,6 +107,8 @@ const QMetaObject * findMetaObject(const char* name);
 const char* getInterface(const char*qt_interface);
 jobject qtjambi_from_object_shared_pointer(JNIEnv *env, const char *className,
                             void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
+jobject qtjambi_from_interface_shared_pointer(JNIEnv *env, const std::type_info& interfaceType,
+                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gCacheLock, (QReadWriteLock::Recursive))
 typedef QHash<hash_type, InternalToExternalConverter> InternalToExternalConverterHash;
@@ -2694,7 +2696,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 // If we found a link for the object, we use the java object
                                 // from the link.
                                 bool found = false;
-                                for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(*ptr)) {
+                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(*ptr)) {
                                     if(link){
                                         jobject obj = link->getJavaObjectLocalRef(env);
                                         if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
@@ -2724,304 +2726,6 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                             if(in){
                                 p->l = qtjambi_from_interface(env, in, *typeId, true);
-                            }
-                            return true;
-                        };
-                    }
-                }
-            }else if(isPolymorphicBase(*typeId)){
-                if(pointerType == PointerType::SharedPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const QSharedPointer<void*>* ptr = reinterpret_cast<const QSharedPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                      *typeId,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &deletePointer<QSharedPointer, void*>,
-                                                                      &getFromPointer<QSharedPointer, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::WeakPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const QWeakPointer<void*>* ptr = reinterpret_cast<const QWeakPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                      *typeId,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &deletePointer<QSharedPointer, void*>,
-                                                                      &getFromPointer<QSharedPointer, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::shared_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const std::shared_ptr<void*>* ptr = reinterpret_cast<const std::shared_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                                  *typeId,
-                                                                                  *typeId,
-                                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                                   &deletePointer<std::shared_ptr, void*>,
-                                                                                   &getFromPointer<std::shared_ptr, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::weak_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const std::weak_ptr<void*>* ptr = reinterpret_cast<const std::weak_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                                  *typeId,
-                                                                                  *typeId,
-                                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                                   &deletePointer<std::shared_ptr, void*>,
-                                                                                   &getFromPointer<std::shared_ptr, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::ScopedPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                        const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object(env, ptr->data(), *typeId, *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::unique_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                        const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object(env, ptr->get(), *typeId, *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
-                        }
-                        return true;
-                    };
-                }else{
-                    if (internalTypeName.contains(QLatin1Char('*'))){
-                        return [typeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                            void * const *ptr = reinterpret_cast<void * const *>(in);
-                            if(ptr){
-                                // If we found a link for the object, we use the java object
-                                // from the link.
-                                bool found = false;
-                                for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(*ptr)) {
-                                    jobject obj = link->getJavaObjectLocalRef(env);
-                                    if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
-                                        link->invalidate(env);
-                                        p->l = qtjambi_from_polymorphic_object(env,
-                                                               *ptr, *typeId, *typeId, false);
-                                        found = true;
-                                        if(scope){
-                                            JObjectWrapper object(env, p->l);
-                                            scope->addFinalAction([object](){
-                                                if(JNIEnv* env = qtjambi_current_environment()){
-                                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                    qtjambi_invalidate_object(env, object.object());
-                                                }
-                                            });
-                                        }
-                                    }else{
-                                        QByteArray className = getJavaName(*typeId);
-                                        jclass targetType = nullptr;
-                                        try{
-                                            targetType = resolveClass(env, className);
-                                        }catch(...){}
-                                        if(targetType && env->IsInstanceOf(obj, targetType)){
-                                            p->l = obj;
-                                            found = true;
-                                        }
-                                    }
-                                }
-                                if(!found){
-                                    p->l = qtjambi_from_polymorphic_object(env,
-                                                           *ptr, *typeId, *typeId, false);
-                                    if(scope){
-                                        JObjectWrapper object(env, p->l);
-                                        scope->addFinalAction([object](){
-                                            if(JNIEnv* env = qtjambi_current_environment()){
-                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                qtjambi_invalidate_object(env, object.object());
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            return true;
-                        };
-                    }else{
-                        return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                            if(in){
-                                p->l = qtjambi_from_polymorphic_object(env,
-                                                       in, *typeId, *typeId, true);
-                            }
-                            return true;
-                        };
-                    }
-                }
-            }else if(const std::type_info* polymorphicBaseTypeId = getPolymorphicBase(*typeId)){
-                if(pointerType == PointerType::SharedPointer){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const QSharedPointer<void*>* ptr = reinterpret_cast<const QSharedPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                      *typeId,
-                                                                      *polymorphicBaseTypeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &deletePointer<QSharedPointer, void*>,
-                                                                      &getFromPointer<QSharedPointer, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::WeakPointer){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const QWeakPointer<void*>* ptr = reinterpret_cast<const QWeakPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                      *typeId,
-                                                                      *polymorphicBaseTypeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &deletePointer<QSharedPointer, void*>,
-                                                                      &getFromPointer<QSharedPointer, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::shared_ptr){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const std::shared_ptr<void*>* ptr = reinterpret_cast<const std::shared_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                                  *typeId,
-                                                                                  *polymorphicBaseTypeId,
-                                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                                   &deletePointer<std::shared_ptr, void*>,
-                                                                                   &getFromPointer<std::shared_ptr, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::weak_ptr){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                        const std::weak_ptr<void*>* ptr = reinterpret_cast<const std::weak_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object_shared_pointer(env,
-                                                                                  *typeId,
-                                                                                  *polymorphicBaseTypeId,
-                                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                                   &deletePointer<std::shared_ptr, void*>,
-                                                                                   &getFromPointer<std::shared_ptr, void*>);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::ScopedPointer){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                        const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object(env, ptr->data(), *typeId, *polymorphicBaseTypeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::unique_ptr){
-                    return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                        const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
-                        if(ptr){
-                            p->l = qtjambi_from_polymorphic_object(env, ptr->get(), *typeId, *polymorphicBaseTypeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
-                        }
-                        return true;
-                    };
-                }else{
-                    if (internalTypeName.contains(QLatin1Char('*'))){
-                        return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
-                            void * const *ptr = reinterpret_cast<void * const *>(in);
-                            if(ptr){
-                                // If we found a link for the object, we use the java object
-                                // from the link.
-                                bool found = false;
-                                for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(*ptr)) {
-                                    jobject obj = link->getJavaObjectLocalRef(env);
-                                    if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
-                                        link->invalidate(env);
-                                        p->l = qtjambi_from_polymorphic_object(env,
-                                                               *ptr, *typeId, *polymorphicBaseTypeId, false);
-                                        found = true;
-                                        if(scope){
-                                            JObjectWrapper object(env, p->l);
-                                            scope->addFinalAction([object](){
-                                                if(JNIEnv* env = qtjambi_current_environment()){
-                                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                    qtjambi_invalidate_object(env, object.object());
-                                                }
-                                            });
-                                        }
-                                    }else{
-                                        QByteArray className = getJavaName(*typeId);
-                                        jclass targetType = nullptr;
-                                        try{
-                                            targetType = resolveClass(env, className);
-                                        }catch(...){}
-                                        if(targetType && env->IsInstanceOf(obj, targetType)){
-                                            p->l = obj;
-                                            found = true;
-                                        }
-                                    }
-                                }
-                                if(!found){
-                                    p->l = qtjambi_from_polymorphic_object(env,
-                                                           *ptr, *typeId, *polymorphicBaseTypeId, false);
-                                    if(scope){
-                                        JObjectWrapper object(env, p->l);
-                                        scope->addFinalAction([object](){
-                                            if(JNIEnv* env = qtjambi_current_environment()){
-                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                qtjambi_invalidate_object(env, object.object());
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            return true;
-                        };
-                    }else{
-                        return [typeId, polymorphicBaseTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
-                            if(in){
-                                p->l = qtjambi_from_polymorphic_object(env,
-                                                       in, *typeId, *polymorphicBaseTypeId, true);
                             }
                             return true;
                         };
@@ -3116,7 +2820,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 // If we found a link for the object, we use the java object
                                 // from the link.
                                 bool found = false;
-                                for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(*ptr)) {
+                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(*ptr)) {
                                     jobject obj = link->getJavaObjectLocalRef(env);
                                     if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
                                         link->invalidate(env);
@@ -3165,7 +2869,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                     // If we found a link for the object, we use the java object
                                     // from the link.
                                     bool found = false;
-                                    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(in)) {
+                                    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(in)) {
                                         jobject obj = link->getJavaObjectLocalRef(env);
                                         if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
                                             link->invalidate(env);
@@ -3410,7 +3114,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             // If we found a link for the object, we use the java object
                             // from the link.
                             bool found = false;
-                            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(*ptr)) {
+                            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(*ptr)) {
                                 jobject obj = link->getJavaObjectLocalRef(env);
                                 if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
                                     link->invalidate(env);
@@ -6325,7 +6029,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong collection content given: %1, expected: %2").arg(qtjambi_object_class_name(env, element).replace("$", ".")).arg(qtjambi_class_name(env, elementClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                         content << element;
                                     }
-                                    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(out)){
+                                    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(out)){
                                         if(auto _access = link->containerAccess()){
                                             response = true;
                                             for(jobject element : content) {
@@ -6820,7 +6524,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                                         content << next;
                                                     }
                                                 }
-                                                for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(out)){
+                                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(out)){
                                                     if(auto _access = link->containerAccess()){
                                                         response = true;
                                                         for(jobject entry : content) {

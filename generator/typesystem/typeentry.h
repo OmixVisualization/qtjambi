@@ -613,9 +613,7 @@ class FunctionalTypeEntry : public TypeEntry {
     public:
         FunctionalTypeEntry(const QString &nspace, const QString &name);
 
-        QString javaPackage() const override {
-            return m_package_name;
-        }
+        QString javaPackage() const override;
         void setTargetLangPackage(const QString &package) {
             m_package_name = package;
         }
@@ -800,9 +798,7 @@ class EnumTypeEntry : public TypeEntry {
             m_java_name = enumName;
         }
 
-        QString javaPackage() const override {
-            return m_package_name;
-        }
+        QString javaPackage() const override;
         void setTargetLangPackage(const QString &package) {
             m_package_name = package;
         }
@@ -1306,6 +1302,13 @@ class ComplexTypeEntry : public TypeEntry {
             m_isTemplate = isTemplate;
         }
 
+        bool isNativeInterface() const {
+            return m_isNativeInterface;
+        }
+        void setNativeInterface(bool isNativeInterface) {
+            m_isNativeInterface = isNativeInterface;
+        }
+
         bool inhibitMetaobject() const {
             return m_inhibitMetaobject;
         }
@@ -1375,6 +1378,7 @@ class ComplexTypeEntry : public TypeEntry {
         uint m_polymorphic_base : 1;
         uint m_generic_class : 1;
         uint m_isTemplate : 1;
+        uint m_isNativeInterface : 1;
         uint m_inhibitMetaobject : 1;
         uint m_isNativeIdBased : 1;
 

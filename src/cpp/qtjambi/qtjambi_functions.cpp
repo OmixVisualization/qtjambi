@@ -73,6 +73,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_cast.h"
 #include "qtjambi_containeraccess_p.h"
 #include "qtjambi_application.h"
+#include "qtjambi_nativeinterface.h"
 
 #ifdef QTJAMBI_SANITY_CHECK
 #include <QtCore/QObject>
@@ -146,6 +147,65 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_disconnectConnection)
         exn.raiseInJava(env);
     }
     return result;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_initializeMultiSignal)
+(JNIEnv *env, jclass, jobject multiSignal, jclass declaringClass, jobject reflectedField)
+{
+    try{
+        const QMetaObject* mo = qtjambi_metaobject_for_class(env, declaringClass, nullptr);
+        QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(reflectedField));
+        if(!signalInfos.isEmpty()){
+            jintArray methodIndexes = env->NewIntArray(jsize(signalInfos.size()));
+            jobjectArray signalParameterTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::List::getClass(env), nullptr);
+            jobjectArray signalObjectTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::Class::getClass(env), nullptr);
+            {
+                JIntArrayPointer methodIndexesPtr(env, methodIndexes, true);
+                for(int i=0; i<signalInfos.size(); i++){
+                    const QtJambiMetaObject::SignalInfo& info = signalInfos.at(i);
+                    env->SetObjectArrayElement(signalObjectTypes, jsize(i), info.signalClass);
+                    env->SetObjectArrayElement(signalParameterTypes, jsize(i), info.signalTypes);
+                    methodIndexesPtr.pointer()[i] = info.methodIndex;
+                }
+            }
+            Java::QtJambi::QtJambiSignals$AbstractMultiSignal::initializeSignals(env, multiSignal, reflectedField, methodIndexes, signalParameterTypes, signalObjectTypes);
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT jlong JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_fromReflectedMethod)
+(JNIEnv *env, jclass, jobject method)
+{
+    return jlong(env->FromReflectedMethod(method));
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_signalInfo)
+    (JNIEnv *env, jclass, jobject _metaObject, jobject field, jobject emitMethod)
+{
+    try{
+        if(emitMethod){
+            QtJambiMetaObject::SignalInfo signalInfo = QtJambiMetaObject::signalInfo(qtjambi_cast<const QMetaObject*>(env, _metaObject), env->FromReflectedField(field), env->FromReflectedMethod(emitMethod));
+            return Java::QtJambi::QtJambiSignals$SignalInfo::newInstance(env, signalInfo.methodIndex, signalInfo.signalTypes);
+        }else{
+            QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(qtjambi_cast<const QMetaObject*>(env, _metaObject), env->FromReflectedField(field));
+            QtJambiMetaObject::SignalInfo result;
+            for(const QtJambiMetaObject::SignalInfo& signalInfo : signalInfos){
+                // in case of default-arg signals take the smallest methodIndex. all subsequent methodIndexes are clones.
+                if(result.methodIndex==-1 || result.methodIndex>signalInfo.methodIndex){
+                    result = signalInfo;
+                }
+            }
+            return Java::QtJambi::QtJambiSignals$SignalInfo::newInstance(env, result.methodIndex, result.signalTypes);
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+        return nullptr;
+    }
 }
 
 extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isSharedPointer)
@@ -225,18 +285,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_00024CurrentSenderSet
     }
 }
 
-static QHash<jint,jfieldID> enumClassValuesFields = QHash<jint,jfieldID>();
-static QHash<jint,jboolean> enumClassExtensible = QHash<jint,jboolean>();
+typedef QHash<jint,jfieldID> EnumClassValuesHash;
+typedef QHash<jint,jboolean> EnumClassExtensibleHash;
+Q_GLOBAL_STATIC(EnumClassValuesHash, enumClassValuesFields)
+Q_GLOBAL_STATIC(EnumClassExtensibleHash, enumClassExtensible)
 
 jboolean isClassExtensible(JNIEnv *env, jint hashCode, jclass enumClass){
-    if(!enumClassExtensible.contains(hashCode)){
-        enumClassExtensible[hashCode] = Java::Runtime::Class::isAnnotationPresent(env, enumClass, Java::QtJambi::QtExtensibleEnum::getClass(env));
+    if(!enumClassExtensible->contains(hashCode)){
+        (*enumClassExtensible)[hashCode] = Java::Runtime::Class::isAnnotationPresent(env, enumClass, Java::QtJambi::QtExtensibleEnum::getClass(env));
     }
-    return enumClassExtensible[hashCode];
+    return (*enumClassExtensible)[hashCode];
 }
 
 jfieldID findValueField(jthrowable& t, JNIEnv *env, jint hashCode, jclass enumClass){
-    jfieldID valuesField = enumClassValuesFields.value(hashCode, nullptr);
+    jfieldID valuesField = enumClassValuesFields->value(hashCode, nullptr);
     if(!valuesField){
         QString signature = QString("[L%1;").arg(qtjambi_class_name(env, enumClass).replace(QLatin1Char('.'), QLatin1Char('/')));
         valuesField = resolveField(env, "$VALUES", qPrintable(signature), enumClass, true);
@@ -261,7 +323,7 @@ jfieldID findValueField(jthrowable& t, JNIEnv *env, jint hashCode, jclass enumCl
             }
         }
         if(valuesField)
-            enumClassValuesFields[hashCode] = valuesField;
+            (*enumClassValuesFields)[hashCode] = valuesField;
     }
     return valuesField;
 }
@@ -854,7 +916,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_registerQmlListPrope
 }
 
 extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaObjectTools_internalTypeName)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_internalTypeName)
 (JNIEnv *env, jclass, jstring s, jobject classLoader)
 {
     try{
@@ -2605,6 +2667,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_00024NativeLink_clea
                 throwable = env->ExceptionOccurred();
                 env->ExceptionClear();
             }
+            {
+                QWriteLocker locker(QtJambiLinkUserData::lock());
+                link.clear();
+            }
         }
         if(throwable)
             env->Throw(throwable);
@@ -2630,6 +2696,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_00024NativeLink_disp
             if(env->ExceptionCheck()){
                 throwable = env->ExceptionOccurred();
                 env->ExceptionClear();
+            }
+            {
+                QWriteLocker locker(QtJambiLinkUserData::lock());
+                link.clear();
             }
         }
         if(throwable)
@@ -5650,3 +5720,21 @@ void qtjambi_funtion_dispatch(JNIEnv *env, void* func, jobjectArray args, ffi_ty
 //    throwByName(throw_type, throw_msg);
 //  }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool registeredNativeInterface(JNIEnv* env, jclass cls, QPair<const char*, int>& nameAndRevision);
+
+NITypeInfo qtjambi_get_native_interface_info(JNIEnv * env, jclass cls){
+    if(!cls)
+        JavaException::raiseNullPointerException(env, "Class must not be null." QTJAMBI_STACKTRACEINFO );
+    QPair<const char*, int> nameAndRevision;
+    NITypeInfo info;
+    if(registeredNativeInterface(env, cls, nameAndRevision)){
+        info.name = nameAndRevision.first;
+        info.revision = nameAndRevision.second;
+    }else{
+        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Class %1 is not a native interface type.").arg(qtjambi_class_name(env, cls).replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
+    }
+    return info;
+}
+#endif

@@ -29,9 +29,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,10 +63,13 @@ import io.qt.core.QEasingCurve;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QFactoryInterface;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QPointF;
 import io.qt.core.QRectF;
 import io.qt.core.QRunnable;
 import io.qt.core.QSize;
+import io.qt.core.QSizeF;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.gui.QAbstractUndoItem;
@@ -80,6 +81,7 @@ import io.qt.gui.QPaintEngineState;
 import io.qt.gui.QPainter;
 import io.qt.gui.QPainterPath;
 import io.qt.gui.QPixmap;
+import io.qt.gui.QScrollPrepareEvent;
 import io.qt.gui.QSurface;
 import io.qt.gui.QSurfaceFormat;
 import io.qt.internal.QtJambiInternal;
@@ -866,32 +868,32 @@ public class TestInterfaces extends QApplicationTest {
 		Assert.assertFalse(object.isDisposed());
 		object.autoDelete();
 		object.dispose();
-		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+		assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
 	}
 
 	@Test
 	public void test_InterfaceLiveCircle3() {
 		QtObjectInterface object = new QtObjectInterface() {};
-		Assert.assertTrue(object.isDisposed());
+		assertTrue(object.isDisposed());
 		object.dispose();
-		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+		assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
 	}
 
 	@Test
 	public void test_InterfaceLiveCircle5() {
 		CustomInterface object = ()->{};
-		Assert.assertTrue(object.isDisposed());
+		assertTrue(object.isDisposed());
 		object.call();
 		object.dispose();
-		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+		assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
 	}
 
 	@Test
 	public void test_InterfaceLiveCircle6() {
 		QtObject object = new QtObject() {};
-		Assert.assertTrue(object.isDisposed());
+		assertTrue(object.isDisposed());
 		object.dispose();
-		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+		assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
 	}
 	
 	static class VirtualOverrideTest extends TestAbstractClass implements TestInterface{
@@ -926,15 +928,62 @@ public class TestInterfaces extends QApplicationTest {
 	@Test
 	public void test_VirtualOverride() {
 		VirtualOverrideTest test = new VirtualOverrideTest();
-		Assert.assertEquals("TestAbstractClass::method1", TestAbstractClass.callMethod1(test));
-		Assert.assertEquals("VirtualOverrideTest::method2", TestAbstractClass.callMethod2(test));
-		Assert.assertEquals("VirtualOverrideTest::method3", TestAbstractClass.callMethod3(test));
-		Assert.assertEquals("VirtualOverrideTest::method4", TestAbstractClass.callMethod4(test));
-		Assert.assertEquals("TestAbstractClass::method5", TestAbstractClass.callMethod5(test));
-		Assert.assertEquals("TestInterface::method1", TestInterface.callMethod1(test));
-		Assert.assertEquals("TestInterface::method2", TestInterface.callMethod2(test));
-		Assert.assertEquals("VirtualOverrideTest::method3", TestInterface.callMethod3(test));
-		Assert.assertEquals("VirtualOverrideTest::method4", TestInterface.callMethod4(test));
-		Assert.assertEquals("TestAbstractClass::method5", TestInterface.callMethod5(test));
+		assertEquals("TestAbstractClass::method1", TestAbstractClass.callMethod1(test));
+		assertEquals("VirtualOverrideTest::method2", TestAbstractClass.callMethod2(test));
+		assertEquals("VirtualOverrideTest::method3", TestAbstractClass.callMethod3(test));
+		assertEquals("VirtualOverrideTest::method4", TestAbstractClass.callMethod4(test));
+		assertEquals("TestAbstractClass::method5", TestAbstractClass.callMethod5(test));
+		assertEquals("TestInterface::method1", TestInterface.callMethod1(test));
+		assertEquals("TestInterface::method2", TestInterface.callMethod2(test));
+		assertEquals("VirtualOverrideTest::method3", TestInterface.callMethod3(test));
+		assertEquals("VirtualOverrideTest::method4", TestInterface.callMethod4(test));
+		assertEquals("TestAbstractClass::method5", TestInterface.callMethod5(test));
+	}
+	
+	@Test
+	public void test_castInterfaceFromQObject() {
+		QObject object = TestAbstractClass.createInterfaceImplementingQObject();
+		assertTrue(object instanceof QTimer);
+		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(object));
+		TestInterface testInterface = QMetaObject.cast(TestInterface.class, object);
+		assertTrue(testInterface instanceof TestInterface);
+		assertEquals("InterfaceImplementingObject", testInterface.method4());
+		testInterface.setReferenceCountTest1(null);
+		assertEquals(QtJambiInternal.Ownership.Split, QtJambiInternal.ownership(testInterface));
+		assertTrue(object==QMetaObject.cast(QObject.class, testInterface));
+		assertTrue(testInterface==QMetaObject.cast(TestInterface.class, object));
+		testInterface.dispose();
+		assertFalse(object.isDisposed());
+		assertEquals("InterfaceImplementingObject", object.objectName());
+		testInterface = QMetaObject.cast(TestInterface.class, object);
+		assertTrue(testInterface instanceof TestInterface);
+		assertFalse(testInterface.isDisposed());
+		object.dispose();
+		assertTrue(testInterface.isDisposed());
+	}
+	
+	@Test
+	public void test_castInterfaceToQObject() {
+		TestInterface testInterface = TestAbstractClass.createQObjectInheritingInterface();
+		assertTrue(testInterface instanceof TestInterface);
+		assertEquals("InterfaceImplementingObject", testInterface.method4());
+		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(testInterface));
+		QObject object = QMetaObject.cast(QObject.class, testInterface);
+		assertTrue(object instanceof QTimer);
+		assertEquals(QtJambiInternal.Ownership.Split, QtJambiInternal.ownership(object));
+		assertEquals("InterfaceImplementingObject", object.objectName());
+		QScrollPrepareEvent event = new QScrollPrepareEvent(new QPointF(1,2));
+		assertTrue(object.event(event));
+		assertEquals(new QSizeF(20,30), event.viewportSize());
+		assertEquals(new QPointF(5,5), event.contentPos());
+		assertEquals(new QRectF(5,7,9,2), event.contentPosRange());
+		assertTrue(testInterface==QMetaObject.cast(TestInterface.class, object));
+		object.dispose();
+		assertFalse(testInterface.isDisposed());
+		object = QMetaObject.cast(QObject.class, testInterface);
+		assertTrue(object instanceof QTimer);
+		assertFalse(object.isDisposed());
+		testInterface.dispose();
+		assertTrue(object.isDisposed());
 	}
 }

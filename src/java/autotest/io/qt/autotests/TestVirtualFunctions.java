@@ -44,6 +44,7 @@ import io.qt.autotests.generated.AnotherNonAbstractSubclass;
 import io.qt.autotests.generated.FunctionalTest;
 import io.qt.autotests.generated.SetupLayout;
 import io.qt.autotests.generated.TestInterfaceObject;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QSize;
@@ -53,6 +54,7 @@ import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.gui.QPainter;
 import io.qt.widgets.QLayoutItem;
+import io.qt.widgets.QProxyStyle;
 import io.qt.widgets.QPushButton;
 import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QVBoxLayout;
@@ -443,6 +445,14 @@ public class TestVirtualFunctions extends QApplicationTest {
     		//    	instances.add(new WeakReference<>(f1));
     		f1.dispose();
     	}
+    }
+    
+    static class Style extends QProxyStyle{
+    }
+    
+    @Test
+    public void testOverriddenAbstract() {
+    	new Style();
     }
 
     public static void main(String args[]) {

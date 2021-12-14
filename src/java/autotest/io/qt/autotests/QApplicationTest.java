@@ -216,7 +216,7 @@ public abstract class QApplicationTest {
 
     
     static void testDeployerApp(String applicationName, String...modules) throws InterruptedException, IOException {
-        String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion();
+        String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
     	boolean isDebug = "debug".equals(System.getProperty("io.qt.debug"));
     	String jvmVersion = System.getProperty("java.version");
     	boolean java8 = jvmVersion.startsWith("1.") || jvmVersion.startsWith("8.") || jvmVersion.startsWith("7.");

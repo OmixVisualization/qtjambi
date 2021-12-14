@@ -161,7 +161,7 @@ jobject qtjambi_from_QList(JNIEnv *env,
             }
         }
     }else{
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
             if(link && (!copyFunction || link->createdByJava())){
                 jobject obj = link->getJavaObjectLocalRef(env);
                 switch(listType){
@@ -276,7 +276,7 @@ jobject qtjambi_from_QList(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             switch(listType){
@@ -348,7 +348,7 @@ jobject qtjambi_from_QStringList(JNIEnv *env,
             }
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link && (!copyFunction || link->createdByJava())){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
@@ -409,7 +409,7 @@ jobject qtjambi_from_QStringList(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
@@ -448,7 +448,7 @@ jobject qtjambi_from_QSet(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link && (!copyFunction || link->createdByJava())){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QSet::isInstanceOf(env, obj)){
@@ -527,7 +527,7 @@ jobject qtjambi_from_QSet(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QSet::isInstanceOf(env, obj)){
@@ -570,7 +570,7 @@ jobject qtjambi_from_QLinkedList(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
             return obj;
@@ -633,7 +633,7 @@ jobject qtjambi_from_QLinkedList(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
@@ -681,7 +681,7 @@ jobject qtjambi_from_QVector(JNIEnv *env,
             }
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(vectorType==VectorType::QStack){
             if(Java::QtCore::QStack::isInstanceOf(env, obj)){
@@ -772,7 +772,7 @@ jobject qtjambi_from_QVector(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(vectorType==VectorType::QStack){
@@ -828,7 +828,7 @@ jobject qtjambi_from_QHash(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QHash::isInstanceOf(env, obj)){
             return obj;
@@ -892,7 +892,7 @@ jobject qtjambi_from_QHash(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QHash::isInstanceOf(env, obj)){
@@ -936,7 +936,7 @@ jobject qtjambi_from_QMultiHash(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
             return obj;
@@ -1001,7 +1001,7 @@ jobject qtjambi_from_QMultiHash(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
@@ -1045,7 +1045,7 @@ jobject qtjambi_from_QMap(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMap::isInstanceOf(env, obj)){
             return obj;
@@ -1109,7 +1109,7 @@ jobject qtjambi_from_QMap(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMap::isInstanceOf(env, obj)){
@@ -1153,7 +1153,7 @@ jobject qtjambi_from_QMultiMap(JNIEnv *env,
             return obj;
         }
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
             return obj;
@@ -1218,7 +1218,7 @@ jobject qtjambi_from_QMultiMap(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){

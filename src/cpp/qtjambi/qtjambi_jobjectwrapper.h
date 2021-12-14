@@ -461,7 +461,8 @@ public:
             if(JNIEnv *env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 m_array[m_index] = newValue;
-                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, JNI_COMMIT);
+                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, 0);
+                m_array = (env->*JArray<JType>::GetArrayElements)(ArrayType(m_arrayWrapper.object()));
             }
         }
         return *this;
@@ -479,7 +480,7 @@ public:
         if(m_array && m_arrayWrapper.object()){
             if(JNIEnv* env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, 0);
+                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, JNI_ABORT);
             }
         }
     }

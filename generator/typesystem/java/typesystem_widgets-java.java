@@ -85,6 +85,12 @@ class QShortcut__{
         throw new IllegalArgumentException("Slot needs to be member of a QWidget instance.");
     }
     
+    private static io.qt.widgets.QWidget parent(io.qt.core.QMetaObject.Connectable0 signal){
+        if(signal.containingObject() instanceof io.qt.widgets.QWidget)
+            return (io.qt.widgets.QWidget)signal.containingObject();
+        throw new IllegalArgumentException("Signal needs to be member of a QWidget instance.");
+    }
+    
     public QShortcut(io.qt.gui.QKeySequence key,
             io.qt.core.QMetaObject.Slot0 slot,
             io.qt.core.Qt.ShortcutContext context)
@@ -141,6 +147,124 @@ class QShortcut__{
             io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
     {
         this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(signal), context);
+        activated.connect(signal);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal)
+    {
+        this(key, signal, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Connectable0 signal2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(signal), context);
+        activated.connect(signal);
+        activatedAmbiguously.connect(signal2);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Connectable0 signal2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(signal2);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(signal), context);
+        activated.connect(signal);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Connectable0 signal2)
+    {
+        this(key, signal, signal2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Connectable0 signal2)
+    {
+        this(key, slot, signal2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, signal, slot2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(signal);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal)
+    {
+        this(key, parent, signal, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Connectable0 signal2)
+    {
+        this(key, parent, signal, signal2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Connectable0 signal2)
+    {
+        this(key, parent, slot, signal2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, parent, signal, slot2, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Connectable0 signal2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(signal);
+        activatedAmbiguously.connect(signal2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Connectable0 signal2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(signal2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(signal);
+        activatedAmbiguously.connect(slot2);
     }
 }// class
 
@@ -190,6 +314,9 @@ class QBoxLayout___ extends QBoxLayout {
 }// class
 
 class QGridLayout___ extends QGridLayout {
+    /**
+     * Result class for <a href="https://doc.qt.io/qt/qgridlayout.html#getItemPosition">QGridLayout::getItemPosition(int,int*,int*,int*,int*)const</a>.
+     */
     public static final class ItemInfo{
         private ItemInfo(int row, int column, int rowSpan, int columnSpan){
             this.row = row;
@@ -205,54 +332,111 @@ class QGridLayout___ extends QGridLayout {
 }// class
 
 class QColorDialog__java_{
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
+     */
     @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedColorSlot) {
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedColorSlot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
-            if(lamdaInfo.isStatic) {
-                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.qobject==null) {
-                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(metaMethod==null) {
-                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            open(lamdaInfo.qobject, metaMethod);
+    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedSlot) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect slot for given handle.");
         }
-        throw new IllegalArgumentException("Slot cannot be detected.");
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QColor.value()) {
+            throw new IllegalArgumentException("Method does not take a single QColor argument: "+metaMethod.cppMethodSignature());
+        }
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
+        if(object==null) {
+            throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
+        }
+        open(object, metaMethod);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Connectable1<io.qt.gui.QColor> selectedSignal) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect signal for given handle.");
+        }
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QColor.value()) {
+            throw new IllegalArgumentException("Method does not take a single QColor argument: "+metaMethod.cppMethodSignature());
+        }
+        if(!(selectedSignal.containingObject() instanceof io.qt.core.QObject)) {
+            throw new IllegalArgumentException("Unable to determine QObject from given signal handle.");
+        }
+        open((io.qt.core.QObject)selectedSignal.containingObject(), metaMethod);
     }
     
     private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QFontDialog__java_ extends QFontDialog {
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
+     */
     @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QFont> selectedFontSlot) {
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedFontSlot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
-            if(lamdaInfo.isStatic) {
-                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.qobject==null) {
-                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(metaMethod==null) {
-                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            open(lamdaInfo.qobject, metaMethod);
+    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QFont> selectedSlot) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect slot for given handle.");
         }
-        throw new IllegalArgumentException("Slot cannot be detected.");
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QFont.value()) {
+            throw new IllegalArgumentException("Method does not take a single QFont argument: "+metaMethod.cppMethodSignature());
+        }
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
+        if(object==null) {
+            throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
+        }
+        open(object, metaMethod);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Connectable1<io.qt.gui.QFont> selectedSignal) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect signal for given handle.");
+        }
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QFont.value()) {
+            throw new IllegalArgumentException("Method does not take a single QFont argument: "+metaMethod.cppMethodSignature());
+        }
+        if(!(selectedSignal.containingObject() instanceof io.qt.core.QObject)) {
+            throw new IllegalArgumentException("Unable to determine QObject from given signal handle.");
+        }
+        open((io.qt.core.QObject)selectedSignal.containingObject(), metaMethod);
     }
     
     private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QFileDialog__java_ extends QFileDialog {
+    /**
+     * Result class for <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileName">QFileDialog::getOpenFileName(QWidget*,QString,QString,QString,QString*,Options)</a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileNames">QFileDialog::getOpenFileNames(QWidget*,QString,QString,QString,QString*,Options)</a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl">QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls">QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileName">QFileDialog::getSaveFileName(QWidget*,QString,QString,QString,QString*,Options)</a> and
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>.
+     */
     public static final class Result<R> {
-        public Result(R result, String selectedFilter) {
+        @io.qt.NativeAccess
+        private Result(R result, String selectedFilter) {
             this.result = result;
             this.selectedFilter = selectedFilter;
         }
@@ -261,108 +445,159 @@ class QFileDialog__java_ extends QFileDialog {
         public final String selectedFilter;
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getExistingDirectoryUrl">QFileDialog::getExistingDirectoryUrl(QWidget*,QString,QUrl,Options,QStringList)</a></p>
+     */
     public static io.qt.core.QUrl getExistingDirectoryUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
         return getExistingDirectoryUrl(parent, caption, dir, new io.qt.widgets.QFileDialog.Options(options), supportedSchemes);
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl">QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     */
     public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getOpenFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
         return getOpenFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls">QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     */
     public static io.qt.widgets.QFileDialog.Result<java.util.List<io.qt.core.QUrl>> getOpenFileUrls(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
         return getOpenFileUrls(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     */
     public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getSaveFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
         return getSaveFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
-            if(lamdaInfo.isStatic) {
-                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.qobject==null) {
-                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.reflectiveMethod.getParameterCount()!=1) {
-                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
-            }
-            Class<?> type = lamdaInfo.reflectiveMethod.getParameterTypes()[0];
-            if(fileMode()==FileMode.ExistingFiles) {
-                if(!java.util.Collection.class.isAssignableFrom(type)) {
-                    throw new IllegalArgumentException("Method does not take a single StringList argument: "+lamdaInfo.reflectiveMethod);
-                }
-                java.lang.reflect.Type genericType = lamdaInfo.reflectiveMethod.getGenericParameterTypes()[0];
-                if(genericType instanceof java.lang.reflect.ParameterizedType) {
-                    java.lang.reflect.Type[] arguments = ((java.lang.reflect.ParameterizedType) genericType).getActualTypeArguments();
-                    if(arguments.length!=1 || arguments[0]!=String.class)
-                        throw new IllegalArgumentException("Method does not take a single StringList argument: "+lamdaInfo.reflectiveMethod);
-                }
-            }else{
-                if(type!=String.class)
-                    throw new IllegalArgumentException("Method does not take a single String argument: "+lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(metaMethod==null) {
-                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            open(lamdaInfo.qobject, metaMethod);
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect slot for given handle.");
         }
-        throw new IllegalArgumentException("Slot cannot be detected.");
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(fileMode()==FileMode.ExistingFiles) {
+            if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QStringList.value()) {
+                throw new IllegalArgumentException("Method does not take a single String list argument: "+metaMethod.cppMethodSignature());
+            }
+        }else {
+            if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QString.value()) {
+                throw new IllegalArgumentException("Method does not take a single String argument: "+metaMethod.cppMethodSignature());
+            }
+        }
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
+        if(object==null) {
+            throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
+        }
+        open(object, metaMethod);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Connectable1<?> selectedSignal) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect signal for given handle.");
+        }
+        if(metaMethod.parameterCount()!=1) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(fileMode()==FileMode.ExistingFiles) {
+            if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QStringList.value()) {
+                throw new IllegalArgumentException("Method does not take a single String list argument: "+metaMethod.cppMethodSignature());
+            }
+        }else {
+            if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QString.value()) {
+                throw new IllegalArgumentException("Method does not take a single String argument: "+metaMethod.cppMethodSignature());
+            }
+        }
+        if(!(selectedSignal.containingObject() instanceof io.qt.core.QObject)) {
+            throw new IllegalArgumentException("Unable to determine QObject from given signal handle.");
+        }
+        open((io.qt.core.QObject)selectedSignal.containingObject(), metaMethod);
     }
     
     private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QInputDialog__java_ extends QInputDialog {
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot0 selectedSlot) {
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
-            if(lamdaInfo.isStatic) {
-                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.qobject==null) {
-                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.reflectiveMethod.getParameterCount()!=0) {
-                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(metaMethod==null) {
-                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            open(lamdaInfo.qobject, metaMethod);
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect slot for given handle.");
         }
-        throw new IllegalArgumentException("Slot cannot be detected.");
+        if(metaMethod.parameterCount()>0) {
+            throw new IllegalArgumentException("Connected method must not take any arguments: "+metaMethod.cppMethodSignature());
+        }
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
+        if(object==null) {
+            throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
+        }
+        open(object, metaMethod);
     }
     
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
-            if(lamdaInfo.isStatic) {
-                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.qobject==null) {
-                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            if(lamdaInfo.reflectiveMethod.getParameterCount()!=1) {
-                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
-            }
-            Class<?> type = lamdaInfo.reflectiveMethod.getParameterTypes()[0];
-            if(type!=String.class && type!=Integer.class && type!=Double.class)
-                throw new IllegalArgumentException("Method does not take a single String, Integer or Double argument: "+lamdaInfo.reflectiveMethod);
-            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(metaMethod==null) {
-                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
-            }
-            open(lamdaInfo.qobject, metaMethod);
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect slot for given handle.");
         }
-        throw new IllegalArgumentException("Slot cannot be detected.");
+        if(metaMethod.parameterCount()>0) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QString.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Int.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.UInt.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Double.value()) {
+            throw new IllegalArgumentException("Method does not take a single String, int or double argument: "+metaMethod.cppMethodSignature());
+        }
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
+        if(object==null) {
+            throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
+        }
+        open(object, metaMethod);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Connectable1<?> selectedSignal) {
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
+        if(metaMethod==null || !metaMethod.isValid()) {
+            throw new IllegalArgumentException("Unable to detect signal for given handle.");
+        }
+        if(metaMethod.parameterCount()>0) {
+            throw new IllegalArgumentException("Connected method does not take a single argument: "+metaMethod.cppMethodSignature());
+        }
+        if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QString.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Int.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.UInt.value()
+            && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Double.value()) {
+            throw new IllegalArgumentException("Method does not take a single String, int or double argument: "+metaMethod.cppMethodSignature());
+        }
+        if(!(selectedSignal.containingObject() instanceof io.qt.core.QObject)) {
+            throw new IllegalArgumentException("Unable to determine QObject from given signal handle.");
+        }
+        open((io.qt.core.QObject)selectedSignal.containingObject(), metaMethod);
     }
     
     private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
@@ -377,7 +612,11 @@ class QAbstractScrollArea___ extends QAbstractScrollArea {
 }// class
 
 class QSplitter___ extends QSplitter {
+        /**
+         * Result class for <a href="https://doc.qt.io/qt/qsplitter.html#getRange">QSplitter::getRange(int,int*,int*)const</a>.
+         */
         public static final class Range {
+            @io.qt.NativeAccess
             private Range(int min, int max) {
                 minimum = min;
                 maximum = max;
@@ -448,6 +687,11 @@ class QApplication___ extends QApplication {
 }// class
 
 class QFormLayout___ extends QFormLayout {
+    /**
+     * Result class for <a href="https://doc.qt.io/qt/qformlayout.html#getItemPosition">QFormLayout::getItemPosition(int,int*,QFormLayout::ItemRole*)const</a>,
+     * <a href="https://doc.qt.io/qt/qformlayout.html#getLayoutPosition">QFormLayout::getLayoutPosition(QLayout*,int*,QFormLayout::ItemRole*)const</a> and
+     * <a href="https://doc.qt.io/qt/qformlayout.html#getWidgetPosition">QFormLayout::getWidgetPosition(QWidget*,int*,QFormLayout::ItemRole*)const</a>.
+     */
     public static final class ItemInfo{
         private ItemInfo(int row, ItemRole role){
             this.row = row;
@@ -458,21 +702,10 @@ class QFormLayout___ extends QFormLayout {
     }
 }// class
 
-class Subclass_of_QGraphicsLayoutItem___ extends QGraphicsLayoutItem {
-        @io.qt.QtUninvokable
-        public final io.qt.core.QMarginsF contentsMargins() {
-            double[] mrg = {0.0, 0.0, 0.0, 0.0};
-            getContentsMargins(mrg);
-            return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);
-        }
-}// class
-
 class QGraphicsWidget___ extends QGraphicsWidget {
 
         /**
-         * Gets the widget's window frame margins.
-         *
-         * @returns An object containing the margins in left, right, top and bottom coordinates.
+         * @see #getWindowFrameMargins(double[])
          */
         @io.qt.QtUninvokable
         public final io.qt.core.QMarginsF windowFrameMargins() {
@@ -919,6 +1152,9 @@ class QGraphicsScene___ extends QGraphicsScene {
 }// class
 
 class QGraphicsItem___{
+    /**
+     * Result class for <a href="https://doc.qt.io/qt/qgraphicsitem.html#isBlockedByModalPanel">QGraphicsItem::isBlockedByModalPanel(QGraphicsItem**)const</a>.
+     */
     public static final class BlockedByModalPanelInfo{
         private BlockedByModalPanelInfo(boolean isBlockedByModalPanel,
                 QGraphicsItem modalPanel) {
@@ -928,6 +1164,29 @@ class QGraphicsItem___{
         }
         public final boolean isBlockedByModalPanel;
         public final QGraphicsItem modalPanel;
+    }
+}// class
+
+class QStyle___{
+    @io.qt.QtUninvokable
+    private static SubControl findSubControl(int control, int subControl) {
+        SubControl[] subControls = SubControl.values();
+        ComplexControl complexControl = ComplexControl.resolve(control);
+        String complexControlName;
+        switch(complexControl) {
+        case CC_MdiControls:
+            complexControlName = "SC_Mdi";
+            break;
+        default:
+            complexControlName = complexControl.name();
+            complexControlName = "S"+complexControlName.substring(1);
+            break;
+        }
+        for (SubControl sc : subControls) {
+            if(sc.value()==subControl && sc.name().startsWith(complexControlName))
+                return sc;
+        }
+        return SubControl.resolve(subControl);
     }
 }// class
 

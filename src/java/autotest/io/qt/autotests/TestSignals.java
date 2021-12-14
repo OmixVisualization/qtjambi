@@ -31,20 +31,25 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.QSignalAccessException;
 import io.qt.QSignalDeclarationException;
 import io.qt.QSignalInitializationException;
 import io.qt.QtPrimitiveType;
+import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
+import io.qt.core.Qt;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
@@ -359,6 +364,72 @@ public class TestSignals extends QApplicationTest{
     	QWizard wizard = new QWizard();
     	object.visibility.connect(wizard, "setVisible(boolean)");
     	object.visibility.connect(wizard::setVisible);
+    }
+    
+    @Test
+    public void testArgumentLambdaConnection() {
+    	class Object extends QObject{
+    		public final Signal1<Boolean> visibility = new Signal1<>();
+    	}
+    	int arg = 5;
+    	Object object = new Object();
+    	object.visibility.connect(v->{
+    		if(v)
+    			System.out.println(arg);
+    		else
+    			System.out.println(this);
+    	});
+    }
+    
+	@SuppressWarnings("serial")
+	public static class NotifyingList<T> extends ArrayList<T> implements QtSignalEmitterInterface, QInstanceMemberSignals {
+		public final PrivateSignal1<T> added = new PrivateSignal1<>(this);
+
+		public boolean add(T t) {
+			if (super.add(t)) {
+				QInstanceMemberSignals.emit(added, t);
+				return true;
+			}
+			return false;
+		}
+	}
+    
+    @Test
+    public void testInstanceMemberSignal() {
+    	NotifyingList<QColor> colorList = new NotifyingList<>();
+    	QColor[] result = {null};
+    	colorList.added.connect(color->{
+    		result[0] = color;
+    	});
+    	System.out.println(colorList.added.argumentTypes());
+    	QColor darkBlue = new QColor(Qt.GlobalColor.darkBlue);
+    	colorList.add(darkBlue);
+    	assertEquals(darkBlue, result[0]);
+    	try {
+			QInstanceMemberSignals.emit(colorList.added, null);
+			fail();
+		} catch (QSignalAccessException e) {
+		}
+    }
+    
+    @Test
+    public void testCustomSlotImpl() {
+    	class Object extends QObject{
+    		public final Signal0 mySignal = new Signal0();
+    	}
+    	int arg = 5;
+    	Object object = new Object();
+    	AtomicBoolean invoked = new AtomicBoolean();
+    	object.mySignal.connect(new QMetaObject.Slot0() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void invoke() throws Throwable {
+				invoked.set(true);
+			}
+		});
+    	object.mySignal.emit();
+    	assertTrue(invoked.get());
     }
 
     public static void main(String args[]) {

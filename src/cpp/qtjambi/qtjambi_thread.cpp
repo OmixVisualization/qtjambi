@@ -94,21 +94,27 @@ void qtjambi_initialize_main_thread(JNIEnv *__jni_env)
                      "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
         }
 #endif
-    if(!QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+    //if(!QCoreApplicationPrivate::theMainThread.loadRelaxed())
+    {
         QCoreApplicationPrivate::theMainThread = reinterpret_cast<QThread*>(1);
         QThread* currentQThread = QThread::currentThread();
         QCoreApplicationPrivate::theMainThread = currentQThread;
         qtjambi_cast<jobject>(__jni_env, currentQThread);
-    }else{
-        qtjambi_initialize_current_thread(__jni_env);
     }
+    /*else{
+        JavaException::raiseError(__jni_env, "There is already a main thread defined." QTJAMBI_STACKTRACEINFO );
+        qtjambi_initialize_current_thread(__jni_env);
+    }*/
 }
 
 void qtjambi_initialize_current_thread(JNIEnv *env)
 {
     QThread* currentQThread = QThread::currentThread();
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(!QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentQThread)){
+        locker.unlock();
         qtjambi_cast<jobject>(env, currentQThread);
+        locker.relock();
     }
 }
 
@@ -149,7 +155,12 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
         javaQThread = qtjambi_cast<jobject>(env, qt_thread);
     }
     if(javaQThread){
-        if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, qt_thread)){
+        QThreadUserData* threadData;
+        {
+            QReadLocker locker(QtJambiLinkUserData::lock());
+            threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, qt_thread);
+        }
+        if(threadData){
             if(threadData->getUncaughtExceptionHandler()){
                 Java::Runtime::Thread::setUncaughtExceptionHandler(env, javaQThread, threadData->getUncaughtExceptionHandler());
                 threadData->clearUncaughtExceptionHandler(env);
@@ -160,6 +171,7 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
             }
             threadData->clearThreadGroup(env);
         }else{
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, qt_thread, new QThreadUserData());
         }
         jobject jthread = Java::QtCore::QThread::javaThread(env, javaQThread);
@@ -188,23 +200,30 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                     EventDispatcherCheck::storage.setLocalData(QSharedPointer<EventDispatcherCheck>(
                          new EventDispatcherCheck(
                              qt_thread,
-                             [jthreadObjectWrapper](QPointer<QThread>& thread, QList<std::function<void()>>&& finalActions) {
+                             link,
+                             [jthreadObjectWrapper](QPointer<QThread>& thread, QWeakPointer<QtJambiLink>&& wlink, QList<std::function<void()>>&& finalActions) {
                                   struct ObjectReleaser : public QtJambiObjectData {
                                      ObjectReleaser(const JObjectWrapper& _jthreadObjectWrapper,
                                                     QList<std::function<void()>>&& _finalActions,
-                                                    QPointer<QThread>& _thread)
+                                                    QPointer<QThread>& _thread,
+                                                    QWeakPointer<QtJambiLink>&& wlink)
                                          : QtJambiObjectData(),
                                            jthreadObjectWrapper(_jthreadObjectWrapper),
                                            finalActions(std::move(_finalActions)),
-                                           m_thread() {
+                                           m_thread(),
+                                           m_wlink(std::move(wlink)) {
                                          QTJAMBI_DEBUG_METHOD_PRINT("native", "ObjectReleaser::ObjectReleaser()")
                                          m_thread.swap(_thread);
                                      }
                                      ~ObjectReleaser() override {
                                          QTJAMBI_DEBUG_METHOD_PRINT("native", "ObjectReleaser::~ObjectReleaser()")
-                                         QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(m_thread.data());
                                          if(JNIEnv* env = qtjambi_current_environment(m_thread.data()==QThread::currentThread())){
                                               QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                              QSharedPointer<QtJambiLink> link;
+                                              {
+                                                   QReadLocker locker(QtJambiLinkUserData::lock());
+                                                   link = m_wlink.toStrongRef();
+                                              }
                                               if(!QThreadData::get2(m_thread.data())->isAdopted
                                                       && link
                                                       && link->qobject()
@@ -223,9 +242,14 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                                              finalActions.takeFirst()();
                                          }
                                          finalActions.clear();
-                                         if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread.data())){
-                                             QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
-                                             delete data;
+                                         {
+                                             QWriteLocker locker(QtJambiLinkUserData::lock());
+                                             if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread.data())){
+                                                 QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
+                                                 locker.unlock();
+                                                 delete data;
+                                                 locker.relock();
+                                             }
                                          }
                                      }
 
@@ -234,6 +258,7 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                                      JObjectWrapper jthreadObjectWrapper;
                                      QList<std::function<void()>> finalActions;
                                      QPointer<QThread> m_thread;
+                                     QWeakPointer<QtJambiLink> m_wlink;
                                   };
 
                                   QAbstractEventDispatcher * eventDispatcher = nullptr;
@@ -244,9 +269,10 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                                         }
                                   }
                                   if(eventDispatcher){
-                                       QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ObjectReleaser), eventDispatcher, new ObjectReleaser(jthreadObjectWrapper, std::move(finalActions), thread));
+                                       QWriteLocker locker(QtJambiLinkUserData::lock());
+                                       QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ObjectReleaser), eventDispatcher, new ObjectReleaser(jthreadObjectWrapper, std::move(finalActions), thread, std::move(wlink)));
                                   }else{
-                                       ObjectReleaser releaser(jthreadObjectWrapper, std::move(finalActions), thread);
+                                       ObjectReleaser releaser(jthreadObjectWrapper, std::move(finalActions), thread, std::move(wlink));
                                        Q_UNUSED(releaser)
                                   }
                               })
@@ -263,9 +289,14 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
 
 QThreadStorage<QSharedPointer<EventDispatcherCheck>> EventDispatcherCheck::storage;
 
-EventDispatcherCheck::EventDispatcherCheck(QThread* thread, std::function<void(QPointer<QThread>&,QList<std::function<void()>>&&)> _cleaner) : m_thread(thread), cleaner(_cleaner) {
+EventDispatcherCheck::EventDispatcherCheck(QThread* thread, const QWeakPointer<QtJambiLink>& wlink, std::function<void(QPointer<QThread>&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)> _cleaner) : m_thread(thread), m_wlink(wlink), cleaner(_cleaner) {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "EventDispatcherCheck::EventDispatcherCheck()")
-    if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread)){
+    QThreadUserData* data;
+    {
+        QReadLocker locker(QtJambiLinkUserData::lock());
+        data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread);
+    }
+    if(data){
         data->m_finalActions = &m_finalActions;
         data->m_mutex = &m_mutex;
     }
@@ -273,20 +304,26 @@ EventDispatcherCheck::EventDispatcherCheck(QThread* thread, std::function<void(Q
 
 EventDispatcherCheck::~EventDispatcherCheck(){
     QTJAMBI_DEBUG_METHOD_PRINT("native", "EventDispatcherCheck::~EventDispatcherCheck()")
-    if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread)){
+    QThreadUserData* data;
+    {
+        QReadLocker locker(QtJambiLinkUserData::lock());
+        data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread);
+    }
+    if(data){
         data->m_finalActions = nullptr;
         data->m_mutex = nullptr;
     }
     try{
         if(!QCoreApplicationPrivate::is_app_closing && cleaner){
-            cleaner(m_thread, std::move(m_finalActions));
+            cleaner(m_thread, std::move(m_wlink), std::move(m_finalActions));
             cleaner = {};
         }else{
             while(!m_finalActions.isEmpty()){
                 m_finalActions.takeFirst()();
             }
             m_finalActions.clear();
-            if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread)){
+            if(data){
+                QWriteLocker locker(QtJambiLinkUserData::lock());
                 QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread, nullptr);
                 delete data;
             }
@@ -378,16 +415,21 @@ void qtjambi_thread_set_daemon(JNIEnv *__jni_env, jobject jthread, bool daemon)
     Q_ASSERT(link);
     QThread* thread = reinterpret_cast<QThread*>(link->pointer());
     Q_ASSERT(thread);
-    QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-    if(!threadData){
-        threadData = new QThreadUserData();
-        QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, threadData);
+    QThreadUserData* threadData;
+    {
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+        if(!threadData){
+            threadData = new QThreadUserData();
+            QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, threadData);
+        }
     }
     threadData->setDaemon(daemon);
 }
 
 bool qtjambi_thread_is_daemon(QThread* thread)
 {
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
         return threadData->isDaemon();
     }
@@ -400,10 +442,14 @@ void qtjambi_thread_set_name(JNIEnv *__jni_env, jobject jthread, jstring name)
     Q_ASSERT(link);
     QThread* thread = reinterpret_cast<QThread*>(link->pointer());
     Q_ASSERT(thread);
-    QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-    if(!threadData){
-        threadData = new QThreadUserData();
-        QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, threadData);
+    QThreadUserData* threadData;
+    {
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+        if(!threadData){
+            threadData = new QThreadUserData();
+            QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, threadData);
+        }
     }
     QString _name = qtjambi_to_qstring(__jni_env, name);
     threadData->setName(_name.toUtf8());
@@ -411,6 +457,7 @@ void qtjambi_thread_set_name(JNIEnv *__jni_env, jobject jthread, jstring name)
 
 jstring qtjambi_thread_get_name(JNIEnv *__jni_env, QThread* thread)
 {
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
         return qtjambi_from_qstring(__jni_env, QLatin1String(threadData->getName()));
     }
@@ -419,6 +466,7 @@ jstring qtjambi_thread_get_name(JNIEnv *__jni_env, QThread* thread)
 
 jobject qtjambi_thread_get_group(JNIEnv *__jni_env, QThread* thread)
 {
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
         return __jni_env->NewLocalRef(threadData->getThreadGroup());
     }
@@ -431,6 +479,7 @@ void qtjambi_thread_set_UncaughtExceptionHandler(JNIEnv *__jni_env, jobject jthr
     Q_ASSERT(link);
     QThread* thread = reinterpret_cast<QThread*>(link->pointer());
     Q_ASSERT(thread);
+    QWriteLocker locker(QtJambiLinkUserData::lock());
     QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
     if(!threadData){
         threadData = new QThreadUserData();
@@ -441,6 +490,7 @@ void qtjambi_thread_set_UncaughtExceptionHandler(JNIEnv *__jni_env, jobject jthr
 
 jobject qtjambi_thread_get_UncaughtExceptionHandler(JNIEnv *__jni_env, QThread* thread)
 {
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
         return __jni_env->NewLocalRef(threadData->getUncaughtExceptionHandler());
     }
@@ -453,6 +503,7 @@ void qtjambi_thread_set_ContextClassLoader(JNIEnv *__jni_env, jobject jthread, j
     Q_ASSERT(link);
     QThread* thread = reinterpret_cast<QThread*>(link->pointer());
     Q_ASSERT(thread);
+    QWriteLocker locker(QtJambiLinkUserData::lock());
     QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
     if(!threadData){
         threadData = new QThreadUserData();
@@ -463,6 +514,7 @@ void qtjambi_thread_set_ContextClassLoader(JNIEnv *__jni_env, jobject jthread, j
 
 jobject qtjambi_thread_get_ContextClassLoader(JNIEnv *__jni_env, QThread* thread)
 {
+    QReadLocker locker(QtJambiLinkUserData::lock());
     if(QThreadUserData* threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
         return __jni_env->NewLocalRef(threadData->getContextClassLoader());
     }

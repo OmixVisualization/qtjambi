@@ -780,9 +780,9 @@ QTJAMBI_EXPORT void registerOwnerFunction(const std::type_info& typeId, PtrOwner
 
 QTJAMBI_EXPORT const QObject* qtjambi_main_thread_owner(const void *);
 
-typedef bool (*PolymorphyHandler)(void *object);
+typedef bool (*PolymorphyHandler)(void *object, qintptr& offset);
 
-QTJAMBI_EXPORT void registerPolymorphyHandler(const std::type_info& typeId, PolymorphyHandler handler, const char *class_name, const std::type_info& targetTypeId, bool isQObject);
+QTJAMBI_EXPORT void registerPolymorphyHandler(const std::type_info& typeId, const std::type_info& targetTypeId, PolymorphyHandler handler);
 
 QTJAMBI_EXPORT void registerSizeOfType(const std::type_info& typeId, size_t size);
 

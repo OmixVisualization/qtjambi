@@ -722,25 +722,25 @@ void Binder::visitNamespace(NamespaceAST *node) {
 
     NamespaceModelItem old;
     if (! anonymous) {
-        QString name = decode_symbol(node->namespace_name)->as_string();
+        QStringList name{decode_symbol(node->namespace_name)->as_string()};
 
         QStringList qualified_name = scope->qualifiedName();
-        qualified_name += name;
-        for(int i=1; i<node->namespace_name_size; ++i){
-            qualified_name += decode_symbol(node->namespace_name+(i*2))->as_string();
+        for(decltype (node->namespace_name_size) i=1; i<node->namespace_name_size; ++i){
+            name << decode_symbol(node->namespace_name+(i*2))->as_string();
         }
+        qualified_name << name.join("::");
         NamespaceModelItem ns =
             model_safe_cast<NamespaceModelItem>(_M_model->findItem(qualified_name,
                                                 _M_current_file->toItem()));
         if (!ns) {
             ns = _M_model->create<NamespaceModelItem>();
             updateItemPosition(ns->toItem(), node);
-            ns->setName(name);
+            ns->setName(name.join("::"));
             ns->setScope(scope->qualifiedName());
         }
         old = changeCurrentNamespace(ns);
 
-        _M_context.append(name);
+        _M_context << name.join("::");
     }
 
     DefaultVisitor::visitNamespace(node);

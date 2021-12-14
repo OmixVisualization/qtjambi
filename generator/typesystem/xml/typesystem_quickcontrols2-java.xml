@@ -43,7 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.quick.controls" module="qtjambi.quickcontrols" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
+    <inject-code position="3">
             io.qt.QtUtilities.loadQtLibrary("QuickTemplates2");
     </inject-code>
 </typesystem>

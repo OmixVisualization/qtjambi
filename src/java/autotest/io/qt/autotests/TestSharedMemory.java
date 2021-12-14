@@ -65,7 +65,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createReadOnly");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadOnly));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadOnly);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer buffer = access.data();
@@ -80,7 +81,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createReadWrite");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadWrite));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadWrite);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();
@@ -117,7 +119,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createReadWriteQIODeviceFromDirectBuffer");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadWrite));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadWrite);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();
@@ -163,7 +166,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createReadWriteQIODeviceFromAddress");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadWrite));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadWrite);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();
@@ -209,7 +213,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createDataStreamQIODeviceFromAddress");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadWrite));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadWrite);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();
@@ -261,7 +266,8 @@ public class TestSharedMemory extends QApplicationTest {
     {
     	QSharedMemory memory = new QSharedMemory();
     	memory.setKey("test_createReadWriteBuffer");
-    	assertTrue("create", memory.create(1024, QSharedMemory.AccessMode.ReadWrite));
+    	boolean created = memory.create(1024, QSharedMemory.AccessMode.ReadWrite);
+    	assertTrue("create failed: "+memory.errorString(), created);
     	assertTrue("isAttached", memory.isAttached());
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();

@@ -71,8 +71,6 @@ const std::type_info* getTypeByQtName(const QString& qt_name);
 const std::type_info* getTypeByQtName(const QByteArray& qt_name);
 const std::type_info* getTypeByMetaObject(const QMetaObject* metaObject);
 int registeredMetaTypeID(const std::type_info& typeId);
-void qtjambi_resolve_polymorphic_id(const std::type_info& polymorphicBaseTypeId, const void *object,
-                                    char const* &class_name, const std::type_info* &targetTypeId, bool& isQObject);
 int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface);
 const QVector<const SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject);
 ParameterInfoProvider registeredParameterInfoProvider(const QMetaObject* metaObject);
@@ -97,7 +95,6 @@ jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz);
 const std::type_info* getPolymorphicBase(const std::type_info& typeId);
 void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetInfo* info);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos);
-jmethodID findEmitMethod(JNIEnv * env, jclass signalClass);
 QHashFunctionPtr registeredHashFunction(const std::type_info& typeId);
 const QtJambiTypeInfo* getQTypeInfo(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false);

@@ -91,7 +91,7 @@
         <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
         <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
         <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-        <exclude name="io/qt/**/TestWebEngine*.java" unless="${qtjambi.webengine.any.true}"/>
+        <exclude name="io/qt/**/TestWebEngineQ*.java" unless="${qtjambi.webengine.any.true}"/>
         <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
         <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
         <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
@@ -248,7 +248,7 @@
             <then>
                 <path id="qtjambi.classpath">
                     <fileset dir="${deploymentdir}">
-                        <include name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <include name="qtjambi*-jre8-${qtjambi.jar.version}.jar"/>
                         <exclude name="qtjambi-*native-*.jar"/>
                     </fileset>
                     <pathelement location="${tests.junit}" />
@@ -259,8 +259,8 @@
             <else>
                 <path id="qtjambi.classpath">
                     <fileset dir="${deploymentdir}">
-                        <include name="qtjambi*-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
-                        <exclude name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+                        <exclude name="qtjambi*-jre8-${qtjambi.jar.version}.jar"/>
                         <exclude name="qtjambi-*native-*.jar"/>
                     </fileset>
                     <pathelement location="${tests.junit}" />
@@ -401,7 +401,7 @@
                 </if>
                 <path id="qtjambi.classpath">
                     <fileset dir="${deploymentdir}">
-                        <include name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <include name="qtjambi*-jre8-${qtjambi.jar.version}.jar"/>
                         <exclude name="qtjambi-*native-*.jar"/>
                     </fileset>
                     <pathelement location="${tests.junit}" />
@@ -431,8 +431,8 @@
                 </if>
                 <path id="qtjambi.classpath">
                     <fileset dir="${deploymentdir}">
-                        <include name="qtjambi*-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
-                        <exclude name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+                        <exclude name="qtjambi*-jre8-${qtjambi.jar.version}.jar"/>
                         <exclude name="qtjambi-*native-*.jar"/>
                     </fileset>
                     <pathelement location="${tests.junit}" />
@@ -591,7 +591,7 @@
     
     <target name="release.run8" depends="init">
         <if>
-            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
             <then>
                 <if>
                     <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
@@ -611,7 +611,7 @@
     
     <target name="debug.run8" depends="init">
         <if>
-            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
             <then>
                 <if>
                     <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>

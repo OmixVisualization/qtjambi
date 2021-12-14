@@ -336,7 +336,7 @@ QFutureInterfaceBase& qtjambi_get_QFutureInterface(const QFuture<void>& future){
 }
 #else
 jobject qtjambi_create_QPromise(JNIEnv* env, jobject futureInterface, const void* promise, QtJambiScope* scope){
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(promise)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(promise)){
         if(link){
             jobject ni = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QPromise$NativeInstance::isInstanceOf(env, ni)){

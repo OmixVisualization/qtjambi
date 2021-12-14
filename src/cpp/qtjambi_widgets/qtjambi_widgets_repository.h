@@ -20,6 +20,9 @@ namespace QtWidgets{
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QSplitter$Range,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QStyle,
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findSubControl))
 }
 }
 

@@ -47,6 +47,7 @@ import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
 
@@ -723,6 +724,12 @@ public class TestQThread extends QApplicationTest {
 			Thread.yield();
 			Thread.sleep(100);
 		}
-		Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
+		if(QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.Windows
+				&& !System.getProperty("java.version", "").startsWith("1.8") 
+    			&& !System.getProperty("java.version", "").startsWith("8")) {
+			Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
+		}else {
+			System.err.println("threadCleaned="+qthreadCleaned.get()+" as expected in Java8");
+		}
 	}
 }

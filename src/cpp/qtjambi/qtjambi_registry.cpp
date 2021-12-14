@@ -20,6 +20,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambilink_p.h"
 #include "qtjambi_interfaces_p.h"
 #include "qtjambi_qml.h"
+#include "qtjambi_nativeinterface.h"
 
 //#define QTJAMBI_LOG_CLASSNAMES
 
@@ -40,6 +41,8 @@ Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
 typedef QSet<size_t> TypeSet;
 Q_GLOBAL_STATIC(StringTypeHash, gIIDTypeHash)
 Q_GLOBAL_STATIC(StringStringHash, gTypeIIDHash)
+typedef QMap<QByteArray,QPair<const char*, int>> NativeInterfaceMap;
+Q_GLOBAL_STATIC(NativeInterfaceMap, gNativeInterfaceMap)
 typedef QHash<QByteArray, QByteArray> IIDByteArrayHash;
 Q_GLOBAL_STATIC(IIDByteArrayHash, gIIDByteArrayHash)
 typedef QMap<size_t, const std::type_info*> ID2IDHash;
@@ -250,6 +253,23 @@ void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info,
     }
 }
 
+void qtjambi_register_native_interface(const char* className, QPair<const char*, int>&& nameAndRevision){
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    gNativeInterfaceMap()->insert(className, std::move(nameAndRevision));
+}
+
+bool registeredNativeInterface(JNIEnv* env, jclass cls, QPair<const char*, int>& nameAndRevision){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    QByteArray className = qtjambi_class_name(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')).toUtf8();
+    if(gNativeInterfaceMap()->contains(className)){
+        nameAndRevision = gNativeInterfaceMap()->value(className);
+        return true;
+    }
+    return false;
+}
+
 void registerInterfaceTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::InterfaceTypeInfo);
@@ -386,6 +406,13 @@ bool isInterface(const std::type_info& typeId)
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
     return gEntryTypesHash->value(typeId.hash_code(), EntryTypes::Unspecific) == EntryTypes::InterfaceTypeInfo;
+}
+
+bool isQObject(const std::type_info& typeId)
+{
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gEntryTypesHash->value(typeId.hash_code(), EntryTypes::Unspecific) == EntryTypes::QObjectTypeInfo;
 }
 
 bool isFunctional(const std::type_info& typeId)
@@ -1061,13 +1088,13 @@ PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId)
 
 void clear_type_entry(const std::type_info& typeId);
 
-void registerPolymorphyHandler(const std::type_info& polymorphicBaseTypeId, PolymorphyHandler handler, const char *class_name, const std::type_info& targetTypeId, bool isQObject)
+void registerPolymorphyHandler(const std::type_info& polymorphicBaseTypeId, const std::type_info& targetTypeId, PolymorphyHandler handler)
 {
     if(handler){
         {
             QWriteLocker locker(gLock());
             Q_UNUSED(locker)
-            g_polymorphic_ids->insert(polymorphicBaseTypeId.hash_code(), new PolymorphicIdHandler(handler, class_name, targetTypeId, isQObject));
+            g_polymorphic_ids->insert(polymorphicBaseTypeId.hash_code(), new PolymorphicIdHandler(targetTypeId, handler));
             gPolymorphicBasesHash->insert(targetTypeId.hash_code(), &polymorphicBaseTypeId);
         }
         clear_type_entry(polymorphicBaseTypeId);
@@ -1090,25 +1117,6 @@ QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
     return g_polymorphic_ids->values(polymorphicBaseTypeId.hash_code());
-}
-
-void qtjambi_resolve_polymorphic_id(const std::type_info& polymorphicBaseTypeId, const void *object,
-                                    char const* &class_name, const std::type_info* &targetTypeId, bool& isQObject)
-{
-    if(object){
-        void *_object = const_cast<void *>(object);
-        QReadLocker locker(gLock());
-        Q_UNUSED(locker)
-        for(const PolymorphicIdHandler* handler : g_polymorphic_ids->values(polymorphicBaseTypeId.hash_code())){
-            Q_ASSERT(handler->m_polymorphyHandler);
-            if(handler->m_polymorphyHandler(_object)) {
-                class_name = handler->m_class_name;
-                isQObject = handler->m_isQObject;
-                targetTypeId = &handler->m_targetTypeId;
-                return;
-            }
-        }
-    }
 }
 
 void registerSizeOfType(const std::type_info& typeId, size_t size)
@@ -2061,28 +2069,6 @@ jclass qtjambi_find_generated_superclass(JNIEnv * env, jclass clazz){
 
 jobject qtjambi_find_QmlAttachedProperties(JNIEnv * env, jclass clazz){
     return Java::QtJambi::QtJambiInternal::findQmlAttachedProperties(env, clazz);
-}
-
-jmethodID findEmitMethod(JNIEnv * env, jclass signalClass){
-    if(!env->IsSameObject(signalClass, nullptr)){
-        uint key = uint(Java::Runtime::Object::hashCode(env,signalClass));
-        {
-            QReadLocker locker(gEmitMethodLock());
-            Q_UNUSED(locker)
-            if(gEmitMethodHash->contains(key)){
-                return (*gEmitMethodHash)[key];
-            }
-        }
-        QWriteLocker locker(gEmitMethodLock());
-        Q_UNUSED(locker)
-        jobject signal_emit_method = Java::QtJambi::QtJambiInternal::findEmitMethod(env, signalClass);
-        if(signal_emit_method){
-            (*gEmitMethodHash)[key] = env->FromReflectedMethod(signal_emit_method);
-            qtjambi_throw_java_exception(env);
-            return (*gEmitMethodHash)[key];
-        }
-    }
-    return nullptr;
 }
 
 void clear_registry_at_shutdown(JNIEnv * env){

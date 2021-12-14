@@ -1,7 +1,7 @@
 QTJAMBILIB = QtJambiGui
 TARGET = $$QTJAMBILIB
 
-VERSION = $$QT_VERSION
+VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 
 SOURCES += \
@@ -19,9 +19,11 @@ include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # because qtjambishell_QActionEvent.cpp refers to qaction.h
 macx:{
+    INCLUDEPATH += $$(QTDIR)/lib/QtGui.framework/Headers/qpa
     INCLUDEPATH += $$(QTDIR)/lib/QtWidgets.framework/Headers
     INCLUDEPATH += $$(QTDIR)/include
 }
+INCLUDEPATH += $$(QTDIR)/include/QtGui/qpa
 INCLUDEPATH += $$(QTDIR)/include/QtWidgets
 INCLUDEPATH += $$(QTDIR)/include/QtPlatformHeaders
 INCLUDEPATH += $$PWD

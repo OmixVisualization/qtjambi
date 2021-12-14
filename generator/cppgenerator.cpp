@@ -961,7 +961,7 @@ QString CppGenerator::jni_signature(const AbstractMetaType *java_type, JNISignat
             return "Lio/qt/QNativePointer;";
     } else if (java_type->isFlags() && !(format & NoModification)) {
         return "I";
-    } else if (java_type->isEnum() && !(format & NoModification)) {
+    } else if (java_type->isEnum() && (!(format & NoModification) || reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry())->forceInteger())) {
         uint size = reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry())->size();
         switch(size){
         case 8: return "B";

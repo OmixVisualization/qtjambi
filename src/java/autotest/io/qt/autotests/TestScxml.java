@@ -35,6 +35,8 @@ import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
+import io.qt.core.QObject;
+import io.qt.scxml.QScxmlEvent;
 import io.qt.scxml.QScxmlStateMachine;
 
 public class TestScxml extends QApplicationTest {
@@ -56,6 +58,34 @@ public class TestScxml extends QApplicationTest {
     	Assert.assertTrue(data.open(QIODevice.OpenModeFlag.ReadOnly));
     	QScxmlStateMachine sm = QScxmlStateMachine.fromData(data);
     	QMetaObject.Connection connection = sm.connectToState("hello", ()->{});
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToState("hello", b->{});
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", ()->{});
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", event->{});
+    	Assert.assertTrue(connection!=null);
+    	class Receiver extends QObject{
+    		void receive(){}
+    		void receiveBoolean(boolean b){}
+    		void receiveEvent(QScxmlEvent e){}
+    	}
+    	Receiver r = new Receiver();
+    	connection = sm.connectToState("hello", r::receive);
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToState("hello", r::receiveBoolean);
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", r::receive);
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", r::receiveEvent);
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToState("hello", r, "receive()");
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToState("hello", r, "receiveBoolean(boolean)");
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", r, "receive()");
+    	Assert.assertTrue(connection!=null);
+    	connection = sm.connectToEvent("hello", r, "receiveEvent(QScxmlEvent)");
     	Assert.assertTrue(connection!=null);
     	data.close();
     }

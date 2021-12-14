@@ -39,17 +39,13 @@
 typedef std::function<void*(void *)> PointerGetterFunction;
 
 struct PolymorphicIdHandler{
-    PolymorphicIdHandler(PolymorphyHandler polymorphyHandler, const char *class_name, const std::type_info& targetTypeId, bool isQObject)
-        : m_polymorphyHandler(polymorphyHandler)
-        , m_class_name(class_name)
-        , m_targetTypeId(targetTypeId)
-        , m_isQObject(isQObject)
+    PolymorphicIdHandler(const std::type_info& targetTypeId, PolymorphyHandler polymorphyHandler)
+        : m_targetTypeId(targetTypeId),
+          m_polymorphyHandler(polymorphyHandler)
     {
     }
-    PolymorphyHandler m_polymorphyHandler;
-    const char *m_class_name;
     const std::type_info& m_targetTypeId;
-    bool m_isQObject;
+    PolymorphyHandler m_polymorphyHandler;
 };
 
 enum class EntryTypes

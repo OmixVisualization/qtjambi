@@ -44,7 +44,6 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtOpenGL" description="Classes that make it easy to use OpenGL in Qt applications."> 
-    <rejection class="QOpenGLContext" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QOpenGLFunctions_*Backend"/>
     <rejection class="PFNGL*"/>
     <rejection class="GLDEBUGPROCAMD"/>

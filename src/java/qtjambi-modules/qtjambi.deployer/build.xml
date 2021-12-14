@@ -1,10 +1,10 @@
 <project default="build">
     <property name="plugin-subdir" value="."/>
     <target name="build">
-        <mkdir dir="${generator.outputdir}/java/${module}"/>
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
         <property name="moduledash" value="${module}"/>
+        <mkdir dir="${generator.outputdir}/java/${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <if>
             <istrue value="${qtjambi-build}"/>

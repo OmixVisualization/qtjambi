@@ -22,5 +22,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QGridLayout$ItemInfo,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QSplitter$Range,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(II)
 )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QStyle,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findSubControl,(II)Lio/qt/widgets/QStyle$SubControl;)
+)
 }
 }

@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.junit.Assume;
+
 import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QDir;
@@ -95,27 +97,64 @@ class DeploymentSqlImpl {
     		dir.cd("../../..");
     	}
     	if(dir.cd("../../../deployment/native")) {
-	    	for(String entry : dir.entryList(QDir.Filter.Dirs)) {
-	    		if(!entry.startsWith(".")) {
-	    			QDir _dir = dir.clone();
-	    			if(_dir.cd(entry + ("debug".equals(System.getProperty("io.qt.debug")) ? "/debug/plugins" : "/release/plugins"))){
-	    				if(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.MacOS) {
-	    					try {
-	    						copyDir(new File(QDir.toNativeSeparators(_dir.canonicalPath())), QtUtilities.jambiTempDir());
-		    					QStringList libraryPaths = QApplication.libraryPaths();
-		    					libraryPaths.removeAll(QApplication.applicationDirPath());
-		    					libraryPaths.removeAll(_dir.canonicalPath());
-		    					libraryPaths.prepend(path = new File(QtUtilities.jambiTempDir(), "plugins").getAbsolutePath());
-		    					QApplication.setLibraryPaths(libraryPaths);
-			    				break;
-	    					}catch(IOException e) {
-	    						e.printStackTrace();
-	    					}
-	    				}
-	    				QApplication.addLibraryPath(path = _dir.canonicalPath());
-	        			break;
-	    			}
-	    		}
+    		String osName = System.getProperty("os.name").toLowerCase();
+    		String platform;
+        	if(osName.startsWith("windows")) {
+        		platform = "windows";
+        		switch(System.getProperty("os.arch").toLowerCase()) {
+            	case "arm":
+            	case "arm32":
+            		platform += "-arm32"; break;
+            	case "arm64":
+            	case "aarch64":
+            		platform += "-arm64"; break;
+            	case "x86_64":
+            	case "x64":
+            	case "amd64":
+            		platform += "-x64"; break;
+        		default:
+            		platform += "-x86"; break;
+        		}
+        	}else if(osName.startsWith("mac")) {
+        		platform = "macos";
+        	}else if(osName.startsWith("android")) {
+        		Assume.assumeFalse("Cannot run on android", true);
+        		return;
+        	}else {
+        		platform = "linux";
+        		switch(System.getProperty("os.arch").toLowerCase()) {
+            	case "arm":
+            	case "arm32":
+            		platform += "-arm32"; break;
+            	case "arm64":
+            	case "aarch64":
+            		platform += "-arm64"; break;
+            	case "x86_64":
+            	case "x64":
+            	case "amd64":
+            		platform += "-x64"; break;
+        		default:
+            		platform += "-x86"; break;
+        		}
+        	}
+	    	{
+	    		QDir _dir = dir.clone();
+    			if(_dir.cd(platform + ("debug".equals(System.getProperty("io.qt.debug")) ? "/debug/plugins" : "/release/plugins"))){
+    				if(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.MacOS) {
+    					try {
+    						copyDir(new File(QDir.toNativeSeparators(_dir.canonicalPath())), QtUtilities.jambiTempDir());
+	    					QStringList libraryPaths = QApplication.libraryPaths();
+	    					libraryPaths.removeAll(QApplication.applicationDirPath());
+	    					libraryPaths.removeAll(_dir.canonicalPath());
+	    					libraryPaths.prepend(path = new File(QtUtilities.jambiTempDir(), "plugins").getAbsolutePath());
+	    					QApplication.setLibraryPaths(libraryPaths);
+    					}catch(IOException e) {
+    						e.printStackTrace();
+    					}
+    				}else {
+    					QApplication.addLibraryPath(path = _dir.canonicalPath());
+    				}
+    			}
 	    	}
     	}
     	try {

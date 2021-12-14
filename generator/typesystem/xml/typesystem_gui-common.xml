@@ -49,9 +49,6 @@
     <rejection class="*" field-name="d"/>
     <rejection class="QRgbaF"/>
     <rejection class="QRgbaFloat"/>
-    <rejection class="QWindow" function-name="resolveInterface" since="6.2.0"/>
-    <rejection class="QOffscreenSurface" function-name="resolveInterface" since="6.2.0"/>
-    <rejection class="QGuiApplication" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QGuiApplication" function-name="nativeInterface" since="6.2.0"/>
     <rejection class="QBrushDataPointerDeleter" since="6.2.0"/>
     <rejection class="QColor::CT"/>
@@ -1782,6 +1779,9 @@
     <object-type name="QRegExpValidator"/>
 
     <object-type name="QScreen">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+        </extra-includes>
     </object-type>
 
     <object-type name="QStandardItem">
@@ -2659,6 +2659,9 @@
       </value-type>
 
     <object-type name="QOpenGLContext">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+        </extra-includes>
         <modify-function signature="makeCurrent(QSurface *)" thread-affine="yes"/>
         <modify-function signature="openGLModuleHandle()" remove="all" until="5.*"/>
         <extra-includes>
@@ -2955,6 +2958,95 @@
     
     <object-type name="QOpenGLWindow" until="5.*">
     </object-type>
+    
+    <value-type name="xcb_connection_t" generate="no" since="6.2.0"/>
+    <value-type name="Display" generate="no" since="6.2.0"/>
+    <value-type name="HWND__" generate="no" since="6.2.0"/>
+    <value-type name="HGLRC__" generate="no" since="6.2.0"/>
+    <value-type name="HMODULE__" generate="no" since="6.2.0"/>
+    <value-type name="__GLXcontextRec" generate="no" since="6.2.0"/>
+    <value-type name="ANativeWindow" generate="no" since="6.2.0"/>
+    <typealias-type name="GLXContext"/>
+    <typealias-type name="EGLContext"/>
+    <typealias-type name="EGLDisplay"/>
+    <typealias-type name="NSOpenGLContext"/>
+    <typealias-type name="HMODULE"/>
+    <typealias-type name="HGLRC"/>
+    <typealias-type name="HWND"/>
+    <typealias-type name="HINSTANCE"/>
+    
+    <rejection class="QNativeInterface::Private::QCocoaWindow::TypeInfo"/>
+    <interface-type name="QNativeInterface::Private::QCocoaWindow" pp-condition="defined(Q_OS_MACOS)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QCocoaWindow()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::QCocoaGLContext::TypeInfo"/>
+    <interface-type name="QNativeInterface::QCocoaGLContext" pp-condition="defined(Q_OS_MACOS)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QCocoaGLContext()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QWindowsWindow::TypeInfo"/>
+    <interface-type name="QNativeInterface::Private::QWindowsWindow" pp-condition="defined(Q_OS_WIN)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QWindowsWindow()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::QWGLContext::TypeInfo"/>
+    <interface-type name="QNativeInterface::QWGLContext" pp-condition="defined(Q_OS_WIN)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QWGLContext()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::QGLXContext::TypeInfo"/>
+    <interface-type name="QNativeInterface::QGLXContext" pp-condition="QT_CONFIG(xcb_glx_plugin)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QGLXContext()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::QEGLContext::TypeInfo"/>
+    <interface-type name="QNativeInterface::QEGLContext" pp-condition="QT_CONFIG(egl)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QEGLContext()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QWindowsApplication::TypeInfo"/>
+    <rejection class="QNativeInterface::Private::QWindowsApplication" function-name="registerMime"/>
+    <rejection class="QNativeInterface::Private::QWindowsApplication" function-name="unregisterMime"/>
+    <interface-type name="QNativeInterface::Private::QWindowsApplication" pp-condition="defined(Q_OS_WIN)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QWindowsApplication()" remove="all"/>
+    </interface-type>
+    <enum-type name="QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior" since="6.2.0"/>
+    <enum-type name="QNativeInterface::Private::QWindowsApplication::DarkModeHandlingFlag" flags="QNativeInterface::Private::QWindowsApplication::DarkModeHandling" since="6.2.0"/>
+    <enum-type name="QNativeInterface::Private::QWindowsApplication::TouchWindowTouchType" flags="QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes" since="6.2.0"/>
+    
+    <rejection class="QNativeInterface::QX11Application::TypeInfo"/>
+    <interface-type name="QNativeInterface::QX11Application" pp-condition="QT_CONFIG(xcb)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QX11Application()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QXcbWindow::TypeInfo"/>
+    <interface-type name="QNativeInterface::Private::QXcbWindow" pp-condition="QT_CONFIG(xcb)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QXcbWindow()" remove="all"/>
+    </interface-type>
+    <enum-type name="QNativeInterface::Private::QXcbWindow::WindowType" flags="QNativeInterface::Private::QXcbWindow::WindowTypes" since="6.2.0"/>
+    
+    <rejection class="QNativeInterface::QAndroidOffscreenSurface::TypeInfo"/>
+    <interface-type name="QNativeInterface::QAndroidOffscreenSurface" pp-condition="defined(Q_OS_ANDROID)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QAndroidOffscreenSurface()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QXcbScreen::TypeInfo"/>
+    <interface-type name="QNativeInterface::Private::QXcbScreen" pp-condition="QT_CONFIG(xcb)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QXcbScreen()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QVsp2Screen::TypeInfo"/>
+    <rejection class="QNativeInterface::Private::QVsp2Screen" function-name="addBlendListener"/>
+    <interface-type name="QNativeInterface::Private::QVsp2Screen" pp-condition="QT_CONFIG(vsp2)" generate="no" since="6.2.0">
+        <modify-function signature="QVsp2Screen()" remove="all"/>
+    </interface-type>
+    
+    <rejection class="QNativeInterface::Private::QWebOSScreen::TypeInfo"/>
+    <rejection class="QNativeInterface::Private::QWebOSScreen" function-name="addFlipListener"/>
+    <interface-type name="QNativeInterface::Private::QWebOSScreen" pp-condition="defined(Q_OS_WEBOS)" generate="no" since="6.2.0">
+        <modify-function signature="QWebOSScreen()" remove="all"/>
+    </interface-type>
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QImageTextKeyLang*'"/>
@@ -3043,4 +3135,5 @@
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QOpenGLPixelTransferOptions."/>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QPagedPaintDevice::Margins."/>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTouchEvent::TouchPoint."/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: class 'VkImage' inherits from unknown base class 'quint64'"/>
 </typesystem>

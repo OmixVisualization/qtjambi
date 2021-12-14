@@ -554,7 +554,7 @@ void MultiTypeShell::deleteShell(){
         QSet<size_t> constructedTypes(m_constructedTypes);
         for(size_t typeIdx : constructedTypes){
             const DestructorInfo& info = m_destructorInfo[typeIdx];
-            QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             Q_UNUSED(locker)
             if(const QObject* obj = info.owner()){
                 QPointer<const QObject> owner;

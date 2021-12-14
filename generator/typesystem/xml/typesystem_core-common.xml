@@ -51,6 +51,7 @@
 &lt;li>QtWidgets - Classes to extend Qt GUI with C++ widgets.&lt;/li>
 &lt;/ul></description>
     <rejection class="" enum-name="QtJambiNativeID"/>
+    <rejection class="QNativeInterface::QAndroidApplication" function-name="runOnAndroidMainThread"/>
     <rejection class="QHashSeed"/>
     <rejection class="QFutureSynchronizer"/>
     <rejection class="JNIEnv_"/>
@@ -397,6 +398,7 @@
     <rejection class="QTypeInfo" enum-name="enum_1"/>
     <rejection class="QTypeInfo" enum-name="enum_2"/>
     <rejection class="QTimeZone" enum-name="enum_1"/>
+    <rejection class="QArrayData" enum-name="AllocationOption"/>
     <rejection class="QVFbKeyData"/>
     <rejection class="QVariantComparisonHelper"/>
     <rejection class="QVectorData"/>
@@ -477,7 +479,6 @@
     <rejection class="QCoreApplication" function-name="filterNativeEvent"/>
     <rejection class="QCoreApplication" function-name="setEventFilter"/>
     <rejection class="QCoreApplication" function-name="nativeInterface" since="6.2.0"/>
-    <rejection class="QCoreApplication" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QCoreApplication" enum-name="enum_1"/><!-- since 4.8 -->
     <rejection class="QRandomGenerator" function-name="bounded"/>
     <rejection class="QFile" function-name="setDecodingFunction"/>
@@ -504,6 +505,10 @@
     <rejection class="QEvent::PointerEventTag" since="6.0.0"/>
     <rejection class="QEvent::InputEventTag" since="6.0.0"/>
     <rejection class="QEvent::SinglePointEventTag" since="6.0.0"/>
+    <rejection class="QNativeInterface::Private::NativeInterface" since="6.0.0"/>
+    <rejection class="QNativeInterface::Private::TypeInfo" since="6.0.0"/>
+    <rejection class="QNativeInterface::Private::has_type_info" since="6.0.0"/>
+    <rejection class="QNativeInterface::QAndroidApplication::TypeInfo" since="6.0.0"/>
     <rejection class="QMetaType" function-name="registerConverterFunction" since="6.0.0"/>
     <rejection class="QMetaType" function-name="unregisterConverterFunction" since="6.0.0"/>
     <rejection class="QMetaType" function-name="registerMutableViewFunction" since="6.0.0"/>
@@ -609,11 +614,6 @@
     <rejection class="QMultiMapIterator"/>
     <rejection class="QMutableMultiHashIterator"/>
     <rejection class="QMutableMultiMapIterator"/>
-    <rejection class="QNativeInterface::QGLXContext"/>
-    <rejection class="QNativeInterface::QEGLContext"/>
-    <rejection class="QNativeInterface::QX11Context"/>
-    <rejection class="QNativeInterface::QSGVulkanTexture"/>
-    <rejection class="QNativeInterface::QX11Application"/>
     <rejection class="TypeInfo"/>
     <rejection class="QPropertyProxyBindingData"/>
     <rejection class="QObjectBindableProperty"/>
@@ -3156,6 +3156,13 @@
     <rejection class="QPropertyData::DisableRValueRefs"/>
     <rejection class="QtPrivate::BindingFunctionVTable"/>
     <rejection class="QUntypedPropertyBinding::BindingFunctionVTable"/>
+    <namespace-type name="QNativeInterface" since="6.0.0" generate="no">
+    </namespace-type>
+    <namespace-type name="QNativeInterface::Private" since="6.0.0" generate="no">
+    </namespace-type>
+    <interface-type name="QNativeInterface::QAndroidApplication" pp-condition="defined(Q_OS_ANDROID) &amp;&amp; !defined(Q_OS_ANDROID_EMBEDDED)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QAndroidApplication()" remove="all"/>
+    </interface-type>
     
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator&lt;&lt;(char16_t)' for function modification in 'QDebug' not found.*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator&lt;&lt;(char32_t)' for function modification in 'QDebug' not found.*"/>
@@ -3170,7 +3177,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::Iterator\*'"/>
 
     <!-- Inefficient hash codes -->
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QVariantAnimation::registerInterpolator', unmatched parameter type 'QVariantAnimation::Interpolator'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QVariantAnimation::registerInterpolator', unmatched parameter type '*Interpolator'" />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'Qt::Initialization'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'std::*'"/>
@@ -3189,6 +3196,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonValueRef'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonArray::const_iterator'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonArray::iterator'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping 'QJsonArray::*' unmatched *type '*iterator'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonObject::const_iterator'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonObject::iterator'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonPrivate::Data\*'"/>
@@ -3308,7 +3316,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'unsigned'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborMap::*', unmatched parameter type 'char const[N]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Something has happened when trying to read array initialization: N" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'Collection' for enum 'AllocationOption' is not declared" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'java.util.Collection' for enum 'AllocationOption' is not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborStreamReader::*', unmatched return type 'StringResult&lt;*>'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: sizeof(qreal)==sizeof(double)?Double:Float in QMetaType::Type" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: possible compilation error in enum value sizeof(qreal)==sizeof(double)?Double:Float" />

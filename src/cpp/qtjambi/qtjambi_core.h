@@ -369,7 +369,10 @@ QTJAMBI_EXPORT void qtjambi_unregister_dependent_interface(JNIEnv *env, jobject 
 
 QTJAMBI_EXPORT void qtjambi_unregister_dependent_object(JNIEnv *env, jobject dependentObject, jobject owner);
 
+QTJAMBI_EXPORT void qtjambi_register_dependent_interface(JNIEnv *env, jobject dependentObject, QtJambiNativeID _this_nativeId);
+
 QTJAMBI_EXPORT jobject qtjambi_get_internal_access(JNIEnv *env, jclass cls);
+
 template<typename T>
 T *qtjambi_object_from_nativeId(QtJambiNativeID nativeId)
 {
@@ -610,126 +613,6 @@ QTJAMBI_EXPORT
 jobject qtjambi_from_object(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
 
 QTJAMBI_EXPORT
-jobject qtjambi_from_polymorphic_object(JNIEnv *env, const void *qt_object, const char *className, const std::type_info& typeId, const std::type_info& polymorphicBaseType,
-                            bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
-
-QTJAMBI_EXPORT
-jobject qtjambi_from_polymorphic_object(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const std::type_info& polymorphicBaseType,
-                            bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
-
-template<typename PolymorphicBase, typename T>
-jobject qtjambi_from_polymorphic_object(JNIEnv *env, const T *qt_object, const char *className,
-                            bool makeCopyOfValueTypes, bool invalidateAfterUse = false)
-{
-    return qtjambi_from_polymorphic_object(env, qt_object, className, typeid(T), typeid(PolymorphicBase), makeCopyOfValueTypes, invalidateAfterUse);
-}
-
-template<typename PolymorphicBase, typename T>
-jobject qtjambi_from_polymorphic_object(JNIEnv *env, const T *qt_object, bool makeCopyOfValueTypes, bool invalidateAfterUse = false)
-{
-    return qtjambi_from_polymorphic_object(env, qt_object, typeid(T), typeid(PolymorphicBase), makeCopyOfValueTypes, invalidateAfterUse);
-}
-
-template<typename T>
-inline jobject qtjambi_from_interface_QSharedPointer(JNIEnv *env, const QSharedPointer<T> & qt_shared_pointer){
-    return qtjambi_from_interface_shared_pointer(env,
-                            typeid(T),
-                            new QSharedPointer<T>(qt_shared_pointer),
-                            &deletePointer<QSharedPointer,T>,
-                            &getFromPointer<QSharedPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_interface_QWeakPointer(JNIEnv *env, const QWeakPointer<T> & qt_shared_pointer){
-    return qtjambi_from_interface_shared_pointer(env,
-                            typeid(T),
-                            new QWeakPointer<T>(qt_shared_pointer),
-                            &deletePointer<QWeakPointer,T>,
-                            &getFromPointer<QWeakPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_interface_QSharedPointer(JNIEnv *env, const QSharedPointer<T> & qt_shared_pointer, const char *className){
-    return qtjambi_from_interface_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            new QSharedPointer<T>(qt_shared_pointer),
-                            &deletePointer<QSharedPointer,T>,
-                            &getFromPointer<QSharedPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_interface_QWeakPointer(JNIEnv *env, const QWeakPointer<T> & qt_shared_pointer, const char *className){
-    return qtjambi_from_interface_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            new QWeakPointer<T>(qt_shared_pointer),
-                            &deletePointer<QWeakPointer,T>,
-                            &getFromPointer<QWeakPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_object_QSharedPointer(JNIEnv *env, const QSharedPointer<T> & qt_shared_pointer){
-    return qtjambi_from_object_shared_pointer(env,
-                            typeid(T),
-                            new QSharedPointer<T>(qt_shared_pointer),
-                            &deletePointer<QSharedPointer,T>,
-                            &getFromPointer<QSharedPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_object_QWeakPointer(JNIEnv *env, const QWeakPointer<T> & qt_shared_pointer){
-    return qtjambi_from_object_shared_pointer(env,
-                            typeid(T),
-                            new QWeakPointer<T>(qt_shared_pointer),
-                            &deletePointer<QWeakPointer,T>,
-                            &getFromPointer<QWeakPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_object_QSharedPointer(JNIEnv *env, const QSharedPointer<T> & qt_shared_pointer, const char *className){
-    return qtjambi_from_object_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            new QSharedPointer<T>(qt_shared_pointer),
-                            &deletePointer<QSharedPointer,T>,
-                            &getFromPointer<QSharedPointer,T>);
-}
-
-template<typename T>
-inline jobject qtjambi_from_object_QWeakPointer(JNIEnv *env, const QWeakPointer<T> & qt_shared_pointer,
-                                    const char *className){
-    return qtjambi_from_object_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            new QWeakPointer<T>(qt_shared_pointer),
-                            &deletePointer<QWeakPointer,T>,
-                            &getFromPointer<QWeakPointer,T>);
-}
-
-template<typename PolymorphicBase, typename T>
-inline jobject qtjambi_from_polymorphic_object_QSharedPointer(JNIEnv *env, const QSharedPointer<T> & qt_shared_pointer, const char *className){
-    return qtjambi_from_polymorphic_object_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            typeid(PolymorphicBase),
-                            new QSharedPointer<T>(qt_shared_pointer),
-                            &deletePointer<QSharedPointer,T>,
-                            &getFromPointer<QSharedPointer,T>);
-}
-
-template<typename PolymorphicBase, typename T>
-inline jobject qtjambi_from_polymorphic_object_QWeakPointer(JNIEnv *env, const QWeakPointer<T> & qt_shared_pointer, const char *className){
-    return qtjambi_from_polymorphic_object_shared_pointer(env,
-                            className,
-                            typeid(T),
-                            typeid(PolymorphicBase),
-                            new QWeakPointer<T>(qt_shared_pointer),
-                            &deletePointer<QWeakPointer,T>,
-                            &getFromPointer<QWeakPointer,T>);
-}
-
-QTJAMBI_EXPORT
 jobject qtjambi_from_object(JNIEnv *env, const void *qt_object, const char *className, const std::type_info& typeId, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
 
 QTJAMBI_EXPORT
@@ -777,27 +660,7 @@ typedef QObject*(*PointerQObjectGetter)(const void *);
 typedef void*(*PointerGetter)(const void *);
 
 QTJAMBI_EXPORT
-jobject qtjambi_from_polymorphic_object_shared_pointer(JNIEnv *env, const char *className,
-                            const std::type_info& typeId, const std::type_info& polymorphicBaseType,
-                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
-
-QTJAMBI_EXPORT
-jobject qtjambi_from_polymorphic_object_shared_pointer(JNIEnv *env, const std::type_info& typeId, const std::type_info& polymorphicBaseType,
-                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
-QTJAMBI_EXPORT
-jobject qtjambi_from_object_shared_pointer(JNIEnv *env, const char *className, const std::type_info& typeId,
-                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
-
-QTJAMBI_EXPORT
 jobject qtjambi_from_object_shared_pointer(JNIEnv *env, const std::type_info& typeId,
-                                           void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
-
-QTJAMBI_EXPORT
-jobject qtjambi_from_interface_shared_pointer(JNIEnv *env, const char *className, const std::type_info& typeId,
-                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
-
-QTJAMBI_EXPORT
-jobject qtjambi_from_interface_shared_pointer(JNIEnv *env, const std::type_info& typeId,
                                            void* ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetter sharedPointerGetter);
 
 QTJAMBI_EXPORT
@@ -942,7 +805,6 @@ jobject qtjambi_array_to_nativepointer(JNIEnv *env, jobjectArray array, size_t e
 
 QTJAMBI_EXPORT QThread *qtjambi_to_thread(JNIEnv *env, jobject thread);
 QTJAMBI_EXPORT jobject qtjambi_from_thread(JNIEnv *env, QThread *thread);
-bool qtjambi_adopt_current_thread(void **args);
 
 QTJAMBI_EXPORT QModelIndex qtjambi_to_QModelIndex(JNIEnv *env, jobject index);
 QTJAMBI_EXPORT jobject qtjambi_from_QModelIndex(JNIEnv *env, const QModelIndex &index);
@@ -1170,27 +1032,6 @@ QTJAMBI_EXPORT const void *qtjambi_to_object_from_shared_pointer(JNIEnv *env, jo
 QTJAMBI_EXPORT const void *qtjambi_to_qobject_from_shared_pointer(JNIEnv *env, jobject java_object, PointerCreator pointerCreator, PointerDeleter pointerDeleter, PointerQObjectGetter pointerGetter);
 
 template<template <typename> class Pointer, typename Instantiation>
-inline jobject qtjambi_from_object_pointer(JNIEnv *env, const Pointer<Instantiation> & qt_shared_pointer,
-                                    const char *className){
-    return qtjambi_from_object_shared_pointer(env,
-                            className,
-                            new Pointer<Instantiation>(qt_shared_pointer),
-                            &deletePointer<Pointer,Instantiation>,
-                            &getFromPointer<Pointer,Instantiation>);
-}
-
-template<template <typename> class Pointer, typename Instantiation>
-inline jobject qtjambi_from_interface_pointer(JNIEnv *env, const Pointer<Instantiation> & qt_shared_pointer,
-                                    const char *className, const char *interfaceType){
-    return qtjambi_from_interface_shared_pointer(env,
-                            className,
-                            interfaceType,
-                            new Pointer<Instantiation>(qt_shared_pointer),
-                            &deletePointer<Pointer,Instantiation>,
-                            &getFromPointer<Pointer,Instantiation>);
-}
-
-template<template <typename> class Pointer, typename Instantiation>
 inline jobject qtjambi_from_qobject_pointer(JNIEnv *env, const Pointer<Instantiation> & qt_shared_pointer, const char *className){
     return qtjambi_from_object_shared_pointer(env,
                                 className,
@@ -1215,30 +1056,6 @@ inline jobject qtjambi_from_object_pointer(JNIEnv *env, const Pointer<O> & qt_sh
                                 new Pointer<O>(qt_shared_pointer),
                                 &deletePointer<Pointer, O>,
                                 &getFromPointer<Pointer, O>);
-}
-
-template<typename Instantiation>
-inline const QSharedPointer<Instantiation >& qtjambi_to_QSharedPointer(JNIEnv *env, jobject java_object){
-    const QSharedPointer<Instantiation >* pointer = reinterpret_cast<const QSharedPointer<Instantiation >*>(qtjambi_to_object_from_shared_pointer(env, java_object, &createPointer<QSharedPointer,Instantiation>, &deletePointer<QSharedPointer, Instantiation>, &getFromPointer<QSharedPointer, Instantiation>));
-    return *pointer;
-}
-
-template<typename Instantiation>
-inline QWeakPointer<Instantiation > qtjambi_to_QWeakPointer(JNIEnv *env, jobject java_object){
-    const QSharedPointer<Instantiation >* pointer = reinterpret_cast<const QSharedPointer<Instantiation >*>(qtjambi_to_object_from_shared_pointer(env, java_object, &createPointer<QSharedPointer,Instantiation>, &deletePointer<QSharedPointer, Instantiation>, &getFromPointer<QSharedPointer, Instantiation>));
-    return pointer->toWeakRef();
-}
-
-template<typename Instantiation>
-inline const QSharedPointer<Instantiation >& qtjambi_to_QSharedPointer_QObject(JNIEnv *env, jobject java_object){
-    const QSharedPointer<Instantiation >* pointer = reinterpret_cast<const QSharedPointer<Instantiation >*>(qtjambi_to_qobject_from_shared_pointer(env, java_object, &createPointer<QSharedPointer,Instantiation>, &deletePointer<QSharedPointer, Instantiation>, &getQObjectFromPointer<QSharedPointer, Instantiation>));
-    return *pointer;
-}
-
-template<typename Instantiation>
-inline QWeakPointer<Instantiation > qtjambi_to_QWeakPointer_QObject(JNIEnv *env, jobject java_object){
-    const QSharedPointer<Instantiation >* pointer = reinterpret_cast<const QSharedPointer<Instantiation >*>(qtjambi_to_qobject_from_shared_pointer(env, java_object, &createPointer<QSharedPointer,Instantiation>, &deletePointer<QSharedPointer, Instantiation>, &getQObjectFromPointer<QSharedPointer, Instantiation>));
-    return pointer->toWeakRef();
 }
 
 class QTJAMBI_EXPORT JBufferConstData
@@ -2032,14 +1849,12 @@ T qtjambi_to_functional(JNIEnv *env, QtJambiNativeID native_id)
 {
     T result;
     if(!!native_id){
-        if([=]()->bool{
-                    jclass cls = env->GetObjectClass(qtjambi_java_object_reference(native_id, env));
-                    DO_FINALLY(env->DeleteLocalRef(cls);)
-                    return qtjambi_class_name(env, cls).endsWith("$Impl$ConcreteWrapper");
-                }()){
+        if(qtjambi_is_shell(native_id)){
+            if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>( qtjambi_from_nativeId(native_id, typeid(T)) )){
+                functionalBase->getFunctional(&result);
+            }
+        }else{
             result = reinterpret_deref_cast<T>(env, qtjambi_from_nativeId(native_id) );
-        }else if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>( qtjambi_from_nativeId(native_id, typeid(T)) )){
-            functionalBase->getFunctional(&result);
         }
     }
     return result;

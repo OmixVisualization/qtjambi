@@ -1,7 +1,7 @@
 QTJAMBILIB = jarimport
 TARGET = $$QTJAMBILIB
 
-VERSION = $$QT_VERSION
+VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 CONFIG += skip_target_version_ext
 

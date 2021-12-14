@@ -91,9 +91,6 @@ public abstract class Constants {
     public static final String QT_VERSION_MAJOR_NEXT    = "qt.version.major.next";
     public static final String QT_VERSION_MINOR_NEXT    = "qt.version.minor.next";
 
-    public static final String QT_VERSION_PROPERTIES          = "version.properties";
-    public static final String QT_VERSION_PROPERTIES_TEMPLATE = "version.properties.template";
-
     public static final String CONFIG_RELEASE           = "release";
     public static final String CONFIG_DEBUG             = "debug";
     public static final String CONFIG_TEST              = "test";

@@ -1201,4 +1201,35 @@ public class TestQml extends QApplicationTest{
 		pool.start(root);
 		QApplication.exec();
 	}
+	
+	@Test
+    public void testQVariantMethod() {
+		QtQml.qmlClearTypeRegistrations();
+		QByteArray data = new QByteArray("import QtQuick 2.15\n" + 
+				"Item {\n" + 
+				"    property variant data\n" + 
+				"    function test(s){data = s; return s;}\n" + 
+				"}");
+		QQmlApplicationEngine engine = new QQmlApplicationEngine();
+		engine.loadData(data);
+		QObject object = engine.rootObjects().first();
+		Object result = QMetaObject.invokeMethod(object, "test(java.lang.Object)", "TEST1");
+		assertEquals("TEST1", object.property("data"));
+		assertEquals("TEST1", result);
+		result = QMetaObject.invokeMethod(object, "test(Object)", "TEST2");
+		assertEquals("TEST2", object.property("data"));
+		assertEquals("TEST2", result);
+		result = QMetaObject.invokeMethod(object, "test(QVariant)", "TEST3");
+		assertEquals("TEST3", object.property("data"));
+		assertEquals("TEST3", result);
+		result = QMetaObject.invokeMethod(object, "test", "TEST4");
+		assertEquals("TEST4", object.property("data"));
+		assertEquals("TEST4", result);
+		result = QMetaObject.invokeMethod(object, "test", (Object)null);
+		assertEquals(null, object.property("data"));
+		assertEquals(null, result);
+		result = QMetaObject.invokeMethod(object, "test", 123);
+		assertEquals(123, object.property("data"));
+		assertEquals(123, result);
+	}
 }

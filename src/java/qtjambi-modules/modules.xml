@@ -62,7 +62,6 @@
                                                                         qtjambi.qt3dquickextras
                                                                         qtjambi.qt3dquickscene2d
                                                                         qtjambi.deployer"/>
-    <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
     <target name="build">
         <subant target="build" inheritall="true" verbose="true">
             <filelist refid="all-modules"/>
@@ -315,7 +314,8 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir2}"/>
         </antcall>
-        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} classpath: ${qtjambi.java.module.path}"/>
+        <dependencies-to-classpath property="qtjambi.dependencies" ismodulebased="${java.module.based}" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
+        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} classpath: ${qtjambi.dependencies}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -330,7 +330,7 @@
                     <src path="${sourcedir2}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                     <modulepath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.java.module.path}"/>
+                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </modulepath>
                 </javac>
             </then>
@@ -346,7 +346,7 @@
                     <src path="${sourcedir2}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                     <classpath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.java8.class.path}"/>
+                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </classpath>
                 </javac>
             </else>
@@ -368,6 +368,8 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir3}"/>
         </antcall>
+        <dependencies-to-classpath property="qtjambi.dependencies" ismodulebased="${java.module.based}" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
+        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2}, ${sourcedir3} classpath: ${qtjambi.dependencies}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -384,7 +386,7 @@
                     <src path="${sourcedir3}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                     <modulepath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.java.module.path}"/>
+                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </modulepath>
                 </javac>
             </then>
@@ -401,7 +403,7 @@
                     <src path="${sourcedir3}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                     <classpath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.java8.class.path}"/>
+                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </classpath>
                 </javac>
             </else>
@@ -720,7 +722,7 @@
                             sourcefiles="${java.source.files2.flat}">
                   <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
                   <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/"/>
-                    <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                    <doctitle>QtJambi ${qtjambi.soname.version.major}.${qtjambi.soname.version.minor} Reference Documentation</doctitle>
                     <bottom><![CDATA[
                                 <font size="-2">QtJambi Reference Documentation<br>
                                 The documentation provided herein is licensed under the terms of the 
@@ -770,7 +772,7 @@
                             sourcefiles="${java.source.files2.flat}">
                   <link href="https://docs.oracle.com/javase/8/docs/api/"/>
                   <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/"/>
-                    <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                    <doctitle>QtJambi ${qtjambi.soname.version.major}.${qtjambi.soname.version.minor} Reference Documentation</doctitle>
                     <bottom><![CDATA[
                                 <font size="-2">QtJambi Reference Documentation<br>
                                 The documentation provided herein is licensed under the terms of the 

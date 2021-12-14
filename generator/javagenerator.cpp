@@ -209,7 +209,7 @@ void JavaGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField 
         if (declaringClass->hasFunction(setter)) {
             QString warning =
                 QString("class '%1' already has setter '%2' for %3 field '%4'")
-                .arg(declaringClass->name()).arg(setter->name()).arg(field->isProtected() ? "protected" : "public").arg(field->name());
+                .arg(declaringClass->name()).arg(setter->name(), field->isProtected() ? "protected" : "public", field->name());
             ReportHandler::warning(warning);
         } else {
             writeFunction(s, setter, 0, 0, functionOptions);
@@ -221,7 +221,7 @@ void JavaGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaField 
         if (declaringClass->hasFunction(getter)) {
             QString warning =
                 QString("class '%1' already has getter '%2' for %3 field '%4'")
-                .arg(declaringClass->name()).arg(getter->name()).arg(field->isProtected() ? "protected" : "public").arg(field->name());
+                .arg(declaringClass->name()).arg(getter->name(), field->isProtected() ? "protected" : "public", field->name());
             ReportHandler::warning(warning);
         } else {
             writeFunction(s, getter, 0, 0, functionOptions);
@@ -2284,11 +2284,13 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractM
                 s << "return ";
             }
 
-            if (return_type && return_type->isTargetLangEnum()) {
-                s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
-            } else if (return_type && return_type->isTargetLangFlags()) {
-                registerPackage(return_type->typeEntry()->qualifiedTargetLangName());
-                s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+            if (return_type && new_return_type.isEmpty()) {
+                if (return_type->isTargetLangEnum() && new_return_type.isEmpty()) {
+                    s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
+                } else if (return_type->isTargetLangFlags()) {
+                    registerPackage(return_type->typeEntry()->qualifiedTargetLangName());
+                    s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+                }
             }
         }
 
@@ -2391,7 +2393,7 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractM
         s << ")";
 
         // This closed the ".resolve(" or the "new MyType(" fragments
-        if (return_type && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
+        if (return_type && new_return_type.isEmpty() && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
             s << ")";
 
         s << ";" << Qt::endl;
@@ -2671,142 +2673,152 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
         s << INDENT << "private MultiSignal_" << signalName << "(){" << Qt::endl;
         {
             INDENTATION(INDENT)
-            s << INDENT << "super(";
-            bool first = true;
-            QSet<qint64> argCounts;
-            for(AbstractMetaFunction* java_function : signalList){
-                const AbstractMetaArgumentList& arguments = java_function->arguments();
-                auto sz = arguments.count();
-                argCounts.insert(sz);
-                argumentCountMap[sz]++;
+            QString configurations;
+            bool hasDefaults = false;
+            {
+                QTextStream s(&configurations);
+                bool first = true;
+                QSet<qint64> argCounts;
+                for(AbstractMetaFunction* java_function : signalList){
+                    const AbstractMetaArgumentList& arguments = java_function->arguments();
+                    auto sz = arguments.count();
+                    argCounts.insert(sz);
+                    argumentCountMap[sz]++;
 
-                QList<QString> defaultValueArgumentType;
-                QList<QString> defaultValueExpressions;
+                    QList<QString> defaultValueArgumentType;
+                    QList<QString> defaultValueExpressions;
 
-                QString constructorCall("Signal");
-                if (java_function->isPrivateSignal()) {
-                    constructorCall = "PrivateSignal";
-                }else{
-                    for (int i = 0; i < sz; ++i) {
-                        auto arg = arguments.at(i);
-                        QString defaultValueExpression = arguments.at(i)->defaultValueExpression();
-                        if(!defaultValueExpression.isEmpty()){
-                            defaultValueExpressions << defaultValueExpression;
+                    QString constructorCall("Signal");
+                    if (java_function->isPrivateSignal()) {
+                        constructorCall = "PrivateSignal";
+                    }else{
+                        for (int i = 0; i < sz; ++i) {
+                            auto arg = arguments.at(i);
+                            QString defaultValueExpression = arguments.at(i)->defaultValueExpression();
+                            if(!defaultValueExpression.isEmpty()){
+                                defaultValueExpressions << defaultValueExpression;
 
-                            QString type = java_function->typeReplaced(arg->argumentIndex() + 1);
+                                QString type = java_function->typeReplaced(arg->argumentIndex() + 1);
 
-                            if (type.isEmpty()){
-                                type = translateType(arg->type(), java_function->implementingClass(), Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers));
+                                if (type.isEmpty()){
+                                    type = translateType(arg->type(), java_function->implementingClass(), Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers));
+                                }else{
+                                    registerPackage(type);
+                                    type = type.replace('$', '.');
+                                }
+
+                                defaultValueArgumentType << type;
+                            }
+                        }
+                    }
+
+                    constructorCall += QString::number(sz);
+
+                    QString signalDefaultArgumentExpressions;
+                    if((hasDefaults = !defaultValueExpressions.isEmpty())){
+                        auto dsz = defaultValueExpressions.size();
+                        constructorCall += "Default";
+                        constructorCall += QString::number(dsz);
+                        QTextStream s2(&signalDefaultArgumentExpressions);
+                        for (int i = 0; i < dsz; ++i) {
+                            if (i > 0)
+                                s2 << ", ";
+                            s2 << "()->" << defaultValueExpressions.at(i);
+                        }
+                    }
+                    QString signalParameterClasses;
+                    QString signalObjectType = constructorCall;
+                    signalTypesByArgs[sz] << signalObjectType;
+                    if (sz > 0) {
+                        constructorCall += "<>";
+                        signalObjectType += "<";
+                        for (int i = 0; i < sz; ++i) {
+                            auto arg = arguments.at(i);
+                            if (i > 0){
+                                signalParameterClasses += ", ";
+                                signalObjectType += ", ";
+                            }
+
+                            QString modifiedType = java_function->typeReplaced(arg->argumentIndex() + 1);
+
+                            QString boxedType;
+                            QString unboxedType;
+                            if (modifiedType.isEmpty()){
+                                boxedType += translateType(arg->type(), java_function->implementingClass(), Option(BoxedPrimitive | InitializerListAsArray));
+                                QString type = translateType(arg->type(), java_function->implementingClass(), Option(InitializerListAsArray));
+                                auto idx = type.indexOf('<');
+                                if(idx>0){
+                                    type = type.mid(0, idx);
+                                    if(type=="io.qt.core.QList")
+                                        type = "java.util.List";
+                                    else if(type=="io.qt.core.QMap" || type=="io.qt.core.QHash")
+                                        type = "java.util.Map";
+                                    else if(type=="io.qt.core.QSet")
+                                        type = "java.util.Set";
+                                }
+                                unboxedType += type;
                             }else{
-                                registerPackage(type);
-                                type = type.replace('$', '.');
+                                registerPackage(modifiedType);
+                                boxedType += modifiedType.replace('$', '.');
+                                unboxedType += modifiedType.replace('$', '.');
                             }
+                            signalObjectType += boxedType;
+                            signalParameterClasses += unboxedType+".class";
+                        }
+                        signalObjectType += ">";
+                        signalParameterClassesList[sz] << signalParameterClasses;
+                    }
+                    signalTypes[java_function] = signalObjectType;
 
-                            defaultValueArgumentType << type;
+                    uint exclude_attributes = AbstractMetaAttributes::Abstract
+                                             | AbstractMetaAttributes::Native;
+                    uint include_attributes = AbstractMetaAttributes::Public;
+
+                    FunctionModificationList mods = java_function->modifications(java_function->implementingClass());
+                    for(const FunctionModification& mod : mods) {
+                        if (mod.isAccessModifier()) {
+                            exclude_attributes |= AbstractMetaAttributes::Public
+                                                  | AbstractMetaAttributes::Protected
+                                                  | AbstractMetaAttributes::Private
+                                                  | AbstractMetaAttributes::Friendly;
+                            include_attributes &= ~(exclude_attributes);
+
+                            if (mod.isPublic())
+                                include_attributes |= AbstractMetaAttributes::Public;
+                            else if (mod.isProtected())
+                                include_attributes |= AbstractMetaAttributes::Protected;
+                            else if (mod.isPrivate())
+                                include_attributes |= AbstractMetaAttributes::Private;
+                            else if (mod.isFriendly())
+                                include_attributes |= AbstractMetaAttributes::Friendly;
+
+                            exclude_attributes &= ~(include_attributes);
+
                         }
                     }
-                }
 
-                constructorCall += QString::number(sz);
-
-                QString signalDefaultArgumentExpressions;
-                if(!defaultValueExpressions.isEmpty()){
-                    auto dsz = defaultValueExpressions.size();
-                    constructorCall += "Default";
-                    constructorCall += QString::number(dsz);
-                    QTextStream s2(&signalDefaultArgumentExpressions);
-                    for (int i = 0; i < dsz; ++i) {
-                        if (i > 0)
-                            s2 << ", ";
-                        s2 << "()->" << defaultValueExpressions.at(i);
+                    if(!first){
+                        s << ", ";
                     }
-                }
-                QString signalParameterClasses;
-                QString signalObjectType = constructorCall;
-                signalTypesByArgs[sz] << signalObjectType;
-                if (sz > 0) {
-                    constructorCall += "<>";
-                    signalObjectType += "<";
-                    for (int i = 0; i < sz; ++i) {
-                        auto arg = arguments.at(i);
-                        if (i > 0){
-                            signalParameterClasses += ", ";
-                            signalObjectType += ", ";
-                        }
-
-                        QString modifiedType = java_function->typeReplaced(arg->argumentIndex() + 1);
-
-                        QString boxedType;
-                        QString unboxedType;
-                        if (modifiedType.isEmpty()){
-                            boxedType += translateType(arg->type(), java_function->implementingClass(), Option(BoxedPrimitive | InitializerListAsArray));
-                            QString type = translateType(arg->type(), java_function->implementingClass(), Option(InitializerListAsArray));
-                            auto idx = type.indexOf('<');
-                            if(idx>0){
-                                type = type.mid(0, idx);
-                                if(type=="io.qt.core.QList")
-                                    type = "java.util.List";
-                                else if(type=="io.qt.core.QMap" || type=="io.qt.core.QHash")
-                                    type = "java.util.Map";
-                                else if(type=="io.qt.core.QSet")
-                                    type = "java.util.Set";
-                            }
-                            unboxedType += type;
-                        }else{
-                            registerPackage(modifiedType);
-                            boxedType += modifiedType.replace('$', '.');
-                            unboxedType += modifiedType.replace('$', '.');
-                        }
-                        signalObjectType += boxedType;
-                        signalParameterClasses += unboxedType+".class";
+                    if (sz > 0) {
+                        s << "new SignalConfiguration(" << signalParameterClasses << ", new " << constructorCall << "(" << signalDefaultArgumentExpressions << "))";
+                    }else{
+                        s << "new SignalConfiguration(new " << constructorCall << "(" << signalDefaultArgumentExpressions << "))";
                     }
-                    signalObjectType += ">";
-                    signalParameterClassesList[sz] << signalParameterClasses;
+                    first = false;
                 }
-                signalTypes[java_function] = signalObjectType;
-
-                uint exclude_attributes = AbstractMetaAttributes::Abstract
-                                         | AbstractMetaAttributes::Native;
-                uint include_attributes = AbstractMetaAttributes::Public;
-
-                FunctionModificationList mods = java_function->modifications(java_function->implementingClass());
-                for(const FunctionModification& mod : mods) {
-                    if (mod.isAccessModifier()) {
-                        exclude_attributes |= AbstractMetaAttributes::Public
-                                              | AbstractMetaAttributes::Protected
-                                              | AbstractMetaAttributes::Private
-                                              | AbstractMetaAttributes::Friendly;
-                        include_attributes &= ~(exclude_attributes);
-
-                        if (mod.isPublic())
-                            include_attributes |= AbstractMetaAttributes::Public;
-                        else if (mod.isProtected())
-                            include_attributes |= AbstractMetaAttributes::Protected;
-                        else if (mod.isPrivate())
-                            include_attributes |= AbstractMetaAttributes::Private;
-                        else if (mod.isFriendly())
-                            include_attributes |= AbstractMetaAttributes::Friendly;
-
-                        exclude_attributes &= ~(include_attributes);
-
-                    }
-                }
-
-                if(!first){
-                    s << ", ";
-                }
-                if (sz > 0) {
-                    s << "new SignalConfiguration(" << signalParameterClasses << ", new " << constructorCall << "(" << signalDefaultArgumentExpressions << "))";
-                }else{
-                    s << "new SignalConfiguration(new " << constructorCall << "(" << signalDefaultArgumentExpressions << "))";
-                }
-                first = false;
             }
-            s << ");" << Qt::endl;
+            /*if(hasDefaults){
+                s << INDENT << "super(" << configurations << ");" << Qt::endl;
+            }else{*/
+                s << INDENT << "super();" << Qt::endl;
+            //}
         }
         s << INDENT << "}" << Qt::endl << Qt::endl;
+        QSet<qint64> writtenConnects;
         for(QMap<qint64,int>::const_iterator it=argumentCountMap.begin(); it!=argumentCountMap.end(); it++){
             QString parameters;
+            QStringList parameterClasses;
             QStringList classes;
             QStringList vars;
             QString annotations;
@@ -2819,17 +2831,19 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
             if(it.key()>0){
                 QStringList params;
                 for(int j=0; j<it.key(); j++){
-                    params << QChar('A'+j);
-                    classes << "Class<" + QString(QChar('A'+j))+"> type"+QString::number(j+1);
-                    vars << "type"+QString::number(j+1);
+                    QString letter = QString(QChar('A'+j));
+                    params << letter;
+                    classes << QString(QLatin1String("Class<%1> type%2")).arg(letter).arg(j+1);
+                    vars << QString(QLatin1String("type%1")).arg(j+1);
+                    parameterClasses << QString(QLatin1String("(Class<%1>)parameters[%2]")).arg(letter).arg(j);
                 }
-                parameters = "<" + params.join(",") + "> ";
-            }
+                parameters = QString(QLatin1String("<%1>")).arg(params.join(","));
+            };
 
             s << INDENT << "/**" << Qt::endl;
             if(it.key()==0){
-                s << INDENT << " * <p>Provides an overloaded parameterless signal.</p>" << Qt::endl;
-                s << INDENT << " * @return overloaded signal" << Qt::endl;
+                s << INDENT << " * <p>Provides an overloaded parameterless signal.</p>" << Qt::endl
+                  << INDENT << " * @return overloaded signal" << Qt::endl;
             }else{
                 if(it.key()==1){
                     s << INDENT << " * <p>Provides an overloaded signal by parameter type.</p>" << Qt::endl;
@@ -2852,28 +2866,175 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
                 for(int j=0; j<it.key(); j++){
                     s << INDENT << " * @param type" << QString::number(j+1) << " value of type " << QChar('A'+j) << Qt::endl;
                 }
-                s << INDENT << " * @return overloaded signal" << Qt::endl;
-                s << INDENT << " * @throws io.qt.QNoSuchSignalException if signal is not available" << Qt::endl;
+                s << INDENT << " * @return overloaded signal" << Qt::endl
+                  << INDENT << " * @throws io.qt.QNoSuchSignalException if signal is not available" << Qt::endl;
             }
             s << INDENT << " */" << Qt::endl;
 
             if(signalTypesByArgs[it.key()].size()==1){
-                s << INDENT << annotations << "public final " << parameters << signalTypesByArgs[it.key()].begin().operator *() << parameters << " overload(" << classes.join(", ") << ") throws io.qt.QNoSuchSignalException{" << Qt::endl;
-                s << INDENT << "    return (" << signalTypesByArgs[it.key()].begin().operator *() << parameters << ")super.overload(" << vars.join(", ") << ");" << Qt::endl;
-                s << INDENT << "}" << Qt::endl << Qt::endl;
+                s << INDENT << annotations << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << signalTypesByArgs[it.key()].begin().operator *() << parameters << " overload(" << classes.join(", ") << ") throws io.qt.QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return (" << signalTypesByArgs[it.key()].begin().operator *() << parameters << ")super.overload(" << vars.join(", ") << ");" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl;
             }else{
-                s << INDENT << annotations << "public final " << parameters << "io.qt.core.QMetaObject.AbstractPrivateSignal" << it.key() << parameters << " overload(" << classes.join(", ") << ") throws io.qt.QNoSuchSignalException{" << Qt::endl;
-                s << INDENT << "    return super.overload(" << vars.join(", ") << ");" << Qt::endl;
-                s << INDENT << "}" << Qt::endl << Qt::endl;
+                s << INDENT << annotations << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.AbstractPrivateSignal" << it.key() << parameters << " overload(" << classes.join(", ") << ") throws io.qt.QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return super.overload(" << vars.join(", ") << ");" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl;
+            }
+
+            if(it.key()>0){
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Initializes a connection to the <i>slot</i>." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param slot the slot to be connected" << Qt::endl
+                  << INDENT << " * @param connectionType type of connection" << Qt::endl
+                  << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                  << INDENT << " * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                  << INDENT << " * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Slot" << it.key() << parameters << " slot, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Removes the connection to the given <i>slot</i>." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param slot the slot to be disconnected" << Qt::endl
+                  << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.Slot" << it.key() << parameters << " slot) {" << Qt::endl
+                  << INDENT << "    return super.disconnect(slot);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second" << Qt::endl
+                  << INDENT << " * signal to be emitted as well." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param signal The second signal. This will be emitted whenever this signal is emitted." << Qt::endl
+                  << INDENT << " * @param connectionType One of the connection types defined in the Qt interface." << Qt::endl
+                  << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                  << INDENT << " * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Connectable" << it.key() << parameters << " signal, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return super.connect((io.qt.core.QMetaObject.AbstractSignal)signal, connectionType);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Disconnects a signal from another signal if the two were previously connected by a call to connect." << Qt::endl
+                  << INDENT << " * A call to this function will assure that the emission of the first signal will not cause the emission of the second." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param signal The second signal." << Qt::endl
+                  << INDENT << " * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.Connectable" << it.key() << parameters << " signal) {" << Qt::endl
+                  << INDENT << "    return super.disconnect((io.qt.core.QMetaObject.AbstractSignal)signal);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second" << Qt::endl
+                  << INDENT << " * signal to be emitted as well." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param signal The second signal. This will be emitted whenever this signal is emitted." << Qt::endl
+                  << INDENT << " * @param connectionType One of the connection types defined in the Qt interface." << Qt::endl
+                  << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                  << INDENT << " * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.AbstractPublicSignal" << it.key() << parameters << " signal, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return super.connect((io.qt.core.QMetaObject.AbstractSignal)signal, connectionType);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Disconnects a signal from another signal if the two were previously connected by a call to connect." << Qt::endl
+                  << INDENT << " * A call to this function will assure that the emission of the first signal will not cause the emission of the second." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param signal The second signal." << Qt::endl
+                  << INDENT << " * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.AbstractPublicSignal" << it.key() << parameters << " signal) {" << Qt::endl
+                  << INDENT << "    return super.disconnect((io.qt.core.QMetaObject.AbstractSignal)signal);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl;
+                for(qint64 i = it.key()-1; i>0; --i){
+                    if(!argumentCountMap.contains(i) && !writtenConnects.contains(i)){
+                        writtenConnects.insert(i);
+                        QString parameters;
+                        QStringList parameterClasses;
+                        QStringList classes;
+                        QStringList vars;
+                        if(i>0){
+                            QStringList params;
+                            for(int j=0; j<i; j++){
+                                QString letter = QString(QChar('A'+j));
+                                params << letter;
+                                classes << QString(QLatin1String("Class<%1> type%2")).arg(letter).arg(j+1);
+                                vars << QString(QLatin1String("type%1")).arg(j+1);
+                                parameterClasses << QString(QLatin1String("(Class<%1>)parameters[%2]")).arg(letter).arg(j);
+                            }
+                            parameters = QString(QLatin1String("<%1>")).arg(params.join(","));
+                        }
+                        s << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Initializes a connection to the <i>slot</i>." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param slot the slot to be connected" << Qt::endl
+                          << INDENT << " * @param connectionType type of connection" << Qt::endl
+                          << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                          << INDENT << " * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                          << INDENT << " * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Slot" << i << parameters << " slot, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{" << Qt::endl
+                          << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Removes the connection to the given <i>slot</i>." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param slot the slot to be disconnected" << Qt::endl
+                          << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.Slot" << i << parameters << " slot) {" << Qt::endl
+                          << INDENT << "    return super.disconnect(slot);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second" << Qt::endl
+                          << INDENT << " * signal to be emitted as well." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param signal The second signal. This will be emitted whenever this signal is emitted." << Qt::endl
+                          << INDENT << " * @param connectionType One of the connection types defined in the Qt interface." << Qt::endl
+                          << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                          << INDENT << " * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.AbstractPublicSignal" << i << parameters << " signal, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{" << Qt::endl
+                          << INDENT << "    return super.connect((io.qt.core.QMetaObject.AbstractSignal)signal, connectionType);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Disconnects a signal from another signal if the two were previously connected by a call to connect." << Qt::endl
+                          << INDENT << " * A call to this function will assure that the emission of the first signal will not cause the emission of the second." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param signal The second signal." << Qt::endl
+                          << INDENT << " * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.AbstractPublicSignal" << i << parameters << " signal) {" << Qt::endl
+                          << INDENT << "    return super.disconnect((io.qt.core.QMetaObject.AbstractSignal)signal);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl;
+                    }
+                }
             }
         }
 
         for(AbstractMetaFunction* java_function : signalList){
-            if (!java_function->isPrivateSignal()){
-                QString comment;
-                QTextStream commentStream(&comment);
-                if(!java_function->brief().isEmpty()){
-                    commentStream << "<p>" << QString(java_function->brief())
+            QString comment;
+            QTextStream commentStream(&comment);
+            if(!java_function->brief().isEmpty()){
+                commentStream << "<p>" << QString(java_function->brief())
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                              << "</p>" << Qt::endl;
+            }
+            if(!java_function->href().isEmpty()){
+                QString url = docsUrl+java_function->href();
+                commentStream << "<p>See <a href=\"" << url << "\">";
+                if(java_function->declaringClass())
+                    commentStream << java_function->declaringClass()->qualifiedCppName()
+                                     .replace("<JObjectWrapper>", "")
+                                     .replace("QtJambi", "Q")
+                                     .replace("QVoid", "Q")
                                      .replace("&", "&amp;")
                                      .replace("<", "&lt;")
                                      .replace(">", "&gt;")
@@ -2881,86 +3042,102 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
                                      .replace("@", "&commat;")
                                      .replace("/*", "&sol;*")
                                      .replace("*/", "*&sol;")
-                                  << "</p>" << Qt::endl;
+                                  << "::";
+                commentStream << QString(java_function->originalSignature())
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                              << "</a></p>" << Qt::endl;
+            }
+            if(!comment.isEmpty())
+                commentStream << Qt::endl;
+            if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
+                writeDeprecatedComment(commentStream, java_function);
+            }
+            if(!java_function->isPrivateSignal() && !comment.trimmed().isEmpty()){
+                s << INDENT << "/**" << Qt::endl;
+                commentStream.seek(0);
+                while(!commentStream.atEnd()){
+                    s << INDENT << " * " << commentStream.readLine() << Qt::endl;
                 }
-                if(!java_function->href().isEmpty()){
-                    QString url = docsUrl+java_function->href();
-                    commentStream << "<p>See <a href=\"" << url << "\">";
-                    if(java_function->declaringClass())
-                        commentStream << java_function->declaringClass()->qualifiedCppName()
-                                         .replace("<JObjectWrapper>", "")
-                                         .replace("QtJambi", "Q")
-                                         .replace("QVoid", "Q")
-                                         .replace("&", "&amp;")
-                                         .replace("<", "&lt;")
-                                         .replace(">", "&gt;")
-                                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                         .replace("@", "&commat;")
-                                         .replace("/*", "&sol;*")
-                                         .replace("*/", "*&sol;")
-                                      << "::";
-                    commentStream << QString(java_function->originalSignature())
-                                     .replace("&", "&amp;")
-                                     .replace("<", "&lt;")
-                                     .replace(">", "&gt;")
-                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                     .replace("@", "&commat;")
-                                     .replace("/*", "&sol;*")
-                                     .replace("*/", "*&sol;")
-                                  << "</a></p>" << Qt::endl;
+                s << INDENT << " */" << Qt::endl;
+            }
+            QStringList classes;
+            bool hasInstantiations = false;
+            for(int i = 0; i < java_function->arguments().size(); i++){
+                QString type = translateType(java_function->arguments().at(i)->type(), java_function->implementingClass(), Option(InitializerListAsArray));
+                auto idx = type.indexOf('<');
+                if(idx>0){
+                    type = type.mid(0, idx);
+                    if(type=="io.qt.core.QList")
+                        type = "java.util.List";
+                    else if(type=="io.qt.core.QMap" || type=="io.qt.core.QHash")
+                        type = "java.util.Map";
+                    else if(type=="io.qt.core.QSet")
+                        type = "java.util.Set";
+                    hasInstantiations = true;
                 }
-                if(!comment.isEmpty())
-                    commentStream << Qt::endl;
-                if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
-                    writeDeprecatedComment(commentStream, java_function);
+                classes << type+".class";
+            }
+            m_exportedPackages.clear();
+            QString sig = functionSignature(java_function,
+                                            java_function->isPrivateSignal() ? AbstractMetaAttributes::Private : AbstractMetaAttributes::Public,
+                                            ( java_function->isPrivateSignal() ? AbstractMetaAttributes::Public : 0 ) | AbstractMetaAttributes::Native,
+                                            Option(), -1, "emit");// << "public final void emit("
+            bool exp = false;
+            for(const QString& pkg : m_exportedPackages){
+                if(pkg!=java_function->implementingClass()->package()
+                        && !pkg.isEmpty()
+                        && m_typeSystemByPackage[pkg]
+                        && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
+                        && !pkg.startsWith("io.qt.internal")
+                        && pkg!="io.qt"){
+                    exp = true;
+                    break;
                 }
-                if(!comment.trimmed().isEmpty()){
-                    s << INDENT << "/**" << Qt::endl;
-                    commentStream.seek(0);
-                    while(!commentStream.atEnd()){
-                        s << INDENT << " * " << commentStream.readLine() << Qt::endl;
-                    }
-                    s << INDENT << " */" << Qt::endl;
-                }
-                QStringList classes;
-                bool hasInstantiations = false;
-                for(int i = 0; i < java_function->arguments().size(); i++){
-                    QString type = translateType(java_function->arguments().at(i)->type(), java_function->implementingClass(), Option(InitializerListAsArray));
-                    auto idx = type.indexOf('<');
-                    if(idx>0){
-                        type = type.mid(0, idx);
-                        if(type=="io.qt.core.QList")
-                            type = "java.util.List";
-                        else if(type=="io.qt.core.QMap" || type=="io.qt.core.QHash")
-                            type = "java.util.Map";
-                        else if(type=="io.qt.core.QSet")
-                            type = "java.util.Set";
-                        hasInstantiations = true;
-                    }
-                    classes << type+".class";
-                }
-                m_exportedPackages.clear();
-                QString sig = functionSignature(java_function, AbstractMetaAttributes::Public, AbstractMetaAttributes::Native, Option(), -1, "emit");// << "public final void emit("
-                bool exp = false;
-                for(const QString& pkg : m_exportedPackages){
-                    if(pkg!=java_function->implementingClass()->package()
-                            && !pkg.isEmpty()
-                            && m_typeSystemByPackage[pkg]
-                            && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
-                            && !pkg.startsWith("io.qt.internal")
-                            && pkg!="io.qt"){
-                        exp = true;
-                        break;
-                    }
-                }
-                if(exp){
-                    if(hasInstantiations)
+            }
+            if(exp){
+                if(hasInstantiations){
+                    if(java_function->isPrivateSignal())
+                        s << INDENT << "@SuppressWarnings({\"exports\", \"unchecked\", \"rawtypes\", \"unused\" })" << Qt::endl;
+                    else
                         s << INDENT << "@SuppressWarnings({\"exports\", \"unchecked\", \"rawtypes\" })" << Qt::endl;
-                }else if(hasInstantiations)
+                }
+            }else if(hasInstantiations){
+                if(java_function->isPrivateSignal())
+                    s << INDENT << "@SuppressWarnings({ \"unchecked\", \"rawtypes\", \"unused\" })" << Qt::endl;
+                else
                     s << INDENT << "@SuppressWarnings({ \"unchecked\", \"rawtypes\" })" << Qt::endl;
-                s << sig;
-                //writeFunctionArguments(s, java_function, java_function->arguments().size(), Option());
-                s << " {" << Qt::endl;
+            }else if(java_function->isPrivateSignal())
+                s << INDENT << "@SuppressWarnings(\"unused\")" << Qt::endl;
+
+            s << sig;
+            s << " {" << Qt::endl;
+            if (java_function->isPrivateSignal()){
+                s << INDENT << "    io.qt.core.QObject.emit((";
+                if(hasInstantiations){
+                    QString signalType = signalTypes.value(java_function);
+                    auto idx = signalType.indexOf('<');
+                    if(idx>0){
+                        signalType = signalType.mid(0, idx);
+                    }
+                    s << signalType;
+                }else{
+                    s << signalTypes.value(java_function);
+                }
+                s << ")overload(";
+                s << classes.join(", ") << "), ";
+                for(int i = 0; i < java_function->arguments().size(); i++){
+                    if(i!=0)
+                        s << ", ";
+                    s << java_function->arguments().at(i)->modifiedArgumentName();
+                }
+                s << ");" << Qt::endl;
+            }else{
                 s << INDENT << "    ((";
                 if(hasInstantiations){
                     QString signalType = signalTypes.value(java_function);
@@ -2980,9 +3157,12 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
                     s << java_function->arguments().at(i)->modifiedArgumentName();
                 }
                 s << ");" << Qt::endl;
-                s << INDENT << "}" << Qt::endl << Qt::endl;
-                writeFunctionOverloads(s, java_function, AbstractMetaAttributes::Public, AbstractMetaAttributes::Native, Option(NoOption), "emit");
             }
+            s << INDENT << "}" << Qt::endl << Qt::endl;
+            writeFunctionOverloads(s, java_function,
+                                   java_function->isPrivateSignal() ? AbstractMetaAttributes::Private : AbstractMetaAttributes::Public,
+                                   ( java_function->isPrivateSignal() ? AbstractMetaAttributes::Public : 0 ) | AbstractMetaAttributes::Native,
+                                   Option(NoOption), "emit");
         }
     }
     s << INDENT << "};" << Qt::endl << Qt::endl;
@@ -3419,15 +3599,37 @@ void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *ja
                                  .replace("*/", "*&sol;")
                               << "::";
             }
-            commentStream << QString(java_function->originalSignature())
-                             .replace("&", "&amp;")
-                             .replace("<", "&lt;")
-                             .replace(">", "&gt;")
-                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                             .replace("@", "&commat;")
-                             .replace("/*", "&sol;*")
-                             .replace("*/", "*&sol;")
-                          << "</a></p>" << Qt::endl;
+            if(!java_function->originalSignature().isEmpty()){
+                commentStream << QString(java_function->originalSignature())
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                              << "</a></p>" << Qt::endl;
+            }else if(!java_function->minimalSignature().isEmpty()){
+                commentStream << QString(java_function->minimalSignature())
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                              << "</a></p>" << Qt::endl;
+            }else{
+                commentStream << QString(java_function->name())
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                              << "(...)</a></p>" << Qt::endl;
+            }
         }
     }
     if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
@@ -3602,10 +3804,12 @@ void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *ja
                     s << "return ";
                 }
 
-                if (return_type && return_type->isTargetLangEnum()) {
-                    s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
-                } else if (return_type && return_type->isTargetLangFlags()) {
-                    s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+                if (return_type && new_return_type.isEmpty()) {
+                    if (return_type->isTargetLangEnum()) {
+                        s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
+                    } else if (return_type->isTargetLangFlags()) {
+                        s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+                    }
                 }
             }
 
@@ -3642,7 +3846,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *ja
             s << ")";
 
             // This closed the ".resolve(" or the "new MyType(" fragments
-            if (return_type && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
+            if (return_type && new_return_type.isEmpty() && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
                 s << ")";
 
             s << ";" << Qt::endl;
@@ -4706,7 +4910,7 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFun
             writeDeprecatedComment(commentStream, java_function);
         }
 
-        if(!comment.trimmed().isEmpty() && (_option & InFunctionComment)==0){
+        if(!comment.trimmed().isEmpty() && (_option & InFunctionComment)==0 && !java_function->isPrivateSignal()){
             s << INDENT << "/**" << Qt::endl;
             commentStream.seek(0);
             while(!commentStream.atEnd()){
@@ -5618,10 +5822,12 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                                             s << "return ";
                                         }
 
-                                        if (return_type && return_type->isTargetLangEnum()) {
-                                            s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
-                                        } else if (return_type && return_type->isTargetLangFlags()) {
-                                            s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+                                        if (return_type && new_return_type.isEmpty()) {
+                                            if (return_type->isTargetLangEnum()) {
+                                                s << static_cast<const EnumTypeEntry *>(return_type->typeEntry())->qualifiedTargetLangName() << ".resolve(";
+                                            } else if (return_type->isTargetLangFlags()) {
+                                                s << "new " << return_type->typeEntry()->qualifiedTargetLangName().replace('$', '.') << "(";
+                                            }
                                         }
                                     }
 
@@ -5703,7 +5909,7 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                                     s << ")";
 
                                     // This closed the ".resolve(" or the "new MyType(" fragments
-                                    if (return_type && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
+                                    if (return_type && new_return_type.isEmpty() && (return_type->isTargetLangEnum() || return_type->isTargetLangFlags()))
                                         s << ")";
 
                                     s << ";" << Qt::endl;
@@ -6940,9 +7146,9 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
 
         bool needsSuppressUnusedWarning = TypeDatabase::instance()->includeEclipseWarnings()
                                           && java_function->isSignal()
-                                          && (((excluded_attributes & AbstractMetaAttributes::Private) == 0)
+                                          && ((((excluded_attributes & AbstractMetaAttributes::Private) == 0)
                                               && (java_function->isPrivate()
-                                                  || ((included_attributes & AbstractMetaAttributes::Private) != 0)));
+                                                  || ((included_attributes & AbstractMetaAttributes::Private) != 0))) || java_function->isPrivateSignal());
 
         bool needsSuppressExportsWarning = false;
 
@@ -6957,6 +7163,7 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
                         && !pkg.isEmpty()
                         && m_typeSystemByPackage[pkg]
                         && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
+                        && m_typeSystemByPackage[pkg]!=m_typeSystemByPackage[java_function->implementingClass()->package()]
                         && !pkg.startsWith("io.qt.internal")
                         && pkg!="io.qt"){
                     needsSuppressExportsWarning = true;

@@ -76,7 +76,8 @@ public class CreateNativeDeploymentTask extends Task {
         List<String> _libraries = Collections.emptyList();
         int qtMajorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
         int qtMinorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
-        int qtPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_PATCHLEVEL));
+//        int qtPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_PATCHLEVEL));
+        int qtjambiPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.patchversion"));
 		try {
 			java.io.File directory = new java.io.File(outputDirectory);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -90,7 +91,7 @@ public class CreateNativeDeploymentTask extends Task {
 			java.io.File builddir = new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.builddir"));
 			doc.getDocumentElement().setAttribute("module", moduleName);
 			doc.getDocumentElement().setAttribute("system", AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME));
-			doc.getDocumentElement().setAttribute("version", AntUtil.getPropertyAsString(propertyHelper, "qtjambi.version"));
+			doc.getDocumentElement().setAttribute("version", String.format("%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion));
 			doc.getDocumentElement().setAttribute("compiler", AntUtil.getPropertyAsString(propertyHelper, "qtjambi.compiler"));
 			doc.getDocumentElement().setAttribute("configuration", debug ? "debug" : "release");
 			doc.getDocumentElement().setAttribute("date", AntUtil.getPropertyAsString(propertyHelper, "DSTAMP"));
@@ -175,7 +176,7 @@ public class CreateNativeDeploymentTask extends Task {
 					}
 					break;
 				default:
-					libName = LibraryEntry.formatQtJambiJniName(name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+					libName = LibraryEntry.formatQtJambiJniName(name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
 					break;
 				}
 				if(!libraryIncludes.isEmpty())

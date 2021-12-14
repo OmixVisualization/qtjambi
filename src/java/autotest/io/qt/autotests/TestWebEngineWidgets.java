@@ -28,27 +28,22 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QTimer;
-import io.qt.core.QUrl;
-import io.qt.core.Qt;
-import io.qt.gui.QGuiApplication;
-import io.qt.webengine.QtWebEngine;
-import io.qt.webengine.widgets.QWebEngineView;
-import io.qt.widgets.QApplication;
+import io.qt.QtUtilities;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.webengine.core.*;
+import io.qt.webengine.widgets.*;
+import io.qt.widgets.*;
 
-public class TestWebEngine extends QApplicationTest {
+public class TestWebEngineWidgets extends QApplicationTest {
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	QtWebEngine.initialize();
-    	if(QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.MacOS)
-    		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+    	QtUtilities.initializePackage("io.qt.webengine.widgets");
         QApplicationTest.testInitialize();
     	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
@@ -59,19 +54,24 @@ public class TestWebEngine extends QApplicationTest {
 		} catch (ClassNotFoundException e) {
 		}
     	assumeTrue("QWebEngineView not available.", found);
+    	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
     }
 
     @Test
     public void test() {
+    	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
+        QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
+        QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
     	QWebEngineView webView = new QWebEngineView();
-    	webView.setUrl(new QUrl("http://www.qt.io"));
+    	webView.load(new QUrl("http://www.qt.io"));
+    	webView.loadProgress.connect(progress -> { if(progress>95) webView.close(); });
     	webView.show();
-    	webView.loadFinished.connect(b -> QTimer.singleShot(10, ()->{webView.close(); QApplication.quit();}) );
+    	QTimer.singleShot(25000, QApplication::quit);
     	QApplication.exec();
     	webView.dispose();
     }
     
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestWebEngine.class.getName());
+        org.junit.runner.JUnitCore.main(TestWebEngineWidgets.class.getName());
     }
 }

@@ -294,6 +294,9 @@ public class CreatePOMTask extends Task {
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
 							dependencyEl.appendChild(dversion);
+							Element opt = doc.createElement("optional");
+							opt.setTextContent("true");
+							dependencyEl.appendChild(opt);
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
@@ -324,6 +327,9 @@ public class CreatePOMTask extends Task {
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
 							dependencyEl.appendChild(dversion);
+							Element opt = doc.createElement("optional");
+							opt.setTextContent("true");
+							dependencyEl.appendChild(opt);
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
@@ -337,9 +343,6 @@ public class CreatePOMTask extends Task {
 							Element family = doc.createElement("family");
 							family.setTextContent("mac");
 							os.appendChild(family);
-							Element arch = doc.createElement("arch");
-							arch.setTextContent("amd64");
-							os.appendChild(arch);
 							activation.appendChild(os);
 							profile.appendChild(activation);
 							Element dependencies = doc.createElement("dependencies");
@@ -354,6 +357,9 @@ public class CreatePOMTask extends Task {
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
 							dependencyEl.appendChild(dversion);
+							Element opt = doc.createElement("optional");
+							opt.setTextContent("true");
+							dependencyEl.appendChild(opt);
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
@@ -379,6 +385,11 @@ public class CreatePOMTask extends Task {
 								Element dversion = doc.createElement("version");
 								dversion.setTextContent(qtjambiVersion);
 								dependencyEl.appendChild(dversion);
+								if(!"qtjambi".equals(dependency) && !"qtjambi-jre8".equals(dependency)) {
+									Element opt = doc.createElement("optional");
+									opt.setTextContent("true");
+									dependencyEl.appendChild(opt);
+								}
 								dependencies.appendChild(dependencyEl);
 							}
 						}

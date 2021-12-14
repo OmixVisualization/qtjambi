@@ -69,6 +69,7 @@ ComplexTypeEntry::ComplexTypeEntry(const QString &name, Type t)
         m_polymorphic_base(false),
         m_generic_class(false),
         m_isTemplate(false),
+        m_isNativeInterface(false),
         m_inhibitMetaobject(false),
         m_isNativeIdBased(useNativeIds),
         m_type_flags() {
@@ -166,6 +167,20 @@ QString FlagsTypeEntry::qualifiedTargetLangJNIName() const {
             );
 }
 
+QString FunctionalTypeEntry::javaPackage() const {
+    if(!m_qualifier_type)
+        m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+    if (m_qualifier_type){
+        if(m_qualifier_type->isVariant())
+            return "io.qt.core";
+        if(m_qualifier_type->designatedInterface()){
+            return m_qualifier_type->designatedInterface()->javaPackage();
+        }
+        return m_qualifier_type->javaPackage().isEmpty() ? m_package_name : m_qualifier_type->javaPackage();
+    }else
+        return m_package_name;
+}
+
 QString FunctionalTypeEntry::javaQualifier() const {
     if(!m_qualifier_type)
         m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
@@ -178,6 +193,20 @@ QString FunctionalTypeEntry::javaQualifier() const {
         return m_qualifier_type->targetLangName();
     }else
         return m_qualifier;
+}
+
+QString EnumTypeEntry::javaPackage() const {
+    if(!m_qualifier_type)
+        m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+    if (m_qualifier_type){
+        if(m_qualifier_type->isVariant())
+            return "io.qt.core";
+        if(m_qualifier_type->designatedInterface()){
+            return m_qualifier_type->designatedInterface()->javaPackage();
+        }
+        return m_qualifier_type->javaPackage().isEmpty() ? m_package_name : m_qualifier_type->javaPackage();
+    }else
+        return m_package_name;
 }
 
 QString EnumTypeEntry::javaQualifier() const {

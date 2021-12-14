@@ -77,6 +77,20 @@
                     };
         }
     </template>
+    <template name="core.supplier.function">
+        std::function&lt;%TYPE()> %out;
+        if(%in){
+            JObjectWrapper wrapper(%env, %in);
+            %out = [wrapper]() -> %TYPE {
+                        if(JNIEnv *env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                            jobject value = Java::Runtime::Supplier::get(env, wrapper.object());
+                            return qtjambi_cast&lt;%TYPE>(env, value);
+                        }
+                        return {};
+                    };
+        }
+    </template>
     <template name="core.AtomicReference_to_ptr">
     %TYPE* %out = nullptr;
     if(%in){
@@ -2570,6 +2584,7 @@
   <object-type name="QCoreApplication">
       <extra-includes>
           <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+          <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
           <include file-name="QtCore/private/qthread_p.h" location="global"/>
           <include file-name="QtCore/private/qcoreapplication_p.h" location="global"/>
           <include file-name="qtjambi_core_repository.h" location="local"/>
@@ -2628,6 +2643,9 @@
       <inject-code>
           <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QCoreApplication___" quote-before-line="}// class"/>
       </inject-code>
+      <inject-code since="6.2.0">
+          <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QCoreApplication__62_" quote-before-line="}// class"/>
+      </inject-code>
 
         <modify-function signature="translate(const char*,const char*,const char*,int)">
             <modify-argument index="1">
@@ -2638,6 +2656,38 @@
             </modify-argument>
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolveInterface(const char *, int)const" access="private">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    if(inherits("QGuiApplication")){
+                        bool classNotFound = false;
+                        try{
+                            Java::QtGui::QGuiApplication::getClass(%env);
+                        }catch(...){
+                            classNotFound = true;
+                        }
+                        if(!classNotFound)
+                            return Java::QtGui::QGuiApplication::resolveInterface(%env, qtjambi_java_object_reference(__this_nativeId, %env), %in);
+                    }
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
             </modify-argument>
         </modify-function>
   </object-type>
@@ -3980,6 +4030,12 @@
                         return qtjambi_cast&lt;jobject>(__jni_env, QByteArray(newName));
                 }
             </inject-code>
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    %in.detach();
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
         </modify-function>
     </value-type>
     <value-type name="QMetaProperty">
@@ -4811,4 +4867,6 @@
     <object-type name="QAbstractFileEngine" package="io.qt.internal.fileengine"/>
     <object-type name="QAbstractFileEngineHandler" package="io.qt.internal.fileengine"/>
     <object-type name="QAbstractFileEngineIterator" package="io.qt.internal.fileengine"/>-->
+    <interface-type name="QNativeInterface::QAndroidApplication" java-name="QAndroidApplication" package="io.qt.core.nativeinterface" is-native-interface="yes">
+    </interface-type>
 </typesystem>

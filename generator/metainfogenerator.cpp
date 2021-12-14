@@ -637,11 +637,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
             nativeLibs[baseTypeSystem].insert(0, "QtJambi");
         }
 
-        const QString jarversion = QString("-%1.%2").arg(QString::number((m_qtVersion & 0xff0000) >> 16)).arg(QString::number((m_qtVersion & 0xff00) >> 8));
         for(const QString& moduleName : allTypeSystems.keys()){
             if(!moduleName.isEmpty() && !allTypeSystems[moduleName].isEmpty()){
-                QStringList modulePath;
-                QStringList modulePath8;
                 QStringList dependentModules;
                 QStringList bundledLibraries;
                 QString description;
@@ -682,15 +679,12 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         QList<QString> entries = requiredTypeSystems[typeSystem];
                         entries.removeDuplicates();
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::Position2, INDENT);
-                        for(QString e : entries){
+                        for(const QString& e : entries){
                             if(e=="qtjambi")
                                 fileOut.stream << "    requires transitive " << e << ";" << Qt::endl;
                             else
                                 fileOut.stream << "    requires " << e << ";" << Qt::endl;
                             dependentModules << e;
-                            e = e.replace('.', '-');
-                            modulePath << e + jarversion + ".jar";
-                            modulePath8 << e + "-jre8" + jarversion + ".jar";
                         }
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::Position3, INDENT);
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::End, INDENT);
@@ -719,13 +713,14 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 QSettings settings(javaOutputDirectory() + "/" + moduleName + "/build.properties", QSettings::IniFormat);
                 settings.clear();
                 settings.setValue("qtjambi.module.description", description);
-                if(dependentModules.isEmpty())
+                if(!dependentModules.isEmpty())
                     settings.setValue("qtjambi.required.modules", dependentModules);
                 else
                     settings.setValue("qtjambi.required.modules", "");
-                settings.setValue("qtjambi.java.module.path", modulePath);
-                settings.setValue("qtjambi.java8.class.path", modulePath8);
-                settings.setValue("qtjambi.bundle.libraries", bundledLibraries);
+                if(!bundledLibraries.isEmpty())
+                    settings.setValue("qtjambi.bundle.libraries", bundledLibraries);
+                else
+                    settings.setValue("qtjambi.bundle.libraries", "");
                 if(!moduleExcludes.isEmpty())
                     settings.setValue("qtjambi.jar.excludes", moduleExcludes);
                 else

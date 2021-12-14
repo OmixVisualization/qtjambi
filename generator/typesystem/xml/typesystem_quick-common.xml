@@ -43,10 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtQuick" description="A declarative framework for building highly dynamic applications with custom user interfaces.">
-    <rejection class="QSGTexture" function-name="resolveInterface" since="6.2.0"/>
-    <rejection class="QNativeInterface::QSGD3D11Texture::TypeInfo"/>
-    <rejection class="QNativeInterface::QSGOpenGLTexture::TypeInfo"/>
-    <rejection class="QNativeInterface::TypeInfo"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_mipmap_filtering"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_filtering"/>
@@ -719,11 +715,34 @@
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::BlendFactor" since="6.0.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialShader::GraphicsPipelineState::ColorMask" since="6.0.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::CullMode" since="6.0.0"/>
-    <namespace-type name="QNativeInterface" since="6.0.0" generate="no">
-        <modify-function signature="lcNativeInterface()" remove="all" since="6.2.0"/>
-    </namespace-type>
-    <interface-type name="QNativeInterface::QSGOpenGLTexture" java-name="QSGOpenGLTexture" pp-condition="QT_CONFIG(opengl)" since="6.0.0"/>
-    <interface-type name="QNativeInterface::QSGD3D11Texture" java-name="QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" since="6.0.0"/>
+
+    <rejection class="QNativeInterface::QSGOpenGLTexture::TypeInfo"/>
+    <interface-type name="QNativeInterface::QSGOpenGLTexture" pp-condition="QT_CONFIG(opengl)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QSGOpenGLTexture()" remove="all"/>
+    </interface-type>
+    <rejection class="QNativeInterface::QSGD3D11Texture::TypeInfo"/>
+    <interface-type name="QNativeInterface::QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QSGD3D11Texture()" remove="all"/>
+    </interface-type>
+    <value-type name="MTLTexture" generate="no" since="6.2.0"/>
+    <object-type name="id" template="yes" since="6.2.0">
+        <instantiation arguments="MTLTexture"/>
+    </object-type>
+    <object-type name="id&lt;MTLTexture>" generate="no" since="6.2.0"/>
+    <rejection class="QNativeInterface::QSGMetalTexture::TypeInfo"/>
+    <interface-type name="QNativeInterface::QSGMetalTexture" pp-condition="defined(__OBJC__)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QSGMetalTexture()" remove="all"/>
+    </interface-type>
+    <object-type name="VkImage" generate="no"/>
+    <object-type name="VkImageLayout" generate="no"/>
+    <rejection class="QNativeInterface::QSGVulkanTexture::TypeInfo"/>
+    <interface-type name="QNativeInterface::QSGVulkanTexture" pp-condition="QT_CONFIG(vulkan)" generate="no-shell" since="6.2.0">
+        <modify-function signature="QSGVulkanTexture()" remove="all"/>
+    </interface-type>
+    <rejection class="QNativeInterface::QSGVulkanTexture" function-name="fromNative"/>
+    <rejection class="QNativeInterface::QSGMetalTexture" function-name="fromNative"/>
+    <rejection class="QNativeInterface::QSGD3D11Texture" function-name="fromNative"/>
+    
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />

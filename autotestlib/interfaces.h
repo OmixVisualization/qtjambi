@@ -69,6 +69,8 @@ public:
     static QString callMethod3(TestAbstractClass* cls);
     static QString callMethod4(TestAbstractClass* cls);
     static QString callMethod5(TestAbstractClass* cls);
+    static QObject* createInterfaceImplementingQObject(QObject* parent = nullptr);
+    static class TestInterface* createQObjectInheritingInterface(QObject* parent = nullptr);
 };
 
 class TestInterface

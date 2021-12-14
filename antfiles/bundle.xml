@@ -644,7 +644,6 @@
     <delete file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/qtjambi-deployment.xml" failonerror="false"/>
   </target>
   <target name="javadocs" depends="init.build" description="Generates the Java Doc pages for QtJambi">
-    <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
     <delete dir="${outputDir}/javadocs" failonerror="no"/>
     <mkdir dir="${outputDir}/javadocs"/>
     <tstamp>
@@ -687,7 +686,7 @@
             version="true"
             sourcefiles="${java.source.files.flat}">
               <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
-                <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                <doctitle>QtJambi ${qtjambi.soname.version.major}.${qtjambi.soname.version.minor} Reference Documentation</doctitle>
                 <bottom><![CDATA[
                             <font size="-2">QtJambi Reference Documentation<br>
                             The documentation provided herein is licensed under the terms of the 
@@ -728,7 +727,7 @@
             version="true"
             sourcefiles="${java.source.files.flat}">
               <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
-                <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                <doctitle>QtJambi ${qtjambi.soname.version.major}.${qtjambi.soname.version.minor} Reference Documentation</doctitle>
                 <bottom><![CDATA[
                             <font size="-2">QtJambi Reference Documentation<br>
                             The documentation provided herein is licensed under the terms of the 

@@ -21,12 +21,16 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
 package io.qt.core;
+
+import io.qt.InternalAccess.Cleanable;
+import io.qt.QtUninvokable;
 
 /**
  * <p>QScopeGuard is a class of which the sole purpose is to run the function <code>f</code> at the end of a try-with-resource block.
@@ -45,29 +49,50 @@ package io.qt.core;
  * }
  * </code>
  */
-public class QScopeGuard implements AutoCloseable{
+public final class QScopeGuard implements AutoCloseable {
+	
+	private static class Data{
+		private Runnable data;
+		private Cleanable cleanable;
+		
+	    @QtUninvokable
+		void close(){
+			if(data!=null) {
+				try{
+					data.run();
+				}finally{
+					data = null;
+				}
+			}
+		}
+	}
+
+	private final Data data = new Data();
+	
 	/**
 	 * Create a scope guard that will execute <code>function</code> at the end of the scope.
 	 * @param function runnable to be executed
 	 */
-	public QScopeGuard(Runnable function) {
-		super();
-		this.function = function;
+	public QScopeGuard(Runnable runnable) {
+		this.data.data = runnable;
+		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
 	}
 
 	@Override
-	public void close() {
-		if(function != null)
-			function.run();
+    @QtUninvokable
+	public void close(){
+		data.close();
+		if(this.data.cleanable!=null)
+			this.data.cleanable.clean();
 	}
 	
 	/**
 	 * Disarms the scope guard, so that the function F will not be called at the end of the scope.
 	 */
-	public void dismiss()
-    {
-		function = null;
-    }
-
-	private Runnable function;
+	@QtUninvokable
+	public void dismiss() {
+		data.data = null;
+		if(this.data.cleanable!=null)
+			this.data.cleanable.clean();
+	}
 }

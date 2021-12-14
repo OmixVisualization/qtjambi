@@ -156,11 +156,11 @@ public class TestNetworkInjectedCode extends QApplicationTest {
         }
 
 		public void firstSlot(QHostInfo info) {
-            fromFirstSlot = info.addresses().get(0).toString();
+            fromFirstSlot = info.addresses().isEmpty() ? "" : info.addresses().get(0).toString();
         }
 
         public void secondSlot(QHostInfo info) {
-            fromSecondSlot = info.addresses().get(0).toString();
+            fromSecondSlot = info.addresses().isEmpty() ? "" : info.addresses().get(0).toString();
         }
     }
 
@@ -190,11 +190,57 @@ public class TestNetworkInjectedCode extends QApplicationTest {
     }
 
     @Test
+    public void testLookupHostWithSlotName()
+    {
+        LookupHostQObject helloObject = new LookupHostQObject();
+
+        // This API does not need the extra argument only the method name
+        QHostInfo.lookupHost("qt.io", helloObject, "firstSlot(QHostInfo)");
+        int i = 0;
+        while (helloObject.fromFirstSlot.length() == 0 && i < 100) {
+            QCoreApplication.processEvents();
+            try {
+                Thread.sleep(100);
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+            i++;
+        }
+
+        // Was: 62.70.27.67 (pre 02-Aug-2011)
+        // Now: 62.116.130.8 (since 22-08-2015)
+        // Now: 52.18.144.254 (since ???)
+        assertEquals("52.18.144.254", helloObject.fromFirstSlot);
+        Utils.println(2, "RESULT: " + helloObject.fromFirstSlot + " for " + "qt.io");
+    }
+
+    @Test
     public void testLookupHostWithSignal()
     {
         LookupHostQObject helloObject = new LookupHostQObject();
 
-        QHostInfo.lookupHost("qt.io", helloObject.mySignal::emit);
+        QHostInfo.lookupHost("qt.io", helloObject.mySignal);
+        int i = 0;
+        while (helloObject.fromSecondSlot.length() == 0 && i < 100) {
+            QCoreApplication.processEvents();
+            try {
+                Thread.sleep(100);
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+            i++;
+        }
+
+        assertEquals("52.18.144.254", helloObject.fromSecondSlot);
+        Utils.println(2, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
+    }
+    
+    @Test
+    public void testLookupHostWithSignalName()
+    {
+        LookupHostQObject helloObject = new LookupHostQObject();
+
+        QHostInfo.lookupHost("qt.io", helloObject, "mySignal(QHostInfo)");
         int i = 0;
         while (helloObject.fromSecondSlot.length() == 0 && i < 100) {
             QCoreApplication.processEvents();

@@ -43,10 +43,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtScxml" description="Provides classes and tools for creating state machines from SCXML files and embedding them in applications.">
-    <rejection class="QScxmlStateMachine" function-name="connectToEvent"/>
     <rejection class="QScxmlStateMachine" function-name="onExit"/>
     <rejection class="QScxmlStateMachine" function-name="onEntry"/>
-    <rejection class="QScxmlStateMachine" function-name="connectToState"/>
   <namespace-type name="QScxmlExecutableContent">
   </namespace-type>
   <value-type name="QScxmlExecutableContent::AssignmentInfo">

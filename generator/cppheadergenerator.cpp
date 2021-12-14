@@ -544,7 +544,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             }
         }
 
-        if(needsAccess){
+        if(needsAccess && java_class->generateShellClass()){
             s << "struct " << java_class->name() + "_access"
               << " : public " << java_class->qualifiedCppName() << Qt::endl
               << "{" << Qt::endl;

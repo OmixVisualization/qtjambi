@@ -190,7 +190,7 @@ const QObject* qtjambi_get_owner(const QGraphicsLayoutItem* __qt_this){
     }else if(__qt_this->parentLayoutItem()){
         return qtjambi_get_owner(__qt_this->parentLayoutItem());
     }else{
-        return nullptr;
+        return dynamic_cast<const QObject*>(__qt_this);
     }
 }
 
@@ -204,7 +204,7 @@ const QObject* qtjambi_get_owner(const QGraphicsItem* __qt_this)
         return __qt_this->parentObject();
     }else if(__qt_this->parentItem()){
         return qtjambi_get_owner(__qt_this->parentItem());
-    }else return nullptr;
+    }else return dynamic_cast<const QObject*>(__qt_this);
 }
 
 const QObject* qtjambi_get_owner(const QTreeWidgetItemIterator* iter)

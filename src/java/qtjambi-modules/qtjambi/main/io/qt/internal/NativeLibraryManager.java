@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -135,13 +134,9 @@ final class NativeLibraryManager {
 
     private static final boolean VERBOSE_LOADING = Boolean.getBoolean("io.qt.verbose-loading") || Boolean.getBoolean("qtjambi.verbose-loading");
 
-    private static final int[] versionA;
-    public static final String VERSION_STRING;
+    private static final int[] versionA = {QtJambiVersion.qtMajorVersion, QtJambiVersion.qtMinorVersion};
     public static final String ICU_VERSION;
     public static final String LIBINFIX;
-    public static final String VERSION_MAJOR_STRING;
-    public static final int VERSION_MAJOR;
-    public static final int VERSION_MINOR;
     // We use a List<> to make the collection read-only an array would not be suitable
     private static final List<String> systemLibrariesList;
     private static final List<String> jniLibdirBeforeList;
@@ -181,47 +176,22 @@ final class NativeLibraryManager {
         jambiTempDir = new File(tmpDir, "QtJambi_" + System.getProperty("user.name") + "_" + RetroHelper.processName());
 		
     	reporter.setReportEnabled(VERBOSE_LOADING);
-        int[] tmpVERSION_A = null;
-        String tmpVERSION_STRING = null;
         String tmpICUVERSION_STRING = null;
-        String tmpINFIX_STRING = "5";
-        String tmpVERSION_MAJOR_STRING = null;
-        int tmpVERSION_MAJOR = 0;
+        String tmpINFIX_STRING = null;
         List<String> tmpSystemLibrariesList = null;
         List<String> tmpJniLibdirBeforeList = null;
         List<String> tmpJniLibdirList = null;
         try {
-            final Properties props = new Properties();
-            final InputStream in = NativeLibraryManager.class.getResourceAsStream("version.properties");
-            if (in == null)
-                throw new ExceptionInInitializerError("version.properties not found!");
-            try {
-                props.load(in);
-            } catch (Exception ex) {
-                throw new ExceptionInInitializerError("Cannot read properties!");
-            }
-            tmpINFIX_STRING = props.getProperty("qtjambi.libinfix");
-            tmpICUVERSION_STRING = props.getProperty("qtjambi.icu.version", "56");
+            tmpINFIX_STRING = QtJambiVersion.properties.getProperty("qtjambi.libinfix");
+            tmpICUVERSION_STRING = QtJambiVersion.properties.getProperty("qtjambi.icu.version", "56");
             
-            tmpVERSION_STRING = props.getProperty("qtjambi.version");
-            if (tmpVERSION_STRING == null)
-                throw new ExceptionInInitializerError("qtjambi.version is not set!");
-            int dotIndex = tmpVERSION_STRING.indexOf(".");	// "4.7.4" => "4"
-            if(dotIndex > 0)	// don't allow setting it be empty
-                tmpVERSION_MAJOR_STRING = tmpVERSION_STRING.substring(0, dotIndex);
-            else
-                tmpVERSION_MAJOR_STRING = tmpVERSION_STRING;
-
-            tmpVERSION_MAJOR = Integer.parseInt(tmpVERSION_MAJOR_STRING);
-            
-            tmpVERSION_A = getVersion(tmpVERSION_STRING);        	
             SortedMap<String,String> tmpSystemLibrariesMap = new TreeMap<String,String>();
             SortedMap<String,String> tmpJniLibdirBeforeMap = new TreeMap<String,String>();
             SortedMap<String,String> tmpJniLibdirMap = new TreeMap<String,String>();
-            Enumeration<? extends Object> e = props.propertyNames();
+            Enumeration<? extends Object> e = QtJambiVersion.properties.propertyNames();
             while (e.hasMoreElements()) {
                 String key = (String) e.nextElement();
-                String value = props.getProperty(key);
+                String value = QtJambiVersion.properties.getProperty(key);
                 if (key.equals("qtjambi.system.libraries") || key.startsWith("qtjambi.system.libraries.")) {
                     tmpSystemLibrariesMap.put(key, value);
                 } else if(key.equals("qtjambi.jni.libdir.before") || key.startsWith("qtjambi.jni.libdir.before.")) {
@@ -261,11 +231,6 @@ final class NativeLibraryManager {
             java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
         }finally {
         	ICU_VERSION = tmpICUVERSION_STRING;
-            versionA = tmpVERSION_A;
-            VERSION_STRING = tmpVERSION_STRING;
-            VERSION_MAJOR = tmpVERSION_MAJOR;
-            VERSION_MINOR = versionA.length>1 ? versionA[1] : 0;
-            VERSION_MAJOR_STRING = tmpVERSION_MAJOR_STRING;
             systemLibrariesList = tmpSystemLibrariesList;
             jniLibdirBeforeList = tmpJniLibdirBeforeList;
             jniLibdirList = tmpJniLibdirList;
@@ -655,9 +620,9 @@ final class NativeLibraryManager {
                 }
                 spec.setSystem(system);
                 String version = attributes.getValue("version");
-                if(!version.equals(VERSION_MAJOR + "." + VERSION_MINOR) && !version.startsWith(VERSION_MAJOR + "." + VERSION_MINOR + ".")) {
+                if(!version.equals(QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch)) {
                     throw new WrongVersionException("trying to load: '" + version
-                            + "', expected: '" + VERSION_MAJOR + "." + VERSION_MINOR + ".x'");                	
+                            + "', expected: '" + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch + "'");                	
                 }
                 spec.setVersion(version);
                 spec.setModule(attributes.getValue("module"));
@@ -1677,10 +1642,6 @@ final class NativeLibraryManager {
 
     private static String convertAbsolutePathStringToFileUrlString(File file) {
         return convertAbsolutePathStringToFileUrlString(file.getAbsolutePath());
-    }
-
-    static int[] getVersion() {
-        return Arrays.copyOf(versionA, versionA.length);
     }
 
     private static List<String> mergeJniLibdir(List<String> middle) {

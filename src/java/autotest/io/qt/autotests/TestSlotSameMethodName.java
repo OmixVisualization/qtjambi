@@ -48,12 +48,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.qt.QNoSuchSlotException;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEventLoop.ProcessEventsFlag;
 import io.qt.core.QEventLoop.ProcessEventsFlags;
@@ -245,9 +243,9 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 		int i = foo(tabWidget, myNotifiable);
 		int expect = B_CLOSE | B_SHOW;  // We never hooked up our slots in this testcase
-		if((mode & 0x1) == 0x1)
+		if(((mode & 0x1) == 0x1) || ((mode & 0x2) == 0x2))
 			expect |= B_TAB1 | switchTab;	// Tab index=0 is signalled on first show
-		if((mode & 0x2) == 0x2)
+		if((mode & 0x11) == 0x11)
 			expect |= cb2(B_TAB1) | cb2(switchTab);	// Tab index=0 is signalled on first show, callback2
 		assertEquals("i", expect, i);
 		assertEquals("at", expect, myNotifiable.getNotified());
@@ -301,24 +299,12 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 	@Test
 	public void testSlotSameMethodNameSameAuto2() {
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.AutoConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.AutoConnection);
 	}
 
 	@Test
 	public void testSlotSameMethodNameSameAuto3() {
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.AutoConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.AutoConnection);
 	}
 
 
@@ -334,24 +320,12 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 	@Test
 	public void testSlotSameMethodNameSameDirect2() {
-		try{
-			doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.DirectConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.DirectConnection);
 	}
 
 	@Test
 	public void testSlotSameMethodNameSameDirect3() {
-		try{
-			doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.DirectConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.DirectConnection);
 	}
 
 
@@ -367,24 +341,12 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 	@Test
 	public void testSlotSameMethodNameSameQueued2() {
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.QueuedConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.QueuedConnection);
 	}
 
 	@Test
 	public void testSlotSameMethodNameSameQueued3() {
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.QueuedConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
+		doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.QueuedConnection);
 	}
 
 	@Test

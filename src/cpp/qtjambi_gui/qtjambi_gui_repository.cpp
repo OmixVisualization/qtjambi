@@ -26,7 +26,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QTextCursor$SelectedTableCells,
 namespace QtWidgets{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QMenu,
 )
+#if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
+#define QTJAMBI_REPOSITORY_DEFINE_METHOD_QT6(M,P) QTJAMBI_REPOSITORY_DEFINE_METHOD(M,P)
+#else
+#define QTJAMBI_REPOSITORY_DEFINE_METHOD_QT6(M,P)
+#endif
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QApplication,
-                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(exec,()I))
+                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(exec,()I)
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD_QT6(resolveInterface,(Ljava/lang/Class;)Lio/qt/QtObjectInterface;)
+                                )
 }
 }

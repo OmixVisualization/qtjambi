@@ -1171,6 +1171,9 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
         }
         writeInclude(s, java_class->typeEntry()->include(), included);
         writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), included);
+        if(java_class->typeEntry()->isNativeInterface() || (java_class->extractInterface() && java_class->extractInterface()->typeEntry()->isNativeInterface())){
+            writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_nativeinterface.h"), included);
+        }
         writeExtraIncludes(s, java_class, included);
         writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), included);
     }
@@ -1226,16 +1229,29 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
             if(!pps.isEmpty()){
                 s << "#if " << pps.join(" && ") << Qt::endl;
             }
-            s << "    static int result = QMetaMethod::fromSignal(";
+            s << "    static int result = ";
             if(java_class->queryFunctionsByOriginalName(f->originalName()).size()>1){
-                s << "QOverload<" << argumentList << ">::of(";
+                if(f->isPrivateSignal()){
+                    s << f->declaringClass()->typeEntry()->qualifiedCppName()
+                      << "::staticMetaObject.indexOfMethod(\"" << function_name << "("
+                      << argumentList << ")\");" << Qt::endl;
+                }else{
+                    s << "QMetaMethod::fromSignal(";
+                    if(java_class->queryFunctionsByOriginalName(f->originalName()).size()>1){
+                        s << "QOverload<" << argumentList << ">::of(";
+                    }
+                    s << "&" << f->declaringClass()->typeEntry()->qualifiedCppName() << "::" << function_name;
+                    if(java_class->queryFunctionsByOriginalName(f->originalName()).size()>1){
+                        s << ")";
+                    }
+                    s << ").methodIndex();" << Qt::endl;
+                }
+            }else{
+                s << "QMetaMethod::fromSignal(";
+                s << "&" << f->declaringClass()->typeEntry()->qualifiedCppName() << "::" << function_name;
+                s << ").methodIndex();" << Qt::endl;
             }
-            s << "&" << f->declaringClass()->typeEntry()->qualifiedCppName() << "::" << function_name;
-            if(java_class->queryFunctionsByOriginalName(f->originalName()).size()>1){
-                s << ")";
-            }
-            s << ").methodIndex();" << Qt::endl
-              << "    return result;" << Qt::endl;
+            s << "    return result;" << Qt::endl;
             if(!pps.isEmpty()){
                 s << "#else" << Qt::endl;
                 s << "        return -1;" << Qt::endl;
@@ -1262,10 +1278,10 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
 
     for(const AbstractMetaFunction *function : java_class->functionsInTargetLang()) {
         if (
-            (!function->isConstructor() ||
-             !java_class->hasUnimplmentablePureVirtualFunction()) &&
-             !function->isEmptyFunction() &&
-             !function->hasTemplateArgumentTypes()
+            (!function->isConstructor()
+             || !java_class->hasUnimplmentablePureVirtualFunction())
+            && !function->isEmptyFunction()
+            && !function->hasTemplateArgumentTypes()
             )
             functionsInTargetLang << function;
     }
@@ -1436,7 +1452,12 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
         }
     }
 
-    if(!java_class->isNamespace() && !java_class->hasPrivateDestructor() && !java_class->hasJustPrivateConstructors() && !java_class->hasUnimplmentablePureVirtualFunction()){
+    if(!java_class->isNamespace()
+            && !java_class->hasPrivateDestructor()
+            && !java_class->hasJustPrivateConstructors()
+            && !java_class->hasUnimplmentablePureVirtualFunction()
+            && (java_class->generateShellClass() || java_class->hasPublicDestructor())
+            ){
         s << "// destruct " << (instantiateShellClass ? shellClassName(java_class) : java_class->fullQualifiedCppName()) << Qt::endl
           << "void __qt_destruct_" << java_class->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_");
         s << "(void* ptr)" << Qt::endl
@@ -4103,7 +4124,50 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const AbstractMetaFuncti
                     break;
                 case ArgumentRemove_No:
                     {
-                    QString jniType = translateType(argumentType, options);
+                    QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
+                    QString jniType;
+                    if(typeReplaced=="int")
+                        jniType = "jint";
+                    else if(typeReplaced=="long")
+                        jniType = "jlong";
+                    else if(typeReplaced=="short")
+                        jniType = "jshort";
+                    else if(typeReplaced=="byte")
+                        jniType = "jbyte";
+                    else if(typeReplaced=="boolean")
+                        jniType = "jboolean";
+                    else if(typeReplaced=="char")
+                        jniType = "jchar";
+                    else if(typeReplaced=="float")
+                        jniType = "jfloat";
+                    else if(typeReplaced=="double")
+                        jniType = "jdouble";
+                    else if(typeReplaced=="int[]")
+                        jniType = "jintArray";
+                    else if(typeReplaced=="long[]")
+                        jniType = "jlongArray";
+                    else if(typeReplaced=="short[]")
+                        jniType = "jshortArray";
+                    else if(typeReplaced=="byte[]")
+                        jniType = "jbyteArray";
+                    else if(typeReplaced=="boolean[]")
+                        jniType = "jbooleanArray";
+                    else if(typeReplaced=="char[]")
+                        jniType = "jcharArray";
+                    else if(typeReplaced=="float[]")
+                        jniType = "jfloatArray";
+                    else if(typeReplaced=="double[]")
+                        jniType = "jdoubleArray";
+                    else if(typeReplaced.endsWith("[]"))
+                        jniType = "jobjectArray";
+                    else if(typeReplaced.startsWith("java.lang.Class"))
+                        jniType = "jclass";
+                    else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
+                        jniType = "jstring";
+                    else if(!typeReplaced.isEmpty())
+                        jniType = "jobject";
+                    else
+                        jniType = translateType(argumentType, options);
                     s << INDENT << jniType << " " << argument->indexedName() << " = ";
                     bool isJObject = false;
                     if(jniType=="jobjectArray"
@@ -4494,10 +4558,56 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
             argumentRef = "&arguments";
             s << "        jvalue arguments;" << Qt::endl;
             QString jniType;
+            QString argName;
             if(!arguments.isEmpty()){
-                jniType = translateType(arguments.at(0)->type(), NoOption);
+                const AbstractMetaArgument * argument = arguments[0];
+                QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
+                if(typeReplaced=="int")
+                    jniType = "jint";
+                else if(typeReplaced=="long")
+                    jniType = "jlong";
+                else if(typeReplaced=="short")
+                    jniType = "jshort";
+                else if(typeReplaced=="byte")
+                    jniType = "jbyte";
+                else if(typeReplaced=="boolean")
+                    jniType = "jboolean";
+                else if(typeReplaced=="char")
+                    jniType = "jchar";
+                else if(typeReplaced=="float")
+                    jniType = "jfloat";
+                else if(typeReplaced=="double")
+                    jniType = "jdouble";
+                else if(typeReplaced=="int[]")
+                    jniType = "jintArray";
+                else if(typeReplaced=="long[]")
+                    jniType = "jlongArray";
+                else if(typeReplaced=="short[]")
+                    jniType = "jshortArray";
+                else if(typeReplaced=="byte[]")
+                    jniType = "jbyteArray";
+                else if(typeReplaced=="boolean[]")
+                    jniType = "jbooleanArray";
+                else if(typeReplaced=="char[]")
+                    jniType = "jcharArray";
+                else if(typeReplaced=="float[]")
+                    jniType = "jfloatArray";
+                else if(typeReplaced=="double[]")
+                    jniType = "jdoubleArray";
+                else if(typeReplaced.endsWith("[]"))
+                    jniType = "jobjectArray";
+                else if(typeReplaced.startsWith("java.lang.Class"))
+                    jniType = "jclass";
+                else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
+                    jniType = "jstring";
+                else if(!typeReplaced.isEmpty())
+                    jniType = "jobject";
+                else
+                    jniType = translateType(argument->type(), NoOption);
+                argName = argument->indexedName();
             }else{
                 jniType = jniName(addedArguments.at(0)->modified_type);
+                argName = addedArguments.at(0)->modified_name;
             }
             s << "        arguments.";
             if(jniType=="jint")
@@ -4518,16 +4628,56 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
                 s << "d";
             else
                 s << "l";
-            if(!arguments.isEmpty()){
-                s << " = " << arguments.at(0)->indexedName() << ";" << Qt::endl;
-            }else{
-                s << " = " << addedArguments.at(0)->modified_name << ";" << Qt::endl;
-            }
+            s << " = " << argName << ";" << Qt::endl;
         }else{
             argumentRef = "arguments";
             s << "        jvalue arguments[" << (arguments.size() + addedArguments.size()) << "];" << Qt::endl;
             for(int i=0; i<arguments.size(); ++i){
-                QString jniType = translateType(arguments.at(i)->type(), NoOption);
+                const AbstractMetaArgument * argument = arguments[i];
+                QString jniType;
+                QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
+                if(typeReplaced=="int")
+                    jniType = "jint";
+                else if(typeReplaced=="long")
+                    jniType = "jlong";
+                else if(typeReplaced=="short")
+                    jniType = "jshort";
+                else if(typeReplaced=="byte")
+                    jniType = "jbyte";
+                else if(typeReplaced=="boolean")
+                    jniType = "jboolean";
+                else if(typeReplaced=="char")
+                    jniType = "jchar";
+                else if(typeReplaced=="float")
+                    jniType = "jfloat";
+                else if(typeReplaced=="double")
+                    jniType = "jdouble";
+                else if(typeReplaced=="int[]")
+                    jniType = "jintArray";
+                else if(typeReplaced=="long[]")
+                    jniType = "jlongArray";
+                else if(typeReplaced=="short[]")
+                    jniType = "jshortArray";
+                else if(typeReplaced=="byte[]")
+                    jniType = "jbyteArray";
+                else if(typeReplaced=="boolean[]")
+                    jniType = "jbooleanArray";
+                else if(typeReplaced=="char[]")
+                    jniType = "jcharArray";
+                else if(typeReplaced=="float[]")
+                    jniType = "jfloatArray";
+                else if(typeReplaced=="double[]")
+                    jniType = "jdoubleArray";
+                else if(typeReplaced.endsWith("[]"))
+                    jniType = "jobjectArray";
+                else if(typeReplaced.startsWith("java.lang.Class"))
+                    jniType = "jclass";
+                else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
+                    jniType = "jstring";
+                else if(!typeReplaced.isEmpty())
+                    jniType = "jobject";
+                else
+                    jniType = translateType(argument->type(), NoOption);
                 s << "        arguments[" << i << "].";
                 if(jniType=="jint")
                     s << "i";
@@ -4547,7 +4697,7 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
                     s << "d";
                 else
                     s << "l";
-                s << " = " << arguments.at(i)->indexedName() << ";" << Qt::endl;
+                s << " = " << argument->indexedName() << ";" << Qt::endl;
             }
             for(int i=0; i<addedArguments.size(); ++i){
                 QString jniType = jniName(addedArguments.at(i)->modified_type);
@@ -4686,22 +4836,19 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunc
 
     if (java_function->wasPrivate())
         return ;
-    if (java_class->hasUnimplmentablePureVirtualFunction() && java_function->isConstructor())
-        return;
-
-    if (java_class->hasUnimplmentablePureVirtualFunction() && java_function->isAbstract())
-        return;
 
     if (java_function->isModifiedRemoved(TypeSystem::NativeCode))
         return;
 
-    if (java_function->isSignal() && java_function->isPrivate())
+    if (java_function->isSignal())
         return;
 
     if (java_function->isPrivateSignal())
         return;
 
-    if (!java_class->generateShellClass() && (!(java_function->originalAttributes() & AbstractMetaAttributes::Public) || java_function->isAbstract()))
+//    if (!java_class->generateShellClass() && (!(java_function->originalAttributes() & AbstractMetaAttributes::Public) || java_function->isAbstract()))
+//        return;
+    if (!java_class->generateShellClass() && !(java_function->originalAttributes() & AbstractMetaAttributes::Public))
         return;
 
     const AbstractMetaClass *cls = java_class ? java_class : java_function->ownerClass();
@@ -9496,6 +9643,7 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
     if (prefix.isEmpty()
             && !(option & JNIProxyFunction)
             && !java_function->isStatic()
+            && !java_function->implementingClass()->typeEntry()->isNativeInterface()
             && !java_function->implementingClass()->interfaces().isEmpty()
             && !java_function->implementingClass()->inheritsFrom(java_function->declaringClass())) {
         prefix = java_function->declaringClass()->qualifiedCppName() + "::";
@@ -10466,6 +10614,9 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                             }else{
                                 s << INDENT << "const std::type_info& typeId = registerInterfaceTypeInfo<" << qtName << ">(\"" << qtName << "\", \"" << javaTypeName << "\", qobject_interface_iid<" << qtName << "*>());" << Qt::endl;
                             }
+                            if(ientry->isNativeInterface() || cls->typeEntry()->isNativeInterface()){
+                                s << INDENT << "qtjambi_register_native_interface<" << qtName << ">(\"" << javaTypeName << "\");" << Qt::endl;
+                            }
                             isInterface = true;
                             break;
                         }
@@ -10557,7 +10708,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
 
                 if(!cls->isInterface()){
                     AbstractMetaFunctionList virtual_functions = cls->implementableFunctions();
-                    if (!virtual_functions.isEmpty()){
+                    if (!virtual_functions.isEmpty() && (entry->codeGeneration() & TypeEntry::GenerateNoShell)==0 && !cls->isFinal()){
                         usedTypeID = true;
                         s << INDENT << "registerFunctionInfos(typeId, {";
                         if (!virtual_functions.isEmpty()) {
@@ -10586,8 +10737,22 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                         s << "});" << Qt::endl;
                     }
                     if(!cls->hasPrivateDestructor() && !cls->hasJustPrivateConstructors() && !cls->hasUnimplmentablePureVirtualFunction()){
+                        bool hasDestructor = false;
+                        if(!cls->isNamespace()
+                                && !cls->hasPrivateDestructor()
+                                && !cls->hasJustPrivateConstructors()
+                                && !cls->hasUnimplmentablePureVirtualFunction()
+                                && (cls->generateShellClass() || cls->hasPublicDestructor())
+                                ){
+                            hasDestructor = true;
+                        }
                         usedTypeID = true;
-                        s << INDENT << "registerConstructorInfos(typeId, &__qt_destruct_" << cls->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << ", {";
+                        s << INDENT << "registerConstructorInfos(typeId, ";
+                        if(hasDestructor)
+                            s << "&__qt_destruct_" << cls->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_");
+                        else
+                            s << "nullptr";
+                        s << ", {";
                         int counter = 0;
                         const AbstractMetaFunction *standardConstructor = nullptr;
                         for(const AbstractMetaFunction *function : cls->functions()) {
@@ -11161,11 +11326,12 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     if(baseClass){
                         usedTypeID = true;
                         s << INDENT << "registerPolymorphyHandler(typeid(" << baseClass->qualifiedCppName()
-                          << "), [](void *ptr) -> bool {" << Qt::endl
+                          << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
                           << INDENT << "        " << baseClass->qualifiedCppName() << " *object = reinterpret_cast<" << baseClass->qualifiedCppName() << " *>(ptr);" << Qt::endl
                           << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                          << INDENT << "        offset = 0;" << Qt::endl
                           << INDENT << "        return " << QString(entry->polymorphicIdValue()).replace("%1", "object") << ";" << Qt::endl
-                          << INDENT << "    }, \"" << cls->package().replace(".", "/") << "/" << cls->name() << "\", typeId, " << (entry->isQObject() ? "true" : "false") << ");" << Qt::endl;
+                          << INDENT << "    });" << Qt::endl;
                     }
                 }else if(cls->isQObject()){
                     if(!cls->has_Q_OBJECT()){
@@ -11176,12 +11342,14 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                         if(baseClass){
                             usedTypeID = true;
                             s << INDENT << "registerPolymorphyHandler(typeid(" << baseClass->qualifiedCppName()
-                              << "), [](void *ptr) -> bool {" << Qt::endl
+                              << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
                               << INDENT << "        " << baseClass->qualifiedCppName() << " *object = reinterpret_cast<" << baseClass->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                              << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                              << INDENT << "        offset = 0;" << Qt::endl
                               << INDENT << "        try{" << Qt::endl
                               << INDENT << "            return dynamic_cast<" << cls->qualifiedCppName() << "*>(object);" << Qt::endl
                               << INDENT << "        }catch(...){return false;}" << Qt::endl
-                              << INDENT << "    }, \"" << cls->package().replace(".", "/") << "/" << cls->name() << "\", typeId, " << (entry->isQObject() ? "true" : "false") << ");" << Qt::endl;
+                              << INDENT << "    });" << Qt::endl;
                         }
                     }
                 }else{
@@ -11197,12 +11365,14 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     if(hasBaseClassVirtuals){
                         usedTypeID = true;
                         s << INDENT << "registerPolymorphyHandler(typeid(" << cls->baseClass()->qualifiedCppName()
-                          << "), [](void *ptr) -> bool {" << Qt::endl
+                          << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
                           << INDENT << "        " << cls->baseClass()->qualifiedCppName() << " *object = reinterpret_cast<" << cls->baseClass()->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                          << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                          << INDENT << "        offset = 0;" << Qt::endl
                           << INDENT << "        try{" << Qt::endl
                           << INDENT << "            return dynamic_cast<" << cls->qualifiedCppName() << "*>(object);" << Qt::endl
                           << INDENT << "        }catch(...){return false;}" << Qt::endl
-                          << INDENT << "    }, \"" << cls->package().replace(".", "/") << "/" << cls->name() << "\", typeId, " << (entry->isQObject() ? "true" : "false") << ");" << Qt::endl;
+                          << INDENT << "    });" << Qt::endl;
                     }else{
                         baseClass = cls->baseClass();
                         while(baseClass){
@@ -11219,29 +11389,70 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                 }
 
                 for(AbstractMetaClass *interface : cls->interfaces()) {
-                    if(interface->primaryInterfaceImplementor()!=cls){
+                    bool hasBaseClassVirtuals = false;
+                    {
+                        AbstractMetaClass * baseClass = interface;
+                        while(baseClass){
+                            if(baseClass->hasVirtuals()){
+                                hasBaseClassVirtuals = true;
+                                break;
+                            }
+                            baseClass = baseClass->baseClass();
+                        }
+                    }
+                    if(interface->primaryInterfaceImplementor()==cls){ // make interface convertible to QObject
+                        if(hasBaseClassVirtuals){
+                            usedTypeID = true;
+                            s << INDENT << "registerPolymorphyHandler(typeid(QObject), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
+                              << INDENT << "        QObject *object = reinterpret_cast<QObject *>(ptr);" << Qt::endl
+                              << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                              << INDENT << "        try{" << Qt::endl
+                              << INDENT << "            if(" << cls->qualifiedCppName() << "* _object = dynamic_cast<" << cls->qualifiedCppName() << "*>(object)){" << Qt::endl
+                              << INDENT << "                offset = qintptr(object)-qintptr(_object);" << Qt::endl
+                              << INDENT << "                return true;" << Qt::endl
+                              << INDENT << "            }" << Qt::endl
+                              << INDENT << "        }catch(...){}" << Qt::endl
+                              << INDENT << "        return false;" << Qt::endl
+                              << INDENT << "    });" << Qt::endl
+                              << INDENT << "registerPolymorphyHandler(typeId, typeid(QObject), [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
+                              << INDENT << "        " << cls->qualifiedCppName() << " *object = reinterpret_cast<" << cls->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                              << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                              << INDENT << "        try{" << Qt::endl
+                              << INDENT << "            if(QObject* _object = dynamic_cast<QObject*>(object)){" << Qt::endl
+                              << INDENT << "                offset = qintptr(object)-qintptr(_object);" << Qt::endl
+                              << INDENT << "                return true;" << Qt::endl
+                              << INDENT << "            }" << Qt::endl
+                              << INDENT << "        }catch(...){}" << Qt::endl
+                              << INDENT << "        return false;" << Qt::endl
+                              << INDENT << "    });" << Qt::endl;
+                            if(!(cls->typeEntry()->typeFlags() & ComplexTypeEntry::ThreadAffine)){
+                                s << INDENT << "registerOwnerFunction(typeId, [](const void *ptr)->const QObject*{" << Qt::endl
+                                  << INDENT << "    const " << cls->qualifiedCppName() << " *object = reinterpret_cast<const " << cls->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                                  << INDENT << "    try{" << Qt::endl
+                                  << INDENT << "        return dynamic_cast<const QObject*>(object);" << Qt::endl
+                                  << INDENT << "    }catch(...){" << Qt::endl
+                                  << INDENT << "        return nullptr;" << Qt::endl
+                                  << INDENT << "    }" << Qt::endl
+                                  << INDENT << "});" << Qt::endl;
+                            }
+                        }
+                    }else{
                         QString polymorphicId = entry->interfacePolymorphicIdValues().value(interface->qualifiedCppName());
                         if (polymorphicId.isEmpty()) {
-                            bool hasBaseClassVirtuals = false;
-                            {
-                                AbstractMetaClass * baseClass = interface;
-                                while(baseClass){
-                                    if(baseClass->hasVirtuals()){
-                                        hasBaseClassVirtuals = true;
-                                        break;
-                                    }
-                                    baseClass = baseClass->baseClass();
-                                }
-                            }
                             if(hasBaseClassVirtuals){
                                 usedTypeID = true;
                                 s << INDENT << "registerPolymorphyHandler(typeid(" << interface->qualifiedCppName()
-                                  << "), [](void *ptr) -> bool {" << Qt::endl
+                                  << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
                                   << INDENT << "        " << interface->qualifiedCppName() << " *object = reinterpret_cast<" << interface->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                                  << INDENT << "        Q_ASSERT(object);" << Qt::endl
                                   << INDENT << "        try{" << Qt::endl
-                                  << INDENT << "            return dynamic_cast<" << cls->qualifiedCppName() << "*>(object);" << Qt::endl
-                                  << INDENT << "        }catch(...){return false;}" << Qt::endl
-                                  << INDENT << "    }, \"" << cls->package().replace(".", "/") << "/" << cls->name() << "\", typeId, " << (entry->isQObject() ? "true" : "false") << ");" << Qt::endl;
+                                  << INDENT << "            if(" << cls->qualifiedCppName() << "* _object = dynamic_cast<" << cls->qualifiedCppName() << "*>(object)){" << Qt::endl
+                                  << INDENT << "                offset = qintptr(object)-qintptr(_object);" << Qt::endl
+                                  << INDENT << "                return true;" << Qt::endl
+                                  << INDENT << "            }" << Qt::endl
+                                  << INDENT << "        }catch(...){}" << Qt::endl
+                                  << INDENT << "        return false;" << Qt::endl
+                                  << INDENT << "    });" << Qt::endl;
                             }else if(!cls->isAbstract()
                                     && (!cls->baseClass() || !cls->baseClass()->inheritsFromInterface(interface))
                                     && cls->name()!=interface->name()+"$Impl"){
@@ -11255,11 +11466,21 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                                 usedTypeID = true;
                                 // On first find, open the function
                                 s << INDENT << "registerPolymorphyHandler(typeid(" << interface->qualifiedCppName()
-                                  << "), [](void *ptr) -> bool {" << Qt::endl
+                                  << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
                                   << INDENT << "        " << interface->qualifiedCppName() << " *object = reinterpret_cast<" << interface->qualifiedCppName() << " *>(ptr);" << Qt::endl
                                   << INDENT << "        Q_ASSERT(object);" << Qt::endl
-                                  << INDENT << "        return " << polymorphicId.replace("%1", "object") << ";" << Qt::endl
-                                  << INDENT << "    }, \"" << cls->package().replace(".", "/") << "/" << cls->name() << "\", typeId, " << (entry->isQObject() ? "true" : "false") << ");" << Qt::endl;
+                                  << INDENT << "        try{" << Qt::endl
+                                  << INDENT << "            if(" << polymorphicId.replace("%1", "object") << "){" << Qt::endl;
+                                if(hasBaseClassVirtuals){
+                                    s << INDENT << "                offset = qintptr(object)-qintptr(dynamic_cast<" << cls->qualifiedCppName() << "*>(object));" << Qt::endl;
+                                }else{
+                                    s << INDENT << "                offset = qintptr(object);" << Qt::endl;
+                                }
+                                s << INDENT << "                return true;" << Qt::endl
+                                  << INDENT << "            }" << Qt::endl
+                                  << INDENT << "        }catch(...){}" << Qt::endl
+                                  << INDENT << "        return false;" << Qt::endl
+                                  << INDENT << "    });" << Qt::endl;
                             }
                         }
                     }
@@ -11299,6 +11520,10 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
             s << "// END: enums and flags" << Qt::endl;
             writeCodeInjections(s, cls->typeEntry(), CodeSnip::End, TypeSystem::MetaInfo);
             if(!cls->typeEntry()->ppCondition().isEmpty()){
+                if(cls->typeEntry()->isNativeInterface()){
+                    s << Qt::endl << "#else //" << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl
+                      << INDENT << "qtjambi_register_native_interface(\"" << javaTypeName << "\", {});" << Qt::endl;
+                }
                 s << Qt::endl << "#endif //" << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
             }
 

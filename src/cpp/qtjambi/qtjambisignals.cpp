@@ -125,41 +125,88 @@ jobject qtjambi_from_QMetaObject(JNIEnv *env, const QMetaObject *metaObject){
 }
 
 const char * registeredInterfaceID(const std::type_info& typeId);
+QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
+bool isQObject(const std::type_info& typeId);
+void qtjambi_register_pointer(const QSharedPointer<QtJambiLink>& link);
 
 jobject qtjambi_metaobject_cast(JNIEnv *env, jobject object, jclass targetType){
     jobject result = nullptr;
     if(QSharedPointer<QtJambiLink> objectLink = QtJambiLink::findLinkForJavaInterface(env, object)){
-        QString javaName = qtjambi_class_name(env, targetType).replace(QLatin1Char('.'), QLatin1Char('/'));
-        if(const std::type_info* typeId = getTypeByJavaName(javaName)){
-            void* basicPointer = objectLink->pointer();
-            void* interfacePointer = nullptr;
+        QString targetTypeJavaName = qtjambi_class_name(env, targetType).replace(QLatin1Char('.'), QLatin1Char('/'));
+        if(const std::type_info* targetTypeId = getTypeByJavaName(targetTypeJavaName)){
+            void* sourceTypePointer = objectLink->pointer();
+            void* targetTypePointer = nullptr;
             if(objectLink->isQObject()){
-                if(Java::Runtime::Class::isInterface(env, targetType)){
-                    if(const char* iid = registeredInterfaceID(*typeId)){
-                        interfacePointer = objectLink->qobject()->qt_metacast(iid);
+                if(isInterface(*targetTypeId)){
+                    if(const char* iid = registeredInterfaceID(*targetTypeId)){
+                        targetTypePointer = objectLink->qobject()->qt_metacast(iid);
+                    }
+                    if(!targetTypePointer){
+                        for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeid(QObject))){
+                            if(handler->m_targetTypeId==*targetTypeId){
+                                qintptr offset(0);
+                                if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
+                                    targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
-                if(!interfacePointer)
-                    interfacePointer = objectLink->qobject()->qt_metacast(getQtName(*typeId));
-                if(!interfacePointer){
-                    interfacePointer = objectLink->typedPointer(*typeId);
-                    if(interfacePointer==basicPointer)
-                        interfacePointer = nullptr;
+                if(!targetTypePointer)
+                    targetTypePointer = objectLink->qobject()->qt_metacast(getQtName(*targetTypeId));
+                if(!targetTypePointer){
+                    targetTypePointer = objectLink->typedPointer(*targetTypeId);
+                    if(targetTypePointer==sourceTypePointer)
+                        targetTypePointer = nullptr;
                 }
             }else{
-                interfacePointer = objectLink->typedPointer(*typeId);
-                if(interfacePointer==basicPointer)
-                    interfacePointer = nullptr;
+                targetTypePointer = objectLink->typedPointer(*targetTypeId);
+                if(targetTypePointer==sourceTypePointer){
+                    targetTypePointer = nullptr;
+                    if(Java::QtCore::QObject::isAssignableFrom(env, targetType)){
+                        if(jclass sourceType = resolveClosestQtSuperclass(env, env->GetObjectClass(object), nullptr)){
+                            QString sourceTypeJavaName = qtjambi_class_name(env, sourceType).replace(QLatin1Char('.'), QLatin1Char('/'));
+                            if(const std::type_info* sourceTypeId = getTypeByJavaName(sourceTypeJavaName)){
+                                if(isInterface(*sourceTypeId)){
+                                    const std::type_info& qobjectId = typeid(QObject);
+                                    for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(*sourceTypeId)){
+                                        if(handler->m_targetTypeId==qobjectId){
+                                            qintptr offset(0);
+                                            if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
+                                                targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            if(interfacePointer){
-                if(interfacePointer!=basicPointer){
-                    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(interfacePointer)){
-                        if(link && link!=objectLink){
-                            jobject obj = link->getJavaObjectLocalRef(env);
-                            if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
-                                link->invalidate(env);
-                            }else if(env->IsInstanceOf(obj, targetType)){
-                                return obj;
+            if(targetTypePointer){
+                if(targetTypePointer!=sourceTypePointer){
+                    if(isQObject(*targetTypeId)){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(reinterpret_cast<QObject*>(targetTypePointer))){
+                            if(link!=objectLink){
+                                jobject obj = link->getJavaObjectLocalRef(env);
+                                if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
+                                    link->invalidate(env);
+                                }else if(env->IsInstanceOf(obj, targetType)){
+                                    return obj;
+                                }
+                            }
+                        }
+                    }else{
+                        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(targetTypePointer)){
+                            if(link && link!=objectLink){
+                                jobject obj = link->getJavaObjectLocalRef(env);
+                                if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
+                                    link->invalidate(env);
+                                }else if(env->IsInstanceOf(obj, targetType)){
+                                    return obj;
+                                }
                             }
                         }
                     }
@@ -170,26 +217,22 @@ jobject qtjambi_metaobject_cast(JNIEnv *env, jobject object, jclass targetType){
                         }else return obj;
                     }
                 }
-                if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
-                    result = env->NewObject(typeEntry->creatableClass(), typeEntry->creatorMethod(), 0);
-                    qtjambi_throw_java_exception(env);
-                    QtJambiLink::createLinkForInterface(env, result, interfacePointer,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                        getQtName(*typeId),
-#endif
-                                                        objectLink);
-                }else{
-                    result = qtjambi_from_object(env, interfacePointer, targetType, false, false);
+                result = qtjambi_from_object(env, targetTypePointer, *targetTypeId, false, false);
+                if(QSharedPointer<QtJambiLink> newlink = QtJambiLink::findLinkForJavaObject(env, result)){
+                    objectLink->registerDependentObject(newlink);
+                    if(!newlink->isQObject()){
+                        qtjambi_register_pointer(newlink);
+                    }
                 }
             }
         }else{
             void* basicPointer = objectLink->pointer();
             void* interfacePointer = nullptr;
             if(objectLink->isQObject()){
-                interfacePointer = objectLink->qobject()->qt_metacast(qPrintable(javaName.replace("/", "::").replace("$", "::")));
+                interfacePointer = objectLink->qobject()->qt_metacast(qPrintable(targetTypeJavaName.replace("/", "::").replace("$", "::")));
                 if(interfacePointer){
                     if(interfacePointer!=basicPointer){
-                        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(interfacePointer)){
+                        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(interfacePointer)){
                             if(link && link!=objectLink){
                                 jobject obj = link->getJavaObjectLocalRef(env);
                                 if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
@@ -207,6 +250,12 @@ jobject qtjambi_metaobject_cast(JNIEnv *env, jobject object, jclass targetType){
                         }
                     }
                     result = qtjambi_from_object(env, interfacePointer, targetType, false, false);
+                    if(QSharedPointer<QtJambiLink> newlink = QtJambiLink::findLinkForJavaObject(env, result)){
+                        objectLink->registerDependentObject(newlink);
+                        if(!newlink->isQObject()){
+                            qtjambi_register_pointer(newlink);
+                        }
+                    }
                 }
             }
         }
@@ -476,6 +525,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_emitNativeSignal)
  jclass,
  jobject sender,
  jint methodIndex,
+ jint defaults,
  jobjectArray args)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("java", "QtJambiSignals::emitNativeSignal(...)")
@@ -485,7 +535,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_emitNativeSignal)
         QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, sender);
         if (link && link->isQObject()) {
             if(QObject *o = link->qobject()){
-                QMetaMethod method = o->metaObject()->method(methodIndex);
+                QMetaMethod method = o->metaObject()->method(methodIndex + defaults);
                 if(method.isValid()){
                     const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
                     QVector<void *> convertedArguments;
@@ -503,10 +553,15 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_emitNativeSignal)
                     }
                     if (!failed) {
                         Q_ASSERT(method.isValid());
-                        int signalIndex = QMetaObjectPrivate::signalIndex(method);
-                        Q_ASSERT(signalIndex>=0);
-                        if(signalIndex>=0)
-                            QMetaObject::activate(o, 0, signalIndex, convertedArguments.data());
+                        if(defaults==0){
+                            int signalIndex = QMetaObjectPrivate::signalIndex(method);
+                            Q_ASSERT(signalIndex>=0);
+                            if(signalIndex>=0){
+                                QMetaObject::activate(o, 0, signalIndex, convertedArguments.data());
+                                return;
+                            }
+                        }
+                        method.enclosingMetaObject()->metacall(o, QMetaObject::InvokeMetaMethod, method.methodIndex(), convertedArguments.data());
                     }
                 }
             }
@@ -584,7 +639,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNativeToMetaMe
         QSharedPointer<QtJambiLink> receiverLink = QtJambiLink::fromNativeId(receiverObjectId);
         QObject* sender = senderLink ? senderLink->qobject() : nullptr;
         QMetaMethod signalMethod;
-        if(signal)
+        if(sender)
             signalMethod = sender->metaObject()->method(signal);
         QObject* receiver = receiverLink ? receiverLink->qobject() : nullptr;
         QMetaMethod slotMethod;

@@ -383,10 +383,16 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                     }
                     env->DeleteLocalRef(method_object);
                 }else{
+                    jthrowable thr = nullptr;
+                    if(env->ExceptionCheck()){
+                        thr = env->ExceptionOccurred();
+                        env->ExceptionClear();
+                    }
                     fprintf(stderr,
                             "vtable setup conversion to reflected method failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
-                    qtjambi_throw_java_exception(env);
+                    if(thr)
+                        JavaException(env, thr).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
                     methods << nullptr;
                 }
             }else{
@@ -416,9 +422,15 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                     message = message.arg(QLatin1String(typeEntry->qtName()));
                     Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
                 }else{
+                    jthrowable thr = nullptr;
+                    if(env->ExceptionCheck()){
+                        thr = env->ExceptionOccurred();
+                        env->ExceptionClear();
+                    }
                     fprintf(stderr, "vtable setup failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
-                    qtjambi_throw_java_exception(env);
+                    if(thr)
+                        JavaException(env, thr).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
                 }
                 methods << nullptr;
             }

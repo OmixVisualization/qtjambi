@@ -149,7 +149,7 @@ struct QtJambiLinkUserData : public QtJambiObjectData
     inline const QWeakPointer<QtJambiLink>& link() const { return m_link; }
 
     QTJAMBI_OBJECTUSERDATA_ID_DECL
-    static QRecursiveMutex* lock();
+    static QReadWriteLock* lock();
 
 private:
     QWeakPointer<QtJambiLink> m_link;
@@ -214,9 +214,6 @@ public:
     static const QSharedPointer<QtJambiLink>& createLinkForOwnedContainer(JNIEnv *env, jobject java, void *ptr,
                                                                        LINK_NAME_ARG(const char* qt_name)
                                                                        QtJambiNativeID owner, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess);
-    static const QSharedPointer<QtJambiLink>& createLinkForInterface(JNIEnv *env, jobject java, void *ptr,
-                                                                     LINK_NAME_ARG(const char* qt_name)
-                                                                     const QSharedPointer<QtJambiLink>& owner);
     static const QSharedPointer<QtJambiLink>& createLinkForSharedPointerToObject(JNIEnv *env, jobject java,
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  bool created_by_java, bool is_shell, PtrOwnerFunction ownerFunction, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerGetterFunction pointerGetter);
@@ -233,8 +230,8 @@ public:
     static const QSharedPointer<QtJambiLink>& createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& fromNativeId(QtJambiNativeID native_id);
-    static const QWeakPointer<QtJambiLink>& findLinkForQObject(QObject *qobject);
-    static QList<QWeakPointer<QtJambiLink>> findLinksForPointer(const void *ptr);
+    static QSharedPointer<QtJambiLink> findLinkForQObject(QObject *qobject);
+    static QList<QSharedPointer<QtJambiLink>> findLinksForPointer(const void *ptr);
     static const QSharedPointer<QtJambiLink>& findLinkForJavaObject(JNIEnv *env, jobject java);
     static const QSharedPointer<QtJambiLink>& findLinkForJavaInterface(JNIEnv *env, jobject java);
 public:

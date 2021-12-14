@@ -58,8 +58,8 @@ public:
     bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, const jvalue& in,void* & out, jValueType valueType) const;
     jclass javaClass() const;
     int metaType() const;
-    static const InternalToExternalConverter& default_internalToExternalConverter();
-    static const ExternalToInternalConverter& default_externalToInternalConverter();
+    static InternalToExternalConverter default_internalToExternalConverter();
+    static ExternalToInternalConverter default_externalToInternalConverter();
     static ParameterTypeInfo voidTypeInfo(JNIEnv* env);
 private:
     int m_qTypeId;
@@ -104,12 +104,25 @@ public:
     jfieldID getQPropertyField(int index) const;
     void registerQPropertyField(int index, jfieldID field);
 #endif
+    jobject signalTypes(int index) const;
     static jweak javaInstance(const QtJambiMetaObject* metaObject);
     static void setJavaInstance(const QtJambiMetaObject* metaObject, jweak weak);
     static jclass javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull = false);
     static bool isInstance(const QMetaObject* metaObject);
     static const QtJambiMetaObject* cast(const QMetaObject* metaObject);
     static int methodFromJMethod(const QMetaObject* metaObject, jmethodID methodId);
+    struct SignalInfo{
+        int methodIndex;
+        jobject signalTypes;
+        jclass signalClass;
+        SignalInfo()
+            : methodIndex(-1), signalTypes(nullptr), signalClass(nullptr) {}
+        SignalInfo(int _methodIndex, jobject _signalTypes, jclass _signalClass)
+            : methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
+    };
+
+    static SignalInfo signalInfo(const QMetaObject* metaObject, jfieldID fieldId, jmethodID emitMethodID);
+    static QVector<SignalInfo> signalInfos(const QMetaObject* metaObject, jfieldID fieldId);
     static const QList<ParameterTypeInfo>& methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
     static jobject toReflected(JNIEnv * env, const QMetaMethod& method);
 private:

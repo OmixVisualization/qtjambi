@@ -11,6 +11,39 @@ QString TestAbstractClass::callMethod3(TestAbstractClass* cls) { return cls->met
 QString TestAbstractClass::callMethod4(TestAbstractClass* cls) { return cls->method4(); }
 QString TestAbstractClass::callMethod5(TestAbstractClass* cls) { return cls->method5(); }
 
+class InterfaceImplementingObject
+        : public QTimer, public TestInterface
+{
+public:
+    InterfaceImplementingObject(QObject* parent = nullptr) : QTimer(parent) , TestInterface({}){setObjectName("InterfaceImplementingObject");}
+    bool setReferenceCountTest1(QObject*) override {return true;}
+    QString method4() const override {
+        return "InterfaceImplementingObject";
+    }
+    QString method5() const override {
+        return "InterfaceImplementingObject";
+    }
+    bool event(QEvent* event) override{
+        if(QScrollPrepareEvent* sp = dynamic_cast<QScrollPrepareEvent*>(event)){
+            sp->setAccepted(true);
+            sp->setContentPos({5,5});
+            sp->setContentPosRange({5,7,9,2});
+            sp->setViewportSize({20,30});
+            return true;
+        }else{
+            return QTimer::event(event);
+        }
+    }
+};
+
+QObject* TestAbstractClass::createInterfaceImplementingQObject(QObject* parent){
+    return new InterfaceImplementingObject(parent);
+}
+
+TestInterface* TestAbstractClass::createQObjectInheritingInterface(QObject* parent){
+    return new InterfaceImplementingObject(parent);
+}
+
 TestInterface::TestInterface(const QString &){}
 TestInterface::~TestInterface(){}
 bool TestInterface::setReferenceCountTest2(QObject* object) { Q_UNUSED(object) return false; }

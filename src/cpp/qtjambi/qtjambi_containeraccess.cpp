@@ -1127,7 +1127,7 @@ void PointerRCListAccess::assign(void* container, const void* other){
     WrapperListAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1145,7 +1145,7 @@ void* PointerRCListAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1214,7 +1214,7 @@ void PointerRCListAccess::prepend(JNIEnv * env, void* container, jobject value) 
 
 jobject PointerRCListAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
     jobject result = WrapperListAccess::mid(env, container, index1, index2);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(result)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(result)){
         if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(link->containerAccess())){
             access->assignRC(env, *this);
             break;
@@ -1277,7 +1277,7 @@ void PointerRCSetAccess::assign(void* container, const void* other){
     WrapperSetAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1297,7 +1297,7 @@ void* PointerRCSetAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1378,7 +1378,7 @@ void PointerRCLinkedListAccess::assign(void* container, const void* other){
     WrapperLinkedListAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointerRCLinkedListAccess* access = dynamic_cast<PointerRCLinkedListAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1396,7 +1396,7 @@ void* PointerRCLinkedListAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointerRCLinkedListAccess* access = dynamic_cast<PointerRCLinkedListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1482,7 +1482,7 @@ void* PointerRCVectorAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1496,7 +1496,7 @@ void PointerRCVectorAccess::assign(void* container, const void* other){
     WrapperVectorAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1568,7 +1568,7 @@ void PointerRCVectorAccess::prepend(JNIEnv * env, void* container, jobject value
 
 jobject PointerRCVectorAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
     jobject result = WrapperVectorAccess::mid(env, container, index1, index2);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(result)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(result)){
         if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(link->containerAccess())){
             access->assignRC(env, *this);
             break;
@@ -1631,7 +1631,7 @@ void KeyPointerRCMapAccess::assign(void* container, const void* other){
     WrapperMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1649,7 +1649,7 @@ void* KeyPointerRCMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1697,7 +1697,7 @@ void ValuePointerRCMapAccess::assign(void* container, const void* other){
     WrapperMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1715,7 +1715,7 @@ void* ValuePointerRCMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1766,7 +1766,7 @@ void PointersRCMapAccess::assign(void* container, const void* other){
     WrapperMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1784,7 +1784,7 @@ void* PointersRCMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1832,7 +1832,7 @@ void KeyPointerRCMultiMapAccess::assign(void* container, const void* other){
     WrapperMultiMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1850,7 +1850,7 @@ void* KeyPointerRCMultiMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1933,7 +1933,7 @@ void ValuePointerRCMultiMapAccess::assign(void* container, const void* other){
     WrapperMultiMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -1951,7 +1951,7 @@ void* ValuePointerRCMultiMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2046,7 +2046,7 @@ void PointersRCMultiMapAccess::assign(void* container, const void* other){
     WrapperMultiMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2064,7 +2064,7 @@ void* PointersRCMultiMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2142,7 +2142,7 @@ void KeyPointerRCHashAccess::assign(void* container, const void* other){
     WrapperHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2160,7 +2160,7 @@ void* KeyPointerRCHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2208,7 +2208,7 @@ void ValuePointerRCHashAccess::assign(void* container, const void* other){
     WrapperHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2226,7 +2226,7 @@ void* ValuePointerRCHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2277,7 +2277,7 @@ void PointersRCHashAccess::assign(void* container, const void* other){
     WrapperHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2295,7 +2295,7 @@ void* PointersRCHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2343,7 +2343,7 @@ void KeyPointerRCMultiHashAccess::assign(void* container, const void* other){
     WrapperMultiHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2361,7 +2361,7 @@ void* KeyPointerRCMultiHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2422,7 +2422,7 @@ void ValuePointerRCMultiHashAccess::assign(void* container, const void* other){
     WrapperMultiHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2440,7 +2440,7 @@ void* ValuePointerRCMultiHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2511,7 +2511,7 @@ void PointersRCMultiHashAccess::assign(void* container, const void* other){
     WrapperMultiHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2529,7 +2529,7 @@ void* PointersRCMultiHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2608,7 +2608,7 @@ void NestedPointersRCListAccess::assign(void* container, const void* other){
     WrapperListAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2626,7 +2626,7 @@ void* NestedPointersRCListAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2717,7 +2717,7 @@ void NestedPointersRCListAccess::prepend(JNIEnv * env, void* container, jobject 
 
 jobject NestedPointersRCListAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
     jobject result = WrapperListAccess::mid(env, container, index1, index2);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(result)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(result)){
         if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(link->containerAccess())){
             access->assignRC(env, *this);
             break;
@@ -2765,7 +2765,7 @@ NestedPointersRCSetAccess* NestedPointersRCSetAccess::clone(){
 
 void NestedPointersRCSetAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -2778,7 +2778,7 @@ void NestedPointersRCSetAccess::assign(void* container, const void* other){
     WrapperSetAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2798,7 +2798,7 @@ void* NestedPointersRCSetAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2853,7 +2853,7 @@ NestedPointersRCLinkedListAccess* NestedPointersRCLinkedListAccess::clone(){
 
 void NestedPointersRCLinkedListAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -2866,7 +2866,7 @@ void NestedPointersRCLinkedListAccess::assign(void* container, const void* other
     WrapperLinkedListAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCLinkedListAccess* access = dynamic_cast<NestedPointersRCLinkedListAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -2884,7 +2884,7 @@ void* NestedPointersRCLinkedListAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCLinkedListAccess* access = dynamic_cast<NestedPointersRCLinkedListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2959,7 +2959,7 @@ NestedPointersRCVectorAccess* NestedPointersRCVectorAccess::clone(){
 
 void NestedPointersRCVectorAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -2973,7 +2973,7 @@ void* NestedPointersRCVectorAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2987,7 +2987,7 @@ void NestedPointersRCVectorAccess::assign(void* container, const void* other){
     WrapperVectorAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -3049,7 +3049,7 @@ void NestedPointersRCVectorAccess::prepend(JNIEnv * env, void* container, jobjec
 
 jobject NestedPointersRCVectorAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
     jobject result = WrapperVectorAccess::mid(env, container, index1, index2);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(result)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(result)){
         if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(link->containerAccess())){
             access->assignRC(env, *this);
             break;
@@ -3098,7 +3098,7 @@ NestedPointersRCMapAccess* NestedPointersRCMapAccess::clone(){
 
 void NestedPointersRCMapAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -3111,7 +3111,7 @@ void NestedPointersRCMapAccess::assign(void* container, const void* other){
     WrapperMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -3129,7 +3129,7 @@ void* NestedPointersRCMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3176,7 +3176,7 @@ NestedPointersRCMultiMapAccess* NestedPointersRCMultiMapAccess::clone(){
 
 void NestedPointersRCMultiMapAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -3189,7 +3189,7 @@ void NestedPointersRCMultiMapAccess::assign(void* container, const void* other){
     WrapperMultiMapAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -3207,7 +3207,7 @@ void* NestedPointersRCMultiMapAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3272,7 +3272,7 @@ NestedPointersRCHashAccess* NestedPointersRCHashAccess::clone(){
 
 void NestedPointersRCHashAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -3285,7 +3285,7 @@ void NestedPointersRCHashAccess::assign(void* container, const void* other){
     WrapperHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -3303,7 +3303,7 @@ void* NestedPointersRCHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3350,7 +3350,7 @@ NestedPointersRCMultiHashAccess* NestedPointersRCMultiHashAccess::clone(){
 
 void NestedPointersRCMultiHashAccess::updateRC(JNIEnv * env, const void* container){
     jobject set = Java::QtJambi::QtJambiInternal$RCSet::newInstance(env);
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
         if(link->containerAccess()==this){
             unfoldAndAddContainer(env, set, link->getJavaObjectLocalRef(env));
         }
@@ -3363,7 +3363,7 @@ void NestedPointersRCMultiHashAccess::assign(void* container, const void* other)
     WrapperMultiHashAccess::assign(container, other);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(other)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(other)){
             if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(link->containerAccess())){
                 if(access!=this){
                     clearRC(env);
@@ -3381,7 +3381,7 @@ void* NestedPointersRCMultiHashAccess::copyContainer(const void* container){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
             if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;

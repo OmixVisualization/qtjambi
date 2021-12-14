@@ -57,6 +57,12 @@
 #include <QtCore/private/qmetaobject_p.h>
 #include <QtCore/private/qfactoryloader_p.h>
 
+#define QCOREAPPLICATION_PLATFORM_H
+#define QSGTEXTURE_PLATFORM_H
+#define QOPENGLCONTEXT_PLATFORM_H
+#define QGUIAPPLICATION_PLATFORM_H
+#define QGUIAPPLICATION_P_H
+
 #define QSETTINGS_H
 #include <QtCore/QtCore>
 #undef QSETTINGS_H
@@ -535,6 +541,40 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #endif
 
 #endif
+
+#undef Q_OS_ANDROID_EMBEDDED
+#define Q_OS_ANDROID
+#undef QT_FEATURE_xcb
+#undef QT_FEATURE_opengl
+#undef QT_FEATURE_vulkan
+#undef QT_FEATURE_vsp2
+#undef Q_OS_WEBOS
+#define QT_FEATURE_xcb 1
+#define QT_FEATURE_opengl 1
+#define QT_FEATURE_vulkan 1
+#define QT_FEATURE_vsp2 1
+#define Q_OS_WIN
+#define Q_OS_MACOS
+#define Q_CLANG_QDOC
+#define Q_OS_WEBOS
+
+#undef QCOREAPPLICATION_PLATFORM_H
+#include <QtCore/qcoreapplication_platform.h>
+
+#undef QGUIAPPLICATION_P_H
+#include <QtGui/private/qguiapplication_p.h>
+#undef QGUIAPPLICATION_PLATFORM_H
+#include <QtGui/qguiapplication_platform.h>
+#include <QtGui/qoffscreensurface_platform.h>
+
+#undef QOPENGLCONTEXT_PLATFORM_H
+#include <QtGui/qopenglcontext_platform.h>
+
+#include <QtGui/qpa/qplatformwindow_p.h>
+#include <QtGui/qpa/qplatformscreen_p.h>
+
+#undef QSGTEXTURE_PLATFORM_H
+#include <QtQuick/qsgtexture_platform.h>
 
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 

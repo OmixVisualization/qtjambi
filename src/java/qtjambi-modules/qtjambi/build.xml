@@ -8,9 +8,8 @@
         <antcall inheritrefs="true" target="build.impl"/>
     </target>
     <target name="build.impl" if="build.module">
+        <qtjambi-version-file targetdir="${generator.outputdir}/java/qtjambi"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}/io/qt/internal"/>
-        <qtjambi-version-properties targetdir="${java.outdir}/${module}/io/qt/internal"/>
         <condition property="qtjambi-retro" value="Retro" else="RetroJDK8">
             <istrue value="${java.module.based}"/>
         </condition>

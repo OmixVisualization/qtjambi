@@ -53,6 +53,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 (JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
 {
     QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+    qtjambi_check_resource(env, container.first, typeid(QList<QVariant>));
     AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(container.second);
     Q_ASSERT(containerAccess);
     return qtjambi_cast<jobject>(env, containerAccess->elementMetaType());

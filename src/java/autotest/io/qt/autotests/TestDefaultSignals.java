@@ -35,12 +35,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import io.qt.QtPrimitiveType;
+import io.qt.core.QMetaMethod;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
 public class TestDefaultSignals extends QApplicationTest {
     private static class Sender extends QObject {
-    	public final Signal2Default1<String, Integer> signal21 = new Signal2Default1<>(()->7654);
-    	public final Signal2Default2<String, Integer> signal22 = new Signal2Default2<>(()->"No arg", ()->12345);
+    	public final Signal2Default1<String, @QtPrimitiveType Integer> signal21 = new Signal2Default1<>(()->7654);
+    	public final Signal2Default2<String, @QtPrimitiveType Integer> signal22 = new Signal2Default2<>(()->"No arg", ()->12345);
     }
     
     private static class Receiver{
@@ -68,6 +71,102 @@ public class TestDefaultSignals extends QApplicationTest {
     		received2 = null;
     		received = false;
     	}
+    }
+    
+	@SuppressWarnings("unused")
+    private static class QReceiver extends QObject{
+    	boolean received;
+    	String received1;
+    	Integer received2;
+    	QObject destroyed;
+    	int destroyedCalled;
+    	
+    	void receive2(String s, int i) {
+    		received1 = s;
+    		received2 = i;
+    		received = true;
+    	}
+    	
+		void receive1(String s) {
+    		received1 = s;
+    		received = true;
+    	}
+		
+		void onDestroyed(QObject obj) {
+			destroyed = obj;
+			destroyedCalled = 2;
+		}
+		
+		void onDestroyed() {
+			destroyed = null;
+			destroyedCalled = 1;
+		}
+    }
+    
+    @Test
+    public void testNativeDefaultSignalInvocation() {
+    	QObject sent = new QObject();
+    	Sender sender = new Sender();
+//    	sender.metaObject().methods().forEach(m->System.out.println(m.methodIndex()+": "+m.cppMethodSignature()));
+    	QMetaMethod method = sender.metaObject().method("signal22(String)");
+    	QReceiver receiver = new QReceiver();
+    	QMetaObject.Connection con = sender.signal22.connect(receiver::receive2);
+    	assertTrue(con!=null);
+    	assertEquals(QMetaMethod.fromSignal(sender.signal22), io.qt.internal.QtJambiSignals.signal(con));
+    	method.invoke(sender, "TEST");
+    	assertTrue(receiver.received);
+    	assertEquals(Integer.valueOf(12345), receiver.received2);
+    	assertEquals("TEST", receiver.received1);
+    	receiver.received = false;
+    	receiver.received1 = null;
+    	receiver.received2 = null;
+    	sender.signal22.emit();
+    	assertTrue(receiver.received);
+    	assertEquals(Integer.valueOf(12345), receiver.received2);
+    	assertEquals("No arg", receiver.received1);
+    	QObject.disconnect(con);
+    	
+    	receiver.received = false;
+    	receiver.received1 = null;
+    	receiver.received2 = null;
+    	con = QObject.connect(sender, "signal22(String)", receiver, "receive1(String)");
+    	assertTrue(con!=null);
+    	assertEquals(QMetaMethod.fromSignal(sender.signal22), io.qt.internal.QtJambiSignals.signal(con));
+    	method.invoke(sender, "TEST");
+    	assertTrue(receiver.received);
+    	assertEquals(null, receiver.received2);
+    	assertEquals("TEST", receiver.received1);
+    	QObject.disconnect(con);
+//    	sender.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+    	
+    	con = QObject.connect(sender, "destroyed()", receiver, "onDestroyed()");
+    	assertTrue(con!=null);
+    	assertEquals(QMetaMethod.fromSignal(sender.destroyed), io.qt.internal.QtJambiSignals.signal(con));
+    	method = sender.metaObject().method("destroyed()");
+    	method.invoke(sender);
+    	assertEquals(1, receiver.destroyedCalled);
+    	assertEquals(null, receiver.destroyed);
+    	receiver.destroyedCalled = 0;
+    	receiver.destroyed = null;
+    	sender.destroyed.emit(sent);
+    	assertEquals(1, receiver.destroyedCalled);
+    	assertEquals(null, receiver.destroyed);
+    	QObject.disconnect(con);
+    	
+    	con = QObject.connect(sender, "destroyed(QObject)", receiver, "onDestroyed(QObject)");
+    	assertTrue(con!=null);
+    	assertEquals(QMetaMethod.fromSignal(sender.destroyed), io.qt.internal.QtJambiSignals.signal(con));
+    	receiver.destroyedCalled = 0;
+    	receiver.destroyed = null;
+    	sender.destroyed.emit(sent);
+    	assertEquals(2, receiver.destroyedCalled);
+    	assertEquals(sent, receiver.destroyed);
+    	receiver.destroyedCalled = 0;
+    	receiver.destroyed = null;
+    	method.invoke(sender);
+    	assertEquals(2, receiver.destroyedCalled);
+    	assertEquals(null, receiver.destroyed);
+    	QObject.disconnect(con);
     }
 
     @Test

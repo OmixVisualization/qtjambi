@@ -48,8 +48,8 @@
         classname="io.qt.tools.ant.InitializeBuildTask"/>
     <taskdef name="qtjambi-resolve-path"
         classname="io.qt.tools.ant.ResolvePathTask"/>
-    <taskdef name="qtjambi-version-properties"
-        classname="io.qt.tools.ant.VersionPropertiesTask"/>
+    <taskdef name="qtjambi-version-file"
+        classname="io.qt.tools.ant.VersionFileTask"/>
 
     <!-- Added due to dash in name -->
     <typedef name="plugin-designer"
@@ -60,5 +60,7 @@
          classname="io.qt.tools.ant.File"/>
     <typedef name="stringreplace"
          classname="io.qt.tools.ant.StringReplaceTask"/>
+    <typedef name="dependencies-to-classpath"
+         classname="io.qt.tools.ant.DependenciesToClassPathTask"/>
 </antlib>
 

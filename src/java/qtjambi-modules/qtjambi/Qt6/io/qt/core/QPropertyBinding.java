@@ -163,7 +163,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new <code>QPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QPropertyBinding(QtUtilities.Supplier<T> f) {
+	public QPropertyBinding(QtUtilities.Supplier<? extends T> f) {
 		super(f);
 	}
 	

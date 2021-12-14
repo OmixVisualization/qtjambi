@@ -624,6 +624,16 @@
   <object-type name="MultiSignalTest">
   </object-type>
   <object-type name="TestAbstractClass">
+        <modify-function signature="createInterfaceImplementingQObject(QObject*)">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createQObjectInheritingInterface(QObject*)">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java" />
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setReferenceCountTest1(QObject*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcReferenceCountTest1" condition="__qt_return_value"/>

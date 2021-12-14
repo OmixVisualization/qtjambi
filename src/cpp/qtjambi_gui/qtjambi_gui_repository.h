@@ -19,8 +19,17 @@ namespace QtGui{
 }
 namespace QtWidgets{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QMenu,)
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
+#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_QT6(M) QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(M)
+#else
+#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_QT6(M)
+#endif
+
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QApplication,
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(exec))
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(exec)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_QT6(resolveInterface)
+                                     )
 }
 }
 

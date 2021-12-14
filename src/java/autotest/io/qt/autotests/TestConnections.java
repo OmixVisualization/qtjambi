@@ -34,14 +34,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +56,11 @@ import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtInvokable;
 import io.qt.QtObjectInterface;
+import io.qt.QtPointerType;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyWriter;
+import io.qt.QtReferenceType;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
 import io.qt.autotests.generated.SignalsAndSlots;
@@ -70,6 +78,7 @@ import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QSize;
+import io.qt.core.QStringList;
 import io.qt.core.QUrl;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
@@ -132,6 +141,7 @@ public class TestConnections extends QApplicationTest
 
         assertEquals("one-two-three", nonQObject.receivedFoo);
         assertEquals(123, nonQObject.receivedBar);
+        assertTrue(signalEmitter.mySignal.disconnect(nonQObject, "foobar(String, int)"));
     }
 
     @Test public void run_connectToNonQObjects() {
@@ -1344,7 +1354,7 @@ public class TestConnections extends QApplicationTest
      }
 
      private void test_borkedConnections(String name, MyQObject sender,
-             Object signal,
+    		 QMetaObject.AbstractSignal signal,
              QObject receiver,
              String slotSignature,
              Class<?> expectedExceptionType,
@@ -1354,7 +1364,7 @@ public class TestConnections extends QApplicationTest
          Class<?> ce = null;
          String msg = null;
          try {
-             ((QMetaObject.AbstractSignal)signal).connect(receiver, slotSignature);
+             signal.connect(receiver, slotSignature);
          } catch (Exception e) {
              ce = e.getClass();
              msg = e.getMessage();
@@ -1602,7 +1612,7 @@ public class TestConnections extends QApplicationTest
         boolean goodExit = false;
 
         public void run() {
-            for (int i=0; i<100000; ++i) {
+            for (int i=0; i<50000; ++i) {
                 signal.emit();
             }
             goodExit = true;
@@ -1622,7 +1632,7 @@ public class TestConnections extends QApplicationTest
         t.start();
 
         try {
-            for (int i=0; i<100000; ++i) {
+            for (int i=0; i<50000; ++i) {
                 e.signal.connect(e::slot2);
                 e.signal.disconnect(e::slot2);
             }
@@ -2048,7 +2058,225 @@ public class TestConnections extends QApplicationTest
 		emitter.exceptionOccurred.emit(new RuntimeException());
 		assertTrue(called[0]);
 	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test public void testGenericTypedArguments() {
+		class Sender extends QObject{
+			public final Signal1<List<QObject>> objects = new Signal1<>();
+			public final Signal1<List<String>> strings = new Signal1<>();
+			public final Signal1<QList<QObject>> objectQList = new Signal1<>();
+			public final Signal1<QList<String>> stringQList = new Signal1<>();
+			public final Signal1<QStringList> qstringList = new Signal1<>();
+			public final Signal1<@QtPointerType QList<String>> stringQListPointer = new Signal1<>();
+			public final Signal1<@QtPointerType QStringList> qstringListPointer = new Signal1<>();
+			public final Signal1<@QtReferenceType QList<String>> stringQListRef = new Signal1<>();
+			public final Signal1<@QtReferenceType QStringList> qstringListRef = new Signal1<>();
+		}
+		
+		@SuppressWarnings("unused")
+		class Receiver extends QObject{
+			List<QObject> objects;
+			List<String> strings;
+			QStringList stringList;
+			public void receiveStrings(List<String> strings) {
+				this.strings = strings;
+			}
+			public void receiveStringList(QStringList strings) {
+				this.stringList = strings;
+				this.strings = strings;
+			}
+			public void receiveStringListPointer(@QtPointerType QStringList strings) {
+				this.stringList = strings;
+				this.strings = strings;
+			}
+			public void receiveStringListRef(@QtReferenceType QStringList strings) {
+				this.stringList = strings;
+				this.strings = strings;
+			}
+			public void receiveObjects(QList<QObject> objects) {
+				this.objects = objects;
+			}
+			void reset() {
+				strings = null;
+				stringList = null;
+				objects = null;
+			}
+		}
+		Sender sender = new Sender();
+		Receiver receiver = new Receiver();
+//		sender.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+//		receiver.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+		QObject obj = new QObject();
+		QStringList stringList = new QStringList("TEST");
+		QList<String> stringList2 = QList.of("TEST");
+		try {
+			sender.objects.connect(receiver, "receiveStrings(List)");
+			Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);
+		} catch (QMisfittingSignatureException e) {
+		}
+		try {
+			QMetaObject.Slot1<List<String>> slot = receiver::receiveStrings;
+			sender.objects.connect((QMetaObject.Slot1)slot);
+			Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);
+		} catch (QMisfittingSignatureException e) {
+		}
+		QMetaObject.Connection con;
+		con = sender.objects.connect(receiver, "receiveObjects(QList)");
+		assertTrue(con!=null);
+		sender.objects.emit(QList.of(obj));
+		assertTrue(receiver.objects instanceof QList);
+		assertEquals(1, receiver.objects.size());
+		assertEquals(obj, receiver.objects.get(0));
+		receiver.reset();
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.strings.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.strings.emit(Arrays.asList("TEST"));
+		assertTrue(receiver.strings instanceof QList);
+		assertEquals(1, receiver.strings.size());
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.objectQList.connect(receiver, "receiveObjects(QList)");
+		assertTrue(con!=null);
+		sender.objectQList.emit(QList.of(obj));
+		assertTrue(receiver.objects instanceof QList);
+		assertEquals(1, receiver.objects.size());
+		assertEquals(obj, receiver.objects.get(0));
+		receiver.objects = null;
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.stringQList.connect(receiver, "receiveStrings(List)");
+		assertTrue(con!=null);
+		sender.stringQList.emit(stringList);
+		assertTrue(receiver.strings instanceof QList);
+		assertEquals(1, receiver.strings.size());
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
 
+		con = sender.stringQList.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.stringQList.emit(stringList);
+		assertTrue(receiver.strings instanceof QList);
+		assertEquals(1, receiver.strings.size());
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.qstringList.connect(receiver, "receiveStrings(List)");
+		assertTrue(con!=null);
+		sender.qstringList.emit(stringList);
+		assertTrue(receiver.strings instanceof QList);
+		assertEquals(1, receiver.strings.size());
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+
+		con = sender.qstringList.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.qstringList.emit(stringList);
+		assertTrue(receiver.strings instanceof QList);
+		assertTrue(receiver.strings!=stringList);
+		assertEquals(1, receiver.strings.size());
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.qstringListPointer.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.qstringListPointer.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.qstringListPointer.connect(receiver, "receiveStringListPointer(QStringList)");
+		assertTrue(con!=null);
+		sender.qstringListPointer.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.stringQListPointer.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.stringQListPointer.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.stringQListPointer.connect(receiver, "receiveStringListPointer(QStringList)");
+		assertTrue(con!=null);
+		sender.stringQListPointer.emit(stringList2);
+		assertTrue(receiver.stringList instanceof QStringList);
+		assertTrue(receiver.stringList.isDisposed());
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.qstringListRef.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.qstringListRef.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+
+		con = sender.qstringListRef.connect(receiver, "receiveStringListPointer(QStringList)");
+		assertTrue(con!=null);
+		sender.qstringListRef.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.stringQListRef.connect(receiver, "receiveStringList(QStringList)");
+		assertTrue(con!=null);
+		sender.stringQListRef.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		assertEquals("TEST", receiver.strings.get(0));
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+		
+		con = sender.stringQListRef.connect(receiver, "receiveStringListPointer(QStringList)");
+		assertTrue(con!=null);
+		sender.stringQListRef.emit(stringList2);
+		assertTrue(receiver.stringList instanceof QStringList);
+		assertTrue(receiver.stringList.isDisposed());
+		sender.stringQListRef.emit(stringList);
+		assertTrue(receiver.strings == stringList);
+		receiver.reset();
+		assertTrue(con!=null);
+		assertTrue(QObject.disconnect(con));
+	}
+	
+	@Test(expected=NotSerializableException.class)
+	public void testSignalSerialization() throws IOException {
+		QObject object = new QObject();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutputStream serializer = new ObjectOutputStream(bos);
+		serializer.writeObject(object.destroyed);
+	}
+	
+	@Test(expected=NotSerializableException.class)
+	public void testSlotSerialization() throws IOException {
+		QObject object = new QObject();
+		QMetaObject.Slot0 slot = object::disposeLater;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutputStream serializer = new ObjectOutputStream(bos);
+		serializer.writeObject(slot);
+	}
+	
     public static void main(String args[]) {
     	org.junit.runner.JUnitCore.main(TestConnections.class.getName());
     }

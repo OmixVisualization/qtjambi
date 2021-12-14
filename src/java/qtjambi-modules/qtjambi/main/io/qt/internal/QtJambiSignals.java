@@ -30,18 +30,26 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandleProxies;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +58,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -65,12 +75,19 @@ import io.qt.QSignalInvocationException;
 import io.qt.QUninvokableSlotException;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
+import io.qt.QtPointerType;
+import io.qt.QtPrimitiveType;
+import io.qt.QtReferenceType;
 import io.qt.QtSignalBlockerInterface;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtThreadAffineInterface;
 import io.qt.QtUninvokable;
+import io.qt.core.QByteArray;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QHash;
 import io.qt.core.QInstanceMemberSignals;
+import io.qt.core.QList;
+import io.qt.core.QMap;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaObject.Connection;
@@ -88,7 +105,9 @@ import io.qt.core.QMetaObject.Slot9;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.core.QPair;
+import io.qt.core.QSet;
 import io.qt.core.QStaticMemberSignals;
+import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.core.Qt.ConnectionType;
@@ -99,30 +118,36 @@ public abstract class QtJambiSignals {
 	
 	private static final Map<Integer, Method> lookupSlots = Collections.synchronizedMap(new HashMap<>());
 
-	private static final byte InCppEmission     = 0x01;
-	private static final byte InJavaEmission    = 0x02;
-	private static final byte InDisconnect      = 0x04;
+	private static final byte IsGenericSignal   = 0x04;
 	private static final byte IsNativeSignal    = 0x08;
 	private static final byte IsStaticSignal    = 0x10;
 	private static final byte IsQObjectSignal   = 0x20;
 	
+	@NativeAccess
 	static final class SignalParameterType{
-		public SignalParameterType(Class<?> originalType, Class<?> type, Type genericType, AnnotatedType annotatedType, int arrayDimension, boolean isPointer, boolean isReference) {
+		public SignalParameterType(Class<?> type, Type genericType, AnnotatedType annotatedType, boolean isPointer, boolean isReference) {
 			super();
-			this.originalType = originalType;
 			this.genericType = genericType;
-			this.type = type;
 			this.annotatedType = annotatedType;
-			this.arrayDimension = arrayDimension;
+			this.type = type;
+			if(annotatedType!=null) {
+	        	if(!isReference) {
+	        		QtReferenceType referenceType = annotatedType.getAnnotation(QtReferenceType.class);
+	        		isReference = referenceType!=null && !referenceType.isConst();
+	        	}
+	        	if(!isPointer) {
+	        		QtPointerType pointerType = annotatedType.getAnnotation(QtPointerType.class);
+	        		isPointer = pointerType!=null;
+	        	}
+        	}
 			this.isPointer = isPointer;
 			this.isReference = isReference;
 		}
 		
-		final Class<?> originalType;
+		@NativeAccess
 		final Class<?> type;
 		final Type genericType;
 		final AnnotatedType annotatedType;
-		final int arrayDimension;
 		final boolean isPointer;
 		final boolean isReference;
 		
@@ -132,8 +157,10 @@ public abstract class QtJambiSignals {
 				return true;
 			if (obj instanceof SignalParameterType) {
 				SignalParameterType other = (SignalParameterType) obj;
-				if(arrayDimension == other.arrayDimension) {
-					return type==other.type && isPointer==other.isPointer && isReference==other.isReference;
+				if(isPointer==other.isPointer 
+						&& isReference==other.isReference) {
+					if(type==other.type)
+						return true;
 				}
 				return false;
 			}
@@ -144,7 +171,6 @@ public abstract class QtJambiSignals {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + arrayDimension;
 			result = prime * result + ((type == null) ? 0 : type.getName().hashCode());
 			result = prime * result + (isPointer ? 0 : 1);
 			result = prime * result + (isReference ? 0 : 1);
@@ -159,8 +185,8 @@ public abstract class QtJambiSignals {
 	private static abstract class AbstractSignalCore {
 		abstract List<SignalParameterType> signalTypes(AbstractSignal signal);
 		abstract String name(AbstractSignal signal);
-		abstract void emitSignal(AbstractSignal signal, final Object ... args);
-		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect, Qt.ConnectionType... connectionType);
+		abstract void emitSignal(AbstractSignal signal, final Object[] args, Supplier<?>... suppliers);
+		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, Qt.ConnectionType... connectionType);
 		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType);
 		abstract <Slot extends Serializable> QMetaObject.Connection addConnectionToSlotObject(AbstractSignal signal, SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHash, Slot slotObject, Qt.ConnectionType[] connectionType);
 		abstract boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect);
@@ -182,69 +208,70 @@ public abstract class QtJambiSignals {
 		}
 	}
 	
-	private interface AnalyzingSignalCoreInterface{}
+	private interface AnalyzingSignalCoreInterface{
+	}
 	
-	private static class AnalyzingSignalCore extends AbstractSignalCore implements AnalyzingSignalCoreInterface{
+	private static final class AnalyzingSignalCore extends AbstractSignalCore implements AnalyzingSignalCoreInterface{
 		final static AnalyzingSignalCore instance = new AnalyzingSignalCore();
 		
 		@Override
-		List<SignalParameterType> signalTypes(AbstractSignal signal) {
+		final List<SignalParameterType> signalTypes(AbstractSignal signal) {
 			signal.resolveSignal();
 			return signal.core.signalTypes(signal);
 		}
 
 		@Override
-		String name(AbstractSignal signal) {
+		final String name(AbstractSignal signal) {
 			signal.resolveSignal();
 			return signal.core.name(signal);
 		}
 
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect, ConnectionType... connectionType) {
+		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
+				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, ConnectionType... connectionType) {
 			signal.resolveSignal();
-			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, unsolvableConnection, allowNativeConnect, connectionType);
+			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, unsolvableConnection, connectionType);
 		}
 		
 		@Override
-		QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType){
+		final QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType){
 			signal.resolveSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, connectionType);			
 		}
 
 		@Override
-		void emitSignal(AbstractSignal signal, Object... args) {
+		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			signal.resolveSignal();
-			signal.core.emitSignal(signal, args);
+			signal.core.emitSignal(signal, args, suppliers);
 		}
 
 		@Override
-		<Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
+		final <Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
 				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHash, Slot slotObject, ConnectionType[] connectionType) {
 			signal.resolveSignal();
 			return signal.core.addConnectionToSlotObject(signal, factory, lambdaOwner, lambdaOwnerClass, lambdaHash, slotObject, connectionType);
 		}
 		
-		int methodIndex(AbstractSignal signal) { 
+		final int methodIndex(AbstractSignal signal) { 
 			signal.resolveSignal();
 			return signal.core.methodIndex(signal);
 		}
 		
 		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs,
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs,
 				boolean allowNativeDisconnect) {
 			signal.resolveSignal();
 			return signal.core.removeConnectionToMethod(signal, receiver, slot, lambdaArgs, allowNativeDisconnect);
 		}
 		
 		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
 			signal.resolveSignal();
 			return signal.core.removeConnectionToMethod(signal, receiver, slot, allowNativeDisconnect);
 		}
 
 		@Override
-		boolean removeConnectionToSlotObject(AbstractSignal signal,
+		final boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo) {
 			signal.resolveSignal();
@@ -252,13 +279,13 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
 			signal.resolveSignal();
 			return signal.core.removeConnection(signal, javaConnection);
 		}
 		
 		@Override
-		boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
+		final boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
 			signal.resolveSignal();
 			return signal.core.removeConnection(signal, nativeConnection);
 		}
@@ -273,7 +300,7 @@ public abstract class QtJambiSignals {
 		}
 
 		@Override
-		final List<SignalParameterType> signalTypes(AbstractSignal signal) {
+		List<SignalParameterType> signalTypes(AbstractSignal signal) {
 			return signalParameterTypes;
 		}		
 	}
@@ -308,8 +335,8 @@ public abstract class QtJambiSignals {
 		
 		@Override
 		final String name(AbstractSignal signal) {
-			if(signal.containingObject() instanceof QObject && methodIndex>=0) {
-				QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signal);
+			if(signal.isQObjectSignal() && methodIndex>=0) {
+				QMetaMethod method = QMetaMethod.fromSignal(signal);
 				if(method!=null)
 					return method.name().toString();
 			}
@@ -320,7 +347,7 @@ public abstract class QtJambiSignals {
 		final int methodIndex(AbstractSignal signal) { return methodIndex; }
 
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
+		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
 				ConnectionType... connectionType) {
 			QObject senderObject = (QObject)signal.containingObject();
 			if(receiver instanceof QObject) {
@@ -366,8 +393,8 @@ public abstract class QtJambiSignals {
 		}
 
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect, ConnectionType... connectionType) {
+		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
+				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, ConnectionType... connectionType) {
 			QObject senderObject = (QObject)signal.containingObject();
     		if((lambdaArgs==null || lambdaArgs.isEmpty()) 
     		    && (receiver instanceof QObject || 
@@ -438,7 +465,7 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		<Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
+		final <Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
 				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, ConnectionType[] connectionType) {
     		QObject senderObject = (QObject)signal.containingObject();
     		QMetaObject.Connection connection;
@@ -459,13 +486,14 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
 			QObject senderObject = (QObject)signal.containingObject();
 			if(senderObject==null || senderObject.isDisposed())
 				return false;
 			boolean success = false;
-			if((receiver == null || receiver instanceof QObject) && slot == null) {
-				success |= disconnectNative(QtJambiInternal.internalAccess.checkedNativeId(senderObject), methodIndex, QtJambiInternal.internalAccess.nativeId((QObject)receiver), -1);
+			if(((receiver == null || receiver instanceof QObject) && slot == null)
+					|| (receiver instanceof QObject && slot != null)) {
+				success |= disconnectNative(QtJambiInternal.internalAccess.checkedNativeId(senderObject), methodIndex, QtJambiInternal.internalAccess.nativeId((QObject)receiver), slot==null ? -1 : slot.methodIndex());
 			}
 			synchronized(nativeConnectionHandles) {
 				List<QPair<AbstractConnection<?>, Connection>> foundPairs = null;
@@ -530,7 +558,7 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect) {
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect) {
 			QObject senderObject = (QObject)signal.containingObject();
 			if(senderObject==null || senderObject.isDisposed())
 				return false;
@@ -627,7 +655,7 @@ public abstract class QtJambiSignals {
 						&& slot!=null 
 						&& slot.getName().equals("emit") 
 						&& ((AbstractSignal)receiver).methodIndex()>=0 
-						&& ((AbstractSignal)receiver).containingObject() instanceof QObject) ) {
+						&& ((AbstractSignal)receiver).isQObjectSignal()) ) {
         		QObject receiverObject;
         		QMetaMethod slotMethod = null;
         		if(receiver instanceof QObject) {
@@ -639,7 +667,7 @@ public abstract class QtJambiSignals {
         			AbstractSignal otherSignal = (AbstractSignal)receiver;
         			receiverObject = (QObject)otherSignal.containingObject();
 	        		if(otherSignal.methodIndex()>=0) {
-	        			slotMethod = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)otherSignal);
+	        			slotMethod = QMetaMethod.fromSignal(otherSignal);
 	        		}
         		}
 				success |= disconnectNative(QtJambiInternal.internalAccess.checkedNativeId(senderObject), methodIndex, QtJambiInternal.internalAccess.checkedNativeId(receiverObject), slotMethod==null ? -1 : slotMethod.methodIndex());
@@ -647,7 +675,7 @@ public abstract class QtJambiSignals {
 			return success;
 		}
 		
-		boolean removeConnectionToSlotObject(AbstractSignal signal,
+		final boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo) {
 			boolean success = false;
@@ -674,12 +702,12 @@ public abstract class QtJambiSignals {
 		}
 
 		@Override
-		boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
 			return false;
 		};
 		
 		@Override
-		boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
+		final boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
 			if(super.removeConnection(signal, nativeConnection)) {
 				synchronized(nativeConnectionHandles) {
 					QPair<AbstractConnection<?>, Connection> foundPair = null;
@@ -697,48 +725,23 @@ public abstract class QtJambiSignals {
 		}
 	}
 	
-	private static class QObjectsDirectSignalCore extends AbstractQObjectsSignalCore {
-		private final EternalConnection directConnection;
-
-		public QObjectsDirectSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex, EternalConnection directConnection) {
-			super(signalParameterTypes, methodIndex);
-			this.directConnection = directConnection;
-		}
-
-		@Override
-		void emitSignal(AbstractSignal signal, Object... args) {
-			try{
-				directConnection.invoke(args);
-            } catch (RuntimeException | Error e) {
-            	throw e;
-            } catch (Throwable e) {
-                throw new QSignalInvocationException(String.format("Exception caught in signal %1$s after invoking slot %2$s: sender=%3$s, receiver=%4$s", 
-						signal.fullName(), 
-						directConnection.slot,
-						signal.containingObject() != null ? signal.containingObject().getClass().getName() : "N/A",
-								directConnection.receiver==null ? "(static)" : directConnection.receiver
-					),e);
-            }
-		}
-	}
-	
 	private static class QObjectsPrivateSignalCore extends AbstractQObjectsSignalCore {
 		public QObjectsPrivateSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex) {
 			super(signalParameterTypes, methodIndex);
 		}
 
 		@Override
-		void emitSignal(AbstractSignal signal, Object... args) {
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 		}
 	}
 	
-	private static class QObjectsSignalCore extends QObjectsPrivateSignalCore {
+	private static final class QObjectsSignalCore extends QObjectsPrivateSignalCore {
 		public QObjectsSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex) {
 			super(signalParameterTypes, methodIndex);
 		}
 
 		@Override
-		void emitSignal(AbstractSignal signal, Object... args) {
+		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			QObject senderObject = (QObject)signal.containingObject();
             // When you dispose() a QObject, the first thing that happens is
             // that the native ID is set to 0. Then we proceed to delete the
@@ -746,89 +749,111 @@ public abstract class QtJambiSignals {
             // they will be passed into Java, which will lead to a threadCheck()
             // from signalsBlocked, and you will get an exception. We cannot
             // support listening to signals emitted in the C++ destructor.
-            if (!signal.inCppEmission()) {
-            	logger.finest(()->String.format("Emit native signal %1$s(%2$s)", signal.fullName(), signal.signalParameters()));
-            	if(this.methodIndex>=0) {
-        			emitNativeSignal(senderObject, this.methodIndex, args);
-            	}else {
-            		throw new RuntimeException("QObject signal without method index"); 
-            	}
-            }
+			logger.finest(()->String.format("Emit native signal %1$s(%2$s)", signal.fullName(), signal.signalParameters()));
+        	if(this.methodIndex>=0) {
+        		if(suppliers.length>0) {
+        			if(signal.isNativeSignal()) {
+        				emitNativeSignal(senderObject, this.methodIndex, suppliers.length, args);
+        			}else {
+        				int offset = args.length;
+        				args = Arrays.copyOf(args, args.length+suppliers.length);
+                		for (int i = 0; i < suppliers.length; i++) {
+                			Supplier<?> supplier = suppliers[i];
+                			args[offset+i] = supplier==null ? null : supplier.get();
+        				}
+        				emitNativeSignal(senderObject, this.methodIndex, 0, args);
+        			}
+        		}else {
+        			emitNativeSignal(senderObject, this.methodIndex, 0, args);
+        		}
+        	}else {
+        		throw new RuntimeException("QObject signal without method index"); 
+        	}
 		}
 	}
 	
-	private static class NamelessJavaSignalCore extends AbstractParameterSignalCore implements AnalyzingSignalCoreInterface{
+	private static final class MultiSignalAnalyingSignalCore extends AbstractSignalCore implements AnalyzingSignalCoreInterface{
+		
+		final AbstractMultiSignal<?> multiSignal;
+		final Class<?>[] types;
 
-		public NamelessJavaSignalCore(List<SignalParameterType> signalParameterTypes) {
-			super(signalParameterTypes);
+		public MultiSignalAnalyingSignalCore(AbstractMultiSignal<?> multiSignal, Class<?>[] types) {
+			super();
+			this.multiSignal = multiSignal;
+			this.types = types;
+		}
+		
+		@Override
+		List<SignalParameterType> signalTypes(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.signalTypes(signal);
 		}
 
 		@Override
 		String name(AbstractSignal signal) {
-			return "unknown";
+			return multiSignal.name();
 		}
 		
 		int methodIndex(AbstractSignal signal) { 
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.methodIndex(signal);
 		}
 
 		@Override
 		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle,
-				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect,
-				ConnectionType... connectionType) {
-			signal.resolveSignal();
-			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, unsolvableConnection, allowNativeConnect, connectionType);
+				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, ConnectionType... connectionType) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, unsolvableConnection, connectionType);
 		}
 
 		@Override
-		void emitSignal(AbstractSignal signal, Object... args) {
-			signal.resolveSignal();
-			signal.core.emitSignal(signal, args);
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			multiSignal.resolveMultiSignal();
+			signal.core.emitSignal(signal, args, suppliers);
 		}
 
 		@Override
 		<Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
 				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHash, Slot slotObject, ConnectionType[] connectionType) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.addConnectionToSlotObject(signal, factory, lambdaOwner, lambdaOwnerClass, lambdaHash, slotObject, connectionType);
 		}
 
 		@Override
 		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs,
 				boolean allowNativeDisconnect) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnectionToMethod(signal, receiver, slot, lambdaArgs, allowNativeDisconnect);
 		}
 		
 		@Override
 		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnectionToMethod(signal, receiver, slot, allowNativeDisconnect);
 		}
 		
 		boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnectionToSlotObject(signal, slotObject, _functionalInterfaceClass, _lambdaOwner, _lambdaOwnerClass, _lambdaHashCode, useLambdaInfo);
 		}
 		
 		@Override
 		boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnection(signal, javaConnection);
 		}
 		
 		@Override
 		boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnection(signal, nativeConnection);
 		}
 
 		@Override
 		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, ConnectionType... connectionType) {
-			signal.resolveSignal();
+			multiSignal.resolveMultiSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, connectionType);
 		}
 	}
@@ -840,7 +865,7 @@ public abstract class QtJambiSignals {
 
 		private List<AbstractConnection<?>> connections;
 		
-		List<AbstractConnection<?>> connections() {
+		final List<AbstractConnection<?>> connections() {
         	if(this.connections!=null) {
         		return new ArrayList<>(this.connections);
 			}else {
@@ -848,7 +873,7 @@ public abstract class QtJambiSignals {
 			}
 		}
 		
-		void removeConnection_helper(Collection<AbstractConnection<?>> toRemove) {
+		final void removeConnection_helper(Collection<AbstractConnection<?>> toRemove) {
             if (toRemove != null) {
 				if(connections!=null) {
 					if(connections.size()==1) {
@@ -871,21 +896,9 @@ public abstract class QtJambiSignals {
             }
         }
 		
-		void nativeEmit(AbstractSignal signal, QObject sender, Object... args) {
-		}
-		
 		@Override
-		final void emitSignal(AbstractSignal signal, Object... args) {
+		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			QtSignalEmitterInterface senderObject = signal.containingObject();
-            // When you dispose() a QObject, the first thing that happens is
-            // that the native ID is set to 0. Then we proceed to delete the
-            // native object. If this has a destructor which emits signals,
-            // they will be passed into Java, which will lead to a threadCheck()
-            // from signalsBlocked, and you will get an exception. We cannot
-            // support listening to signals emitted in the C++ destructor.
-			QObject sender = null;
-			if(senderObject instanceof QObject)
-				sender = (QObject)senderObject;
             if (signal.isQObjectSignal() && !signal.isStaticSignal()) {
                 return;
             }
@@ -897,8 +910,14 @@ public abstract class QtJambiSignals {
                 return;
             }
 
-        	nativeEmit(signal, sender, args);
-
+        	if(suppliers.length>0) {
+        		int offset = args.length;
+				args = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args[offset+i] = supplier==null ? null : supplier.get();
+				}
+        	}
             Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
 
             for (AbstractConnection<?> c : connections()) {
@@ -923,8 +942,8 @@ public abstract class QtJambiSignals {
                 	receiver = c.resolveReceiver();
                 	AbstractReflectiveConnection<?> reflectiveConnection = (AbstractReflectiveConnection<?>)c;
 					isStatic = Modifier.isStatic(reflectiveConnection.slot.getModifiers());
-					if (signal.inCppEmission() && reflectiveConnection.isEternal())
-						continue;
+                }else if(c instanceof MetaMethodConnection){
+                	receiver = c.resolveReceiver();
 				}else {
 					continue;
 				}
@@ -1057,8 +1076,8 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect, ConnectionType... connectionType) {
+		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
+				List<Supplier<?>> lambdaArgs, boolean unsolvableConnection, ConnectionType... connectionType) {
 			if(isUnique(connectionType)){
 				for (AbstractConnection<?> c : connections()) {
 					Object resolvedReceiver = c.resolveReceiver();
@@ -1105,7 +1124,7 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		<Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
+		final <Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
 				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, ConnectionType[] connectionType) {
 			if(isUnique(connectionType)){
 				for (AbstractConnection<?> c : connections()) {
@@ -1135,95 +1154,81 @@ public abstract class QtJambiSignals {
 		}
 
 		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
 			boolean returned = false;
-			signal.setInDisconnect(true);
-			try{
-				Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
-				for (AbstractConnection<?> c : connections()) {
-					Object resolvedReceiver = c.resolveReceiver();
-					if(c instanceof MetaMethodConnection){
-						if (resolvedReceiver == null) {  // GCed receiver
-							if (toRemove.isEmpty()) {
-								toRemove = Collections.singletonList(c);
-							}else {
-								if (toRemove.size()==1) {
-									toRemove = new ArrayList<>(toRemove);
-								}
-								toRemove.add(c);
-							}
-						} else if ((receiver == null || resolvedReceiver == receiver)
-							&& (slot == null || slot.equals(((MetaMethodConnection)c).slot))) {
-							if (toRemove.isEmpty()) {
-								toRemove = Collections.singletonList(c);
-							}else {
-								if (toRemove.size()==1) {
-									toRemove = new ArrayList<>(toRemove);
-								}
-								toRemove.add(c);
-							}
-							returned = true;
-						}
-					}
+			Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
+			Method slotMethod = null;
+//			AbstractSignal signalObject = null;
+			if(slot!=null) {
+				switch(slot.methodType()) {
+				case Constructor:
+					break;
+				case Signal:
+//					if(receiver instanceof QObject)
+//						signalObject = slot.toSignal((QObject)receiver);
+					break;
+				case Method:
+				case Slot:
+					slotMethod = slot.toReflectedMethod();
+					break;
+				default:
+					break;
 				}
-				removeConnection_helper(toRemove);
-			}finally{
-				signal.setInDisconnect(false);
 			}
-			return returned;
-		}
-		
-		@Override
-		boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs,
-				boolean allowNativeDisconnect) {
-			boolean returned = false;
-			signal.setInDisconnect(true);
-			try{
-				QtSignalEmitterInterface containingObject = signal.containingObject();
-				Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
-				for (AbstractConnection<?> c : connections()) {
-					Object resolvedReceiver = c.resolveReceiver();
-					if(c instanceof ReflectiveConnection){
-						if (resolvedReceiver == null) {  // GCed receiver
-							if (toRemove.isEmpty()) {
-								toRemove = Collections.singletonList(c);
-							}else {
-								if (toRemove.size()==1) {
-									toRemove = new ArrayList<>(toRemove);
-								}
-								toRemove.add(c);
+			for (AbstractConnection<?> c : connections()) {
+				Object resolvedReceiver = c.resolveReceiver();
+				if(c instanceof MetaMethodConnection){
+					if (resolvedReceiver == null) {  // GCed receiver
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
 							}
-						} else if ((receiver == null || resolvedReceiver == receiver)
-							&& (slot == null || slot.equals(((ReflectiveConnection)c).slot))) {
-							if (toRemove.isEmpty()) {
-								toRemove = Collections.singletonList(c);
-							}else {
-								if (toRemove.size()==1) {
-									toRemove = new ArrayList<>(toRemove);
-								}
-								toRemove.add(c);
-							}
-							returned = true;
+							toRemove.add(c);
 						}
-					}else if(c instanceof SlotObjectConnection){
-						SlotObjectConnection<?> slotObjectConnection = (SlotObjectConnection<?>)c;
-						Object lambdaOwner = slotObjectConnection.lambdaOwner();
-						Class<?> lambdaOwnerClass = slotObjectConnection.lambdaOwnerClass;
-						if(lambdaOwner!=null || lambdaOwnerClass!=null){
-							if(receiver != null && slot == null){
-								if(lambdaOwner == receiver || 
-										lambdaOwnerClass == receiver){
-									if (toRemove.isEmpty()) {
-										toRemove = Collections.singletonList(c);
-									}else {
-										if (toRemove.size()==1) {
-											toRemove = new ArrayList<>(toRemove);
-										}
-										toRemove.add(c);
-									}
-									returned = true;
-								}
-							}else if(receiver == null && slot == null){
+					} else if ((receiver == null || resolvedReceiver == receiver)
+						&& (slot == null || slot.equals(((MetaMethodConnection)c).slot))) {
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
+					}
+				}else if(c instanceof ReflectiveConnection){
+					if (resolvedReceiver == null) {  // GCed receiver
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+					} else if ((receiver == null || resolvedReceiver == receiver)
+						&& (slot==null || (slotMethod != null && slotMethod.equals(((ReflectiveConnection)c).slot)))) {
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
+					}
+				}else if(c instanceof SlotObjectConnection){
+					SlotObjectConnection<?> slotObjectConnection = (SlotObjectConnection<?>)c;
+					Object lambdaOwner = slotObjectConnection.lambdaOwner();
+					Class<?> lambdaOwnerClass = slotObjectConnection.lambdaOwnerClass;
+					if(lambdaOwner!=null || lambdaOwnerClass!=null){
+						if(receiver != null && slot == null){
+							if(lambdaOwner == receiver || 
+									lambdaOwnerClass == receiver){
 								if (toRemove.isEmpty()) {
 									toRemove = Collections.singletonList(c);
 								}else {
@@ -1233,20 +1238,8 @@ public abstract class QtJambiSignals {
 									toRemove.add(c);
 								}
 								returned = true;
-							}else{
-								// remove if lambda owner has been disposed
-								if(lambdaOwner instanceof QtJambiObject && QtJambiInternal.internalAccess.nativeId((QtJambiObject)lambdaOwner)==0){
-									if (toRemove.isEmpty()) {
-										toRemove = Collections.singletonList(c);
-									}else {
-										if (toRemove.size()==1) {
-											toRemove = new ArrayList<>(toRemove);
-										}
-										toRemove.add(c);
-									}
-								}
 							}
-						}else if(resolvedReceiver == receiver){
+						}else if(receiver == null && slot == null){
 							if (toRemove.isEmpty()) {
 								toRemove = Collections.singletonList(c);
 							}else {
@@ -1256,54 +1249,182 @@ public abstract class QtJambiSignals {
 								toRemove.add(c);
 							}
 							returned = true;
+						}else{
+							// remove if lambda owner has been disposed
+							if(lambdaOwner instanceof QtJambiObject && QtJambiInternal.internalAccess.nativeId((QtJambiObject)lambdaOwner)==0){
+								if (toRemove.isEmpty()) {
+									toRemove = Collections.singletonList(c);
+								}else {
+									if (toRemove.size()==1) {
+										toRemove = new ArrayList<>(toRemove);
+									}
+									toRemove.add(c);
+								}
+							}
 						}
+					}else if(resolvedReceiver == receiver){
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
 					}
 				}
-
-				removeConnection_helper(toRemove);
-
-				if (signal.isNativeSignal() 
-						&& containingObject instanceof QObject 
-						&& (receiver instanceof QObject 
-								|| receiver == null
-								|| ( receiver instanceof QMetaObject.AbstractSignal 
-										&& slot.getName().equals("emit") 
-										&& ((AbstractSignal)receiver).methodIndex()>=0 
-										&& ((AbstractSignal)receiver).containingObject() instanceof QObject)
-					)) {
-					
-					QObject senderObject = (QObject)signal.containingObject();
-	        		QMetaMethod signalMethod = null;
-	        		if(signal.methodIndex()>=0) {
-	        			signalMethod = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signal);
-	        		}
-	        		if(signalMethod!=null) {
-		        		QObject receiverObject = null;
-		        		QMetaMethod slotMethod = null;
-		        		if(receiver instanceof QObject) {
-		        			receiverObject = (QObject)receiver;
-		        			if(slot!=null) {
-		        				slotMethod = QMetaMethod.fromReflectedMethod(slot);
-		        			}
-		        		}else if(receiver instanceof AbstractSignal){
-		        			AbstractSignal otherSignal = (AbstractSignal)receiver;
-		        			receiverObject = (QObject)otherSignal.containingObject();
-			        		if(otherSignal.methodIndex()>=0) {
-			        			slotMethod = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)otherSignal);
-			        		}
-		        		}
-        				returned |= QObject.disconnect(senderObject, signalMethod, receiverObject, slotMethod);
-	        		}
+			}
+			removeConnection_helper(toRemove);
+			return returned;
+		}
+		
+		@Override
+		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs,
+				boolean allowNativeDisconnect) {
+			boolean returned = false;
+			QtSignalEmitterInterface containingObject = signal.containingObject();
+			Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
+			for (AbstractConnection<?> c : connections()) {
+				Object resolvedReceiver = c.resolveReceiver();
+				if(c instanceof MetaMethodConnection){
+					if (resolvedReceiver == null) {  // GCed receiver
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+					} else if ((receiver == null || resolvedReceiver == receiver) && slot == null) {
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
+					}
+				}else if(c instanceof ReflectiveConnection){
+					if (resolvedReceiver == null) {  // GCed receiver
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+					} else if ((receiver == null || resolvedReceiver == receiver)
+						&& (slot == null || slot.equals(((ReflectiveConnection)c).slot))) {
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
+					}
+				}else if(c instanceof SlotObjectConnection){
+					SlotObjectConnection<?> slotObjectConnection = (SlotObjectConnection<?>)c;
+					Object lambdaOwner = slotObjectConnection.lambdaOwner();
+					Class<?> lambdaOwnerClass = slotObjectConnection.lambdaOwnerClass;
+					if(lambdaOwner!=null || lambdaOwnerClass!=null){
+						if(receiver != null && slot == null){
+							if(lambdaOwner == receiver || 
+									lambdaOwnerClass == receiver){
+								if (toRemove.isEmpty()) {
+									toRemove = Collections.singletonList(c);
+								}else {
+									if (toRemove.size()==1) {
+										toRemove = new ArrayList<>(toRemove);
+									}
+									toRemove.add(c);
+								}
+								returned = true;
+							}
+						}else if(receiver == null && slot == null){
+							if (toRemove.isEmpty()) {
+								toRemove = Collections.singletonList(c);
+							}else {
+								if (toRemove.size()==1) {
+									toRemove = new ArrayList<>(toRemove);
+								}
+								toRemove.add(c);
+							}
+							returned = true;
+						}else{
+							// remove if lambda owner has been disposed
+							if(lambdaOwner instanceof QtJambiObject && QtJambiInternal.internalAccess.nativeId((QtJambiObject)lambdaOwner)==0){
+								if (toRemove.isEmpty()) {
+									toRemove = Collections.singletonList(c);
+								}else {
+									if (toRemove.size()==1) {
+										toRemove = new ArrayList<>(toRemove);
+									}
+									toRemove.add(c);
+								}
+							}
+						}
+					}else if(resolvedReceiver == receiver){
+						if (toRemove.isEmpty()) {
+							toRemove = Collections.singletonList(c);
+						}else {
+							if (toRemove.size()==1) {
+								toRemove = new ArrayList<>(toRemove);
+							}
+							toRemove.add(c);
+						}
+						returned = true;
+					}
 				}
+			}
 
-			}finally{
-				signal.setInDisconnect(false);
+			removeConnection_helper(toRemove);
+
+			if (signal.isNativeSignal() 
+					&& containingObject instanceof QObject 
+					&& (receiver instanceof QObject 
+							|| receiver == null
+							|| ( receiver instanceof QMetaObject.AbstractSignal 
+									&& slot.getName().equals("emit") 
+									&& ((AbstractSignal)receiver).methodIndex()>=0 
+									&& ((AbstractSignal)receiver).isQObjectSignal())
+				)) {
+				
+				QObject senderObject = (QObject)signal.containingObject();
+        		QMetaMethod signalMethod = null;
+        		if(signal.methodIndex()>=0) {
+        			signalMethod = QMetaMethod.fromSignal(signal);
+        		}
+        		if(signalMethod!=null) {
+	        		QObject receiverObject = null;
+	        		QMetaMethod slotMethod = null;
+	        		if(receiver instanceof QObject) {
+	        			receiverObject = (QObject)receiver;
+	        			if(slot!=null) {
+	        				slotMethod = QMetaMethod.fromReflectedMethod(slot);
+	        			}
+	        		}else if(receiver instanceof AbstractSignal){
+	        			AbstractSignal otherSignal = (AbstractSignal)receiver;
+	        			receiverObject = (QObject)otherSignal.containingObject();
+		        		if(otherSignal.methodIndex()>=0) {
+		        			slotMethod = QMetaMethod.fromSignal(otherSignal);
+		        		}
+	        		}
+    				returned |= QObject.disconnect(senderObject, signalMethod, receiverObject, slotMethod);
+        		}
 			}
 			return returned;
 		}
 		
 		@Override
-		boolean removeConnectionToSlotObject(AbstractSignal signal,
+		final boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo) {
 			boolean returned = true;
@@ -1355,7 +1476,7 @@ public abstract class QtJambiSignals {
 		}
 		
 		@Override
-		boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
 			boolean returned = false;
 			Collection<AbstractConnection<?>> toRemove = Collections.emptyList();
 			for (AbstractConnection<?> c : connections()) {
@@ -1419,9 +1540,15 @@ public abstract class QtJambiSignals {
 		}
 
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
+		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
 				ConnectionType... connectionType) {
-			MetaMethodConnection conn = new MetaMethodConnection(new WeakReference<Object>(receiver), slot, connectionType);
+			Method slotMethod = slot.toReflectedMethod();
+			AbstractConnection<?> conn;
+			if(slotMethod!=null) {
+				conn = new ReflectiveConnection(new WeakReference<Object>(receiver), slotMethod, null, null, connectionType);
+			}else {
+				conn = new MetaMethodConnection(new WeakReference<Object>(receiver), slot, connectionType);
+			}
 			if(connections==null) {
             	connections = Collections.singletonList(conn);
             }else {
@@ -1443,7 +1570,7 @@ public abstract class QtJambiSignals {
 		private final String name;
 		
 		@Override
-		String name(AbstractSignal signal) {
+		final String name(AbstractSignal signal) {
 			return name;
 		}
 	}
@@ -1452,7 +1579,7 @@ public abstract class QtJambiSignals {
      * QSignalEmitter is a class used internally by Qt Jambi.
      * You should never have to concern yourself with this class.
      */
-    protected static abstract class AbstractSignal {
+    protected static abstract class AbstractSignal implements QMetaObject.Signal{
     	private byte flags = 0;
     	private AbstractSignalCore core;
 		private Class<?> declaringClass;
@@ -1474,17 +1601,19 @@ public abstract class QtJambiSignals {
 			}
         }
 		
-		protected AbstractSignal(Class<?>[] types) {
+		protected AbstractSignal(boolean isGeneric, Class<?>[] types) {
 			this("anonymous_signal", types);
+			if(isGeneric)
+				flags |= IsGenericSignal;
 		}
 
         @io.qt.QtUninvokable
-		public synchronized int methodIndex() {
+		public final synchronized int methodIndex() {
 			return core.methodIndex(this);
 		}
 
         @io.qt.QtUninvokable
-		Class<?> getDeclaringClass() {
+        final Class<?> getDeclaringClass() {
         	name();// initializes the core
 			return declaringClass;
 		}
@@ -1493,13 +1622,7 @@ public abstract class QtJambiSignals {
         	name = Objects.requireNonNull(name);
         	List<SignalParameterType> typeList = Collections.emptyList();
         	for (int i = 0; i < types.length; i++) {
-        		int arrayDimension = 0;
-        		Class<?> type = types[i];
-        		while (type.isArray()) {
-        			arrayDimension++;
-        			type = type.getComponentType();
-                }
-        		SignalParameterType signalType = new SignalParameterType(types[i], type, type, null, arrayDimension, false, false);
+        		SignalParameterType signalType = new SignalParameterType(types[i], types[i], null, false, false);
         		if(i==0) {
         			if(types.length>1) {
         				typeList = new ArrayList<>();
@@ -1515,29 +1638,12 @@ public abstract class QtJambiSignals {
         }
 
         @io.qt.QtUninvokable
-        synchronized List<SignalParameterType> signalTypes() {
+        final synchronized List<SignalParameterType> signalTypes() {
 			return core.signalTypes(this);
 		}
 
         @io.qt.QtUninvokable
-        public List<Class<?>> argumentTypes() {
-        	List<SignalParameterType> signalTypes = signalTypes();
-        	switch(signalTypes.size()){
-        	case 0:
-        		return Collections.emptyList();
-        	case 1:
-        		return Collections.singletonList(signalTypes.get(0).originalType);
-    		default:
-    			List<Class<?>> result = new ArrayList<>();
-    			for(SignalParameterType signalType : signalTypes) {
-    				result.add(signalType.originalType);
-    			}
-    			return Collections.unmodifiableList(result);
-        	}
-		}
-
-        @io.qt.QtUninvokable
-        private List<Class<?>> signalTypeClasses() {
+        public final List<Class<?>> argumentTypes() {
         	List<SignalParameterType> signalTypes = signalTypes();
         	switch(signalTypes.size()){
         	case 0:
@@ -1554,47 +1660,6 @@ public abstract class QtJambiSignals {
 		}
 
         @io.qt.QtUninvokable
-        private boolean inCppEmission() {
-			return (flags & InCppEmission)==InCppEmission;
-		}
-
-        @NativeAccess
-        @io.qt.QtUninvokable
-        private void setInCppEmission(boolean inCppEmission) {
-        	if(inCppEmission)
-        		flags |= InCppEmission;
-        	else
-        		flags &= ~InCppEmission;
-		}
-
-        @NativeAccess
-        @io.qt.QtUninvokable
-        private boolean inJavaEmission() {
-			return (flags & InJavaEmission)==InJavaEmission;
-		}
-
-        @io.qt.QtUninvokable
-        private void setInJavaEmission(boolean inJavaEmission) {
-        	if(inJavaEmission)
-        		flags |= InJavaEmission;
-        	else
-        		flags &= ~InJavaEmission;
-		}
-
-        @io.qt.QtUninvokable
-        private boolean inDisconnect() {
-			return (flags & InDisconnect)==InDisconnect;
-		}
-
-        @io.qt.QtUninvokable
-        private void setInDisconnect(boolean inDisconnect) {
-        	if(inDisconnect)
-        		flags |= InDisconnect;
-        	else
-        		flags &= ~InDisconnect;
-		}
-
-        @io.qt.QtUninvokable
         private boolean isNativeSignal() {
 			return (flags & IsNativeSignal)==IsNativeSignal;
 		}
@@ -1605,7 +1670,7 @@ public abstract class QtJambiSignals {
 		}
 
         @io.qt.QtUninvokable
-        private void setNativeSignal(boolean isNativeSignal) {
+        void setNativeSignal(boolean isNativeSignal) {
         	if(isNativeSignal)
         		flags |= IsNativeSignal;
         	else
@@ -1618,7 +1683,7 @@ public abstract class QtJambiSignals {
 		}
 
         @io.qt.QtUninvokable
-        private void setQObjectSignal(boolean isQObjectSignal) {
+        void setQObjectSignal(boolean isQObjectSignal) {
         	if(isQObjectSignal)
         		flags |= IsQObjectSignal;
         	else
@@ -1643,39 +1708,6 @@ public abstract class QtJambiSignals {
             return core.name(this);
         }
         
-        @NativeAccess
-        @io.qt.QtUninvokable
-		private synchronized void initializeExtraSignal(Class<?> declaringClass, List<Class<?>> signalParameterTypes, int methodIndex) {
-        	if(methodIndex>=0 && core instanceof AnalyzingSignalCoreInterface) {
-	        	this.declaringClass = declaringClass;
-	        	setNativeSignal(true);
-	        	setQObjectSignal(true);
-				List<SignalParameterType> typeList = Collections.emptyList();
-	        	for (int i = 0; i < signalParameterTypes.size(); i++) {
-	        		int arrayDimension = 0;
-	        		Class<?> type = signalParameterTypes.get(i);
-	        		if(type!=null) {
-		        		while (type.isArray()) {
-		        			arrayDimension++;
-		        			type = type.getComponentType();
-		                }
-	        		}
-					SignalParameterType signalType = new SignalParameterType(type, type, type, null, arrayDimension, false, false);
-	        		if(i==0) {
-	        			if(signalParameterTypes.size()>1) {
-	        				typeList = new ArrayList<>();
-	        				typeList.add(signalType);
-	        			}else {
-	        				typeList = Collections.singletonList(signalType);
-	        			}
-	        		}else {
-	        			typeList.add(signalType);
-	        		}
-				}
-	        	this.core = new QObjectsSignalCore(typeList, methodIndex);
-        	}
-		}
-		
         /**
          * Returns the full name of the signal, on the form "package.class.signalName"
          *
@@ -1687,68 +1719,67 @@ public abstract class QtJambiSignals {
             return declaringClass == null ? name : declaringClass.getName() + "." + name;
         }
 
-        @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnection(Object receiver, String method, Qt.ConnectionType... connectionType) {
-	        Method slotMethod = lookupSlot(receiver, method, null);
+		@io.qt.QtUninvokable
+        protected final QMetaObject.Connection addConnection(Object receiver, String method, Qt.ConnectionType... connectionType) {
+        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(receiver.getClass());
+        	Method slotMethod = null;
+        	if(metaObject!=null) {
+        		QMetaMethod metaMethod = metaObject.method(method);
+        		if(metaMethod==null || !metaMethod.isValid()) {
+        			slotMethod = lookupSlot(receiver, method, null);
+        			if (slotMethod == null) {
+        	            throw new QNoSuchSlotException(receiver, method);
+        	        }
+        			metaMethod = QMetaMethod.fromReflectedMethod(slotMethod);
+        		}
+        		if(metaMethod!=null && metaMethod.isValid()) {
+        			return addConnectionToMethod(receiver, metaMethod, connectionType);
+        		}
+        	}
+        	if (slotMethod == null)
+        		slotMethod = lookupSlot(receiver, method, null);
 	        if (slotMethod == null) {
-	        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(receiver.getClass());
-	        	if(metaObject!=null) {
-	        		QMetaMethod metaMethod = metaObject.method(method);
-	        		if(metaMethod!=null && metaMethod.isValid()) {
-	        			if(!matchTypes(metaMethod.parameterClassTypes().toArray(new Class[metaMethod.parameterTypes().size()]))) {
-	        				throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + metaMethod.methodSignature());
-	        			}
-	        			return addConnectionToMethod(receiver, metaMethod, connectionType);
-	        		}
-	        	}
 	            throw new QNoSuchSlotException(receiver, method);
+	        }else {
+	        	if (slotMethod.isAnnotationPresent(QtUninvokable.class)) {
+            		throw new QUninvokableSlotException(slotMethod);
+	            }
+
+	        	Match match = matchMethodTypes(slotMethod.getParameterTypes(), slotMethod.getGenericParameterTypes(), slotMethod.getAnnotatedParameterTypes());
+				if(match==Match.NoMatch) {
+					QMetaMethod signal = QMetaMethod.fromSignal(this);
+					if(signal!=null && signal.isValid()) {
+						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), slotMethod.toGenericString()));
+					}
+					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slotMethod.toGenericString()));
+				}
+	            return addConnectionToMethod(receiver, slotMethod, null, null, false, connectionType);
 	        }
-	        return addConnection(receiver, slotMethod, connectionType);
         }
 
-        @NativeAccess
         @io.qt.QtUninvokable
-        private QMetaObject.Connection addConnectionFromCpp(Object receiver, Method slotMethod, int conType) {
+        protected final QMetaObject.Connection addConnection(Object receiver, Method slotMethod, Qt.ConnectionType... connectionType) {
             if (slotMethod.isAnnotationPresent(QtUninvokable.class)) {
             	QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
-            	if(method.isValid()) {
-            		slotMethod = method.toReflectedMethod();
+            	if(method!=null && method.isValid() && method.methodType()!=QMetaMethod.MethodType.Constructor) {
+            		return addConnectionToMethod(receiver, method, connectionType);
             	}else {
             		throw new QUninvokableSlotException(slotMethod);
             	}
             }
 
-            if (!matchSlot(slotMethod))
-            	throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + slotMethod.toString());
-
-            List<Qt.ConnectionType> connectionType = new ArrayList<>();
-            if((conType & Qt.ConnectionType.DirectConnection.value()) == Qt.ConnectionType.DirectConnection.value()) {
-            	connectionType.add(Qt.ConnectionType.DirectConnection);
-            }
-            if((conType & Qt.ConnectionType.UniqueConnection.value()) == Qt.ConnectionType.UniqueConnection.value()) {
-            	connectionType.add(Qt.ConnectionType.UniqueConnection);
-            }
-            if((conType & Qt.ConnectionType.QueuedConnection.value()) == Qt.ConnectionType.QueuedConnection.value()) {
-            	connectionType.add(Qt.ConnectionType.QueuedConnection);
-            }
-            return addConnectionToMethod(receiver, slotMethod, null, null, false, false, connectionType.toArray(new Qt.ConnectionType[connectionType.size()]));
-        }
-
-        @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnection(Object receiver, Method slotMethod, Qt.ConnectionType... connectionType) {
-            if (slotMethod.isAnnotationPresent(QtUninvokable.class)) {
-            	QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
-            	if(method.isValid()) {
-            		slotMethod = method.toReflectedMethod();
-            	}else {
-            		throw new QUninvokableSlotException(slotMethod);
-            	}
-            }
-
-            if (!matchSlot(slotMethod))
-                throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + slotMethod.toString());
-
-            return addConnectionToMethod(receiver, slotMethod, null, null, false, true, connectionType);
+			if(matchMethodTypes(slotMethod.getParameterTypes(), slotMethod.getGenericParameterTypes(), slotMethod.getAnnotatedParameterTypes())==Match.NoMatch) {
+				QMetaMethod signal = QMetaMethod.fromSignal(this);
+				if(signal!=null && signal.isValid()) {
+					QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
+					if(method!=null && method.isValid()) {
+						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), method.cppMethodSignature()));
+					}
+					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), slotMethod.toGenericString()));
+				}
+				throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slotMethod.toGenericString()));
+			}
+            return addConnectionToMethod(receiver, slotMethod, null, null, false, connectionType);
         }
         
         /**
@@ -1771,11 +1802,11 @@ public abstract class QtJambiSignals {
                             AbstractSignal sig = (AbstractSignal)QtJambiInternal.fetchField(lookup, null, field);
                             if (sig == this) {
                             	if(!java.lang.reflect.Modifier.isStatic(field.getModifiers()))
-                            		throw new QSignalDeclarationException(String.format("Missing modifier 'static' at signal %1$s.%2$s.", declaringClass.getSimpleName(), field.getName()));
+                            		throw new QSignalDeclarationException(String.format("Missing modifier 'static' at signal %1$s.%2$s.", field.getDeclaringClass().getSimpleName(), field.getName()));
                             	if (!Modifier.isFinal(field.getModifiers())) {
 		                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
-		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", declaringClass.getSimpleName(), field.getName()));
-		                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", declaringClass.getSimpleName(), field.getName()));
+		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", field.getDeclaringClass().getSimpleName(), field.getName()));
+		                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", field.getDeclaringClass().getSimpleName(), field.getName()));
 		                    		}
 		                    	}
                                 found = true;
@@ -1796,7 +1827,7 @@ public abstract class QtJambiSignals {
                             	AbstractSignal sig = (AbstractSignal)QtJambiInternal.fetchField(lookup, containingObject, field);
                                 if (sig == this) {
                                 	if(java.lang.reflect.Modifier.isStatic(field.getModifiers()))
-                                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", declaringClass.getSimpleName(), field.getName()));
+                                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", cls.getSimpleName(), field.getName()));
                                 	if (!Modifier.isFinal(field.getModifiers())) {
     		                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
     		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", cls.getSimpleName(), field.getName()));
@@ -1813,9 +1844,9 @@ public abstract class QtJambiSignals {
                         cls = cls.getSuperclass();
                     }
                     if (!found) {
-                    	if(this.getClass().getDeclaringClass()==QObject.class)
+                    	if(QObject.class.isAssignableFrom(this.getClass().getDeclaringClass()))
                     		throw new QSignalDeclarationException("Signals must be declared as members of QObject subclasses.");
-                    	else if(this.getClass().getDeclaringClass()==QInstanceMemberSignals.class)
+                    	else if(QInstanceMemberSignals.class.isAssignableFrom(this.getClass().getDeclaringClass()))
                     		throw new QSignalDeclarationException("Signals must be declared as members of QInstanceMemberSignals subclasses.");
                     	else
                     		throw new QSignalInitializationException("Unable to resolve signal.");
@@ -1839,31 +1870,17 @@ public abstract class QtJambiSignals {
 
         @NativeAccess
         @io.qt.QtUninvokable
-        private synchronized void initializeSignal(Field field, Method method, int methodIndex) {
+        private synchronized void initializeSignal(Class<?> declaringClass, List<SignalParameterType> signalTypes, int methodIndex) {
         	if(methodIndex>=0 && core instanceof AnalyzingSignalCoreInterface) {
-	        	declaringClass = field.getDeclaringClass();
+	        	this.declaringClass = declaringClass;
 	        	setNativeSignal(true);
 	        	setQObjectSignal(true);
-	
-	            QtJambiInternal.ResolvedSignal resolvedSignal = QtJambiInternal.resolveSignal(field, declaringClass);
-	            if(method!=null) {
-	            	MethodHandle slotHandle = null;
-	            	try{
-    					slotHandle = QtJambiInternal.privateLookup(method.getDeclaringClass()).unreflect(method);
-    					if(slotHandle.isVarargsCollector()) {
-    						slotHandle = slotHandle.asFixedArity();
-    					}
-    				} catch (Throwable e2) {
-    					logger.log(java.util.logging.Level.WARNING, "Exception caught while analyzing slot "+method, e2);
-    				}
-	            	EternalConnection con = new EternalConnection(new WeakReference<Object>(this.containingObject()), method, slotHandle, null);
-	            	this.core = new QObjectsDirectSignalCore(resolvedSignal.signalTypes, methodIndex, con);
-	            }else {
-	            	this.core = new QObjectsSignalCore(resolvedSignal.signalTypes, methodIndex);
-	            }
+	        	this.core = new QObjectsSignalCore(signalTypes, methodIndex);
         	}
 		}
-
+        
+        private static final Map<Field,List<SignalParameterType>> signalTypesByField = Collections.synchronizedMap(new HashMap<>());
+        
         @io.qt.QtUninvokable
         private synchronized void analyzeSignalField(Field field) {
         	if(core instanceof AnalyzingSignalCoreInterface) {
@@ -1871,21 +1888,13 @@ public abstract class QtJambiSignals {
 	        	setNativeSignal(QtJambiInternal.isGeneratedClass(declaringClass));
 	        	setQObjectSignal(QObject.class.isAssignableFrom(declaringClass));
 	
-	            QtJambiInternal.ResolvedSignal resolvedSignal = QtJambiInternal.resolveSignal(field, declaringClass);
-	
-	            String name = resolvedSignal.field.getName();
-	            List<SignalParameterType> signalParameterTypes = resolvedSignal.signalTypes;
-	        	if(this instanceof io.qt.core.QDeclarableSignals.AbstractPrivateGenericSignal) {
-					Class<?>[] types = (Class<?>[])QtJambiInternal.fetchField(this, io.qt.core.QDeclarableSignals.AbstractPrivateGenericSignal.class, "types", Class[].class);
+	            String name = field.getName();
+	            List<SignalParameterType> signalTypes;
+	        	if((flags & IsGenericSignal)==IsGenericSignal) {
+					Class<?>[] types = (Class<?>[])QtJambiInternal.fetchField(this, null, "types", Class[].class);
 					List<SignalParameterType> typeList = Collections.emptyList();
 		        	for (int i = 0; i < types.length; i++) {
-		        		int arrayDimension = 0;
-		        		Class<?> type = types[i];
-		        		while (type.isArray()) {
-		        			arrayDimension++;
-		        			type = type.getComponentType();
-		                }
-		        		SignalParameterType signalType = new SignalParameterType(types[i], type, type, null, arrayDimension, false, false);
+		        		SignalParameterType signalType = new SignalParameterType(types[i], types[i], null, false, false);
 		        		if(i==0) {
 		        			if(types.length>1) {
 		        				typeList = new ArrayList<>();
@@ -1897,90 +1906,140 @@ public abstract class QtJambiSignals {
 		        			typeList.add(signalType);
 		        		}
 					}
-		        	signalParameterTypes = types.length>1 ? Collections.unmodifiableList(typeList) : typeList;
+		        	signalTypes = types.length>1 ? Collections.unmodifiableList(typeList) : typeList;
+	            }else {
+	            	if(isQObjectSignal()) {
+	            		QMetaObject metaObject = QMetaObject.forType(declaringClass);
+	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, null);
+	            		if(signalInfo.methodIndex>=0 && signalInfo.signalTypes!=null) {
+            				this.core = new QObjectsSignalCore(signalInfo.signalTypes, signalInfo.methodIndex);
+	            			return;
+	            		}
+	            	}
+	            	signalTypes = signalTypesByField.computeIfAbsent(field, QtJambiSignals::resolveSignal);
 	            }
-	        	if(isQObjectSignal()) {
-	        		Class<?>[] argumentTypes = new Class[resolvedSignal.signalTypes.size()];
-					int i=0;
-	    			for(SignalParameterType signalType : resolvedSignal.signalTypes) {
-	    				argumentTypes[i++] = signalType.originalType;
-	    			}
-					QMetaMethod signalMethod = QMetaObject.forType(declaringClass).method(name, argumentTypes);
-					int methodIndex = -1;
-					if(signalMethod!=null) {
-						methodIndex = signalMethod.methodIndex();
-					}
-					if(methodIndex>=0) {
-						this.core = new QObjectsSignalCore(resolvedSignal.signalTypes, methodIndex);
-					}else {
-						core = new JavaSignalCore(name, signalParameterTypes);
-					}
-	        	}else {
-	        		core = new JavaSignalCore(name, signalParameterTypes);
-	        	}
+        		core = new JavaSignalCore(name, signalTypes);
         	}
 		}
+        
+        @io.qt.QtUninvokable
+        void setCore(Class<?> declaringClass, String name, List<SignalParameterType> signalTypes, int methodIndex) {
+        	if(core instanceof AnalyzingSignalCoreInterface) {
+        		this.declaringClass = declaringClass;
+	        	if(methodIndex>=0 && signalTypes!=null && isQObjectSignal()) {
+	        		core = new QObjectsSignalCore(signalTypes, methodIndex);
+	        	}else {
+	        		core = new JavaSignalCore(name, signalTypes);
+	        	}
+        	}
+        }
 
         @io.qt.QtUninvokable
         private String signalParameters() {
-        	return MetaObjectTools.bunchOfClassNamesInARow(signalTypes(), false);
+        	List<String> args = new ArrayList<>();
+        	for (QtJambiSignals.SignalParameterType type : signalTypes()) {
+        		if(type.genericType!=null)
+        			args.add(type.genericType.getTypeName());
+        		else
+        			args.add(type.type.getName());
+        	}
+        	return String.join(", ", args);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+												arg4Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, Supplier<?> arg5Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+        										arg4Default, arg5Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
+        		final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+	        									arg4Default, arg5Default, arg6Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
+        		Supplier<?> arg7Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+								        		arg4Default, arg5Default, arg6Default, 
+								        		arg7Default);
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
+        		Supplier<?> arg7Default, Supplier<?> arg8Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+								        		arg4Default, arg5Default, arg6Default, 
+								        		arg7Default, arg8Default);        	
+        }
+        
+        @io.qt.QtUninvokable
+        protected synchronized final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
+        		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
+        		Supplier<?> arg7Default, Supplier<?> arg8Default, Supplier<?> arg9Default, final Object ... args) {
+        	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default, 
+								        		arg4Default, arg5Default, arg6Default, 
+								        		arg7Default, arg8Default, arg9Default);
         }
 
         @io.qt.QtUninvokable
         protected synchronized final void emitSignal(final Object ... args) {
-        	setInJavaEmission(true);
-            try {
-            	core.emitSignal(this, args);
-            } finally {
-            	setInJavaEmission(false);
-            }
+        	core.emitSignal(this, args);
+        }
+        
+        private enum Match{
+        	NoMatch,
+        	JavaMatch,
+        	NativeMatch
         }
 
         @io.qt.QtUninvokable
-        private boolean matchSlot(Method slot) {
-        	Class<?>[] slotArguments = slot.getParameterTypes();
-            List<SignalParameterType> signalTypes = signalTypes();
-            if (slotArguments.length > signalTypes.size()) {
-                return false;
-            }
-
-            for (int i = 0; i < slotArguments.length; ++i) {
-                if (!matchTwoTypes(slotArguments[i],
-                		signalTypes.get(i).type,
-                		signalTypes.get(i).arrayDimension)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        @io.qt.QtUninvokable
-        boolean matchTypes(Class<?>... types) {
-        	List<SignalParameterType> typeList = Collections.emptyList();
+        final boolean matchTypes(Class<?>... types) {
+        	List<SignalParameterType> receivedTypes = Collections.emptyList();
         	for (int i = 0; i < types.length; i++) {
-        		int arrayDimension = 0;
-        		Class<?> type = types[i];
-        		if(type!=null) {
-	        		while (type.isArray()) {
-	        			arrayDimension++;
-	        			type = type.getComponentType();
-	                }
-        		}
-        		SignalParameterType signalType = new SignalParameterType(types[i], type, type, null, arrayDimension, false, false);
+        		SignalParameterType signalType = new SignalParameterType(types[i], types[i], null, false, false);
         		if(i==0) {
         			if(types.length>1) {
-        				typeList = new ArrayList<>();
-        				typeList.add(signalType);
+        				receivedTypes = new ArrayList<>();
+        				receivedTypes.add(signalType);
         			}else {
-        				typeList = Collections.singletonList(signalType);
+        				receivedTypes = Collections.singletonList(signalType);
         			}
         		}else {
-        			typeList.add(signalType);
+        			receivedTypes.add(signalType);
         		}
 			}
-        	List<SignalParameterType> signalTypes = signalTypes();
-        	if(signalTypes.equals(typeList)) {
+        	List<SignalParameterType> sentTypes = signalTypes();
+        	if(sentTypes.equals(receivedTypes)) {
         		return true;
         	}else {
         		String signalClassName = this.getClass().getName();
@@ -1993,167 +2052,167 @@ public abstract class QtJambiSignals {
         				|| signalClassName.endsWith("Default7")
         				|| signalClassName.endsWith("Default8")
         				|| signalClassName.endsWith("Default9")) {
-        			signalTypes = new ArrayList<>(signalTypes);
+        			sentTypes = new ArrayList<>(sentTypes);
     				if(signalClassName.endsWith("Default1")) {
-    					if(signalTypes.size()>=1) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=1) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}
             		}else if(signalClassName.endsWith("Default2")) {
-    					if(signalTypes.size()>=2) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=2) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default3")) {
-    					if(signalTypes.size()>=3) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=3) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default4")) {
-    					if(signalTypes.size()>=4) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=4) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default5")) {
-    					if(signalTypes.size()>=5) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=5) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default6")) {
-    					if(signalTypes.size()>=6) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=6) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default7")) {
-    					if(signalTypes.size()>=7) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=7) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default8")) {
-    					if(signalTypes.size()>=8) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=8) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}else if(signalClassName.endsWith("Default9")) {
-    					if(signalTypes.size()>=9) {
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    					if(sentTypes.size()>=9) {
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
-    						signalTypes.remove(signalTypes.size()-1);
-    						if(signalTypes.equals(typeList))
+    						sentTypes.remove(sentTypes.size()-1);
+    						if(sentTypes.equals(receivedTypes))
     			        		return true;
     					}            			
             		}
@@ -2161,50 +2220,464 @@ public abstract class QtJambiSignals {
         	}
             return false;
         }
-
+        
         @io.qt.QtUninvokable
-        private boolean matchTwoTypes(Class<?> slotArgument, Class<?> signalArgument, int signalArrayDims) {
-            return matchTwoTypes(slotArgument, signalArgument, signalArrayDims, false);
-        }
-
-        @io.qt.QtUninvokable
-        private boolean matchTwoTypes(Class<?> slotArgument,
-                                      Class<?> signalArgument,
-                                      int signalArrayDims,
-                                      boolean wasArray) {
-        	if(slotArgument.isPrimitive() && !wasArray)
-        		slotArgument = QtJambiInternal.getComplexType(slotArgument);
-        	if(signalArgument.isPrimitive() && signalArrayDims==0)
-        		signalArgument = QtJambiInternal.getComplexType(signalArgument);
-
-            if (slotArgument.isArray() || signalArrayDims < 0) {
-                int slotArrayDims = 0;
-                while (slotArgument.isArray()) {
-                    slotArgument = slotArgument.getComponentType();
-                    ++slotArrayDims;
-                }
-                // JRE7 returns Class as the top level item, but isArray() is set (for each dimension, hence we loop)
-                // JRE5/JRE6 returns GenericArrayTypeImpl for each dimension and the final unwrapping returns a Class with isArray() not set
-                // So this while loop below is needed since JRE7, the purpose is not really to count but to unwrap.
-                // This section of code is commented out because it is not needed because we unwrap in
-                //  QtJambiInternal#resolveSignal() and use the keep the result.
-                //if (signalArgument.isArray()) {
-                //    int newSignalArrayDims = 0;
-                //    while (signalArgument.isArray()) {
-                //        newSignalArrayDims++;
-                //        signalArgument = signalArgument.getComponentType();
-                //    }
-                //    if(signalArrayDims >= 0 && newSignalArrayDims != signalArrayDims)
-                //        return false;
-                //}
-                return slotArrayDims == signalArrayDims && matchTwoTypes(slotArgument, signalArgument, 0, true);
-            } else if (!slotArgument.isAssignableFrom(signalArgument)) {
-                return false;
-            }
-
-            return true;
+        private static boolean matches(boolean isNativeConnect, Type sentType, Type receivedType) {
+        	if(sentType instanceof Class) {
+            	Class<?> sentClass = (Class<?>)sentType;
+        		if(receivedType instanceof Class) {
+        			Class<?> receivedClass = (Class<?>)receivedType;
+                	if(sentClass==receivedClass || receivedClass.isAssignableFrom(sentClass)) {
+                		return true;
+                	}
+        		}else if(receivedType instanceof WildcardType) {
+        			WildcardType receivedWildcardType = (WildcardType)receivedType;
+        			for(Type bound : receivedWildcardType.getUpperBounds()) {
+        				if(!matches(isNativeConnect, sentType, bound))
+        					return false;
+        			}
+        			for(Type bound : receivedWildcardType.getLowerBounds()) {
+        				if(!matches(isNativeConnect, bound, sentType))
+        					return false;
+        			}
+        			return true;
+        		}else if(receivedType instanceof TypeVariable) {
+        			TypeVariable<?> receivedVarType = (TypeVariable<?>)receivedType;
+        			for(Type bound : receivedVarType.getBounds()) {
+        				if(!matches(isNativeConnect, sentType, bound))
+        					return false;
+        			}
+        			return true;
+        		}else if(receivedType instanceof ParameterizedType) {
+        			ParameterizedType receivedParamType = (ParameterizedType)receivedType;
+        			return matches(isNativeConnect, sentType, receivedParamType.getRawType());
+        		}
+        	}else if(sentType instanceof WildcardType) {
+    			WildcardType sentWildcardType = (WildcardType)sentType;
+    			for(Type bound : sentWildcardType.getUpperBounds()) {
+    				if(!matches(isNativeConnect, bound, receivedType))
+    					return false;
+    			}
+    			for(Type bound : sentWildcardType.getLowerBounds()) {
+    				if(!matches(isNativeConnect, receivedType, bound))
+    					return false;
+    			}
+    			return true;
+    		}else if(sentType instanceof TypeVariable) {
+    			TypeVariable<?> sentVarType = (TypeVariable<?>)receivedType;
+    			for(Type bound : sentVarType.getBounds()) {
+    				if(!matches(isNativeConnect, bound, receivedType))
+    					return false;
+    			}
+    			return true;
+    		}else if(sentType instanceof ParameterizedType) {
+        		ParameterizedType sentParamType = (ParameterizedType)sentType;
+        		if(receivedType instanceof WildcardType) {
+        			WildcardType receivedWildcardType = (WildcardType)receivedType;
+        			for(Type bound : receivedWildcardType.getUpperBounds()) {
+        				if(!matches(isNativeConnect, sentType, bound))
+        					return false;
+        			}
+        			for(Type bound : receivedWildcardType.getLowerBounds()) {
+        				if(!matches(isNativeConnect, bound, sentType))
+        					return false;
+        			}
+        			return true;
+        		}else if(receivedType instanceof TypeVariable) {
+        			TypeVariable<?> receivedVarType = (TypeVariable<?>)receivedType;
+        			for(Type bound : receivedVarType.getBounds()) {
+        				if(!matches(isNativeConnect, sentType, bound))
+        					return false;
+        			}
+        			return true;
+        		}else if(receivedType instanceof ParameterizedType) {
+        			ParameterizedType receivedParamType = (ParameterizedType)receivedType;
+    				if(!matches(isNativeConnect, sentParamType.getRawType(), receivedParamType.getRawType()))
+    					return false;
+    				Type[] sentArgs = sentParamType.getActualTypeArguments();
+	    			Type[] receivedArgs = receivedParamType.getActualTypeArguments();
+	    			if(sentArgs.length!=receivedArgs.length)
+	    				return false;
+	    			for (int i = 0; i < receivedArgs.length; i++) {
+						if(!matches(isNativeConnect, sentArgs[i], receivedArgs[i]))
+							return false;
+					}
+	    			return true;
+        		}else if(receivedType instanceof Class) {
+        			return matches(isNativeConnect, sentParamType.getRawType(), receivedType);
+        		}
+        	}
+        	return false;
         }
         
+        @io.qt.QtUninvokable
+        private static Match matches(boolean isNativeConnect, SignalParameterType sentType, SignalParameterType receivedType) {
+        	Class<?> sentClass = sentType.type;
+        	Class<?> receivedClass = receivedType.type;
+        	if(sentClass==int.class)
+        		sentClass = Integer.class;
+        	if(sentClass==byte.class)
+        		sentClass = byte.class;
+        	if(sentClass==short.class)
+        		sentClass = Short.class;
+        	if(sentClass==long.class)
+        		sentClass = Long.class;
+        	if(sentClass==boolean.class)
+        		sentClass = Boolean.class;
+        	if(sentClass==char.class)
+        		sentClass = Character.class;
+        	if(sentClass==double.class)
+        		sentClass = Double.class;
+        	if(sentClass==float.class)
+        		sentClass = Float.class;
+        	if(receivedClass==int.class)
+        		receivedClass = Integer.class;
+        	if(receivedClass==byte.class)
+        		receivedClass = Byte.class;
+        	if(receivedClass==short.class)
+        		receivedClass = Short.class;
+        	if(receivedClass==long.class)
+        		receivedClass = Long.class;
+        	if(receivedClass==boolean.class)
+        		receivedClass = Boolean.class;
+        	if(receivedClass==char.class)
+        		receivedClass = Character.class;
+        	if(receivedClass==double.class)
+        		receivedClass = Double.class;
+        	if(receivedClass==float.class)
+        		receivedClass = Float.class;
+        	if(isNativeConnect) {
+            	if(Set.class==receivedClass)
+            		receivedClass = QSet.class;        		
+            	if(List.class==receivedClass)
+            		receivedClass = QList.class;
+            	if(NavigableMap.class==receivedClass)
+            		receivedClass = QMap.class;        		
+            	if(Map.class==receivedClass)
+            		receivedClass = QHash.class;        		
+            	if(Set.class==sentClass)
+            		sentClass = QSet.class;        		
+            	if(List.class==sentClass)
+            		sentClass = QList.class;        		
+            	if(NavigableMap.class==sentClass)
+            		sentClass = QMap.class;        		
+            	if(Map.class==sentClass)
+            		sentClass = QHash.class;        		
+        	}
+        	if(sentClass==receivedClass || receivedClass.isAssignableFrom(sentClass)) {
+        		if(sentType.genericType==null || sentType.genericType instanceof Class) {
+        			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        		}else if(sentType.genericType instanceof ParameterizedType && receivedType.genericType instanceof ParameterizedType) {
+        			ParameterizedType sentParamType = (ParameterizedType)sentType.genericType;
+        			ParameterizedType receivedParamType = (ParameterizedType)receivedType.genericType;
+        			Type[] sentArgs = sentParamType.getActualTypeArguments();
+        			Type[] receivedArgs = receivedParamType.getActualTypeArguments();
+        			if(sentArgs.length!=receivedArgs.length)
+        				return Match.NoMatch;
+        			for (int i = 0; i < receivedArgs.length; i++) {
+						if(!matches(isNativeConnect, sentArgs[i], receivedArgs[i]))
+							return Match.NoMatch;
+					}
+        			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        		}
+        	}
+        	if(isNativeConnect) {
+        		if(receivedClass==QStringList.class
+        				&& sentClass==QList.class
+        				&& sentType.genericType instanceof ParameterizedType) {
+        			Type[] sentArgs = ((ParameterizedType)sentType.genericType).getActualTypeArguments();
+        			if(sentArgs.length==1 && sentArgs[0]==String.class) {
+        				return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        			}
+        		}
+        	}
+        	return Match.NoMatch;
+        }
+        
+        @io.qt.QtUninvokable
+        private static Match matches(boolean isNativeConnect, List<SignalParameterType> sentTypes, List<SignalParameterType> receivedTypes) {
+        	Match result = Match.NoMatch;
+        	if(sentTypes.size()==receivedTypes.size()) {
+        		result = Match.NativeMatch;
+        		for (int i = 0; i < sentTypes.size(); i++) {
+        			switch(matches(isNativeConnect, sentTypes.get(i), receivedTypes.get(i))) {
+					case JavaMatch:
+						result = Match.JavaMatch;
+						break;
+					case NativeMatch:
+						break;
+					case NoMatch:
+						return Match.NoMatch;
+					default:
+						break;
+        			}
+				}
+        		return result;
+        	}
+        	return result;
+        }
+        
+        @io.qt.QtUninvokable
+        private Match matchMethodTypes(List<SignalParameterType> receivedTypes, String signalClassName) {
+        	List<SignalParameterType> sentTypes = signalTypes();
+        	boolean isNativeConnect = isQObjectSignal() && methodIndex()>=0;
+        	Match result = matches(isNativeConnect, sentTypes, receivedTypes);
+        	if(result!=Match.NoMatch) {
+        		return result;
+        	}else if(sentTypes.size()>receivedTypes.size()){
+        		sentTypes = new ArrayList<>(sentTypes);
+        		while(sentTypes.size()>receivedTypes.size()) {
+        			sentTypes.remove(sentTypes.size()-1);
+        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+        			if(result!=Match.NoMatch)
+                		return result;
+        		}
+        	}else if(sentTypes.size()<receivedTypes.size() 
+        			&& signalClassName!=null
+        			&& (signalClassName.endsWith("Default1")
+            				|| signalClassName.endsWith("Default2")
+            				|| signalClassName.endsWith("Default3")
+            				|| signalClassName.endsWith("Default4")
+            				|| signalClassName.endsWith("Default5")
+            				|| signalClassName.endsWith("Default6")
+            				|| signalClassName.endsWith("Default7")
+            				|| signalClassName.endsWith("Default8")
+            				|| signalClassName.endsWith("Default9"))){
+    			receivedTypes = new ArrayList<>(receivedTypes);
+				if(signalClassName.endsWith("Default1")) {
+					if(receivedTypes.size()>=1) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}
+        		}else if(signalClassName.endsWith("Default2")) {
+					if(receivedTypes.size()>=2) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default3")) {
+					if(receivedTypes.size()>=3) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default4")) {
+					if(receivedTypes.size()>=4) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default5")) {
+					if(receivedTypes.size()>=5) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default6")) {
+					if(receivedTypes.size()>=6) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default7")) {
+					if(receivedTypes.size()>=7) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default8")) {
+					if(receivedTypes.size()>=8) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}else if(signalClassName.endsWith("Default9")) {
+					if(receivedTypes.size()>=9) {
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+						receivedTypes.remove(receivedTypes.size()-1);
+	        			result = matches(isNativeConnect, sentTypes, receivedTypes);
+	        			if(result!=Match.NoMatch)
+	                		return result;
+					}            			
+        		}
+    		}
+            return result;
+        }
+        
+        @io.qt.QtUninvokable
+        private Match matchMethodTypes(Class<?>[] types, Type[] genericTypes, AnnotatedType[] annotatedTypes) {
+        	List<SignalParameterType> typeList = Collections.emptyList();
+        	for (int i = 0; i < types.length; i++) {
+        		Class<?> type = types[i];
+        		Type genericType = genericTypes==null ? type : genericTypes[i];
+        		AnnotatedType annotatedType = annotatedTypes==null ? null : annotatedTypes[i];
+        		SignalParameterType signalType = new SignalParameterType(type, genericType, annotatedType, false, false);
+        		if(i==0) {
+        			if(types.length>1) {
+        				typeList = new ArrayList<>();
+        				typeList.add(signalType);
+        			}else {
+        				typeList = Collections.singletonList(signalType);
+        			}
+        		}else {
+        			typeList.add(signalType);
+        		}
+			}
+        	return matchMethodTypes(typeList, null);
+        }
+
         protected void checkConnection(Object receiver, boolean slotObject) {
         	if(receiver==this) {
     			throw new IllegalArgumentException("Cannot connect a signal to itself.");
@@ -2212,7 +2685,7 @@ public abstract class QtJambiSignals {
         }
 
         @io.qt.QtUninvokable
-        private synchronized QMetaObject.Connection addConnectionToMethod(Object receiver, Method slot, MethodHandle slotHandle, Object[] lambdaArgs, boolean unsolvableConnection, boolean allowNativeConnect, Qt.ConnectionType... connectionType) {
+        private synchronized QMetaObject.Connection addConnectionToMethod(Object receiver, Method slot, MethodHandle slotHandle, Object[] lambdaArgs, boolean unsolvableConnection, Qt.ConnectionType... connectionType) {
     		checkConnection(receiver, false);
         	List<Supplier<?>> _lambdaArgs = null;
 			if(lambdaArgs!=null && lambdaArgs.length>0) {
@@ -2235,67 +2708,117 @@ public abstract class QtJambiSignals {
 					}
 				}
 			}
-        	return core.addConnectionToMethod(this, receiver, slot, slotHandle, _lambdaArgs, unsolvableConnection, allowNativeConnect, connectionType);
+        	return core.addConnectionToMethod(this, receiver, slot, slotHandle, _lambdaArgs, unsolvableConnection, connectionType);
         }
         
         @io.qt.QtUninvokable
         private synchronized QMetaObject.Connection addConnectionToMethod(Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
     		checkConnection(receiver, false);
+    		QMetaMethod signalMethod = QMetaMethod.fromSignal(this);
+			if(signalMethod!=null 
+					&& signalMethod.isValid() 
+					&& QMetaObject.checkConnectArgs(signalMethod, slot)) {
+				boolean hasWrappers = false;
+				for(QByteArray ba : signalMethod.parameterTypes()) {
+					if(ba.startsWith("J") && ba.endsWith("Wrapper")) {
+						hasWrappers = true;
+						break;
+					}
+				}
+				if(!hasWrappers) {
+					for(QByteArray ba : slot.parameterTypes()) {
+    					if(ba.startsWith("J") && ba.endsWith("Wrapper")) {
+    						hasWrappers = true;
+    						break;
+    					}
+    				}
+				}
+				if(!hasWrappers) {
+					return core.addConnectionToMethod(this, receiver, slot, connectionType);
+				}
+			}
+			if(receiver instanceof QObject && slot.methodType()==QMetaMethod.MethodType.Signal) {
+				AbstractSignal signal = slot.toSignal((QObject)receiver);
+				if(signal!=null) {
+    				if(matchMethodTypes(signal.signalTypes(), signal.getClass().getName())!=Match.NativeMatch) {
+    					if(signalMethod!=null && signalMethod.isValid()) {
+							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signalMethod.cppMethodSignature(), slot.cppMethodSignature()));
+    					}
+    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+    				}
+				}
+			}else if(slot.methodType()==QMetaMethod.MethodType.Method
+					|| slot.methodType()==QMetaMethod.MethodType.Slot){
+				Method slotMethod = slot.toReflectedMethod();
+				if(slotMethod!=null) {
+					Match match = matchMethodTypes(slotMethod.getParameterTypes(), slotMethod.getGenericParameterTypes(), slotMethod.getAnnotatedParameterTypes());
+					switch(match) {
+					case NoMatch:
+    					if(signalMethod!=null && signalMethod.isValid()) {
+							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signalMethod.cppMethodSignature(), slot.cppMethodSignature()));
+    					}
+						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+					case JavaMatch:
+						return addConnectionToMethod(receiver, slotMethod, null, null, false, connectionType);
+					default:
+					}
+				}
+			}
         	return core.addConnectionToMethod(this, receiver, slot, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(GenericSlot slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(GenericSlot slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(GenericSlotObjectConnection::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot0 slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot0 slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection0::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot1<?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot1<?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection1::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot2<?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot2<?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection2::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot3<?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot3<?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection3::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot4<?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot4<?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection4::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot5<?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot5<?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection5::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot6<?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot6<?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection6::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot7<?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot7<?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection7::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot8<?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot8<?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection8::new, slotObject, connectionType);
         }
 
         @io.qt.QtUninvokable
-        protected QMetaObject.Connection addConnectionToSlotObject(Slot9<?,?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
+        protected final QMetaObject.Connection addConnectionToSlotObject(Slot9<?,?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection9::new, slotObject, connectionType);
         }
 
@@ -2334,7 +2857,7 @@ public abstract class QtJambiSignals {
 					        	checkConnection(lambdaArgs[i], true);
 							}
 						}
-						return addConnectionToMethod(owner, reflectiveMethod, methodHandle, lambdaArgs, false, true, connectionType);
+						return addConnectionToMethod(owner, reflectiveMethod, methodHandle, lambdaArgs, false, connectionType);
 					}else if(serializedLambda.getCapturedArgCount()>0
 							&& (arg1 = serializedLambda.getCapturedArg(0))!=null
 							&& reflectiveMethod.getDeclaringClass().isInstance(arg1)){
@@ -2354,8 +2877,43 @@ public abstract class QtJambiSignals {
 								for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
 									lambdaArgs[i-1] = serializedLambda.getCapturedArg(i);
 								}
+							}else if(arg1 instanceof QMetaObject.AbstractSignal && reflectiveMethod.getName().equals("emit")) {
+								QMetaObject.AbstractSignal signal = (QMetaObject.AbstractSignal)arg1;
+								QMetaMethod method = QMetaMethod.fromSignal(signal);
+					    		if(method!=null && method.isValid()) {
+					    			QMetaObject.Connection connection = addConnectionToMethod(signal.containingObject(), method, connectionType);
+					    			if(connection!=null)
+					    				return connection;
+					    		}
+				        	}
+							Class<?>[] paraTypes = reflectiveMethod.getParameterTypes();
+							Type[] genTypes = reflectiveMethod.getGenericParameterTypes();
+							AnnotatedType[] annTypes = reflectiveMethod.getAnnotatedParameterTypes();
+							if(lambdaArgs==null || lambdaArgs.length==0) {
+								QMetaMethod metaMethod = QMetaMethod.fromReflectedMethod(reflectiveMethod);
+								if(metaMethod!=null && metaMethod.isValid()) {
+									return addConnectionToMethod(arg1, metaMethod, connectionType);
+								}
+							}else {
+								Class<?>[] _paraTypes = new Class[paraTypes.length-lambdaArgs.length];
+								Type[] _genTypes = new Type[genTypes.length-lambdaArgs.length];
+								AnnotatedType[] _annTypes = new AnnotatedType[annTypes.length-lambdaArgs.length];
+								System.arraycopy(paraTypes, lambdaArgs.length, _paraTypes, 0, _paraTypes.length);
+								System.arraycopy(genTypes, lambdaArgs.length, _genTypes, 0, _genTypes.length);
+								System.arraycopy(annTypes, lambdaArgs.length, _annTypes, 0, _annTypes.length);
+								paraTypes = _paraTypes;
+								genTypes = _genTypes;
+								annTypes = _annTypes;
 							}
-							return addConnectionToMethod(arg1, reflectiveMethod, methodHandle, lambdaArgs, false, true, connectionType);
+							Match match = matchMethodTypes(paraTypes, genTypes, annTypes);
+							if(match==Match.NoMatch) {
+								QMetaMethod signal = QMetaMethod.fromSignal(this);
+								if(signal!=null && signal.isValid()) {
+									throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), reflectiveMethod.toGenericString()));
+								}
+								throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), reflectiveMethod.toGenericString()));
+							}
+							return addConnectionToMethod(arg1, reflectiveMethod, methodHandle, lambdaArgs, false, connectionType);
 						}else{
 							try {
 								lambdaOwnerClass = Class.forName(serializedLambda.getCapturingClass().replace('/', '.'));
@@ -2406,92 +2964,129 @@ public abstract class QtJambiSignals {
             
             return this.core.addConnectionToSlotObject(this, factory, lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
         }
+        
+        @io.qt.QtUninvokable
+        protected final synchronized QMetaObject.Connection addConnectionToSignalObject(AbstractSignal signalObject, Qt.ConnectionType[] connectionType) {
+        	this.name();
+    		QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signalObject);
+    		if(method!=null && method.isValid()) {
+    			QMetaObject.Connection connection = addConnectionToMethod(signalObject.containingObject(), method, connectionType);
+    			if(connection!=null)
+    				return connection;
+    		}
+    		for(int signalTypeCount = signalTypes().size(); signalTypeCount>=0; --signalTypeCount) {
+	    		for(Method mtd : signalObject.getClass().getMethods()) {
+	    			if(mtd.getName().equals("emit") 
+	    					&& mtd.getReturnType()==void.class
+	    					&& mtd.getParameterCount()==signalTypeCount) {
+	    				return addConnectionToMethod(signalObject, mtd, null, null, false, connectionType);
+	    			}
+	    		}
+    		}
+        	return null;//this.core.addConnectionToSignal(this, signalObject, connectionType);
+        }
+        
+        @io.qt.QtUninvokable
+		protected final synchronized boolean removeConnectionToSignalObject(AbstractSignal signalObject) {
+        	this.name();
+    		QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signalObject);
+    		if(method!=null && method.isValid()) {
+    			boolean result = removeConnectionToMethod(signalObject.containingObject(), method, true);
+    			if(result)
+    				return result;
+    		}
+    		for(int signalTypeCount = signalTypes().size(); signalTypeCount>=0; --signalTypeCount) {
+	    		for(Method mtd : signalObject.getClass().getMethods()) {
+	    			if(mtd.getName().equals("emit") 
+	    					&& mtd.getReturnType()==void.class
+	    					&& mtd.getParameterCount()==signalTypeCount) {
+	    				return removeConnectionToMethod(signalObject, mtd, null, true);
+	    			}
+	    		}
+    		}
+        	return false;
+        }
 
         @io.qt.QtUninvokable
 		protected synchronized boolean removeConnectionToSlotObject(Serializable slotObject) {
-            if (inDisconnect())
-                return false;  // Why might we re-enter ?  Why are we not reentrant ?
-			setInDisconnect(true);
-			try{
-				SerializedLambda _serializedLambda = QtJambiInternal.serializeLambdaExpression(slotObject);
-				Class<?> _lambdaOwnerClass = null;
-				Class<?> _functionalInterfaceClass = null;
-	            if(_serializedLambda!=null){
-            		try {
-						_lambdaOwnerClass = slotObject.getClass().getClassLoader().loadClass(_serializedLambda.getCapturingClass().replace('/', '.'));
-						_functionalInterfaceClass = slotObject.getClass().getClassLoader().loadClass(_serializedLambda.getFunctionalInterfaceClass().replace('/', '.'));
-					} catch (Throwable e) {
-					}
-	            	MethodHandle methodHandle = QtJambiInternal.lambdaSlotHandles(slotObject.getClass(), _serializedLambda);
-					Method reflectiveMethod = null;
-					if(methodHandle!=null){
-						reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
-						if(methodHandle.isVarargsCollector()) {
-							methodHandle = methodHandle.asFixedArity();
-						}
-					}
-					Object _lambdaOwner = null;
-					if(reflectiveMethod!=null && _serializedLambda!=null && methodHandle!=null){
-						if(Modifier.isStatic(reflectiveMethod.getModifiers())){
-							setInDisconnect(false);
-							Object[] lambdaArgs = null;
-							if(_serializedLambda.getCapturedArgCount()>0){
-								lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()];
-								for(int i=0; i<_serializedLambda.getCapturedArgCount(); i++) {
-									lambdaArgs[i] = _serializedLambda.getCapturedArg(i);
-								}
-							}
-							try{
-								if(removeConnectionToMethod(null, reflectiveMethod, lambdaArgs, true))
-									return true;
-							}finally {
-								setInDisconnect(true);
-							}
-						}else if(_serializedLambda.getCapturedArgCount()>0 
-								&& reflectiveMethod.getDeclaringClass().isInstance(_serializedLambda.getCapturedArg(0))){
-							Object[] lambdaArgs = null;
-							if(_serializedLambda.getCapturedArgCount()>1){
-								lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()-1];
-								for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
-									lambdaArgs[i-1] = _serializedLambda.getCapturedArg(i);
-								}
-							}
-							setInDisconnect(false);
-							try{
-								if(removeConnectionToMethod(_serializedLambda.getCapturedArg(0), reflectiveMethod, lambdaArgs, true))
-									return true;
-							}finally {
-								setInDisconnect(true);
-							}
-						}
-					}
-
-					int _lambdaHashCode = 0;
-					if(_serializedLambda!=null){
-						_lambdaHashCode = hashcode(_serializedLambda);
-						if(_serializedLambda.getCapturedArgCount()>0){
-							_lambdaOwner = _serializedLambda.getCapturedArg(0);
-							if(!(_lambdaOwner instanceof QtThreadAffineInterface) || !(_lambdaOwner instanceof QtJambiSignals.AbstractSignal)){
-								for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
-									Object arg = _serializedLambda.getCapturedArg(i);
-									if(arg instanceof QtThreadAffineInterface){
-										_lambdaOwner = arg;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if(_lambdaOwner==null){
-						_lambdaOwner = _lambdaOwnerClass;
-					}
-					return core.removeConnectionToSlotObject(this, slotObject, _functionalInterfaceClass, _lambdaOwner, _lambdaOwnerClass, _lambdaHashCode, true);
-				}else{
-					return core.removeConnectionToSlotObject(this, slotObject, _functionalInterfaceClass, null, _lambdaOwnerClass, 0, false);
+        	if(slotObject instanceof AbstractSignal) {
+        		return removeConnectionToSignalObject((AbstractSignal)slotObject);
+        	}
+			SerializedLambda _serializedLambda = QtJambiInternal.serializeLambdaExpression(slotObject);
+			Class<?> _lambdaOwnerClass = null;
+			Class<?> _functionalInterfaceClass = null;
+            if(_serializedLambda!=null){
+        		try {
+					_lambdaOwnerClass = slotObject.getClass().getClassLoader().loadClass(_serializedLambda.getCapturingClass().replace('/', '.'));
+					_functionalInterfaceClass = slotObject.getClass().getClassLoader().loadClass(_serializedLambda.getFunctionalInterfaceClass().replace('/', '.'));
+				} catch (Throwable e) {
 				}
-			}finally{
-				setInDisconnect(false);
+            	MethodHandle methodHandle = QtJambiInternal.lambdaSlotHandles(slotObject.getClass(), _serializedLambda);
+				Method reflectiveMethod = null;
+				if(methodHandle!=null){
+					reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
+					if(methodHandle.isVarargsCollector()) {
+						methodHandle = methodHandle.asFixedArity();
+					}
+				}
+				Object _lambdaOwner = null;
+				if(reflectiveMethod!=null && _serializedLambda!=null && methodHandle!=null){
+					if(Modifier.isStatic(reflectiveMethod.getModifiers())){
+						Object[] lambdaArgs = null;
+						if(_serializedLambda.getCapturedArgCount()>0){
+							lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()];
+							for(int i=0; i<_serializedLambda.getCapturedArgCount(); i++) {
+								lambdaArgs[i] = _serializedLambda.getCapturedArg(i);
+							}
+						}
+						if(removeConnectionToMethod(null, reflectiveMethod, lambdaArgs, true))
+							return true;
+					}else if(_serializedLambda.getCapturedArgCount()>0 
+							&& reflectiveMethod.getDeclaringClass().isInstance(_serializedLambda.getCapturedArg(0))){
+						Object[] lambdaArgs = null;
+						if(_serializedLambda.getCapturedArgCount()>1){
+							if(_serializedLambda.getCapturedArg(0) instanceof QMetaObject.AbstractSignal && reflectiveMethod.getName().equals("emit")) {
+								QMetaObject.AbstractSignal signalObject = (QMetaObject.AbstractSignal)_serializedLambda.getCapturedArg(0);
+								QMetaMethod method = QMetaMethod.fromSignal(signalObject);
+					    		if(method!=null && method.isValid()) {
+					    			boolean result = removeConnectionToMethod(signalObject.containingObject(), method, true);
+					    			if(result)
+					    				return result;
+					    		}
+				        	}
+							lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()-1];
+							for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
+								lambdaArgs[i-1] = _serializedLambda.getCapturedArg(i);
+							}
+						}
+						if(removeConnectionToMethod(_serializedLambda.getCapturedArg(0), reflectiveMethod, lambdaArgs, true))
+							return true;
+					}
+				}
+
+				int _lambdaHashCode = 0;
+				if(_serializedLambda!=null){
+					_lambdaHashCode = hashcode(_serializedLambda);
+					if(_serializedLambda.getCapturedArgCount()>0){
+						_lambdaOwner = _serializedLambda.getCapturedArg(0);
+						if(!(_lambdaOwner instanceof QtThreadAffineInterface) || !(_lambdaOwner instanceof QtJambiSignals.AbstractSignal)){
+							for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
+								Object arg = _serializedLambda.getCapturedArg(i);
+								if(arg instanceof QtThreadAffineInterface){
+									_lambdaOwner = arg;
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+				if(_lambdaOwner==null){
+					_lambdaOwner = _lambdaOwnerClass;
+				}
+				return core.removeConnectionToSlotObject(this, slotObject, _functionalInterfaceClass, _lambdaOwner, _lambdaOwnerClass, _lambdaHashCode, true);
+			}else{
+				return core.removeConnectionToSlotObject(this, slotObject, _functionalInterfaceClass, null, _lambdaOwnerClass, 0, false);
 			}
 		}
 
@@ -2518,73 +3113,55 @@ public abstract class QtJambiSignals {
 
         @io.qt.QtUninvokable
         protected final boolean removeConnection(Object receiver, String method) {
-        	if(receiver instanceof QMetaObject.Connection && method==null){
-				return removeConnection((QMetaObject.Connection)receiver);
-			}else {
+        	if(receiver!=null && method!=null) {
+	        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(receiver.getClass());
 	        	Method slotMethod = null;
-		        if (method != null) {
-		            slotMethod = lookupSlot(receiver, method, null);
-		            if (slotMethod == null) {
-		            	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(receiver.getClass());
-			        	if(metaObject!=null) {
-			        		QMetaMethod metaMethod = metaObject.method(method);
-			        		if(metaMethod!=null && metaMethod.isValid()) {
-			        			if(!matchTypes(metaMethod.parameterClassTypes().toArray(new Class[metaMethod.parameterTypes().size()]))) {
-			        				throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + metaMethod.methodSignature());
-			        			}
-			        			return removeConnectionToMethod(receiver, metaMethod, true);
-			        		}
-			        	}
-			        	throw new QNoSuchSlotException(receiver, method);
-		            }
-		        }
+	        	if(metaObject!=null) {
+	        		QMetaMethod metaMethod = metaObject.method(method);
+	        		if(metaMethod==null || !metaMethod.isValid()) {
+	        			slotMethod = lookupSlot(receiver, method, null);
+	        			if (slotMethod == null) {
+	        	            throw new QNoSuchSlotException(receiver, method);
+	        	        }
+	        			metaMethod = QMetaMethod.fromReflectedMethod(slotMethod);
+	        		}
+	        		if(metaMethod!=null && metaMethod.isValid()) {
+	        			return removeConnectionToMethod(receiver, metaMethod, true);
+	        		}
+	        	}
+	        	if (slotMethod == null)
+	        		slotMethod = lookupSlot(receiver, method, null);
+	        	if (slotMethod == null)
+	        		throw new QNoSuchSlotException(receiver, method);
 		        return removeConnectionToMethod(receiver, slotMethod, null, true);
-			}
-        }
-
-        @NativeAccess
-        @io.qt.QtUninvokable
-        private boolean removeConnectionFromCpp(Object receiver, Method slot) {
-        	return removeConnectionToMethod(receiver, slot, null, false);
+        	}else {
+        		return removeConnectionToMethod(receiver, null, null, true);
+        	}
         }
 
         @io.qt.QtUninvokable
-        synchronized boolean removeConnectionToMethod(Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect) {
-			if (inDisconnect())
-				return false;  // Why might we re-enter ?  Why are we not reentrant ?
+        final synchronized boolean removeConnectionToMethod(Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect) {
 			return core.removeConnectionToMethod(this, receiver, slot, lambdaArgs, allowNativeDisconnect);
 		}
         
         @io.qt.QtUninvokable
-        synchronized boolean removeConnectionToMethod(Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
-			if (inDisconnect())
-				return false;  // Why might we re-enter ?  Why are we not reentrant ?
+        final synchronized boolean removeConnectionToMethod(Object receiver, QMetaMethod slot, boolean allowNativeDisconnect) {
 			return core.removeConnectionToMethod(this, receiver, slot, allowNativeDisconnect);
 		}
 
         @io.qt.QtUninvokable
-		public synchronized boolean removeConnection(QMetaObject.Connection conn) {
+		protected final synchronized boolean removeConnection(QMetaObject.Connection conn) {
             boolean returned = false;
         	if(conn instanceof JavaConnection) {
 				JavaConnection javaConnection = (JavaConnection)conn;
-				if(javaConnection.signal.get()==this && inDisconnect()) {
-					setInDisconnect(true);
-					try{
-						returned = core.removeConnection(this, javaConnection);
-					}finally{
-						setInDisconnect(false);
-					}
+				if(javaConnection.signal.get()==this) {
+					returned = core.removeConnection(this, javaConnection);
 				}
         	}else if(conn instanceof NativeConnection) {
         		NativeConnection nativeConnection = (NativeConnection)conn;
         		if(!nativeConnection.isDisposed() && nativeConnection.isConnected()) {
         			if(nativeConnection.sender()==containingObject() && this.methodIndex()==nativeConnection.signal().methodIndex()) {
-						setInDisconnect(true);
-	        			try{
-	        				returned = core.removeConnection(this, nativeConnection);
-	        			}finally {
-							setInDisconnect(false);
-	        			}
+        				returned = core.removeConnection(this, nativeConnection);
         			}
         		}
         	}
@@ -2592,33 +3169,112 @@ public abstract class QtJambiSignals {
         }
 
 		@Override
-		public synchronized String toString() {
-			if(core instanceof AnalyzingSignalCoreInterface)
-				return super.toString();
-			return this.fullName() + "(" + signalParameters() + ")";
+		public final synchronized String toString() {
+			if(core instanceof AnalyzingSignalCoreInterface) {
+				try {
+					resolveSignal();
+				}catch(QSignalInitializationException | QSignalDeclarationException e) {
+					return super.toString();
+				}
+			}
+			QMetaMethod signal = QMetaMethod.fromSignal(this);
+			if(signal!=null && signal.isValid()) {
+				return signal.cppMethodSignature().toString();
+			}
+			return String.format("%1$s(%2$s)", fullName(), signalParameters());
 		}
     }
     
-    protected abstract static class SignalConfiguration{
-    	protected SignalConfiguration(AbstractSignal signal, Class<?>... types) {
+    protected abstract static class SignalConfiguration<Signal extends AbstractSignal>{
+    	protected SignalConfiguration(Signal signal, Class<?>[] types) {
 			super();
 			this.signal = signal;
 			this.types = types;
 		}
-    	AbstractSignal signal;
-    	Class<?>[] types;
+    	final Signal signal;
+    	final Class<?>[] types;
     }
-	
-    protected static abstract class MultiSignal {
-    	private final List<QMetaObject.AbstractSignal> signals;
+    
+    private static abstract class AbstractMultiSignalCore<Signal extends AbstractSignal>{
+		public AbstractMultiSignalCore() {
+			super();
+		}
+    	abstract List<Signal> signals(AbstractMultiSignal<Signal> multiSignal);
+    	abstract String name(AbstractMultiSignal<Signal> multiSignal);
+    	abstract Class<?> declaringClass(AbstractMultiSignal<Signal> multiSignal);
+    }
+    
+    private static class AnalyzingMultiSignalCore<Signal extends AbstractSignal> extends AbstractMultiSignalCore<Signal>{
+    	
+    	@SuppressWarnings("rawtypes")
+		public final static AnalyzingMultiSignalCore INSTANCE = new AnalyzingMultiSignalCore<>();
+    	
+		public AnalyzingMultiSignalCore() {
+			super();
+		}
+		
+		List<Signal> preparedSignals(){ return null; }
+		
+		final List<Signal> signals(AbstractMultiSignal<Signal> multiSignal) {
+    		multiSignal.resolveMultiSignal();
+    		return multiSignal.core.signals(multiSignal);
+		}
+		final String name(AbstractMultiSignal<Signal> multiSignal) {
+    		multiSignal.resolveMultiSignal();
+    		return multiSignal.core.name(multiSignal);
+    	}
+		final Class<?> declaringClass(AbstractMultiSignal<Signal> multiSignal){
+    		multiSignal.resolveMultiSignal();
+    		return multiSignal.core.declaringClass(multiSignal);
+		}
+    }
+    
+    private final static class PreparedAnalyzingMultiSignalCore<Signal extends AbstractSignal> extends AnalyzingMultiSignalCore<Signal>{
+    	final List<Signal> signals;
+		public PreparedAnalyzingMultiSignalCore(List<Signal> signals) {
+			super();
+			this.signals = signals;
+		}
+		
+		List<Signal> preparedSignals(){ return signals; }
+    }
+    
+    private static final class MultiSignalCore<Signal extends AbstractSignal> extends AbstractMultiSignalCore<Signal>{
+		public MultiSignalCore(List<Signal> signals, String name, Class<?> declaringClass) {
+			super();
+			this.signals = signals;
+			this.name = name;
+			this.declaringClass = declaringClass;
+		}
+    	private final List<Signal> signals;
 		private String name;
         private Class<?> declaringClass;
-
-		protected MultiSignal(SignalConfiguration signal1, SignalConfiguration signal2, SignalConfiguration... furtherSignals){
+        
+        @Override
+        final List<Signal> signals(AbstractMultiSignal<Signal> multiSignal) {return signals;}
+    	
+    	@Override
+    	final String name(AbstractMultiSignal<Signal> multiSignal) {return name;}
+    	
+    	@Override
+    	final Class<?> declaringClass(AbstractMultiSignal<Signal> multiSignal){return declaringClass;}
+    }
+	
+    protected static abstract class AbstractMultiSignal<Signal extends AbstractSignal> {
+    	private AbstractMultiSignalCore<Signal> core;
+    	
+    	@SuppressWarnings("unchecked")
+		protected AbstractMultiSignal(){
 			super();
-			List<QMetaObject.AbstractSignal> signals = new ArrayList<>(furtherSignals.length+2);
+    		this.core = AnalyzingMultiSignalCore.INSTANCE;
+    	}
+    	
+        @SafeVarargs
+		protected AbstractMultiSignal(SignalConfiguration<Signal> signal1, SignalConfiguration<Signal> signal2, SignalConfiguration<Signal>... furtherSignals){
+			super();
+			List<Signal> signals = new ArrayList<>(furtherSignals.length+2);
 			for (int i = 0; i < furtherSignals.length+2; i++) {
-				SignalConfiguration signalConfiguration;
+				SignalConfiguration<Signal> signalConfiguration;
 				if(i==0) {
 					signalConfiguration = signal1;
 				}else if(i==1) {
@@ -2628,85 +3284,178 @@ public abstract class QtJambiSignals {
 				}
 				AbstractSignal signal = signalConfiguration.signal;
 				if(signal.core instanceof AnalyzingSignalCore && signalConfiguration.types!=null) {
-					List<SignalParameterType> typeList = Collections.emptyList();
-		        	for (int j = 0; j < signalConfiguration.types.length; j++) {
-		        		int arrayDimension = 0;
-		        		Class<?> type = signalConfiguration.types[j];
-		        		while (type.isArray()) {
-		        			arrayDimension++;
-		        			type = type.getComponentType();
-		                }
-		        		SignalParameterType signalType = new SignalParameterType(signalConfiguration.types[j], type, type, null, arrayDimension, false, false);
-		        		if(j==0) {
-		        			if(signalConfiguration.types.length>1) {
-		        				typeList = new ArrayList<>();
-		        				typeList.add(signalType);
-		        			}else {
-		        				typeList = Collections.singletonList(signalType);
-		        			}
-		        		}else {
-		        			typeList.add(signalType);
-		        		}
-					}
-		        	signal.core = new NamelessJavaSignalCore(signalConfiguration.types.length>1 ? Collections.unmodifiableList(typeList) : typeList);
+		        	signal.core = new MultiSignalAnalyingSignalCore(this, signalConfiguration.types);
 				}
-				signals.add((QMetaObject.AbstractSignal)signalConfiguration.signal);
+				signals.add(signalConfiguration.signal);
 			}
-    		this.signals = Collections.unmodifiableList(signals);
+    		this.core = new PreparedAnalyzingMultiSignalCore<>(signals);
     	}
+        
+        @io.qt.QtUninvokable
+        private final void resolveMultiSignal() {
+        	if(core instanceof AnalyzingMultiSignalCore) {
+        		AnalyzingMultiSignalCore<Signal> core = (AnalyzingMultiSignalCore<Signal>)this.core;
+        		boolean found = false;
+        		QtSignalEmitterInterface containingObject = containingObject();
+            	Class<?> cls = containingObject==null ? this.getClass().getDeclaringClass() : containingObject.getClass();
+                loop: while (cls != null) {
+                    Field fields[] = cls.getDeclaredFields();
+                    java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(cls);
+                    for (Field field : fields) {
+                        if (AbstractMultiSignal.class.isAssignableFrom(field.getType())) {
+                        	@SuppressWarnings("unchecked")
+							AbstractMultiSignal<Signal> sig = (AbstractMultiSignal<Signal>)QtJambiInternal.fetchField(lookup, containingObject, field);
+                            if (sig == this) {
+                            	found = true;
+                            	if(QObject.MultiSignal.class.isAssignableFrom(field.getType()))
+                            		initializeMultiSignal(this, field.getDeclaringClass(), field);
+                            	if(this.core instanceof AnalyzingMultiSignalCore) {
+                            		if(QStaticMemberSignals.MultiSignal.class.isAssignableFrom(field.getType())) {
+		                            	if(!java.lang.reflect.Modifier.isStatic(field.getModifiers()))
+		                            		throw new QSignalDeclarationException(String.format("Missing modifier 'static' at signal %1$s.%2$s.", cls.getSimpleName(), field.getName()));
+                            		}else {
+		                            	if(java.lang.reflect.Modifier.isStatic(field.getModifiers()))
+		                            		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", cls.getSimpleName(), field.getName()));
+                            		}
+	                            	if (!Modifier.isFinal(field.getModifiers()))
+		                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", cls.getSimpleName(), field.getName()));
+	                    			if(!Modifier.isFinal(field.getType().getModifiers()))
+	                    				throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal class %1$s.", field.getType().getTypeName()));
+	                    			if(field.getDeclaringClass()!=field.getType().getEnclosingClass())
+	                    				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: Multi signal class has to be declared in the class using it.", cls.getSimpleName(), field.getName()));
+	                                String name = field.getName();
+	                                final Class<?> declaringClass = field.getDeclaringClass();
+	                                final boolean isNativeSignal = QtJambiInternal.isGeneratedClass(declaringClass);
+	                                final boolean isQObjectSignal = QObject.class.isAssignableFrom(declaringClass);
+	                    			QMetaObject metaObject = QMetaObject.forType(declaringClass);
+	                    			List<Signal> signals = core.preparedSignals();
+	                    			if(signals==null) {
+	                    				Class<?> multiSignalSuperType = field.getType().getSuperclass();
+	                    				while(multiSignalSuperType!=null 
+	                    						&& multiSignalSuperType.getEnclosingClass()!=QObject.class
+                								&& multiSignalSuperType.getEnclosingClass()!=QStaticMemberSignals.class
+                								&& multiSignalSuperType.getEnclosingClass()!=QInstanceMemberSignals.class) {
+	                    					multiSignalSuperType = multiSignalSuperType.getSuperclass();
+	                    				}
+	                    				SignalClasses signalClasses = signalClasses(multiSignalSuperType.getEnclosingClass());
+	                            		if(signalClasses==null)
+	                            			throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
+	                            		Map<List<Class<?>>,EmitMethodInfo> emitMethods = QtJambiSignals.findEmitMethods(getClass());
+	                    				if(emitMethods==null)
+	                            			throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
+	                    				signals = new ArrayList<>();
+	                    				for(Map.Entry<List<Class<?>>,EmitMethodInfo> entry : emitMethods.entrySet()) {
+	                    					Class<?> signalClass;
+	                    					if(Modifier.isPublic(entry.getValue().method.getModifiers())) {
+	                    						signalClass = signalClasses.getPublicSignal(entry.getKey().size());
+	                    					}else {
+	                    						signalClass = signalClasses.getPrivateSignal(entry.getKey().size());
+	                    					}
+	                        				if(signalClass==null)
+	                                			throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
+	                        				Function<Object,Signal> factory = getSignalFactory(signalClass);
+	                	    				if(factory==null)
+	                	    					throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
+	                	    				Signal signal;
+	                	    				try {
+	                	    					signal = factory.apply(containingObject==null ? declaringClass : containingObject);
+	                						} catch (Throwable e) {
+	                							throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
+	                						}
+	                	    				signals.add(signal);
+	                	    				SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, entry.getValue().method);
+	                	    				signal.setNativeSignal(isNativeSignal);
+	                	    				signal.setQObjectSignal(isQObjectSignal);
+	                	            		if(signalInfo.signalTypes==null) {
+	                	            			signal.setCore(declaringClass, name, resolveSignal(entry.getValue().method), -1);
+	                	            		}else {
+	                	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex);
+	                	            		}
+	                    				}
+	                    				signals = Collections.unmodifiableList(signals);
+	                    			}else {
+		                                for (AbstractSignal signal : signals) {
+		                                	MultiSignalAnalyingSignalCore signalCore = (MultiSignalAnalyingSignalCore)signal.core;
+		                                	Class<?> _cls = getClass();
+		                                	while (_cls != QtJambiSignals.AbstractMultiSignal.class) {
+		                                		try {
+		                                			Method emitMethod = _cls.getDeclaredMethod("emit", signalCore.types);
+		                    	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, emitMethod);
+			                	    				signal.setNativeSignal(isNativeSignal);
+			                	    				signal.setQObjectSignal(isQObjectSignal);
+		                    	            		if(signalInfo.signalTypes==null) {
+		                    	            			signal.setCore(declaringClass, name, resolveSignal(emitMethod), -1);
+		                    	            		}else {
+		                    	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex);
+		                    	            		}
+		                                        	break;
+		                                		}catch(Throwable t) {}
+		                    					_cls = _cls.getSuperclass();
+		                    				}
+										}
+	                    			}
+	                                this.core = new MultiSignalCore<>(signals, name, declaringClass);
+                            	}
+                                break loop;
+                            }
+                        }
+                    }
+
+                    cls = cls.getSuperclass();
+                }
+                if (!found) {
+            		throw new QSignalDeclarationException("Multi signals must be declared as members of QObject subclasses.");
+                }
+        	}
+        	if(core instanceof AnalyzingMultiSignalCore) {
+        		throw new QSignalInitializationException("Unable to resolve multi signal.");
+        	}
+        }
 
         @io.qt.QtUninvokable
-    	protected final List<QMetaObject.AbstractSignal> signals() {
-			return signals;
+    	final List<Signal> signals() {
+			return core.signals(this);
 		}
-    	
+        
     	@NativeAccess
         @io.qt.QtUninvokable
-    	private final QMetaObject.AbstractSignal signal(int i) {
+    	private final Signal signal(int i) {
+    		List<Signal> signals = signals();
 			return i>=0 && i<signals.size() ? signals.get(i) : null;
 		}
     	
-    	@NativeAccess
+    	@SuppressWarnings("unchecked")
+		@NativeAccess
         @io.qt.QtUninvokable
-    	private void initializeSignals(Field field, List<Method> methods, int[] methodIndexes) {
-			this.name = field.getName();
-			this.declaringClass = field.getDeclaringClass();
-			boolean isNativeSignal = QtJambiInternal.isGeneratedClass(declaringClass);
-			boolean isQObjectSignal = QObject.class.isAssignableFrom(declaringClass);
-    		for (int i = 0; i < signals.size(); i++) {
-    			Method method = i<methods.size() ? methods.get(i) : null;
-    			AbstractSignal signal = signals.get(i);
-    			synchronized(signal) {
-	    			if(signal.core instanceof NamelessJavaSignalCore) {
-		    			List<SignalParameterType> signalTypes = signal.signalTypes();
-		    			signal.declaringClass = this.declaringClass;
-		    			signal.setNativeSignal(isNativeSignal);
-		    			signal.setQObjectSignal(isQObjectSignal);
-		    			
-		    			if(methodIndexes[i]>=0) {
-							if(method!=null) {
-				            	MethodHandle slotHandle = null;
-				            	try{
-			    					slotHandle = QtJambiInternal.privateLookup(method.getDeclaringClass()).unreflect(method);
-			    					if(slotHandle.isVarargsCollector()) {
-			    						slotHandle = slotHandle.asFixedArity();
-			    					}
-			    				} catch (Throwable e2) {
-			    					logger.log(java.util.logging.Level.WARNING, "Exception caught while analyzing slot "+method, e2);
-			    				}
-				            	EternalConnection con = new EternalConnection(new WeakReference<Object>(this.containingObject()), method, slotHandle, null);
-				            	signal.core = new QObjectsDirectSignalCore(signalTypes, methodIndexes[i], con);
-				            }else {
-				            	signal.core = new QObjectsSignalCore(signalTypes, methodIndexes[i]);
-				            }
-						}else {
-							signal.core = new JavaSignalCore(this.name, signalTypes);
-							if(containingObject()!=null && method!=null) {
-								signal.addConnectionToMethod(containingObject(), method, null, null, true, false, Qt.ConnectionType.UniqueConnection);
-			                }
+    	private void initializeSignals(Field field, int[] methodIndexes, List<SignalParameterType>[] signalParameterTypes, Class<?>[] signalObjectTypes) {
+    		if(core instanceof AnalyzingMultiSignalCore) {
+    			List<Signal> signals = ((AnalyzingMultiSignalCore<Signal>)core).preparedSignals();
+				String name = field.getName();
+				Class<?> declaringClass = field.getDeclaringClass();
+				List<Signal> _signals = signals;
+				if(_signals==null)
+					_signals = new ArrayList<>();
+				for (int i = 0; i < signalParameterTypes.length; i++) {
+	    			AbstractSignal signal;
+	    			if(signals==null) {
+						Function<Object,Signal> factory = getSignalFactory(signalObjectTypes[i]);
+	    				if(factory==null)
+	    					throw new QSignalInitializationException("Unable to initialize multi signal.");
+	    				try {
+							signal = factory.apply(containingObject());
+						} catch (Throwable e) {
+							throw new QSignalInitializationException("Unable to initialize multi signal.");
 						}
+	    				_signals.add((Signal)signal);
+	    			}else {
+	    				signal = signals.get(i);
 	    			}
+					List<SignalParameterType> signalTypes = signalParameterTypes[i];
+	    			signal.setNativeSignal(true);
+	    			signal.setQObjectSignal(true);
+    				signal.setCore(declaringClass, name, signalTypes, methodIndexes[i]);
 	    		}
+	    		core = new MultiSignalCore<>(_signals, name, declaringClass);
     		}
     	}
 
@@ -2714,7 +3463,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F,G,H,I> QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
     			Class<F> type6, Class<G> type7, Class<H> type8, Class<I> type9) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal9 && _signal.matchTypes(type1, type2, type3, type4, type5, type6, type7, type8, type9)) {
             		return (QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I>)signal;
@@ -2728,7 +3477,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
     	protected <A,B,C,D,E,F,G,H> QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
     			Class<F> type6, Class<G> type7, Class<H> type8) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal8 && _signal.matchTypes(type1, type2, type3, type4, type5, type6, type7, type8)) {
             		return (QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H>)signal;
@@ -2742,7 +3491,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F,G> QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
     			Class<F> type6, Class<G> type7) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal7 && _signal.matchTypes(type1, type2, type3, type4, type5, type6, type7)) {
             		return (QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G>)signal;
@@ -2756,7 +3505,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F> QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
     			Class<F> type6) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal6 && _signal.matchTypes(type1, type2, type3, type4, type5, type6)) {
             		return (QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F>)signal;
@@ -2769,7 +3518,7 @@ public abstract class QtJambiSignals {
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E> QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal5 && _signal.matchTypes(type1, type2, type3, type4, type5)) {
             		return (QMetaObject.AbstractPrivateSignal5<A,B,C,D,E>)signal;
@@ -2782,7 +3531,7 @@ public abstract class QtJambiSignals {
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D> QMetaObject.AbstractPrivateSignal4<A,B,C,D> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal4 && _signal.matchTypes(type1, type2, type3, type4)) {
             		return (QMetaObject.AbstractPrivateSignal4<A,B,C,D>)signal;
@@ -2795,7 +3544,7 @@ public abstract class QtJambiSignals {
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C> QMetaObject.AbstractPrivateSignal3<A,B,C> overload(Class<A> type1, Class<B> type2, Class<C> type3) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal3 && _signal.matchTypes(type1, type2, type3)) {
             		return (QMetaObject.AbstractPrivateSignal3<A,B,C>)signal;
@@ -2808,7 +3557,7 @@ public abstract class QtJambiSignals {
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B> QMetaObject.AbstractPrivateSignal2<A,B> overload(Class<A> type1, Class<B> type2) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal2 && _signal.matchTypes(type1, type2)) {
             		return (QMetaObject.AbstractPrivateSignal2<A,B>)signal;
@@ -2821,7 +3570,7 @@ public abstract class QtJambiSignals {
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A> QMetaObject.AbstractPrivateSignal1<A> overload(Class<A> type1) throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal1 && _signal.matchTypes(type1)) {
             		return (QMetaObject.AbstractPrivateSignal1<A>)signal;
@@ -2833,7 +3582,7 @@ public abstract class QtJambiSignals {
 
         @io.qt.QtUninvokable
     	protected QMetaObject.AbstractPrivateSignal0 overload() throws QNoSuchSignalException{
-    		for(QMetaObject.AbstractSignal signal : signals) {
+    		for(Signal signal : signals()) {
     			AbstractSignal _signal = signal;
             	if(_signal instanceof QMetaObject.AbstractPrivateSignal0 && _signal.matchTypes()) {
             		return (QMetaObject.AbstractPrivateSignal0)signal;
@@ -2846,7 +3595,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
 	    protected boolean disconnect(QMetaObject.Connection connection) {
 	    	boolean result = false;
-	    	for(AbstractSignal signal : signals) {
+	    	for(AbstractSignal signal : signals()) {
 	    		result |= signal.removeConnection(connection);
 	    	}
 	        return result;
@@ -2855,11 +3604,285 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
 	    protected boolean disconnectAll() {
 	    	boolean result = false;
-	    	for(QMetaObject.AbstractSignal signal : signals) {
-	    		result |= signal.disconnect();
+	    	for(Signal signal : signals()) {
+	    		result |= signal.removeConnection(null, null);
 	    	}
 	        return result;
 	    }
+        
+        @io.qt.QtUninvokable
+        protected final synchronized boolean disconnect(QMetaObject.AbstractSlot slotObject) {
+        	boolean result = false;
+        	for(AbstractSignal signal : signals()) {
+        		result |= signal.removeConnectionToSlotObject(slotObject);
+        	}
+        	return result;
+        }
+        
+        @io.qt.QtUninvokable
+		protected final synchronized boolean disconnect(AbstractSignal signalObject) {
+        	boolean result = false;
+        	for(AbstractSignal signal : signals()) {
+        		result |= signal.removeConnectionToSignalObject(signalObject);
+        	}
+        	return result;
+        }
+        
+        @io.qt.QtUninvokable
+        protected final synchronized QMetaObject.Connection connect(AbstractSignal signalObject, Qt.ConnectionType... connectionType) {
+        	List<AbstractSignal> matchingSignals = new ArrayList<>();
+        	for(AbstractSignal _signal : signals()) {
+				if(_signal.matchMethodTypes(signalObject.signalTypes(), signalObject.getClass().getName())!=AbstractSignal.Match.NoMatch) {
+					matchingSignals.add(_signal);
+				}
+			}
+        	if(matchingSignals.size()>1) {
+        		List<AbstractSignal> _matchingSignals = new ArrayList<>();
+        		for (AbstractSignal signal : matchingSignals) {
+					if(signal.signalTypes().size()==signalObject.signalTypes().size()) {
+						_matchingSignals.add(signal);
+					}
+				}
+        		if(!_matchingSignals.isEmpty())
+        			matchingSignals = _matchingSignals;
+        	}
+        	if(matchingSignals.isEmpty()) {
+    			throwMismatchException(signalObject.argumentTypes().toArray(new Class[signalObject.signalTypes().size()]));
+        	/*
+        	}else if(matchingSignals.size()>1) {
+        		String ambinuousSignals = "";
+        		for(AbstractSignal signal : matchingSignals) {
+        			if(!ambinuousSignals.isEmpty())
+        				ambinuousSignals += ", ";
+					ambinuousSignals += signal.name()+"("+signal.signalParameters()+")";
+        		}
+        		throw new QMisfittingSignatureException("Signal is ambiguous. Use overload() to select one of: "+ambinuousSignals); 
+			*/
+        	}
+        	return matchingSignals.get(0).addConnectionToSignalObject(signalObject, connectionType);
+        }
+        
+        @io.qt.QtUninvokable
+        protected final synchronized QMetaObject.Connection connect(QMetaObject.AbstractSlot slotObject, Qt.ConnectionType... connectionType) {
+        	QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(slotObject);
+        	if(info==null || info.reflectiveMethod==null) {
+        		throw new QNoSuchSlotException("");
+        	}
+        	if(info.owner instanceof AbstractSignal && info.reflectiveMethod.getName().equals("emit")) {
+        		return connect((AbstractSignal)info.owner, connectionType);
+        	}
+        	Class<?>[] parameterClassTypes = info.reflectiveMethod.getParameterTypes();
+        	Type[] genericParameterTypes = info.reflectiveMethod.getGenericParameterTypes();
+        	AnnotatedType[] annotatedParameterTypes = info.reflectiveMethod.getAnnotatedParameterTypes();
+        	if(info.lambdaArgs!=null && !info.lambdaArgs.isEmpty()) {
+        		Class<?>[] _parameterClassTypes = new Class[parameterClassTypes.length - info.lambdaArgs.size()];
+        		Type[] _genericParameterTypes = new Type[genericParameterTypes.length - info.lambdaArgs.size()];
+        		AnnotatedType[] _annotatedParameterTypes = new AnnotatedType[annotatedParameterTypes.length - info.lambdaArgs.size()];
+        		System.arraycopy(parameterClassTypes, info.lambdaArgs.size(), _parameterClassTypes, 0, _parameterClassTypes.length);
+        		System.arraycopy(genericParameterTypes, info.lambdaArgs.size(), _genericParameterTypes, 0, _genericParameterTypes.length);
+        		System.arraycopy(annotatedParameterTypes, info.lambdaArgs.size(), _annotatedParameterTypes, 0, _annotatedParameterTypes.length);
+        		parameterClassTypes = _parameterClassTypes;
+        		genericParameterTypes = _genericParameterTypes;
+        		annotatedParameterTypes = _annotatedParameterTypes;
+        	}
+        	List<AbstractSignal> matchingSignals = new ArrayList<>();
+        	for(AbstractSignal signal : signals()) {
+				if(signal.matchMethodTypes(parameterClassTypes, genericParameterTypes, annotatedParameterTypes)!=AbstractSignal.Match.NoMatch) {
+					matchingSignals.add(signal);
+				}
+			}
+        	if(matchingSignals.size()>1) {
+        		List<AbstractSignal> _matchingSignals = new ArrayList<>();
+        		for (AbstractSignal signal : matchingSignals) {
+					if(signal.signalTypes().size()==parameterClassTypes.length) {
+						_matchingSignals.add(signal);
+					}
+				}
+        		if(!_matchingSignals.isEmpty())
+        			matchingSignals = _matchingSignals;
+        	}
+        	if(matchingSignals.isEmpty()) {
+        		throwMismatchException(parameterClassTypes);
+        	/*
+        	}else if(matchingSignals.size()>1) {
+        		String ambinuousSignals = "";
+        		for(AbstractSignal signal : matchingSignals) {
+        			if(!ambinuousSignals.isEmpty())
+        				ambinuousSignals += ", ";
+					ambinuousSignals += signal.name()+"("+signal.signalParameters()+")";
+        		}
+        		throw new QMisfittingSignatureException("Signal is ambiguous. Use overload() to select one of: "+ambinuousSignals); 
+    		*/
+        	}
+        	if(slotObject instanceof QMetaObject.Slot0) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot0)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot1) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot1<?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot2) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot2<?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot3) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot3<?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot4) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot4<?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot5) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot5<?,?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot6) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot6<?,?,?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot7) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot7<?,?,?,?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot8) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot8<?,?,?,?,?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject instanceof QMetaObject.Slot9) {
+        		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot9<?,?,?,?,?,?,?,?,?>)slotObject, connectionType);
+        	}else if(slotObject!=null){
+        		throw new QMisfittingSignatureException("Invalid slot type "+slotObject.getClass());
+        	}else {
+        		return null;
+        	}
+        }
+        
+        @SuppressWarnings("unlikely-arg-type")
+		@io.qt.QtUninvokable
+        protected QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... connectionType) {
+        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(receiver.getClass());
+	        Class<?>[] parameterClassTypes = null;
+        	List<AbstractSignal> matchingSignals = new ArrayList<>();
+        	Map<AbstractSignal,AbstractSignal.Match> matches = new HashMap<>();
+        	QMetaMethod metaMethod = null;
+        	Method slotMethod = null;
+        	if(metaObject!=null) {
+        		metaMethod = metaObject.method(method);
+        		if(metaMethod==null || !metaMethod.isValid()) {
+        			slotMethod = lookupSlot(receiver, method, null);
+        			if (slotMethod == null) {
+        	            throw new QNoSuchSlotException(receiver, method);
+        	        }
+        			metaMethod = QMetaMethod.fromReflectedMethod(slotMethod);
+        		}
+        		if(metaMethod!=null && metaMethod.isValid()) {
+        			parameterClassTypes = metaMethod.parameterClassTypes().toArray(new Class[metaMethod.parameterTypes().size()]);
+        			boolean done = false;
+        			for(AbstractSignal signal : signals()) {
+        	        	signal.name();
+        				QMetaMethod signalMethod = QMetaMethod.fromSignal(signal);
+        				if(signalMethod!=null 
+            					&& signalMethod.isValid() 
+            					&& QMetaObject.checkConnectArgs(signalMethod, metaMethod)) {
+            				boolean hasWrappers = false;
+            				for(QByteArray ba : signalMethod.parameterTypes()) {
+            					if((ba.startsWith("J") && ba.endsWith("Wrapper")) || ba.equals("QVariant")) {
+            						hasWrappers = true;
+            						break;
+            					}
+            				}
+            				if(!hasWrappers) {
+            					for(QByteArray ba : metaMethod.parameterTypes()) {
+                					if((ba.startsWith("J") && ba.endsWith("Wrapper")) || ba.equals("QVariant")) {
+                						hasWrappers = true;
+                						break;
+                					}
+                				}
+            				}
+            				if(!hasWrappers) {
+            					matchingSignals.add(signal);
+            					done = true;
+            				}
+            			}
+        			}
+        			if(!done) {
+	        			if(receiver instanceof QObject && metaMethod.methodType()==QMetaMethod.MethodType.Signal) {
+	        				AbstractSignal signal = metaMethod.toSignal((QObject)receiver);
+	        				if(signal!=null) {
+	        					for(AbstractSignal _signal : signals()) {
+	        						AbstractSignal.Match match = _signal.matchMethodTypes(signal.signalTypes(), signal.getClass().getName());
+	    	        				if(match!=AbstractSignal.Match.NoMatch) {
+	    	        					matches.put(_signal, match);
+	    	    						matchingSignals.add(_signal);
+	    	        				}
+	    	        			}
+	        					done = true;
+	        				}
+	        			}else if(metaMethod.methodType()==QMetaMethod.MethodType.Method
+	        					|| metaMethod.methodType()==QMetaMethod.MethodType.Slot){
+	        				slotMethod = metaMethod.toReflectedMethod();
+	        				done = slotMethod!=null;
+	        			}
+	        			if(!done) {
+		        			for(AbstractSignal signal : signals()) {
+		        				AbstractSignal.Match match = signal.matchMethodTypes(parameterClassTypes, null, null);
+		        				if(match!=AbstractSignal.Match.NoMatch) {
+		        					matches.put(signal, match);
+		    						matchingSignals.add(signal);
+		        				}
+		        			}
+	        			}
+        			}
+        		}else {
+        			metaMethod = null;
+        		}
+        	}
+        	if (metaMethod == null) {
+        		if (slotMethod == null)
+        			slotMethod = lookupSlot(receiver, method, null);
+        		if (slotMethod != null) {
+	        		if (slotMethod.isAnnotationPresent(QtUninvokable.class)) {
+	            		throw new QUninvokableSlotException(slotMethod);
+	                }
+    	        	parameterClassTypes = slotMethod.getParameterTypes();
+    	        	Type[] genericParameterTypes = slotMethod.getGenericParameterTypes();
+    	        	AnnotatedType[] annotatedParameterTypes = slotMethod.getAnnotatedParameterTypes();
+    	        	for(AbstractSignal signal : signals()) {
+    	        		AbstractSignal.Match match = signal.matchMethodTypes(parameterClassTypes, genericParameterTypes, annotatedParameterTypes);
+    					if(match!=AbstractSignal.Match.NoMatch) {
+    						matches.put(signal, match);
+    						matchingSignals.add(signal);
+    					}
+    				}
+    	        }else {
+    	        	throw new QNoSuchSlotException(receiver, method);
+    	        }
+	        }
+        	if(matchingSignals.size()>1 && parameterClassTypes!=null) {
+        		List<AbstractSignal> _matchingSignals = new ArrayList<>();
+        		for (AbstractSignal signal : matchingSignals) {
+					if(signal.signalTypes().size()==parameterClassTypes.length) {
+						_matchingSignals.add(signal);
+					}
+				}
+        		if(!_matchingSignals.isEmpty())
+        			matchingSignals = _matchingSignals;
+        	}
+        	if(matchingSignals.isEmpty()) {
+        		if(parameterClassTypes!=null)
+        			throwMismatchException(parameterClassTypes);
+        		else
+        			throw new QNoSuchSlotException(receiver, method);
+        	/*
+        	}else if(matchingSignals.size()>1) {
+        		String ambinuousSignals = "";
+        		for(AbstractSignal signal : matchingSignals) {
+        			if(!ambinuousSignals.isEmpty())
+        				ambinuousSignals += ", ";
+					ambinuousSignals += signal.name()+"("+signal.signalParameters()+")";
+        		}
+        		throw new QMisfittingSignatureException("Signal is ambiguous. Use overload() to select one of: "+ambinuousSignals); 
+    		*/
+        	}
+        	if(metaMethod==null || !metaMethod.isValid() || matches.get(matchingSignals.get(0))==AbstractSignal.Match.JavaMatch) {
+        		return matchingSignals.get(0).addConnectionToMethod(receiver, slotMethod, null, null, false, connectionType);
+        	}
+        	else
+        		return matchingSignals.get(0).addConnectionToMethod(receiver, metaMethod, connectionType);
+        }
+        
+        @io.qt.QtUninvokable
+        protected boolean disconnect(Object receiver, String method) {
+	    	boolean result = false;
+	    	for(AbstractSignal signal : signals()) {
+	    		result |= signal.removeConnection(receiver, method);
+	    	}
+	        return result;
+        }
 
         @io.qt.QtUninvokable
 	    private void throwMismatchException(Class<?>... type) throws QNoSuchSignalException{
@@ -2867,7 +3890,7 @@ public abstract class QtJambiSignals {
 	    	for (int i = 0; i < type.length; i++) {
 				if(i!=0)
 					name += ",";
-				name += type[i].getName().replace("$", ".");
+				name += type[i].getTypeName().replace("$", ".");
 			}
 	    	name += ")";
 	    	throw new QNoSuchSignalException(name);
@@ -2887,6 +3910,7 @@ public abstract class QtJambiSignals {
          */
         @io.qt.QtUninvokable
         public final String name() {
+        	String name = core.name(this);
             return name==null ? "unnamed" : name;
         }
 
@@ -2897,14 +3921,17 @@ public abstract class QtJambiSignals {
          */
         @io.qt.QtUninvokable
         public final String fullName() {
+        	Class<?> declaringClass = core.declaringClass(this);
         	String name = name();
             return declaringClass == null ? name : declaringClass.getName() + "." + name;
         }
     }
 	
 	private static class MetaCall implements QMetaObject.Slot0, QtThreadAffineInterface, QtObjectInterface {
-
-		private static final long serialVersionUID = 2770243659499018807L;
+        private static final long serialVersionUID = 0L;
+        private void writeObject(java.io.ObjectOutputStream s) throws IOException{
+        	throw new NotSerializableException(this.getClass().getName());
+    	}
 		
 		private final QtThreadAffineInterface eventReceiver;
 		private final AbstractSignal signal;
@@ -3020,8 +4047,7 @@ public abstract class QtJambiSignals {
     }
 	
 	private static class ThrowingMetaCall extends MetaCall{
-		
-		private static final long serialVersionUID = 4051575621054775749L;
+        private static final long serialVersionUID = 0L;
 
 		public ThrowingMetaCall(QtThreadAffineInterface eventReceiver, AbstractSignal signal, AbstractConnection<?> connection,
 				QtSignalEmitterInterface senderObject, Method slot, Object[] arguments) {
@@ -3133,6 +4159,24 @@ public abstract class QtJambiSignals {
 		private static native boolean isSlotObject(long nativeId);
 		
 		private static native boolean equals(long nativeId, long otherNativeId);
+	}
+	
+	public static QMetaMethod signal(QMetaObject.Connection connection) {
+		if(connection instanceof NativeConnection)
+			return ((NativeConnection)connection).signal();
+		return null;
+	}
+	
+	public static QMetaMethod method(QMetaObject.Connection connection) {
+		if(connection instanceof NativeConnection)
+			return ((NativeConnection)connection).method();
+		return null;
+	}
+	
+	public static boolean isSlotObject(QMetaObject.Connection connection) {
+		if(connection instanceof NativeConnection)
+			return ((NativeConnection)connection).isSlotObject();
+		return false;
 	}
     
     static class JavaConnection implements QMetaObject.Connection{
@@ -3319,6 +4363,12 @@ public abstract class QtJambiSignals {
         private AbstractReflectiveConnection(O receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, Qt.ConnectionType... connectionType) {
             super(receiver, connectionType);
             this.slot = slot;
+            if(slotHandle==null) {
+            	try {
+					slotHandle = QtJambiInternal.getMethodHandle(slot);
+				} catch (Exception e) {
+				}
+            }
 			this.slotHandle = slotHandle;
 			if(lambdaArgs==null)
 				lambdaArgs = Collections.emptyList();
@@ -3761,11 +4811,7 @@ public abstract class QtJambiSignals {
 	
 	private static native final boolean disconnectNative(long senderObjectId, int signal, long receiverObjectId, int slot);
 
-	protected native static void emitNativeSignal(QObject senderNative, int methodIndex, Object args[]);
-	
-	protected static void registerDisposedSignalFactory(Function<Class<?>,QMetaObject.DisposedSignal> disposedSignalFactory) {
-		QtJambiInternal.registerDisposedSignalFactory(disposedSignalFactory);
-	}
+	protected native static void emitNativeSignal(QObject senderNative, int methodIndex, int defaults, Object args[]);
 	
     protected static void checkConnectionToDisposedSignalImpl(QMetaObject.DisposedSignal signal, Object receiver, boolean slotObject) {
     	if(receiver==signal) {
@@ -4013,5 +5059,292 @@ public abstract class QtJambiSignals {
 				return findFunctionRecursive(cls.getSuperclass(), functionName, argumentTypes);
 		}
 		return result;
+	}
+	
+	static List<SignalParameterType> resolveSignal(Field field) {
+		return resolveSignal(field, null, null);
+	}
+	
+	static List<SignalParameterType> resolveSignal(Method emitMethod) {
+		return resolveSignal(emitMethod, null, null);
+	}
+	
+	@NativeAccess
+	static List<SignalParameterType> resolveSignal(Object data, boolean[] argumentIsPointerType, boolean[] argumentIsReferenceType) {
+		List<SignalParameterType> typeList = Collections.emptyList();
+		Class<?>[] classTypes = null;
+		AnnotatedType[] actualTypes = null;
+		if(data instanceof QPair) {
+			QPair<?,?> pair = (QPair<?,?>)data;
+			if(pair.first instanceof AbstractMultiSignal<?>) {
+				AbstractMultiSignal<?> multisignal = (AbstractMultiSignal<?>)pair.first;
+				Map<List<Class<?>>,EmitMethodInfo> emitMethodInfos = findEmitMethods(multisignal.getClass());
+				if(pair.second instanceof Integer) {
+					AbstractSignal signal = multisignal.signal((int)pair.second);
+					if(signal.core instanceof MultiSignalAnalyingSignalCore) {
+						MultiSignalAnalyingSignalCore core = (MultiSignalAnalyingSignalCore)signal.core;
+						classTypes = core.types;
+						EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList(classTypes));
+						if(emitMethodInfo!=null) {
+							actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
+						}
+					}
+				}else if(pair.second instanceof Class[]) {
+					EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList((Class[])pair.second));
+					if(emitMethodInfo!=null) {
+						actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
+					}
+				}
+			}
+		}else if(data instanceof Field) {
+			AnnotatedType annotatedType = ((Field)data).getAnnotatedType();
+			if (annotatedType instanceof AnnotatedParameterizedType) {
+				AnnotatedParameterizedType p = (AnnotatedParameterizedType) annotatedType;
+				actualTypes = p.getAnnotatedActualTypeArguments();
+			}
+		}else if(data instanceof Method) {
+			classTypes = ((Method)data).getParameterTypes();
+			actualTypes = ((Method)data).getAnnotatedParameterTypes();
+		}else if(data instanceof Class[]) {
+			classTypes = (Class<?>[])data;
+		}
+		
+		if(actualTypes!=null) {
+			for (int j = 0; j < actualTypes.length; ++j) {
+				AnnotatedType actualType = actualTypes[j];
+				boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
+				boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
+				if(!isPointer && argumentIsPointerType!=null && j<argumentIsPointerType.length)
+					isPointer = argumentIsPointerType[j];
+				QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
+				boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
+				if(!isReference && argumentIsReferenceType!=null && j<argumentIsReferenceType.length)
+					isReference = argumentIsReferenceType[j];
+				if (!isPrimitive) {
+					AnnotatedType annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
+					if (annotatedOwnerType != null) {
+						isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
+					}
+				}
+
+				Type type = actualType.getType();
+				Class<?> classType;
+				if (type instanceof Class) {
+					classType = (Class<?>) type;
+				} else if (type instanceof ParameterizedType) {
+					ParameterizedType ptype = (ParameterizedType) type;
+					classType = (Class<?>) ptype.getRawType();
+				} else if (type instanceof TypeVariable<?>) {
+					TypeVariable<?> tv = (TypeVariable<?>)type;
+					Type[] bounds = tv.getBounds();
+					if(bounds==null || bounds.length==0)
+						classType = Object.class;
+					else if(bounds[0] instanceof Class)
+						classType = (Class<?>)bounds[0];
+					else if(bounds[0] instanceof ParameterizedType)
+						classType = (Class<?>)((ParameterizedType)bounds[0]).getRawType();
+					else
+						throw new RuntimeException("Signals of generic types not supported: " + actualType.toString());
+				} else {
+					throw new RuntimeException("Signals of generic types not supported: " + actualType.toString());
+				}
+				if (isPrimitive) {
+					if (classType == Integer.class) {
+						classType = int.class;
+					} else if (classType == Short.class) {
+						classType = short.class;
+					} else if (classType == Byte.class) {
+						classType = byte.class;
+					} else if (classType == Long.class) {
+						classType = long.class;
+					} else if (classType == Double.class) {
+						classType = double.class;
+					} else if (classType == Float.class) {
+						classType = float.class;
+					} else if (classType == Boolean.class) {
+						classType = boolean.class;
+					} else if (classType == Character.class) {
+						classType = char.class;
+					}
+				}
+				// If we do not do this assignment here, we need to uncomment the section in
+				// QSignalEmitterInternal#matchTwoTypes()
+				// to unwrap things there as well (or unit tests continue to fail).
+				SignalParameterType signalType = new SignalParameterType(classType, type, actualType, isPointer, isReference);
+				if (j == 0) {
+					if (actualTypes.length > 1) {
+						typeList = new ArrayList<>();
+						typeList.add(signalType);
+					} else {
+						typeList = Collections.singletonList(signalType);
+					}
+				} else {
+					typeList.add(signalType);
+				}
+			}
+			typeList = actualTypes.length > 1 ? Collections.unmodifiableList(typeList) : typeList;
+		}else if(classTypes!=null) {
+			for (int j = 0; j < classTypes.length; ++j) {
+				Class<?> classType = classTypes[j];
+				boolean isPointer = false;
+				if(argumentIsPointerType!=null && j<argumentIsPointerType.length)
+					isPointer = argumentIsPointerType[j];
+				boolean isReference = false;
+				if(argumentIsReferenceType!=null && j<argumentIsReferenceType.length)
+					isReference = argumentIsReferenceType[j];
+				SignalParameterType signalType = new SignalParameterType(classType, classType, null, isPointer, isReference);
+				if (j == 0) {
+					if (classTypes.length > 1) {
+						typeList = new ArrayList<>();
+						typeList.add(signalType);
+					} else {
+						typeList = Collections.singletonList(signalType);
+					}
+				} else {
+					typeList.add(signalType);
+				}
+			}
+			typeList = classTypes.length > 1 ? Collections.unmodifiableList(typeList) : typeList;
+		}
+		
+		return typeList;
+	}
+
+	@NativeAccess
+    private static class SignalInfo{
+		@NativeAccess
+    	private SignalInfo(int methodIndex, List<SignalParameterType> signalTypes) {
+			super();
+			this.methodIndex = methodIndex;
+			this.signalTypes = signalTypes;
+		}
+		final int methodIndex;
+    	final List<SignalParameterType> signalTypes;
+    }
+    
+    private static native SignalInfo signalInfo(QMetaObject metaObject, Field field, Method emitMethod);
+    
+    static final class EmitMethodInfo{
+    	public EmitMethodInfo(Method method, long methodId, List<SignalParameterType> parameterTypes) {
+			super();
+			this.method = method;
+			this.methodId = methodId;
+			this.parameterTypes = parameterTypes;
+		}
+		public final Method method;
+		public final long methodId;
+		public final List<SignalParameterType> parameterTypes;
+    }
+
+	private final static Map<Class<?>,Map<List<Class<?>>,EmitMethodInfo>> allEmitMethods = Collections.synchronizedMap(new HashMap<>());
+	
+	static Map<List<Class<?>>,EmitMethodInfo> findEmitMethods(Class<?> signalClass) {
+		return allEmitMethods.computeIfAbsent(signalClass, cls->{
+			Map<List<Class<?>>,EmitMethodInfo> methodMap = Collections.emptyMap();
+			if (QtJambiSignals.AbstractSignal.class.isAssignableFrom(signalClass)
+					|| QtJambiSignals.AbstractMultiSignal.class.isAssignableFrom(signalClass)) {
+				while (cls != QtJambiSignals.AbstractSignal.class
+						&& cls != QtJambiSignals.AbstractMultiSignal.class) {
+					Method methods[] = cls.getDeclaredMethods();
+					for (Method method : methods) {
+						if (!method.isSynthetic() 
+                                && !method.isBridge() 
+                                && !Modifier.isStatic(method.getModifiers())
+                                && method.getName().equals("emit") && method.getParameterCount()<10) {
+							List<SignalParameterType> params = QtJambiSignals.resolveSignal(method);
+							if(methodMap.isEmpty()) {
+								methodMap = Collections.singletonMap(Collections.unmodifiableList(Arrays.asList(method.getParameterTypes())), 
+																	 new EmitMethodInfo(method, fromReflectedMethod(method), params));
+							}else {
+								if(methodMap.size()==1) {
+									methodMap = new HashMap<>(methodMap);
+								}
+								if(!methodMap.containsKey(params))
+									methodMap.put(Collections.unmodifiableList(Arrays.asList(method.getParameterTypes())), 
+												  new EmitMethodInfo(method, fromReflectedMethod(method), params));
+							}
+						}
+					}
+					cls = cls.getSuperclass();
+				}
+			}
+			if(methodMap.size()>1)
+				methodMap = Collections.unmodifiableMap(methodMap);
+			return methodMap;
+		});
+	}
+	
+	private static native long fromReflectedMethod(Method method);
+	
+	private static native void initializeMultiSignal(AbstractMultiSignal<?> signal, Class<?> declaringClass, Field field);
+	
+	static class SignalClasses{
+		private SignalClasses(Class<?>[] publicSignals, Class<?>[] privateSignals) {
+			super();
+			this.publicSignals = publicSignals;
+			this.privateSignals = privateSignals;
+		}
+		private final Class<?>[] publicSignals;
+		private final Class<?>[] privateSignals;
+		
+		public Class<?> getPublicSignal(int i) {
+			return publicSignals[i];
+		}
+		public Class<?> getPrivateSignal(int i) {
+			return privateSignals[i];
+		}
+	}
+	
+	private final static Map<Class<?>,SignalClasses> allSignalTypes = Collections.synchronizedMap(new HashMap<>());
+	
+	static SignalClasses signalClasses(Class<?> enclosingClass){
+		return allSignalTypes.computeIfAbsent(enclosingClass, enclosingType->{
+					Class<?>[] publicSignals = new Class[10];
+					Class<?>[] privateSignals = new Class[10];
+					for(Class<?> type : enclosingType.getClasses()) {
+						if(!Modifier.isAbstract(type.getModifiers()) && AbstractSignal.class.isAssignableFrom(type)) {
+							String sname = type.getSimpleName();
+							Class<?>[] _signals;
+							if(sname.startsWith("PrivateSignal")) {
+								sname = sname.substring(13);
+								_signals = privateSignals;
+							}else if(sname.startsWith("Signal")) {
+								sname = sname.substring(6);
+								_signals = publicSignals;
+							}else continue;
+							try {
+								_signals[Integer.parseInt(sname)] = type;
+							} catch (Exception e) {
+							}
+						}
+					}
+					return new SignalClasses(publicSignals, privateSignals);
+				});
+	}
+	
+	private static final Map<Class<?>, Function<?,?>> signalFactories = Collections.synchronizedMap(new HashMap<>());
+	
+	@SuppressWarnings("unchecked")
+	static <Signal> Function<Object,Signal> getSignalFactory(Class<?> signalObjectType) {
+		return (Function<Object,Signal>)signalFactories.computeIfAbsent(signalObjectType, cls->{
+			try {
+				if(cls.getEnclosingClass()==QObject.class) {
+					Constructor<?> constructor = cls.getDeclaredConstructor(QObject.class);
+					MethodHandle constructorHandle = QtJambiInternal.getConstructorHandle(constructor);
+					return MethodHandleProxies.asInterfaceInstance(Function.class, constructorHandle);
+				}else if(cls.getEnclosingClass()==QInstanceMemberSignals.class) {
+					Constructor<?> constructor = cls.getDeclaredConstructor(Object.class);
+					MethodHandle constructorHandle = QtJambiInternal.getConstructorHandle(constructor);
+					return MethodHandleProxies.asInterfaceInstance(Function.class, constructorHandle);
+				}else if(cls.getEnclosingClass()==QStaticMemberSignals.class || cls==QMetaObject.DisposedSignal.class) {
+					Constructor<?> constructor = cls.getDeclaredConstructor(Class.class);
+					MethodHandle constructorHandle = QtJambiInternal.getConstructorHandle(constructor);
+					return MethodHandleProxies.asInterfaceInstance(Function.class, constructorHandle);
+				}
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+			return null;
+		});
 	}
 }

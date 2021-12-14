@@ -34,12 +34,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.QSignalAccessException;
+import io.qt.QtObject;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QAbstractItemModel;
 import io.qt.core.QInstanceMemberSignals;
+import io.qt.core.QMetaObject;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
@@ -149,42 +152,60 @@ public class TestPrivateSignals extends QApplicationTest {
     public void test_emit_private_signal_QObject() {
     	PrivateSignalOwnerQObject o = new PrivateSignalOwnerQObject();
     	String[] result = {null};
-    	o.privateSignal.connect(s->result[0] = s);
+    	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertTrue(con instanceof QtObject);
     	o.emitString("test");
     	assertEquals("test", result[0]);
     }
     
-    @Test(expected=QSignalAccessException.class)
+    @Test
     public void test_external_emit_private_signal_QObject() {
     	PrivateSignalOwnerQObject o = new PrivateSignalOwnerQObject();
     	String[] result = {null};
-    	o.privateSignal.connect(s->result[0] = s);
-    	PrivateSignalAccessor.emitPrivateSignal(o.privateSignal, "test");
-    	assertEquals("test", result[0]);
+    	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertTrue(con instanceof QtObject);
+    	try{
+        	PrivateSignalAccessor.emitPrivateSignal(o.privateSignal, "test");
+    		Assert.fail("QSignalAccessException expected to be thrown.");
+    	}catch(QSignalAccessException e) {
+    	}
+    	assertEquals(null, result[0]);
     }
     
     @Test
     public void test_emit_private_signal_InstanceMember() {
     	PrivateSignalOwnerObject o = new PrivateSignalOwnerObject();
     	String[] result = {null};
-    	o.privateSignal.connect(s->result[0] = s);
+    	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertFalse(con instanceof QtObject);
     	o.emitString("test");
     	assertEquals("test", result[0]);
     }
     
-    @Test(expected=QSignalAccessException.class)
+    @Test
     public void test_external_emit_private_signal_InstanceMember() {
     	PrivateSignalOwnerObject o = new PrivateSignalOwnerObject();
     	String[] result = {null};
-    	o.privateSignal.connect(s->result[0] = s);
-    	QInstanceMemberSignals.emit(o.privateSignal, "test");
-    	assertEquals("test", result[0]);
+    	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertFalse(con instanceof QtObject);
+    	try{
+    		QInstanceMemberSignals.emit(o.privateSignal, "test");
+    		Assert.fail("QSignalAccessException expected to be thrown.");
+    	}catch(QSignalAccessException e) {
+    	}
+    	assertEquals(null, result[0]);
     }
     
     @Test
     public void test_emit_private_signal_static() {
     	String[] result = {null};
-    	PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
+    	QMetaObject.Connection con = PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertFalse(con instanceof QtObject);
     	PrivateStaticSignalOwner.emitStaticString("statictest");
     	assertEquals("statictest", result[0]);
     }
@@ -193,7 +214,9 @@ public class TestPrivateSignals extends QApplicationTest {
     public void test_emit_private_signal_static_QObject() {
     	new PrivateStaticSignalOwnerQObject();
     	String[] result = {null};
-    	PrivateStaticSignalOwnerQObject.privateStaticSignal.connect(s->result[0] = s);
+    	QMetaObject.Connection con = PrivateStaticSignalOwnerQObject.privateStaticSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertFalse(con instanceof QtObject);
     	PrivateStaticSignalOwnerQObject.emitStaticString("statictest");
     	assertEquals("statictest", result[0]);
     }
@@ -201,7 +224,9 @@ public class TestPrivateSignals extends QApplicationTest {
     @Test(expected=QSignalAccessException.class)
     public void test_external_emit_private_signal_static() {
     	String[] result = {null};
-    	PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
+    	QMetaObject.Connection con = PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
+    	assertTrue(con!=null);
+    	assertFalse(con instanceof QtObject);
     	QStaticMemberSignals.emit(PrivateStaticSignalOwner.privateStaticSignal, "statictest");
     	assertEquals("statictest", result[0]);
     }

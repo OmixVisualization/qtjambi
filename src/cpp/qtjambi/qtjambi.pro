@@ -1,6 +1,6 @@
 TARGET = QtJambi
 
-VERSION = $$QT_VERSION
+VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 include(qtjambi_base.pri)
 
@@ -60,6 +60,7 @@ HEADERS += \
     qtjambi_global.h \
     qtjambi_interfaces_p.h \
     qtjambi_internal.h \
+    qtjambi_nativeinterface.h \
     qtjambi_plugin.h \
     qtjambi_qml.h \
     qtjambi_registry_p.h \

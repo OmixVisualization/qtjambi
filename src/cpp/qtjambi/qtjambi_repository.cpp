@@ -230,6 +230,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Slot1,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,(Ljava/lang/Object;)V)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Slot0,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V)
+)
+
 }
 
 namespace Runtime{
@@ -864,6 +868,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Arrays,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/reflect,Method,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaringClass,()Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getReturnType,()Ljava/lang/Class;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/reflect,Executable,
@@ -905,6 +910,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isInterface,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getModifiers,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getComponentType,()Ljava/lang/Class;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getTypeParameters,()[Ljava/lang/reflect/TypeVariable;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isArray,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isPrimitive,()Z)
 )
@@ -1032,7 +1038,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getImplementedInterfaces,(Ljava/lang/Class;)Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getAllImplementedInterfaces,(Ljava/lang/Class;)Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(checkImplementation,(Ljava/lang/Class;Ljava/lang/Class;)V)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findEmitMethod,(Ljava/lang/Class;)Ljava/lang/reflect/Method;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isImplementedInJava,(ZLjava/lang/reflect/Method;Ljava/lang/Class;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findGeneratedSuperclass,(Ljava/lang/Class;)Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(writeSerializableJavaObject,(Lio/qt/core/QDataStream;Ljava/lang/Object;)V)
@@ -1074,17 +1079,25 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,QtJambiInternal$RCMap)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectTools,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(buildMetaData,(Ljava/lang/Class;)Lio/qt/internal/MetaObjectTools$MetaData;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(methodTypes,(Ljava/lang/reflect/AccessibleObject;)Lio/qt/core/QPair;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(signalTypes,(Ljava/lang/reflect/Field;)[Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getEnumForQFlags,(Ljava/lang/Class;)Ljava/lang/Class;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectTools$SignalInfo,
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(field,Ljava/lang/reflect/Field;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(signalTypes,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(signalClass,Ljava/lang/Class;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(signalMetaTypes,[I)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(methodId,J)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectTools$MetaData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(metaData,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(stringData,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(signalFields,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(signalInfos,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(methods,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(methodMetaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(constructors,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(constructorMetaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyReaders,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyWriters,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyResetters,Ljava/util/List;)
@@ -1097,6 +1110,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectTools$MetaData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyUserResolvers,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(propertyQPropertyFields,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(propertyBindables,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyMetaTypes,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyClassTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(metaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(relatedMetaObjects,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(hasStaticMembers,Z)
@@ -1147,12 +1162,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtGadget,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractSignal,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(setInCppEmission,(Z)V)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(inJavaEmission,()Z)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(addConnectionFromCpp,(Ljava/lang/Object;Ljava/lang/reflect/Method;I)Lio/qt/core/QMetaObject$Connection;)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(removeConnectionFromCpp,(Ljava/lang/Object;Ljava/lang/reflect/Method;)Z)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignal,(Ljava/lang/reflect/Field;Ljava/lang/reflect/Method;I)V)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeExtraSignal,(Ljava/lang/Class;Ljava/util/List;I)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignal,(Ljava/lang/Class;Ljava/util/List;I)V)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$SignalInfo,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ILjava/util/List;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$SignalParameterType,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(type,Ljava/lang/Class;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QMissingVirtualOverridingException,
@@ -1180,12 +1198,12 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$NativeConnection,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals,
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(NativeConnectionPolicy,I)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveSignal,(Ljava/lang/Object;[Z[Z)Ljava/util/List;)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$MultiSignal,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignals,(Ljava/lang/reflect/Field;Ljava/util/List;[I)V)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(signal,(I)Lio/qt/core/QMetaObject$AbstractSignal;)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractMultiSignal,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignals,(Ljava/lang/reflect/Field;[I[Ljava/util/List;[Ljava/lang/Class;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(signal,(I)Lio/qt/internal/QtJambiSignals$AbstractSignal;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt,QtObject)

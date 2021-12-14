@@ -886,6 +886,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </inject-code>
     </object-type>
     <object-type name="QStyle">
+        <extra-includes>
+            <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QStyle___" quote-before-line="}// class"/>
+        </inject-code>
         <modify-function signature="drawControl(QStyle::ControlElement, const QStyleOption *, QPainter *, const QWidget *) const">
             <modify-argument index="2" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.widgets.QStyleOption"/>
@@ -933,6 +939,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 </conversion-rule>
                 <conversion-rule class="native">
                     QStyleOptionComplex *%out = qtjambi_cast&lt;QStyleOptionComplex *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.widgets.QStyle$SubControl"/>
+                <conversion-rule class="shell">
+                    QStyle::SubControl %out = qtjambi_cast&lt;QStyle::SubControl>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtWidgets::QStyle::findSubControl(%env, %1, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2542,6 +2557,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <include file-name="QtCore/private/qthread_p.h" location="global"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
         </extra-includes>
         <modify-function signature="QApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
@@ -2614,6 +2630,28 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="1" thread-affine="yes"/>
         </modify-function>
         <modify-function signature="aboutQt()" thread-affine="ui"/>
+        <modify-function signature="resolveInterface(const char *, int)const" access="private">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
     </object-type>
 
     <interface-type name="QGraphicsLayoutItem">
@@ -2722,10 +2760,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
-        </inject-code>
         <inject-code class="interface">
+            /**
+             * @see #getContentsMargins(double[])
+             */
+            @io.qt.QtDeclaredFinal
             @io.qt.QtUninvokable
             public default io.qt.core.QMarginsF contentsMargins(){
                 double[] mrg = {0.0, 0.0, 0.0, 0.0};
@@ -2813,9 +2852,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
-        </inject-code>
     </object-type>
     
     <object-type name="QGraphicsAnchorLayout">
@@ -2980,7 +3016,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </modify-function>
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QGraphicsWidget___" quote-before-line="}// class"/>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
         </inject-code>
 
         <modify-function signature="initStyleOption(QStyleOption*)const">

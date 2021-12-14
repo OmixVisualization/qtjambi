@@ -2006,6 +2006,15 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
             }else{
                 type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
             }
+        }else if(info.path().endsWith("/qpa")){
+            QString path = info.path();
+            path.chop(4);
+            auto idx = path.lastIndexOf("/");
+            if(idx>0){
+                type->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
+            }else{
+                type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
+            }
         }else{
             type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
         }
@@ -3436,6 +3445,15 @@ AbstractMetaEnum *AbstractMetaBuilder::traverseEnum(EnumModelItem enum_item, Abs
             }else{
                 meta_enum->typeEntry()->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
             }
+        }else if(info.path().endsWith("/qpa")){
+            QString path = info.path();
+            path.chop(4);
+            auto idx = path.lastIndexOf("/");
+            if(idx>0){
+                meta_enum->typeEntry()->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
+            }else{
+                meta_enum->typeEntry()->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
+            }
         }else{
             meta_enum->typeEntry()->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
         }
@@ -3605,6 +3623,15 @@ AbstractMetaClass *AbstractMetaBuilder::traverseTypeAlias(TypeAliasModelItem typ
         if(info.path().endsWith("/private")){
             QString path = info.path();
             path.chop(8);
+            auto idx = path.lastIndexOf("/");
+            if(idx>0){
+                type->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
+            }else{
+                type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
+            }
+        }else if(info.path().endsWith("/qpa")){
+            QString path = info.path();
+            path.chop(4);
             auto idx = path.lastIndexOf("/");
             if(idx>0){
                 type->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
@@ -3802,6 +3829,15 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
             }else{
                 type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
             }
+        }else if(info.path().endsWith("/qpa")){
+            QString path = info.path();
+            path.chop(4);
+            auto idx = path.lastIndexOf("/");
+            if(idx>0){
+                type->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
+            }else{
+                type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
+            }
         }else{
             type->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
         }
@@ -3858,6 +3894,15 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
                     if(info.path().endsWith("/private")){
                         QString path = info.path();
                         path.chop(8);
+                        auto idx = path.lastIndexOf("/");
+                        if(idx>0){
+                            instantiation->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
+                        }else{
+                            instantiation->setInclude(Include(Include::IncludePath, info.fileName(), requiredFeatures));
+                        }
+                    }else if(info.path().endsWith("/qpa")){
+                        QString path = info.path();
+                        path.chop(4);
                         auto idx = path.lastIndexOf("/");
                         if(idx>0){
                             instantiation->setInclude(Include(Include::IncludePath, info.filePath().mid(idx+1), requiredFeatures));
@@ -4908,7 +4953,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
     if(function_item->isConstant()){
         originalSignature += "const";
     }
-    meta_function->setOriginalSignature(QLatin1String(QMetaObject::normalizedSignature(qPrintable(originalSignature)).data()));
+    meta_function->setOriginalSignature(QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(originalSignature))));
     if (function_item->isFriend() && function_item->hasBody()){
         meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
         meta_function->setOriginalAttributes(meta_function->attributes());
@@ -4922,7 +4967,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
                     && function_name!="operator>"
                     && function_name!="operator>>"
                     && function_name!="operator<<")
-                ReportHandler::warning(QString("Mapping unmodified inline global friend of class %1: %2").arg(m_current_class->qualifiedCppName()).arg(originalSignature));
+                ReportHandler::warning(QString("Mapping unmodified inline global friend of class %1: %2").arg(m_current_class->qualifiedCppName(), originalSignature));
         }
     }
 

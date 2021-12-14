@@ -1,6 +1,5 @@
 <project default="build">
     <target name="build">
-        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <if>
             <istrue value="${qtjambi.testbuild}"/>
             <then>
@@ -18,13 +17,11 @@
         </if>
     </target>
     <target name="bundle-plugins">
-        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <!--subant target="bundle-plugin" inheritall="true" verbose="true">
             <filelist dir="${basedir}/src/java/qtjambi-plugins" files="qsqljdbc,multimediawidgets,helpwidgets"/>
         </subant-->
     </target>
     <target name="bundle-tests">
-        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <!--subant target="bundle-plugin" inheritall="true" verbose="true">
             <filelist dir="${basedir}/src/java/qtjambi-plugins" files="customwidgets"/>
         </subant-->

@@ -2058,6 +2058,62 @@ public class TestMetaProgramming extends QApplicationTest {
 			Assert.assertEquals(null, b.parameter);
 		}
 	}
+    
+    static class JavaProperties{
+    	private String string;
+    	private QObject object;
+    	private JavaProperties other;
+    	@QtPropertyReader
+		public String getString() {
+			return string;
+		}
+    	@QtPropertyWriter
+		public void setString(String string) {
+			this.string = string;
+		}
+    	@QtPropertyReader
+		public QObject getObject() {
+			return object;
+		}
+    	@QtPropertyWriter
+		public void setObject(QObject object) {
+			this.object = object;
+		}
+    	@QtPropertyReader
+		public JavaProperties getOther() {
+			return other;
+		}
+    	@QtPropertyWriter
+		public void setOther(JavaProperties other) {
+			this.other = other;
+		}
+    }
+    
+    @Test
+    public void testPropertiesReadWriteOnGadget() {
+    	JavaProperties javaProperties = new JavaProperties();
+    	QMetaObject metaObject = QMetaObject.forType(JavaProperties.class);
+    	QMetaProperty objectProperty = metaObject.property("object");
+    	QMetaProperty otherProperty = metaObject.property("other");
+    	QMetaProperty stringProperty = metaObject.property("string");
+    	QObject object = new QObject();
+    	objectProperty.writeOnGadget(javaProperties, object);
+    	Assert.assertEquals(object, javaProperties.getObject());
+    	Assert.assertEquals(object, objectProperty.readOnGadget(javaProperties));
+    	String string = "TEST";
+    	stringProperty.writeOnGadget(javaProperties, string);
+    	Assert.assertEquals(string, javaProperties.getString());
+    	Assert.assertEquals(string, stringProperty.readOnGadget(javaProperties));
+    	JavaProperties other = new JavaProperties();
+    	otherProperty.writeOnGadget(javaProperties, other);
+    	Assert.assertEquals(other, javaProperties.getOther());
+    	Assert.assertEquals(other, otherProperty.readOnGadget(javaProperties));
+    	try {
+			otherProperty.writeOnGadget(javaProperties, object);
+			Assert.fail();
+		} catch (IllegalArgumentException e) {
+		}
+    }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaProgramming.class.getName());

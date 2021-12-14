@@ -32,13 +32,11 @@ package io.qt.internal;
 
 import static io.qt.internal.QtJambiInternal.internalTypeNameOfClass;
 import static io.qt.internal.QtJambiInternal.registerMetaType;
-import static io.qt.internal.QtJambiInternal.registerQmlListProperty;
+import static io.qt.internal.QtJambiInternal.registerRefMetaType;
 
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -50,22 +48,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
 import io.qt.QFlags;
 import io.qt.QSignalDeclarationException;
+import io.qt.QSignalInitializationException;
 import io.qt.QtByteEnumerator;
 import io.qt.QtClassInfo;
 import io.qt.QtEnumerator;
 import io.qt.QtInvokable;
 import io.qt.QtLongEnumerator;
+import io.qt.QtMetaType;
 import io.qt.QtPointerType;
 import io.qt.QtPropertyConstant;
 import io.qt.QtPropertyDesignable;
@@ -80,15 +80,14 @@ import io.qt.QtPropertyUser;
 import io.qt.QtPropertyWriter;
 import io.qt.QtReferenceType;
 import io.qt.QtShortEnumerator;
-import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
 import io.qt.QtUnlistedEnum;
-import io.qt.core.QMetaMethod;
+import io.qt.core.QDeclarableSignals;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QPair;
-import io.qt.internal.QtJambiSignals.AbstractSignal;
+import io.qt.core.QStaticMemberSignals;
 import io.qt.internal.QtJambiSignals.SignalParameterType;
 
 
@@ -100,6 +99,12 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
 	private static class PrivateConstructorAccess extends io.qt.QtObject{
     	static Class<?> type(){
     		return QPrivateConstructor.class;
+    	}
+    }
+	
+	private static class DeclarativeConstructorAccess extends io.qt.core.QObject{
+    	static Class<?> type(){
+    		return QDeclarativeConstructor.class;
     	}
     }
     
@@ -259,26 +264,57 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         }
     }
     
+    @NativeAccess
+	static class SignalInfo{
+		SignalInfo(Field field, List<SignalParameterType> signalTypes, Class<?> signalClass, int[] signalMetaTypes, long methodId) {
+			super();
+			this.field = field;
+			this.signalTypes = Collections.unmodifiableList(signalTypes);
+			this.signalClass = signalClass;
+			this.signalMetaTypes = signalMetaTypes;
+			this.methodId = methodId;
+		}
+		
+		final @NativeAccess Field field;
+		final @NativeAccess List<SignalParameterType> signalTypes;
+		final @NativeAccess Class<?> signalClass;
+		final @NativeAccess int[] signalMetaTypes;
+		final @NativeAccess long methodId;
+	}
+    
+    @NativeAccess
     private static class MetaData {
+    	int addStringData(String data) {
+    		int index = stringData.indexOf(data);
+    		if(index<0) {
+    			index = stringData.size();
+    			stringData.add(data);
+    		}
+    		return index;
+    	}
         final @NativeAccess List<Integer> metaData = new ArrayList<>();
-        final @NativeAccess List<String> stringData = new StringList();
+        final @NativeAccess List<String>  stringData = new StringList();
 
-        final @NativeAccess List<Field> signalFields = new ArrayList<>();
-        final @NativeAccess List<Method> methods = new ArrayList<>();
+        final @NativeAccess List<SignalInfo>  signalInfos = new ArrayList<>();
+        final @NativeAccess List<Method>  methods = new ArrayList<>();
+        final @NativeAccess List<int[]>   methodMetaTypes = new ArrayList<>();
         final @NativeAccess List<Constructor<?>> constructors = new ArrayList<>();
+        final @NativeAccess List<int[]>   constructorMetaTypes = new ArrayList<>();
 
-        final @NativeAccess List<Method> propertyReaders = new ArrayList<>();
-        final @NativeAccess List<Method> propertyWriters = new ArrayList<>();
-        final @NativeAccess List<Method> propertyResetters = new ArrayList<>();
-        final @NativeAccess List<Field>  propertyNotifies = new ArrayList<>();
-        final @NativeAccess List<Method> propertyBindables = new ArrayList<>();
-        final @NativeAccess List<Field>  propertyQPropertyFields = new ArrayList<>();
-        final @NativeAccess List<Field>  propertyMemberFields = new ArrayList<>();
-        final @NativeAccess List<Method> propertyDesignableResolvers = new ArrayList<>();
-        final @NativeAccess List<Method> propertyScriptableResolvers = new ArrayList<>();
-        final @NativeAccess List<Method> propertyEditableResolvers = new ArrayList<>();
-        final @NativeAccess List<Method> propertyStoredResolvers = new ArrayList<>();
-        final @NativeAccess List<Method> propertyUserResolvers = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyReaders = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyWriters = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyResetters = new ArrayList<>();
+        final @NativeAccess List<Integer> propertyNotifies = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyBindables = new ArrayList<>();
+        final @NativeAccess List<Field>   propertyQPropertyFields = new ArrayList<>();
+        final @NativeAccess List<Field>   propertyMemberFields = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyDesignableResolvers = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyScriptableResolvers = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyEditableResolvers = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyStoredResolvers = new ArrayList<>();
+        final @NativeAccess List<Method>  propertyUserResolvers = new ArrayList<>();
+        final @NativeAccess List<int[]>   propertyMetaTypes = new ArrayList<>();
+        final @NativeAccess List<Class<?>>   propertyClassTypes = new ArrayList<>();
         final @NativeAccess List<Class<?>> relatedMetaObjects = new ArrayList<>();
 
         @NativeAccess boolean hasStaticMembers;
@@ -345,8 +381,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         int enumConstantCount = 0;
         if (!enums.contains(enumType.getName())) {
             enums.put(enumType.getName(), enumType);
-
-            enumConstantCount = enumType.getEnumConstants().length;
+        	Object[] enumConstants = enumType.getEnumConstants();
+            enumConstantCount = enumConstants==null ? 0 : enumConstants.length;
         }
 
         if (flagsType != null && !enums.contains(flagsType.getName()))
@@ -387,7 +423,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 return Boolean.TRUE;
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
-            } else if(NativeLibraryManager.VERSION_MAJOR<6) { 
+            } else if(QtJambiInternal.majorVersion()<6) { 
             	try {
 	                Method m = clazz.getMethod(value);
 	                if (isBoolean(m.getReturnType()))
@@ -413,7 +449,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 return Boolean.TRUE;
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
-            } else if(NativeLibraryManager.VERSION_MAJOR<6) {
+            } else if(QtJambiInternal.majorVersion()<6) {
             	try {
 	                Method m = clazz.getMethod(value);
 	                if (isBoolean(m.getReturnType()))
@@ -438,7 +474,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 return Boolean.TRUE;
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
-            } else if(NativeLibraryManager.VERSION_MAJOR<6) {
+            } else if(QtJambiInternal.majorVersion()<6) {
             	try {
 	                Method m = clazz.getMethod(value);
 	                if (isBoolean(m.getReturnType()))
@@ -454,34 +490,12 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
     }
     
     private static Object isEditable(Method declaredMethod, Class<?> clazz) {
-        /*
-        QtPropertyEditable editable = declaredMethod.getAnnotation(QtPropertyEditable.class);
-
-        if (editable != null) {
-            String value = editable.value();
-
-            if (value.equals("true")) {
-                return Boolean.TRUE;
-            } else if (value.equals("false")) {
-                return Boolean.FALSE;
-            } else try {
-                Method m = clazz.getMethod(value);
-                if (isBoolean(m.getReturnType()))
-                    return m;
-                else
-                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
-            } catch (Throwable t) {
-                java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
-            }
-        }
-        */
         return Boolean.TRUE;
     }
 
     private static boolean isValidSetter(Method declaredMethod) {
         return (declaredMethod.getParameterCount() == 1
-                && declaredMethod.getReturnType() == Void.TYPE
-                && !internalTypeNameOfParameters(declaredMethod).equals(""));
+                && declaredMethod.getReturnType() == Void.TYPE);
     }
 
     private static Method getDeclaredMethod(Class<?> clazz, String name, Class<?> args[]) {
@@ -548,586 +562,6 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return (method.getParameterCount() == 0
                 && method.getReturnType() != Void.TYPE);
     }
-
-
-    private static String bunchOfClassNamesInARow(Class<?> classes[], Type[] genericTypes, AnnotatedType[] annotatedTypes, boolean cppName) {
-        List<SignalParameterType> typeList = Collections.emptyList();
-        for (int i = 0; i < classes.length && i < genericTypes.length && i < annotatedTypes.length; i++) {
-            int arrayDimension = 0;
-            Class<?> type = classes[i];
-            Type genericType = genericTypes[i];
-            AnnotatedType annotatedType = annotatedTypes[i];
-            while (type.isArray()) {
-                arrayDimension++;
-                type = type.getComponentType();
-                if(genericType instanceof GenericArrayType) {
-                    genericType = ((GenericArrayType) genericType).getGenericComponentType();
-                }else {
-                    genericType = type;
-                }
-            }
-            boolean isPointer = annotatedType.isAnnotationPresent(QtPointerType.class);
-            QtReferenceType referenceType = annotatedType!=null ? annotatedType.getAnnotation(QtReferenceType.class) : null;
-            boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
-            SignalParameterType signalType = new SignalParameterType(classes[i], type, genericType, annotatedType, arrayDimension, isPointer, isReference);
-            if(i==0) {
-                if(classes.length>1) {
-                    typeList = new ArrayList<>();
-                    typeList.add(signalType);
-                }else {
-                    typeList = Collections.singletonList(signalType);
-                }
-            }else {
-                typeList.add(signalType);
-            }
-        }
-        return bunchOfClassNamesInARow(typeList, cppName);
-    }
-    
-    static String bunchOfClassNamesInARow(QtJambiSignals.SignalParameterType type, boolean cppName) {
-    	if(type.type==null)
-    		return "<unknown type>";
-        String className = type.type.getName();
-        String arrays = "";
-        for (int j=0; j<type.arrayDimension; ++j)
-            arrays += "[";
-        if(!arrays.isEmpty()){
-            if(type.type==int.class){
-                className = arrays+"I";
-            }else if(type.type==short.class){
-                className = arrays+"S";
-            }else if(type.type==long.class){
-                className = arrays+"J";
-            }else if(type.type==byte.class){
-                className = arrays+"B";
-            }else if(type.type==double.class){
-                className = arrays+"D";
-            }else if(type.type==float.class){
-                className = arrays+"F";
-            }else if(type.type==boolean.class){
-                className = arrays+"Z";
-            }else{
-                className = arrays+"L"+className+";";
-            }
-        }
-        if(cppName) {
-            String _className = internalTypeName(className, type.originalType.getClassLoader());
-            if(!className.isEmpty() && _className.isEmpty()) {
-                _className = "JObjectWrapper";
-            }
-            className = _className;
-        }
-        return className;
-    }
-
-    static String bunchOfClassNamesInARow(List<QtJambiSignals.SignalParameterType> types, boolean cppName) {
-        String classNames = "";
-
-        for (int i=0; i<types.size(); i++) {
-            classNames += bunchOfClassNamesInARow(types.get(i), cppName);
-            if (i<types.size()-1)
-                classNames += ",";
-        }
-
-        return classNames;
-    }
-
-    private static String methodParameters(Method m) {
-        return bunchOfClassNamesInARow(m.getParameterTypes(), m.getGenericParameterTypes(), m.getAnnotatedParameterTypes(), false);
-    }
-
-	private native static String internalTypeName(String s, ClassLoader classLoader);
-    
-    @SuppressWarnings("rawtypes")
-    @NativeAccess
-    private static Class[] signalTypes(Field field) {
-        QtJambiInternal.ResolvedSignal resolvedSignal = QtJambiInternal.resolveSignal(field, field.getDeclaringClass());
-        Class[] result = new Class[resolvedSignal.signalTypes.size()];
-        for (int i = 0; i < resolvedSignal.signalTypes.size(); i++) {
-            result[i] = resolvedSignal.signalTypes.get(i).originalType;
-        }
-        return result;
-    }
-    
-    @NativeAccess
-    private static QPair<Object[],String[]> methodTypes(AccessibleObject accessible) {
-        Class<?> returnType = null;
-        Type genericReturnType = null;
-        AnnotatedType annotatedReturnType = null;
-        Class<?>[] parameterTypes = null;
-        Type[] genericParameterTypes = null;
-        AnnotatedType[] annotatedParameterTypes = null;
-        if(accessible instanceof Method) {
-            Method m = (Method)accessible;
-            returnType = m.getReturnType();
-            genericReturnType = m.getGenericReturnType();
-            parameterTypes = m.getParameterTypes();
-            annotatedReturnType = m.getAnnotatedReturnType();
-            genericParameterTypes = m.getGenericParameterTypes();
-            annotatedParameterTypes = m.getAnnotatedParameterTypes();
-        }else if(accessible instanceof Constructor<?>) {
-            Constructor<?> c = (Constructor<?>)accessible;
-            returnType = void.class;
-            genericReturnType = void.class;
-            parameterTypes = c.getParameterTypes();
-            genericParameterTypes = c.getGenericParameterTypes();
-            annotatedParameterTypes = c.getAnnotatedParameterTypes();
-        }else if(accessible instanceof Field) {
-            Field f = (Field)accessible;
-            if(isValidQProperty(f)) {
-            	MetaObjectTools.QPropertyTypeInfo propertyTypeInfo = getQPropertyTypeInfo(f);
-            	if(propertyTypeInfo!=null) {
-    	            Class<?>[] cresult = new Class[1];
-    	            String[] qresult = new String[1];
-	                cresult[0] = propertyTypeInfo.propertyType;
-	                qresult[0] = internalTypeNameOfClass(propertyTypeInfo.propertyType, propertyTypeInfo.genericPropertyType);
-	                if(propertyTypeInfo.isPointer) {
-	                    if(!qresult[0].endsWith("*")) {
-	                        qresult[0] += "*";
-	                    }
-	                }
-	                if(propertyTypeInfo.isReference) {
-	                    if(qresult[0].endsWith("*")) {
-	                        qresult[0] = qresult[0].substring(0, qresult[0].length()-2);
-	                    }
-	                    if(!qresult[0].endsWith("&")) {
-	                        qresult[0] += "&";
-	                    }
-	                }
-		            return new QPair<>(cresult, qresult);
-            	}
-            }else if(QtJambiInternal.isSignalType(f.getType())) {
-	            QtJambiInternal.ResolvedSignal resolvedSignal = QtJambiInternal.resolveSignal(f, f.getDeclaringClass());
-	            Class<?>[] cresult = new Class[1+resolvedSignal.signalTypes.size()];
-	            String[] qresult = new String[1+resolvedSignal.signalTypes.size()];
-	            qresult[0] = "void";
-	            cresult[0] = void.class;
-	            for (int i = 0; i < resolvedSignal.signalTypes.size(); i++) {
-	                cresult[i+1] = resolvedSignal.signalTypes.get(i).originalType;
-	                qresult[i+1] = internalTypeNameOfClass(resolvedSignal.signalTypes.get(i).originalType, resolvedSignal.signalTypes.get(i).genericType);
-	                if(resolvedSignal.signalTypes.get(i).isPointer) {
-	                    if(!qresult[i+1].endsWith("*")) {
-	                        qresult[i+1] += "*";
-	                    }
-	                }
-	                if(resolvedSignal.signalTypes.get(i).isReference) {
-	                    if(qresult[i+1].endsWith("*")) {
-	                        qresult[i+1] = qresult[i+1].substring(0, qresult[i+1].length()-2);
-	                    }
-	                    if(!qresult[i+1].endsWith("&")) {
-	                        qresult[i+1] += "&";
-	                    }
-	                }
-	            }
-	            return new QPair<>(cresult, qresult);
-            }else {
-	            Class<?>[] cresult = new Class[1];
-	            String[] qresult = new String[1];
-	            AnnotatedType annotatedType = f.getAnnotatedType();
-                boolean isPointer = annotatedType!=null && annotatedType.isAnnotationPresent(QtPointerType.class);
-                QtReferenceType referenceType = annotatedType!=null ? annotatedType.getAnnotation(QtReferenceType.class) : null;
-                boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
-                cresult[0] = f.getType();
-                qresult[0] = internalTypeNameOfClass(f.getType(), f.getGenericType());
-                if(isPointer) {
-                    if(!qresult[0].endsWith("*")) {
-                        qresult[0] += "*";
-                    }
-                }
-                if(isReference) {
-                    if(qresult[0].endsWith("*")) {
-                        qresult[0] = qresult[0].substring(0, qresult[0].length()-2);
-                    }
-                    if(!qresult[0].endsWith("&")) {
-                        qresult[0] += "&";
-                    }
-                }
-                return new QPair<>(cresult, qresult);            	
-            }
-        }
-        if(returnType!=null) {
-            Class<?>[] cresult = new Class[1+parameterTypes.length];
-            String[] qresult = new String[1+parameterTypes.length];
-            {
-                boolean isPointer = annotatedReturnType!=null && annotatedReturnType.isAnnotationPresent(QtPointerType.class);
-                QtReferenceType referenceType = annotatedReturnType!=null ? annotatedReturnType.getAnnotation(QtReferenceType.class) : null;
-                boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
-
-                cresult[0] = returnType;
-                qresult[0] = internalTypeNameOfClass(returnType, genericReturnType);
-                if(isPointer) {
-                    if(!qresult[0].endsWith("*")) {
-                        qresult[0] += "*";
-                    }
-                }
-                if(isReference) {
-                    if(qresult[0].endsWith("*")) {
-                        qresult[0] = qresult[0].substring(0, qresult[0].length()-2);
-                    }
-                    if(!qresult[0].endsWith("&")) {
-                        qresult[0] += "&";
-                    }
-                }
-            }
-            for (int i = 0; i < genericParameterTypes.length; i++) {
-                AnnotatedType annotatedType = annotatedParameterTypes[i];
-                boolean isPointer = annotatedType!=null && annotatedType.isAnnotationPresent(QtPointerType.class);
-                QtReferenceType referenceType = annotatedType!=null ? annotatedType.getAnnotation(QtReferenceType.class) : null;
-                boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
-                cresult[i+1] = parameterTypes[i];
-                String typeName = internalTypeNameOfClass(parameterTypes[i], genericParameterTypes[i]);
-                if(isPointer) {
-                    if(!typeName.endsWith("*")) {
-                        typeName += "*";
-                    }
-                }
-                if(isReference) {
-                    if(typeName.endsWith("*")) {
-                        typeName = typeName.substring(0, typeName.length()-2);
-                    }
-                    if(!typeName.endsWith("&")) {
-                        typeName += "&";
-                    }
-                }
-                qresult[i+1] = typeName;
-            }
-            return new QPair<>(cresult, qresult);
-        }else {
-            return null;
-        }
-    }
-    
-    /**
-     * Returns the signature of the method m excluding the modifiers and the
-     * return type.
-     */
-    private static String methodSignature(Method m, boolean includeReturnType) {
-        return (includeReturnType ? m.getReturnType().getName() + " " : "")
-               + m.getName() + "(" + methodParameters(m) + ")";
-    }
-    
-    private static String constructorSignature(Constructor<?> m) {
-        return m.getName() + "(" + constructorParameters(m) + ")";
-    }
-    
-    private static String methodSignature(QtJambiInternal.ResolvedSignal r) {
-        return r.field.getName() + "(" + bunchOfClassNamesInARow(r.signalTypes, false) + ")";
-    }
-
-    static String methodSignature(Method m) {
-        return methodSignature(m, false);
-    }
-    
-    private static String shortConstructorSignature(Constructor<?> c) {
-        String name = c.getName();
-        int idx = name.lastIndexOf('.');
-        if(idx>0){
-            name = name.substring(idx+1, name.length());
-        }
-        return name + "(" + constructorParameters(c) + ")";
-    }
-    
-    private static String constructorParameters(Constructor<?> c) {
-        return bunchOfClassNamesInARow(c.getParameterTypes(), c.getGenericParameterTypes(), c.getAnnotatedParameterTypes(), false);
-    }
-    
-    private static QtJambiSignals.AbstractSignal lookupSignal(QtSignalEmitterInterface signalEmitter, String name, Class<?>[] requiredParameters) {
-		try {
-			if (name == null || signalEmitter == null) {
-				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
-						"lookupSignal: Name or object is null");
-				return null;
-			}
-
-			String parameters;
-			if (requiredParameters != null) {
-				return QtJambiInternal.findSignal((QtSignalEmitterInterface) signalEmitter, name, requiredParameters);
-			} else {
-				parameters = "";
-				int idx = name.indexOf("(");
-				if (idx >= 0) {
-					parameters = name.substring(idx).trim();
-					name = name.substring(0, idx);
-				}
-			}
-
-			String[] argumentTypes = {};
-			if (parameters != null && !parameters.isEmpty()) {
-				if (parameters.startsWith("(") && parameters.endsWith(")")) {
-					parameters = parameters.substring(1, parameters.length() - 1).trim();
-					if (!parameters.isEmpty()) {
-						argumentTypes = parameters.split("\\,");
-						for (int i = 0; i < argumentTypes.length; ++i)
-							argumentTypes[i] = argumentTypes[i].replace(" ", "");
-					}
-				}
-			}
-
-			Set<AbstractSignal> visitedSignals = new HashSet<>();
-
-			for (Class<?> cls = signalEmitter.getClass(); QtSignalEmitterInterface.class
-					.isAssignableFrom(cls); cls = cls.getSuperclass()) {
-
-				try {
-					Field f = cls.getDeclaredField(name);
-					if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
-						List<? extends QtJambiSignals.AbstractSignal> signals = Collections.emptyList();
-						if (QtJambiSignals.AbstractSignal.class.isAssignableFrom(f.getType())) {
-							signals = Collections.singletonList((QtJambiSignals.AbstractSignal) QtJambiInternal.fetchField(signalEmitter, f));
-						} else if (QtJambiSignals.MultiSignal.class.isAssignableFrom(f.getType())) {
-							QtJambiSignals.MultiSignal multiSignal = (QtJambiSignals.MultiSignal) QtJambiInternal.fetchField(signalEmitter, f);
-							signals = multiSignal.signals();
-						}
-						visitedSignals.addAll(signals);
-						for (QtJambiSignals.AbstractSignal signal : signals) {
-							if (argumentTypes.length == 0 && signal.signalTypes().isEmpty()) {
-								return signal;
-							} else if (argumentTypes.length == signal.signalTypes().size()) {
-								List<SignalParameterType> signalTypes = signal.signalTypes();
-
-								boolean matches = true;
-								for (int i = 0; i < signalTypes.size(); ++i) {
-									Class<?> t = signalTypes.get(i).type;
-									String arg = t.getName();
-
-									if (t.isArray()) {
-										String brackets = "";
-
-										do {
-											t = t.getComponentType();
-											brackets += "[]";
-										} while (t.isArray());
-
-										arg = t.getName() + brackets;
-									}
-
-									if (argumentTypes[i].indexOf('.') < 0) {
-										arg = arg.substring(arg.lastIndexOf('.') + 1);
-									}
-
-									String argLenient = t.isMemberClass() ? arg.replace('$', '.') : null;
-									if (!arg.equals(argumentTypes[i])
-											&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
-										matches = false;
-										break;
-									}
-								}
-								if (matches) {
-									return signal;
-								}
-							}
-						}
-					}
-				} catch (NoSuchFieldException | SecurityException t) {
-				}
-			}
-
-			if (signalEmitter instanceof QObject) {
-				List<AbstractSignal> listOfExtraSignal = QtJambiInternal.getListOfExtraSignal(QtJambiInternal.internalAccess.nativeId((QObject) signalEmitter));
-				visitedSignals.addAll(listOfExtraSignal);
-				for (AbstractSignal signal : listOfExtraSignal) {
-					if (signal.name().equals(name)) {
-						if (argumentTypes.length == 0 && signal.signalTypes().isEmpty()) {
-							return signal;
-						} else if (argumentTypes.length == signal.signalTypes().size()) {
-							List<SignalParameterType> signalTypes = signal.signalTypes();
-
-							boolean matches = true;
-							for (int i = 0; i < signalTypes.size(); ++i) {
-								Class<?> t = signalTypes.get(i).type;
-								String arg = t.getName();
-
-								if (t.isArray()) {
-									String brackets = "";
-
-									do {
-										t = t.getComponentType();
-										brackets += "[]";
-									} while (t.isArray());
-
-									arg = t.getName() + brackets;
-								}
-
-								if (argumentTypes[i].indexOf('.') < 0) {
-									arg = arg.substring(arg.lastIndexOf('.') + 1);
-								}
-
-								String argLenient = t.isMemberClass() ? arg.replace('$', '.') : null;
-								if (!arg.equals(argumentTypes[i])
-										&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
-									matches = false;
-									break;
-								}
-							}
-							if (matches) {
-								return signal;
-							}
-						}
-					}
-				}
-				for (QMetaMethod method : QMetaObject.forType(signalEmitter.getClass()).methods()) {
-					if (method.methodType() == QMetaMethod.MethodType.Signal) {
-						AbstractSignal signal = method.toSignal((QObject) signalEmitter);
-						if (signal != null && signal.name().equals(name) && !visitedSignals.contains(signal)) {
-							if (argumentTypes.length == 0 && signal.signalTypes().isEmpty()) {
-								return signal;
-							} else if (argumentTypes.length == signal.signalTypes().size()) {
-								List<SignalParameterType> signalTypes = signal.signalTypes();
-
-								boolean matches = true;
-								for (int i = 0; i < signalTypes.size(); ++i) {
-									Class<?> t = signalTypes.get(i).type;
-									String arg = t.getName();
-
-									if (t.isArray()) {
-										String brackets = "";
-
-										do {
-											t = t.getComponentType();
-											brackets += "[]";
-										} while (t.isArray());
-
-										arg = t.getName() + brackets;
-									}
-
-									if (argumentTypes[i].indexOf('.') < 0) {
-										arg = arg.substring(arg.lastIndexOf('.') + 1);
-									}
-
-									String argLenient = t.isMemberClass() ? arg.replace('$', '.') : null;
-									if (!arg.equals(argumentTypes[i])
-											&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
-										matches = false;
-										break;
-									}
-								}
-								if (matches) {
-									return signal;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			return null;
-		} catch (RuntimeException | Error e) {
-			e.printStackTrace();
-			throw e;
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
-    
-    public static String cppSignalSignature(QtSignalEmitterInterface signalEmitter, String signalName) {
-        QtJambiSignals.AbstractSignal signal = lookupSignal(signalEmitter, signalName, null);
-        if (signal != null) {
-            return cppSignalSignature(signal);
-        }else {
-            return "";
-        }
-    }
-    
-    public static String cppNormalizedSignature(String signalName) {
-        int idx = signalName.indexOf("(");
-        if(idx>=0) {
-            String parameters = signalName.substring(idx).trim();
-            String name = signalName.substring(0, idx);
-            if(parameters.startsWith("(") && parameters.endsWith(")")) {
-                parameters = parameters.substring(1, parameters.length()-1).trim();
-                if(parameters.isEmpty()) {
-                    return name+"()";
-                }else {
-                    String[] argumentTypes = parameters.split("\\,");
-                    name += "(";
-                    for (int i = 0; i < argumentTypes.length; ++i) {
-                        if(i>0) {
-                            name += ",";
-                        }
-                        name += internalTypeName(argumentTypes[i].replace(" ", ""), MetaObjectTools.class.getClassLoader());
-                    }
-                    name += ")";
-                }
-                return name;
-            }
-            return signalName;
-        }else {
-            return signalName+"()";
-        }
-    }
-    
-    public static String cppSignalSignature(String signal) {
-        if(signal.length()>0) {
-            if(signal.charAt(0)!=io.qt.internal.QtJambiInternal.SignalPrefix
-                    && signal.charAt(0)!=io.qt.internal.QtJambiInternal.SlotPrefix) {
-                signal = io.qt.internal.QtJambiInternal.SignalPrefix + signal;
-            }
-        }
-        return signal;
-    }
-    
-    public static String cppSlotSignature(String slot) {
-        if(slot.length()>0) {
-            if(slot.charAt(0)!=io.qt.internal.QtJambiInternal.SignalPrefix
-                    && slot.charAt(0)!=io.qt.internal.QtJambiInternal.SlotPrefix) {
-                slot = io.qt.internal.QtJambiInternal.SlotPrefix + slot;
-            }
-        }
-        return slot;
-    }
-    
-    public static String cppSignalSignature(QMetaObject.AbstractSignal signal) {
-        return cppSignalSignature((QtJambiSignals.AbstractSignal)signal);
-    }
-
-    static String cppSignalSignature(QtJambiSignals.AbstractSignal signal) {
-        QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signal);
-        if(method!=null && method.isValid() && method.methodType()==QMetaMethod.MethodType.Signal) {
-            return io.qt.internal.QtJambiInternal.SignalPrefix + method.cppMethodSignature().toString();
-        }
-        String signalParameters = bunchOfClassNamesInARow(signal.signalTypes(), true);
-        return io.qt.internal.QtJambiInternal.SignalPrefix + signal.name() + "(" + signalParameters + ")";
-    }
-
-    private static String signalParameters(QtJambiInternal.ResolvedSignal resolvedSignal) {
-        return bunchOfClassNamesInARow(resolvedSignal.signalTypes, false);
-    }
-
-    private static String internalTypeNameOfSignal(String s, ClassLoader classCoader) {
-        try {
-            return internalTypeName(s, classCoader);
-        } catch (Throwable t) {
-            return "";
-        }
-    }
-    
-    private static String internalTypeNameOfParameters(Method declaredMethod) {
-        try {
-            String s = methodParameters(declaredMethod);
-            return internalTypeName(s, declaredMethod.getDeclaringClass().getClassLoader());
-        } catch (Throwable t) {
-            return "";
-        }
-    }
-    
-    public static String internalTypeNameOfParameters(Constructor<?> declaredConstructor) {
-        try {
-            String s = constructorParameters(declaredConstructor);
-            return internalTypeName(s, declaredConstructor.getDeclaringClass().getClassLoader());
-        } catch (Throwable t) {
-            return "";
-        }
-    }
-    
-    public static String internalTypeNameOfMethodSignature(Constructor<?> constructor) {
-        try {
-            String javaMethodSignature = shortConstructorSignature(constructor);
-            return internalTypeName(javaMethodSignature, constructor.getDeclaringClass().getClassLoader());
-        } catch (Throwable t) {
-            return "";
-        }
-    }
     
     private static Class<?> getBoxedType(Class<?> type){
     	if(type.isPrimitive()) {
@@ -1163,7 +597,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 return null;
             }
             MetaData metaData = new MetaData();
-            metaData.stringData.add("Reserving the first string for QDynamicMetaObject identification.");
+            metaData.addStringData("Reserving the first string for QDynamicMetaObject identification.");
             List<String> intdataComments = /*new ArrayList<>();*/new AbstractList<String>() {
                 @Override
                 public boolean add(String e) { return false; }
@@ -1173,7 +607,6 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 public int size() {return 0; }
             };
             final String classname = clazz.getName().replace(".", "::");
-            metaData.stringData.add(classname);
             
             Hashtable<String,String> classInfos = new Hashtable<String, String>();
             
@@ -1181,16 +614,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 classInfos.put(info.key(), info.value());
             }
             
-            for(Map.Entry<String,String> entry : classInfos.entrySet()){
-                metaData.stringData.add(entry.getKey());
-                metaData.stringData.add(entry.getValue());
-            }
-            
-            List<Method> slots = new ArrayList<Method>();
-            List<Method> methods = new ArrayList<Method>();
-            
-            List<String> originalSignatures = new ArrayList<String>();
-
+            Map<Method, MethodFlags> methodFlags = new HashMap<>();
             TreeMap<String, Method> propertyReaders = new TreeMap<>();
             TreeMap<String, List<Method>> propertyWriters = new TreeMap<>();
             TreeMap<String, Object> propertyDesignableResolvers = new TreeMap<>();
@@ -1211,76 +635,298 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             // First we get all enums actually declared in the class
             Hashtable<String, Class<?>> enums = new Hashtable<String, Class<?>>();
             queryEnums(clazz, enums);
+            
+            class ParameterInfo{
+            	public ParameterInfo(int metaTypeId, String typeName) {
+					super();
+					this.type = null;
+					this.metaTypeId = metaTypeId;
+					this.typeName = typeName;
+				}
+            	public ParameterInfo(io.qt.core.QMetaType.Type type) {
+					super();
+					this.type = type;
+					this.metaTypeId = 0;
+					this.typeName = null;
+				}
+				final QMetaType.Type type;
+            	final int metaTypeId;
+            	final String typeName;
+            }
 
-            List<QtJambiInternal.ResolvedSignal> resolvedSignals = new ArrayList<>();
+            Set<String> addedMethodSignatures = new TreeSet<>();
+            List<Boolean> signalIsClone = new ArrayList<>();
+            List<List<ParameterInfo>> allSignalParameterInfos = new ArrayList<>();
 //            cl.getEnclosingClass() != QInstanceMemberSignals.class
             boolean isQObject = QObject.class.isAssignableFrom(clazz);
 //            if(QObject.class.isAssignableFrom(clazz)) 
             {
 	            Field declaredFields[] = clazz.getDeclaredFields();
-	            for (Field declaredField : declaredFields) {
-	            	if(QtJambiInternal.isSignalType(declaredField.getType())) {
+signalLoop:	    for (Field declaredField : declaredFields) {
+					Class<?> signalClass = declaredField.getType();
+	            	if(isQObjectSignalType(signalClass)) {
 	            		if (!Modifier.isStatic(declaredField.getModifiers())) {
-	            			if(!isQObject && declaredField.getType().getEnclosingClass() == QObject.class) {
+	            			if(!isQObject && signalClass.getEnclosingClass() == QObject.class)
 	            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: do not use QObject signals within non-QObjects.", clazz.getSimpleName(), declaredField.getName()));
-	            			}
 		                    // If we can't convert all the types we don't list the signal
-		                    QtJambiInternal.ResolvedSignal resolvedSignal = QtJambiInternal.resolveSignal(declaredField, declaredField.getDeclaringClass());
-		                    String signalParameters = signalParameters(resolvedSignal);
-		                    if (signalParameters.length() == 0 || internalTypeNameOfSignal(signalParameters, clazz.getClassLoader()).length() != 0) {
-		                    	if (!Modifier.isFinal(declaredField.getModifiers())) {
+	            			List<Class<?>> emitParameterTypes = new ArrayList<>();
+	            			List<SignalParameterType> signalTypes = new ArrayList<>(QtJambiSignals.resolveSignal(declaredField));
+	                    	List<String> cppTypes = new ArrayList<>();
+	                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
+	                        for (int j = 0; j < signalTypes.size(); j++) {
+	                        	emitParameterTypes.add(Object.class);
+	                            QtJambiSignals.SignalParameterType signalType = signalTypes.get(j);
+	                            QtMetaType metaTypeDecl = signalType.annotatedType.getAnnotation(QtMetaType.class);
+	                            int metaTypeId = 0;
+	                            String typeName;
+	                            if(metaTypeDecl!=null) {
+	                				if(metaTypeDecl.id()!=0) {
+	                					metaTypeId = metaTypeDecl.id();
+	                					if(signalType.isPointer || signalType.isReference) {
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+	                					}
+	                					typeName = new QMetaType(metaTypeId).name().toString();
+	                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+	                					metaTypeId = metaTypeDecl.type().value();
+	                					if(signalType.isPointer || signalType.isReference) {
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+	                					}
+	                					typeName = new QMetaType(metaTypeId).name().toString();
+	                				}else {
+	            						if(metaTypeDecl.name().isEmpty())
+	            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+	                					typeName = metaTypeDecl.name();
+	                					if(signalType.isPointer && !typeName.endsWith("*")) {
+	                                        typeName += "*";
+	                                    }
+	                                    if(signalType.isReference) {
+	                                    	if(typeName.endsWith("*")) {
+	                                            typeName = typeName.substring(0, typeName.length()-2);
+	                                        }
+	                                        if(!typeName.endsWith("&")) {
+	                                            typeName += "&";
+	                                        }
+	                                    }
+	                				}
+	                			}else{
+	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
+	                				if(signalType.isPointer) {
+	                                    if(!typeName.endsWith("*")) {
+	                                        typeName += "*";
+	                                    }
+	                                }
+	                                if(signalType.isReference) {
+	                                    if(typeName.endsWith("*")) {
+	                                        typeName = typeName.substring(0, typeName.length()-2);
+	                                    }
+	                                    if(!typeName.endsWith("&")) {
+	                                        typeName += "&";
+	                                    }
+	                                }
+	                			}
+	                            QMetaType.Type type = metaType(typeName);
+	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+	                                	metaTypeId = QtJambiInternal.findMetaType(typeName);
+	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(signalType.genericType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+	    	                            }
+	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+	    	                                typeName = new QMetaType(metaTypeId).name().toString();
+	    	                            else
+	    	                            	continue signalLoop;
+	                                }
+	                                cppTypes.add(typeName);
+	                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+	                            }else{
+	                                cppTypes.add(new QMetaType(type).name().toString());
+	                                signalParameterInfos.add(new ParameterInfo(type));
+	                            }
+	                        }
+	                        long methodId = findEmitMethodId(signalClass, emitParameterTypes);
+	                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+	                        if(!addedMethodSignatures.contains(methodSignature) && methodId!=0) {
+	                        	if (!Modifier.isFinal(declaredField.getModifiers())) {
 		                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
 		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", clazz.getSimpleName(), declaredField.getName()));
 		                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
 		                    		}
 		                    	}
-		                        metaData.signalFields.add(declaredField);
-		                        resolvedSignals.add(resolvedSignal);
-		                        originalSignatures.add(methodSignature(resolvedSignal));
-		                        
-		                        metaData.stringData.add(resolvedSignal.field.getName());
-		                        for (int i = 1; i <= resolvedSignal.signalTypes.size(); i++) {
-		                            QtJambiSignals.SignalParameterType signalType = resolvedSignal.signalTypes.get(i-1);
-		                            String typeName;
-		                            if(signalType.arrayDimension==0){
-		                                typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
-		                            }else{
-		                                typeName = internalTypeNameOfClass(signalType.originalType, signalType.originalType);
-		                            }
-		                            if(signalType.isPointer) {
-		                                if(!typeName.endsWith("*")) {
-		                                    typeName += "*";
-		                                }
-		                            }
-		                            if(signalType.isReference) {
-		                                if(typeName.endsWith("*")) {
-		                                    typeName = typeName.substring(0, typeName.length()-2);
-		                                }
-		                                if(!typeName.endsWith("&")) {
-		                                    typeName += "&";
-		                                }
-		                            }
-		                            QMetaType.Type type = metaType(typeName);
-		                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-		                                metaData.stringData.add(typeName);
-		                            }
-		                            metaData.stringData.add("arg__"+i);
-		                        }
-		                        metaData.stringData.add(""); // for the method tag
-		                    	
 			                    // Rules for resetters:
 			                    // 1. Zero or one argument
-			                    if(resolvedSignal.signalTypes.size() <= 1){
+			                    if(signalTypes.size() <= 1){
 			                        PropertyAnnotation notify = PropertyAnnotation.notifyAnnotation(declaredField);
 			
 			                        if (notify != null) {
 			                            propertyNotifies.put(notify.name(), declaredField);
 			                        }
 			                    }
-		                    }
+	                        	addedMethodSignatures.add(methodSignature);
+	                        	signalIsClone.add(Boolean.FALSE);
+	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+                        		metaData.signalInfos.add(new SignalInfo(declaredField, new ArrayList<>(signalTypes), signalClass, new int[signalTypes.size()], methodId));
+		                        Runnable addDefaultSignal = ()->{
+		                        	signalTypes.remove(signalTypes.size()-1);
+	                        		signalParameterInfos.remove(signalParameterInfos.size()-1);
+	                        		cppTypes.remove(cppTypes.size()-1);
+	                        		emitParameterTypes.remove(emitParameterTypes.size()-1);
+		                        	long _methodId = findEmitMethodId(signalClass, emitParameterTypes);
+	                        		String _methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+	                        		if(!addedMethodSignatures.contains(_methodSignature) && _methodId!=0) {
+	                        			addedMethodSignatures.add(_methodSignature);
+	                        			signalIsClone.add(Boolean.TRUE);
+	    	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+	    	                        	metaData.signalInfos.add(new SignalInfo(declaredField, new ArrayList<>(signalTypes), signalClass, new int[signalTypes.size()], _methodId));
+	                        		}
+		                        };
+		                        switch(signalTypes.size()) {
+		                        case 9:
+		                        	if(QMetaObject.Emitable8.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+		                        case 8:
+		                        	if(QMetaObject.Emitable7.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+		                        case 7:
+		                        	if(QMetaObject.Emitable6.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+		                        case 6:
+		                        	if(QMetaObject.Emitable5.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+		                        case 5:
+		                        	if(QMetaObject.Emitable4.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+	                        	case 4:
+		                        	if(QMetaObject.Emitable3.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+	                        	case 3:
+		                        	if(QMetaObject.Emitable2.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+	                        	case 2:
+		                        	if(QMetaObject.Emitable1.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+	                        	case 1:
+		                        	if(QMetaObject.Emitable0.class.isAssignableFrom(signalClass)) {
+		                        		addDefaultSignal.run();
+		                        	}else break;
+		                        }
+	                        }
 	                	}else {
 	                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
 	                	}
+	            	}else if(isQObject && QtJambiSignals.AbstractMultiSignal.class.isAssignableFrom(signalClass) && QObject.class!=signalClass.getEnclosingClass()) {
+	            		if(Modifier.isStatic(declaredField.getModifiers()))
+	                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
+            			if(declaredField.getDeclaringClass()!=signalClass.getEnclosingClass())
+            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: Multi signal class has to be declared in the class using it.", clazz.getSimpleName(), declaredField.getName()));
+            			if(!Modifier.isFinal(signalClass.getModifiers()))
+            				throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal class %1$s.", signalClass.getTypeName()));
+                    	if (!Modifier.isFinal(declaredField.getModifiers()))
+                			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
+                    	Map<List<Class<?>>,QtJambiSignals.EmitMethodInfo> emitMethods = QtJambiSignals.findEmitMethods(signalClass);
+        				if(emitMethods.keySet().isEmpty())
+        					throw new QSignalDeclarationException(String.format("Missing modifier emit methods at signal class %1$s.", signalClass.getTypeName()));
+                        for (QtJambiSignals.EmitMethodInfo emitMethodInfo : emitMethods.values()) {
+                        	if(emitMethodInfo.methodId==0)
+                        		continue;
+                        	List<SignalParameterType> signalTypes = emitMethodInfo.parameterTypes;
+	                    	List<String> cppTypes = new ArrayList<>();
+	                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
+	                        List<Class<?>> signalClassTypes = new ArrayList<>();
+	                        for (int j = 0; j < signalTypes.size(); j++) {
+	                            QtJambiSignals.SignalParameterType signalType = signalTypes.get(j);
+	                            signalClassTypes.add(signalType.type);
+	                            QtMetaType metaTypeDecl = signalType.annotatedType.getAnnotation(QtMetaType.class);
+	                            int metaTypeId = 0;
+	                            String typeName;
+	                            if(metaTypeDecl!=null) {
+	                				if(metaTypeDecl.id()!=0) {
+	                					metaTypeId = metaTypeDecl.id();
+	                					if(signalType.isPointer || signalType.isReference) {
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+	                					}
+	                					typeName = new QMetaType(metaTypeId).name().toString();
+	                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+	                					metaTypeId = metaTypeDecl.type().value();
+	                					if(signalType.isPointer || signalType.isReference) {
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+	                					}
+	                					typeName = new QMetaType(metaTypeId).name().toString();
+	                				}else {
+	            						if(metaTypeDecl.name().isEmpty())
+	            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+	                					typeName = metaTypeDecl.name();
+	                					if(signalType.isPointer && !typeName.endsWith("*")) {
+	                                        typeName += "*";
+	                                    }
+	                                    if(signalType.isReference) {
+	                                    	if(typeName.endsWith("*")) {
+	                                            typeName = typeName.substring(0, typeName.length()-2);
+	                                        }
+	                                        if(!typeName.endsWith("&")) {
+	                                            typeName += "&";
+	                                        }
+	                                    }
+	                				}
+	                			}else{
+	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
+	                				if(signalType.isPointer) {
+	                                    if(!typeName.endsWith("*")) {
+	                                        typeName += "*";
+	                                    }
+	                                }
+	                                if(signalType.isReference) {
+	                                    if(typeName.endsWith("*")) {
+	                                        typeName = typeName.substring(0, typeName.length()-2);
+	                                    }
+	                                    if(!typeName.endsWith("&")) {
+	                                        typeName += "&";
+	                                    }
+	                                }
+	                			}
+	                            QMetaType.Type type = metaType(typeName);
+	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+	                                	metaTypeId = QtJambiInternal.findMetaType(typeName);
+	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(signalType.genericType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+	    	                            }
+	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+	    	                                typeName = new QMetaType(metaTypeId).name().toString();
+	    	                            else
+	    	                            	continue signalLoop;
+	                                }
+	                                cppTypes.add(typeName);
+	                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+	                            }else{
+	                                cppTypes.add(new QMetaType(type).name().toString());
+	                                signalParameterInfos.add(new ParameterInfo(type));
+	                            }
+	                        }
+	                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+	                        if(!addedMethodSignatures.contains(methodSignature)) {
+	                        	addedMethodSignatures.add(methodSignature);
+	                        	signalIsClone.add(Boolean.FALSE);
+	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+	                        	Class<?> _signalClass;
+	                        	QtJambiSignals.SignalClasses signalClasses = QtJambiSignals.signalClasses(QObject.class);
+                        		if(signalClasses==null)
+                        			throw new QSignalInitializationException("Unable to resolve multi signal.");
+	                        	if(Modifier.isPublic(emitMethodInfo.method.getModifiers())) {
+            						_signalClass = signalClasses.getPublicSignal(emitMethodInfo.parameterTypes.size());
+            					}else {
+            						_signalClass = signalClasses.getPrivateSignal(emitMethodInfo.parameterTypes.size());
+            					}
+	                        	metaData.signalInfos.add(new SignalInfo(declaredField, new ArrayList<>(signalTypes), _signalClass, new int[signalTypes.size()], emitMethodInfo.methodId));
+	                        }
+            			}
 	            	}else{
 	            		PropertyAnnotation member = PropertyAnnotation.memberAnnotation(declaredField);
 	            		if(member!=null) {
@@ -1294,38 +940,115 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
 	            }
             }
             
+            List<List<ParameterInfo>> allConstructorParameterInfos = new ArrayList<>();
 //			if(QObject.class.isAssignableFrom(clazz)) 
             {
-                cloop: for(Constructor<?> constructor : clazz.getDeclaredConstructors()){
+cloop: 		    for(Constructor<?> constructor : clazz.getDeclaredConstructors()){
                     if(!constructor.isSynthetic() && constructor.isAnnotationPresent(QtInvokable.class)) {
                         Class<?>[] parameterTypes = constructor.getParameterTypes();
                         for (Class<?> parameterType : parameterTypes) {
-                            if(parameterType==PrivateConstructorAccess.type()) {
+                            if(parameterType==PrivateConstructorAccess.type()
+                            		|| parameterType==DeclarativeConstructorAccess.type()) {
                                 continue cloop;
                             }
                         }
-                        metaData.constructors.add(constructor);
-                        metaData.hasStaticMembers = true;
-                        originalSignatures.add(constructorSignature(constructor));
-                        Parameter[] parameters = constructor.getParameters();
+                        
+                    	List<String> cppTypes = new ArrayList<>();
+                        List<ParameterInfo> constructorParameterInfos = new ArrayList<>();
                         Type[] genericParameterTypes = constructor.getGenericParameterTypes();
-                        for (int i = 0; i < parameterTypes.length; i++) {
-                            String typeName = internalTypeNameOfClass(parameterTypes[i], genericParameterTypes[i]);
-                            QMetaType.Type type = metaType(typeName);
-                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                                metaData.stringData.add(typeName);
+                        AnnotatedType[] annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
+                        for (int j = 0; j < parameterTypes.length; j++) {
+                            boolean isPointer = false;
+                            boolean isReference = false;
+                            if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
+                            	isPointer = true;
                             }
-                            if(parameters[i].isNamePresent()) {
-                                metaData.stringData.add(parameters[i].getName());
-                            }else {
-                                metaData.stringData.add("arg__"+(i+1));
+                            QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
+                            if(referenceType!=null && !referenceType.isConst()) {
+                            	isReference = true;
+                            }
+                            String typeName;
+                            QtMetaType metaTypeDecl = annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
+                            int metaTypeId = 0;
+                            if(metaTypeDecl!=null) {
+                				if(metaTypeDecl.id()!=0) {
+                					metaTypeId = metaTypeDecl.id();
+                					if(isPointer || isReference) {
+                						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+                					}
+                					typeName = new QMetaType(metaTypeId).name().toString();
+                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+                					metaTypeId = metaTypeDecl.type().value();
+                					if(isPointer || isReference) {
+                						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+                					}
+                					typeName = new QMetaType(metaTypeId).name().toString();
+                				}else {
+            						if(metaTypeDecl.name().isEmpty())
+            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+                					typeName = metaTypeDecl.name();
+                					if(isPointer && !typeName.endsWith("*")) {
+                                        typeName += "*";
+                                    }
+                                    if(isReference) {
+                                    	if(typeName.endsWith("*")) {
+                                            typeName = typeName.substring(0, typeName.length()-2);
+                                        }
+                                        if(!typeName.endsWith("&")) {
+                                            typeName += "&";
+                                        }
+                                    }
+                				}
+                			}else {
+                				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
+                				if(isPointer && !typeName.endsWith("*")) {
+                                    typeName += "*";
+                                }
+                                if(isReference) {
+                                	if(typeName.endsWith("*")) {
+                                        typeName = typeName.substring(0, typeName.length()-2);
+                                    }
+                                    if(!typeName.endsWith("&")) {
+                                        typeName += "&";
+                                    }
+                                }
+                			}
+                        	QMetaType.Type type = metaType(typeName);
+                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+    	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
+    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+    	                                metaTypeId = registerMetaType(parameterTypes[j], 
+    	                                        genericParameterTypes[j],
+    	                                        annotatedParameterTypes[j],
+    	                                        isPointer,
+    	                                        isReference);
+    	                            }
+    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+    	                                typeName = new QMetaType(metaTypeId).name().toString();
+    	                            else continue cloop;
+                                }
+                                cppTypes.add(typeName);
+                                constructorParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+                            }else{
+                                cppTypes.add(new QMetaType(type).name().toString());
+                                constructorParameterInfos.add(new ParameterInfo(type));
                             }
                         }
-                        metaData.stringData.add("");
+                        
+                        String methodSignature = String.format("%1$s(%2$s)", constructor.getName(), String.join(", ", cppTypes));
+                        if(!addedMethodSignatures.contains(methodSignature)) {
+                        	addedMethodSignatures.add(methodSignature);
+	                        allConstructorParameterInfos.add(constructorParameterInfos);
+	                        metaData.constructors.add(constructor);
+	                        metaData.constructorMetaTypes.add(new int[parameterTypes.length+1]);
+	                        metaData.hasStaticMembers = true;
+                        }
                     }
                 }
             }
             
+            List<List<ParameterInfo>> allMethodParameterInfos = new ArrayList<>();
             List<Method> possibleBindables = Collections.emptyList();
             for (Method declaredMethod : clazz.getDeclaredMethods()) {
                 if(declaredMethod.isSynthetic() 
@@ -1345,78 +1068,183 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         )
                         && !overridesGeneratedSlot(declaredMethod, clazz)
                     ) {
-
-                    // If we can't convert the type, we don't list it
-                    String methodParameters = methodParameters(declaredMethod);
-                    String returnType = declaredMethod.getReturnType().getName();
-                    String returnTypeName = internalTypeNameOfClass(declaredMethod.getReturnType(), declaredMethod.getGenericReturnType());
-                    if(returnTypeName.startsWith("QQmlListProperty<") && QtJambiInternal.findMetaType(returnTypeName)==QMetaType.Type.UnknownType.value()) {
-                        registerQmlListProperty(returnTypeName);
+                	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
+                	boolean isPointer = false;
+                    boolean isReference = false;
+                    if(declaredMethod.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)
+                    		|| declaredMethod.isAnnotationPresent(QtPointerType.class)) {
+                    	isPointer = true;
                     }
                     QtReferenceType referenceType = declaredMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
                     if(referenceType==null)
-                    	declaredMethod.getAnnotation(QtReferenceType.class);
-                    if(declaredMethod.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)) {
-                        if(!returnTypeName.endsWith("*")) {
-                            returnTypeName += "*";
-                        }
-                    }else if(referenceType!=null && !referenceType.isConst()) {
-                        if(returnTypeName.endsWith("*")) {
-                            returnTypeName = returnTypeName.substring(0, returnTypeName.length()-2);
-                        }
-                        if(!returnTypeName.endsWith("&")) {
-                            returnTypeName += "&";
-                        }
+                    	referenceType = declaredMethod.getAnnotation(QtReferenceType.class);
+                    if(referenceType!=null && !referenceType.isConst()) {
+                    	isReference = true;
                     }
-                    if ((methodParameters.equals("") || !internalTypeNameOfParameters(declaredMethod).equals(""))
-                        &&(returnType.equals("") || returnType.equals("void") || !returnTypeName.equals(""))) {
-                        String methodSignature = methodSignature(declaredMethod);
-                        if(!originalSignatures.contains(methodSignature)) {
-                            if(Modifier.isStatic(declaredMethod.getModifiers())){
-                                methods.add(declaredMethod);
-                                metaData.hasStaticMembers = true;
-                            }else{
-                                if(!QObject.class.isAssignableFrom(clazz)) {
-                                    // we need to make sure that static_metacall is set
-                                    metaData.hasStaticMembers = true;
-                                }
-                                slots.add(declaredMethod);
+                    QtMetaType metaTypeDecl = declaredMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+                    int metaTypeId = 0;
+                    String typeName;
+                    if(metaTypeDecl!=null) {
+        				if(metaTypeDecl.id()!=0) {
+        					metaTypeId = metaTypeDecl.id();
+        					if(isPointer || isReference) {
+        						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+        					}
+        					typeName = new QMetaType(metaTypeId).name().toString();
+        				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+        					metaTypeId = metaTypeDecl.type().value();
+        					if(isPointer || isReference) {
+        						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+        					}
+        					typeName = new QMetaType(metaTypeId).name().toString();
+        				}else {
+    						if(metaTypeDecl.name().isEmpty())
+    							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+        					typeName = metaTypeDecl.name();
+        					if(isPointer && !typeName.endsWith("*")) {
+                                typeName += "*";
                             }
-                            originalSignatures.add(methodSignature);
-                            metaData.stringData.add(declaredMethod.getName());
-                            metaData.stringData.add(returnTypeName);
-                            Parameter[] parameters = declaredMethod.getParameters();
-                            Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
-                            Type[] genericParameterTypes = declaredMethod.getGenericParameterTypes();
-                            AnnotatedType[] annotatedParameterTypes = declaredMethod.getAnnotatedParameterTypes();
-                            for (int i = 1; i <= parameterTypes.length; i++) {
-                                String typeName = internalTypeNameOfClass(parameterTypes[i-1], genericParameterTypes[i-1]);
-                                if(annotatedParameterTypes[i-1].isAnnotationPresent(QtPointerType.class)) {
-                                    if(!typeName.endsWith("*")) {
-                                        typeName += "*";
-                                    }
+                            if(isReference) {
+                            	if(typeName.endsWith("*")) {
+                                    typeName = typeName.substring(0, typeName.length()-2);
                                 }
-                                QtReferenceType _referenceType = annotatedParameterTypes[i-1].getAnnotation(QtReferenceType.class);
-                                if(_referenceType!=null && !_referenceType.isConst()) {
-                                    if(typeName.endsWith("*")) {
+                                if(!typeName.endsWith("&")) {
+                                    typeName += "&";
+                                }
+                            }
+        				}
+        			}else {
+        				typeName = internalTypeNameOfClass(declaredMethod.getReturnType(), declaredMethod.getGenericReturnType());
+        				if(isPointer && !typeName.endsWith("*")) {
+                            typeName += "*";
+                        }
+                        if(isReference) {
+                        	if(typeName.endsWith("*")) {
+                                typeName = typeName.substring(0, typeName.length()-2);
+                            }
+                            if(!typeName.endsWith("&")) {
+                                typeName += "&";
+                            }
+                        }
+        			}
+                    QMetaType.Type type = metaType(typeName);
+                    if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+                    	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+	                    	metaTypeId = QtJambiInternal.findMetaType(typeName);
+	                        if(metaTypeId==QMetaType.Type.UnknownType.value() || !(declaredMethod.getGenericReturnType() instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                        	metaTypeId = registerMetaType(
+	                                    declaredMethod.getReturnType(), 
+	                                    declaredMethod.getGenericReturnType(), 
+	                                    declaredMethod.getAnnotatedReturnType(),
+	                                    isPointer,
+	                                    isReference);
+	                        }
+	                        if(metaTypeId!=QMetaType.Type.UnknownType.value())
+	                            typeName = new QMetaType(metaTypeId).name().toString();
+                    	}
+                    	methodParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+                    }else{
+                    	methodParameterInfos.add(new ParameterInfo(type));
+                    }
+                    
+                    List<String> cppTypes = new ArrayList<>();
+                    Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
+                    Type[] genericParameterTypes = declaredMethod.getGenericParameterTypes();
+                    AnnotatedType[] annotatedParameterTypes = declaredMethod.getAnnotatedParameterTypes();
+                    for (int j = 0; j < parameterTypes.length; j++) {
+                    	metaTypeId = 0;
+                        isPointer = false;
+                        isReference = false;
+                        if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
+                        	isPointer = true;
+                        	
+                        }
+                        referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
+                        if(referenceType!=null && !referenceType.isConst()) {
+                        	isReference = true;
+                        }
+                    	metaTypeDecl = annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
+                    	if(metaTypeDecl!=null) {
+            				if(metaTypeDecl.id()!=0) {
+            					metaTypeId = metaTypeDecl.id();
+            					if(isPointer || isReference) {
+            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+            					}
+            					typeName = new QMetaType(metaTypeId).name().toString();
+            				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+            					metaTypeId = metaTypeDecl.type().value();
+            					if(isPointer || isReference) {
+            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+            					}
+            					typeName = new QMetaType(metaTypeId).name().toString();
+            				}else {
+        						if(metaTypeDecl.name().isEmpty())
+        							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+            					typeName = metaTypeDecl.name();
+            					if(isPointer && !typeName.endsWith("*")) {
+                                    typeName += "*";
+                                }
+                                if(isReference) {
+                                	if(typeName.endsWith("*")) {
                                         typeName = typeName.substring(0, typeName.length()-2);
                                     }
                                     if(!typeName.endsWith("&")) {
                                         typeName += "&";
                                     }
                                 }
-                                QMetaType.Type type = metaType(typeName);
-                                if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                                    metaData.stringData.add(typeName);
+            				}
+            			}else {
+            				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
+            				if(isPointer && !typeName.endsWith("*")) {
+                                typeName += "*";
+                            }
+                            if(isReference) {
+                            	if(typeName.endsWith("*")) {
+                                    typeName = typeName.substring(0, typeName.length()-2);
                                 }
-                                if(parameters[i-1].isNamePresent()) {
-                                    metaData.stringData.add(parameters[i-1].getName());
-                                }else {
-                                    metaData.stringData.add("arg__"+i);
+                                if(!typeName.endsWith("&")) {
+                                    typeName += "&";
                                 }
                             }
-                            metaData.stringData.add(""); // for the method tag
+            			}
+                        type = metaType(typeName);
+                        if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+                            if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
+	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                                metaTypeId = registerMetaType(parameterTypes[j], 
+	                                        genericParameterTypes[j],
+	                                        annotatedParameterTypes[j],
+	                                        isPointer,
+	                                        isReference);
+	                            }
+	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+	                                typeName = new QMetaType(metaTypeId).name().toString();
+                            }
+                            cppTypes.add(typeName);
+                            methodParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+                        }else{
+                            cppTypes.add(new QMetaType(type).name().toString());
+                        	methodParameterInfos.add(new ParameterInfo(type));
                         }
+                    }
+                    String methodSignature = String.format("%1$s(%2$s)", declaredMethod.getName(), String.join(", ", cppTypes));
+                    if(!addedMethodSignatures.contains(methodSignature)) {
+                    	allMethodParameterInfos.add(methodParameterInfos);
+                    	metaData.methods.add(declaredMethod);
+                        if(Modifier.isStatic(declaredMethod.getModifiers())){
+                            methodFlags.put(declaredMethod, MethodFlags.MethodMethod);
+                            metaData.hasStaticMembers = true;
+                        }else{
+                            if(!QObject.class.isAssignableFrom(clazz)) {
+                                // we need to make sure that static_metacall is set
+                                metaData.hasStaticMembers = true;
+                            	methodFlags.put(declaredMethod, MethodFlags.MethodMethod);
+                            }else {
+                            	methodFlags.put(declaredMethod, MethodFlags.MethodSlot);
+                            }
+                        }
+                        metaData.methodMetaTypes.add(new int[declaredMethod.getParameterCount()+1]);
                     }
                 }
                 
@@ -1461,7 +1289,6 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         propertyRequiredResolvers.put(name, isRequired(declaredMethod, clazz));
                         propertyConstantResolvers.put(name, isConstant(declaredMethod));
                         propertyFinalResolvers.put(name, isFinal(declaredMethod));
-                        metaData.stringData.add(name);
                     }
                 }
 
@@ -1581,29 +1408,29 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             
             for(String property : propertyReaders.keySet()) {
             	if(propertyNotifies.get(property)==null) {
-            		for(QtJambiInternal.ResolvedSignal resolvedSignal : resolvedSignals) {
-            			if(resolvedSignal.field.getName().equals(property+"Changed")) {
-                			if(resolvedSignal.signalTypes.isEmpty()) {
-                				propertyNotifies.put(property, resolvedSignal.field);
+            		for(SignalInfo signalInfo : metaData.signalInfos) {
+            			if(signalInfo.field.getName().equals(property+"Changed")) {
+                			if(signalInfo.signalTypes.isEmpty()) {
+                				propertyNotifies.put(property, signalInfo.field);
                 			}else {
                 				if(propertyReaders.get(property)!=null) {
-                					if(resolvedSignal.signalTypes.get(0).originalType.isAssignableFrom(getBoxedType(propertyReaders.get(property).getReturnType()))) {
-                        				propertyNotifies.put(property, resolvedSignal.field);
+                					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(propertyReaders.get(property).getReturnType()))) {
+                        				propertyNotifies.put(property, signalInfo.field);
                         			}
                     			}else if(propertyMembers.get(property)!=null) {
-                    				Field field = propertyMembers.get(property);
-                    				if(isValidQProperty(field)) {
-                    					MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(field);
-                    					if(resolvedSignal.signalTypes.get(0).originalType.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
-                            				propertyNotifies.put(property, resolvedSignal.field);
+                    				Field propertyField = propertyMembers.get(property);
+                    				if(isValidQProperty(propertyField)) {
+                    					MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyField);
+                    					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
+                            				propertyNotifies.put(property, propertyField);
                             			}
-                    				}else if(resolvedSignal.signalTypes.get(0).originalType.isAssignableFrom(getBoxedType(field.getType()))) {
-                        				propertyNotifies.put(property, resolvedSignal.field);
+                    				}else if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(propertyField.getType()))) {
+                        				propertyNotifies.put(property, propertyField);
                         			}
                     			}else if(propertyQPropertyFields.get(property)!=null) {
                     				MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyQPropertyFields.get(property));
-                					if(resolvedSignal.signalTypes.get(0).originalType.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
-                        				propertyNotifies.put(property, resolvedSignal.field);
+                					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
+                        				propertyNotifies.put(property, signalInfo.field);
                         			}
                     			}
                 			}
@@ -1612,9 +1439,6 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             		}
             	}
             }
-            
-            metaData.methods.addAll(slots);
-            metaData.methods.addAll(methods);
             
             int flagsIndex = 0;
             {
@@ -1635,13 +1459,13 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 // revision
                 metaData.metaData.add(resolveMetaDataRevision());		intdataComments.add("revision");
                 // classname
-                metaData.metaData.add(metaData.stringData.indexOf(classname));		intdataComments.add("className");
+                metaData.metaData.add(metaData.addStringData(classname));		intdataComments.add("className");
                 // classinfo
                 metaData.metaData.add(classInfos.size());		intdataComments.add("classInfoCount");
                 metaData.metaData.add(classInfos.isEmpty() ? 0 : MO_HEADER_LEN);		intdataComments.add("classInfoData");
                 
                 // methods
-                int methodCount = metaData.signalFields.size() + slots.size() + methods.size();
+                int methodCount = metaData.signalInfos.size() + metaData.methods.size();
                 metaData.metaData.add(methodCount);		intdataComments.add("methodCount");
                 final int METHOD_METADATA_INDEX = metaData.metaData.size();
                 metaData.metaData.add(0);		intdataComments.add("methodData");
@@ -1666,15 +1490,15 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 metaData.metaData.add(0);		intdataComments.add("flags");
                 
                 // signalCount
-                metaData.metaData.add(metaData.signalFields.size());		intdataComments.add("signalCount");
+                metaData.metaData.add(metaData.signalInfos.size());		intdataComments.add("signalCount");
                 
                 //
                 // Build classinfo array
                 //
                 for(Map.Entry<String,String> entry : classInfos.entrySet()){
                     // classinfo: key, value
-                    metaData.metaData.add(metaData.stringData.indexOf(entry.getKey()));		intdataComments.add("classinfo: key");
-                    metaData.metaData.add(metaData.stringData.indexOf(entry.getValue()));		intdataComments.add("classinfo: value");
+                    metaData.metaData.add(metaData.addStringData(entry.getKey()));		intdataComments.add("classinfo: key");
+                    metaData.metaData.add(metaData.addStringData(entry.getValue()));		intdataComments.add("classinfo: value");
                 }
                 
                 HashMap<Object,Integer> paramIndexOfMethods = new HashMap<Object,Integer>();
@@ -1683,45 +1507,46 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 //
                 // Build signals array first, otherwise the signal indices would be wrong
                 //
-                if(metaData.signalFields.size() + metaData.methods.size() > 0){
+                if(metaData.signalInfos.size() + metaData.methods.size() > 0){
 
                     metaData.metaData.set(METHOD_METADATA_INDEX, metaData.metaData.size());
                     
-                    for (int i = 0; i < metaData.signalFields.size(); ++i) {
-                        Field signalField = metaData.signalFields.get(i);
-                        signalIndexes.put(signalField, i);
-                        QtJambiInternal.ResolvedSignal resolvedSignal = resolvedSignals.get(i);
+                    for (int i = 0; i < metaData.signalInfos.size(); ++i) {
+                        SignalInfo signalInfo = metaData.signalInfos.get(i);
+                        if(!signalIndexes.containsKey(signalInfo.field))
+                        	signalIndexes.put(signalInfo.field, i);
                         MethodAttributes flags = MethodFlags.MethodSignal.asFlags();
-                        if (Modifier.isPrivate(signalField.getModifiers()))
+                        if (Modifier.isPrivate(signalInfo.field.getModifiers()))
                             flags.set(MethodFlags.AccessPrivate);
-                        else if (Modifier.isPublic(signalField.getModifiers()))
+                        else if (Modifier.isPublic(signalInfo.field.getModifiers()))
                             flags.set(MethodFlags.AccessPublic);
                         else
                             flags.set(MethodFlags.AccessProtected);
                         
-                        if (signalField.isAnnotationPresent(QtInvokable.class))
+                        if (signalInfo.field.isAnnotationPresent(QtInvokable.class))
                             flags.set(MethodFlags.MethodScriptable);
-                        int argc = resolvedSignal.signalTypes.size();
+                        if(Boolean.TRUE.equals(signalIsClone.get(i)))
+                        	flags.set(MethodFlags.MethodCloned);
+                        int argc = signalInfo.signalTypes.size();
                         
                         // signals: name, argc, parameters, tag, flags, initial metatype offsets
-                        metaData.metaData.add(metaData.stringData.indexOf(signalField.getName()));		intdataComments.add("signal["+i+"]: name");
+                        metaData.metaData.add(metaData.addStringData(signalInfo.field.getName()));		intdataComments.add("signal["+i+"]: name");
                         metaData.metaData.add(argc);		intdataComments.add("signal["+i+"]: argc");
-                        paramIndexOfMethods.put(resolvedSignal, metaData.metaData.size());
+                    	paramIndexOfMethods.put(new QPair<>(signalInfo.field, argc), metaData.metaData.size());
                         metaData.metaData.add(0);		intdataComments.add("signal["+i+"]: parameters");
-                        metaData.metaData.add(metaData.stringData.indexOf(""));		intdataComments.add("signal["+i+"]: tag");
+                        metaData.metaData.add(metaData.addStringData(""));		intdataComments.add("signal["+i+"]: tag");
                         metaData.metaData.add(flags.value());		intdataComments.add("signal["+i+"]: flags");
-                        if(NativeLibraryManager.VERSION_MAJOR>5) {
+                        if(QtJambiInternal.majorVersion()>5) {
                             metaData.metaData.add(0);		intdataComments.add("signal["+i+"]: initial metatype offsets");
                         }
                     }
                     
                     //
-                    // Build slots array
                     // Build method array
                     //
                     for (int i = 0; i < metaData.methods.size(); i++) {
                         Method method = metaData.methods.get(i);
-                        MethodAttributes flags = slots.contains(method) ? MethodFlags.MethodSlot.asFlags() : MethodFlags.MethodMethod.asFlags();
+                        MethodAttributes flags = methodFlags.get(method).asFlags();
                         if (Modifier.isPrivate(method.getModifiers()))
                             flags.set(MethodFlags.AccessPrivate);
                         else if (Modifier.isPublic(method.getModifiers()))
@@ -1734,18 +1559,18 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         int argc = method.getParameterTypes().length;
                         
                         // slots: name, argc, parameters, tag, flags, initial metatype offsets
-                        metaData.metaData.add(metaData.stringData.indexOf(method.getName()));
+                        metaData.metaData.add(metaData.addStringData(method.getName()));
                         intdataComments.add("slot["+i+"]: name");
                         metaData.metaData.add(argc);
                         intdataComments.add("slot["+i+"]: argc");
                         paramIndexOfMethods.put(method, metaData.metaData.size());
                         metaData.metaData.add(0);
                         intdataComments.add("slot["+i+"]: parameters");
-                        metaData.metaData.add(metaData.stringData.indexOf(""));
+                        metaData.metaData.add(metaData.addStringData(""));
                         intdataComments.add("slot["+i+"]: tag");
                         metaData.metaData.add(flags.value());
                         intdataComments.add("slot["+i+"]: flags");
-                        if(NativeLibraryManager.VERSION_MAJOR>5) {
+                        if(QtJambiInternal.majorVersion()>5) {
                             metaData.metaData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
                         }
                     }
@@ -1758,58 +1583,32 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                     metaData.metaTypes.add(0);
                 }
                 
-                for (int i = 0; i < metaData.signalFields.size(); ++i) {
-                    QtJambiInternal.ResolvedSignal resolvedSignal = resolvedSignals.get(i);
+                for (int i = 0; i < metaData.signalInfos.size(); ++i) {
+                	SignalInfo signalInfo = metaData.signalInfos.get(i);
+                	List<ParameterInfo> signalParameterInfos = allSignalParameterInfos.get(i);
                     // signals: parameters
-                    int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(resolvedSignal);
+                    int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(new QPair<>(signalInfo.field, signalInfo.signalMetaTypes.length));
                     metaData.metaData.set(METHOD_PARAMETER_INDEX, metaData.metaData.size());
-                    if(NativeLibraryManager.VERSION_MAJOR>5) {
+                    if(QtJambiInternal.majorVersion()>5) {
                         metaData.metaData.set(METHOD_PARAMETER_INDEX+3, metaData.metaTypes.size());
                     }
                     metaData.metaData.add(QMetaType.Type.Void.value());		intdataComments.add("signal["+i+"].returnType");
                     metaData.metaTypes.add(QMetaType.Type.Void.value());
-                    for (int j = 0; j < resolvedSignal.signalTypes.size(); j++) {
-                        QtJambiSignals.SignalParameterType signalType = resolvedSignal.signalTypes.get(j);
-                        String typeName;
-                        if(signalType.arrayDimension==0){
-                            typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
+                    for (int j = 0; j < signalParameterInfos.size(); j++) {
+                    	ParameterInfo info = signalParameterInfos.get(j);
+                        if(info.type==null){
+                        	signalInfo.signalMetaTypes[j] = info.metaTypeId;
+                            metaData.metaData.add(0x80000000 | metaData.addStringData(info.typeName));
+                            metaData.metaTypes.add(info.metaTypeId);
                         }else{
-                            typeName = internalTypeNameOfClass(signalType.originalType, signalType.originalType);
-                        }
-                        if(signalType.isPointer) {
-                            if(!typeName.endsWith("*")) {
-                                typeName += "*";
-                            }
-                        }
-                        if(signalType.isReference) {
-                            if(typeName.endsWith("*")) {
-                                typeName = typeName.substring(0, typeName.length()-2);
-                            }
-                            if(!typeName.endsWith("&")) {
-                                typeName += "&";
-                            }
-                        }
-                        QMetaType.Type type = metaType(typeName);
-                        if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                            int t = QtJambiInternal.findMetaType(typeName);
-                            if(t==QMetaType.Type.UnknownType.value() || !(signalType.genericType instanceof Class || new QMetaType(t).name().toString().equals(typeName))) {
-                                t = registerMetaType(signalType.type, signalType.genericType, signalType.annotatedType, signalType.isPointer, signalType.isReference);
-                            }
-                            if(t!=QMetaType.Type.UnknownType.value())
-                                typeName = new QMetaType(t).name().toString();
-                            if(!metaData.stringData.contains(typeName)){
-                                metaData.stringData.add(typeName);
-                            }
-                            metaData.metaData.add(0x80000000 | metaData.stringData.indexOf(typeName));
-                            metaData.metaTypes.add(t);
-                        }else{
-                            metaData.metaData.add(type.value());
-                            metaData.metaTypes.add(type.value());
+                        	signalInfo.signalMetaTypes[j] = info.type.value();
+                        	metaData.metaData.add(info.type.value());
+                            metaData.metaTypes.add(info.type.value());
                         }
                         intdataComments.add("signal["+i+"]: parameter["+j+"].arg");
                     }
-                    for (int j = 0; j < resolvedSignal.signalTypes.size(); j++) {
-                        metaData.metaData.add(metaData.stringData.indexOf("arg__"+(j+1)));		intdataComments.add("signal["+i+"]: parameter["+j+"].argName");
+                    for (int j = 0; j < signalParameterInfos.size(); j++) {
+                        metaData.metaData.add(metaData.addStringData("arg__"+(j+1)));		intdataComments.add("signal["+i+"]: parameter["+j+"].argName");
                     }
                 }
                 
@@ -1838,14 +1637,13 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         if(className.contains(".")){
                             className = className.substring(className.lastIndexOf('.')+1);
                         }
-                        metaData.stringData.add(className);
-                        metaData.metaData.add(metaData.stringData.indexOf(className));		intdataComments.add("constructor["+i+"]: name");
+                        metaData.metaData.add(metaData.addStringData(className));		intdataComments.add("constructor["+i+"]: name");
                         metaData.metaData.add(argc);		intdataComments.add("constructor["+i+"]: argc");
                         paramIndexOfMethods.put(constructor, metaData.metaData.size());
                         metaData.metaData.add(0);		intdataComments.add("constructor["+i+"]: parameters");
-                        metaData.metaData.add(metaData.stringData.indexOf(""));		intdataComments.add("constructor["+i+"]: tag");
+                        metaData.metaData.add(metaData.addStringData(""));		intdataComments.add("constructor["+i+"]: tag");
                         metaData.metaData.add(flags.value());		intdataComments.add("constructor["+i+"]: flags");
-                        if(NativeLibraryManager.VERSION_MAJOR>5) {
+                        if(QtJambiInternal.majorVersion()>5) {
                             metaData.metaData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
                         }
                     }
@@ -1853,101 +1651,44 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 
                 for (int i = 0; i < metaData.methods.size(); i++) {
                     Method method = metaData.methods.get(i);
+                    int[] metaTypes = metaData.methodMetaTypes.get(i);
+                    List<ParameterInfo> methodParameterInfos = allMethodParameterInfos.get(i);
                     // slot/method: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(method);
                     metaData.metaData.set(METHOD_PARAMETER_INDEX, metaData.metaData.size());
-                    if(NativeLibraryManager.VERSION_MAJOR>5) {
+                    if(QtJambiInternal.majorVersion()>5) {
                         metaData.metaData.set(METHOD_PARAMETER_INDEX+3, metaData.metaTypes.size());
                     }
-                    String typeName = internalTypeNameOfClass(method.getReturnType(), method.getGenericReturnType());
-                    if(method.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)) {
-                        if(!typeName.endsWith("*")) {
-                            typeName += "*";
-                        }
-                    }
-                    QtReferenceType referenceType = method.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
-                    if(referenceType==null)
-                    	referenceType = method.getAnnotation(QtReferenceType.class);
-                    if(referenceType!=null && !referenceType.isConst()) {
-                        if(typeName.endsWith("*")) {
-                            typeName = typeName.substring(0, typeName.length()-2);
-                        }
-                        if(!typeName.endsWith("&")) {
-                            typeName += "&";
-                        }
-                    }
-                    QMetaType.Type type = metaType(typeName);
-                    if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                        int t = QtJambiInternal.findMetaType(typeName);
-                        if(t==QMetaType.Type.UnknownType.value() || !(method.getGenericReturnType() instanceof Class || new QMetaType(t).name().toString().equals(typeName))) {
-                        	referenceType = method.getAnnotation(QtReferenceType.class);
-                            t = registerMetaType(
-                                    method.getReturnType(), 
-                                    method.getGenericReturnType(), 
-                                    method.getAnnotatedReturnType(),
-                                    method.isAnnotationPresent(QtPointerType.class),
-                                    referenceType!=null && !referenceType.isConst());
-                        }
-                        if(t!=QMetaType.Type.UnknownType.value())
-                            typeName = new QMetaType(t).name().toString();
-                        if(!metaData.stringData.contains(typeName)){
-                            metaData.stringData.add(typeName);
-                        }
-                        metaData.metaData.add(0x80000000 | metaData.stringData.indexOf(typeName));
-                        metaData.metaTypes.add(t);
+                    ParameterInfo info = methodParameterInfos.get(0);
+                    if(info.type==null){
+                        metaData.metaData.add(0x80000000 | metaData.addStringData(info.typeName));
+                        metaData.metaTypes.add(info.metaTypeId);
+                        metaTypes[0] = info.metaTypeId;
                     }else{
-                        metaData.metaData.add(type.value());
-                        metaData.metaTypes.add(type.value());
+                        metaData.metaData.add(info.type.value());
+                        metaData.metaTypes.add(info.type.value());
+                        metaTypes[0] = info.type.value();
                     }
                     intdataComments.add("slot["+i+"].returnType");
-                    Parameter[] parameters = method.getParameters();
-                    Class<?>[] parameterTypes = method.getParameterTypes();
-                    Type[] genericParameterTypes = method.getGenericParameterTypes();
-                    AnnotatedType[] annotatedParameterTypes = method.getAnnotatedParameterTypes();
-                    for (int j = 0; j < parameterTypes.length; j++) {
-                        typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
-                        if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
-                            if(!typeName.endsWith("*")) {
-                                typeName += "*";
-                            }
-                        }
-                        referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
-                        if(referenceType!=null && !referenceType.isConst()) {
-                            if(typeName.endsWith("*")) {
-                                typeName = typeName.substring(0, typeName.length()-2);
-                            }
-                            if(!typeName.endsWith("&")) {
-                                typeName += "&";
-                            }
-                        }
-                        type = metaType(typeName);
-                        if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                            int t = QtJambiInternal.findMetaType(typeName);
-                            if(t==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(t).name().toString().equals(typeName))) {
-                                t = registerMetaType(parameterTypes[j], 
-                                        genericParameterTypes[j],
-                                        annotatedParameterTypes[j],
-                                        false,
-                                        false);
-                            }
-                            if(t!=QMetaType.Type.UnknownType.value())
-                                typeName = new QMetaType(t).name().toString();
-                            if(!metaData.stringData.contains(typeName)){
-                                metaData.stringData.add(typeName);
-                            }
-                            metaData.metaData.add(0x80000000 | metaData.stringData.indexOf(typeName));
-                            metaData.metaTypes.add(t);
+                    for (int j = 1; j < methodParameterInfos.size(); j++) {
+                    	info = methodParameterInfos.get(j);
+                        if(info.type==null){
+                            metaData.metaData.add(0x80000000 | metaData.addStringData(info.typeName));
+                            metaData.metaTypes.add(info.metaTypeId);
+                            metaTypes[j] = info.metaTypeId;
                         }else{
-                            metaData.metaData.add(type.value());
-                            metaData.metaTypes.add(type.value());
+                            metaData.metaData.add(info.type.value());
+                            metaData.metaTypes.add(info.type.value());
+                            metaTypes[j] = info.type.value();
                         }
-                        intdataComments.add("slot["+i+"]: parameter["+j+"].arg");
+                        intdataComments.add("slot["+i+"]: parameter["+(j-1)+"].arg");
                     }
-                    for (int j = 0; j < parameterTypes.length; j++) {
+                    Parameter[] parameters = method.getParameters();
+                    for (int j = 0; j < parameters.length; j++) {
                         if(parameters[j].isNamePresent()) {
-                            metaData.metaData.add(metaData.stringData.indexOf(parameters[j].getName()));
+                            metaData.metaData.add(metaData.addStringData(parameters[j].getName()));
                         }else {
-                            metaData.metaData.add(metaData.stringData.indexOf("arg__"+(j+1)));
+                            metaData.metaData.add(metaData.addStringData("arg__"+(j+1)));
                         }
                         intdataComments.add("slot["+i+"]: parameter["+j+"].argName");
                     }
@@ -1955,63 +1696,36 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                 
                 for (int i = 0; i < metaData.constructors.size(); i++) {
                     Constructor<?> constructor = metaData.constructors.get(i);
+                    List<ParameterInfo> constructorParameterInfos = allConstructorParameterInfos.get(i);
+                    int[] metaTypes = metaData.constructorMetaTypes.get(i);
+                    metaTypes[0] = QMetaType.Type.Void.value();
                     // constructors: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(constructor);
                     metaData.metaData.set(METHOD_PARAMETER_INDEX, metaData.metaData.size());
-                    if(NativeLibraryManager.VERSION_MAJOR>5) {
+                    if(QtJambiInternal.majorVersion()>5) {
                         metaData.metaData.set(METHOD_PARAMETER_INDEX+3, metaData.metaTypes.size());
                     }
-//				paramIndexOfMethods.put(constructor, metaData.metaData.size());
-                    metaData.metaData.add(0x80000000 | metaData.stringData.indexOf(""));
+                    metaData.metaData.add(0x80000000 | metaData.addStringData(""));
                     intdataComments.add("constructor["+i+"].returnType");
-                    Parameter[] parameters = constructor.getParameters();
-                    Class<?>[] parameterTypes = constructor.getParameterTypes();
-                    Type[] genericParameterTypes = constructor.getGenericParameterTypes();
-                    AnnotatedType[] annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
-                    for (int j = 0; j < parameterTypes.length; j++) {
-                        String typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
-                        if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
-                            if(!typeName.endsWith("*")) {
-                                typeName += "*";
-                            }
-                        }
-                        QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
-                        if(referenceType!=null && !referenceType.isConst()) {
-                            if(typeName.endsWith("*")) {
-                                typeName = typeName.substring(0, typeName.length()-2);
-                            }
-                            if(!typeName.endsWith("&")) {
-                                typeName += "&";
-                            }
-                        }
-                        QMetaType.Type type = metaType(typeName);
-                        if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                            int t = QtJambiInternal.findMetaType(typeName);
-                            if(t==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(t).name().toString().equals(typeName))) {
-                                t = registerMetaType(parameterTypes[j], 
-                                        genericParameterTypes[j],
-                                        annotatedParameterTypes[j],
-                                        false,
-                                        false);
-                            }
-                            if(t!=QMetaType.Type.UnknownType.value())
-                                typeName = new QMetaType(t).name().toString();
-                            if(!metaData.stringData.contains(typeName)){
-                                metaData.stringData.add(typeName);
-                            }
-                            metaData.metaData.add(0x80000000 | metaData.stringData.indexOf(typeName));
-                            metaData.metaTypes.add(t);
+                    for (int j = 0; j < constructorParameterInfos.size(); j++) {
+                    	ParameterInfo info = constructorParameterInfos.get(j);
+                        if(info.type==null){
+                            metaData.metaData.add(0x80000000 | metaData.addStringData(info.typeName));
+                            metaData.metaTypes.add(info.metaTypeId);
+                            metaTypes[j+1] = info.metaTypeId;
                         }else{
-                            metaData.metaData.add(type.value());
-                            metaData.metaTypes.add(type.value());
+                            metaData.metaData.add(info.type.value());
+                            metaData.metaTypes.add(info.type.value());
+                            metaTypes[j+1] = info.type.value();
                         }
                         intdataComments.add("constructor["+i+"]: parameter["+(j)+"].arg");
                     }
-                    for (int j = 0; j < parameterTypes.length; j++) {
+                    Parameter[] parameters = constructor.getParameters();
+                    for (int j = 0; j < parameters.length; j++) {
                         if(parameters[j].isNamePresent()) {
-                            metaData.metaData.add(metaData.stringData.indexOf(parameters[j].getName()));
+                            metaData.metaData.add(metaData.addStringData(parameters[j].getName()));
                         }else {
-                            metaData.metaData.add(metaData.stringData.indexOf("arg__"+(j+1)));
+                            metaData.metaData.add(metaData.addStringData("arg__"+(j+1)));
                         }
                         intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
                     }
@@ -2041,6 +1755,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         boolean isReference;
                         boolean isMemberWritable = false;
                         boolean isMemberReadable = false;
+                        QtMetaType metaTypeDecl;
                         if(reader!=null) {
                         	propertyType = reader.getReturnType();
                         	genericPropertyType = reader.getGenericReturnType();
@@ -2051,6 +1766,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         	if(referenceType==null)
                         		referenceType = reader.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
                         	isReference = referenceType!=null && !referenceType.isConst();
+                        	metaTypeDecl = reader.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
                         }else if(propertyMemberField!=null) {
                         	if(isValidQProperty(propertyMemberField)) {
                         		qPropertyField = propertyMemberField;
@@ -2065,6 +1781,10 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                             	isReference = info.isReference;
                             	isMemberWritable = info.isWritable;
                             	isMemberReadable = true;
+                            	if(info.annotatedPropertyType!=null)
+                            		metaTypeDecl = info.annotatedPropertyType.getAnnotation(QtMetaType.class);
+                            	else
+                            		metaTypeDecl = null;
                         	}else {
                             	propertyType = propertyMemberField.getType();
                             	genericPropertyType = propertyMemberField.getGenericType();
@@ -2077,6 +1797,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                             	isReference = referenceType!=null && !referenceType.isConst();
                             	isMemberWritable = !Modifier.isFinal(propertyMemberField.getModifiers());
                             	isMemberReadable = true;
+                            	metaTypeDecl = propertyMemberField.getAnnotatedType().getAnnotation(QtMetaType.class);
                         	}
                         }else if(qPropertyField!=null){
                         	QPropertyTypeInfo info = getQPropertyTypeInfo(qPropertyField);
@@ -2089,12 +1810,17 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         	isReference = info.isReference;
                         	isMemberWritable = info.isWritable;
                         	isMemberReadable = true;
+                        	if(info.annotatedPropertyType!=null)
+                        		metaTypeDecl = info.annotatedPropertyType.getAnnotation(QtMetaType.class);
+                        	else
+                        		metaTypeDecl = null;
                         }else {
                         	propertyType = null;
                         	genericPropertyType = null;
                         	annotatedPropertyType = null;
                         	isPointer = false;
                         	isReference = false;
+                        	metaTypeDecl = null;
                         }
                         if(propertyType!=null) {
 	                        if(writers!=null) {
@@ -2122,6 +1848,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                                 	isPointer = writer.getAnnotatedParameterTypes()[0].isAnnotationPresent(QtPointerType.class);
                                 	QtReferenceType referenceType = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtReferenceType.class);
                                 	isReference = referenceType!=null && !referenceType.isConst();
+                                	metaTypeDecl = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtMetaType.class);
                         		}else {
                         			continue;
                         		}
@@ -2141,20 +1868,53 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
 
                         PropertyAttributes flags = PropertyFlags.Invalid.asFlags();
                         // Type (need to special case flags and enums)
-                        String typeName = internalTypeNameOfClass(propertyType, genericPropertyType);
-                        if(isPointer) {
-                            if(!typeName.endsWith("*")) {
-                                typeName += "*";
+                        int metaTypeId = 0;
+                        String typeName;
+                        if(metaTypeDecl!=null) {
+            				if(metaTypeDecl.id()!=0) {
+            					metaTypeId = metaTypeDecl.id();
+            					if(isPointer || isReference) {
+            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+            					}
+            					typeName = new QMetaType(metaTypeId).name().toString();
+            				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+            					metaTypeId = metaTypeDecl.type().value();
+            					if(isPointer || isReference) {
+            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+            					}
+            					typeName = new QMetaType(metaTypeId).name().toString();
+            				}else {
+        						if(metaTypeDecl.name().isEmpty())
+        							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+            					typeName = metaTypeDecl.name();
+            					if(isPointer && !typeName.endsWith("*")) {
+                                    typeName += "*";
+                                }
+                                if(isReference) {
+                                	if(typeName.endsWith("*")) {
+                                        typeName = typeName.substring(0, typeName.length()-2);
+                                    }
+                                    if(!typeName.endsWith("&")) {
+                                        typeName += "&";
+                                    }
+                                }
+            				}
+            			}else{
+            				typeName = internalTypeNameOfClass(propertyType, genericPropertyType);
+            				if(isPointer) {
+                                if(!typeName.endsWith("*")) {
+                                    typeName += "*";
+                                }
                             }
-                        }
-                        if(isReference) {
-                            if(typeName.endsWith("*")) {
-                                typeName = typeName.substring(0, typeName.length()-2);
+                            if(isReference) {
+                                if(typeName.endsWith("*")) {
+                                    typeName = typeName.substring(0, typeName.length()-2);
+                                }
+                                if(!typeName.endsWith("&")) {
+                                    typeName += "&";
+                                }
                             }
-                            if(!typeName.endsWith("&")) {
-                                typeName += "&";
-                            }
-                        }
+            			}
                         
                         if (!isBuiltinType(typeName))
                             flags.set(PropertyFlags.EnumOrFlag);
@@ -2219,9 +1979,6 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                             metaData.propertyStoredResolvers.add(null);
                         }
                                
-                                                                       
-                         
-                        
                         if (userVariant instanceof Boolean) {
                             if ((Boolean) userVariant)
                                 flags.set(PropertyFlags.User);
@@ -2249,37 +2006,32 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                             flags.set(Notify);
                         
                      // properties: name, type, flags
-                        int idx = metaData.stringData.indexOf(propertyName);
-                        if(idx==-1){
-                            metaData.stringData.add(propertyName);
-                            idx = metaData.stringData.indexOf(propertyName);
-                        }
-                        metaData.metaData.add(idx);
+                        metaData.metaData.add(metaData.addStringData(propertyName));
                         intdataComments.add("property["+i+"].name");
                         QMetaType.Type type = metaType(typeName);
                         if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                            int t = QtJambiInternal.findMetaType(typeName);
-                            if(t==QMetaType.Type.UnknownType.value() || !(genericPropertyType instanceof Class || new QMetaType(t).name().toString().equals(typeName))) {
-                                t = registerMetaType(propertyType, genericPropertyType, annotatedPropertyType, isPointer, isReference);
-                            }
-                            if(t!=QMetaType.Type.UnknownType.value())
-                                typeName = new QMetaType(t).name().toString();
-                            idx = metaData.stringData.indexOf(typeName);
-                            if(idx==-1){
-                                metaData.stringData.add(typeName);
-                                idx = metaData.stringData.indexOf(typeName);
-                            }
-                            metaData.metaData.add(0x80000000 | idx);
-                            metaData.metaTypes.set(i, t);
+                        	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
+	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericPropertyType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                                metaTypeId = registerMetaType(propertyType, genericPropertyType, annotatedPropertyType, isPointer, isReference);
+	                            }
+	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+	                                typeName = new QMetaType(metaTypeId).name().toString();
+                        	}
+                            metaData.metaData.add(0x80000000 | metaData.addStringData(typeName));
+                            metaData.metaTypes.set(i, metaTypeId);
+                            metaData.propertyMetaTypes.add(new int[]{metaTypeId,metaTypeId});
                         }else{
                             metaData.metaData.add(type.value());
                             metaData.metaTypes.set(i, type.value());
+                            metaData.propertyMetaTypes.add(new int[]{type.value(),type.value()});
                         }
+                        metaData.propertyClassTypes.add(propertyType);
                         intdataComments.add("property["+i+"].type");
                         metaData.metaData.add(flags.value());
                         intdataComments.add("property["+i+"].flags");
-                        if(NativeLibraryManager.VERSION_MAJOR>5){
-                            Integer signalIndex = signalIndexes.get(notify);
+                        Integer signalIndex = signalIndexes.get(notify);
+                        if(QtJambiInternal.majorVersion()>5){
                             metaData.metaData.add(signalIndex!=null ? signalIndex : -1);
                             intdataComments.add("property["+i+"].notifyId");
                             metaData.metaData.add(0);
@@ -2289,7 +2041,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         metaData.propertyReaders.add(reader);
                         metaData.propertyWriters.add(writer);
                         metaData.propertyResetters.add(resetter);
-                        metaData.propertyNotifies.add(notify);
+                        metaData.propertyNotifies.add(signalIndex);
                         metaData.propertyBindables.add(bindable);
                         metaData.propertyQPropertyFields.add(qPropertyField);
                         metaData.propertyMemberFields.add(propertyMemberField);
@@ -2300,11 +2052,14 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                     for (String propertyName : propertyReaders.keySet()) {
                         Field notify = propertyNotifies.get(propertyName);
                         if(notify!=null) {
-                            if(metaData.signalFields.contains(notify)) {
-                                metaData.metaData.add(metaData.signalFields.indexOf(notify));
-                            }else {
-                                metaData.metaData.add(0x70000000);	            			
-                            }
+                        	int idx = 0x70000000;
+                        	for(int j=0; j<metaData.signalInfos.size(); ++j) {
+                        		if(metaData.signalInfos.get(j).field==notify) {
+                        			idx = j;
+                        			break;
+                        		}
+                        	}
+                            metaData.metaData.add(idx);
                             intdataComments.add("property["+i+"].notify_signal_id");
                         }else {
                             metaData.metaData.add(0);
@@ -2329,18 +2084,16 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                     for (int i = 0; i < enumList.size(); i++) {
                         Class<?> enumClass = enumList.get(i);
                         // enums: name, alias, flags, count, data
-                        metaData.stringData.add(enumClass.getSimpleName());
-                        if(NativeLibraryManager.VERSION_MAJOR>5){
+                        if(QtJambiInternal.majorVersion()>5){
                             String alias = enumClass.getSimpleName();
                             if(QFlags.class.isAssignableFrom(enumClass)) {
                                 Class<?> _enumClass = getEnumForQFlags(enumClass);
                                 alias = _enumClass.getSimpleName();
-                                metaData.stringData.add(alias);
                             }
-                            metaData.metaData.add(metaData.stringData.indexOf(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
-                            metaData.metaData.add(metaData.stringData.indexOf(alias));	intdataComments.add("enum["+i+"].alias");
+                            metaData.metaData.add(metaData.addStringData(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
+                            metaData.metaData.add(metaData.addStringData(alias));	intdataComments.add("enum["+i+"].alias");
                         }else{
-                            metaData.metaData.add(metaData.stringData.indexOf(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
+                            metaData.metaData.add(metaData.addStringData(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
                         }
                                                                                                                                                
                                                                                                                             
@@ -2349,7 +2102,12 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         // Get the enum class
                         Class<?> contentEnumClass = Enum.class.isAssignableFrom(enumClass) ? enumClass : getEnumForQFlags(enumClass);
                         
-                        metaData.metaData.add(contentEnumClass.getEnumConstants().length);	intdataComments.add("enum["+i+"].count");
+                        if(contentEnumClass==null) {
+                        	metaData.metaData.add(0);	intdataComments.add("enum["+i+"].count");
+                        }else {
+                        	Object[] enumConstants = contentEnumClass.getEnumConstants();
+                        	metaData.metaData.add(enumConstants==null ? 0 : enumConstants.length);	intdataComments.add("enum["+i+"].count");
+                        }
                         dataIndexOfEnums.put(enumClass, metaData.metaData.size());
                         metaData.metaData.add(0);	intdataComments.add("enum["+i+"].data");
                     }
@@ -2361,25 +2119,29 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
                         // enum data: key, value
                         int ENUM_DATA_INDEX = dataIndexOfEnums.get(enumClass);
                         metaData.metaData.set(ENUM_DATA_INDEX, metaData.metaData.size());
-                        for(Enum<?> enumConstant : contentEnumClass.getEnumConstants()){
-                            metaData.stringData.add(enumConstant.name());
-                            metaData.metaData.add(metaData.stringData.indexOf(enumConstant.name()));	intdataComments.add("enum["+i+"].data: key");
-                            if(enumConstant instanceof QtEnumerator){
-                                QtEnumerator enumerator = (QtEnumerator)enumConstant;
-                                metaData.metaData.add(enumerator.value());
-                            }else if(enumConstant instanceof QtShortEnumerator){
-                                QtShortEnumerator enumerator = (QtShortEnumerator)enumConstant;
-                                metaData.metaData.add((int)enumerator.value());
-                            }else if(enumConstant instanceof QtByteEnumerator){
-                                QtByteEnumerator enumerator = (QtByteEnumerator)enumConstant;
-                                metaData.metaData.add((int)enumerator.value());
-                            }else if(enumConstant instanceof QtLongEnumerator){
-                                QtLongEnumerator enumerator = (QtLongEnumerator)enumConstant;
-                                metaData.metaData.add((int)enumerator.value());
-                            }else{
-                                metaData.metaData.add(enumConstant.ordinal());
-                            }
-                            intdataComments.add("enum["+i+"].data: value");
+                        if(contentEnumClass!=null) {
+                        	Enum<?>[] enumConstants = contentEnumClass.getEnumConstants();
+                        	if(enumConstants!=null) {
+		                        for(Enum<?> enumConstant : enumConstants){
+		                            metaData.metaData.add(metaData.addStringData(enumConstant.name()));	intdataComments.add("enum["+i+"].data: key");
+		                            if(enumConstant instanceof QtEnumerator){
+		                                QtEnumerator enumerator = (QtEnumerator)enumConstant;
+		                                metaData.metaData.add(enumerator.value());
+		                            }else if(enumConstant instanceof QtShortEnumerator){
+		                                QtShortEnumerator enumerator = (QtShortEnumerator)enumConstant;
+		                                metaData.metaData.add((int)enumerator.value());
+		                            }else if(enumConstant instanceof QtByteEnumerator){
+		                                QtByteEnumerator enumerator = (QtByteEnumerator)enumConstant;
+		                                metaData.metaData.add((int)enumerator.value());
+		                            }else if(enumConstant instanceof QtLongEnumerator){
+		                                QtLongEnumerator enumerator = (QtLongEnumerator)enumConstant;
+		                                metaData.metaData.add((int)enumerator.value());
+		                            }else{
+		                                metaData.metaData.add(enumConstant.ordinal());
+		                            }
+		                            intdataComments.add("enum["+i+"].data: value");
+		                        }
+                        	}
                         }
                     }
                 }
@@ -2500,7 +2262,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
 
     // Using a variable to ensure this is changed in all the right places in the
     //  future when higher values are supported.
-    public static final int METAOBJECT_REVISION_HIGHEST_SUPPORTED = NativeLibraryManager.VERSION_MAJOR==5 ? 7 : 9;
+    public static final int METAOBJECT_REVISION_HIGHEST_SUPPORTED = QtJambiInternal.majorVersion()==5 ? 7 : 9;
     // This property allows you to override the QMetaObject revision number for
     //  QtJambi to use.
     public static final String K_io_qt_qtjambi_metadata_revision = "io.qt.qtjambi.metadata.revision";
@@ -2513,17 +2275,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         if(r != 0)
             return r;
 
-        int[] versionA = NativeLibraryManager.getVersion();
-        int major = NativeLibraryManager.VERSION_MAJOR;
-        if(versionA.length > 0)
-            major = versionA[0];
-        int minor = -1;
-        if(versionA.length > 1)
-            minor = versionA[1];
-        @SuppressWarnings("unused")
-        int plevel = -1;
-        if(versionA.length > 2)
-            plevel = versionA[2];
+        int major = QtJambiInternal.majorVersion();
+        int minor = QtJambiInternal.minorVersion();
         // It became a requirement in 4.7.x to move away from revision 1
         //  in order to restore broken functionality due to improvements
         //  in Qt.  Before this time QtJambi always used to report
@@ -2627,4 +2380,39 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             return QMetaType.Type.User;
         }
     }
+	
+	private static long findEmitMethodId(Class<?> signalClass, List<Class<?>> signalTypes) {
+		Map<List<Class<?>>,QtJambiSignals.EmitMethodInfo> emitMethods = QtJambiSignals.findEmitMethods(signalClass);
+		QtJambiSignals.EmitMethodInfo result;
+		if(emitMethods.isEmpty())
+			result = null;
+		else if(emitMethods.size()==1) {
+			if(signalTypes==null) {
+				result = emitMethods.entrySet().iterator().next().getValue();
+			}else {
+				result = emitMethods.get(signalTypes);
+			}
+		}else {
+			if(signalTypes==null) {
+				result = emitMethods.get(emitMethods.keySet().stream().max((t1, t2)->t1.size() > t2.size() ? 1 : -1).orElse(null));
+			}else {
+				result = emitMethods.get(signalTypes);
+			}
+		}
+		return result==null ? 0 : result.methodId;
+	}
+
+	/**
+	 * Returns true if the class cl represents a Signal.
+	 * 
+	 * @return True if the class is a signal
+	 * @param cl The class to check
+	 */
+	public static boolean isQObjectSignalType(Class<?> cl) {
+		return QtJambiSignals.AbstractSignal.class.isAssignableFrom(cl)
+				&& !Modifier.isAbstract(cl.getModifiers())
+				&& cl.getEnclosingClass() != QMetaObject.class
+				&& cl.getEnclosingClass() != QStaticMemberSignals.class
+				&& cl.getEnclosingClass() != QDeclarableSignals.class && !QtJambiSignals.findEmitMethods(cl).isEmpty();
+	}
 }

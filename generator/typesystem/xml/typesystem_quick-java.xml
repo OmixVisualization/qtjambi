@@ -733,44 +733,66 @@
             <modify-argument index="3" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
-    <interface-type name="QNativeInterface::QSGOpenGLTexture">
-        <modify-function signature="fromNative(GLuint,QQuickWindow*,QSize,QFlags&lt;QQuickWindow::CreateTextureOption>)">
-            <modify-argument index="4">
-                <remove-default-expression/>
+
+    <interface-type name="QNativeInterface::QSGOpenGLTexture" java-name="QSGOpenGLTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
+    </interface-type>
+    <interface-type name="QNativeInterface::QSGD3D11Texture" java-name="QSGD3D11Texture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
+    </interface-type>
+    <interface-type name="QNativeInterface::QSGMetalTexture" java-name="QSGMetalTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
+        <modify-function signature="nativeTexture() const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.QNativePointer" />
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(quint64(%in)), QNativePointer::Type::Pointer, 1);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </interface-type>
-    <interface-type name="QNativeInterface::QSGD3D11Texture">
-         <extra-includes>
-             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
-         </extra-includes>
-        <modify-function signature="fromNative(void *,QQuickWindow*,QSize,QFlags&lt;QQuickWindow::CreateTextureOption>)">
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
+    <interface-type name="QNativeInterface::QSGVulkanTexture" java-name="QSGVulkanTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
+        <modify-function signature="nativeImage() const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.QNativePointer" />
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(%in), QNativePointer::Type::Pointer, 1);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="nativeTexture() const">
+        <modify-function signature="nativeImageLayout() const">
             <modify-argument index="0">
-                <replace-type modified-type="java.nio.ByteBuffer" />
+                <replace-type modified-type="io.qt.QNativePointer" />
                 <conversion-rule class="native">
-                jobject %out = %in ? %env->NewDirectByteBuffer(%in, 1024) : nullptr;
-                </conversion-rule>
-                <conversion-rule class="shell">
-                if (%in == nullptr) {
-                    JavaException::raiseNullPointerException(__jni_env, qPrintable(QString("Method %1.nativeTexture must not return null.").arg(qtjambi_object_class_name(__jni_env, __java_this))) QTJAMBI_STACKTRACEINFO );
-                }
-                if (!Java::Runtime::Buffer::isDirect(%env, %in)) {
-                    JavaException::raiseNullPointerException(__jni_env, qPrintable(QString("Method %1.nativeTexture has to return direct buffer.").arg(qtjambi_object_class_name(__jni_env, __java_this))) QTJAMBI_STACKTRACEINFO );
-                }
-                void* %out = %env->GetDirectBufferAddress(%in);
+                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(%in), QNativePointer::Type::Pointer, 1);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </interface-type>
     <value-type name="QSGMaterialRhiShader::RenderState">
     </value-type>
+    <object-type name="QSGTexture">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
 </typesystem>

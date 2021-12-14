@@ -7,6 +7,7 @@ MultiSignalTest::MultiSignalTest(QObject *parent) : QObject(parent)
 
 
 void MultiSignalTest::emit_multiSignal1(){ emit multiSignal1(); }
+void MultiSignalTest::emit_multiSignal1(double d){ emit multiSignal1(d, QPrivateSignal()); }
 void MultiSignalTest::emit_multiSignal1(int i){ emit multiSignal1(i); }
 void MultiSignalTest::emit_multiSignal1(int i, const QString& s){ emit multiSignal1(i,s); }
 void MultiSignalTest::emit_multiSignal2(const QString& s){ emit multiSignal2(s); }

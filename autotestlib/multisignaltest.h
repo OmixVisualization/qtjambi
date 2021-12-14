@@ -16,6 +16,7 @@ signals:
     void multiSignal1();
     void multiSignal1(int i);
     void multiSignal1(int i, const QString& s);
+    void multiSignal1(double d, QPrivateSignal);
     void multiSignal2(const QString& s);
     void multiSignal2(int i);
     void multiSignal2(bool b);
@@ -32,6 +33,7 @@ public:
     void emit_multiSignal1();
     void emit_multiSignal1(int i);
     void emit_multiSignal1(int i, const QString& s);
+    void emit_multiSignal1(double d);
     void emit_multiSignal2(const QString& s);
     void emit_multiSignal2(int i);
     void emit_multiSignal2(bool b);

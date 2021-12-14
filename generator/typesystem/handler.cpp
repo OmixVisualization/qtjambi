@@ -1072,18 +1072,36 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         }
     }
 
-    if(convertBoolean(attributeValue(attributes.removeNamedItem("template"), "no"), "template", false)){
+    QString generate = attributeValue(attributes.removeNamedItem("generate"), "yes");
+
+    if(convertBoolean(attributeValue(attributes.removeNamedItem("is-native-interface"), "no"), "is-native-interface", false)){
+        ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
+        ctype->setNativeInterface(true);
+        if(m_generate==TypeEntry::GenerateAll){
+            if(convertBoolean(generate, "generate", true)){
+                ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+            }else{
+                ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
+            }
+        }else
+            ctype->setCodeGeneration(m_generate);
+    }else if(convertBoolean(attributeValue(attributes.removeNamedItem("template"), "no"), "template", false)){
         ctype->setTemplate(true);
         ctype->setGenericClass(true);
-        ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
-    }else{
-        ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
-        QString generate = attributeValue(attributes.removeNamedItem("generate"), "yes");
-        if(generate=="no-shell"){
-            ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
-        }else if (!convertBoolean(generate, "generate", true))
+        if(m_generate==TypeEntry::GenerateAll)
             ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
         else
+            ctype->setCodeGeneration(m_generate);
+    }else{
+        ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
+        if(m_generate==TypeEntry::GenerateAll){
+            if(generate=="no-shell"){
+                ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+            }else if (!convertBoolean(generate, "generate", true))
+                ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
+            else
+                ctype->setCodeGeneration(m_generate);
+        }else
             ctype->setCodeGeneration(m_generate);
     }
     if(attributes.count()){
@@ -1104,6 +1122,7 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         ctype->designatedInterface()->setTypeFlags(ctype->typeFlags());
         ctype->designatedInterface()->setThreadAffinity(ctype->threadAffinity());
         ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
+        ctype->designatedInterface()->setNativeInterface(ctype->isNativeInterface());
     }
 
     if(ctype->designatedInterface()){
@@ -2221,12 +2240,16 @@ void Handler::parseFunctionalType(const QDomElement &element){
             fentry.reset(new FunctionalTypeEntry(QStringList(names.mid(0, names.size() - 1)).join("::"), names.last()));
         }
         fentry->setFunctionName(functionName);
-        if(generate=="no-shell"){
-            fentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
-        }else if (!convertBoolean(generate, "generate", true))
-            fentry->setCodeGeneration(TypeEntry::GenerateNothing);
-        else
+        if(m_generate==TypeEntry::GenerateAll){
+            if(generate=="no-shell"){
+                fentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+            }else if (!convertBoolean(generate, "generate", true))
+                fentry->setCodeGeneration(TypeEntry::GenerateNothing);
+            else
+                fentry->setCodeGeneration(m_generate);
+        }else
             fentry->setCodeGeneration(m_generate);
+
         if (convertBoolean(disableNativeIdUsage, "disable-native-id-usage", false))
             fentry->disableNativeIdUsage();
         {
@@ -2563,11 +2586,14 @@ void Handler::parseEnumType(const QDomElement &element){
         } else {
             eentry.reset(new EnumTypeEntry(QStringList(names.mid(0, names.size() - 1)).join("::"), names.last()));
         }
-        if(generate=="no-shell"){
-            eentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
-        }else if (!convertBoolean(generate, "generate", true))
-            eentry->setCodeGeneration(TypeEntry::GenerateNothing);
-        else
+        if(m_generate==TypeEntry::GenerateAll){
+            if(generate=="no-shell"){
+                eentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+            }else if (!convertBoolean(generate, "generate", true))
+                eentry->setCodeGeneration(TypeEntry::GenerateNothing);
+            else
+                eentry->setCodeGeneration(m_generate);
+        }else
             eentry->setCodeGeneration(m_generate);
         eentry->setTargetLangPackage(package);
         eentry->setTargetTypeSystem(m_defaultPackage);

@@ -56,11 +56,12 @@
     </extra-includes>
     <inject-code class="metainfo">
     QPixmapCache::cacheLimit();
-    registerPolymorphyHandler(typeid(QGradient), [](void *ptr) -> bool {
+    registerPolymorphyHandler(typeid(QGradient), typeid(std::nullptr_t), [](void *ptr, qintptr&amp; offset) -> bool {
             QGradient *object = reinterpret_cast&lt;QGradient *>(ptr);
             Q_ASSERT(object);
+            offset = 0;
             return object->type() == QGradient::NoGradient;
-        }, nullptr, typeid(std::nullptr_t), false);
+        });
     qtjambi_install_threaded_pixmaps_checker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
     </inject-code>
   <primitive-type name="GLuint" java-name="int" preferred-conversion="no" jni-name="jint"/>
@@ -2494,6 +2495,7 @@ public final void copyDataTo(float[] values)    {
         <extra-includes>
             <include file-name="QtCore/private/qthread_p.h" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
             <include file-name="qtjambi_gui_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="QGuiApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
@@ -2552,6 +2554,38 @@ public final void copyDataTo(float[] values)    {
                 <conversion-rule class="native">
                     jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolveInterface(const char *, int)const" access="private">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    if(inherits("QApplication")){
+                        bool classNotFound = false;
+                        try{
+                            Java::QtWidgets::QApplication::getClass(%env);
+                        }catch(...){
+                            classNotFound = true;
+                        }
+                        if(!classNotFound)
+                            return Java::QtWidgets::QApplication::resolveInterface(%env, qtjambi_java_object_reference(__this_nativeId, %env), %in);
+                    }
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
             </modify-argument>
         </modify-function>
         <modify-function signature="notify(QObject *, QEvent *)">
@@ -3442,6 +3476,9 @@ public final void copyDataTo(float[] values)    {
     </value-type>
 
     <object-type name="QOpenGLContext">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+        </extra-includes>
         <!--modify-function signature="versionFunctions(const QOpenGLVersionProfile &amp;) const">
             <modify-argument index="0">
                 <conversion-rule class="native">
@@ -3469,6 +3506,28 @@ public final void copyDataTo(float[] values)    {
         </modify-function-->
       <modify-function signature="makeCurrent(QSurface *)" thread-affine="yes">
       </modify-function>
+      <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
         <inject-code class="java" until="5.*">
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLContext___" quote-before-line="}// class"/>
         </inject-code>
@@ -5145,13 +5204,85 @@ __rcRedirections.remove(%1);
     <value-type name="QFontInfo">
     </value-type>
     <object-type name="QWindow">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+        </extra-includes>
         <inject-code>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QWindow___" quote-before-line="}// class"/>
         </inject-code>
         <modify-function signature="requestUpdate()" thread-affine="ui" />
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QOffscreenSurface">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+        </extra-includes>
         <modify-function signature="create()" thread-affine="ui" />
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(%env, %in, %1, false, false);
+                    qtjambi_register_dependent_interface(%env, %out, __this_nativeId);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;QNativeInterface>"/>
+                <conversion-rule class="native">
+                    NITypeInfo info = qtjambi_get_native_interface_info(%env, %in);
+                    const char* %out = info.name;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    int %out = info.revision;
+                </conversion-rule>
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <interface-type name="QAccessibleTextInterface">
         <modify-function signature="attributes(int, int *, int *) const">
@@ -7372,6 +7503,133 @@ __rcRedirections.remove(%1);
                 <replace-default-expression with="Long.MAX_VALUE"/>
             </modify-argument>
         </modify-function>
+    </object-type>
+    <interface-type name="QNativeInterface::Private::QWindowsApplication" java-name="QWindowsApplication" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QGuiApplication" location="global"/>
+        </extra-includes>
+    </interface-type>
+    <interface-type name="QNativeInterface::QX11Application" java-name="QX11Application" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QGuiApplication" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::Private::QCocoaWindow" java-name="QCocoaWindow" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QWindow" location="global"/>
+            <include file-name="qpa/qplatformwindow_p.h" location="global"/>
+            <include file-name="QtGui/qpa/qplatformwindow_p.h" location="global" suppressed="yes"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::QCocoaGLContext" java-name="QCocoaGLContext" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QOpenGLContext" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::Private::QWindowsWindow" java-name="QWindowsWindow" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QWindow" location="global"/>
+            <include file-name="qpa/qplatformwindow_p.h" location="global"/>
+            <include file-name="QtGui/qpa/qplatformwindow_p.h" location="global" suppressed="yes"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::QWGLContext" java-name="QWGLContext" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QOpenGLContext" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::QGLXContext" java-name="QGLXContext" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QOpenGLContext" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::QEGLContext" java-name="QEGLContext" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QOpenGLContext" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::Private::QX11Application" java-name="QX11Application" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QGuiApplication" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::Private::QXcbWindow" java-name="QXcbWindow" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QWindow" location="global"/>
+            <include file-name="qpa/qplatformwindow_p.h" location="global"/>
+            <include file-name="QtGui/qpa/qplatformwindow_p.h" location="global" suppressed="yes"/>
+        </extra-includes>
+    </interface-type>
+    
+    <interface-type name="QNativeInterface::Private::QXcbScreen" java-name="QXcbScreen" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QScreen" location="global"/>
+        </extra-includes>
+    </interface-type>
+    <interface-type name="QNativeInterface::Private::QVsp2Screen" java-name="QVsp2Screen" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QScreen" location="global"/>
+        </extra-includes>
+    </interface-type>
+    <interface-type name="QNativeInterface::Private::QWebOSScreen" java-name="QWebOSScreen" package="io.qt.gui.nativeinterface" is-native-interface="yes">
+        <extra-includes>
+            <include file-name="QtGui/QScreen" location="global"/>
+        </extra-includes>
+    </interface-type>
+    
+    <object-type name="QScreen">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+        </extra-includes>
+        <inject-code class="native" since="6.2">
+// QScreen::resolveInterface(const char * name, int revision) const
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QScreen_nativeInterface)
+(JNIEnv *__jni_env,
+ jobject __this,
+ QtJambiNativeID __this_nativeId,
+jclass name0)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QScreen::resolveInterface(const char * name, int revision) const")
+    Q_UNUSED(__this)
+    try{
+        struct Screen : QScreen{
+            jobject nativeInterface(JNIEnv *__jni_env, QtJambiNativeID __this_nativeId, jclass name0)const{
+                NITypeInfo info = qtjambi_get_native_interface_info(__jni_env, name0);
+                const char* __qt_name0 = info.name;
+                int __qt_revision1 = info.revision;
+                void* __qt_return_value = resolveInterface(__qt_name0, static_cast&lt;int>(__qt_revision1));
+                jobject __java_return_value = qtjambi_from_object(__jni_env, __qt_return_value, name0, false, false);
+                qtjambi_register_dependent_interface(__jni_env, __java_return_value, __this_nativeId);
+                return __java_return_value;
+            }
+        };
+
+        const Screen *__qt_this = qtjambi_object_from_nativeId&lt;Screen>(__this_nativeId);
+        qtjambi_check_resource(__jni_env, __qt_this);
+        return __qt_this->nativeInterface(__jni_env, __this_nativeId, name0);
+    }catch(const JavaException&amp; exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+
+}        </inject-code>
+        <inject-code class="java" since="6.2">
+@io.qt.QtUninvokable
+public final &lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(java.lang.Class&lt;QNativeInterface> name){
+    return nativeInterface(QtJambi_LibraryUtilities.internal.nativeId(this), name);
+}
+
+@io.qt.QtUninvokable
+private native &lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class&lt;QNativeInterface> name);
+        </inject-code>
     </object-type>
 </typesystem>
 

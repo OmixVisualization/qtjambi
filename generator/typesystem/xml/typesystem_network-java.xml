@@ -240,19 +240,21 @@
 
 
     <value-type name="QNetworkProxy">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QNetworkProxy___" quote-before-line="}// class"/>
-        </inject-code>
         <modify-function signature="QNetworkProxy(QNetworkProxy::ProxyType,QString,unsigned short,QString,QString)" access="private">
-            <modify-argument index="2">
-                <remove-default-expression />
-            </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression />
+                <replace-type modified-type="int"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setPort(unsigned short)" access="private"/>
-        <modify-function signature="port()const" access="private" rename="port_private"/>
+        <modify-function signature="setPort(unsigned short)">
+            <modify-argument index="1">
+                <replace-type modified-type="int"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="port()const">
+            <modify-argument index="0">
+                <replace-type modified-type="int"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
 
     <object-type name="QNetworkReply">
@@ -285,9 +287,6 @@
         </modify-function>
     </object-type>
     <object-type name="QNetworkAccessManager">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QNetworkAccessManager___" quote-before-line="}// class"/>
-        </inject-code>
         <modify-function signature="proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)">
             <modify-argument index="2" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.network.QAuthenticator" />

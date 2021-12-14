@@ -1,6 +1,5 @@
 <project default="build">
     <target name="build">
-        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <if>
             <istrue value="${qtjambi.testbuild}"/>
             <then>

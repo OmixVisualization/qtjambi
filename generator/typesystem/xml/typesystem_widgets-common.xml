@@ -51,7 +51,6 @@
     <rejection class="*" field-name="d"/>
 
     <rejection class="QApplication" function-name="nativeInterface" since="6.2.0"/>
-    <rejection class="QApplication" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QMacCocoaViewContainer" />
     <rejection class="QMacNativeWidget" />
     <rejection class="QGtkStyle" />
@@ -254,7 +253,39 @@
     <enum-type name="QSizePolicy::Policy">
     </enum-type>
     <enum-type name="QSizePolicy::ControlType" flags="QSizePolicy::ControlTypes"/>
-    <enum-type name="QStyle::SubControl" flags="QStyle::SubControls" extensible="yes" force-integer="yes"/>
+    <enum-type name="QStyle::SubControl" flags="QStyle::SubControls" extensible="yes">
+        <reject-enum-value name="SC_SpinBoxUp"/>
+        <reject-enum-value name="SC_SpinBoxDown"/>
+        <reject-enum-value name="SC_SpinBoxFrame"/>
+        <reject-enum-value name="SC_SpinBoxEditField"/>
+        <reject-enum-value name="SC_ComboBoxFrame"/>
+        <reject-enum-value name="SC_ComboBoxEditField"/>
+        <reject-enum-value name="SC_ComboBoxArrow"/>
+        <reject-enum-value name="SC_ComboBoxListBoxPopup"/>
+        <reject-enum-value name="SC_SliderGroove"/>
+        <reject-enum-value name="SC_SliderHandle"/>
+        <reject-enum-value name="SC_SliderTickmarks"/>
+        <reject-enum-value name="SC_ToolButton"/>
+        <reject-enum-value name="SC_ToolButtonMenu"/>
+        <reject-enum-value name="SC_TitleBarSysMenu"/>
+        <reject-enum-value name="SC_TitleBarMinButton"/>
+        <reject-enum-value name="SC_TitleBarMaxButton"/>
+        <reject-enum-value name="SC_TitleBarCloseButton"/>
+        <reject-enum-value name="SC_TitleBarNormalButton"/>
+        <reject-enum-value name="SC_TitleBarShadeButton"/>
+        <reject-enum-value name="SC_TitleBarUnshadeButton"/>
+        <reject-enum-value name="SC_TitleBarContextHelpButton"/>
+        <reject-enum-value name="SC_DialGroove"/>
+        <reject-enum-value name="SC_DialHandle"/>
+        <reject-enum-value name="SC_DialTickmarks"/>
+        <reject-enum-value name="SC_GroupBoxCheckBox"/>
+        <reject-enum-value name="SC_GroupBoxLabel"/>
+        <reject-enum-value name="SC_GroupBoxContents"/>
+        <reject-enum-value name="SC_GroupBoxFrame"/>
+        <reject-enum-value name="SC_MdiMinButton"/>
+        <reject-enum-value name="SC_MdiNormalButton"/>
+        <reject-enum-value name="SC_MdiCloseButton"/>
+    </enum-type>
     <enum-type name="QStyle::ComplexControl" extensible="yes"/>
     <enum-type name="QStyle::ContentsType" extensible="yes"/>
     <enum-type name="QStyle::ControlElement" extensible="yes"/>
@@ -786,6 +817,9 @@
         </modify-function>
     </object-type-->
     <object-type name="QCommonStyle">
+        <extra-includes>
+            <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
     </object-type>
     <object-type name="QDataWidgetMapper">
         <modify-function signature="addMapping(QWidget*,int)">
@@ -3940,6 +3974,9 @@
     <object-type name="QPanGesture" />
     <object-type name="QPinchGesture" />
     <object-type name="QProxyStyle">
+        <extra-includes>
+            <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
         <modify-function signature="setBaseStyle(QStyle*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>

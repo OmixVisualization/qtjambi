@@ -49,6 +49,7 @@ void qtjambi_to_qstring(QString& result, JNIEnv *env, jobject object);
 JNIEnv *qtjambi_current_environment(bool initializeJavaThread);
 const QMetaObject *qtjambi_find_first_static_metaobject(const QMetaObject *meta_object);
 jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic);
+bool isQObject(const std::type_info& typeId);
 
 struct QtJambiShellAccess : QtJambiShellImpl{
     void overrideLink(const QSharedPointer<QtJambiLink>& link){
@@ -334,7 +335,13 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
             const QVector<const FunctionInfo>* _virtualFunctions = virtualFunctions(typeId);
             Destructor destructor = registeredDestructor(typeId);
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
+            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
+            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
+                jclass _java_class = resolveClass(env, getJavaName(handler->m_targetTypeId));
+                if(env->IsAssignableFrom(_java_class, java_class)){
+                    polymorphicIdHandlers << handler;
+                }
+            }
             result = new InterfaceTypeEntry(env, typeId,
                                         qt_name, java_name, java_class, creator_method,
                                         value_size, java_impl_class, java_wrapper_class,
@@ -378,7 +385,13 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             Destructor destructor = registeredDestructor(typeId);
             QMetaType qt_meta_type(registeredMetaTypeID(typeId));
             Q_ASSERT(qt_meta_type.isValid());
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
+            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
+            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
+                jclass _java_class = resolveClass(env, getJavaName(handler->m_targetTypeId));
+                if(env->IsAssignableFrom(_java_class, java_class)){
+                    polymorphicIdHandlers << handler;
+                }
+            }
 
             result = new InterfaceValueTypeEntry(env, typeId,
                                         qt_name, java_name, java_class, creator_method,
@@ -400,7 +413,13 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             const QVector<const FunctionInfo>* _virtualFunctions = virtualFunctions(typeId);
             const QMetaObject* original_meta_object = registeredOriginalMetaObject(typeId);
             int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
+            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
+            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
+                jclass _java_class = resolveClass(env, getJavaName(handler->m_targetTypeId));
+                if(env->IsAssignableFrom(_java_class, java_class)){
+                    polymorphicIdHandlers << handler;
+                }
+            }
             if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
                 jclass java_wrapper_class = nullptr;
                 try {
@@ -1143,8 +1162,14 @@ bool QThreadTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool ma
     bool result = QObjectTypeEntry::convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, valueType);
     if(result){
         QThread* thread = const_cast<QThread*>(reinterpret_cast<const QThread*>(qt_object));
-        if (thread && !QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
-            qtjambi_from_thread_impl(env, output->l, thread);
+        if (thread){
+            QThreadUserData* data;
+            {
+                QReadLocker locker(QtJambiLinkUserData::lock());
+                data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+            }
+            if(!data)
+                qtjambi_from_thread_impl(env, output->l, thread);
         }
     }
     return result;
@@ -1155,8 +1180,14 @@ bool QThreadTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
     bool result = QObjectTypeEntry::convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, valueType);
     if(result){
         QThread* thread = reinterpret_cast<QThread*>(sharedPointerGetter(ptr_shared_pointer));
-        if (thread && !QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
-            qtjambi_from_thread_impl(env, output->l, thread);
+        if (thread){
+            QThreadUserData* data;
+            {
+                QReadLocker locker(QtJambiLinkUserData::lock());
+                data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+            }
+            if(!data)
+                qtjambi_from_thread_impl(env, output->l, thread);
         }
     }
     return result;
@@ -1238,7 +1269,8 @@ const std::type_info* qtjambi_resolve_polymorphy(const QList<const PolymorphicId
         void *_object = const_cast<void *>(object);
         for(const PolymorphicIdHandler* handler : polymorphicIdHandlers){
             Q_ASSERT(handler->m_polymorphyHandler);
-            if(handler->m_polymorphyHandler(_object)) {
+            qintptr offset = 0;
+            if(handler->m_polymorphyHandler(_object, offset)) {
                 return &handler->m_targetTypeId;
             }
         }
@@ -1253,7 +1285,7 @@ bool InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool 
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1304,7 +1336,7 @@ bool InterfaceTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_share
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1327,7 +1359,7 @@ bool InterfaceTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_share
                     registeredThreadAffinityFunction = polink->ownerFunction();
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToObject(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            createdByJava,
@@ -1428,7 +1460,7 @@ bool InterfaceValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, 
         return true;
     }
     if(!makeCopyOfValueTypes){
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
                 if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1487,7 +1519,7 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
         return true;
     }
 
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1510,7 +1542,7 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
                     registeredThreadAffinityFunction = polink->ownerFunction();
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToObject(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            createdByJava,
@@ -1570,7 +1602,7 @@ bool ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool mak
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1620,7 +1652,7 @@ bool ObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_p
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1643,7 +1675,7 @@ bool ObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_p
                     registeredThreadAffinityFunction = polink->ownerFunction();
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToObject(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            createdByJava,
@@ -1718,7 +1750,7 @@ bool ObjectValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, boo
         return true;
     }
     if(!makeCopyOfValueTypes){
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
                 if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1784,7 +1816,7 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1807,7 +1839,7 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
                     registeredThreadAffinityFunction = polink->ownerFunction();
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToObject(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            createdByJava,
@@ -1942,7 +1974,7 @@ bool ObjectContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object,
         return true;
     }
     if(!makeCopyOfValueTypes){
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
                 if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -1999,7 +2031,7 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -2016,7 +2048,7 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
                     Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToContainer(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            ptr_shared_pointer,
@@ -2073,7 +2105,7 @@ bool ObjectAbstractContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt
         return true;
     }
     if(!makeCopyOfValueTypes){
-        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
                 if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -2130,7 +2162,7 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
         output->l = nullptr;
         return true;
     }
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(qt_object)){
+    for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
         if(link && !link->isSharedPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
@@ -2147,7 +2179,7 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
                     Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 link = QtJambiLink::createLinkForSharedPointerToContainer(env, output->l,
                                                                            LINK_NAME_ARG(qtName())
                                                                            ptr_shared_pointer,
@@ -2205,7 +2237,9 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
         return true;
     }
 
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object).toStrongRef()){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
         // Since QObjects are created in a class based on virtual function calls,
         // if they at some point during their constructor are converted to Java,
         // the Java object will get the wrong class. In order to fix this as well
@@ -2214,7 +2248,7 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
             if (p && p->metaObject() != qt_object->metaObject()) {
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
@@ -2222,10 +2256,9 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
-                jobject nativeLink = link->nativeLink(env);
                 Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 link->setSplitOwnership(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 locker.relock();
             }
         }
@@ -2233,16 +2266,21 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
             output->l = link->getJavaObjectLocalRef(env);
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
-                    QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
-                    if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                        locker.unlock();
-                        delete p;
-                        locker.relock();
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            delete p;
+                            isInvalidated = true;
+                            locker.relock();
+                        }
                     }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
                 }
-                link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
             }else return true;
         }
     }
@@ -2301,7 +2339,9 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
         return true;
     }
 
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object).toStrongRef()){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
         // Since QObjects are created in a class based on virtual function calls,
         // if they at some point during their constructor are converted to Java,
         // the Java object will get the wrong class. In order to fix this as well
@@ -2310,7 +2350,7 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
             if (p && p->metaObject() != qt_object->metaObject()) {
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
@@ -2318,10 +2358,9 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
-                jobject nativeLink = link->nativeLink(env);
                 Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 link->setSplitOwnership(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 locker.relock();
             }
         }
@@ -2342,7 +2381,7 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
                     Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 PointerQObjectGetterFunction pointerGetter = [sharedPointerGetter](void* ptr) -> QObject* {
                     return reinterpret_cast<QObject*>( sharedPointerGetter(ptr) );
                 };
@@ -2358,16 +2397,21 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
             output->l = link->getJavaObjectLocalRef(env);
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
-                    QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
-                    if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                        locker.unlock();
-                        delete p;
-                        locker.relock();
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            isInvalidated = true;
+                            delete p;
+                            locker.relock();
+                        }
                     }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
                 }
-                link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
             }else return true;
         }
     }
@@ -2425,7 +2469,9 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
         return true;
     }
 
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object).toStrongRef()){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
         // Since QObjects are created in a class based on virtual function calls,
         // if they at some point during their constructor are converted to Java,
         // the Java object will get the wrong class. In order to fix this as well
@@ -2434,7 +2480,7 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
             if (p && p->metaObject() != qt_object->metaObject()) {
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
@@ -2442,10 +2488,9 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
-                jobject nativeLink = link->nativeLink(env);
                 Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 link->setSplitOwnership(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 locker.relock();
             }
         }
@@ -2453,16 +2498,21 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
             output->l = link->getJavaObjectLocalRef(env);
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
-                    QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
-                    if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                        locker.unlock();
-                        delete p;
-                        locker.relock();
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            isInvalidated = true;
+                            delete p;
+                            locker.relock();
+                        }
                     }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
                 }
-                link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
             }else return true;
         }
     }
@@ -2528,7 +2578,9 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
         return true;
     }
 
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object).toStrongRef()){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
         // Since QObjects are created in a class based on virtual function calls,
         // if they at some point during their constructor are converted to Java,
         // the Java object will get the wrong class. In order to fix this as well
@@ -2537,7 +2589,7 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
+            QWriteLocker locker(QtJambiLinkUserData::lock());
             QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
             if (p && p->metaObject() != qt_object->metaObject()) {
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
@@ -2545,10 +2597,9 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
-                jobject nativeLink = link->nativeLink(env);
                 Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 link->setSplitOwnership(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 locker.relock();
             }
         }
@@ -2569,7 +2620,7 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
                     Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
                 }
                 link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
+                link.clear();
                 PointerQObjectGetterFunction pointerGetter = [sharedPointerGetter](void* ptr) -> QObject* {
                     return reinterpret_cast<QObject*>( sharedPointerGetter(ptr) );
                 };
@@ -2585,16 +2636,21 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
             output->l = link->getJavaObjectLocalRef(env);
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
-                    QRecursiveMutexLocker locker(QtJambiLinkUserData::lock());
-                    if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                        locker.unlock();
-                        delete p;
-                        locker.relock();
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            isInvalidated = true;
+                            delete p;
+                            locker.relock();
+                        }
                     }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
                 }
-                link->invalidate(env);
-                link = QSharedPointer<QtJambiLink>();
             }else return true;
         }
     }

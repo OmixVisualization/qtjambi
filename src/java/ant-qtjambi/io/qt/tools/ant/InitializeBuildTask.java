@@ -72,6 +72,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     private int qtMajorVersion;
     private int qtMinorVersion;
     private int qtPatchlevelVersion;
+    private int qtJambiVersion;
     private boolean useQtFramework;
     private String qtVersionSource = "";
     private String versionSuffix;       // beta4
@@ -285,11 +286,40 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             mySetProperty(-1, Constants.QMAKE_ABSPATH, sourceValue, qtQmakeAbspath, false);
         }
         if(!decideQtVersion())
-            throw new BuildException("Unable to determine Qt version, try editing: " + Constants.QT_VERSION_PROPERTIES_TEMPLATE);
+            throw new BuildException("Unable to determine Qt version.");
         if(!decideQMAKE_XSPEC())
             throw new BuildException("Unable to determine QMAKE_XSPEC");
         String s;
         analyzeLibinfix(new File(QTDIR));
+        
+        String qtVersionShort = String.format("%1$s.%2$s", qtMajorVersion, qtMinorVersion);
+		InputStream inStream = null;
+        try {
+            inStream = new FileInputStream("releases.properties");
+            Properties releases = new Properties();
+            releases.load(inStream);
+            String value = releases.getProperty(qtVersionShort, "0");
+            try {
+				qtJambiVersion = Integer.parseInt(value);
+			} catch (NumberFormatException e) {
+				qtJambiVersion = 0;
+			}
+        } catch(FileNotFoundException e) {
+            // Acceptable failure
+        } catch(IOException e) {
+            throw new BuildException(e);
+        }finally {
+        	if(inStream!=null) {
+        		try {
+					inStream.close();
+				} catch (IOException e) {
+					throw new BuildException(e);
+				}
+        	}
+        }
+        sourceValue = " (auto-detected)";
+    	mySetProperty(-1, "qtjambi.patchversion", sourceValue, "" + qtJambiVersion, false);  // report value
+    	mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtVersionShort + "." + qtJambiVersion, false);  // report value
 
         FindCompiler finder = new FindCompiler(this);
 
@@ -1858,38 +1888,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             if(parseQtVersion(tmpQtVersion)) {
                 versionFound = true;
                 qtVersionSource = " (${" + Constants.QT_VERSION + "})";
-            }
-        }
-
-        // If failure, open version.properties.template to get version
-        if(!versionFound) {
-            tmpQtVersion = null;
-            InputStream inStream = null;
-            Properties props = null;
-            try {
-                inStream = new FileInputStream(Constants.QT_VERSION_PROPERTIES_TEMPLATE);
-                props = new Properties();
-                props.load(inStream);
-                tmpQtVersion = (String) props.get(Constants.VERSION);
-            } catch(FileNotFoundException e) {
-                // Acceptable failure
-            } catch(IOException e) {
-                throw new BuildException(e);
-            } finally {
-                if(inStream != null) {
-                    try {
-                        inStream.close();
-                    } catch(IOException eat) {
-                    }
-                    inStream = null;
-                }
-            }
-
-            if(tmpQtVersion != null) {
-                if(parseQtVersion(tmpQtVersion)) {
-                    versionFound = true;
-                    qtVersionSource = " (" + Constants.QT_VERSION_PROPERTIES_TEMPLATE + ")";
-                }
             }
         }
 

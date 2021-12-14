@@ -31,8 +31,13 @@ package io.qt.core;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import io.qt.QtUninvokable;
+import io.qt.InternalAccess.Cleanable;
 import io.qt.QtObjectInterface;
 
 /**
@@ -46,12 +51,18 @@ import io.qt.QtObjectInterface;
  * }<br>
  * &#47;&#47; dialog is disposed
  * </code>
+ * <p>Alternatively, <i>performAndDispose</i> disposes a recource after calling a lambda expression:</p>
+ * <code>
+ * QScopedPointer.performAndDispose(QDialog::exec, new QDialog());
+ * </code>
+ * 
  */
 public final class QScopedPointer<O> implements AutoCloseable {
 	
 	private static class Data<O>{
 		private O data;
 		private Consumer<O> cleanup;
+		private Cleanable cleanable;
 		
 	    @QtUninvokable
 		void close(){
@@ -72,7 +83,7 @@ public final class QScopedPointer<O> implements AutoCloseable {
 	private QScopedPointer(O data, Consumer<O> cleanup) {
 		this.data.data = data;
 		this.data.cleanup = Objects.requireNonNull(cleanup);
-		QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
+		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
 	}
 
     @QtUninvokable
@@ -120,6 +131,8 @@ public final class QScopedPointer<O> implements AutoCloseable {
     @QtUninvokable
 	public void close(){
 		data.close();
+		if(this.data.cleanable!=null)
+			this.data.cleanable.clean();
 	}
 	
     @QtUninvokable
@@ -145,7 +158,232 @@ public final class QScopedPointer<O> implements AutoCloseable {
 	}
 	
     @QtUninvokable
+    @Deprecated
 	public static <O> QScopedPointer<O> cleanup(O data, Consumer<O> cleanup){
 		return new QScopedPointer<>(data, cleanup);
+	}
+    
+    @QtUninvokable
+	public static <O> QScopedPointer<O> cleanup(Consumer<O> cleanup, O data){
+		return new QScopedPointer<>(data, cleanup);
+	}
+	
+	/**
+	 * Performs an action on a resource which will be disposes subsequently.
+	 * <code>
+	 * QScopedPointer.performAndDispose(QDialog::exec, new QDialog());
+	 * </code>
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 */
+    @QtUninvokable
+	public static <O extends QtObjectInterface> void performAndDispose(Consumer<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposing(data)){
+			action.accept(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a {@link QObject} resource which will be called {@link QObject#disposeLater()} subsequently.
+	 * <code>
+	 * QScopedPointer.performAndDispose(QDialog::exec, new QDialog());
+	 * </code>
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 */
+    @QtUninvokable
+	public static <O extends QObject> void performAndDisposeLater(Consumer<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposingLater(data)){
+			action.accept(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a resource which will be cleaned up subsequently.
+	 * <code>
+	 * QScopedPointer.performAndCleanup(object-> { 
+	 * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...//action
+	 * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+	 * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object -> { object.cleanup(); }, new CustomObject() );
+	 * </code>
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 */
+    @QtUninvokable
+	public static <O> void performAndCleanup(Consumer<O> action, Consumer<O> cleanup, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.cleanup(cleanup, data)){
+			action.accept(ptr.get());
+		}
+	}
+    
+	/**
+	 * Performs an action on a resource which will be disposes subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QtObjectInterface,R> R performAndDispose(Function<O,R> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposing(data)){
+			return action.apply(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a {@link QObject} resource which will be called {@link QObject#disposeLater()} subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QObject,R> R performAndDisposeLater(Function<O,R> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposingLater(data)){
+			return action.apply(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a resource which will be cleaned up subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O,R> R performAndCleanup(Function<O,R> action, Consumer<O> cleanup, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.cleanup(cleanup, data)){
+			return action.apply(ptr.get());
+		}
+	}
+    
+	/**
+	 * Performs an action on a resource which will be disposes subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QtObjectInterface> int performAndDispose(ToIntFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposing(data)){
+			return action.applyAsInt(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a {@link QObject} resource which will be called {@link QObject#disposeLater()} subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QObject> int performAndDisposeLater(ToIntFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposingLater(data)){
+			return action.applyAsInt(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a resource which will be cleaned up subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O> int performAndCleanup(ToIntFunction<O> action, Consumer<O> cleanup, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.cleanup(cleanup, data)){
+			return action.applyAsInt(ptr.get());
+		}
+	}
+    
+	/**
+	 * Performs an action on a resource which will be disposes subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QtObjectInterface> double performAndDispose(ToDoubleFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposing(data)){
+			return action.applyAsDouble(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a {@link QObject} resource which will be called {@link QObject#disposeLater()} subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QObject> double performAndDisposeLater(ToDoubleFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposingLater(data)){
+			return action.applyAsDouble(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a resource which will be cleaned up subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O> double performAndCleanup(ToDoubleFunction<O> action, Consumer<O> cleanup, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.cleanup(cleanup, data)){
+			return action.applyAsDouble(ptr.get());
+		}
+	}
+    
+	/**
+	 * Performs an action on a resource which will be disposes subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QtObjectInterface> long performAndDispose(ToLongFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposing(data)){
+			return action.applyAsLong(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a {@link QObject} resource which will be called {@link QObject#disposeLater()} subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O extends QObject> long performAndDisposeLater(ToLongFunction<O> action, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.disposingLater(data)){
+			return action.applyAsLong(ptr.get());
+		}
+	}
+	
+	/**
+	 * Performs an action on a resource which will be cleaned up subsequently.
+	 * 
+	 * @param data the resource
+	 * @param action the action
+	 * @return result
+	 */
+    @QtUninvokable
+	public static <O> long performAndCleanup(ToLongFunction<O> action, Consumer<O> cleanup, O data){
+		try(QScopedPointer<O> ptr = QScopedPointer.cleanup(cleanup, data)){
+			return action.applyAsLong(ptr.get());
+		}
 	}
 }
