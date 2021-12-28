@@ -41,7 +41,7 @@ Following Qt 6.2 modules are provided by QtJambi:
     * [**qtjambi-network-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network/6.2.1/jar)
     * [**qtjambi-network-jre8-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network-jre8/6.2.1/jar)
     * [**qtjambi-network-native-windows-x64-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network-native-windows-x64/6.2.1/jar)
-    * [**qtjambi-network-native-linux-x64-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network-native-linux-x64/6.2.1/jar)
+    * [**qtjambi-network-native-linux-x64-6.2.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network-native-linux-x64/6.2/jar)
     * [**qtjambi-network-native-macos-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-network-native-macos/6.2.1/jar)
 * [QtQml](https://doc.qt.io/qt-6/qtqml-index.html) in module **qtjambi-qml**:
     * [**qtjambi-qml-6.2.1.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qml/6.2.1/jar)
