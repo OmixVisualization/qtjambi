@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,6 +49,7 @@ import io.qt.core.QSize;
 import io.qt.core.Qt.Orientations;
 import io.qt.gui.QPaintEvent;
 import io.qt.gui.QPainter;
+import io.qt.widgets.QApplication;
 import io.qt.widgets.QFormLayout;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsObject;
@@ -61,11 +62,15 @@ import io.qt.widgets.QGridLayout;
 import io.qt.widgets.QHBoxLayout;
 import io.qt.widgets.QLayout;
 import io.qt.widgets.QLayoutItem;
+import io.qt.widgets.QProxyStyle;
+import io.qt.widgets.QSlider;
 import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QStackedLayout;
 import io.qt.widgets.QStyleOption;
 import io.qt.widgets.QStyleOptionButton;
+import io.qt.widgets.QStyleOptionComplex;
 import io.qt.widgets.QStyleOptionGraphicsItem;
+import io.qt.widgets.QStyleOptionSlider;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.QWidgetItem;
 
@@ -425,6 +430,26 @@ public class TestPolymorphicTypes extends QApplicationTest {
         QStyleOption opt = PolymorphicType.getUnmappedCustomStyleOption();
         assertTrue(opt instanceof QStyleOption);
         assertEquals(opt.getClass().getName(), "io.qt.widgets.QStyleOption");
+    }
+    
+    @Test
+    public void testSliderStyleOption() {
+    	QStyleOptionComplex[] option = {null};
+    	QProxyStyle style = new QProxyStyle(){
+			@Override
+			public void drawComplexControl(ComplexControl control, QStyleOptionComplex _option, QPainter painter,
+					QWidget widget) {
+				option[0] = _option;
+				super.drawComplexControl(control, _option, painter, widget);
+				QApplication.quit();
+			}
+    	};
+    	QSlider slider = new QSlider();
+    	slider.setStyle(style);
+    	slider.show();
+    	QApplication.exec();
+    	slider.hide();
+    	assertTrue("Type unexpected: " + (option[0]==null ? "null" : option[0].getClass().getName()), option[0] instanceof QStyleOptionSlider);
     }
 
     /*

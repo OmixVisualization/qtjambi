@@ -583,7 +583,7 @@ void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonP
         const std::type_info* _nonPointerTypeId = &nonPointerTypeId;
         QMetaType metaType(qtMetaType);
         QMetaType jObjectWrapperMetaType = QMetaType::fromType<JObjectWrapper>();
-        if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperMetaType, metaType)){
+        if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperMetaType, metaType) && strcmp("QRemoteObjectPendingCall", metaType.name())!=0){
             QMetaType::registerConverterFunction([metaType,_nonPointerTypeId](const void *src, void *target) -> bool {
                 const JObjectWrapper * wrapper = reinterpret_cast<const JObjectWrapper *>(src);
                 if(wrapper->object()){
@@ -2141,7 +2141,7 @@ int JObjectWrapperConverter::jobjectWrapperID(){
 }
 
 void JObjectWrapperConverter::registerConverter(const std::type_info& _typeId, int _to){
-    if(!QMetaType::hasRegisteredConverterFunction(jobjectWrapperID(), _to))
+    if(!QMetaType::hasRegisteredConverterFunction(jobjectWrapperID(), _to) && strcmp("QRemoteObjectPendingCall", QMetaType::typeName(_to))!=0)
         qtjambi_register_converter(new JObjectWrapperConverter(_typeId, _to), jobjectWrapperID(), _to);
 }
 

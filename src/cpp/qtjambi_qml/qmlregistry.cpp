@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -160,11 +160,11 @@ int registerQmlMetaType(const QString& javaName, const QMetaObject *meta_object)
 {
     QByteArray _javaName = javaName.toLatin1().replace(".", "::")+"*";
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int definedType = QMetaType::type(_javaName);
     if(definedType!=QMetaType::UnknownType){
         return definedType;
     }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int typeId = QMetaType::registerNormalizedType(_javaName,
                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<QObject*>::Destruct,
                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<QObject*>::Construct,
@@ -174,6 +174,10 @@ int registerQmlMetaType(const QString& javaName, const QMetaObject *meta_object)
     registerJavaClassForCustomMetaType(typeId, QString(javaName).replace(".", "/").toLatin1());
     return typeId;
 #else
+    QMetaType definedType = QMetaType::fromName(_javaName);
+    if(definedType.id()!=QMetaType::UnknownType){
+        return definedType.id();
+    }
     return registerQmlMetaType(javaName.toLatin1().replace(".", "/"), _javaName,
                                         /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<QObject*>::getDefaultCtr(),
                                         /*.copyCtr=*/ QtPrivate::QMetaTypeForType<QObject*>::getCopyCtr(),

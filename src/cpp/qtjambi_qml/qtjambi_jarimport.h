@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,6 +42,6 @@
 
 class QObject;
 
-Q_EXTERN_C QTJAMBI_QML_EXPORT QObject* qtjambi_qml_create_jarimport(quintptr);
+extern "C" QTJAMBI_QML_EXPORT QObject* qtjambi_qml_create_jarimport(quintptr);
 
 #endif // QTJAMBI_JARIMPORT_H

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -89,8 +89,13 @@ public final class QtUtilities {
         QtJambiInternal.loadLibrary(lib);
     }
 
+    public static File jambiDeploymentDir() {
+        return QtJambiInternal.jambiDeploymentDir();
+    }
+    
+    @Deprecated
     public static File jambiTempDir() {
-        return QtJambiInternal.jambiTempDir();
+        return QtJambiInternal.jambiDeploymentDir();
     }
     
     public static boolean initializePackage(String packagePath){

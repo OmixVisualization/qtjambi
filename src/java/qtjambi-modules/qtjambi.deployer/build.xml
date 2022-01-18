@@ -95,8 +95,8 @@
                         <jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
                             <manifest>
                                 <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
-                                <attribute name="Bundle-Name"      value="${module} native bundle"/>
-                                <attribute name="Bundle-Description"      value="${module} native bundle"/>
+                                <attribute name="Bundle-Name"      value="${module} platform bundle"/>
+                                <attribute name="Bundle-Description"      value="${module} platform bundle"/>
                                 <attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
                                 <attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
                                 <attribute name="Bundle-ManifestVersion" value="2"/>

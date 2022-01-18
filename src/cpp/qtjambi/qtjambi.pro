@@ -4,18 +4,12 @@ VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 include(qtjambi_base.pri)
 
+QTJAMBI_CPP = ../../../build/generator/out/cpp/
+include($$QTJAMBI_CPP/QtJambi/generated.pri)
+
 SOURCES += \
     qnativepointer.cpp \
     qtjambi_containeraccess.cpp \
-    qtjambi_containeraccess_hash1.cpp \
-    qtjambi_containeraccess_linkedlist.cpp \
-    qtjambi_containeraccess_list.cpp \
-    qtjambi_containeraccess_map1.cpp \
-    qtjambi_containeraccess_multihash1.cpp \
-    qtjambi_containeraccess_multimap1.cpp \
-    qtjambi_containeraccess_pair.cpp \
-    qtjambi_containeraccess_set.cpp \
-    qtjambi_containeraccess_vector.cpp \
     qtjambi_future.cpp \
     qtjambi_util.cpp \
     qtjambi_core.cpp \
@@ -47,15 +41,15 @@ HEADERS += \
     qtjambi_cast_container_util_p.h \
     qtjambi_containeraccess.h \
     qtjambi_containeraccess_hash.h \
-    qtjambi_containeraccess_linkedlist.h \
-    qtjambi_containeraccess_list.h \
+    qtjambi_containeraccess_linkedlist_p.h \
+    qtjambi_containeraccess_list_p.h \
     qtjambi_containeraccess_map.h \
     qtjambi_containeraccess_multihash.h \
     qtjambi_containeraccess_multimap.h \
     qtjambi_containeraccess_p.h \
-    qtjambi_containeraccess_pair.h \
-    qtjambi_containeraccess_set.h \
-    qtjambi_containeraccess_vector.h \
+    qtjambi_containeraccess_pair_p.h \
+    qtjambi_containeraccess_set_p.h \
+    qtjambi_containeraccess_vector_p.h \
     qtjambi_core.h \
     qtjambi_global.h \
     qtjambi_interfaces_p.h \

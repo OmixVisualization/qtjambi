@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,10 +45,13 @@ import io.qt.gui.QTextDocument;
 public class TestOwnedDestruction extends QApplicationTest {
     @Test
     public void testOwnedValueObjectThreadedDisposeWithoutCrash() throws InterruptedException {
+    	long tstart = System.currentTimeMillis();
     	int numberOfTests = 20;
     	int numberOfThreads = 20;
     	int numberOfCursors = 1000;
     	for (int k = 0; k < numberOfTests; k++) {
+    		if(System.currentTimeMillis()-tstart>120000)
+    			break;
     		Utils.println(5, "running test "+(k+1));
     		QTextDocument document = new QTextDocument();
         	List<QThread> threads = new ArrayList<>();

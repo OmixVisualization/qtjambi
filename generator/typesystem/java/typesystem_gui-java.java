@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -485,8 +485,14 @@ class QPainter___ extends QPainter {
             if(object.isWidgetType() || device instanceof QPaintDeviceWindow) {
                 java.util.List<QPainter> painters = __paintedDevices.get(device);
                 if(painters==null){
-                    if(inConstructor)
+                    if(inConstructor) {
+                        if(QPaintDevice.Impl.getSharedPainter(device)!=null)
+                            return;
+                        QPaintDevice rpd = QPaintDevice.Impl.getRedirected(device, null);
+                        if(rpd!=null && rpd.paintEngine()!=null)
+                            return;
                         throw new QPaintingOutsidePaintEventException();
+                    }
                 }else if(painters.size()==0){
                     threadCheck((io.qt.core.QObject)device);
                     painters = java.util.Collections.singletonList(this);
@@ -511,6 +517,18 @@ class QPainter___ extends QPainter {
     private static native void threadCheck(io.qt.core.QObject object);
     
     private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
+}// class
+
+class QPaintDevice___{
+    @io.qt.QtUninvokable
+    static io.qt.gui.QPainter getSharedPainter(QPaintDevice instance){
+        return sharedPainter_native_constfct(QtJambi_LibraryUtilities.internal.nativeId(instance));
+    }
+    
+    @io.qt.QtUninvokable
+    static io.qt.gui.QPaintDevice getRedirected(QPaintDevice instance, io.qt.core.QPoint offset){
+        return redirected_native_QPoint_ptr_constfct(QtJambi_LibraryUtilities.internal.nativeId(instance), offset);
+    }
 }// class
 
 class QPen___ extends QPen {

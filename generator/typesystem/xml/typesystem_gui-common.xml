@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -2957,6 +2957,11 @@
     </object-type>
     
     <object-type name="QOpenGLWindow" until="5.*">
+        <modify-function signature="paintGL()">
+            <inject-code class="shell" position="beginning">
+            QTJAMBI_ABOUT_TO_PAINT(%env, __java_this)
+            </inject-code>
+        </modify-function>
     </object-type>
     
     <value-type name="xcb_connection_t" generate="no" since="6.2.0"/>

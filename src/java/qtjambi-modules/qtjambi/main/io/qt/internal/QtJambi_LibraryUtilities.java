@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,10 +43,7 @@ final class QtJambi_LibraryUtilities {
         	loadQtJambiLibrary();
         	
         	if(!Boolean.getBoolean("io.qt.no-library-shutdown-hook")) {
-        		Thread shutdownHook = new Thread(()->{
-        			shutdown();
-        	        NativeLibraryManager.resetDeploymentSpecs();
-        		});
+        		Thread shutdownHook = new Thread(QtJambi_LibraryUtilities::shutdown);
         		shutdownHook.setName("QtJambi_LibraryShutdown");
         		Runtime.getRuntime().addShutdownHook(shutdownHook);
         	}

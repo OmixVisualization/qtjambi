@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,8 +57,8 @@ public class DeploymentSql {
     	}catch(java.lang.ExceptionInInitializerError e) {
     		System.err.println("java.class.path="+System.getProperty("java.class.path"));
     		System.err.println("java.library.path="+System.getProperty("java.library.path"));
-    		if(io.qt.QtUtilities.jambiTempDir()!=null && io.qt.QtUtilities.jambiTempDir().isDirectory()) {
-    			System.err.println("qtjambi.deplspec.dir="+io.qt.QtUtilities.jambiTempDir().getAbsolutePath());
+    		if(io.qt.QtUtilities.jambiDeploymentDir()!=null && io.qt.QtUtilities.jambiDeploymentDir().isDirectory()) {
+    			System.err.println("qtjambi.deplspec.dir="+io.qt.QtUtilities.jambiDeploymentDir().getAbsolutePath());
     		}
         	String osName = System.getProperty("os.name").toLowerCase();
     		if(osName.startsWith("windows")) {
@@ -142,11 +142,11 @@ class DeploymentSqlImpl {
     			if(_dir.cd(platform + ("debug".equals(System.getProperty("io.qt.debug")) ? "/debug/plugins" : "/release/plugins"))){
     				if(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.MacOS) {
     					try {
-    						copyDir(new File(QDir.toNativeSeparators(_dir.canonicalPath())), QtUtilities.jambiTempDir());
+    						copyDir(new File(QDir.toNativeSeparators(_dir.canonicalPath())), QtUtilities.jambiDeploymentDir());
 	    					QStringList libraryPaths = QApplication.libraryPaths();
 	    					libraryPaths.removeAll(QApplication.applicationDirPath());
 	    					libraryPaths.removeAll(_dir.canonicalPath());
-	    					libraryPaths.prepend(path = new File(QtUtilities.jambiTempDir(), "plugins").getAbsolutePath());
+	    					libraryPaths.prepend(path = new File(QtUtilities.jambiDeploymentDir(), "plugins").getAbsolutePath());
 	    					QApplication.setLibraryPaths(libraryPaths);
     					}catch(IOException e) {
     						e.printStackTrace();

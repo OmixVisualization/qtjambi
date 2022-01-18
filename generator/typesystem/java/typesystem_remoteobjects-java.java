@@ -70,6 +70,16 @@ class QRemoteObjectNode___ {
     }
     
     @io.qt.QtUninvokable
+    public final <T extends QRemoteObjectReplica> T acquire(java.util.function.BiFunction<QRemoteObjectNode, String, T> replicaConstructor) {
+        return acquire(replicaConstructor, null);
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T extends QRemoteObjectReplica> T acquire(java.util.function.BiFunction<QRemoteObjectNode, String, T> replicaConstructor, String name) {
+        return replicaConstructor.apply(this, name);
+    }
+    
+    @io.qt.QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(Class<T> type) throws NoSuchMethodException{
         return acquire(type, null);
     }

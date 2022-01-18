@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,29 +29,34 @@
 
 package io.qt.dbus;
 
-import io.qt.core.QVariant;
+import io.qt.core.QMetaType;
 
 public class QDBusPendingReply2<A,B> extends QDBusPendingReply<A> {
 
-	private final Class<B> typeB;
+	private final QMetaType typeB;
 	
 	public QDBusPendingReply2() {
-		typeB = null;
+		typeB = new QMetaType();
 	}
 
 	public QDBusPendingReply2(QDBusMessage message, Class<A> typeA, Class<B> typeB) {
 		super(message, typeA);
-		this.typeB = typeB;
+		this.typeB = QMetaType.fromType(typeB);
 	}
 
 	public QDBusPendingReply2(QDBusPendingCall call, Class<A> typeA, Class<B> typeB) {
 		super(call, typeA);
-		this.typeB = typeB;
+		this.typeB = QMetaType.fromType(typeB);
 	}
 
 	public QDBusPendingReply2(QDBusPendingReply2<A,B> other) {
 		super(other);
 		this.typeB = other.typeB;
+	}
+	
+	public QDBusPendingReply2(QDBusPendingReply<A> other, Class<B> typeB, QMetaType... instantiations) {
+		super(other);
+		this.typeB = QMetaType.fromType(typeB, instantiations);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class QDBusPendingReply2<A,B> extends QDBusPendingReply<A> {
 
 	@Override
 	boolean isInvalid() {
-		return super.isInvalid() || typeB==null;
+		return super.isInvalid() || typeB==null || !typeB.isValid();
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class QDBusPendingReply2<A,B> extends QDBusPendingReply<A> {
 
 	@io.qt.QtUninvokable
 	public final B argumentAt1(){
-		return QVariant.convert(argumentAt(1), typeB);
+		return argumentAt(typeB, 1);
+	}
+	
+	void fillMetaTypes(QMetaType[] metaTypes) {
+		metaTypes[1] = typeB;
+		super.fillMetaTypes(metaTypes);
 	}
 }

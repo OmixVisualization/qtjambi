@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -7513,7 +7513,15 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                 }else{
                     s << INDENT << "qint" << enumType->size() << " " << qt_name << " = ";
                 }
-                s << "qtjambi_cast<qint" << enumType->size() << ">(" << __jni_env << ", " << java_name << ")";
+                if(java_enum && !java_enum->isPublic() && (option & NoEnumAsInts)==0){
+                    if(enumType->size()==32){
+                        s << "qtjambi_to_enum(" << __jni_env << ", " << java_name << ")";
+                    }else{
+                        s << "qtjambi_to_enumerator(" << __jni_env << ", " << java_name << ").value<qint" << enumType->size() << ">()";
+                    }
+                }else{
+                    s << "qtjambi_cast<qint" << enumType->size() << ">(" << __jni_env << ", " << java_name << ")";
+                }
                 written = true;
             }
         }
@@ -11323,15 +11331,22 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     while(baseClass && !baseClass->typeEntry()->isPolymorphicBase()){
                         baseClass = baseClass->baseClass();
                     }
-                    if(baseClass){
+                    if(baseClass && baseClass->typeEntry()->isPolymorphicBase()){
+                        AbstractMetaClass *polymorphicBaseClass = baseClass;
                         usedTypeID = true;
-                        s << INDENT << "registerPolymorphyHandler(typeid(" << baseClass->qualifiedCppName()
-                          << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
-                          << INDENT << "        " << baseClass->qualifiedCppName() << " *object = reinterpret_cast<" << baseClass->qualifiedCppName() << " *>(ptr);" << Qt::endl
-                          << INDENT << "        Q_ASSERT(object);" << Qt::endl
-                          << INDENT << "        offset = 0;" << Qt::endl
-                          << INDENT << "        return " << QString(entry->polymorphicIdValue()).replace("%1", "object") << ";" << Qt::endl
-                          << INDENT << "    });" << Qt::endl;
+                        baseClass = cls->baseClass();
+                        while(baseClass){
+                            s << INDENT << "registerPolymorphyHandler(typeid(" << baseClass->qualifiedCppName()
+                              << "), typeId, [](void *ptr, qintptr& offset) -> bool {" << Qt::endl
+                              << INDENT << "        " << baseClass->qualifiedCppName() << " *object = reinterpret_cast<" << baseClass->qualifiedCppName() << " *>(ptr);" << Qt::endl
+                              << INDENT << "        Q_ASSERT(object);" << Qt::endl
+                              << INDENT << "        offset = 0;" << Qt::endl
+                              << INDENT << "        return " << QString(entry->polymorphicIdValue()).replace("%1", "object") << ";" << Qt::endl
+                              << INDENT << "    });" << Qt::endl;
+                            if(baseClass==polymorphicBaseClass)
+                                break;
+                            baseClass = baseClass->baseClass();
+                        }
                     }
                 }else if(cls->isQObject()){
                     if(!cls->has_Q_OBJECT()){

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -978,8 +978,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1092,8 +1092,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1211,8 +1211,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1335,8 +1335,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1464,8 +1464,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1601,8 +1601,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1740,8 +1740,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -1884,8 +1884,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2033,8 +2033,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -2187,8 +2187,8 @@ public final class QMetaObject {
                         }
                     };
                     invoker.moveToThread(thread);
-                    invoker.disposeLater();
                     synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
                             invoker.wait();
                         } catch (InterruptedException e) {
@@ -4311,8 +4311,8 @@ public final class QMetaObject {
         	QtJambiSignals.registerPropertyField(metaProperty, field);
         }
         
-        static void _emitNativeSignal(QObject sender, int methodIndex, Object args[]) {
-        	QtJambiSignals.emitNativeSignal(sender, methodIndex, 0, args);
+        static void _emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object args[]) {
+        	QtJambiSignals.emitNativeSignal(sender, methodIndex, metaObjectId, 0, args);
         }
         
         static Class<?> _signalDeclaringClass(AbstractSignal signal){
@@ -4482,8 +4482,8 @@ public final class QMetaObject {
 			SignalAccess._registerPropertyField(metaProperty, field);
 		}
 		
-		static void emitNativeSignal(QObject sender, int methodIndex, Object... args) {
-			SignalAccess._emitNativeSignal(sender, methodIndex, args);
+		static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
+			SignalAccess._emitNativeSignal(sender, methodIndex, metaObjectId, args);
 		}
 		
 		Class<?> signalDeclaringClass(){

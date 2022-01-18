@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -6090,15 +6090,17 @@ class QObject_6__ extends QObject {
         @Override
         public void run() {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex); 
+                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex, metaObjectId); 
             }catch(QNoNativeResourcesException e){}
         }
     
         private final int methodIndex;
+        private final long metaObjectId;
     
-        public EmitSignal0(int methodIndex) {
+        public EmitSignal0(int methodIndex, long metaObjectId) {
             super();
             this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
         }
     }
     
@@ -6106,17 +6108,19 @@ class QObject_6__ extends QObject {
         @Override
         public void run() {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex, supplier.get());
+                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex, metaObjectId, supplier.get());
             }catch(QNoNativeResourcesException e){}
         }
     
         private final int methodIndex;
+        private final long metaObjectId;
         private final java.util.function.Supplier<? extends T> supplier;
         
-        public EmitSignal1(int methodIndex, java.util.function.Supplier<? extends T> supplier) {
+        public EmitSignal1(int methodIndex, long metaObjectId, java.util.function.Supplier<? extends T> supplier) {
             super();
             this.supplier = supplier;
             this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
         }
     }
     
@@ -6153,17 +6157,19 @@ class QObject_6__ extends QObject {
     }
     
     private final static class SignalPropertyCore<T> extends PropertyCore<T>{
-        public SignalPropertyCore(QMetaType metaType, int methodIndex) {
+        public SignalPropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
             super(metaType);
             this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
         }
         void emitSignal(QProperty<T> property) {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex); 
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId); 
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
         private final int methodIndex;
+        private final long metaObjectId;
     }
     
     private static class RCPropertyCore<T> extends PropertyCore<T>{
@@ -6182,17 +6188,19 @@ class QObject_6__ extends QObject {
     }
     
     private final static class RCSignalPropertyCore<T> extends RCPropertyCore<T>{
-        public RCSignalPropertyCore(QMetaType metaType, int methodIndex) {
+        public RCSignalPropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
             super(metaType);
             this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
         }
         void emitSignal(QProperty<T> property) {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex);
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId);
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
         private final int methodIndex;
+        private final long metaObjectId;
     }
     
     private static class InitializingPropertyCore<T> extends AbstractPropertyCore<T>{
@@ -6214,9 +6222,9 @@ class QObject_6__ extends QObject {
                     }
                 }else {
                     if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
-                        property.core = new RCSignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex());
+                        property.core = new RCSignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                     }else {
-                        property.core = new SignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex());
+                        property.core = new SignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                     }
                 }
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
@@ -6226,9 +6234,9 @@ class QObject_6__ extends QObject {
                 QMetaMethod notifySignal = findNotifySignalByBindables(property.owner(), result.reflectedField, property);
                 if(notifySignal!=null) {
                     if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
-                        property.core = new RCSignalPropertyCore<>(result.metaType, notifySignal.methodIndex());
+                        property.core = new RCSignalPropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                     }else {
-                        property.core = new SignalPropertyCore<>(result.metaType, notifySignal.methodIndex());
+                        property.core = new SignalPropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                     }
                 }
             }
@@ -6895,11 +6903,10 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7179,9 +7186,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7463,9 +7470,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7745,9 +7752,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -8027,9 +8034,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -8309,9 +8316,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -8591,9 +8598,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -8873,9 +8880,9 @@ class QObject_6__ extends QObject {
             }else{
                 int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
-                    this.signal = new EmitSignal0(methodIndex);
+                    this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
-                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
+                    this.signal = new EmitSignal1<>(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -9919,14 +9926,14 @@ class QCoreApplication___ extends QCoreApplication {
                 throw new IllegalStateException("Must not call QCoreApplication.shutdown() in event loop.");
             if(app instanceof io.qt.widgets.QApplication) {
                 for(io.qt.widgets.QWidget widget : new java.util.ArrayList<>(io.qt.widgets.QApplication.topLevelWidgets())) {
-                    if(!widget.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(widget)) {
+                    if(widget!=null && !widget.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(widget)) {
                         widget.dispose();
                     }
                 }
             }
             if(app instanceof io.qt.gui.QGuiApplication) {
                 for(io.qt.gui.QWindow window : new java.util.ArrayList<>(io.qt.gui.QGuiApplication.topLevelWindows())) {
-                    if(!window.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(window) && currentThread==window.thread()) {
+                    if(window!=null && !window.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(window) && currentThread==window.thread()) {
                         window.dispose();
                     }
                 }
@@ -11757,6 +11764,69 @@ class QMetaType___ extends QMetaType {
             }
             return io.qt.internal.QtJambiInternal.registerMetaType(clazz);
         }
+    }
+    
+    /**
+     * Writes a value to data stream.
+     * @param <U>
+     */
+    public interface DataStreamInFn<U> extends java.util.function.BiConsumer<QDataStream, U>, java.io.Serializable{
+    }
+    
+    /**
+     * Reads a value from data stream.
+     * @param <U>
+     */
+    public interface DataStreamOutFn<U> extends java.util.function.Function<QDataStream, U>, java.io.Serializable{
+    }
+    
+    /**
+     * Registers datastream operators for meta type <code>T</code>.
+     * @param datastreamInFn (only lambda expressions allowed)
+     * @param datastreamOutFn (only lambda expressions allowed)
+     * @return the registered meta type
+     */
+    public static <T> int registerDataStreamOperators(DataStreamInFn<T> datastreamInFn, DataStreamOutFn<T> datastreamOutFn) {
+        java.util.Objects.requireNonNull(datastreamInFn);
+        java.util.Objects.requireNonNull(datastreamOutFn);
+        int[] datastreamInTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(datastreamInFn);
+        int[] datastreamOutTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(datastreamOutFn);
+        Class<?>[] datastreamOutFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(datastreamOutFn);
+        Class<?>[] datastreamInFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(datastreamInFn);
+        if(datastreamInTypes==null || datastreamOutTypes==null 
+                || datastreamInTypes.length!=3 || datastreamOutTypes.length!=2)
+            throw new IllegalArgumentException("DataStreamIn and/or DataStreamOut function not a lambda expression.");
+        if(datastreamOutTypes[0]==0 || datastreamInTypes[2]==0)
+            throw new IllegalArgumentException("Unable to recognize meta type.");
+        if(datastreamOutTypes[0]!=datastreamInTypes[2] || datastreamOutFnClassTypes[0]!=datastreamInFnClassTypes[2]) {
+            throw new IllegalArgumentException(String.format("DataStreamIn type %1$s (%2$s) is different from DataStreamOut type %3$s (%4$s).", datastreamInFnClassTypes[2].getTypeName(), new QMetaType(datastreamInTypes[2]).name(), datastreamOutFnClassTypes[0].getTypeName(), new QMetaType(datastreamOutTypes[0]).name()));
+        }
+        io.qt.internal.QtJambiInternal.registerDataStreamOperators(datastreamOutTypes[0], datastreamOutFnClassTypes[0], datastreamInFn, datastreamOutFn);
+        return datastreamOutTypes[0];
+    }
+    
+    /**
+     * Writes a value to debug stream.
+     * @param <U>
+     */
+    public interface DebugStreamFn<U> extends java.util.function.BiConsumer<QDebug, U>, java.io.Serializable{
+    }
+    
+    /**
+     * Registers debug stream operator for meta type <code>T</code>.
+     * @param debugstreamFn (only lambda expressions allowed)
+     * @return the registered meta type
+     */
+    public static <T> int registerDebugStreamOperator(DebugStreamFn<T> debugstreamFn) {
+        java.util.Objects.requireNonNull(debugstreamFn);
+        int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(debugstreamFn);
+        Class<?>[] debugstreamClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(debugstreamFn);
+        if(debugstreamTypes==null || debugstreamTypes.length!=3)
+            throw new IllegalArgumentException("DataStreamIn and/or DataStreamOut function not a lambda expression.");
+        if(debugstreamTypes[2]==0)
+            throw new IllegalArgumentException("Unable to recognize meta type.");
+        io.qt.internal.QtJambiInternal.registerDebugStreamOperator(debugstreamTypes[2], debugstreamClassTypes[2], debugstreamFn);
+        return debugstreamTypes[2];
     }
     
     /**

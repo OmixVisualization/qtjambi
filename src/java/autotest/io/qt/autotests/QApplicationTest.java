@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -50,9 +51,12 @@ import org.junit.BeforeClass;
 
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
+import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QObject;
+import io.qt.core.QProcess;
+import io.qt.core.QProcessEnvironment;
 import io.qt.core.QThread;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.internal.QtJambiInternal;
@@ -65,7 +69,7 @@ public abstract class QApplicationTest {
     @BeforeClass
 	public static void testInitialize() throws Exception {
         try {
-        	System.setProperty("io.qt.log.messages", "ALL");
+        	System.setProperty("io.qt.log-messages", "ALL");
 			if(QCoreApplication.instance()==null) {
 				Utils.println(2, "QApplicationTest.testInitialize(): begin");
 			    io.qt.QtResources.addSearchPath(".");
@@ -216,7 +220,8 @@ public abstract class QApplicationTest {
 
     
     static void testDeployerApp(String applicationName, String...modules) throws InterruptedException, IOException {
-        String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+    	final QProcess process = new QProcess();
+    	String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
     	boolean isDebug = "debug".equals(System.getProperty("io.qt.debug"));
     	String jvmVersion = System.getProperty("java.version");
     	boolean java8 = jvmVersion.startsWith("1.") || jvmVersion.startsWith("8.") || jvmVersion.startsWith("7.");
@@ -278,6 +283,7 @@ public abstract class QApplicationTest {
         		platform += "-x86"; break;
     		}
     	}
+    	String qtdir = System.getenv("QTDIR");
     	File deploymentDir = new File(new File(new File(jambidir, "deployment"), "native"), platform);
     	if(isDebug) {
     		platform += "-debug";
@@ -290,6 +296,7 @@ public abstract class QApplicationTest {
     	if(osName.startsWith("mac")) {
     		macosPrefix = "../../../";
     	}
+    	File jambiDeploymentDir = null;
     	try {
 	    	if(java8) {
 	    		classPath = macosPrefix+"../java8";
@@ -310,7 +317,7 @@ public abstract class QApplicationTest {
 	        			"--class-path="+classPath,
 	        			"--ico=C:\\",
 	        			"--main-class=io.qt.autotests."+applicationName,
-	        			"-Djava.library.path="+System.getenv("QTDIR")+File.separator+(osName.startsWith("windows") ? "bin" : "lib"),
+	        			"-Djava.library.path="+qtdir+File.separator+(osName.startsWith("windows") ? "bin" : "lib"),
 	        			"--jvm-path="+System.getProperty("java.home"),
 	        			"--executable="+new File(deploymentDir, "QtJambiLauncher"+executable).getAbsolutePath(),
 	        			"-Dio.qt.debug="+(isDebug ? "debug" : "release"),
@@ -338,7 +345,7 @@ public abstract class QApplicationTest {
 	        			"--module-path="+modulePath,
 	        			"--ico=C:\\",
 	        			"--main-class=io.qt.autotests."+applicationName,
-	        			"-Djava.library.path="+System.getenv("QTDIR")+File.separator+(osName.startsWith("windows") ? "bin" : "lib"),
+	        			"-Djava.library.path="+qtdir+File.separator+(osName.startsWith("windows") ? "bin" : "lib"),
 	        			"--jvm-path="+System.getProperty("java.home"),
 	        			"--executable="+new File(deploymentDir, "QtJambiLauncher"+executable).getAbsolutePath(),
 	        			"-Dio.qt.debug="+(isDebug ? "debug" : "release"),
@@ -351,15 +358,16 @@ public abstract class QApplicationTest {
 	    	testFile.delete();
 	    	Assert.assertTrue(!testFile.exists());
 	    	UUID uuid = UUID.randomUUID();
-    		ProcessBuilder builder = new ProcessBuilder();
-    		builder = builder.directory(targetDir);
-			builder.redirectOutput(new File(targetDir, applicationName+".out.log"));
-			builder.redirectError(new File(targetDir, applicationName+".err.log"));
+	    	process.setWorkingDirectory(targetDir.getAbsolutePath());
+	    	process.setStandardOutputFile(new File(targetDir, applicationName+".out.log").getAbsolutePath());
+	    	process.setStandardErrorFile(new File(targetDir, applicationName+".err.log").getAbsolutePath());
+    		QProcessEnvironment environment = QProcessEnvironment.systemEnvironment();
 	    	if(osName.startsWith("windows")) {
 	    		File exeFile = new File(targetDir, applicationName+".exe");
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" does not exist", exeFile.exists());
-				builder = builder.command(exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString());
-				builder.environment().put("PATH", builder.environment().get("QTDIR")+"\\bin");
+	    		process.setProgram(exeFile.getAbsolutePath());
+	    		process.setArguments(Arrays.asList(testFile.getAbsolutePath(), uuid.toString()));
+	    		environment.insert("PATH", qtdir+"\\bin");
 	    	}else if(osName.startsWith("mac")) {
 	    		File exeFile = new File(targetDir, applicationName+".app/Contents/MacOS/"+applicationName);
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" does not exist", exeFile.exists());
@@ -367,52 +375,72 @@ public abstract class QApplicationTest {
 	    		switch(System.getProperty("os.arch").toLowerCase()) {
 	        	case "arm64":
 	        	case "aarch64":
-	    			builder = builder.command("/usr/bin/arch", "-arm64", exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString());
+		    		process.setProgram("/usr/bin/arch");
+		    		process.setArguments(Arrays.asList("-arm64", exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString()));
 	    			break;
 	        	case "x86_64":
 	        	case "x64":
 	        	case "amd64":
-	    			builder = builder.command("/usr/bin/arch", "-x86_64", exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString());
+		    		process.setProgram("/usr/bin/arch");
+		    		process.setArguments(Arrays.asList("-x86_64", exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString()));
 	    			break;
 	    		default:
-	    			builder = builder.command(exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString());
+		    		process.setProgram(exeFile.getAbsolutePath());
+		    		process.setArguments(Arrays.asList(testFile.getAbsolutePath(), uuid.toString()));
 	    		}
 	    		if(!new File(targetDir, applicationName+".app/Contents/Frameworks").exists())
-	    			Files.createSymbolicLink(new File(targetDir, applicationName+".app/Contents/Frameworks").toPath(), new File(builder.environment().get("QTDIR")+"/lib").toPath());
-				builder.environment().put("DYLD_LIBRARY_PATH", builder.environment().get("QTDIR")+"/lib");
-				builder.environment().put("DYLD_FRAMEWORK_PATH", builder.environment().get("QTDIR")+"/lib");
+	    			Files.createSymbolicLink(new File(targetDir, applicationName+".app/Contents/Frameworks").toPath(), new File(qtdir+"/lib").toPath());
+	    		environment.insert("DYLD_LIBRARY_PATH", qtdir+"/lib");
+	    		environment.insert("DYLD_FRAMEWORK_PATH", qtdir+"/lib");
 	    	}else {
 	    		File exeFile = new File(targetDir, applicationName);
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" does not exist", exeFile.exists());
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" cannot be executed", exeFile.canExecute());
-				builder = builder.command(exeFile.getAbsolutePath(), testFile.getAbsolutePath(), uuid.toString());
-				builder.environment().put("LD_LIBRARY_PATH", builder.environment().get("QTDIR")+"/lib");
+	    		process.setArguments(Arrays.asList(testFile.getAbsolutePath(), uuid.toString()));
+	    		process.setProgram(exeFile.getAbsolutePath());
+	    		environment.insert("LD_LIBRARY_PATH", qtdir+"/lib");
 	    	}
-			builder.redirectOutput(new File(targetDir, applicationName+".out.log"));
-			builder.redirectError(new File(targetDir, applicationName+".err.log"));
-			Process process = builder.start();
-			int result = process.waitFor();
-			if(process.isAlive()) {
+    		process.setProcessEnvironment(environment);
+	    	process.start();
+			File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+			jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambiInternal.majorVersion() + "." + QtJambiInternal.minorVersion() + "." + QtJambiInternal.qtjambiPatchVersion() + "_" + System.getProperty("user.name") + "_" + process.processId());
+			while(!process.waitForFinished(500)) {
+				if(Thread.interrupted())
+					throw new InterruptedException();
+			}
+			if(process.state()==QProcess.ProcessState.Running) {
 				try{
-					process.destroyForcibly();
+					process.kill();
 				}catch(Throwable t) {}
 			}
-	    	try {
-		    	Assert.assertTrue("Test file does not exist, i.e. standalone program did not run. Process returned: "+result, testFile.exists());
-		    	Assert.assertEquals(uuid.toString(), new String(Files.readAllBytes(testFile.toPath())));
-	    	}finally {
-				try {
-					String content = new String(Files.readAllBytes(new File(targetDir, applicationName+".out.log").toPath()));
-					if(!content.trim().isEmpty())
-						System.out.println(content);
-				} catch (Throwable e) {}
-				try {
-					String content = new String(Files.readAllBytes(new File(targetDir, applicationName+".err.log").toPath()));
-					if(!content.trim().isEmpty())
-						System.err.println(content);
-				} catch (Throwable e) {}
-	    	}
+	    	Assert.assertTrue("Test file does not exist, i.e. standalone program did not run. Process returned: "+process.exitCode(), testFile.exists());
+	    	Assert.assertEquals(uuid.toString(), new String(Files.readAllBytes(testFile.toPath())));
+    	}catch(InterruptedException e) {
     	}finally {
+    		if(process!=null && !process.isDisposed() && process.state()==QProcess.ProcessState.Running) {
+        		process.write(new QByteArray("quit"));
+        		process.closeWriteChannel();
+        		process.waitForFinished(500);
+    			process.terminate();
+    			process.waitForFinished(500);
+    			if(process.state()==QProcess.ProcessState.Running) {
+    				process.kill();
+    				process.waitForFinished();
+    			}
+    		}
+			try {
+				String content = new String(Files.readAllBytes(new File(targetDir, applicationName+".out.log").toPath()));
+				if(!content.trim().isEmpty())
+					System.out.println(content);
+			} catch (Throwable e) {}
+			try {
+				String content = new String(Files.readAllBytes(new File(targetDir, applicationName+".err.log").toPath()));
+				if(!content.trim().isEmpty())
+					System.err.println(content);
+			} catch (Throwable e) {}
+    		if(jambiDeploymentDir!=null && jambiDeploymentDir.isDirectory()) {
+    			clearAndDelete(jambiDeploymentDir);
+    		}
     		if(!Boolean.getBoolean("qtjambi.deployer.skip.deletion")) {
 		    	try {
 					Files.walkFileTree(targetDir.toPath(), new SimpleFileVisitor<Path>() {
@@ -441,5 +469,18 @@ public abstract class QApplicationTest {
 				}
     		}
     	}
+    }
+    
+    private static void clearAndDelete(File directory) {
+    	for(File file : directory.listFiles()) {
+    		if(file.getName().equals(".") || file.getName().equals(".."))
+    			continue;
+    		if(file.isDirectory()) {
+    			clearAndDelete(file);
+    		}else {
+    			file.delete();
+    		}
+    	}
+    	directory.delete();
     }
 }

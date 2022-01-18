@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,29 +29,34 @@
 
 package io.qt.dbus;
 
-import io.qt.core.QVariant;
+import io.qt.core.QMetaType;
 
 public class QDBusPendingReply6<A,B,C,D,E,F> extends QDBusPendingReply5<A,B,C,D,E> {
 
-	private final Class<F> typeF;
+	private final QMetaType typeF;
 	
 	public QDBusPendingReply6() {
-		typeF = null;
+		typeF = new QMetaType();
 	}
 
 	public QDBusPendingReply6(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF) {
 		super(message, typeA, typeB, typeC, typeD, typeE);
-		this.typeF = typeF;
+		this.typeF = QMetaType.fromType(typeF);
 	}
 
 	public QDBusPendingReply6(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF) {
 		super(call, typeA, typeB, typeC, typeD, typeE);
-		this.typeF = typeF;
+		this.typeF = QMetaType.fromType(typeF);
 	}
 
 	public QDBusPendingReply6(QDBusPendingReply6<A,B,C,D,E,F> other) {
 		super(other);
 		this.typeF = other.typeF;
+	}
+	
+	public QDBusPendingReply6(QDBusPendingReply5<A,B,C,D,E> other, Class<F> typeF, QMetaType... instantiations) {
+		super(other);
+		this.typeF = QMetaType.fromType(typeF, instantiations);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class QDBusPendingReply6<A,B,C,D,E,F> extends QDBusPendingReply5<A,B,C,D,
 
 	@Override
 	boolean isInvalid() {
-		return super.isInvalid() || typeF==null;
+		return super.isInvalid() || typeF==null || !typeF.isValid();
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class QDBusPendingReply6<A,B,C,D,E,F> extends QDBusPendingReply5<A,B,C,D,
 
 	@io.qt.QtUninvokable
 	public final F argumentAt5(){
-		return QVariant.convert(argumentAt(5), typeF);
+		return argumentAt(typeF, 5);
+	}
+
+	void fillMetaTypes(QMetaType[] metaTypes) {
+		metaTypes[5] = typeF;
+		super.fillMetaTypes(metaTypes);
 	}
 }

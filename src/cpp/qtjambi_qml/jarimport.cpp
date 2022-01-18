@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,7 +45,7 @@ void Jarimport::registerTypes(const char * uri){
 }
 
 
-extern "C" QObject* qtjambi_qml_create_jarimport(quintptr ptr){
+QObject* qtjambi_qml_create_jarimport(quintptr ptr){
     static QHash<quintptr,QPointer<Jarimport>> hash;
     if(!hash.contains(ptr) || hash[ptr].isNull())
         hash[ptr] = new Jarimport();

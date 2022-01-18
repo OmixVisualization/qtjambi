@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,14 +49,50 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.*;
+import io.qt.NativeAccess;
+import io.qt.QNoNativeResourcesException;
+import io.qt.QtClassInfo;
+import io.qt.QtPropertyNotify;
+import io.qt.QtPropertyReader;
+import io.qt.QtPropertyWriter;
+import io.qt.QtUtilities;
 import io.qt.autotests.generated.TestInterface;
-import io.qt.core.*;
-import io.qt.gui.*;
-import io.qt.qml.*;
-import io.qt.quick.*;
-import io.qt.quick.widgets.*;
-import io.qt.widgets.*;
+import io.qt.core.QByteArray;
+import io.qt.core.QEvent;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaMethod;
+import io.qt.core.QMetaObject;
+import io.qt.core.QObject;
+import io.qt.core.QPointF;
+import io.qt.core.QRectF;
+import io.qt.core.QRunnable;
+import io.qt.core.QThread;
+import io.qt.core.QThreadPool;
+import io.qt.core.QUrl;
+import io.qt.core.Qt;
+import io.qt.gui.QColor;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QPainter;
+import io.qt.qml.QJSEngine;
+import io.qt.qml.QJSValue;
+import io.qt.qml.QQmlApplicationEngine;
+import io.qt.qml.QQmlComponent;
+import io.qt.qml.QQmlEngine;
+import io.qt.qml.QQmlIncubationController;
+import io.qt.qml.QQmlIncubator;
+import io.qt.qml.QQmlListProperty;
+import io.qt.qml.QQmlParserStatus;
+import io.qt.qml.QQmlProperty;
+import io.qt.qml.QQmlPropertyValueSource;
+import io.qt.qml.QtQml;
+import io.qt.quick.QQuickItem;
+import io.qt.quick.QQuickView;
+import io.qt.quick.widgets.QQuickWidget;
+import io.qt.widgets.QApplication;
+import io.qt.widgets.QGraphicsItem;
+import io.qt.widgets.QGraphicsScene;
+import io.qt.widgets.QStyleOptionGraphicsItem;
+import io.qt.widgets.QWidget;
 
 public class TestQml extends QApplicationTest{
 
@@ -828,6 +865,46 @@ public class TestQml extends QApplicationTest{
 		Assert.assertEquals("Alexandra", message.author().name());
 		Assert.assertEquals("alexandra@mail.com", message.author().email());
 		valueCallback.dispose();
+	}
+	
+	@Test
+    public void run_testJavaSignalQMLConnection() {
+		QtQml.qmlClearTypeRegistrations();
+		class SingletonObject extends QObject{
+			public final Signal1<String> textChanged = new Signal1<>();
+		}
+		SingletonObject singleton = new SingletonObject();
+		boolean[] disposed = {false};
+		QtUtilities.getSignalOnDispose(singleton).connect(()->{
+			disposed[0] = true;
+		});
+		WeakReference<QObject> weakSingleton = new WeakReference<>(singleton);
+		QtQml.qmlRegisterSingletonInstance(singleton, "signal.test", 1, 0, "Singleton");
+		QByteArray data = new QByteArray("import QtQuick 2.0\n" + 
+				"import signal.test 1.0\n" + 
+				"Item {\n" + 
+				"    property string receivedText\n" + 
+				"    Connections {\n" + 
+				"        target: Singleton\n" + 
+				"        function onTextChanged(text) {receivedText = text;}\n" +
+				"    }\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QObject root = component.create();
+		Assert.assertEquals("", root.property("receivedText"));
+		singleton.textChanged.emit("TEST");
+		Assert.assertEquals("TEST", root.property("receivedText"));
+		singleton = null;
+		for (int i = 0; i < 30; i++) {
+			System.gc();
+			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+			Assert.assertTrue(weakSingleton.get()!=null);
+		}
+		Assert.assertFalse(disposed[0]);
 	}
 	
 	@Test

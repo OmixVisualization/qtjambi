@@ -27,11 +27,11 @@ public class CreatePOMTask extends Task {
 		this.libraries = libraries;
 	}
 	
-	public String getAboutFile() {
+	public String getDescription() {
 		return description;
 	}
-	public void setAboutFile(String aboutFile) {
-		this.description = aboutFile;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	public String getOutputDirectory() {
 		return outputDirectory;
@@ -138,7 +138,7 @@ public class CreatePOMTask extends Task {
 				id.setTextContent("docjambi");
 				developer.appendChild(id);
 				Element devname = doc.createElement("name");
-				devname.setTextContent("Peter Droste");
+				devname.setTextContent("Dr. Peter Droste");
 				developer.appendChild(devname);
 				Element email = doc.createElement("email");
 				email.setTextContent("info@qtjambi.io");
@@ -170,7 +170,19 @@ public class CreatePOMTask extends Task {
 						}
 					}
 				}
-				String _moduleName = moduleName.replace('.', '-');
+				String _moduleId = moduleName.replace('.', '-');
+				String _moduleName = "${project.groupId}:${project.artifactId}";
+				if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
+					_moduleName = getProject().getProperty("module-name");
+				}else {
+					for(String line : libraries) {
+						if(line.startsWith("QtJambi"))
+							_moduleName = line.replace("QtJambi", "QtJambi ");
+						else
+							_moduleName = line;
+						break;
+					}
+				}
 				{
 					Document doc = builder.getDOMImplementation().createDocument(
 							"http://maven.apache.org/POM/4.0.0",
@@ -186,18 +198,10 @@ public class CreatePOMTask extends Task {
 					groupId.setTextContent("io.qtjambi");
 					doc.getDocumentElement().appendChild(groupId);
 					Element artifactId = doc.createElement("artifactId");
-					artifactId.setTextContent(_moduleName);
+					artifactId.setTextContent(_moduleId);
 					doc.getDocumentElement().appendChild(artifactId);
 					Element name = doc.createElement("name");
-					name.setTextContent("${project.groupId}:${project.artifactId}");
-					if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
-						name.setTextContent(getProject().getProperty("module-name"));
-					}else {
-						for(String line : libraries) {
-							name.setTextContent(line);
-							break;
-						}
-					}
+					name.setTextContent(_moduleName);
 					doc.getDocumentElement().appendChild(name);
 					Element version = doc.createElement("version");
 					version.setTextContent(qtjambiVersion);
@@ -205,6 +209,9 @@ public class CreatePOMTask extends Task {
 					if(this.description!=null) {
 						Element description = doc.createElement("description");
 						this.description = this.description.trim();
+						if(this.description.startsWith("\"") && this.description.endsWith("\"")) {
+							this.description = this.description.substring(1, this.description.length()-1);
+						}
 						if(this.description.startsWith("<p>")) {
 							this.description = this.description.substring(3);
 							int idx = this.description.indexOf("</p>");
@@ -257,7 +264,7 @@ public class CreatePOMTask extends Task {
 					id.setTextContent("docjambi");
 					developer.appendChild(id);
 					Element devname = doc.createElement("name");
-					devname.setTextContent("Peter Droste");
+					devname.setTextContent("Dr. Peter Droste");
 					developer.appendChild(devname);
 					Element email = doc.createElement("email");
 					email.setTextContent("info@qtjambi.io");
@@ -289,7 +296,7 @@ public class CreatePOMTask extends Task {
 							dgroupId.setTextContent("io.qtjambi");
 							dependencyEl.appendChild(dgroupId);
 							Element dartifactId = doc.createElement("artifactId");
-							dartifactId.setTextContent(_moduleName+"-native-windows-x64");
+							dartifactId.setTextContent(_moduleId+"-native-windows-x64");
 							dependencyEl.appendChild(dartifactId);
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
@@ -322,7 +329,7 @@ public class CreatePOMTask extends Task {
 							dgroupId.setTextContent("io.qtjambi");
 							dependencyEl.appendChild(dgroupId);
 							Element dartifactId = doc.createElement("artifactId");
-							dartifactId.setTextContent(_moduleName+"-native-linux-x64");
+							dartifactId.setTextContent(_moduleId+"-native-linux-x64");
 							dependencyEl.appendChild(dartifactId);
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
@@ -352,7 +359,7 @@ public class CreatePOMTask extends Task {
 							dgroupId.setTextContent("io.qtjambi");
 							dependencyEl.appendChild(dgroupId);
 							Element dartifactId = doc.createElement("artifactId");
-							dartifactId.setTextContent(_moduleName+"-native-macos");
+							dartifactId.setTextContent(_moduleId+"-native-macos");
 							dependencyEl.appendChild(dartifactId);
 							Element dversion = doc.createElement("version");
 							dversion.setTextContent(qtjambiVersion);
@@ -372,7 +379,7 @@ public class CreatePOMTask extends Task {
 					if(this.dependencies!=null && !this.dependencies.isEmpty()){
 						for(String dependency : this.dependencies.split(",")) {
 							dependency = dependency.trim().replace('.', '-');
-							if(!dependency.isEmpty() && !dependency.equals(_moduleName) && !dependenciesList.contains(dependency)) {
+							if(!dependency.isEmpty() && !dependency.equals(_moduleId) && !dependenciesList.contains(dependency)) {
 								dependenciesList.add(dependency);
 								Element dependencyEl = doc.createElement("dependency");
 								Element dgroupId = doc.createElement("groupId");
@@ -409,31 +416,23 @@ public class CreatePOMTask extends Task {
 					parent.appendChild(dversion);
 					doc.getDocumentElement().appendChild(parent);
 					
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleName+"-"+qtjambiVersion+".pom"))){
+					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-"+qtjambiVersion+".pom"))){
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}
 					
-					artifactId.setTextContent(_moduleName+"-jre8");
-					name.setTextContent("${project.groupId}:${project.artifactId}");
-					if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
-						name.setTextContent(getProject().getProperty("module-name") + " for Java 8");
-					}else {
-						for(String line : libraries) {
-							name.setTextContent(line + " for Java 8");
-							break;
-						}
-					}
+					artifactId.setTextContent(_moduleId+"-jre8");
+					name.setTextContent(_moduleName + " for Java 8");
 					for(Element element : dependencyElements) {
 						element.setTextContent(element.getTextContent()+"-jre8");
 					}
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleName+"-jre8-"+qtjambiVersion+".pom"))){
+					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-jre8-"+qtjambiVersion+".pom"))){
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}
 				}
 				
-				/*native*/{
+				/*platform*/{
 					Document doc = builder.getDOMImplementation().createDocument(
 							"http://maven.apache.org/POM/4.0.0",
 							"project",
@@ -448,18 +447,10 @@ public class CreatePOMTask extends Task {
 					groupId.setTextContent("io.qtjambi");
 					doc.getDocumentElement().appendChild(groupId);
 					Element artifactId = doc.createElement("artifactId");
-					artifactId.setTextContent(_moduleName+"-native-windows-x64");
+					artifactId.setTextContent(_moduleId+"-native-windows-x64");
 					doc.getDocumentElement().appendChild(artifactId);
 					Element name = doc.createElement("name");
-					name.setTextContent("${project.groupId}:${project.artifactId}");
-					if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
-						name.setTextContent(getProject().getProperty("module-name")+" native components for Windows");
-					}else {
-						for(String line : libraries) {
-							name.setTextContent(line+" native components for Windows");
-							break;
-						}
-					}
+					name.setTextContent(_moduleName+" native components for Windows");
 					doc.getDocumentElement().appendChild(name);
 					Element version = doc.createElement("version");
 					version.setTextContent(qtjambiVersion);
@@ -509,7 +500,7 @@ public class CreatePOMTask extends Task {
 					id.setTextContent("docjambi");
 					developer.appendChild(id);
 					Element devname = doc.createElement("name");
-					devname.setTextContent("Peter Droste");
+					devname.setTextContent("Dr. Peter Droste");
 					developer.appendChild(devname);
 					Element email = doc.createElement("email");
 					email.setTextContent("info@qtjambi.io");
@@ -529,39 +520,23 @@ public class CreatePOMTask extends Task {
 					parent.appendChild(dversion);
 					doc.getDocumentElement().appendChild(parent);
 					
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleName+"-native-windows-x64-"+qtjambiVersion+".pom"))){
+					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-windows-x64-"+qtjambiVersion+".pom"))){
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}
 					
-					artifactId.setTextContent(_moduleName+"-native-linux-x64");
-					name.setTextContent("${project.groupId}:${project.artifactId}");
-					if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
-						name.setTextContent(getProject().getProperty("module-name")+" native components for Linux x64");
-					}else {
-						for(String line : libraries) {
-							name.setTextContent(line+" native components for Linux x64");
-							break;
-						}
-					}
+					artifactId.setTextContent(_moduleId+"-native-linux-x64");
+					name.setTextContent(_moduleName+" native components for Linux x64");
 					description.setTextContent("Native components for Linux x64");
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleName+"-native-linux-x64-"+qtjambiVersion+".pom"))){
+					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-linux-x64-"+qtjambiVersion+".pom"))){
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}
 					
-					artifactId.setTextContent(_moduleName+"-native-macos");
-					name.setTextContent("${project.groupId}:${project.artifactId}");
-					if(getProject().getProperty("module-name")!=null && !getProject().getProperty("module-name").isEmpty()) {
-						name.setTextContent(getProject().getProperty("module-name")+" native components for macOS");
-					}else {
-						for(String line : libraries) {
-							name.setTextContent(line+" native components for macOS");
-							break;
-						}
-					}
+					artifactId.setTextContent(_moduleId+"-native-macos");
+					name.setTextContent(_moduleName+" native components for macOS");
 					description.setTextContent("Native components for macOS");
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleName+"-native-macos-"+qtjambiVersion+".pom"))){
+					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-macos-"+qtjambiVersion+".pom"))){
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}

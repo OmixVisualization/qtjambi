@@ -82,7 +82,7 @@ This saves compilation time.
 
 ### Example
 
-Add **qtjambi-5.15.3.jar**/**qtjambi-6.2.1.jar** to the classpath of your Java project containing the most 
+Add **qtjambi-5.15.4.jar**/**qtjambi-6.2.2.jar** to the classpath of your Java project containing the most 
 essential Qt Core, Gui and Widgets modules. If you use Maven to build your application simply add following dependency
 to your project:
 
@@ -93,7 +93,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.3` or by `6.2.1`).
+(exchange `$VERSION` either by `5.15.4` or by `6.2.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -113,14 +113,14 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.2.1.jar Test.java
+javac -cp qtjambi-6.2.2.jar Test.java
 ```
 
 ### Execute Example
 
 For execution you need the platform dependent binaries of QtJambi either as self-extracting bundle or as library file (e.b. dll). 
-For instance, if you are working on Windows download **qtjambi-native-windows-x64-5.15.3.jar**/**qtjambi-native-windows-x64-6.2.1.jar**
-from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
+For instance, if you are working on Windows download **qtjambi-platform-windows-x64-5.15.4.jar**/**qtjambi-platform-windows-x64-6.2.2.jar**
+from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-platform-windows-x64/) and add it to java class path. 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
@@ -128,7 +128,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.2.1.jar;qtjambi-native-windows-x64-6.2.1.jar;. 
+java -cp qtjambi-6.2.2.jar;qtjambi-platform-windows-x64-6.2.2.jar;. 
      -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
@@ -144,7 +144,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2021 Dr. Peter Droste, 
+            Copyright (C) 2009-2022 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
@@ -156,7 +156,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2021 Dr. Peter Droste, 
+            Copyright (C) 2009-2022 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 

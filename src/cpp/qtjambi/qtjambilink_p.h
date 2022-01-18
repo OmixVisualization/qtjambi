@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -221,6 +221,7 @@ public:
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerGetterFunction pointerGetter, AbstractContainerAccess* containerAccess);
     static const QSharedPointer<QtJambiLink>& createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java, bool is_shell);
+    static const QSharedPointer<QtJambiLink>& createLinkForPendingQObject(JNIEnv *env, jobject java, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool is_shell);
     static const QSharedPointer<QtJambiLink>& createLinkForSharedPointerToQObject(JNIEnv *env, jobject java, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerQObjectGetterFunction pointerGetter);
     static const QSharedPointer<QtJambiLink>& createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
@@ -266,7 +267,8 @@ public:
 #if defined(QTJAMBI_DEBUG_TOOLS)
         IsListed = 0x010000,   // Weak ref to java object, deleteNativeObject deletes c++ object
 #endif
-        HasDisposedSignal = 0x020000
+        HasDisposedSignal = 0x020000,
+        IsPendingObjectResolved = 0x040000
     };
     typedef QFlags<Flag> Flags;
 
@@ -625,6 +627,20 @@ public:
     ~PointerToQObjectWithExtraSignalsLink() override = default;
     jobject getListOfExtraSignal(JNIEnv * env) const override;
 private:
+    QHash<int,QtJambiSignalInfo> m_extraSignals;
+    friend QtJambiLink;
+    friend class PointerToQObjectWithDetectedExtraSignalsLink;
+};
+
+class PointerToPendingQObjectLink : public PointerToQObjectLink{
+protected:
+    PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
+public:
+    ~PointerToPendingQObjectLink() override = default;
+    jobject getListOfExtraSignal(JNIEnv * env) const override;
+    void init(JNIEnv* env) override;
+private:
+    void resolveListOfExtraSignal(JNIEnv * env);
     QHash<int,QtJambiSignalInfo> m_extraSignals;
     friend QtJambiLink;
     friend class PointerToQObjectWithDetectedExtraSignalsLink;

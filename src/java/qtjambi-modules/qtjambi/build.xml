@@ -1,5 +1,6 @@
 <project default="build">
     <target name="build">
+        <property name="module-name" value="QtJambi (Core, Gui &amp; Widgets)"/>
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
         <condition property="build.module" value="true">

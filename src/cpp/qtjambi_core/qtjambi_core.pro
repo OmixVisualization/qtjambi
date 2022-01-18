@@ -22,31 +22,10 @@ SOURCES +=\
     QLinkedList_shell.cpp \
     QList_shell.cpp \
     qtjambi_biginteger.cpp \
-#    qtjambi_core_functionpointer.cpp \
     qtjambi_core_future.cpp \
     qtjambi_core_repository.cpp \
     qtjambi_core_util.cpp \
-    qtjambi_core_variant.cpp \
-    qtjambi_containers_hash2.cpp \
-    qtjambi_containers_hash3.cpp \
-    qtjambi_containers_hash4.cpp \
-    qtjambi_containers_hash5.cpp \
-    qtjambi_containers_hash6.cpp \
-    qtjambi_containers_map2.cpp \
-    qtjambi_containers_map3.cpp \
-    qtjambi_containers_map4.cpp \
-    qtjambi_containers_map5.cpp \
-    qtjambi_containers_map6.cpp \
-    qtjambi_containers_multihash2.cpp \
-    qtjambi_containers_multihash3.cpp \
-    qtjambi_containers_multihash4.cpp \
-    qtjambi_containers_multihash5.cpp \
-    qtjambi_containers_multihash6.cpp \
-    qtjambi_containers_multimap2.cpp \
-    qtjambi_containers_multimap3.cpp \
-    qtjambi_containers_multimap4.cpp \
-    qtjambi_containers_multimap5.cpp \
-    qtjambi_containers_multimap6.cpp
+    qtjambi_core_variant.cpp
 
 QT = core core-private
 

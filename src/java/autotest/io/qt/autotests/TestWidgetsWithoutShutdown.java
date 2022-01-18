@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,7 +46,7 @@ public class TestWidgetsWithoutShutdown {
     @Test
     public void test() {
     	{
-	    	System.setProperty("io.qt.log.messages", "ALL");
+	    	System.setProperty("io.qt.log-messages", "ALL");
 		    io.qt.QtResources.addSearchPath(".");
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
 		    QApplication.initialize(new String[]{"arg1", "arg2", "arg3"});

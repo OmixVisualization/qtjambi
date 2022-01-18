@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -5137,6 +5137,9 @@ __rcRedirections.remove(%1);
             <extra-includes>
                 <include file-name="qtjambi_gui/qtjambi_gui.h" location="global" inherited="true"/>
             </extra-includes>
+            <inject-code>
+                <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPaintDevice___" quote-before-line="}// class"/>
+            </inject-code>
             <inject-code class="destructor-function">
                 qtjambi_finalize_paint_device(%this);
             </inject-code>

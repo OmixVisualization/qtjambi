@@ -1,54 +1,19 @@
-# What's new in QtJambi 6.2.1 / 5.15.3
+# What's new in QtJambi 6.2.2 / 5.15.4
 
-#Versioning
+## Bugfixes
 
-Since there are multiple releases of QtJambi for the same Qt version and since QtJambi is now available on Maven, 
-it is necessary to use more specific version numbers for different QtJambi releases.
+Solved issues:
+* [Issue 15](../../../issues/15): Crash during shutdown on some linux systems should be solved (blind fix).
+* [Issue 16](../../../issues/16): All possible race conditions in `QMetaObject` solved. 
+* [Issue 18](../../../issues/18): QtJambi stores library files temporarily or persistently by choice. Therefore, use JVM arguments `io.qt.keep-temp-deployment` or `io.qt.deploymentdir`.
+* [Issue 19](../../../issues/19): `QDBusReply<T>` and `QDBusPendingReply<T>` now work as expected.
+* [Issue 23](../../../issues/23): QPainter now also works fine in `QOpenGLWidget::paintGL()`.
+* [Issue 25](../../../issues/25): invalid `QVariant` is now coded by Java `null`. If you want to specify null pointer variant you need to call `QVariant.fromValue(null)`.
+* [Issue 27](../../../issues/27): Reduced size of single compilation units to support MinGW.
+* [Issue 30](../../../issues/30): QML debugging is now possible by starting an application with Java runtime flag `-Dio.qt.enabled-qml-debugging=true`.
+* Signal connection to synthetic java method no longer throws an exception.
 
-From now on, QtJambi builds have the major and minor version of their assigned Qt versions (e.g. 6.2) 
-and an increasing patch version counting the number of releases.
-Since QtJambi for Qt 5.15 was published three times up to now, the current forth QtJambi release is 5.15.3. QtJambi for Qt6.2 is release number 6.2.1. 
-The first QtJambi for Qt 6.3 will be versioned 6.3.0.
 
-QtJambi 5.15.3 works with any patch version of Qt 5.15 and, accordingly, QtJambi 6.2.1 works with any patch version of Qt 6.2.
+## Compatibility
 
-# Support for Platform Integration Native Interfaces on Qt6
-
-`QCoreApplication`, `QWindow` and other components now give access to their platform integration on macOS, Windows and X11. Example:
-
-``` java
-QWindow window = ...
-QWindowsWindow windowsWindow = window.nativeInterface(QWindowsWindow.class);
-QCocoaWindow macWindow = window.nativeInterface(QCocoaWindow.class);
-QXcbWindow x11Window = window.nativeInterface(QXcbWindow.class);
-```
-
-# Overloaded Signals
-
-Implementing overloaded signals is simplyfied and can now be done even outside of QObjects. Therefore, subclass `QObject.MultiSignal`, 
-`QInstanceMemberSignals.MultiSignal` or `QStaticMemberSignals.MultiSignal` and add custom overloaded emit methods. 
-The underlying signal structure is generated automatically.
-
-Beside this, you can connect to overloaded signals without specifying its parameters by `overload(Class)`.
-The intended parameterized signal is determined in accordance with the slot's parameters. Example:
-
-``` java
-QCompleter completer = ...
-completer.activated.connect(receiver, "onActivatedIndex(QModelIndex)");
-completer.activated.connect(receiver, "onActivatedText(String)");
-completer.activated.connect(receiver::onActivatedIndex);
-completer.activated.connect(receiver::onActivatedText);
-```
-
-# Performance Improvements
-
-Signal initialization is improved bringing better performance for object initialization.
-
-# Bugfixes
-
-A lot!
-
-# Compatibility
-
-QtJambi 6.2.1 and 5.15.3 are source-compatible but maybe not be binary-compatible to its predecessor releases. 
-You might need to compile your code with the new QtJambi version again.
+QtJambi 6.2.2 and 5.15.4 are source- and binary-compatible to its predecessor releases. 

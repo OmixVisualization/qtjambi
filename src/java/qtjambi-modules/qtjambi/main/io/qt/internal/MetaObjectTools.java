@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -661,7 +661,10 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             boolean isQObject = QObject.class.isAssignableFrom(clazz);
 //            if(QObject.class.isAssignableFrom(clazz)) 
             {
-	            Field declaredFields[] = clazz.getDeclaredFields();
+            	TreeSet<Field> declaredFields = new TreeSet<>((m1, m2)->{
+                	return m1.getName().compareTo(m2.getName());
+                });
+            	declaredFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 signalLoop:	    for (Field declaredField : declaredFields) {
 					Class<?> signalClass = declaredField.getType();
 	            	if(isQObjectSignalType(signalClass)) {
@@ -943,7 +946,11 @@ signalLoop:	    for (Field declaredField : declaredFields) {
             List<List<ParameterInfo>> allConstructorParameterInfos = new ArrayList<>();
 //			if(QObject.class.isAssignableFrom(clazz)) 
             {
-cloop: 		    for(Constructor<?> constructor : clazz.getDeclaredConstructors()){
+            	TreeSet<Constructor<?>> declaredConstructors = new TreeSet<>((m1, m2)->{
+                	return m1.toGenericString().compareTo(m2.toGenericString());
+                });
+                declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
+cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     if(!constructor.isSynthetic() && constructor.isAnnotationPresent(QtInvokable.class)) {
                         Class<?>[] parameterTypes = constructor.getParameterTypes();
                         for (Class<?> parameterType : parameterTypes) {
@@ -1050,7 +1057,11 @@ cloop: 		    for(Constructor<?> constructor : clazz.getDeclaredConstructors()){
             
             List<List<ParameterInfo>> allMethodParameterInfos = new ArrayList<>();
             List<Method> possibleBindables = Collections.emptyList();
-            for (Method declaredMethod : clazz.getDeclaredMethods()) {
+            TreeSet<Method> declaredMethods = new TreeSet<>((m1, m2)->{
+            	return m1.toGenericString().compareTo(m2.toGenericString());
+            });
+            declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            for (Method declaredMethod : declaredMethods) {
                 if(declaredMethod.isSynthetic() 
                         || declaredMethod.isBridge()) {
                     continue;

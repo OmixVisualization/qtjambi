@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,29 +29,34 @@
 
 package io.qt.dbus;
 
-import io.qt.core.QVariant;
+import io.qt.core.QMetaType;
 
 public class QDBusPendingReply8<A,B,C,D,E,F,G,H> extends QDBusPendingReply7<A,B,C,D,E,F,G> {
 
-	private final Class<H> typeH;
+	private final QMetaType typeH;
 	
 	public QDBusPendingReply8() {
-		typeH = null;
+		typeH = new QMetaType();
 	}
 
 	public QDBusPendingReply8(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH) {
 		super(message, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
-		this.typeH = typeH;
+		this.typeH = QMetaType.fromType(typeH);
 	}
 
 	public QDBusPendingReply8(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH) {
 		super(call, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
-		this.typeH = typeH;
+		this.typeH = QMetaType.fromType(typeH);
 	}
 
 	public QDBusPendingReply8(QDBusPendingReply8<A,B,C,D,E,F,G,H> other) {
 		super(other);
 		this.typeH = other.typeH;
+	}
+	
+	public QDBusPendingReply8(QDBusPendingReply7<A,B,C,D,E,F,G> other, Class<H> typeH, QMetaType... instantiations) {
+		super(other);
+		this.typeH = QMetaType.fromType(typeH, instantiations);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class QDBusPendingReply8<A,B,C,D,E,F,G,H> extends QDBusPendingReply7<A,B,
 
 	@Override
 	boolean isInvalid() {
-		return super.isInvalid() || typeH==null;
+		return super.isInvalid() || typeH==null || !typeH.isValid();
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class QDBusPendingReply8<A,B,C,D,E,F,G,H> extends QDBusPendingReply7<A,B,
 
 	@io.qt.QtUninvokable
 	public final H argumentAt7(){
-		return QVariant.convert(argumentAt(7), typeH);
+		return argumentAt(typeH, 7);
+	}
+	
+	void fillMetaTypes(QMetaType[] metaTypes) {
+		metaTypes[7] = typeH;
+		super.fillMetaTypes(metaTypes);
 	}
 }

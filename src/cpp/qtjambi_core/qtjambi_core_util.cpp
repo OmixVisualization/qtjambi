@@ -379,24 +379,42 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDebug_debugStream)
     const QMetaType& metaType = qtjambi_value_from_nativeId<QMetaType>(metaTypeId);
     try{
         bool success = false;
+        if(metaType==QMetaType::fromType<JObjectWrapper>()
+                || metaType==QMetaType::fromType<JCollectionWrapper>()
+                || metaType==QMetaType::fromType<JMapWrapper>()
+                || metaType==QMetaType::fromType<JIteratorWrapper>()
+                || metaType==QMetaType::fromType<JIntArrayWrapper>()
+                || metaType==QMetaType::fromType<JByteArrayWrapper>()
+                || metaType==QMetaType::fromType<JShortArrayWrapper>()
+                || metaType==QMetaType::fromType<JLongArrayWrapper>()
+                || metaType==QMetaType::fromType<JDoubleArrayWrapper>()
+                || metaType==QMetaType::fromType<JFloatArrayWrapper>()
+                || metaType==QMetaType::fromType<JCharArrayWrapper>()
+                || metaType==QMetaType::fromType<JBooleanArrayWrapper>()
+                || metaType==QMetaType::fromType<JObjectArrayWrapper>()){
+            debug << JObjectWrapper(env, value);
+            success = true;
+        }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        if(metaType.hasRegisteredDebugStreamOperator()){
+        if(!success && metaType.hasRegisteredDebugStreamOperator()){
             QVariant variant = qtjambi_cast<QVariant>(env, value);
             if(variant.metaType()==metaType || variant.convert(metaType)){
                 success = QMetaType(metaType).debugStream(debug, variant.constData());
             }
         }
 #else
-        if(QMetaType::hasRegisteredDebugStreamOperator(metaType.id())){
-            QVariant variant = qtjambi_cast<QVariant>(env, value);
-            if(variant.userType()==metaType.id() || variant.convert(metaType.id())){
-                success = QMetaType::debugStream(debug, variant.constData(), metaType.id());
-            }
-        }else if(const QtPrivate::AbstractDebugStreamFunction * fct = qtjambi_registered_debugstream_operator(metaType.id())){
-            QVariant variant = qtjambi_cast<QVariant>(env, value);
-            if(variant.userType()==metaType.id() || variant.convert(metaType.id())){
-                fct->stream(fct, debug, variant.constData());
-                success = true;
+        if(!success){
+            if(QMetaType::hasRegisteredDebugStreamOperator(metaType.id())){
+                QVariant variant = qtjambi_cast<QVariant>(env, value);
+                if(variant.userType()==metaType.id() || variant.convert(metaType.id())){
+                    success = QMetaType::debugStream(debug, variant.constData(), metaType.id());
+                }
+            }else if(const QtPrivate::AbstractDebugStreamFunction * fct = qtjambi_registered_debugstream_operator(metaType.id())){
+                QVariant variant = qtjambi_cast<QVariant>(env, value);
+                if(variant.userType()==metaType.id() || variant.convert(metaType.id())){
+                    fct->stream(fct, debug, variant.constData());
+                    success = true;
+                }
             }
         }
 #endif
@@ -4937,48 +4955,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 void initialize_meta_info_QFutureInterface();
-void qtjambi_register_map_access2();
-void qtjambi_register_map_access3();
-void qtjambi_register_map_access4();
-void qtjambi_register_map_access5();
-void qtjambi_register_map_access6();
-void qtjambi_register_hash_access2();
-void qtjambi_register_hash_access3();
-void qtjambi_register_hash_access4();
-void qtjambi_register_hash_access5();
-void qtjambi_register_hash_access6();
-void qtjambi_register_multimap_access2();
-void qtjambi_register_multimap_access3();
-void qtjambi_register_multimap_access4();
-void qtjambi_register_multimap_access5();
-void qtjambi_register_multimap_access6();
-void qtjambi_register_multihash_access2();
-void qtjambi_register_multihash_access3();
-void qtjambi_register_multihash_access4();
-void qtjambi_register_multihash_access5();
-void qtjambi_register_multihash_access6();
 
 void initialize_meta_info_QtCore(){
-    qtjambi_register_map_access2();
-    qtjambi_register_map_access3();
-    qtjambi_register_map_access4();
-    qtjambi_register_map_access5();
-    qtjambi_register_map_access6();
-    qtjambi_register_hash_access2();
-    qtjambi_register_hash_access3();
-    qtjambi_register_hash_access4();
-    qtjambi_register_hash_access5();
-    qtjambi_register_hash_access6();
-    qtjambi_register_multimap_access2();
-    qtjambi_register_multimap_access3();
-    qtjambi_register_multimap_access4();
-    qtjambi_register_multimap_access5();
-    qtjambi_register_multimap_access6();
-    qtjambi_register_multihash_access2();
-    qtjambi_register_multihash_access3();
-    qtjambi_register_multihash_access4();
-    qtjambi_register_multihash_access5();
-    qtjambi_register_multihash_access6();
     initialize_meta_info_QFutureInterface();
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

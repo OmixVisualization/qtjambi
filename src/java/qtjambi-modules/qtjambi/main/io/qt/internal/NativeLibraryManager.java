@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -66,7 +66,9 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import io.qt.NativeAccess;
 import io.qt.QNoSuchSlotException;
+import io.qt.QtUninvokable;
 import io.qt.core.QDeclarableSignals;
 
 /**
@@ -153,7 +155,7 @@ final class NativeLibraryManager {
 
     private static final Map<String, LibraryEntry> libraryMap = new HashMap<String, LibraryEntry>();
     private static final Reporter reporter = new Reporter();
-    private static final File jambiTempDir;
+    private static final File jambiDeploymentDir;
 
     public static final String K_SUNOS_X86 = "sunos-x86";
     public static final String K_SUNOS_X64 = "sunos-x64";
@@ -170,10 +172,66 @@ final class NativeLibraryManager {
 
     public static final String K_FREEBSD_X86 = "freebsd-x86";
     public static final String K_FREEBSD_X64 = "freebsd-x64";
+    private static final boolean deleteTmpDeployment;
     
     static {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        jambiTempDir = new File(tmpDir, "QtJambi_" + System.getProperty("user.name") + "_" + RetroHelper.processName());
+    	{
+	        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+	        String deploymentdir = System.getProperty("io.qt.deploymentdir", "");
+	        boolean keepDeployment = Boolean.getBoolean("io.qt.keep-temp-deployment");
+	        if(deploymentdir!=null 
+	        		&& !deploymentdir.isEmpty()
+	        		&& !"tmp".equalsIgnoreCase(deploymentdir)
+	        		&& !"temp".equalsIgnoreCase(deploymentdir)) {
+        		keepDeployment = true;
+	        	if("user".equalsIgnoreCase(deploymentdir)) {
+	        		switch (operatingSystem) {
+	                case Windows:
+	                	tmpDir = new File(System.getProperty("user.home"), "AppData\\Local\\QtJambi");
+	                	break;
+					case Android:
+					case Linux:
+						tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
+						break;
+					case MacOSX:
+						tmpDir = new File(System.getProperty("user.home"), "Library/Application Support/QtJambi");
+						break;
+					default:
+						break;
+	        		}
+	        	}else if("common".equalsIgnoreCase(deploymentdir)) {
+	        		switch (operatingSystem) {
+	                case Windows:
+	                	tmpDir = new File("C:\\ProgramData\\QtJambi");
+	                	break;
+					case Android:
+					case Linux:
+						tmpDir = new File("/usr/local/share/QtJambi");
+						break;
+					case MacOSX:
+						tmpDir = new File("/Library/Application Support/QtJambi");
+						break;
+					default:
+						break;
+	        		}
+	        	}else {
+		        	File deploymentDir = new File(deploymentdir);
+		        	if(deploymentDir.isAbsolute()) {
+		        		tmpDir = deploymentDir;
+		        	}else {
+		        		tmpDir = new File(System.getProperty("user.home"), deploymentdir);
+		        	}
+	        	}
+        		jambiDeploymentDir = new File(tmpDir, "v" + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch);
+	        }else {
+		        if(keepDeployment) {
+		        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch + "_" + System.getProperty("user.name"));
+		        }else {
+		        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch + "_" + System.getProperty("user.name") + "_" + RetroHelper.processName());
+		        }
+	        }
+	        deleteTmpDeployment = !keepDeployment;
+    	}
 		
     	reporter.setReportEnabled(VERBOSE_LOADING);
         String tmpICUVERSION_STRING = null;
@@ -508,24 +566,23 @@ final class NativeLibraryManager {
         return configuration;
     }
     
-    static File jambiTempDir() {
-        return jambiTempDir;
+    static File jambiDeploymentDir() {
+        return jambiDeploymentDir;
     }
 
-    /**
-     * Called during shutdown of the deployment spec to help clear
-     * the active from static values.
-     * @return
-     */
-    static void resetDeploymentSpecs() {
+    @NativeAccess
+	@QtUninvokable
+	private static void resetDeploymentSpecs() {
         deploymentSpec.clear();
-        if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
-        	clearAndDelete(jambiTempDir);
-        	if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
-        		Preferences preferences = Preferences.userNodeForPackage(NativeLibraryManager.class);
-        		preferences.put("qtjambi.previous.deployment.dir", jambiTempDir.getAbsolutePath());
-        	}
-    	}
+        if(deleteTmpDeployment) {
+	        if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
+	        	clearAndDelete(jambiDeploymentDir);
+	        	if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
+	        		Preferences preferences = Preferences.userNodeForPackage(NativeLibraryManager.class);
+	        		preferences.put("qtjambi.previous.deployment.dir", jambiDeploymentDir.getAbsolutePath());
+	        	}
+	    	}
+        }
     }
 
     private static class XMLHandler extends DefaultHandler {
@@ -1202,7 +1259,7 @@ final class NativeLibraryManager {
         if (spec == null)
             return spec;
         
-        File tmpDir = spec.getModule()==null ? jambiTempDirBase(spec) : jambiTempDir;
+        File tmpDir = spec.getModule()==null ? jambiTempDirBase(spec) : jambiDeploymentDir;
 
         reporter.report(" - using cache directory: '", tmpDir.getAbsolutePath(), "'");
 

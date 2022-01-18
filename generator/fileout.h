@@ -49,10 +49,10 @@
 #include <QFile>
 #include <QTextStream>
 
-class FileOut final : public QObject {
+class FileOut final {
     public:
         FileOut(QString name);
-        ~FileOut() override {
+        ~FileOut() {
             if (!isDone)
                 done();
         }

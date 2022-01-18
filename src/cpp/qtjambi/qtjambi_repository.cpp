@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -737,6 +737,12 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFunctionPointerUtil$CppToJavaInvocationHandler,
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(proxy,Ljava/lang/Object;)
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(peer,J))
+
+     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant,
+         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ILjava/lang/Object;Z)
+         QTJAMBI_REPOSITORY_DEFINE_METHOD(userType,()I)
+         QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Object;)
+     )
 }
 
 namespace Runtime {
@@ -1041,6 +1047,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isImplementedInJava,(ZLjava/lang/reflect/Method;Ljava/lang/Class;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findGeneratedSuperclass,(Ljava/lang/Class;)Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(writeSerializableJavaObject,(Lio/qt/core/QDataStream;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(debugObject,(Lio/qt/core/QDebug;Ljava/lang/Object;)V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(readSerializableJavaObject,(Lio/qt/core/QDataStream;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isGeneratedClass,(Ljava/lang/Class;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(putMultiMap,(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Z)
@@ -1057,11 +1064,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(objectToString,(Ljava/lang/Object;)Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(lambdaReturnType,(Ljava/io/Serializable;)Ljava/lang/Class;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(shutdown,()V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(internalAccess,Lio/qt/InternalAccess;)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiEnums,
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeLibraryManager,
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resetDeploymentSpecs,()V)
+)
+
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiEnums,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(extendEnum,(Ljava/lang/Class;[Ljava/lang/Enum;Ljava/lang/Enum;)Z)
 )
 
@@ -1162,7 +1173,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtGadget,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractSignal,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignal,(Ljava/lang/Class;Ljava/util/List;I)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignal,(Ljava/lang/Class;Ljava/util/List;IJ)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$SignalInfo,
@@ -1202,7 +1213,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractMultiSignal,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignals,(Ljava/lang/reflect/Field;[I[Ljava/util/List;[Ljava/lang/Class;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(initializeSignals,(Ljava/lang/reflect/Field;[I[J[Ljava/util/List;[Ljava/lang/Class;)V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(signal,(I)Lio/qt/internal/QtJambiSignals$AbstractSignal;)
 )
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,7 @@ import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
+import io.qt.widgets.QCompleter;
 
 public class TestMultiSignals extends QApplicationTest {
 	private static class CustomMultiQSender extends QObject{
@@ -7861,6 +7862,32 @@ public class TestMultiSignals extends QApplicationTest {
     	assertNull(receiver.receivedB);
     	assertFalse(receiver.received);
     	sender.multiSignal4.disconnect(signalReceiver.receiveI);
+    }
+    
+    @Test
+    public void testConnectToSyntheticMethods() {
+    	String[] result = {null};
+    	QCompleter completer = new QCompleter();
+    	EmbeddingClass object = new EmbeddingClass();
+    	EmbeddingClass.EmbeddedClass.connect(object, completer);
+    	completer.activated.connect((String text)->{
+    		result[0] = text;
+    		System.out.println(this + completer.objectName());
+    	});
+    }
+    
+    static class EmbeddingClass extends QObject{
+    	private EmbeddingClass() {}
+    	static class EmbeddedClass{
+    		public static void connect(EmbeddingClass object, QCompleter completer) {
+    			new EmbeddingClass();
+    			completer.activated.connect(object::onActivated);
+    		}
+    	}
+    	
+    	private void onActivated(String text) {
+			
+		}
     }
 
     public static void main(String args[]) {

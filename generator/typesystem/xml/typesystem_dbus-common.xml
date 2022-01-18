@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
 <typesystem qt-library="QtDBus" description="Classes for inter-process communication over the D-Bus protocol.">
-    <rejection class="QDBusMetaType" />
     <rejection class="QDBusPendingReply" />
     <rejection class="QDBusPendingReply::Select"/>
     <rejection class="QtJambiDBusPendingReply"/>
-    <rejection class="QDBusPendingReplyData" />
-    <rejection class="QDBusPendingReplyBase" />
     <rejection class="QDBusConnection" function-name="registerVirtualObject"/>
 
     <namespace-type name="QDBus">
@@ -173,6 +170,9 @@
     <value-type name="QDBusUnixFileDescriptor"><!-- since 4.8 -->
         <modify-function signature="operator=(const QDBusUnixFileDescriptor &amp;)" remove="all"/>
     </value-type>
+    <rejection class="QDBusMetaType" />
+    <object-type name="QDBusPendingReplyData" until="5.*"/>
+    <object-type name="QDBusPendingReplyBase" since="6.0.0"/>
 
     <object-type name="QDBusVariant"/><!-- since 4.2, inherits QVariant(private) -->
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*" />

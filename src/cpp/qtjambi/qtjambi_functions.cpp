@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -158,18 +158,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_initializeMultiSignal
         QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(reflectedField));
         if(!signalInfos.isEmpty()){
             jintArray methodIndexes = env->NewIntArray(jsize(signalInfos.size()));
+            jlongArray metaObjects = env->NewLongArray(jsize(signalInfos.size()));
             jobjectArray signalParameterTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::List::getClass(env), nullptr);
             jobjectArray signalObjectTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::Class::getClass(env), nullptr);
             {
                 JIntArrayPointer methodIndexesPtr(env, methodIndexes, true);
+                JLongArrayPointer metaObjectsPtr(env, metaObjects, true);
                 for(int i=0; i<signalInfos.size(); i++){
                     const QtJambiMetaObject::SignalInfo& info = signalInfos.at(i);
                     env->SetObjectArrayElement(signalObjectTypes, jsize(i), info.signalClass);
                     env->SetObjectArrayElement(signalParameterTypes, jsize(i), info.signalTypes);
                     methodIndexesPtr.pointer()[i] = info.methodIndex;
+                    metaObjectsPtr.pointer()[i] = jlong(mo);
                 }
             }
-            Java::QtJambi::QtJambiSignals$AbstractMultiSignal::initializeSignals(env, multiSignal, reflectedField, methodIndexes, signalParameterTypes, signalObjectTypes);
+            Java::QtJambi::QtJambiSignals$AbstractMultiSignal::initializeSignals(env, multiSignal, reflectedField, methodIndexes, metaObjects, signalParameterTypes, signalObjectTypes);
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -208,7 +211,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_signalInfo)
     }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isSharedPointer)
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isSharedPointer)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID nativeId)
@@ -221,6 +225,18 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_int
     }
     return false;
 
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isObjectWrapperType)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+    return metaTypeId == registeredMetaTypeID(typeid(JObjectWrapper))
+            || metaTypeId == registeredMetaTypeID(typeid(JCollectionWrapper))
+            || metaTypeId == registeredMetaTypeID(typeid(JMapWrapper))
+            || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
 }
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
@@ -1029,7 +1045,7 @@ void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, const QStr
 int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference)
 {
     try{
-        if(Java::Runtime::Class::isArray(env, clazz) && !isPointer && !isReference){
+        if(Java::Runtime::Class::isArray(env, clazz) && !isPointer){
             jclass componentType = Java::Runtime::Class::getComponentType(env, clazz);
             if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
                 return registerMetaType<JIntArrayWrapper>("JIntArrayWrapper");
@@ -1050,33 +1066,33 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
             }else{
                 return registerMetaType<JObjectWrapper>("JObjectWrapper");
             }
-        }else if((Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Int;
-        }else if((Java::Runtime::Long::isSameClass(env, clazz) || Java::Runtime::Long::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Long::isSameClass(env, clazz) || Java::Runtime::Long::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::LongLong;
-        }else if((Java::Runtime::Short::isSameClass(env, clazz) || Java::Runtime::Short::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Short::isSameClass(env, clazz) || Java::Runtime::Short::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Short;
-        }else if((Java::Runtime::Byte::isSameClass(env, clazz) || Java::Runtime::Byte::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Byte::isSameClass(env, clazz) || Java::Runtime::Byte::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::SChar;
-        }else if((Java::Runtime::Boolean::isSameClass(env, clazz) || Java::Runtime::Boolean::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Boolean::isSameClass(env, clazz) || Java::Runtime::Boolean::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Bool;
-        }else if((Java::Runtime::Character::isSameClass(env, clazz) || Java::Runtime::Character::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Character::isSameClass(env, clazz) || Java::Runtime::Character::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::QChar;
-        }else if((Java::Runtime::Float::isSameClass(env, clazz) || Java::Runtime::Float::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Float::isSameClass(env, clazz) || Java::Runtime::Float::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Float;
-        }else if((Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Double;
-        }else if((Java::Runtime::Void::isPrimitiveType(env, clazz)) && !isPointer && !isReference){
+        }else if((Java::Runtime::Void::isPrimitiveType(env, clazz)) && !isPointer){
             return QMetaType::Void;
         }else{
             QString javaClassName = qtjambi_class_name(env, clazz).replace('.', '/');
             if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
-                if(!isPointer && !isReference){
+                QByteArray qtType = getQtName(*typeId);
+                if((!isPointer || qtType.endsWith("*")) && (!isReference || !qtType.endsWith("*"))){
                     int id = registeredMetaTypeID(*typeId);
                     if(id!=QMetaType::UnknownType)
                         return id;
                 }
-                QByteArray qtType = getQtName(*typeId);
                 const QMetaObject *meta_object = registeredOriginalMetaObject(*typeId);
                 QMetaType::TypeFlags flags = QMetaType::MovableType | QMetaType::NeedsDestruction | QMetaType::NeedsConstruction;
                 QByteArray typeName = QMetaObject::normalizedType(qtType);
@@ -1088,16 +1104,10 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                         if(typeName.endsWith("*")){
                             typeName.chop(1);
                         }
-                        if(!typeName.endsWith("&")){
-                            typeName = QMetaObject::normalizedType(typeName + "&");
-                        }
                         entryType = EntryTypes::ValueTypeInfo; break;
                     case EntryTypes::InterfaceTypeInfo:
                         if(typeName.endsWith("*")){
                             typeName.chop(1);
-                        }
-                        if(!typeName.endsWith("&")){
-                            typeName = QMetaObject::normalizedType(typeName + "&");
                         }
                         entryType = EntryTypes::InterfaceValueTypeInfo; break;
                     default: break;
@@ -1437,9 +1447,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMeta
 #else
         if(!(metaType.flags() & QMetaType::IsPointer)){
 #endif
-            if(typeName.endsWith("&")){
-                typeName.chop(1);
-            }
             if(!typeName.endsWith("*")){
                 typeName = QMetaObject::normalizedType(typeName + "*");
             }
@@ -1490,48 +1497,19 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMeta
 #endif
         }
     }else if(isReference){
-        if(!typeName.endsWith("&")){
-            if(typeName.endsWith("*")){
-                typeName.chop(1);
-            }
-            if(!typeName.endsWith("&")){
-                typeName = QMetaObject::normalizedType(typeName + "&");
-            }
-            QMetaType::TypeFlags flags;
+        if(typeName.endsWith("*")){
+            typeName.chop(1);
+            int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMetaType::Destructor destructor = &destructHelper;
-            QMetaType::Constructor constructor = &pointerConstructHelper;
-            int typeId = QMetaType::registerNormalizedType(
-                    typeName,
-                    destructor,
-                    constructor,
-                    sizeof(void*),
-                    flags,
-                    metaType.metaObject()
-                );
-            qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
+            int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
+            qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
+            if(const std::type_info* typeInfo = getTypeByQtName(typeName)){
+                registerJavaClassForCustomMetaType(typeId, getJavaName(*typeInfo));
+            }
             return typeId;
 #else
-            QMetaType _metaType = createMetaType(typeName,
-                                                true,
-                                                /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<void*>::getDefaultCtr(),
-                                                /*.copyCtr=*/ QtPrivate::QMetaTypeForType<void*>::getCopyCtr(),
-                                                /*.moveCtr=*/ QtPrivate::QMetaTypeForType<void*>::getMoveCtr(),
-                                                /*.dtor=*/ QtPrivate::QMetaTypeForType<void*>::getDtor(),
-                                                /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
-                                                /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
-                                                /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
-                                                /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
-                                                /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
-                                                /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<void*>::getLegacyRegister(),
-                                                /*.size=*/ sizeof(void*),
-                                                /*.alignment=*/ alignof(void*),
-                                                /*.typeId=*/ QMetaType::UnknownType,
-                                                /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                metaType.metaObject(),
-                                                nullptr);
-            _metaType.id();
-            return _metaType.id();
+            QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
+            return id;
 #endif
         }
     }

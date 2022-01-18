@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -388,6 +388,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 // emitting (writeJavaLangObjectOverrideFunctions)
 
 void initialize_meta_info_QQmlListProperty(){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging-nowarn"))){
+            QQmlDebuggingEnabler(false);
+        }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging"))){
+            QQmlDebuggingEnabler(true);
+        }
+    }
     setQmlReportDestruction(&QQmlPrivate::qdeclarativeelement_destructor);
     const std::type_info& typeId = registerTypeInfo<QQmlListProperty<QObject>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<QObject>>();

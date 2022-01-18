@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -196,6 +196,129 @@ void MetaInfoGenerator::buildSkipList() {
 
 static void generateInitializer(QTextStream &s, const TypeSystemTypeEntry * typeSystemEntry, TypeSystem::Language language, CodeSnip::Position pos, Indentor indent);
 
+void MetaInfoGenerator::writeContainerAccess(){
+    FileOut qtjambi_summary_h(QString("%1/QtJambi/qtjambi_containeraccess_all_p.h").arg(cppOutputDirectory()));
+    FileOut qtjambi_summary_cpp(QString("%1/QtJambi/qtjambi_containeraccess_all.cpp").arg(cppOutputDirectory()));
+    FileOut qtjambicore_summary_h(QString("%1/QtJambiCore/qtjambi_containeraccess_core.h").arg(cppOutputDirectory()));
+    FileOut qtjambicore_summary_cpp(QString("%1/QtJambiCore/qtjambi_containeraccess_core.cpp").arg(cppOutputDirectory()));
+    priGenerator->addHeader("QtJambi/generated.pri", "qtjambi_containeraccess_all_p.h");
+    priGenerator->addSource("QtJambi/generated.pri", "qtjambi_containeraccess_all.cpp");
+    priGenerator->addHeader("QtJambiCore/generated.pri", "qtjambi_containeraccess_core.h");
+    priGenerator->addSource("QtJambiCore/generated.pri", "qtjambi_containeraccess_core.cpp");
+    qtjambi_summary_h.stream << "#include <QtCore/QtGlobal>" << Qt::endl;
+    qtjambi_summary_cpp.stream << "#include \"qtjambi_containeraccess_all_p.h\"" << Qt::endl << Qt::endl
+                               << "void qtjambi_register_containeraccess_all(){" << Qt::endl;
+    qtjambicore_summary_h.stream << "#include <QtCore/QtGlobal>" << Qt::endl;
+    qtjambicore_summary_cpp.stream << "#include \"qtjambi_containeraccess_core.h\"" << Qt::endl << Qt::endl
+                               << "void qtjambi_register_containeraccess_core(){" << Qt::endl;
+    QList<uint> alignments{0,1,2,4,8,16};
+    {
+        QList<QPair<bool,QString>> containerTypes{{false,"QList"}, {false,"QSet"}, {true,"QVector"}, {true,"QLinkedList"}};
+        QList<uint> listBits{0,1,2,4,6,8,10,12,14,16,24,32,48,56,64,72,96,128};
+        for(const QPair<bool,QString>& pair : containerTypes){
+            if(pair.first){
+                qtjambi_summary_h.stream << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                qtjambi_summary_cpp.stream << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+            }
+            for(uint bit : listBits){
+                QString flatTypeName = pair.second.toLower().mid(1);
+                QString fileName = QString("qtjambi_containeraccess_%1_%2.cpp").arg(flatTypeName).arg(bit);
+                FileOut f(QString("%1/QtJambi/%2").arg(cppOutputDirectory(), fileName));
+                priGenerator->addSource("QtJambi/generated.pri", fileName);
+                f.stream << "#include <QtCore/QtGlobal>" << Qt::endl;
+                if(pair.first){
+                    f.stream << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                }
+                f.stream << "#include <QtCore/qcompilerdetection.h>" << Qt::endl
+                         << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+                         << "#include <qtjambi/qtjambi_containeraccess_" << flatTypeName << "_p.h>" << Qt::endl << Qt::endl
+                         << "void qtjambi_register_" << flatTypeName << "_access_" << bit << "(){" << Qt::endl;
+                for(uint algn : alignments){
+                    f.stream << "    ContainerAccessFactoryHelper<" << pair.second << ", " << algn << ", " << bit << ", false>::registerContainerAccessFactory();" << Qt::endl;
+                }
+                if(pair.second=="QList"){
+                    f.stream << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                    for(uint algn : alignments){
+                        if(algn<=bit)
+                            f.stream << "    ContainerAccessFactoryHelper<" << pair.second << ", " << algn << ", " << bit << ", true>::registerContainerAccessFactory();" << Qt::endl;
+                    }
+                    f.stream << "#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                }
+                f.stream << "}" << Qt::endl;
+                qtjambi_summary_h.stream << "void qtjambi_register_" << flatTypeName << "_access_" << bit << "();" << Qt::endl;
+                qtjambi_summary_cpp.stream << "    qtjambi_register_" << flatTypeName << "_access_" << bit << "();" << Qt::endl;
+                if(pair.first){
+                    f.stream << "#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                }
+            }
+            if(pair.first){
+                qtjambi_summary_h.stream << "#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+                qtjambi_summary_cpp.stream << "#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
+            }
+        }
+    }
+    {
+        QList<uint> pairBits{0,1,2,4,6,8,16,24,32,64};
+        for(uint bit1 : pairBits){
+            for(uint bit2 : pairBits){
+                QString fileName = QString("qtjambi_containeraccess_pair_%1_%2.cpp").arg(bit1).arg(bit2);
+                FileOut f(QString("%1/QtJambi/%2").arg(cppOutputDirectory(), fileName));
+                priGenerator->addSource("QtJambi/generated.pri", fileName);
+                f.stream << "#include <QtCore/QtGlobal>" << Qt::endl;
+                f.stream << "#include <QtCore/qcompilerdetection.h>" << Qt::endl
+                         << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+                         << "#include <qtjambi/qtjambi_containeraccess_pair_p.h>" << Qt::endl << Qt::endl
+                         << "void qtjambi_register_pair_access_" << bit1 << "_" << bit2 << "(){" << Qt::endl;
+                for(uint algn1 : alignments){
+                    if(algn1<=bit1)
+                        for(uint algn2 : alignments){
+                            if(algn2<=bit2)
+                                f.stream << "    BiContainerAccessFactoryHelper<QPair," << algn1 << ", " << bit1 << ", " << algn2 << ", " << bit2 << ">::registerContainerAccessFactory();" << Qt::endl;
+                        }
+                }
+                f.stream << "}" << Qt::endl;
+                qtjambi_summary_h.stream << "void qtjambi_register_pair_access_" << bit1 << "_" << bit2 << "();" << Qt::endl;
+                qtjambi_summary_cpp.stream << "    qtjambi_register_pair_access_" << bit1 << "_" << bit2 << "();" << Qt::endl;
+            }
+        }
+    }
+    {
+        QList<QString> containerTypes{"QMap", "QHash", "QMultiMap", "QMultiHash"};
+        QList<uint> mapBits1{0,1,2,4,8,16,24,32,64};
+        QList<uint> mapBits2{0,1,2,4,8,16,24,32,64};
+        for(const QString& container : containerTypes){
+            QString flatTypeName = container.toLower().mid(1);
+            for(uint bit1 : mapBits1){
+                QString targetDir(bit1<=0 ? "QtJambi" : "QtJambiCore");
+                FileOut& h = bit1<=0 ? qtjambi_summary_h : qtjambicore_summary_h;
+                FileOut& cpp = bit1<=0 ? qtjambi_summary_cpp : qtjambicore_summary_cpp;
+                for(uint bit2 : mapBits2){
+                    QString fileName = QString("qtjambi_containeraccess_%1_%2_%3.cpp").arg(flatTypeName).arg(bit1).arg(bit2);
+                    FileOut f(QString("%1/%2/%3").arg(cppOutputDirectory(), targetDir, fileName));
+                    priGenerator->addSource(QString("%1/generated.pri").arg(targetDir), fileName);
+                    f.stream << "#include <QtCore/QtGlobal>" << Qt::endl;
+                    f.stream << "#include <QtCore/qcompilerdetection.h>" << Qt::endl
+                             << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+                             << "#include <qtjambi/qtjambi_containeraccess_" << flatTypeName << ".h>" << Qt::endl << Qt::endl
+                             << "void qtjambi_register_" << flatTypeName << "_access_" << bit1 << "_" << bit2 << "(){" << Qt::endl;
+                    for(uint algn1 : alignments){
+                        if(algn1<=bit1)
+                            for(uint algn2 : alignments){
+                                if(algn2<=bit2)
+                                    f.stream << "    BiContainerAccessFactoryHelper<" << container << "," << algn1 << ", " << bit1 << ", " << algn2 << ", " << bit2 << ">::registerContainerAccessFactory();" << Qt::endl;
+                            }
+                    }
+                    f.stream << "}" << Qt::endl;
+                    h.stream << "void qtjambi_register_" << flatTypeName << "_access_" << bit1 << "_" << bit2 << "();" << Qt::endl;
+                    cpp.stream << "    qtjambi_register_" << flatTypeName << "_access_" << bit1 << "_" << bit2 << "();" << Qt::endl;
+                }
+            }
+        }
+    }
+    qtjambicore_summary_cpp.stream << "}" << Qt::endl;
+    qtjambi_summary_cpp.stream << "}" << Qt::endl;
+}
+
 void MetaInfoGenerator::writeCppFile() {
     const TypeEntryHash& entries = TypeDatabase::instance()->allEntries();
 
@@ -230,6 +353,9 @@ void MetaInfoGenerator::writeCppFile() {
             f->stream << Qt::endl;
             if(typeSystemEntry)
                 generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position1, INDENT);
+            if(cls->targetTypeSystem()=="io.qt.core"){
+                f->stream << "void qtjambi_register_containeraccess_core();" << Qt::endl;
+            }
 
             fileHash.insert(cls->targetTypeSystem(), f);
 
@@ -328,6 +454,10 @@ void MetaInfoGenerator::writeCppFile() {
                     generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position4, INDENT);
                     generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::End, INDENT);
                 }
+                if(package=="io.qt.core"){
+                    f->stream << INDENT << "qtjambi_register_containeraccess_core();" << Qt::endl;
+                    writeContainerAccess();
+                }
                 f->stream << INDENT << "return JNI_VERSION_1_8;" << Qt::endl;
             }
             f->stream << "}" << Qt::endl << Qt::endl;
@@ -356,27 +486,6 @@ void MetaInfoGenerator::writeCppFile() {
             }
         }
     }
-
-    /*for(auto iter = m_packageGenerationPolicies.constKeyValueBegin(); iter!=m_packageGenerationPolicies.constKeyValueEnd(); ++iter) {
-
-        if ((iter->second & GeneratedJavaClasses) && (iter->second & GeneratedMetaInfo)) {
-            const QString& package = iter->first;
-            if(package=="io.qt.internal")
-                continue;
-            TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
-            if (FileOut *f = fileHash.value(package, nullptr)) {
-                f->stream << INDENT << "extern \"C\" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_"
-                          << QString(package).replace("_", "_1").replace(".", "_") << "_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){" << Qt::endl
-                          << "    try{" << Qt::endl
-                          << "        return qtjambi_get_internal_access(env, cls);" << Qt::endl
-                          << "    }catch(const JavaException& exn){" << Qt::endl
-                          << "        exn.raiseInJava(env);" << Qt::endl
-                          << "    }" << Qt::endl
-                          << "    return nullptr;" << Qt::endl
-                          << "}" << Qt::endl << Qt::endl;
-            }
-        }
-    }*/
 
     for(QHash<QString, FileOut *>::const_key_value_iterator iter = fileHash.constKeyValueBegin(); iter!=fileHash.constKeyValueEnd(); ++iter) {
         if (FileOut *f = iter->second) {

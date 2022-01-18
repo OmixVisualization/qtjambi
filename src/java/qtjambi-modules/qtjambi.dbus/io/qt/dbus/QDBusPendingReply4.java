@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,29 +29,34 @@
 
 package io.qt.dbus;
 
-import io.qt.core.QVariant;
+import io.qt.core.QMetaType;
 
 public class QDBusPendingReply4<A,B,C,D> extends QDBusPendingReply3<A,B,C> {
 
-	private final Class<D> typeD;
+	private final QMetaType typeD;
 	
 	public QDBusPendingReply4() {
-		typeD = null;
+		typeD = new QMetaType();
 	}
 
 	public QDBusPendingReply4(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD) {
 		super(message, typeA, typeB, typeC);
-		this.typeD = typeD;
+		this.typeD = QMetaType.fromType(typeD);
 	}
 
 	public QDBusPendingReply4(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD) {
 		super(call, typeA, typeB, typeC);
-		this.typeD = typeD;
+		this.typeD = QMetaType.fromType(typeD);
 	}
 
 	public QDBusPendingReply4(QDBusPendingReply4<A,B,C,D> other) {
 		super(other);
 		this.typeD = other.typeD;
+	}
+	
+	public QDBusPendingReply4(QDBusPendingReply3<A,B,C> other, Class<D> typeD, QMetaType... instantiations) {
+		super(other);
+		this.typeD = QMetaType.fromType(typeD, instantiations);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class QDBusPendingReply4<A,B,C,D> extends QDBusPendingReply3<A,B,C> {
 
 	@Override
 	boolean isInvalid() {
-		return super.isInvalid() || typeD==null;
+		return super.isInvalid() || typeD==null || !typeD.isValid();
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class QDBusPendingReply4<A,B,C,D> extends QDBusPendingReply3<A,B,C> {
 
 	@io.qt.QtUninvokable
 	public final D argumentAt3(){
-		return QVariant.convert(argumentAt(3), typeD);
+		return argumentAt(typeD, 3);
+	}
+	
+	void fillMetaTypes(QMetaType[] metaTypes) {
+		metaTypes[3] = typeD;
+		super.fillMetaTypes(metaTypes);
 	}
 }

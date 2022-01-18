@@ -1117,13 +1117,13 @@ If you want to provide a custom plugin as jar library you need to
 provide a platform-dependent loader library along with the jar file.
 Therefore, use the *QtJambi plugin deployer tool* to prepare the
 loader library. Download **qtjambi-deployer.jar** from the release
-of your choice along with the platform-dependent **qtjambi-deployer-native-X.jar**.
+of your choice along with the platform-dependent **qtjambi-deployer-platform-X.jar**.
 Extract the binaries to a directory called `utilities`. Call the plugin
 deployer as shown below. Make sure the library path points to the *Qt*
 and *QtJambi* libraries:
 
 ``` shell
-java -cp qtjambi-deployer-6.2.1.jar;qtjambi-6.2.1.jar;qtjambi-native-windows-x64-6.2.1.jar;qtjambi-deployer-native-windows-x64-6.2.1.jar 
+java -cp qtjambi-deployer-6.2.2.jar;qtjambi-6.2.2.jar;qtjambi-platform-windows-x64-6.2.2.jar;qtjambi-deployer-platform-windows-x64-6.2.2.jar 
         -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin
         io.qt.qtjambi.deployer.Main
         plugin

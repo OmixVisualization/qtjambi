@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,29 +29,34 @@
 
 package io.qt.dbus;
 
-import io.qt.core.QVariant;
+import io.qt.core.QMetaType;
 
 public class QDBusPendingReply7<A,B,C,D,E,F,G> extends QDBusPendingReply6<A,B,C,D,E,F> {
 
-	private final Class<G> typeG;
+	private final QMetaType typeG;
 	
 	public QDBusPendingReply7() {
-		typeG = null;
+		typeG = new QMetaType();
 	}
 
 	public QDBusPendingReply7(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG) {
 		super(message, typeA, typeB, typeC, typeD, typeE, typeF);
-		this.typeG = typeG;
+		this.typeG = QMetaType.fromType(typeG);
 	}
 
 	public QDBusPendingReply7(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG) {
 		super(call, typeA, typeB, typeC, typeD, typeE, typeF);
-		this.typeG = typeG;
+		this.typeG = QMetaType.fromType(typeG);
 	}
 
 	public QDBusPendingReply7(QDBusPendingReply7<A,B,C,D,E,F,G> other) {
 		super(other);
 		this.typeG = other.typeG;
+	}
+	
+	public QDBusPendingReply7(QDBusPendingReply6<A,B,C,D,E,F> other, Class<G> typeG, QMetaType... instantiations) {
+		super(other);
+		this.typeG = QMetaType.fromType(typeG, instantiations);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class QDBusPendingReply7<A,B,C,D,E,F,G> extends QDBusPendingReply6<A,B,C,
 
 	@Override
 	boolean isInvalid() {
-		return super.isInvalid() || typeG==null;
+		return super.isInvalid() || typeG==null || !typeG.isValid();
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class QDBusPendingReply7<A,B,C,D,E,F,G> extends QDBusPendingReply6<A,B,C,
 
 	@io.qt.QtUninvokable
 	public final G argumentAt6(){
-		return QVariant.convert(argumentAt(6), typeG);
+		return argumentAt(typeG, 6);
+	}
+	
+	void fillMetaTypes(QMetaType[] metaTypes) {
+		metaTypes[6] = typeG;
+		super.fillMetaTypes(metaTypes);
 	}
 }

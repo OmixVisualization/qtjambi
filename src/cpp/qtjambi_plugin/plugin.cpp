@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -72,10 +72,9 @@ static constexpr unsigned char qt_pluginMetaData[] = {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,//1024
 };
 
-Q_EXTERN_C Q_DECL_EXPORT
-const char *qt_plugin_query_metadata()
+extern "C" Q_DECL_EXPORT const char *qt_plugin_query_metadata()
 { return reinterpret_cast<const char *>(qt_pluginMetaData); }
 
-Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance(){
+extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance(){
     return qtjambi_plugin_instance(&qt_plugin_query_metadata);
 }

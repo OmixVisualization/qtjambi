@@ -10,7 +10,7 @@
     <target name="build.impl" if="build.module">
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
             <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}"/>
+            <property name="sourcedir2" value="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

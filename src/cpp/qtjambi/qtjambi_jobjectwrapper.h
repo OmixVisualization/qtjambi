@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,10 +58,14 @@ public:
     virtual jobject data() const = 0;
     virtual const void* array() const = 0;
     virtual void* array() = 0;
+    virtual void commitArray() = 0;
+    virtual jsize arrayLength() const = 0;
 };
 
 template<typename JType>
 class JArrayWrapper;
+template<typename JType>
+class JArrayAccessRef;
 
 class QTJAMBI_EXPORT JObjectWrapper
 {
@@ -106,6 +110,8 @@ private:
     jobject filterPrimitiveArray(JNIEnv *env, jobject object, const std::type_info& typeId);
     const void* array() const;
     void* array();
+    void commitArray();
+    jsize arrayLength() const;
     QExplicitlySharedDataPointer<JObjectWrapperData> m_data;
     friend class JEnumWrapper;
     friend class JMapWrapper;
@@ -120,6 +126,14 @@ private:
     friend JArrayWrapper<jboolean>;
     friend JArrayWrapper<jdouble>;
     friend JArrayWrapper<jfloat>;
+    friend JArrayAccessRef<jint>;
+    friend JArrayAccessRef<jlong>;
+    friend JArrayAccessRef<jbyte>;
+    friend JArrayAccessRef<jshort>;
+    friend JArrayAccessRef<jchar>;
+    friend JArrayAccessRef<jboolean>;
+    friend JArrayAccessRef<jdouble>;
+    friend JArrayAccessRef<jfloat>;
 };
 Q_DECLARE_METATYPE(JObjectWrapper)
 
@@ -457,13 +471,10 @@ class JArrayAccessRef{
     typedef typename JArray<JType>::Type ArrayType;
 public:
     JArrayAccessRef& operator=(JType newValue){
-        if(m_array && m_arrayWrapper.object()){
-            if(JNIEnv *env = qtjambi_current_environment()){
-                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                m_array[m_index] = newValue;
-                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, 0);
-                m_array = (env->*JArray<JType>::GetArrayElements)(ArrayType(m_arrayWrapper.object()));
-            }
+        if(m_array){
+            m_array[m_index] = newValue;
+            m_arrayWrapper.commitArray();
+            m_array = reinterpret_cast<JType*>(m_arrayWrapper.array());
         }
         return *this;
     }
@@ -477,18 +488,12 @@ public:
     }
 
     ~JArrayAccessRef(){
-        if(m_array && m_arrayWrapper.object()){
-            if(JNIEnv* env = qtjambi_current_environment()){
-                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, JNI_ABORT);
-            }
-        }
     }
 private:
-    JArrayAccessRef(JNIEnv *env, const JObjectWrapper& arrayWrapper, jsize index)
+    JArrayAccessRef(const JObjectWrapper& arrayWrapper, jsize index)
         : m_arrayWrapper(arrayWrapper),
           m_index(index),
-          m_array(env ? (env->*JArray<JType>::GetArrayElements)(ArrayType(arrayWrapper.object()), nullptr) : nullptr)
+          m_array(reinterpret_cast<JType*>(m_arrayWrapper.array()))
     { }
 
     JObjectWrapper m_arrayWrapper;
@@ -563,11 +568,7 @@ public:
 
 template<typename JType>
 jsize JArrayWrapper<JType>::length() const{
-    if(JNIEnv* env = qtjambi_current_environment()){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        return env->GetArrayLength(object());
-    }
-    return 0;
+    return JObjectWrapper::arrayLength();
 }
 
 template<typename JType>
@@ -592,27 +593,21 @@ JType JArrayWrapper<JType>::operator[](jsize index) const{
 
 template<typename JType>
 JArrayAccessRef<JType> JArrayWrapper<JType>::operator[](jsize index){
-    if(JNIEnv* env = qtjambi_current_environment()){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        if(index>=0 && index < env->GetArrayLength(object())){
-            return JArrayAccessRef<JType>(env, *this, index);
-        }
+    if(index>=0 && index < length()){
+        return JArrayAccessRef<JType>(*this, index);
     }
-    return JArrayAccessRef<JType>(nullptr, JObjectWrapper(), 0);
+    return JArrayAccessRef<JType>(JObjectWrapper(), 0);
 }
 
 template<typename JType>
 QString JArrayWrapper<JType>::toString(bool * ok) const{
     QString result = QLatin1String("[");
-    if(JNIEnv* env = qtjambi_current_environment()){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        jsize _length = env->GetArrayLength(object());
-        for(jsize i=0; i<_length; ++i){
-            if(i>0)
-                result += QLatin1String(",");
-            JType value = (*this)[i];
-            result += QString::number(value);
-        }
+    jsize _length = length();
+    for(jsize i=0; i<_length; ++i){
+        if(i>0)
+            result += QLatin1String(",");
+        JType value = (*this)[i];
+        result += QString::number(value);
     }
     result += QLatin1String("]");
     if(ok)

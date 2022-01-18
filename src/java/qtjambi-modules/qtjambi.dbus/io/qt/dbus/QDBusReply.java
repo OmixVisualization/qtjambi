@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,16 +31,12 @@ package io.qt.dbus;
 
 import java.util.Objects;
 
-import io.qt.core.QVariant;
-
 public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Cloneable
 {
     static {
         QtJambi_LibraryUtilities.initialize();
     }
 
-    private final Class<T> valueType;
-    
     public QDBusReply() {
     	this(new io.qt.dbus.QDBusError());
     }
@@ -55,26 +51,25 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     public QDBusReply(io.qt.dbus.QDBusError dbusError){
         super((QPrivateConstructor)null);
         initialize_native(this, dbusError);
-        this.valueType = null;
     }
 
     private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusError dbusError);
     
-    public QDBusReply(io.qt.dbus.QDBusMessage reply, Class<T> valueType){
+    public QDBusReply(io.qt.dbus.QDBusMessage reply, Class<T> valueType, io.qt.core.QMetaType... instantiation){
         super((QPrivateConstructor)null);
-        initialize_native(this, reply);
-        this.valueType = Objects.requireNonNull(valueType);
+        Objects.requireNonNull(valueType);
+        initialize_native(this, reply, io.qt.core.QMetaType.fromType(valueType, instantiation));
     }
     
-    private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusMessage reply);
+    private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusMessage reply, io.qt.core.QMetaType metaType);
 
-    public QDBusReply(io.qt.dbus.QDBusPendingCall pcall, Class<T> valueType){
+    public QDBusReply(io.qt.dbus.QDBusPendingCall pcall, Class<T> valueType, io.qt.core.QMetaType... instantiation){
         super((QPrivateConstructor)null);
-        initialize_native(this, pcall);
-        this.valueType = Objects.requireNonNull(valueType);
+        Objects.requireNonNull(valueType);
+        initialize_native(this, pcall, io.qt.core.QMetaType.fromType(valueType, instantiation));
     }
     
-    private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusPendingCall pcall);
+    private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusPendingCall pcall, io.qt.core.QMetaType metaType);
 
     @io.qt.QtUninvokable
     private native final void set(io.qt.dbus.QDBusReply<T> other);
@@ -85,13 +80,8 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     @io.qt.QtUninvokable
     public native final boolean isValid();
 
-    @SuppressWarnings("unchecked")
-	public final T value(){
-        return valueType==null ? (T)value_native() : QVariant.convert(value_native(), valueType);
-    }
-
     @io.qt.QtUninvokable
-    private native java.lang.Object value_native();
+    public native T value();
     
-    protected QDBusReply(QPrivateConstructor p) { super(p); valueType = null; } 
+    protected QDBusReply(QPrivateConstructor p) { super(p); } 
 }

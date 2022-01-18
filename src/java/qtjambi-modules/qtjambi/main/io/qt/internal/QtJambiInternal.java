@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,11 +36,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamConstants;
 import java.io.Serializable;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.ref.Reference;
@@ -48,6 +50,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -73,6 +76,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -97,8 +101,10 @@ import io.qt.QtPointerType;
 import io.qt.QtReferenceType;
 import io.qt.QtShortEnumerator;
 import io.qt.QtSignalEmitterInterface;
+import io.qt.QtUninvokable;
 import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
+import io.qt.core.QDebug;
 import io.qt.core.QHash;
 import io.qt.core.QList;
 import io.qt.core.QMap;
@@ -111,6 +117,7 @@ import io.qt.core.QPair;
 import io.qt.core.QQueue;
 import io.qt.core.QSet;
 import io.qt.core.QStack;
+import io.qt.core.QVariant;
 import io.qt.core.Qt;
 import io.qt.internal.QtJambiSignals.AbstractSignal;
 
@@ -430,6 +437,34 @@ public final class QtJambiInternal {
 	private static final Map<Class<?>, Boolean> isClassGenerated;
 	private static final Map<String, Boolean> initializedPackages;
 	private static final Map<Class<?>, MethodHandle> lambdaWriteReplaceHandles;
+	
+	private static final class ReadWriteHandles{
+		private ReadWriteHandles(MethodHandle writeTo, MethodHandle readFrom, MethodHandle constructor) {
+			super();
+			this.writeTo = writeTo;
+			this.readFrom = readFrom;
+			this.constructor = constructor;
+		}
+		final MethodHandle writeTo;
+		final MethodHandle readFrom;
+		final MethodHandle constructor;
+	}
+	private static final Map<Class<?>, ReadWriteHandles> readWriteHandles;
+	
+	private static final class DataStreamFunctions{
+		@SuppressWarnings("unchecked")
+		private DataStreamFunctions(BiConsumer<QDataStream, ?> datastreamInFn,
+				Function<QDataStream, ?> datastreamOutFn) {
+			super();
+			this.datastreamInFn = (java.util.function.BiConsumer<QDataStream, Object>)datastreamInFn;
+			this.datastreamOutFn = (java.util.function.Function<QDataStream, Object>)datastreamOutFn;
+		}
+		final java.util.function.BiConsumer<QDataStream, Object> datastreamInFn;
+		final java.util.function.Function<QDataStream, Object> datastreamOutFn;
+	}
+	private static final Map<Class<?>, DataStreamFunctions> dataStreamFunctions;
+	private static final Map<Class<?>, java.util.function.BiConsumer<QDebug, Object>> debugStreamFunctions;
+	
 	private static final Map<QPair<Class<? extends QtObjectInterface>, Class<?>>, Check> checkedClasses;
 	private static final Map<Class<?>, MethodHandle> lambdaSlotHandles;
 	static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
@@ -441,6 +476,9 @@ public final class QtJambiInternal {
 		initializedPackages = Collections.synchronizedMap(new HashMap<>());
 		initializedPackages.put("io.qt.internal", Boolean.TRUE);
 		lambdaWriteReplaceHandles = Collections.synchronizedMap(new HashMap<>());
+		readWriteHandles = Collections.synchronizedMap(new HashMap<>());
+		dataStreamFunctions = Collections.synchronizedMap(new HashMap<>());
+		debugStreamFunctions = Collections.synchronizedMap(new HashMap<>());
 		checkedClasses = Collections.synchronizedMap(new HashMap<>());
 		lambdaSlotHandles = Collections.synchronizedMap(new HashMap<>());
 
@@ -477,7 +515,8 @@ public final class QtJambiInternal {
 	}
 
 	@NativeAccess
-	private static void shutdown() throws Throwable {
+	@QtUninvokable
+	private static void terminateCleanupThread() throws Throwable {
 		switch (cleanupRegistrationThread.getState()) {
 		case TERMINATED:
 			break;
@@ -872,42 +911,391 @@ public final class QtJambiInternal {
 		}
 		return clazz;
 	}
+	
+	private static final int RWH_MAGIC = 0x01010101;
+	private static final int NULL_MAGIC = 0x02020202;
+	private static final int DSF_MAGIC = 0x03030303;
+	private static final int BYTE_ARRAY_MAGIC = 0x04040400;
+	private static final int SHORT_ARRAY_MAGIC = 0x04040401;
+	private static final int INT_ARRAY_MAGIC = 0x04040402;
+	private static final int LONG_ARRAY_MAGIC = 0x04040403;
+	private static final int FLOAT_ARRAY_MAGIC = 0x04040404;
+	private static final int DOUBLE_ARRAY_MAGIC = 0x04040405;
+	private static final int BOOLEAN_ARRAY_MAGIC = 0x04040406;
+	private static final int CHAR_ARRAY_MAGIC = 0x04040407;
+	private static final int OBJECT_ARRAY_MAGIC = 0x04040408;
+
+	private static ReadWriteHandles getReadWriteHandles(Class<?> _cls) {
+		return readWriteHandles.computeIfAbsent(_cls, cls ->{
+			try {
+				Constructor<?> constructor = cls.getConstructor();
+				Method writeTo;
+				try {
+					writeTo = cls.getMethod("writeTo", QDataStream.class);
+				} catch (Throwable e) {
+					writeTo = cls.getDeclaredMethod("writeTo", QDataStream.class);
+				}
+				Method readFrom;
+				try {
+					readFrom = cls.getMethod("readFrom", QDataStream.class);
+				} catch (Throwable e) {
+					readFrom = cls.getDeclaredMethod("readFrom", QDataStream.class);
+				}
+				if(!Modifier.isStatic(writeTo.getModifiers()) && !Modifier.isStatic(readFrom.getModifiers())) {
+					Lookup lookup = privateLookup(cls);
+					return new ReadWriteHandles(lookup.unreflect(writeTo), lookup.unreflect(readFrom), lookup.unreflectConstructor(constructor));
+				}
+			} catch (Throwable e) {
+			}
+			return null;
+		});
+	}
 
 	@NativeAccess
 	private static Object readSerializableJavaObject(final QDataStream s) throws ClassNotFoundException, IOException {
 		Object res = null;
-		try (ObjectInputStream in = new ObjectInputStream(new InputStream() {
+		InputStream is = new InputStream() {
 			@Override
 			public int read() throws IOException {
 				return s.readByte();
 			}
-		});) {
-			res = in.readObject();
+		};
+		boolean isSerialized = true;
+		s.startTransaction();
+		{
+			int ch1 = is.read();
+	        int ch2 = is.read();
+			int ch3 = is.read();
+	        int ch4 = is.read();
+	        short magic = (short)((ch1 << 8) + (ch2 & 0xFF));
+	        short version = (short)((ch3 << 8) + (ch4 & 0xFF));
+			if(magic!=ObjectStreamConstants.STREAM_MAGIC
+					|| version!=ObjectStreamConstants.STREAM_VERSION) {
+				isSerialized = false;
+			}
+		}
+		s.rollbackTransaction();
+		
+		if(isSerialized) {
+			try (ObjectInputStream in = new ObjectInputStream(is)) {
+				res = in.readObject();
+			}
+		}else {
+			Class<?> cls;
+			int length;
+			switch(s.readInt()) {
+			case BYTE_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					byte[] array = new byte[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readByte();
+					}
+					res = array;
+				}
+				break;
+			case SHORT_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					short[] array = new short[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readShort();
+					}
+					res = array;
+				}
+				break;
+			case INT_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					int[] array = new int[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readInt();
+					}
+					res = array;
+				}
+				break;
+			case LONG_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					long[] array = new long[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readLong();
+					}
+					res = array;
+				}
+				break;
+			case FLOAT_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					float[] array = new float[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readFloat();
+					}
+					res = array;
+				}
+				break;
+			case DOUBLE_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					double[] array = new double[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readDouble();
+					}
+					res = array;
+				}
+				break;
+			case BOOLEAN_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					boolean[] array = new boolean[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readBoolean();
+					}
+					res = array;
+				}
+				break;
+			case CHAR_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					char[] array = new char[length];
+					for (int i = 0; i < array.length; i++) {
+						array[i] = s.readChar();
+					}
+					res = array;
+				}
+				break;
+			case OBJECT_ARRAY_MAGIC:
+				length = s.readInt();
+				{
+					cls = Class.forName(s.readString());
+					res = Array.newInstance(cls, length);
+					for (int i = 0; i < length; i++) {
+						Array.set(res, i, QVariant.loadObject(s));
+					}
+				}
+				break;
+			case RWH_MAGIC:
+				cls = Class.forName(s.readString());
+				ReadWriteHandles readWriteHandles = getReadWriteHandles(cls);
+				if(readWriteHandles!=null) {
+					try {
+						res = readWriteHandles.constructor.invoke();
+						readWriteHandles.readFrom.invoke(res, s);
+					} catch (RuntimeException | Error | IOException e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new IOException(e);
+					}
+				}
+				break;
+			case DSF_MAGIC:
+				cls = Class.forName(s.readString());
+				DataStreamFunctions functions = dataStreamFunctions.get(cls);
+				if(functions!=null) {
+					try {
+						res = functions.datastreamOutFn.apply(s);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new IOException(e);
+					}
+				}
+				break;
+			case NULL_MAGIC:
+				break;
+			default:
+				break;
+			}
 		}
 		return res;
 	}
-
+	
 	@NativeAccess
 	private static void writeSerializableJavaObject(QDataStream s, Object o) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutputStream out = null;
-		try {
-			out = new ObjectOutputStream(bos);
-			out.writeObject(o);
-			ObjectOutputStream tmpOut = out;
-			out = null; // don't call close() twice
-			tmpOut.close();
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException eat) {
+		if(o==null) {
+			s.writeInt(NULL_MAGIC);
+			return;
+		}
+		Class<?> objectClass = o.getClass();
+		if(objectClass.isArray()) {
+			if(objectClass==byte[].class) {
+				byte[] array = (byte[])o;
+				s.writeInt(BYTE_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeByte(array[i]);
 				}
-				out = null;
+			}else if(objectClass==short[].class) {
+				short[] array = (short[])o;
+				s.writeInt(SHORT_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeShort(array[i]);
+				}
+			}else if(objectClass==int[].class) {
+				int[] array = (int[])o;
+				s.writeInt(INT_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeInt(array[i]);
+				}
+			}else if(objectClass==long[].class) {
+				long[] array = (long[])o;
+				s.writeInt(LONG_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeLong(array[i]);
+				}
+			}else if(objectClass==float[].class) {
+				float[] array = (float[])o;
+				s.writeInt(FLOAT_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeFloat(array[i]);
+				}
+			}else if(objectClass==double[].class) {
+				double[] array = (double[])o;
+				s.writeInt(DOUBLE_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeDouble(array[i]);
+				}
+			}else if(objectClass==boolean[].class) {
+				boolean[] array = (boolean[])o;
+				s.writeInt(BOOLEAN_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeBoolean(array[i]);
+				}
+			}else if(objectClass==char[].class) {
+				char[] array = (char[])o;
+				s.writeInt(CHAR_ARRAY_MAGIC);
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					s.writeChar(array[i]);
+				}
+			}else {
+				Object[] array = (Object[])o;
+				s.writeInt(OBJECT_ARRAY_MAGIC);
+				s.writeString(objectClass.getComponentType().getName());
+				s.writeInt(array.length);
+				for (int i = 0; i < array.length; i++) {
+					QVariant.saveObject(s, array[i]);
+				}
+			}
+		}else {
+			DataStreamFunctions functions = dataStreamFunctions.get(objectClass);
+			if(functions!=null) {
+				try {
+					s.writeInt(DSF_MAGIC);
+					s.writeString(objectClass.getName());
+					functions.datastreamInFn.accept(s, o);
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new IOException(e);
+				}
+			}else {
+				ReadWriteHandles readWriteHandles = getReadWriteHandles(objectClass);
+				if(readWriteHandles!=null) {
+					try {
+						s.writeInt(RWH_MAGIC);
+						s.writeString(objectClass.getName());
+						readWriteHandles.writeTo.invoke(o, s);
+					} catch (RuntimeException | Error | IOException e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new IOException(e);
+					}
+				}else {
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					try(ObjectOutputStream out = new ObjectOutputStream(bos)) {
+						out.writeObject(o);
+					}
+					s.writeBytes(bos.toByteArray());
+				}
 			}
 		}
-		s.writeBytes(bos.toByteArray());
 	}
+	
+	@NativeAccess
+	private static void debugObject(QDebug s, Object o) {
+		if(o==null) {
+			s.append("null");
+		}else{
+			Class<?> objectClass = o.getClass();
+			if(objectClass.isArray()) {
+				if(objectClass==byte[].class) {
+					byte[] array = (byte[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==short[].class) {
+					short[] array = (short[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==int[].class) {
+					int[] array = (int[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==long[].class) {
+					long[] array = (long[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==float[].class) {
+					float[] array = (float[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==double[].class) {
+					double[] array = (double[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==boolean[].class) {
+					boolean[] array = (boolean[])o;
+					s.append(Arrays.toString(array));
+				}else if(objectClass==char[].class) {
+					char[] array = (char[])o;
+					s.append(Arrays.toString(array));
+				}else {
+					Object[] array = (Object[])o;
+					s.append(Arrays.toString(array));
+				}
+			}else {
+				java.util.function.BiConsumer<QDebug,Object> function = debugStreamFunctions.get(objectClass);
+				if(function!=null) {
+					try {
+						function.accept(s, o);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+				}else {
+					s.append(o.toString());
+				}
+			}
+		}
+	}
+	
+	public static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn) {
+		if(!isObjectWrapperType(metaType)) {
+			if(classType.isArray())
+				throw new IllegalArgumentException(String.format("Unable to register datastream operators for type %1$s.", classType.getTypeName()));
+			else
+				throw new IllegalArgumentException(String.format("Unable to register datastream operators for type %1$s (%2$s).", classType.getTypeName(), new QMetaType(metaType).name()));
+		}
+		DataStreamFunctions functions = dataStreamFunctions.computeIfAbsent(classType, cls->new DataStreamFunctions(datastreamInFn, datastreamOutFn));
+		if(functions.datastreamInFn!=datastreamInFn || functions.datastreamOutFn!=datastreamOutFn)
+			throw new RuntimeException(String.format("Datastream operators already exist for type %1$s.", classType.getTypeName()));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> void registerDebugStreamOperator(int metaType, Class<?> classType, java.util.function.BiConsumer<QDebug, T> debugstreamFn) {
+		if(!isObjectWrapperType(metaType)) {
+			if(classType.isArray())
+				throw new IllegalArgumentException(String.format("Unable to register debug stream operator for type %1$s.", classType.getTypeName()));
+			else
+				throw new IllegalArgumentException(String.format("Unable to register debug stream operator for type %1$s (%2$s).", classType.getTypeName(), classType.getTypeName()));
+		}
+		java.util.function.BiConsumer<QDebug,Object> fun = debugStreamFunctions.computeIfAbsent(classType, c->(java.util.function.BiConsumer<QDebug,Object>)debugstreamFn);
+		if(fun!=debugstreamFn)
+			throw new RuntimeException(String.format("Debug stream operator already exists for type %1$s.", classType.getTypeName()));
+	}
+	
+	private static native boolean isObjectWrapperType(int metaType);
 
 	@NativeAccess
 	static boolean isGeneratedClass(Class<?> clazz) {
@@ -2720,8 +3108,8 @@ public final class QtJambiInternal {
 		NativeLibraryManager.loadLibrary(lib);
 	}
 
-	public static File jambiTempDir() {
-		return NativeLibraryManager.jambiTempDir();
+	public static File jambiDeploymentDir() {
+		return NativeLibraryManager.jambiDeploymentDir();
 	}
 
 	public static void loadQtJambiLibrary(Class<?> callerClass, String library) {
@@ -3511,7 +3899,43 @@ public final class QtJambiInternal {
 				return null;
 			}
 		}
-
+		
+		@Override
+		public int[] lambdaMetaTypes(java.io.Serializable lambdaExpression) {
+			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
+			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
+				int[] metaTypes = new int[1+lamdaInfo.reflectiveMethod.getParameterCount()];
+				metaTypes[0] = registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), lamdaInfo.reflectiveMethod.getAnnotatedReturnType(), false, false);
+				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
+				for (int i = 0; i < parameters.length; i++) {
+					metaTypes[i+1] = registerMetaType(parameters[i].getType(), parameters[i].getParameterizedType(), parameters[i].getAnnotatedType(), false, false);
+				}
+				return metaTypes;
+			}else {
+				return null;
+			}
+		}
+		
+		@Override
+		public Class<?>[] lambdaClassTypes(java.io.Serializable lambdaExpression) {
+			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
+			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
+				Class<?>[] classTypes = new Class[1+lamdaInfo.reflectiveMethod.getParameterCount()];
+				classTypes[0] = lamdaInfo.reflectiveMethod.getReturnType();
+				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
+				for (int i = 0; i < parameters.length; i++) {
+					classTypes[i+1] = parameters[i].getType();
+				}
+				return classTypes;
+			}else {
+				return null;
+			}
+		}
+		
+		@Override
+		public Class<?> findGeneratedSuperclass(Class<?> clazz){
+			return QtJambiInternal.findGeneratedSuperclass(clazz);
+		}
 
 		@Override
 		public Supplier<CallerContext> callerContextProvider() {

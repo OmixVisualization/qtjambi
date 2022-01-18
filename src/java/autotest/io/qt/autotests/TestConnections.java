@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,12 +55,12 @@ import org.junit.Test;
 import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtInvokable;
+import io.qt.QtObject;
 import io.qt.QtObjectInterface;
 import io.qt.QtPointerType;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyWriter;
-import io.qt.QtReferenceType;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
 import io.qt.autotests.generated.SignalsAndSlots;
@@ -87,7 +87,6 @@ import io.qt.gui.QDesktopServices;
 import io.qt.gui.QGuiApplication;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.internal.QtJambiInternal;
-import io.qt.QtObject;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QColorDialog;
 import io.qt.widgets.QGraphicsScene;
@@ -2069,8 +2068,6 @@ public class TestConnections extends QApplicationTest
 			public final Signal1<QStringList> qstringList = new Signal1<>();
 			public final Signal1<@QtPointerType QList<String>> stringQListPointer = new Signal1<>();
 			public final Signal1<@QtPointerType QStringList> qstringListPointer = new Signal1<>();
-			public final Signal1<@QtReferenceType QList<String>> stringQListRef = new Signal1<>();
-			public final Signal1<@QtReferenceType QStringList> qstringListRef = new Signal1<>();
 		}
 		
 		@SuppressWarnings("unused")
@@ -2086,10 +2083,6 @@ public class TestConnections extends QApplicationTest
 				this.strings = strings;
 			}
 			public void receiveStringListPointer(@QtPointerType QStringList strings) {
-				this.stringList = strings;
-				this.strings = strings;
-			}
-			public void receiveStringListRef(@QtReferenceType QStringList strings) {
 				this.stringList = strings;
 				this.strings = strings;
 			}
@@ -2219,42 +2212,6 @@ public class TestConnections extends QApplicationTest
 		sender.stringQListPointer.emit(stringList2);
 		assertTrue(receiver.stringList instanceof QStringList);
 		assertTrue(receiver.stringList.isDisposed());
-		receiver.reset();
-		assertTrue(con!=null);
-		assertTrue(QObject.disconnect(con));
-		
-		con = sender.qstringListRef.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
-		sender.qstringListRef.emit(stringList);
-		assertTrue(receiver.strings == stringList);
-		receiver.reset();
-		assertTrue(con!=null);
-		assertTrue(QObject.disconnect(con));
-
-		con = sender.qstringListRef.connect(receiver, "receiveStringListPointer(QStringList)");
-		assertTrue(con!=null);
-		sender.qstringListRef.emit(stringList);
-		assertTrue(receiver.strings == stringList);
-		receiver.reset();
-		assertTrue(con!=null);
-		assertTrue(QObject.disconnect(con));
-		
-		con = sender.stringQListRef.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
-		sender.stringQListRef.emit(stringList);
-		assertTrue(receiver.strings == stringList);
-		assertEquals("TEST", receiver.strings.get(0));
-		receiver.reset();
-		assertTrue(con!=null);
-		assertTrue(QObject.disconnect(con));
-		
-		con = sender.stringQListRef.connect(receiver, "receiveStringListPointer(QStringList)");
-		assertTrue(con!=null);
-		sender.stringQListRef.emit(stringList2);
-		assertTrue(receiver.stringList instanceof QStringList);
-		assertTrue(receiver.stringList.isDisposed());
-		sender.stringQListRef.emit(stringList);
-		assertTrue(receiver.strings == stringList);
 		receiver.reset();
 		assertTrue(con!=null);
 		assertTrue(QObject.disconnect(con));

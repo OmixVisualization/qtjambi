@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -456,13 +456,25 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                                                   value_size, super_type, interface_types, interface_offsets,
                                                   shell_size, _virtualFunctions, original_meta_object
                                              );
-                else
-                if(polymorphicIdHandlers.isEmpty())
-                    result = new QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets,
-                                                  shell_size, _virtualFunctions, original_meta_object
-                                             );
-                else
+                else if(polymorphicIdHandlers.isEmpty()){
+                    const std::type_info* otherTypeId = nullptr;
+                    if(!original_meta_object
+                            && strcmp(qt_name, "QRemoteObjectDynamicReplica")==0
+                            && (otherTypeId = getTypeByQtName("QRemoteObjectReplica"))
+                            && (original_meta_object = registeredOriginalMetaObject(*otherTypeId))){
+                        result = new QObjectPendingTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type, interface_types, interface_offsets,
+                                                      shell_size, _virtualFunctions, original_meta_object
+                                                 );
+                        original_meta_object = nullptr;
+                    }else{
+                        result = new QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type, interface_types, interface_offsets,
+                                                      shell_size, _virtualFunctions, original_meta_object
+                                                 );
+
+                    }
+                }else
                     result = new QObjectPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
                                                   value_size, super_type, interface_types, interface_offsets,
                                                   shell_size, _virtualFunctions, original_meta_object, polymorphicIdHandlers
@@ -1152,7 +1164,6 @@ QThreadTypeEntry::QThreadTypeEntry(JNIEnv* env,
                        super_type, interface_types, interface_offsets,
                        shell_size, virtualFunctions, original_meta_object)
 {
-
 }
 
 jobject qtjambi_from_thread_impl(JNIEnv * env, jobject java_qthread, QThread *thread);
@@ -2457,6 +2468,91 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
         return reinterpret_cast<QObject*>( sharedPointerGetter(ptr) );
     };
     QtJambiLink::createLinkForSharedPointerToQObject(env, output->l, false, false, ptr_shared_pointer, sharedPointerDeleter, pointerGetter);
+    return true;
+}
+
+QObjectPendingTypeEntry::QObjectPendingTypeEntry(JNIEnv* env,
+                 const std::type_info& typeId,
+                 const char *qt_name,
+                 const char *java_name,
+                 jclass java_class,
+                 jmethodID creator_method,
+                 size_t value_size,
+                 const std::type_info* super_type,
+                 const QList<const std::type_info*>& interface_types,
+                 const QMap<size_t, uint>& interface_offsets,
+                 size_t shell_size,
+                 const QVector<const FunctionInfo>* virtualFunctions,
+                 const QMetaObject* metaObject
+            )
+    : QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
+                       super_type, interface_types, interface_offsets,
+                       shell_size, virtualFunctions, nullptr),
+      m_metaObject(metaObject)
+{
+}
+
+bool QObjectPendingTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool, bool, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
+        // Since QObjects are created in a class based on virtual function calls,
+        // if they at some point during their constructor are converted to Java,
+        // the Java object will get the wrong class. In order to fix this as well
+        // as possible, we replace the java object if it turns out it has previously
+        // been created using a different metaObject than the current. This should
+        // at least make the brokeness identical to that of C++, and we can't do this
+        // better than C++ since we depend on C++ to do it.
+        if(!link->createdByJava()){
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
+            if (p && p->metaObject() != qt_object->metaObject()) {
+                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                locker.unlock();
+                delete p;
+                // It should already be split ownership, but in case it has been changed, we need to make sure the c++
+                // object isn't deleted.
+                Java::QtJambi::QtJambiInternal$NativeLink::reset(env, nativeLink);
+                link->setSplitOwnership(env);
+                link.clear();
+                locker.relock();
+            }
+        }
+        if(link){
+            output->l = link->getJavaObjectLocalRef(env);
+            if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
+                {
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            delete p;
+                            isInvalidated = true;
+                            locker.relock();
+                        }
+                    }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
+                }
+            }else return true;
+        }
+    }
+    if(!creatableClass() || !creatorMethod())
+        JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+    output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+    qtjambi_throw_java_exception(env);
+    QtJambiLink::createLinkForPendingQObject(env, output->l, m_metaObject, qt_object, false, false);
     return true;
 }
 

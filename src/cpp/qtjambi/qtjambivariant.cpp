@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -269,6 +269,9 @@ static bool convert(const QVariant::Private *d, int t,
         break;
     default :
         if(const JObjectWrapper *wrapper = cast_to_object_wrapper(d)){
+            QByteArray targetType = QMetaType::typeName(t);
+            if(targetType=="QRemoteObjectPendingCall")
+                return false;
             const std::type_info* typeId = getTypeByMetaType(t);
             if(!typeId){
                 QByteArray typeName = QMetaType::typeName(t);
@@ -288,7 +291,6 @@ static bool convert(const QVariant::Private *d, int t,
                     }
                 }
             }
-            QByteArray targetType = QMetaType::typeName(t);
             if((targetType.startsWith("QList<")
                 || targetType.startsWith("QQueue<")
                 || targetType.startsWith("QStack<")
@@ -450,6 +452,8 @@ static bool canConvert(const QVariant::Private *d, int t)
             return true;
         }
     }
+    if(strcmp("QRemoteObjectPendingCall", QMetaType::typeName(t))==0)
+        return false;
     switch (t) {
     case QVariant::Int :
     case QVariant::UInt :
@@ -635,15 +639,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
             || v.userType() == qMetaTypeId<JCollectionWrapper>()
             || v.userType() == qMetaTypeId<JIteratorWrapper>()) {
         const JObjectWrapper wrapper = v.value<JObjectWrapper>();
-        if(JNIEnv *env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-            jobject java_object =  wrapper.object();
-            if(java_object==nullptr){ // avoid NullPointerException
-                dbg << "null";
-            }else{
-                dbg << qtjambi_to_qstring(env, java_object);
-            }
-        }
+        dbg << wrapper;
         return;
     }
     if(const QtPrivate::AbstractDebugStreamFunction * function = qtjambi_registered_debugstream_operator(v.userType())){

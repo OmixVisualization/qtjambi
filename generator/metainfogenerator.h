@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -85,6 +85,7 @@ class MetaInfoGenerator : public JavaGenerator {
     private:
         void writeCppFile();
         void buildSkipList();
+        void writeContainerAccess();
 
         QHash<QString, quint8> m_packageGenerationPolicies;
         QHash<QString, QString> m_typeSystemByPackage;

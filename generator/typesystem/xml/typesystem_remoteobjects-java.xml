@@ -43,7 +43,13 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.remoteobjects" module="qtjambi.remoteobjects" default-superclass="io.qt.QtObject">
-  <object-type name="QRemoteObjectHostBase">
+    <inject-code class="metainfo" position="1">
+    void initialize_meta_info_RemoteObject();
+    </inject-code>
+    <inject-code class="metainfo">
+    initialize_meta_info_RemoteObject();
+    </inject-code>
+    <object-type name="QRemoteObjectHostBase">
         <modify-function signature="proxy(const QUrl &amp;, const QUrl &amp;, QRemoteObjectHostBase::RemoteObjectNameFilter)">
             <modify-argument index="2">
                 <replace-default-expression with="new io.qt.core.QUrl()"/>

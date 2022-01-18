@@ -50,9 +50,8 @@ struct QDBusReplyUtility{
     static QDBusReply<T>* reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
     {
         if(dBusReply.isValid()){
-            QDBusVariant dbusVariant(dBusReply.value());
             QDBusMessage message;
-            message.setArguments({QVariant::fromValue<QDBusVariant>(dbusVariant)});
+            message.setArguments({QVariant::fromValue<T>(dBusReply.value().value<T>())});
             return new QDBusReply<T>(message);
         }else{
             return new QDBusReply<T>(dBusReply.error());
@@ -62,9 +61,8 @@ struct QDBusReplyUtility{
     static QDBusReply<QVariant>* createFrom(const QDBusReply<T>& dBusReply)
     {
         if(dBusReply.isValid()){
-            QDBusVariant dbusVariant(QVariant::fromValue<T>(dBusReply.value()));
             QDBusMessage message;
-            message.setArguments({QVariant::fromValue<QDBusVariant>(dbusVariant)});
+            message.setArguments({QVariant::fromValue<QDBusVariant>(QDBusVariant(QVariant::fromValue<T>(dBusReply.value())))});
             return new QDBusReply<QVariant>(message);
         }else{
             return new QDBusReply<QVariant>(dBusReply.error());

@@ -166,6 +166,11 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterface,
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant,
+                                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(userType)
+                                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value)
+                                         )
     }
 
     namespace QtGui{
@@ -417,6 +422,7 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(checkImplementation)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(writeSerializableJavaObject)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(readSerializableJavaObject)
+            QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(debugObject)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isGeneratedClass)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(putMultiMap)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createComparator)
@@ -436,9 +442,11 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(lambdaReturnType)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(objectToString)
-            QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(shutdown)
+            QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(terminateCleanupThread)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(internalAccess)
         )
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeLibraryManager,QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(resetDeploymentSpecs))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiEnums,
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(extendEnum)

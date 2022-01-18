@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -94,7 +94,10 @@ public final class QLogging {
             if(!supportedMessageTypes.isEmpty())
             	qInstallExceptionMessageHandler(supportedMessageTypes);
         }
-    	config = System.getProperty("io.qt.log.messages");
+    	config = System.getProperty("io.qt.log-messages");
+    	if (config == null || config.isEmpty())
+    		config = System.getProperty("io.qt.log.messages");
+    		
     	if (config != null) {
             config = config.trim().toUpperCase();
             boolean all = config.equals("") || config.equals("ALL") || config.equals("TRUE");
@@ -168,7 +171,7 @@ public final class QLogging {
      * Without specifying any message type here, all message types are sent to the handler.</p>
      * <p>Alternatively, you can use the following Java VM argument to let QtJambi install a Java logging
      * message handler:</p>
-     * <code>-Dio.qt.log.messages=TYPE</code>
+     * <code>-Dio.qt.log-messages=TYPE</code>
      * <p>where <code>TYPE</code> is either <code>ALL</code> or a combination of 
      * <code>CRITICAL</code>,
      * <code>DEBUG</code>,

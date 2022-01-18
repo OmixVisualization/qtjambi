@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,14 +44,6 @@
 #include <Windows.h>
 #endif
 
-class ObjectDeleter{
-public:
-    ObjectDeleter(QObject* object);
-    ~ObjectDeleter();
-private:
-    QPointer<QObject> m_object;
-};
-
 class QtJambiLink;
 
 class EventDispatcherCheck{
@@ -71,8 +63,8 @@ private:
 class QThreadUserData : public QtJambiObjectData
 {
 public:
-    QThreadUserData();
-    QThreadUserData(JNIEnv *env, jobject threadGroup);
+    QThreadUserData(QThread* thread);
+    QThreadUserData(JNIEnv *env, jobject threadGroup, QThread* thread);
     ~QThreadUserData() override;
     QTJAMBI_OBJECTUSERDATA_ID_DECL
     void deleteAtThreadEnd(QObject* object);
@@ -90,6 +82,8 @@ public:
     inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
     inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
 private:
+    void cleanup();
+    QList<QPointer<QObject>> m_objectsForDeletion;
     QList<std::function<void()>>* m_finalActions;
     QMutex* m_mutex;
     JObjectWrapper m_threadGroup;
@@ -97,6 +91,7 @@ private:
     QByteArray m_name;
     JObjectWrapper m_uncaughtExceptionHandler;
     JObjectWrapper m_contextClassLoader;
+    QMetaObject::Connection m_finishedConnection;
     friend EventDispatcherCheck;
 };
 

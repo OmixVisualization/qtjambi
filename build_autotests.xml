@@ -119,6 +119,7 @@
         <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
         <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
         <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
+        <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
         <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
     </fileset>
 

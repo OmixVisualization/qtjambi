@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -71,10 +71,79 @@ import io.qt.QtShortEnumerator;
  * for classes with the same super class.
 */
 public final class QVariant {
-	
-	private QVariant(){}
+    @io.qt.NativeAccess
+    private QVariant(int userType, Object value, boolean dummy){
+        this.userType = userType; 
+        this.value = value;
+    }
+    
+    public QVariant(int userType){
+        this(userType, null);
+    }
+    
+    public static QVariant fromValue(Object value){
+        return new QVariant(type(value), value); 
+    }
+    
+    public QVariant(int userType, Object value){
+        this.userType = userType; 
+        this.value = new QMetaType(userType).create(value);
+    }
+    
+    private final int userType;
+    
+    private final Object value;
 
-	@QtExtensibleEnum
+    @io.qt.NativeAccess
+    public int userType() {
+        return userType;
+    }
+
+    @io.qt.NativeAccess
+    public Object value() {
+        return new QMetaType(userType).create(value);
+    }
+    
+    public <T> T value(Class<T> cl) {
+        return convert(value(), cl);
+    }
+    
+    public boolean isValid() {
+        return userType!=QMetaType.Type.UnknownType.value();
+    }
+    
+    @Override
+    public String toString() {
+        if(isValid()) {
+            return convert(value(), String.class);
+        }else {
+            return "QVariant(Invalid)";
+        }
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+        if(!isValid()) {
+            if(other instanceof QVariant)
+                return !((QVariant) other).isValid();
+            return other==null;
+        }else if(other instanceof QVariant){
+            QVariant variant = (QVariant) other;
+            if(userType==variant.userType) {
+                return java.util.Objects.equals(value, variant.value);
+            }
+            return false;
+        }
+        else return java.util.Objects.equals(value, other);
+    }
+    
+    public static boolean isValid(Object variant) {
+        if(variant instanceof QVariant)
+            return ((QVariant) variant).isValid();
+        return true;
+    }
+
+    @QtExtensibleEnum
     public enum Type implements io.qt.QtEnumerator{
         Invalid(QMetaType.Type.UnknownType.value()),
         Boolean(QMetaType.Type.Bool.value()),
@@ -158,74 +227,74 @@ public final class QVariant {
     private static boolean dbusVariantResolved;
     
     private static boolean isDBusVariant(Object value, Class <?> cl) {
-    	if(!dbusVariantResolved) {
-    		dbusVariantResolved = true;
-    		Class<?> _dbusVariant = null;
-        	try {
-        		_dbusVariant = Class.forName("io.qt.dbus.QDBusVariant");
-        	} catch (Exception e) {
-        	}
-        	dbusVariant = _dbusVariant;
-    	}
-		return dbusVariant!=null && cl!=dbusVariant && dbusVariant.isInstance(value);
-	}
+        if(!dbusVariantResolved) {
+            dbusVariantResolved = true;
+            Class<?> _dbusVariant = null;
+            try {
+                _dbusVariant = Class.forName("io.qt.dbus.QDBusVariant");
+            } catch (Exception e) {
+            }
+            dbusVariant = _dbusVariant;
+        }
+        return dbusVariant!=null && cl!=dbusVariant && dbusVariant.isInstance(value);
+    }
 
     public static Object convert(Object obj, QMetaType.Type type) {
-    	return convert(obj, type.value(), null);
+        return convert(obj, type.value(), null);
     }
     public static Object convert(Object obj, QMetaType.Type type, boolean ok[]) {
-    	return convert(obj, type.value(), ok);
+        return convert(obj, type.value(), ok);
     }
     public static Object convert(Object obj, Type type) {
-    	return convert(obj, type.value(), null);
+        return convert(obj, type.value(), null);
     }
     public static Object convert(Object obj, Type type, boolean ok[]) {
-    	return convert(obj, type.value(), ok);
+        return convert(obj, type.value(), ok);
     }
     public static Object convert(Object obj, int userType) {
-    	return convert(obj, userType, null);
+        return convert(obj, userType, null);
     }
     
     private static native Object convert(Object obj, int userType, boolean ok[]);
     
     public static boolean canConvert(Object obj, QMetaType.Type type) {
-    	return canConvert(obj, type.value());
+        return canConvert(obj, type.value());
     }
     public static boolean canConvert(Object obj, Type type) {
-    	return canConvert(obj, type.value());
+        return canConvert(obj, type.value());
     }
     
     public static boolean canConvert(Object obj, int targetType) {
-    	return QMetaType.javaType(targetType).isInstance(obj) || canConvertByType(type(obj), targetType);
+        return QMetaType.javaType(targetType).isInstance(obj) || canConvertByType(type(obj), targetType);
     }
     
     private static native boolean canConvertByType(int sourceType, int targetType);
     
     public static int type(Object obj) {
-    	if(obj==null)
-    		return QMetaType.Type.Nullptr.value();
-    	if(obj.getClass()==QList.class) {
-    		return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QQueue.class) {
-    		return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QStack.class) {
-    		return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QVector.class) {
-    		return QMetaType.fromType(QVector.class, ((QVector<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QSet.class) {
-    		return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QLinkedList.class) {
-    		return QMetaType.fromType(QLinkedList.class, ((QLinkedList<?>)obj).elementMetaType()).id();
-    	}else if(obj.getClass()==QMultiMap.class) {
-    		return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType()).id();
-    	}else if(obj.getClass()==QMap.class) {
-    		return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType()).id();
-    	}else if(obj.getClass()==QMultiHash.class) {
-    		return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType()).id();
-    	}else if(obj.getClass()==QHash.class) {
-    		return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType()).id();
-    	}
-    	return QMetaType.fromType(obj.getClass()).id();
+        if(obj==null)
+            return QMetaType.Type.Nullptr.value();
+        if(obj.getClass()==QList.class) {
+            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QQueue.class) {
+            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QStack.class) {
+            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QVector.class) {
+            return QMetaType.fromType(QVector.class, ((QVector<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QSet.class) {
+            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QLinkedList.class) {
+            return QMetaType.fromType(QLinkedList.class, ((QLinkedList<?>)obj).elementMetaType()).id();
+        }else if(obj.getClass()==QMultiMap.class) {
+            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType()).id();
+        }else if(obj.getClass()==QMap.class) {
+            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType()).id();
+        }else if(obj.getClass()==QMultiHash.class) {
+            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType()).id();
+        }else if(obj.getClass()==QHash.class) {
+            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType()).id();
+        }
+        return QMetaType.fromType(obj.getClass()).id();
     }
 
     private static void setOk(boolean ok[], boolean isOk)
@@ -241,7 +310,7 @@ public final class QVariant {
     public static double toDouble(Object obj) { return toDouble(obj, null); }
     public static double toDouble(Object obj, boolean ok[])
     {
-    	if (obj==null) {
+        if (obj==null) {
             setOk(ok, true);
             return 0.0;
         } else if (obj instanceof Number) {
@@ -260,7 +329,7 @@ public final class QVariant {
     public static float toFloat(Object obj) { return toFloat(obj, null); }
     public static float toFloat(Object obj, boolean ok[])
     {
-    	if (obj==null) {
+        if (obj==null) {
             setOk(ok, true);
             return 0.f;
         } else if (obj instanceof Number) {
@@ -292,7 +361,7 @@ public final class QVariant {
     }
     public static boolean toBoolean(Object obj)
     {
-    	if (obj==null) {
+        if (obj==null) {
             return false;
         } else if (obj instanceof Boolean) {
             return (Boolean) obj;
@@ -310,15 +379,15 @@ public final class QVariant {
     }
     public static QByteArray toByteArray(Object obj)
     {
-    	if(obj instanceof QByteArray) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QByteArray)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.ByteArray);
-	        if (returned instanceof QByteArray) {
-	            return (QByteArray)returned;
-	        }
-    	}
+        if(obj instanceof QByteArray) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QByteArray)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.ByteArray);
+            if (returned instanceof QByteArray) {
+                return (QByteArray)returned;
+            }
+        }
         return new QByteArray();
     }
 
@@ -328,15 +397,15 @@ public final class QVariant {
     }
     public static QBitArray toBitArray(Object obj)
     {
-    	if(obj instanceof QBitArray) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QBitArray)obj;
-    	}else if(obj!=null){
+        if(obj instanceof QBitArray) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QBitArray)obj;
+        }else if(obj!=null){
             Object returned = convert(obj, Type.BitArray);
             if (returned instanceof QBitArray) {
                 return (QBitArray)returned;
             }    		
-    	}
+        }
         return new QBitArray();
     }
 
@@ -346,9 +415,9 @@ public final class QVariant {
     }
     public static char toChar(Object obj)
     {
-    	if(obj==null)
-    		return 0;
-    	else if (obj instanceof Character)
+        if(obj==null)
+            return 0;
+        else if (obj instanceof Character)
             return (Character) obj;
         else
             return __qt_toChar(obj);
@@ -361,15 +430,15 @@ public final class QVariant {
     }
     public static QDate toDate(Object obj)
     {
-    	if(obj instanceof QDate) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QDate)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Date);
-	        if (returned instanceof QDate) {
-	            return (QDate)returned;
-	        }
-    	}
+        if(obj instanceof QDate) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QDate)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Date);
+            if (returned instanceof QDate) {
+                return (QDate)returned;
+            }
+        }
         return new QDate();
     }
 
@@ -379,15 +448,15 @@ public final class QVariant {
     }
     public static QDateTime toDateTime(Object obj)
     {
-    	if(obj instanceof QDateTime) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QDateTime)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.DateTime);
-	        if (returned instanceof QDateTime) {
-	            return (QDateTime)returned;
-	        }
-    	}
+        if(obj instanceof QDateTime) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QDateTime)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.DateTime);
+            if (returned instanceof QDateTime) {
+                return (QDateTime)returned;
+            }
+        }
         return new QDateTime();
     }
 
@@ -399,7 +468,7 @@ public final class QVariant {
     public static int toInt(Object obj, boolean ok[])
     {
         if(obj==null) {
-        	return 0;
+            return 0;
         }else if (obj instanceof Number) {
             setOk(ok, true);
             return ((Number) obj).intValue();
@@ -415,15 +484,15 @@ public final class QVariant {
     }
     public static QLine toLine(Object obj)
     {
-    	if(obj instanceof QLine) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QLine)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Line);
-	        if (returned instanceof QLine) {
-	            return (QLine) returned;
-	        }
-    	}
+        if(obj instanceof QLine) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QLine)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Line);
+            if (returned instanceof QLine) {
+                return (QLine) returned;
+            }
+        }
         return new QLine();
     }
     public static boolean canConvertToLineF(Object obj)
@@ -432,15 +501,15 @@ public final class QVariant {
     }
     public static QLineF toLineF(Object obj)
     {
-    	if(obj instanceof QLineF) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QLineF)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.LineF);
-	        if (returned instanceof QLineF) {
-	            return (QLineF)returned;
-	        }
-    	}
+        if(obj instanceof QLineF) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QLineF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.LineF);
+            if (returned instanceof QLineF) {
+                return (QLineF)returned;
+            }
+        }
         return new QLineF();
     }
 
@@ -450,15 +519,15 @@ public final class QVariant {
     }
     public static QLocale toLocale(Object obj)
     {
-    	if(obj instanceof QLocale) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QLocale)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Locale);
-	        if (returned instanceof QLocale) {
-	            return (QLocale)returned;
-	        }
-    	}
+        if(obj instanceof QLocale) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QLocale)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Locale);
+            if (returned instanceof QLocale) {
+                return (QLocale)returned;
+            }
+        }
         return new QLocale();
     }
 
@@ -468,15 +537,15 @@ public final class QVariant {
     }
     public static QPoint toPoint(Object obj)
     {
-    	if(obj instanceof QPoint) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QPoint)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Point);
-	        if (returned instanceof QPoint) {
-	            return (QPoint) returned;
-	        }
-    	}
+        if(obj instanceof QPoint) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QPoint)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Point);
+            if (returned instanceof QPoint) {
+                return (QPoint) returned;
+            }
+        }
         return new QPoint();
     }
 
@@ -486,15 +555,15 @@ public final class QVariant {
     }
     public static QPointF toPointF(Object obj)
     {
-    	if(obj instanceof QPointF) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QPointF)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.PointF);
-	        if (returned instanceof QPointF) {
-	            return (QPointF)returned;
-	        }
-    	}
+        if(obj instanceof QPointF) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QPointF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.PointF);
+            if (returned instanceof QPointF) {
+                return (QPointF)returned;
+            }
+        }
         return new QPointF();
     }
 
@@ -504,15 +573,15 @@ public final class QVariant {
     }
     public static QRect toRect(Object obj)
     {
-    	if(obj instanceof QRect) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QRect)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Rect);
-	        if (returned instanceof QRect) {
-	            return (QRect)returned;
-	        }
-    	}
+        if(obj instanceof QRect) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QRect)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Rect);
+            if (returned instanceof QRect) {
+                return (QRect)returned;
+            }
+        }
         return new QRect();
     }
 
@@ -522,15 +591,15 @@ public final class QVariant {
     }
     public static QRectF toRectF(Object obj)
     {
-    	if(obj instanceof QRectF) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QRectF)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.RectF);
-	        if (returned instanceof QRectF) {
-	            return (QRectF)returned;
-	        }
-    	}
+        if(obj instanceof QRectF) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QRectF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.RectF);
+            if (returned instanceof QRectF) {
+                return (QRectF)returned;
+            }
+        }
         return new QRectF();
     }
 
@@ -540,15 +609,15 @@ public final class QVariant {
     }
     public static QRegExp toRegExp(Object obj)
     {
-    	if(obj instanceof QRegExp) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QRegExp)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.RegExp);
-	        if (returned instanceof QRegExp) {
-	            return (QRegExp)returned;
-	        }
-    	}
+        if(obj instanceof QRegExp) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QRegExp)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.RegExp);
+            if (returned instanceof QRegExp) {
+                return (QRegExp)returned;
+            }
+        }
         return new QRegExp();
     }
 
@@ -558,15 +627,15 @@ public final class QVariant {
     }
     public static QRegularExpression toRegularExpression(Object obj)
     {
-    	if(obj instanceof QRegularExpression) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QRegularExpression)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.RegularExpression);
-	        if (returned instanceof QRegularExpression) {
-	            return (QRegularExpression)returned;
-	        }
-    	}
+        if(obj instanceof QRegularExpression) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QRegularExpression)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.RegularExpression);
+            if (returned instanceof QRegularExpression) {
+                return (QRegularExpression)returned;
+            }
+        }
         return new QRegularExpression();
     }
 
@@ -576,15 +645,15 @@ public final class QVariant {
     }
     public static QSize toSize(Object obj)
     {
-    	if(obj instanceof QSize) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QSize)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Size);
-	        if (returned instanceof QSize) {
-	            return (QSize)returned;
-	        }
-    	}
+        if(obj instanceof QSize) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QSize)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Size);
+            if (returned instanceof QSize) {
+                return (QSize)returned;
+            }
+        }
         return new QSize();
     }
 
@@ -594,15 +663,15 @@ public final class QVariant {
     }
     public static QSizeF toSizeF(Object obj)
     {
-    	if(obj instanceof QSizeF) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QSizeF)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.SizeF);
-	        if (returned instanceof QSizeF) {
-	            return (QSizeF)returned;
-	        }
-    	}
+        if(obj instanceof QSizeF) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QSizeF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.SizeF);
+            if (returned instanceof QSizeF) {
+                return (QSizeF)returned;
+            }
+        }
         return new QSizeF();
     }
 
@@ -612,15 +681,15 @@ public final class QVariant {
     }
     public static QTime toTime(Object obj)
     {
-    	if(obj instanceof QTime) {
-    		if(!((QtObjectInterface)obj).isDisposed())
-    			return (QTime)obj;
-    	}else if(obj!=null){
-	        Object returned = convert(obj, Type.Time);
-	        if (returned instanceof QTime) {
-	            return (QTime)returned;
-	        }
-    	}
+        if(obj instanceof QTime) {
+            if(!((QtObjectInterface)obj).isDisposed())
+                return (QTime)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, Type.Time);
+            if (returned instanceof QTime) {
+                return (QTime)returned;
+            }
+        }
         return new QTime();
     }
 
@@ -631,10 +700,10 @@ public final class QVariant {
     public static long toLong(Object obj) { return toLong(obj, null); }
     public static long toLong(Object obj, boolean ok[])
     {
-    	if(obj==null) {
-    		setOk(ok, true);
-    		return 0;
-    	}else if (obj instanceof Number) {
+        if(obj==null) {
+            setOk(ok, true);
+            return 0;
+        }else if (obj instanceof Number) {
             setOk(ok, true);
             return ((Number) obj).longValue();
         } else {
@@ -645,7 +714,7 @@ public final class QVariant {
 
     public static boolean canConvertToList(Object obj)
     {
-    	return obj instanceof Collection || canConvert(obj, Type.List);
+        return obj instanceof Collection || canConvert(obj, Type.List);
     }
     public static List<?> toList(Object obj)
     {
@@ -656,43 +725,43 @@ public final class QVariant {
                 list.addAll((Collection<?>) obj);
             return list;
         }else if(obj!=null) {
-        	Object returned = convert(obj, Type.List);
-	        if (returned instanceof List) {
-	            return (List<?>)returned;
-	        }
+            Object returned = convert(obj, Type.List);
+            if (returned instanceof List) {
+                return (List<?>)returned;
+            }
         }
         return Collections.emptyList();
     }
 
     public static boolean canConvertToStringList(Object obj)
     {
-    	return obj instanceof Collection || canConvert(obj, Type.StringList);
+        return obj instanceof Collection || canConvert(obj, Type.StringList);
     }
     @SuppressWarnings("unchecked")
-	public static List<String> toStringList(Object obj)
+    public static List<String> toStringList(Object obj)
     {
         if (obj instanceof Collection){
             if (obj instanceof List) {
-            	boolean fail = false;
-            	for(Object entry : (List<?>)obj) {
-            		if(!(entry instanceof String)) {
-            			fail = true;
-            			break;
-            		}
-            	}
-            	if(fail)
-            		return (List<String>)obj;
+                boolean fail = false;
+                for(Object entry : (List<?>)obj) {
+                    if(!(entry instanceof String)) {
+                        fail = true;
+                        break;
+                    }
+                }
+                if(fail)
+                    return (List<String>)obj;
             }
             List<String> list = new ArrayList<String>();
             for(Object entry : (Collection<?>)obj) {
-            	list.add(entry==null ? null : entry.toString());
+                list.add(entry==null ? null : entry.toString());
             }
             return list;
         }else if(obj!=null) {
-        	Object returned = convert(obj, Type.StringList);
-	        if (returned instanceof List) {
-	            return (List<String>)returned;
-	        }
+            Object returned = convert(obj, Type.StringList);
+            if (returned instanceof List) {
+                return (List<String>)returned;
+            }
         }
         return Collections.emptyList();
     }
@@ -706,17 +775,17 @@ public final class QVariant {
         if (obj instanceof Collection){
             return (Collection<?>)obj;
         }else if(obj!=null) {
-        	Object returned = convert(obj, Type.List);
-	        if (returned instanceof Collection) {
-	            return (Collection<?>)returned;
-	        }
+            Object returned = convert(obj, Type.List);
+            if (returned instanceof Collection) {
+                return (Collection<?>)returned;
+            }
         }
         return Collections.emptyList();
     }
 
     public static boolean canConvertToMap(Object obj)
     {
-    	return obj instanceof Map || canConvert(obj, Type.Hash);
+        return obj instanceof Map || canConvert(obj, Type.Hash);
     }
 
     @SuppressWarnings("unchecked")
@@ -740,25 +809,25 @@ public final class QVariant {
                 return (Map<String,?>) obj;
             }
         }else if(obj!=null) {
-        	Object returned = convert(obj, Type.Hash);
-        	if(returned instanceof Map) {
-	        	Map<?, ?> otherMap = (Map<?, ?>) returned;
-	            boolean convert = false;
-	            for (Map.Entry<?, ?> e : otherMap.entrySet()){
-	                if(!(e.getKey() instanceof String)){
-	                    convert = true;
-	                    break;
-	                }
-	            }
-	            if(convert){
-	                Map<String, Object> map = new TreeMap<String, Object>();
-	                for (Map.Entry<?, ?> e : otherMap.entrySet())
-	                    map.put(e.getKey().toString(), e.getValue());
-	                return map;
-	            }else{
-	                return (Map<String,?>) returned;
-	            }
-        	}
+            Object returned = convert(obj, Type.Hash);
+            if(returned instanceof Map) {
+                Map<?, ?> otherMap = (Map<?, ?>) returned;
+                boolean convert = false;
+                for (Map.Entry<?, ?> e : otherMap.entrySet()){
+                    if(!(e.getKey() instanceof String)){
+                        convert = true;
+                        break;
+                    }
+                }
+                if(convert){
+                    Map<String, Object> map = new TreeMap<String, Object>();
+                    for (Map.Entry<?, ?> e : otherMap.entrySet())
+                        map.put(e.getKey().toString(), e.getValue());
+                    return map;
+                }else{
+                    return (Map<String,?>) returned;
+                }
+            }
         }
         return Collections.emptyMap();
     }
@@ -766,17 +835,17 @@ public final class QVariant {
     @SuppressWarnings("unchecked")
     public static <T> T convert(Object value, Class < T > cl) {
         if(cl.isInstance(value)) {
-        	if(value instanceof QtObjectInterface) {
-        		if(!((QtObjectInterface)value).isDisposed()) {
-        			return cl.cast(value);
-        		}
-        	}else {
-        		return cl.cast(value);
-        	}
+            if(value instanceof QtObjectInterface) {
+                if(!((QtObjectInterface)value).isDisposed()) {
+                    return cl.cast(value);
+                }
+            }else {
+                return cl.cast(value);
+            }
         }
         if(isDBusVariant(value, cl)){
-        	int type = QMetaType.metaTypeId(cl);
-        	return convert(convert(value, type), cl);
+            int type = QMetaType.metaTypeId(cl);
+            return convert(convert(value, type), cl);
         }
         
         if(cl==int.class){
@@ -853,7 +922,7 @@ public final class QVariant {
             if(value instanceof QBitArray)
                 return cl.cast(value);
             if(QVariant.canConvertToBitArray(value)){
-            	value = QVariant.toBitArray(value);
+                value = QVariant.toBitArray(value);
                 return cl.cast(value);
             }
             return null;
@@ -861,7 +930,7 @@ public final class QVariant {
             if(value instanceof QByteArray)
                 return cl.cast(value);
             if(QVariant.canConvertToByteArray(value)){
-            	value = QVariant.toByteArray(value);
+                value = QVariant.toByteArray(value);
                 return cl.cast(value);
             }
             return null;
@@ -869,7 +938,7 @@ public final class QVariant {
             if(value instanceof QDate)
                 return cl.cast(value);
             if(QVariant.canConvertToDate(value)){
-            	value = QVariant.toDate(value);
+                value = QVariant.toDate(value);
                 return cl.cast(value);
             }
             return null;
@@ -877,7 +946,7 @@ public final class QVariant {
             if(value instanceof QDateTime)
                 return cl.cast(value);
             if(QVariant.canConvertToDateTime(value)){
-            	value = QVariant.toDateTime(value);
+                value = QVariant.toDateTime(value);
                 return cl.cast(value);
             }
             return null;
@@ -885,7 +954,7 @@ public final class QVariant {
             if(value instanceof QTime)
                 return cl.cast(value);
             if(QVariant.canConvertToTime(value)){
-            	value = QVariant.toTime(value);
+                value = QVariant.toTime(value);
                 return cl.cast(value);
             }
             return null;
@@ -893,7 +962,7 @@ public final class QVariant {
             if(value instanceof QLine)
                 return cl.cast(value);
             if(QVariant.canConvertToLine(value)){
-            	value = QVariant.toLine(value);
+                value = QVariant.toLine(value);
                 return cl.cast(value);
             }
             return null;
@@ -901,7 +970,7 @@ public final class QVariant {
             if(value instanceof List)
                 return cl.cast(value);
             if(QVariant.canConvertToList(value)){
-            	value = QVariant.toList(value);
+                value = QVariant.toList(value);
                 return cl.cast(value);
             }
             return null;
@@ -909,7 +978,7 @@ public final class QVariant {
             if(value instanceof QLocale)
                 return cl.cast(value);
             if(QVariant.canConvertToLocale(value)){
-            	value = QVariant.toLocale(value);
+                value = QVariant.toLocale(value);
                 return cl.cast(value);
             }
             return null;
@@ -917,7 +986,7 @@ public final class QVariant {
             if(value instanceof QPoint)
                 return cl.cast(value);
             if(QVariant.canConvertToPoint(value)){
-            	value = QVariant.toPoint(value);
+                value = QVariant.toPoint(value);
                 return cl.cast(value);
             }
             return null;
@@ -925,7 +994,7 @@ public final class QVariant {
             if(value instanceof Map)
                 return cl.cast(value);
             if(QVariant.canConvertToMap(value)){
-            	value = QVariant.toMap(value);
+                value = QVariant.toMap(value);
                 return cl.cast(value);
             }
             return null;
@@ -933,7 +1002,7 @@ public final class QVariant {
             if(value instanceof QRect)
                 return cl.cast(value);
             if(QVariant.canConvertToRect(value)){
-            	value = QVariant.toRect(value);
+                value = QVariant.toRect(value);
                 return cl.cast(value);
             }
             return null;
@@ -941,7 +1010,7 @@ public final class QVariant {
             if(value instanceof QRectF)
                 return cl.cast(value);
             if(QVariant.canConvertToRectF(value)){
-            	value = QVariant.toRectF(value);
+                value = QVariant.toRectF(value);
                 return cl.cast(value);
             }
             return null;
@@ -949,7 +1018,7 @@ public final class QVariant {
             if(value instanceof QSize)
                 return cl.cast(value);
             if(QVariant.canConvertToSize(value)){
-            	value = QVariant.toSize(value);
+                value = QVariant.toSize(value);
                 return cl.cast(value);
             }
             return null;
@@ -957,7 +1026,7 @@ public final class QVariant {
             if(value instanceof QSizeF)
                 return cl.cast(value);
             if(QVariant.canConvertToSizeF(value)){
-            	value = QVariant.toSizeF(value);
+                value = QVariant.toSizeF(value);
                 return cl.cast(value);
             }
             return null;
@@ -965,13 +1034,13 @@ public final class QVariant {
             if(value instanceof QRegExp)
                 return cl.cast(value);
             if(QVariant.canConvertToRegExp(value)){
-            	value = QVariant.toRegExp(value);
+                value = QVariant.toRegExp(value);
                 return cl.cast(value);
             }
             return null;
         }else if(Enum.class.isAssignableFrom(cl)){
             if(QVariant.canConvertToEnum((Class<? extends Enum<?>>)cl, value)){
-            	value = QVariant.toEnum((Class<? extends Enum<?>>)cl, value);
+                value = QVariant.toEnum((Class<? extends Enum<?>>)cl, value);
                 return cl.cast(value);
             }
             return null;
@@ -980,12 +1049,12 @@ public final class QVariant {
         }
         int type = QMetaType.metaTypeId(cl);
         if(canConvert(value, type)) {
-        	return cl.cast(convert(value, type));
+            return cl.cast(convert(value, type));
         }
         return cl.cast(value);
     }
 
-	public static <E extends Enum<?>> boolean canConvertToEnum(Class<E> enumClass, Object obj)
+    public static <E extends Enum<?>> boolean canConvertToEnum(Class<E> enumClass, Object obj)
     {
         if(enumClass.isInstance(obj)) {
             return true;
@@ -1003,111 +1072,111 @@ public final class QVariant {
         }else return false;
     }
     
-	public static boolean canConvertToFlags(Object obj)
+    public static boolean canConvertToFlags(Object obj)
     {
-		return obj instanceof QFlags || canConvertToInt(obj);
+        return obj instanceof QFlags || canConvertToInt(obj);
     }
-	
-	public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj) {
-		return toEnum(enumClass, obj, (boolean[])null);
-	}
-	
-	public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj, boolean ok[]) {
-		if(enumClass.isInstance(obj)) {
-			try {
-				return enumClass.cast(obj);
-			} catch (Exception e) {
-			}
-		}else if(QtEnumerator.class.isAssignableFrom(enumClass)) {
-    		try {
-    			Method resolveMethod = enumClass.getMethod("resolve", int.class);
-    			int i = toInt(obj, ok);
-    			if(ok==null || ok[0])
-    				return enumClass.cast(resolveMethod.invoke(null, java.lang.Integer.valueOf(i)));
-			} catch (Exception e) {
-			}
-    	}else if(QtByteEnumerator.class.isAssignableFrom(enumClass)) {
-    		try {
-    			Method resolveMethod = enumClass.getMethod("resolve", byte.class);
-    			byte i = (byte)toInt(obj, ok);
-    			if(ok==null || ok[0])
-    				return enumClass.cast(resolveMethod.invoke(null, java.lang.Byte.valueOf(i)));
-			} catch (Exception e) {
-			}
-    	}else if(QtShortEnumerator.class.isAssignableFrom(enumClass)) {
-    		try {
-    			Method resolveMethod = enumClass.getMethod("resolve", short.class);
-    			short i = (short)toInt(obj, ok);
-    			if(ok==null || ok[0])
-    				return enumClass.cast(resolveMethod.invoke(null, java.lang.Short.valueOf(i)));
-			} catch (Exception e) {
-			}
-    	}else if(QtLongEnumerator.class.isAssignableFrom(enumClass)) {
-    		try {
-    			Method resolveMethod = enumClass.getMethod("resolve", long.class);
-    			long l = toLong(obj, ok);
-    			if(ok==null || ok[0])
-    				return enumClass.cast(resolveMethod.invoke(null, java.lang.Long.valueOf(l)));
-			} catch (Exception e) {
-			}
-    	}else if (canConvertToInt(obj)) {
-        	int value = toInt(obj, ok);
-        	E[] constants = enumClass.getEnumConstants();
-        	if(constants!=null && (ok==null || ok[0]  && value<constants.length)) {
-        		return constants[value];
-        	}
-    		
-    	}
-		if(ok!=null && ok.length>0)
-			ok[0] = false;
-		return null;
-	}
-	
-	public static <F extends QFlags<?>> F toFlags(Class<F> flagsClass, Object obj) {
-		return toFlags(flagsClass, obj, null);
-	}
-	
-	public static <F extends QFlags<?>> F toFlags(Class<F> flagsClass, Object obj, boolean ok[]) {
-		if(flagsClass.isInstance(obj)) {
-        	try{
-				return flagsClass.cast(obj);
-			} catch (Exception e) {
-			}
-		}else if (canConvertToInt(obj)) {
-        	int value = toInt(obj, ok);
-        	try{
-        		return flagsClass.getConstructor(int.class).newInstance(value);
-        	} catch (Exception e) {
-			}
-    	}
-		if(ok!=null && ok.length>0)
-			ok[0] = false;
-		return null;
-	}
-	
-	public static void saveObject(QDataStream stream, Object variant){
-		saveObject(stream, variant, null);
-	}
-	
-	public static void saveObject(QDataStream stream, Object variant, Boolean[] ok){
-		long nativeId = QtJambi_LibraryUtilities.internal.nativeId(stream);
-		if (nativeId == 0)
-			throw new QNoNativeResourcesException("Function call on incomplete object of type: " +stream.getClass().getName());
-		saveObject(nativeId, variant, ok);
-	}
-	
-	public static Object loadObject(QDataStream stream){
-		return loadObject(stream, null);
-	}
-	
-	public static Object loadObject(QDataStream stream, Boolean[] ok){
-		long nativeId = QtJambi_LibraryUtilities.internal.nativeId(stream);
-		if (nativeId == 0)
-			throw new QNoNativeResourcesException("Function call on incomplete object of type: " +stream.getClass().getName());
-		return loadObject(nativeId, ok);
-	}
-	
-	private static native void saveObject(long stream_nativeId, Object variant, Boolean[] ok);
-	
-	private static native Object loadObject(long stream_nativeId, Boolean[] ok);
+    
+    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj) {
+        return toEnum(enumClass, obj, (boolean[])null);
+    }
+    
+    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj, boolean ok[]) {
+        if(enumClass.isInstance(obj)) {
+            try {
+                return enumClass.cast(obj);
+            } catch (Exception e) {
+            }
+        }else if(QtEnumerator.class.isAssignableFrom(enumClass)) {
+            try {
+                Method resolveMethod = enumClass.getMethod("resolve", int.class);
+                int i = toInt(obj, ok);
+                if(ok==null || ok[0])
+                    return enumClass.cast(resolveMethod.invoke(null, java.lang.Integer.valueOf(i)));
+            } catch (Exception e) {
+            }
+        }else if(QtByteEnumerator.class.isAssignableFrom(enumClass)) {
+            try {
+                Method resolveMethod = enumClass.getMethod("resolve", byte.class);
+                byte i = (byte)toInt(obj, ok);
+                if(ok==null || ok[0])
+                    return enumClass.cast(resolveMethod.invoke(null, java.lang.Byte.valueOf(i)));
+            } catch (Exception e) {
+            }
+        }else if(QtShortEnumerator.class.isAssignableFrom(enumClass)) {
+            try {
+                Method resolveMethod = enumClass.getMethod("resolve", short.class);
+                short i = (short)toInt(obj, ok);
+                if(ok==null || ok[0])
+                    return enumClass.cast(resolveMethod.invoke(null, java.lang.Short.valueOf(i)));
+            } catch (Exception e) {
+            }
+        }else if(QtLongEnumerator.class.isAssignableFrom(enumClass)) {
+            try {
+                Method resolveMethod = enumClass.getMethod("resolve", long.class);
+                long l = toLong(obj, ok);
+                if(ok==null || ok[0])
+                    return enumClass.cast(resolveMethod.invoke(null, java.lang.Long.valueOf(l)));
+            } catch (Exception e) {
+            }
+        }else if (canConvertToInt(obj)) {
+            int value = toInt(obj, ok);
+            E[] constants = enumClass.getEnumConstants();
+            if(constants!=null && (ok==null || ok[0]  && value<constants.length)) {
+                return constants[value];
+            }
+            
+        }
+        if(ok!=null && ok.length>0)
+            ok[0] = false;
+        return null;
+    }
+    
+    public static <F extends QFlags<?>> F toFlags(Class<F> flagsClass, Object obj) {
+        return toFlags(flagsClass, obj, null);
+    }
+    
+    public static <F extends QFlags<?>> F toFlags(Class<F> flagsClass, Object obj, boolean ok[]) {
+        if(flagsClass.isInstance(obj)) {
+            try{
+                return flagsClass.cast(obj);
+            } catch (Exception e) {
+            }
+        }else if (canConvertToInt(obj)) {
+            int value = toInt(obj, ok);
+            try{
+                return flagsClass.getConstructor(int.class).newInstance(value);
+            } catch (Exception e) {
+            }
+        }
+        if(ok!=null && ok.length>0)
+            ok[0] = false;
+        return null;
+    }
+    
+    public static void saveObject(QDataStream stream, Object variant){
+        saveObject(stream, variant, null);
+    }
+    
+    public static void saveObject(QDataStream stream, Object variant, Boolean[] ok){
+        long nativeId = QtJambi_LibraryUtilities.internal.nativeId(stream);
+        if (nativeId == 0)
+            throw new QNoNativeResourcesException("Function call on incomplete object of type: " +stream.getClass().getName());
+        saveObject(nativeId, variant, ok);
+    }
+    
+    public static Object loadObject(QDataStream stream){
+        return loadObject(stream, null);
+    }
+    
+    public static Object loadObject(QDataStream stream, Boolean[] ok){
+        long nativeId = QtJambi_LibraryUtilities.internal.nativeId(stream);
+        if (nativeId == 0)
+            throw new QNoNativeResourcesException("Function call on incomplete object of type: " +stream.getClass().getName());
+        return loadObject(nativeId, ok);
+    }
+    
+    private static native void saveObject(long stream_nativeId, Object variant, Boolean[] ok);
+    
+    private static native Object loadObject(long stream_nativeId, Boolean[] ok);
 }

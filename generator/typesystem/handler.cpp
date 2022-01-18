@@ -1078,7 +1078,7 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
         ctype->setNativeInterface(true);
         if(m_generate==TypeEntry::GenerateAll){
-            if(convertBoolean(generate, "generate", true)){
+            if(generate=="no-shell" || convertBoolean(generate, "generate", true)){
                 ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
             }else{
                 ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);

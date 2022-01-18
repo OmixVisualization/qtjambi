@@ -182,6 +182,14 @@ public class CreateNativeDeploymentTask extends Task {
 				if(!libraryIncludes.isEmpty())
 					libraryIncludes += ",";
 				libraryIncludes += jarpath + "/" + libName;
+				if(isMacExecutable) {
+					libraryIncludes += "/Contents/MacOS/QtJambiLauncher";
+					if(debug)
+						libraryIncludes += "_debug";
+					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Resources/empty.lproj";
+					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Info.plist";
+					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/PkgInfo";
+				}
 				java.io.File libFile = new java.io.File(new java.io.File(builddir, _libdir), libName);
 				java.io.File target = new java.io.File(targetLibDir, libName);
 				if(isMacExecutable) {

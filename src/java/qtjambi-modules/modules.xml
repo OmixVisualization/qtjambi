@@ -75,7 +75,10 @@
         <if>
             <istrue value="${qtjambi-deploy-bundle}"/>
             <then>
-                <copy file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}.pom" todir="${deploymentdir}/bundles"/>
+                <mkdir dir="${deploymentdir}/bundles"/>
+                <jar destfile="${deploymentdir}/bundles/qtjambi-parent-${qtjambi.jar.version}-bundle.jar">
+                    <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                </jar>
             </then>
         </if>
     </target>
@@ -809,8 +812,8 @@
         <jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
             <manifest>
                 <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
-                <attribute name="Bundle-Name"      value="${module} native bundle"/>
-                <attribute name="Bundle-Description"      value="${module} native bundle"/>
+                <attribute name="Bundle-Name"      value="${module} platform bundle"/>
+                <attribute name="Bundle-Description"      value="${module} platform bundle"/>
                 <attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
                 <attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
                 <attribute name="Bundle-ManifestVersion" value="2"/>
@@ -857,9 +860,6 @@
                 <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT.jar"/>
                 <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT-sources.jar"/>
                 <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT-javadoc.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-native-windows-x64-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-jre8-native-windows-x64-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-native-linux-x64-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-jre8-native-linux-x64-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-native-macos-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-jre8-native-macos-${qtjambi.jar.version}-SNAPSHOT.jar"/>
             </then>
         </if>
     </target>

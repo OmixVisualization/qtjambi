@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,6 +35,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QList;
 import io.qt.dbus.QDBusConnection;
 import io.qt.dbus.QDBusInterface;
 import io.qt.dbus.QDBusMessage;
@@ -57,13 +58,10 @@ public class TestDBus extends QApplicationTest {
 	    QDBusMessage msg = dbus_iface.call("ListNames");
 	    Assert.assertTrue(msg!=null);
 	    Assert.assertTrue(msg.arguments().size()>0);
-	    Assert.assertTrue(msg.errorMessage().isEmpty());
+	    Assert.assertTrue(msg.errorMessage(), msg.errorMessage().isEmpty());
 	    QDBusPendingReply<List<String>> preply = QDBusPendingReply.newStringListInstance(msg);
-	    System.out.println(preply.value());
-	    Assert.assertTrue(preply.value()!=null);
-	    Assert.assertFalse(preply.isError());
-	    System.out.println(preply.value().getClass());
-	    System.out.println(preply.value());
+	    Assert.assertFalse(preply.error().message(), preply.isError());
+	    Assert.assertTrue(preply.value() instanceof QList);
     }
     
     @Test
@@ -73,10 +71,8 @@ public class TestDBus extends QApplicationTest {
 	    QDBusPendingCall msg = dbus_iface.asyncCall("ListNames");
 	    Assert.assertTrue(msg!=null);
 		QDBusPendingReply<List<String>> preply = QDBusPendingReply.newStringListInstance(msg);
-	    Assert.assertTrue(preply.value()!=null);
-	    Assert.assertFalse(preply.isError());
-	    System.out.println(preply.value().getClass());
-	    System.out.println(preply.value());
+	    Assert.assertFalse(preply.error().message(), preply.isError());
+	    Assert.assertTrue(preply.value() instanceof QList);
     }
     
     
@@ -84,11 +80,8 @@ public class TestDBus extends QApplicationTest {
     public void test_QDBusReply() {
 		QDBusReply<List<String>> reply = QDBusConnection.sessionBus().connectionInterface().registeredServiceNames();
 		Assert.assertTrue(reply!=null);
-		List<String> list = reply.value();
-		Assert.assertTrue(list!=null);
-		for(String name : list) {
-			System.out.println(name);
-		}
+	    Assert.assertFalse(reply.error().message(), reply.error().isValid());
+	    Assert.assertTrue(reply.value() instanceof QList);
     }
     
     public static void main(String args[]) {

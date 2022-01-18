@@ -33,11 +33,25 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
+#include <QtDBus/QDBusVariant>
+#include <QtDBus/QDBusUnixFileDescriptor>
 #include "QDBusVariantReply.h"
+#include <QtDBus/qdbusmetatype.h>
+#include <QtDBus/private/qdbusargument_p.h>
+#include <QtCore/QIODevice>
 
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_registry.h>
+#include <qtjambi/qtjambi_repository.h>
 #include <qtjambi/qtjambi_cast.h>
+#include <qtjambi/qtjambi_functionpointer.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#define qtjambiMetaType qMetaTypeId
+#else
+#define qtjambiMetaType QMetaType::fromType
+#endif
 
 // emitting (writeSignalFunction)
 // emitting (writeConstructors)
@@ -59,15 +73,28 @@ void __qt_construct_QDBusReply_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject
     Q_UNUSED(__qt_this)
 }
 
+struct DBusReply{
+    QDBusError m_error;
+    QVariant m_data;
+    DBusReply(const QDBusMessage& reply, const QMetaType& metaType) : m_error(), m_data(metaType
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                                                     .id()
+#endif
+                                                                                              , nullptr) {
+        qDBusReplyFill(reply, m_error, m_data);
+    }
+};
+
 // new QDBusReply(const QDBusMessage & reply)
 void __qt_construct_QDBusReply_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusMessage & reply)")
     jobject reply0 = __java_arguments[0].l;
-    const QDBusMessage& __qt_reply0 = qtjambi_cast<const QDBusMessage& >(__jni_env, reply0);
-    QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>(__qt_reply0);
+    jobject metaType1 = __java_arguments[1].l;
+    const QDBusMessage& reply = qtjambi_cast<const QDBusMessage& >(__jni_env, reply0);
+    const QMetaType& metaType = qtjambi_cast<const QMetaType& >(__jni_env, metaType1);
+    new(__qtjambi_ptr) DBusReply(reply, metaType);
     Q_UNUSED(__jni_object)
-    Q_UNUSED(__qt_this)
 }
 
 // new QDBusReply(const QDBusPendingCall & pcall)
@@ -75,10 +102,13 @@ void __qt_construct_QDBusReply_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusPendingCall & pcall)")
     jobject pcall0 = __java_arguments[0].l;
-    const QDBusPendingCall& __qt_pcall0 = qtjambi_cast<const QDBusPendingCall& >(__jni_env, pcall0);
-    QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>(__qt_pcall0);
+    jobject metaType1 = __java_arguments[1].l;
+    const QDBusPendingCall& pcall = qtjambi_cast<const QDBusPendingCall& >(__jni_env, pcall0);
+    const QMetaType& metaType = qtjambi_cast<const QMetaType& >(__jni_env, metaType1);
+    QDBusPendingCall other(pcall);
+    other.waitForFinished();
+    new(__qtjambi_ptr) DBusReply(other.reply(), metaType);
     Q_UNUSED(__jni_object)
-    Q_UNUSED(__qt_this)
 }
 
 // destruct QDBusReply
@@ -108,17 +138,19 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 }
 
 // QDBusReply::QDBusReply(const QDBusMessage & reply)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusMessage_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusMessage_2Lio_qt_core_QMetaType_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jobject reply0)
+ jobject reply0,
+ jobject metaType)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::QDBusReply(const QDBusMessage & reply)")
     try{
-        jvalue arguments;
-        arguments.l = reply0;
-        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_2, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
+        jvalue arguments[2];
+        arguments[0].l = reply0;
+        arguments[1].l = metaType;
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_2, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -126,17 +158,19 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 }
 
 // QDBusReply::QDBusReply(const QDBusPendingCall & pcall)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusPendingCall_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusPendingCall_2Lio_qt_core_QMetaType_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jobject pcall0)
+ jobject pcall0,
+ jobject metaType)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::QDBusReply(const QDBusPendingCall & pcall)")
     try{
-        jvalue arguments;
-        arguments.l = pcall0;
-        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_3, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
+        jvalue arguments[2];
+        arguments[0].l = pcall0;
+        arguments[1].l = metaType;
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_3, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -201,7 +235,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
 }
 
 // QDBusReply::value() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_value_1native)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_value)
 (JNIEnv *__jni_env,
  jobject _this)
 {
@@ -216,6 +250,338 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
     }
     return nullptr;
 
+}
+
+template<typename T>
+void qtjambiDBusRegisterMetaType(int metaType)
+{
+    auto mf = [](QDBusArgument &arg, const void *t) { arg << *static_cast<const T *>(t); };
+    auto df = [](const QDBusArgument &arg, void *t) { arg >> *static_cast<T *>(t); };
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QDBusMetaType::registerMarshallOperators(metaType, mf, df);
+#else
+    QDBusMetaType::registerMarshallOperators(QMetaType(metaType), mf, df);
+#endif
+}
+
+template<>
+void qtjambiDBusRegisterMetaType<std::nullptr_t>(int metaType)
+{
+    auto mf = [](QDBusArgument &arg, const void *t) { arg << *static_cast<const qlonglong *>(t); };
+    auto df = [](const QDBusArgument &arg, void *t) { arg >> *static_cast<qlonglong *>(t); };
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QDBusMetaType::registerMarshallOperators(metaType, mf, df);
+#else
+    QDBusMetaType::registerMarshallOperators(QMetaType(metaType), mf, df);
+#endif
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_registerDBusMetaType)
+(JNIEnv *__jni_env,
+ jclass,
+ jint metaTypeId,
+ jclass classType,
+ jobject marshallFunction,
+ jobject demarshallFunction)
+{
+    try{
+        QMetaType metaType(metaTypeId);
+        if(metaTypeId==QMetaType::QString
+                || metaTypeId==QMetaType::QStringList
+                || metaTypeId==QMetaType::QByteArray
+                || metaTypeId==QMetaType::UChar
+                || metaTypeId==QMetaType::Bool
+                || metaTypeId==QMetaType::Short
+                || metaTypeId==QMetaType::UShort
+                || metaTypeId==QMetaType::Int
+                || metaTypeId==QMetaType::UInt
+                || metaTypeId==QMetaType::LongLong
+                || metaTypeId==QMetaType::ULongLong
+                || metaTypeId==QMetaType::Double
+                || metaTypeId==QMetaType::QVariant
+                || metaTypeId==qMetaTypeId<QDBusVariant>()
+                || metaTypeId==qMetaTypeId<QDBusObjectPath>()
+                || metaTypeId==qMetaTypeId<QDBusSignature>()
+                || metaTypeId==qMetaTypeId<QDBusUnixFileDescriptor>()
+                || metaTypeId==qMetaTypeId<JIntArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JByteArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JShortArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JLongArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JBooleanArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JCharArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JDoubleArrayWrapper>()
+                || metaTypeId==qMetaTypeId<JFloatArrayWrapper>()){
+            return;
+#ifndef QDBUS_NO_SPECIALTYPES
+        }else if(metaTypeId==QMetaType::Nullptr){
+            qtjambiDBusRegisterMetaType<std::nullptr_t>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QDate){
+            qtjambiDBusRegisterMetaType<QDate>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QTime){
+            qtjambiDBusRegisterMetaType<QTime>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QDateTime){
+            qtjambiDBusRegisterMetaType<QDateTime>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QRect){
+            qtjambiDBusRegisterMetaType<QRect>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QRectF){
+            qtjambiDBusRegisterMetaType<QRectF>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QSize){
+            qtjambiDBusRegisterMetaType<QSize>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QSizeF){
+            qtjambiDBusRegisterMetaType<QSizeF>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QPoint){
+            qtjambiDBusRegisterMetaType<QPoint>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QPointF){
+            qtjambiDBusRegisterMetaType<QPointF>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QLine){
+            qtjambiDBusRegisterMetaType<QLine>(metaTypeId);
+        }else if(metaTypeId==QMetaType::QLineF){
+            qtjambiDBusRegisterMetaType<QLineF>(metaTypeId);
+#endif
+        }else{
+            QDBusMetaType::MarshallFunction mf(nullptr);
+            QDBusMetaType::DemarshallFunction df(nullptr);
+            if(!marshallFunction || !demarshallFunction){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                {
+                    void*const* ptr = reinterpret_cast<void*const*>(&metaType);
+                    if(!ptr[2] || !ptr[3])
+                        JavaException::raiseRuntimeException(__jni_env, qPrintable(QString("Meta type %1 does not provide data stream operators.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+                }
+#else
+                if(!metaType.hasRegisteredDataStreamOperators())
+                    JavaException::raiseRuntimeException(__jni_env, qPrintable(QString("Meta type %1 does not provide data stream operators.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+#endif
+                mf = qtjambi_function_pointer<4,void(QDBusArgument &, const void *)>([metaTypeId](QDBusArgument &arg, const void *t) {
+                    QByteArray data;
+                    {
+                        QDataStream stream(&data, QIODevice::WriteOnly);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        QMetaType::save(stream, metaTypeId, t);
+#else
+                        QMetaType(metaTypeId).save(stream, t);
+#endif
+                    }
+                    arg.beginStructure();
+                    arg << data;
+                    arg.endStructure();
+                }, qHash(metaTypeId));
+                df = qtjambi_function_pointer<4,void(const QDBusArgument &, void *)>([metaTypeId](const QDBusArgument &arg, void *t) {
+                    QByteArray data;
+                    arg.beginStructure();
+                    arg >> data;
+                    arg.endStructure();
+                    {
+                        QDataStream stream(&data, QIODevice::ReadOnly);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        QMetaType::load(stream, metaTypeId, t);
+#else
+                        QMetaType(metaTypeId).load(stream, t);
+#endif
+                    }
+                }, qHash(metaTypeId));
+            }else if(metaTypeId==qMetaTypeId<JObjectWrapper>()
+                     || metaTypeId==qMetaTypeId<JMapWrapper>()
+                     || metaTypeId==qMetaTypeId<JCollectionWrapper>()
+                     || metaTypeId==qMetaTypeId<JIteratorWrapper>()
+                     || metaTypeId==qMetaTypeId<JObjectArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JIntArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JByteArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JLongArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JFloatArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JDoubleArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JBooleanArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JCharArrayWrapper>()
+                     || metaTypeId==qMetaTypeId<JShortArrayWrapper>()){
+                JavaException::raiseIllegalArgumentException(__jni_env, qPrintable(QString("Unable to marhall/unmarshall type %1.").arg(qtjambi_class_name(__jni_env, classType))) QTJAMBI_STACKTRACEINFO );
+            }else{
+                JObjectWrapper _marshallFunction(__jni_env, marshallFunction);
+                mf = qtjambi_function_pointer<4,void(QDBusArgument &, const void *)>([metaTypeId,_marshallFunction](QDBusArgument &arg, const void *t) {
+                    if(JNIEnv* env = qtjambi_current_environment()){
+                        jobject _arg = qtjambi_cast<jobject>(env, &arg);
+                        QTJAMBI_INVALIDATE_AFTER_USE(env, _arg)
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        QVariant variant(metaTypeId, t);
+#else
+                        QVariant variant(QMetaType(metaTypeId), t);
+#endif
+                        Java::Runtime::BiConsumer::accept(env, _marshallFunction.object(), _arg, qtjambi_cast<jobject>(env, variant));
+                    }
+                }, qHash(metaTypeId));
+                JObjectWrapper _demarshallFunction(__jni_env, demarshallFunction);
+                df = qtjambi_function_pointer<4,void(const QDBusArgument &, void *)>([metaTypeId,_demarshallFunction](const QDBusArgument &arg, void *t) {
+                    if(JNIEnv* env = qtjambi_current_environment()){
+                        jobject _arg = qtjambi_cast<jobject>(env, &arg);
+                        QTJAMBI_INVALIDATE_AFTER_USE(env, _arg)
+                        jobject result = Java::Runtime::Function::apply(env, _demarshallFunction.object(), _arg);
+                        QVariant variant = qtjambi_cast<QVariant>(env, result);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        if(variant.userType()!=metaTypeId){
+                            if(!variant.convert(metaTypeId))
+#else
+                        QMetaType metaType(metaTypeId);
+                        if(variant.metaType()!=metaType){
+                            if(!variant.convert(metaType))
+#endif
+                                JavaException::raiseRuntimeException(env, "Unable to convert variant." QTJAMBI_STACKTRACEINFO );
+                        }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        QMetaType::destruct(metaTypeId, t);
+                        QMetaType::construct(metaTypeId, t, variant.constData());
+#else
+                        metaType.destruct(t);
+                        metaType.construct(t, variant.constData());
+#endif
+                    }
+                }, qHash(metaTypeId));
+            }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            QDBusMetaType::registerMarshallOperators(metaTypeId, mf, df);
+#else
+            QDBusMetaType::registerMarshallOperators(metaType, mf, df);
+#endif
+    }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_typeToSignature)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject _metaType)
+{
+    try{
+        const QMetaType& metaType = qtjambi_cast<const QMetaType&>(__jni_env, _metaType);
+        return __jni_env->NewStringUTF(QDBusMetaType::typeToSignature(metaType
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                              .id()
+#endif
+                                                                      ));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_signatureToMetaType)
+(JNIEnv *__jni_env,
+ jclass,
+ jstring _signature)
+{
+    try{
+        J2CStringBuffer signature(__jni_env, _signature);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QMetaType metaType(QDBusMetaType::signatureToType(signature.constData()));
+#else
+        QMetaType metaType(QDBusMetaType::signatureToMetaType(signature.constData()));
+#endif
+        return qtjambi_cast<jobject>(__jni_env, metaType);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_demarshall)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject _arg,
+ jobject _metaType)
+{
+    try{
+        const QDBusArgument* arg = qtjambi_cast<const QDBusArgument*>(__jni_env, _arg);
+        qtjambi_check_resource(__jni_env, arg);
+        const QMetaType& metaType = qtjambi_cast<const QMetaType&>(__jni_env, _metaType);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QVariant variant(metaType.id(), nullptr);
+#else
+        QVariant variant(metaType, nullptr);
+#endif
+        if(QDBusMetaType::demarshall(*arg, metaType
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                  .id()
+#endif
+                                                    , variant.data())){
+            return qtjambi_from_qvariant(__jni_env, variant);
+        }else{
+            JavaException::raiseUnsupportedOperationException(__jni_env, qPrintable(QString("Unable to extract value of type %1 from QDBusArgument.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_marshall)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject _arg,
+ jobject _metaType,
+ jobject _value)
+{
+    try{
+        QDBusArgument* arg = qtjambi_cast<QDBusArgument*>(__jni_env, _arg);
+        qtjambi_check_resource(__jni_env, arg);
+        QMetaType* metaType = qtjambi_cast<QMetaType*>(__jni_env, _metaType);
+        QVariant variant = qtjambi_to_qvariant(__jni_env, _value);
+        if(metaType){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            if(variant.userType()!=metaType->id()){
+                if(!variant.convert(metaType->id()))
+#else
+            if(variant.metaType()!=*metaType){
+                if(!variant.convert(*metaType))
+#endif
+                    JavaException::raiseIllegalArgumentException(__jni_env, qPrintable(QString("Unable to convert value to type %1.").arg(QLatin1String(metaType->name()))) QTJAMBI_STACKTRACEINFO );
+            }
+        }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        if(!QDBusMetaType::marshall(*arg,
+                                   variant.userType(),
+                                   variant.constData())){
+            JavaException::raiseUnsupportedOperationException(__jni_env, qPrintable(QString("Unable to append %1 value to QDBusArgument.").arg(QLatin1String(QMetaType::typeName(variant.userType())))) QTJAMBI_STACKTRACEINFO );
+        }
+#else
+        if(!QDBusMetaType::marshall(*arg,
+                                   variant.metaType(),
+                                   variant.constData())){
+            JavaException::raiseUnsupportedOperationException(__jni_env, qPrintable(QString("Unable to append %1 value to QDBusArgument.").arg(QLatin1String(variant.metaType().name()))) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+void qtjambi_dbus_check_write_argument(JNIEnv * env, const QDBusArgument * arg){
+    QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
+    if(d && d->direction!=QDBusArgumentPrivate::Marshalling)
+        JavaException::raiseIllegalAccessException(env, "QDBusArgument: write from a read-only object" QTJAMBI_STACKTRACEINFO );
+}
+
+void qtjambi_dbus_check_read_argument(JNIEnv * env, const QDBusArgument * arg){
+    QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
+    if(d && d->direction!=QDBusArgumentPrivate::Demarshalling)
+        JavaException::raiseIllegalAccessException(env, "QDBusArgument: read from a write-only object" QTJAMBI_STACKTRACEINFO );
+}
+
+bool qtjambi_dbus_is_read_argument(const QDBusArgument *arg){
+    QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
+    return d && d->direction==QDBusArgumentPrivate::Demarshalling;
+}
+
+namespace Java{
+namespace Runtime{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(Class,
+              QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getComponentType)
+              QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isArray)
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getComponentType,()Ljava/lang/Class;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(isArray,()Z)
+)
+}
 }
 
 void initialize_meta_info_QtDBus()
@@ -234,4 +600,38 @@ void initialize_meta_info_QtDBus()
        ,ConstructorInfo(&__qt_construct_QDBusReply_2, "Lio/qt/dbus/QDBusMessage;")
        ,ConstructorInfo(&__qt_construct_QDBusReply_3, "Lio/qt/dbus/QDBusPendingCall;")
     });
+    QDBusMetaType::MarshallFunction mf = [](QDBusArgument &arg, const void *t) {
+        if(const JObjectWrapper* objectWrapper = reinterpret_cast<const JObjectWrapper*>(t)){
+            QByteArray buffer;
+            QDataStream s(&buffer, QIODevice::WriteOnly);
+            s << *objectWrapper;
+            arg.beginStructure();
+            arg << buffer;
+            arg.endStructure();
+        }
+    };
+    QDBusMetaType::DemarshallFunction df = [](const QDBusArgument &arg, void *t) {
+        if(JObjectWrapper* objectWrapper = reinterpret_cast<JObjectWrapper*>(t)){
+            QByteArray buffer;
+            arg.beginStructure();
+            arg >> buffer;
+            arg.endStructure();
+            QDataStream s(&buffer, QIODevice::ReadOnly);
+            s >> *objectWrapper;
+        }
+    };
+
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JObjectWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JMapWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JCollectionWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JIteratorWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JObjectArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JIntArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JByteArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JShortArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JLongArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JBooleanArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JCharArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JDoubleArrayWrapper>(), mf, df);
+    QDBusMetaType::registerMarshallOperators(qtjambiMetaType<JFloatArrayWrapper>(), mf, df);
 }

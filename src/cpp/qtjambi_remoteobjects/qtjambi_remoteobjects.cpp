@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,7 +29,9 @@
 
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_functionpointer.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <QtRemoteObjects/private/qconnectionfactories_p.h>
+#include <QtRemoteObjects/QRemoteObjectPendingCall>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 using ClientIoDevice = QtROClientIoDevice;
@@ -111,4 +113,51 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remo
     jmethodID constructorID = __jni_env->FromReflectedMethod(constructor);
     Q_ASSERT(constructorID);
     return __jni_env->NewObject(type, constructorID, __this, name);
+}
+
+void __qt_construct_QRemoteObjectPendingCall_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+void __qt_construct_QRemoteObjectPendingCall_0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+void __qt_destruct_QRemoteObjectPendingCall(void* ptr);
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
+    try{
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_0, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, nullptr);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2Lio_qt_remoteobjects_QRemoteObjectPendingCall_2)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object,
+ jobject other0)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>(const QRemoteObjectPendingCall & other)")
+    try{
+        jvalue arguments;
+        arguments.l = other0;
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_1, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, &arguments);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+void initialize_meta_info_RemoteObject(){
+    const std::type_info& typeId = registerTypeInfo<QRemoteObjectPendingReply<QVariant>>("QRemoteObjectPendingReply", "io/qt/remoteobjects/QRemoteObjectPendingReply");
+    registerOperators<QRemoteObjectPendingReply<QVariant>>();
+    int metaTypeID = registerMetaType<QRemoteObjectPendingReply<QVariant>>("QRemoteObjectPendingReply<QVariant>");
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QMetaType::registerNormalizedTypedef("QRemoteObjectPendingReply", metaTypeID);
+#else
+    QMetaType::registerNormalizedTypedef("QRemoteObjectPendingReply", QMetaType(metaTypeID));
+#endif
+    registerConstructorInfos(typeId, &__qt_destruct_QRemoteObjectPendingCall, {
+    });
 }

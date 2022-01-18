@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -125,6 +125,12 @@ public interface InternalAccess {
     io.qt.core.QObject lambdaContext(java.io.Serializable lambdaExpression);
     
     Class<?> lambdaReturnType(java.io.Serializable lambdaExpression);
+    
+    int[] lambdaMetaTypes(java.io.Serializable lambdaExpression);
+    
+    Class<?>[] lambdaClassTypes(java.io.Serializable lambdaExpression);
+    
+    Class<?> findGeneratedSuperclass(Class<?> clazz);
     
     public final class CallerContext{
         public CallerContext(Class<?> declaringClass, String methodName, int lineNumber) {
