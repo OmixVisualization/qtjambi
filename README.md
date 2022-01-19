@@ -18,6 +18,13 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6.2 in Java on Windows Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
 
+## Support
+
+QtJambi is an open source project making the power of Qt available for your Java projects free of charge. However, this project is causing ongoing costs. 
+Please consider supporting this project by donation. Your support is highly appreciated.
+
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=M5Z5VMA7FFCEE)
+
 ## How to build
 
 If you just want to use QtJambi for your application development you can skip these instructions 
