@@ -1321,14 +1321,10 @@ final class NativeLibraryManager {
                     }
 
                     File outFile = new File(tmpDir, path.replace('/', File.separatorChar));
-                    if(spec.getModule()!=null)
-                    	outFile.deleteOnExit();
                     File outFileDir = outFile.getParentFile();
                     if (!outFileDir.exists()) {
                         reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
                         outFileDir.mkdirs();
-                        if(spec.getModule()!=null)
-                        	outFileDir.deleteOnExit();
                     }
 
                     out = new FileOutputStream(outFile);
@@ -1376,14 +1372,10 @@ final class NativeLibraryManager {
                         }
 
                         File outFile = new File(tmpDir, e.getName().replace('/', File.separatorChar));
-                        if(spec.getModule()!=null)
-                        	outFile.deleteOnExit();
                         File outFileDir = outFile.getParentFile();
                         if (!outFileDir.exists()) {
                             reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
                             outFileDir.mkdirs();
-                            if(spec.getModule()!=null)
-                            	outFileDir.deleteOnExit();
                         }
 
                         out = new FileOutputStream(outFile);
@@ -1409,14 +1401,10 @@ final class NativeLibraryManager {
             	if(e instanceof SymlinkEntry) {
             		SymlinkEntry s = (SymlinkEntry)e;
             		File outFile = new File(tmpDir, s.getName().replace('/', File.separatorChar));
-            		if(spec.getModule()!=null)
-            			outFile.deleteOnExit();
                     File outFileDir = outFile.getParentFile();
                     if (!outFileDir.exists()) {
                         reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
                         outFileDir.mkdirs();
-                        if(spec.getModule()!=null)
-                        	outFileDir.deleteOnExit();
                     }
                     File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
                     if(target.exists()) {
@@ -1433,14 +1421,10 @@ final class NativeLibraryManager {
                 	_shiftedLinks.clear();
                 	for (SymlinkEntry s : shiftedLinks) {
                 		File outFile = new File(tmpDir, s.getName().replace('/', File.separatorChar));
-                		if(spec.getModule()!=null)
-                			outFile.deleteOnExit();
                         File outFileDir = outFile.getParentFile();
                         if (!outFileDir.exists()) {
                             reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
                             outFileDir.mkdirs();
-                            if(spec.getModule()!=null)
-                            	outFileDir.deleteOnExit();
                         }
                         File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
                         if(target.exists()) {

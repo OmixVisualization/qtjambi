@@ -122,11 +122,35 @@ QThreadUserData::QThreadUserData(QThread* thread):
     m_threadGroup(),
     m_isDaemon(true),
     m_name(),
-    m_uncaughtExceptionHandler()
+    m_uncaughtExceptionHandler(),
+    m_threadType(NoMainThread)
 {
-    m_finishedConnection = QObject::connect(thread, &QThread::finished, [this]() {
-        this->cleanup();
-    });
+    if(QCoreApplicationPrivate::theMainThread.loadRelaxed() == thread){
+#if defined(Q_OS_LINUX)
+        m_threadType = quintptr(gettid()) == quintptr(getpid()) ? ProcessMainThread : VirtualMainThread;
+#elif defined(Q_OS_MACOS)
+        m_threadType = pthread_main_np() ? ProcessMainThread : VirtualMainThread;
+#elif defined(Q_OS_WIN)
+        m_threadType = ProcessMainThread;
+#endif
+    }
+    switch(m_threadType){
+    case VirtualMainThread:
+        m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [this]() {
+            QCoreApplicationPrivate::theMainThread.storeRelaxed(nullptr);
+            this->cleanup();
+            QObject::disconnect(this->m_finishedConnection);
+        }, Qt::DirectConnection);
+        break;
+    case NoMainThread:
+        m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [this]() {
+            this->cleanup();
+            QObject::disconnect(this->m_finishedConnection);
+        }, Qt::DirectConnection);
+        break;
+    default:
+        break;
+    }
 }
 
 QThreadUserData::QThreadUserData(JNIEnv *env, jobject threadGroup, QThread* thread):
@@ -136,7 +160,17 @@ QThreadUserData::QThreadUserData(JNIEnv *env, jobject threadGroup, QThread* thre
 }
 
 QThreadUserData::~QThreadUserData(){
-    QObject::disconnect(m_finishedConnection);
+    switch(m_threadType){
+    case ProcessMainThread:
+        cleanup();
+        break;
+    default:
+        if(m_finishedConnection){
+            QObject::disconnect(m_finishedConnection);
+            cleanup();
+        }
+        break;
+    }
 }
 
 void QThreadUserData::cleanup(){
@@ -254,10 +288,12 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                                          {
                                              QWriteLocker locker(QtJambiLinkUserData::lock());
                                              if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread.data())){
-                                                 QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
-                                                 locker.unlock();
-                                                 delete data;
-                                                 locker.relock();
+                                                 if(data->purgeOnExit()){
+                                                     QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
+                                                     locker.unlock();
+                                                     delete data;
+                                                     locker.relock();
+                                                 }
                                              }
                                          }
                                      }
@@ -331,7 +367,7 @@ EventDispatcherCheck::~EventDispatcherCheck(){
                 m_finalActions.takeFirst()();
             }
             m_finalActions.clear();
-            if(data){
+            if(data && !data->purgeOnExit()){
                 QWriteLocker locker(QtJambiLinkUserData::lock());
                 QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread, nullptr);
                 delete data;
