@@ -610,8 +610,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNative)
         connectionType = connectionType & ~Qt::UniqueConnection;
         if(connectionType==Qt::AutoConnection || connectionType==Qt::DirectConnection){
             connectionType = Qt::DirectConnection;
-            receiver = new QObject();
-            receiver->moveToThread(nullptr);
+            if(sender->metaObject()->inherits(&QThread::staticMetaObject)){
+                receiver = new QObject();
+                receiver->moveToThread(nullptr);
+            }
         }else if(qt_signalMethod.enclosingMetaObject()==&QThread::staticMetaObject && QThreadData::get2(static_cast<QThread*>(sender))->isAdopted){
             QString _connectionType;
             if(connectionType==Qt::BlockingQueuedConnection){

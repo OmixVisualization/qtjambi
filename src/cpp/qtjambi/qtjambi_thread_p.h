@@ -81,6 +81,7 @@ public:
     inline void clearContextClassLoader(JNIEnv *env) { m_contextClassLoader.clear(env); }
     inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
     inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
+    inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
 private:
     void cleanup();
     QList<QPointer<QObject>> m_objectsForDeletion;
@@ -92,6 +93,15 @@ private:
     JObjectWrapper m_uncaughtExceptionHandler;
     JObjectWrapper m_contextClassLoader;
     QMetaObject::Connection m_finishedConnection;
+
+    enum ThreadType{
+        ProcessMainThread,
+        VirtualMainThread,
+        NoMainThread
+    };
+
+    ThreadType m_threadType;
+
     friend EventDispatcherCheck;
 };
 

@@ -306,10 +306,12 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread)
                                                        {
                                                            QWriteLocker locker(QtJambiLinkUserData::lock());
                                                            if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread.data())){
-                                                               QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
-                                                               locker.unlock();
-                                                               delete data;
-                                                               locker.relock();
+                                                               if(data->purgeOnExit()){
+                                                                   QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
+                                                                   locker.unlock();
+                                                                   delete data;
+                                                                   locker.relock();
+                                                               }
                                                            }
                                                        }
                                                        vm->DetachCurrentThread();
@@ -317,13 +319,16 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread)
                                                       while(!m_finalActions.isEmpty()){
                                                           m_finalActions.takeFirst()();
                                                       }
+
                                                       {
                                                            QWriteLocker locker(QtJambiLinkUserData::lock());
                                                            if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, m_thread.data())){
-                                                               QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
-                                                               locker.unlock();
-                                                               delete data;
-                                                               locker.relock();
+                                                               if(data->purgeOnExit()){
+                                                                   QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_thread.data(), nullptr);
+                                                                   locker.unlock();
+                                                                   delete data;
+                                                                   locker.relock();
+                                                               }
                                                            }
                                                       }
                                                   }
@@ -6969,13 +6974,18 @@ ApplicationData::ApplicationData(JNIEnv *env, jobjectArray array)
 {
     for(jsize i=0; i<m_size; ++i){
         jstring strg = jstring(env->GetObjectArrayElement(array, i));
-        jsize length = env->GetStringUTFLength(strg);
-        if(length>0){
-            m_chars[i] = new char[size_t(length+1)];
-            m_chars[i][length] = 0;
-            env->GetStringUTFRegion(strg, 0, length, m_chars[i]);
+        if(strg){
+            jsize length = env->GetStringUTFLength(strg);
+            if(length>=0){
+                m_chars[i] = new char[size_t(length+1)];
+                m_chars[i][length] = 0;
+                env->GetStringUTFRegion(strg, 0, length, m_chars[i]);
+            }else{
+                m_chars[i] = nullptr;
+            }
         }else{
-            m_chars[i] = nullptr;
+            m_chars[i] = new char[1];
+            m_chars[i][0] = 0;
         }
     }
 }
