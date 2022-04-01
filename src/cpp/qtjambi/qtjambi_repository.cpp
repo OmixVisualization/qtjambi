@@ -51,7 +51,8 @@ void clear_repository_at_shutdown(JNIEnv *){
     {
         QRecursiveMutexLocker locker(gMutex());
         Q_UNUSED(locker)
-        globalClassPointers.swap(*gGlobalClassPointers);
+        if(!gGlobalClassPointers.isDestroyed())
+            globalClassPointers.swap(*gGlobalClassPointers);
     }
     for(void** ptr : globalClassPointers){
         *ptr = nullptr;
@@ -74,6 +75,16 @@ void clear_repository_at_shutdown(JNIEnv *){
     qtjambi_throw_java_exception(env);
 
 namespace Java{
+
+namespace QtQml{
+
+namespace Internal{
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlTypes$JarImport,
+                                        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+        )
+}
+
+}
 
 namespace QtCore{
 
@@ -591,10 +602,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject,
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QMetaObject$Connection)
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal/fileengine,QClassPathEngine,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
-)
-
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaType$GenericTypeInterface,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(metaType,()Lio/qt/core/QMetaType;)
 )
@@ -956,7 +963,23 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,System,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URL,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(openConnection,()Ljava/net/URLConnection;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URLConnection,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,()Ljava/io/InputStream;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getContentLengthLong,()J)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,InputStream,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(close,()V)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(read,([B)I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(skip,(J)J)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/zip,ZipEntry,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getSize,()J)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URLClassLoader,
@@ -1177,7 +1200,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractSignal,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$SignalInfo,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ILjava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(JILjava/util/List;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$SignalParameterType,
@@ -1217,6 +1240,24 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiSignals$AbstractMultiSigna
     QTJAMBI_REPOSITORY_DEFINE_METHOD(signal,(I)Lio/qt/internal/QtJambiSignals$AbstractSignal;)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiResources,
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(pathToJarFiles,(Ljava/lang/String;)Ljava/util/Collection;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(classPathDirs,()Ljava/util/Collection;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(makeUrl,(Ljava/lang/String;)Ljava/net/URL;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveUrlToMyJarFile,(Ljava/net/URL;)Lio/qt/internal/QtJambiResources$MyJarFile;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isDirectory,(Lio/qt/internal/QtJambiResources$MyJarFile;Ljava/lang/String;)Z)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiResources$MyJarFile,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,(Ljava/lang/String;)Ljava/util/jar/JarEntry;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,(Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(fileTime,(Ljava/util/zip/ZipEntry;)Lio/qt/core/QDateTime;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getOrReopen,()I)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(put,()V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;Lio/qt/core/QDir$Filters;Ljava/util/Collection;Ljava/lang/String;)V)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt,QtObject)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtObjectInterface,
@@ -1235,6 +1276,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QNativePointer,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/nio/Buffer;J)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(indirections,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(byteSize,()J)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(setVerificationEnabled,(Z)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(invalidate,()V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isReadOnly,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(pointer,()J)
 )

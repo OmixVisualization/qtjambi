@@ -39,7 +39,7 @@ import org.junit.Test;
 
 import io.qt.bluetooth.QBluetoothDeviceInfo;
 
-public class TestBluetoothInjectedCodeQt6 extends QApplicationTest {
+public class TestBluetoothInjectedCodeQt6 extends ApplicationInitializer {
     @Test
     public void testQBluetoothDeviceInfo()
     {

@@ -36,7 +36,7 @@ import io.qt.*;
 import io.qt.core.*;
 import io.qt.test.*;
 
-public class TestTestlib extends QApplicationTest {
+public class TestTestlib extends ApplicationInitializer {
     @Test
     public void test() {
     	class Object extends QObject{

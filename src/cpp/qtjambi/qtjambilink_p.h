@@ -142,19 +142,27 @@ private:
 
 struct QtJambiLinkUserData : public QtJambiObjectData
 {
-    QtJambiLinkUserData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject);
+    QtJambiLinkUserData(const QWeakPointer<QtJambiLink> & link);
     ~QtJambiLinkUserData() override;
 
-    inline const QMetaObject* metaObject() const {return m_metaObject; }
     inline const QWeakPointer<QtJambiLink>& link() const { return m_link; }
+    virtual inline const QMetaObject* metaObject() const {return nullptr; }
 
     QTJAMBI_OBJECTUSERDATA_ID_DECL
     static QReadWriteLock* lock();
 
 private:
     QWeakPointer<QtJambiLink> m_link;
+};
+
+struct QtJambiMetaObjectLinkUserData : public QtJambiLinkUserData{
+    QtJambiMetaObjectLinkUserData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject);
+    inline const QMetaObject* metaObject() const override {return m_metaObject; }
+private:
     const QMetaObject* m_metaObject;
 };
+
+class QSharedPointerToQObjectLink;
 
 class PointerContainer : public QObject{
 public:
@@ -163,7 +171,7 @@ public:
     ~PointerContainer() override;
     void* getSharedPointer() const;
     QObject *qobject() const;
-    virtual jobject getListOfExtraSignal(JNIEnv * env) const;
+    virtual jobject getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const;
     void setAsQObjectDeleted();
 private:
     void* m_ptr_shared_pointer;
@@ -177,9 +185,20 @@ class PointerContainerWithExtraSignals : public PointerContainer{
 public:
     explicit PointerContainerWithExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException);
     ~PointerContainerWithExtraSignals() override = default;
-    jobject getListOfExtraSignal(JNIEnv * env) const override;
+    jobject getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const override;
 private:
     const QHash<int,QtJambiSignalInfo> m_extraSignals;
+};
+
+class PointerContainerWithPendingExtraSignals : public PointerContainer{
+public:
+    explicit PointerContainerWithPendingExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException);
+    ~PointerContainerWithPendingExtraSignals() override = default;
+    jobject getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const override;
+private:
+    void resolveListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const;
+    mutable QHash<int,QtJambiSignalInfo> m_extraSignals;
+    mutable const QMetaObject* m_metaObject;
 };
 
 class QtJambiLink{
@@ -220,10 +239,9 @@ public:
     static const QSharedPointer<QtJambiLink>& createLinkForSharedPointerToContainer(JNIEnv *env, jobject java,
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerGetterFunction pointerGetter, AbstractContainerAccess* containerAccess);
-    static const QSharedPointer<QtJambiLink>& createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java, bool is_shell);
-    static const QSharedPointer<QtJambiLink>& createLinkForPendingQObject(JNIEnv *env, jobject java, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool is_shell);
-    static const QSharedPointer<QtJambiLink>& createLinkForSharedPointerToQObject(JNIEnv *env, jobject java, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerQObjectGetterFunction pointerGetter);
-    static const QSharedPointer<QtJambiLink>& createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
+    static const QSharedPointer<QtJambiLink>& createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java, bool is_shell, const QMetaObject* superTypeForCustomMetaObject = nullptr);
+    static const QSharedPointer<QtJambiLink>& createLinkForSharedPointerToQObject(JNIEnv *env, jobject java, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject = nullptr);
+    static const QSharedPointer<QtJambiLink>& createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, JavaException& ocurredException);
     static const QSharedPointer<QtJambiLink>& createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject java, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
@@ -393,6 +411,7 @@ protected:
 #endif
     friend struct QtJambiLinkUserData;
     friend class PointerToQObjectLink;
+    friend class PointerContainerWithPendingExtraSignals;
 };
 
 class PointerToObjectLink : public QtJambiLink{
@@ -629,7 +648,6 @@ public:
 private:
     QHash<int,QtJambiSignalInfo> m_extraSignals;
     friend QtJambiLink;
-    friend class PointerToQObjectWithDetectedExtraSignalsLink;
 };
 
 class PointerToPendingQObjectLink : public PointerToQObjectLink{
@@ -640,17 +658,9 @@ public:
     jobject getListOfExtraSignal(JNIEnv * env) const override;
     void init(JNIEnv* env) override;
 private:
-    void resolveListOfExtraSignal(JNIEnv * env);
-    QHash<int,QtJambiSignalInfo> m_extraSignals;
-    friend QtJambiLink;
-    friend class PointerToQObjectWithDetectedExtraSignalsLink;
-};
-
-class PointerToQObjectWithDetectedExtraSignalsLink : public PointerToQObjectWithExtraSignalsLink{
-protected:
-    PointerToQObjectWithDetectedExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, JavaException& ocurredException);
-public:
-    void init(JNIEnv* env) override;
+    void resolveListOfExtraSignal(JNIEnv * env) const;
+    mutable QHash<int,QtJambiSignalInfo> m_extraSignals;
+    mutable const QMetaObject* m_metaObject;
     friend QtJambiLink;
 };
 
@@ -722,7 +732,7 @@ private:
 
 class QSharedPointerToQObjectLink : public QSharedPointerLink{
 protected:
-    QSharedPointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException);
+    QSharedPointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject, JavaException& ocurredException);
 public:
     ~QSharedPointerToQObjectLink() override;
     virtual QObject *qobject() const override;
@@ -736,10 +746,10 @@ public:
     void onDispose(JNIEnv *env) override;
     void onClean(JNIEnv *env) override;
     void invalidate(JNIEnv *env) override;
-    inline PointerContainer* pointerContainer() const {return m_pointerContainer;}
     QString describe() const override;
     void removeInterface(const std::type_info&) override;
     bool isDeleteLater() const { return m_flags.testFlag(Flag::IsDeleteLater); }
+    jobject getListOfExtraSignal(JNIEnv * env) const;
 private:
     void setDeleteLater(){ m_flags.setFlag(Flag::IsDeleteLater); }
     PointerContainer* m_pointerContainer;
@@ -764,6 +774,20 @@ private:
     friend QtJambiLink;
 };
 
+class PointerToPendingQObjectInterfaceLink : public PointerToQObjectInterfaceLink{
+protected:
+    PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
+public:
+    ~PointerToPendingQObjectInterfaceLink() override = default;
+    jobject getListOfExtraSignal(JNIEnv * env) const override;
+    void init(JNIEnv* env) override;
+private:
+    void resolveListOfExtraSignal(JNIEnv * env) const;
+    mutable QHash<int,QtJambiSignalInfo> m_extraSignals;
+    mutable const QMetaObject* m_metaObject;
+    friend QtJambiLink;
+};
+
 class PointerToQObjectInterfaceWithExtraSignalsLink : public PointerToQObjectInterfaceLink{
 protected:
     PointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException);
@@ -774,14 +798,6 @@ private:
     friend QtJambiLink;
     friend class PointerToQObjectInterfaceWithDetectedExtraSignalsLink;
     QHash<int,QtJambiSignalInfo> m_extraSignals;
-};
-
-class PointerToQObjectInterfaceWithDetectedExtraSignalsLink : public PointerToQObjectInterfaceWithExtraSignalsLink{
-protected:
-    PointerToQObjectInterfaceWithDetectedExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, JavaException& ocurredException);
-public:
-    void init(JNIEnv* env) override;
-    friend QtJambiLink;
 };
 
 class QSharedPointerToObjectInterfaceLink : public QSharedPointerToObjectLink{
@@ -806,7 +822,7 @@ private:
 
 class QSharedPointerToQObjectInterfaceLink : public QSharedPointerToQObjectLink{
 private:
-    QSharedPointerToQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException);
+    QSharedPointerToQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject, JavaException& ocurredException);
     INTERFACE_DECL(QSharedPointerToQObjectInterfaceLink)
 };
 

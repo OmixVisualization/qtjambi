@@ -16,7 +16,7 @@ HEADERS += \
     qwidgetutils.h
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
+exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAMBILIB/generated.pri)
 
 # Some classes (such as QLine) need access to <qtjambi_core_qhashes.h>
 INCLUDEPATH += $$PWD/../qtjambi_core $$PWD/../qtjambi_gui

@@ -13,6 +13,7 @@
 #define Q_COMPILER_DEFAULT_MEMBERS
 #define Q_COMPILER_NULLPTR
 #define Q_COMPILER_EXPLICIT_OVERRIDES
+#define Q_DECL_HIDDEN_STATIC_METACALL
 //#define constexpr
 
 //#define noexcept(X)
@@ -72,6 +73,10 @@
 #define QT_DEPRECATED_VERSION_6(a) QTJAMBI_DEPRECATED
 #define Q_DECLARE_TR_FUNCTIONS
 #define Q_OBJECT_FAKE Q_OBJECT
+#define Q_GADGET_EXPORT(...) Q_GADGET
+#define Q_OBJECT_EXPORT(...) Q_OBJECT
+#define Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(...)
+#define Q_DECLARE_MIXED_ENUM_OPERATORS(...)
 
 // There are symbols in Qt that exist in Debug but
 // not in release

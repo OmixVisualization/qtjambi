@@ -5,10 +5,10 @@ final class QtJambi_LibraryUtilities {
     static {
     	try {
             io.qt.QtUtilities.initializePackage("io.qt.internal");
-        } catch(RuntimeException | Error t) {
+        } catch(Error t) {
             throw t;
         } catch(Throwable t) {
-            throw new RuntimeException(t);
+            throw new ExceptionInInitializerError(t);
         }
     }
     

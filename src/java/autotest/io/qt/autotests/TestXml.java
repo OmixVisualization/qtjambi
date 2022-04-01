@@ -45,7 +45,7 @@ import io.qt.xml.QDomElement;
 import io.qt.xml.QDomNodeList;
 import io.qt.xml.QDomText;
 
-public class TestXml extends QApplicationTest {
+public class TestXml extends ApplicationInitializer {
 
     private void compare(String correct, String test) {
         StringTokenizer tokTest = new StringTokenizer(test, "\n");

@@ -45,7 +45,7 @@ import io.qt.QtPropertyUser;
 import io.qt.QtPropertyWriter;
 import io.qt.core.*;
 
-public class TestMetaProgrammingQt6 extends QApplicationTest {
+public class TestMetaProgrammingQt6 extends ApplicationInitializer {
 	
 	private static class FullOfPropertiesSuper extends QObject {
 
@@ -190,7 +190,7 @@ public class TestMetaProgrammingQt6 extends QApplicationTest {
 
         FullOfProperties fop = new FullOfProperties();
         for (ExpectedValues e : expectedValues) {
-//            Utils.println(1, "Current property: " + e.name);
+//            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "Current property: " + e.name);
             QMetaProperty property = fop.metaObject().property(e.name);
             assertTrue(property!=null);
             assertEquals(property.name()+" writable", e.writable, property.isWritable());

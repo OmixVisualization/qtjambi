@@ -32,12 +32,39 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QResource;
+import io.qt.core.QThread;
 
-public class TestApplicationArgs extends QApplicationTest {
+public class TestApplicationArgs extends UnitTestInitializer {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+        try {
+			if(QCoreApplication.instance()==null) {
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testInitialize: begin");
+				QResource.addClassPath(".");
+				QCoreApplication.setApplicationName("QtJambiUnitTest");
+				QCoreApplication.initialize(new String[]{"arg1", "arg2", "arg3"});
+			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testInitialize: done");
+		        QThread.currentThread().setObjectName("main");
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+			throw e;
+		}
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		ApplicationInitializer.testDispose();
+	}
+	
     @Test
     public void testArguments() {
     	assertEquals(Arrays.asList("QtJambiUnitTest", "arg1", "arg2", "arg3"), QCoreApplication.arguments());

@@ -49,7 +49,7 @@ import java.util.Arrays;
 import org.junit.Test;
 import io.qt.gui.*;
 
-public class TestOpenGLVersionFunctionsQt5 extends QApplicationTest {
+public class TestOpenGLVersionFunctionsQt5 extends ApplicationInitializer {
 
 	@Test
 	public void test() {

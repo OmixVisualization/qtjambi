@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationScxml {
+public class TestInitializationScxml extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.scxml");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.scxml"));
     }
 }

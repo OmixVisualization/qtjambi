@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoImplementationException;
@@ -44,7 +45,6 @@ import io.qt.autotests.generated.AnotherNonAbstractSubclass;
 import io.qt.autotests.generated.FunctionalTest;
 import io.qt.autotests.generated.SetupLayout;
 import io.qt.autotests.generated.TestInterfaceObject;
-import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QSize;
@@ -60,7 +60,12 @@ import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QVBoxLayout;
 import io.qt.widgets.QWidget;
 
-public class TestVirtualFunctions extends QApplicationTest {
+public class TestVirtualFunctions extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 
 	static class JavaNonAbstractSubclass extends AbstractClass {
 	    @Override

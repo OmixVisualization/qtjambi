@@ -100,7 +100,7 @@ import io.qt.core.Qt;
 //   Remove the need for runOut() and runIn() as we have ability to on demand setup
 //    QEventLoop in runOut() now.  So merge these 2 methods.
 //  Verify the QMessage output for attempting DirectConnection and not be able to.
-public class TestSignalCrossThread extends QApplicationTest implements UncaughtExceptionHandler {
+public class TestSignalCrossThread extends ApplicationInitializer implements UncaughtExceptionHandler {
 
 	private Thread mainThread;
 	
@@ -144,12 +144,12 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 
 		public void run() {
-			Utils.println(2, "run() start " + QThread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run() start " + QThread.currentThread() + " " + this.thread());
 			if(signalReceiver == null)
 				runIn();
 			else
 				runOut();
-			Utils.println(2, "run() finish " + QThread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run() finish " + QThread.currentThread() + " " + this.thread());
 			// object must be deleted before thread is deleted!
 			dispose();
 		}
@@ -159,11 +159,11 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 				//signal = new Signal1<Object>();
 				signal.connect(this::testThreadCallback, connectionType);
 				signalReceiver = signal;
-				Utils.println(2, "runIn(connect testThreadCallback(Object)) " + QThread.currentThread() + " " + this.thread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runIn(connect testThreadCallback(Object)) " + QThread.currentThread() + " " + this.thread());
 			}
 
 			eventLoop = new QEventLoop();
-			Utils.println(2, "runIn(eventLoop.parent=" + eventLoop.parent() + ") " + QThread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runIn(eventLoop.parent=" + eventLoop.parent() + ") " + QThread.currentThread() + " " + this.thread());
 			if(notifyObject != null)
 				notifyObject.doNotify(1);
 			while(true) {
@@ -188,7 +188,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			eventLoop = null;
 		}
 		private void runOut() {
-			Utils.println(2, "runOut(eventLoop=" + eventLoop + ") " + Thread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runOut(eventLoop=" + eventLoop + ") " + Thread.currentThread() + " " + this.thread());
 			if(notifyObject != null)
 				notifyObject.doNotify(1);
 			while(true) {
@@ -207,13 +207,13 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 					}
 				}
 				if(doEmit) {
-					Utils.println(2, "emit(" + dataObject + ") from subthread " + Thread.currentThread() + " " + this.thread());
+					java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "emit(" + dataObject + ") from subthread " + Thread.currentThread() + " " + this.thread());
 					signalReceiver.emit(dataObject);
 					if(notifyObject != null)
 						notifyObject.doNotify(4);
 				}
 				if(doProcessEvents) {
-					Utils.println(2, "processEvents() from subthread " + Thread.currentThread() + " " + this.thread());
+					java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "processEvents() from subthread " + Thread.currentThread() + " " + this.thread());
 					if(eventLoop == null)
 						eventLoop = new QEventLoop();
 					eventLoop.processEvents();
@@ -227,14 +227,14 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 					if(notifyObject != null)
 						notifyObject.doNotify(2);
 					if(!emit && !processEvents) {
-						Utils.println(2, "runOut() SLEEP " + Thread.currentThread() + " " + this.thread());
+						java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runOut() SLEEP " + Thread.currentThread() + " " + this.thread());
 						try {
 							wait();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 							break;
 						}
-						Utils.println(2, "runOut() WAKE " + Thread.currentThread() + " " + this.thread());
+						java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runOut() WAKE " + Thread.currentThread() + " " + this.thread());
 					}
 				}
 			}
@@ -254,8 +254,8 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 				} catch (QNoNativeResourcesException e) {
 					myThread = " object disposed";
 				}
-				Utils.println(2, "signalShutdown(thread=" + tmpEventLoop.thread() + ") " + Thread.currentThread() + myThread);
-				Utils.println(2, "signalShutdown(" + tmpEventLoop + ") " + Thread.currentThread() + myThread);
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "signalShutdown(thread=" + tmpEventLoop.thread() + ") " + Thread.currentThread() + myThread);
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "signalShutdown(" + tmpEventLoop + ") " + Thread.currentThread() + myThread);
 				// postEvent() does not work, maybe because there is no parent/child relationship
 				//  between QEventLoops.
 				//QCoreApplication.postEvent(tmpEventLoop, new QEvent(Type.Quit));
@@ -290,7 +290,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 
 		protected void testThreadCallback(Object o) {
-			Utils.println(2, "testThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
 			synchronized (this) {
 				this.dataObject = o;
 				this.slotInvoked = true;
@@ -327,10 +327,10 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 		public void connect(Qt.ConnectionType connectionType) {
 			signal.connect(this::recvThreadCallback, connectionType);
-			Utils.println(2, "MyRecever() connect recvThreadCallback(Object)" + Thread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "MyRecever() connect recvThreadCallback(Object)" + Thread.currentThread() + " " + this.thread());
 		}
 		protected void recvThreadCallback(Object o) {  // renamed to avoice confusion
-			Utils.println(2, "recvThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "recvThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
 			synchronized (this) {
 				this.result = o;
 				notifyAll();
@@ -374,7 +374,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		private int didKind = 0;
 		public void doNotify(int kind) {
 			synchronized (this) {
-				Utils.println(2, "doNotify(" + kind + "; change=" + ((didKind < kind) ? "true" : "false") + "; on=" + this + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "doNotify(" + kind + "; change=" + ((didKind < kind) ? "true" : "false") + "; on=" + this + ") " + Thread.currentThread());
 				if(didKind < kind)
 					didKind = kind;
 				notifyAll();
@@ -392,7 +392,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 		protected boolean isNotified(int kind) {
 			synchronized (this) {
-				Utils.println(2, "isNotified(at=" + didKind + "; want=" + kind + "; on=" + this + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "isNotified(at=" + didKind + "; want=" + kind + "; on=" + this + ") " + Thread.currentThread());
 				if(didKind >= kind)
 					return true;
 			}
@@ -419,7 +419,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 						return true;
 				}
 			}
-			Utils.println(2, "waitForNotify(is=" + didKind + "; want=" + kind + "; on=" + this + ") EXPIRED after " + timeout + " " + Thread.currentThread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "waitForNotify(is=" + didKind + "; want=" + kind + "; on=" + this + ") EXPIRED after " + timeout + " " + Thread.currentThread());
 			return false;
 		}
 	}
@@ -429,7 +429,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 			MyNotifiable mySendNotifiable = new MyNotifiable("mySendNotifiable");
 	
-			Utils.println(2, "helperThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "helperThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread());
 	
 			// we test emitting out from another thread into callback on this thread
 			// myReceiver has thread affinity with this testcase thread
@@ -470,7 +470,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 			MyNotifiable mySendNotifiable = new MyNotifiable("mySendNotifiable");
 	
-			Utils.println(2, "helperQThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread());
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "helperQThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread());
 	
 			// we test emitting out from another thread into callback on this thread
 			// myReceiver has thread affinity with this testcase thread
@@ -556,7 +556,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 	private void helperThreadIn(Qt.ConnectionType connectionType) {
 		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 
-		Utils.println(2, "helperThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "helperThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread());
 
 		MyImpl myImpl = new MyImpl(myRecvNotifiable, null, connectionType);
 		Thread thread = new Thread(myImpl);
@@ -584,7 +584,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 	private void helperQThreadIn(Qt.ConnectionType connectionType) {
 		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 
-		Utils.println(2, "helperQThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "helperQThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread());
 
 		MyImpl myImpl = new MyImpl(myRecvNotifiable, null, connectionType);
 		QThread thread = QThread.create(myImpl);
@@ -616,7 +616,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(2000, 2));
 		assertEquals(2, myRecvNotifiable.getNotified());
 
-		Utils.println(2, "emit(" + o + ") " + Thread.currentThread());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "emit(" + o + ") " + Thread.currentThread());
 		myImpl.signal.emit(o);  // do delivery (or queue delivery) from this thread
 		QEventLoop loop = new QEventLoop();
 		QTimer.singleShot(2000, loop::quit);

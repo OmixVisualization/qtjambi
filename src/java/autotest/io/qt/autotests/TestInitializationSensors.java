@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationSensors {
+public class TestInitializationSensors extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.sensors");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.sensors"));
     }
 }

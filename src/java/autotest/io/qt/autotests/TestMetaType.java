@@ -48,7 +48,7 @@ import io.qt.core.QVariant;
 import io.qt.gui.QColor;
 import io.qt.gui.QWindow;
 
-public class TestMetaType extends QApplicationTest {
+public class TestMetaType extends ApplicationInitializer {
     @Test
     public void testRegisterStreams() {
     	QMetaType.registerDataStreamOperators((QDataStream s, MetaValue value)->{

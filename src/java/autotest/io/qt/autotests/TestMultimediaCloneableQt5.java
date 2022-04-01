@@ -45,14 +45,12 @@ import io.qt.internal.QtJambiInternal;
 import io.qt.multimedia.QAudioDeviceInfo;
 import io.qt.multimedia.QAudioFormat;
 import io.qt.multimedia.QVideoSurfaceFormat;
-import io.qt.unittests.support.FilterMultimedia;
 
-public class TestMultimediaCloneableQt5 extends QApplicationTest {
+public class TestMultimediaCloneableQt5 extends ApplicationInitializer {
 
     @BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue(FilterMultimedia.detectStatic());
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
     }
     
 	@Test

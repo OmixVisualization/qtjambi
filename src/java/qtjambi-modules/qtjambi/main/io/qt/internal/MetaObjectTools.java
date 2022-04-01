@@ -419,9 +419,9 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         if (designable != null) {
             String value = designable.value();
 
-            if (value.equals("true")) {
+            if (value.equalsIgnoreCase("true")) {
                 return Boolean.TRUE;
-            } else if (value.equals("false")) {
+            } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
             } else if(QtJambiInternal.majorVersion()<6) { 
             	try {
@@ -445,9 +445,9 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         if (scriptable != null) {
             String value = scriptable.value();
 
-            if (value.equals("true")) {
+            if (value.equalsIgnoreCase("true")) {
                 return Boolean.TRUE;
-            } else if (value.equals("false")) {
+            } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
             } else if(QtJambiInternal.majorVersion()<6) {
             	try {
@@ -470,9 +470,9 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         if (stored != null) {
             String value = stored.value();
 
-            if (value.equals("true")) {
+            if (value.equalsIgnoreCase("true")) {
                 return Boolean.TRUE;
-            } else if (value.equals("false")) {
+            } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
             } else if(QtJambiInternal.majorVersion()<6) {
             	try {
@@ -520,9 +520,9 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         if (user != null) {
             String value = user.value();
 
-            if (value.equals("true")) {
+            if (value.equalsIgnoreCase("true")) {
                 return Boolean.TRUE;
-            } else if (value.equals("false")) {
+            } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
             } else try {
                 Method m = clazz.getMethod(value);

@@ -57,7 +57,8 @@ public class GeneratorTask extends Task {
     private String header;
     private String typesystem;
     private String inputDirectory;
-    private String outputDirectory;
+    private String typesystemsDirectory;
+	private String outputDirectory;
     private String cppOutputDirectory;
     private String javaOutputDirectory;
     private String inputPreprocessFile;
@@ -196,6 +197,9 @@ public class GeneratorTask extends Task {
         if(qtDocUrl != null) {
 			commandList.add("--qt-doc-url=" + qtDocUrl);
         }
+        if(typesystemsDirectory!=null) {
+        	commandList.add("--typesystems-directory=" + typesystemsDirectory);
+        }
 
         // --input-directory: Don't test the value exists, since it might be a pathSeparator
         // spec, or just test each part and warn (not fail) when something does not exist
@@ -226,6 +230,9 @@ public class GeneratorTask extends Task {
         Object o;
 		o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_DEFINES);
         handlePreprocArgument(o, "--preproc-stage1");
+		o = AntUtil.getProperty(props, Constants.GENERATOR_STATICLIBS);
+		if(o instanceof String && !o.toString().isEmpty())
+			commandList.add("--staticlibs="+o);
 
         parseArgumentFiles(commandList);
 
@@ -389,5 +396,13 @@ public class GeneratorTask extends Task {
 
 	public void setUseNativeIds(boolean useNativeIds) {
 		this.useNativeIds = useNativeIds;
+	}
+	
+    public String getTypesystemsDirectory() {
+		return typesystemsDirectory;
+	}
+
+	public void setTypesystemsDirectory(String typesystemsDirectory) {
+		this.typesystemsDirectory = typesystemsDirectory;
 	}
 }

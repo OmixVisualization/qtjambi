@@ -12,12 +12,12 @@
   <rejection class="SignalsAndSlots" function-name="connectNotify"/>
   <rejection class="SignalsAndSlots" function-name="disconnectNotify"/>
   
-  <load-typesystem name="../build/generator/typesystem_core.xml" generate="no" />
-  <load-typesystem name="../build/generator/typesystem_gui.xml" generate="no" />
-  <load-typesystem name="../build/generator/typesystem_widgets.xml" generate="no" />
-  <load-typesystem name="../build/generator/typesystem_xml.xml" generate="no" />
-  <load-typesystem name="../build/generator/typesystem_network.xml" generate="no" />
-  <load-typesystem name="../build/generator/typesystem_sql.xml" generate="no" optional="true" />
+  <load-typesystem name="typesystem_core.xml" generate="no" />
+  <load-typesystem name="typesystem_gui.xml" generate="no" />
+  <load-typesystem name="typesystem_widgets.xml" generate="no" />
+  <load-typesystem name="typesystem_xml.xml" generate="no" />
+  <load-typesystem name="typesystem_network.xml" generate="no" />
+  <load-typesystem name="typesystem_sql.xml" generate="no" optional="true" />
 
     <rejection class="PropertyAndMethodCallTest" function-name="dumpMetaObject"/>
   <value-type name="Tulip">
@@ -521,9 +521,6 @@
   <object-type name="NonPolymorphicObjectType" />
   <object-type name="NonPolymorphicOwnedObjectType" thread-affine="%1->owner()"/>
   <object-type name="QObjectType">
-      <extra-includes>
-          <include file-name="io.qt.autotests.Utils" location="java"/>
-      </extra-includes>
     <modify-function signature="QObjectType()">
       <inject-code position="end">
           <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class QObjectType___" quote-before-line="}// class"/>

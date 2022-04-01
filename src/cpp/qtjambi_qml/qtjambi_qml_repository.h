@@ -40,8 +40,6 @@ namespace QtQml {
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlIncubationController$WhileFlag,
                                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(flag))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlTypes,
-                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(registerModule))
 }
 
 namespace Runtime{

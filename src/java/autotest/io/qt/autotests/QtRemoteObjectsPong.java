@@ -7,12 +7,15 @@ import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
+import io.qt.core.QDir;
 import io.qt.core.QFile;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
+import io.qt.core.QTextStream;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
@@ -126,6 +129,14 @@ public class QtRemoteObjectsPong {
 
 	public static void main(String... args) {
 		QCoreApplication.initialize(args);
+		System.out.println("Writing PID "+QCoreApplication.applicationPid()+" to file "+new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+		QFile libFile = new QFile(new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+		if(libFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
+			QTextStream s = new QTextStream(libFile);
+			s.append(""+QCoreApplication.applicationPid());
+			s.dispose();
+			libFile.close();
+		}
 		QMetaType.registerMetaType(NonQtType.class);
 		Pong pong = new Pong();
 		pong.setObjectName("pong");

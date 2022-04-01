@@ -40,7 +40,8 @@ GeneratorSet::GeneratorSet() :
         inDir("."),
         outDir("."),
         printStdout(false),
-        docsUrl("@docRoot/")
+        docsUrl("@docRoot/"),
+        m_staticLibraries()
 {}
 
 bool GeneratorSet::readParameters(const QMap<QString, QString> args) {
@@ -50,6 +51,8 @@ bool GeneratorSet::readParameters(const QMap<QString, QString> args) {
     if (args.contains("output-directory")) {
         outDir = args.value("output-directory");
     }
+    if (args.contains("staticlibs"))
+        m_staticLibraries << args.value("staticlibs").split(',');
 
     printStdout = args.contains("print-stdout");
 

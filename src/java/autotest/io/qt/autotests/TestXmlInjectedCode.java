@@ -56,7 +56,7 @@ import io.qt.core.QLibraryInfo;
 import io.qt.xml.QDomDocument;
 import io.qt.xml.QDomElement;
 
-public class TestXmlInjectedCode extends QApplicationTest {
+public class TestXmlInjectedCode extends ApplicationInitializer {
 	
     @Test
     public void testQDomElement_setAttributeNS() {

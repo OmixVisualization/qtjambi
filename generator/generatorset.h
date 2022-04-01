@@ -72,6 +72,7 @@ class GeneratorSet : public QObject {
         QString docsUrl;
         uint qtVersion;
         QFuture<const DocModel*> m_docModelFuture;
+        QStringList m_staticLibraries;
 };
 
 #endif // GENERATOR_SET_H

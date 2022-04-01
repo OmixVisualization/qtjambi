@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
@@ -55,18 +56,23 @@ import io.qt.core.Qt;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.widgets.QWidget;
 
-public class TestThreads extends QApplicationTest {
+public class TestThreads extends ApplicationInitializer {
     @Before
     public void setUp() {
         // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM
         // The method run_pingPongSignalSlot() in particular
         assertEquals("getObjectCacheMode != DEFAULT", QtJambiDebugTools.getObjectCacheMode(), QtJambiDebugTools.OBJECT_CACHE_MODE_DEFAULT);
     }
+    
+    @BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitializeWithWidgets();
+    }
 
     @AfterClass
     public static void testDispose() throws Exception {
         PingPong.ID_PING = null;   // clean up static reference to QObject
-        QApplicationTest.testDispose();
+        ApplicationInitializer.testDispose();
     }
 
     @Test
@@ -99,7 +105,7 @@ public class TestThreads extends QApplicationTest {
     
     @Test
     public void testJavaThreadDeletion() throws InterruptedException {
-    	AtomicBoolean threadDisposed = new AtomicBoolean();
+    	AtomicBoolean qthreadDisposed = new AtomicBoolean();
 		AtomicBoolean qobjectDisposed = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadFinished = new AtomicBoolean();
@@ -107,13 +113,18 @@ public class TestThreads extends QApplicationTest {
 		AtomicBoolean qobjectDestroyed = new AtomicBoolean();
 		AtomicBoolean threadCleaned = new AtomicBoolean();
     	{
-	    	Thread thread = new Thread(()->{
+    		class MyThread extends Thread{
+				public MyThread(Runnable target, String name) {
+					super(target, name);
+				}
+    		}
+	    	Thread thread = new MyThread(()->{
 	    		try {
 	    			QThread qthread = QThread.currentThread();
 	    			qthread.finished.connect(()->{
 	    				qthreadFinished.set(true);
     				});
-	    			QtUtilities.getSignalOnDispose(qthread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
+	    			QtUtilities.getSignalOnDispose(qthread).connect(()->qthreadDisposed.set(true), Qt.ConnectionType.DirectConnection);
 					qthread.destroyed.connect(()->qthreadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 	    			General.internalAccess.registerCleaner(qthread, ()->qthreadCleaned.set(true));
 					QObject object = new QObject();
@@ -123,8 +134,7 @@ public class TestThreads extends QApplicationTest {
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
-	    	});
-	    	thread.setName("\0\0");
+	    	}, "\0\0");
 	    	General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 	    	thread.setDaemon(true);
 	    	thread.start();
@@ -133,8 +143,14 @@ public class TestThreads extends QApplicationTest {
 		Thread.yield();
 		System.gc();
 		Thread.sleep(100);
-    	for (int i = 0; i < 500; i++) {
-    		if(threadCleaned.get()) {
+		for (int i = 0; i < 500; i++) {
+			if(qthreadFinished.get())
+    			break;
+    		Thread.yield();
+    		Thread.sleep(100);
+		}
+    	for (int i = 0; i < 50; i++) {
+    		if(qthreadDestroyed.get()) {
         		Thread.yield();
         		Thread.sleep(100);
     			break;
@@ -155,12 +171,12 @@ public class TestThreads extends QApplicationTest {
 		Thread.yield();
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
-    	assertTrue("qthreadDisposed", threadDisposed.get());
+    	assertTrue("qthreadDisposed", qthreadDisposed.get());
     	assertTrue("qthreadDestroyed", qthreadDestroyed.get());
     	assertTrue("qthreadFinished", qthreadFinished.get());
-    	if(QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.Windows 
-    			&& !System.getProperty("java.version", "").startsWith("1.8") 
-    			&& !System.getProperty("java.version", "").startsWith("8")) {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
+    			|| (!System.getProperty("java.version", "").startsWith("1.8") 
+    					&& !System.getProperty("java.version", "").startsWith("8"))) {
 	    	assertTrue("threadCleaned", threadCleaned.get());
 	    	assertTrue("qthreadCleaned", qthreadCleaned.get());
     	}else {
@@ -556,17 +572,17 @@ public class TestThreads extends QApplicationTest {
     {
     	QObject movedObject = new QObject();
     	movedObject.destroyed.connect(()->{
-    		System.out.println("dispose movedObject");
+    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose movedObject");
     	});
     	QObject _movedObject = movedObject;
     	QThread thread = QThread.create(()->{
     		QObject threadInObject = new QObject(_movedObject);
     		threadInObject.destroyed.connect(()->{
-    			System.out.println("dispose threadInObject");
+    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose threadInObject");
     		});
     	});
     	movedObject.moveToThread(thread);
-    	thread.destroyed.connect(()->System.out.println("dispose thread"));
+    	thread.destroyed.connect(()->java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose thread"));
     	thread.start();
     	thread = null;
     	movedObject = null;

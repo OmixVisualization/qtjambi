@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QByteArray;
@@ -47,11 +48,18 @@ import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QResource;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
 import io.qt.widgets.QLabel;
 
-public class TestFileEngine extends QApplicationTest {
+public class TestFileEngine extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     private int byteArrayCompare(byte[] a, int aOff, byte[] b, int bOff, int len) {
         int count = 0;
         while(len > 0) {
@@ -99,12 +107,12 @@ public class TestFileEngine extends QApplicationTest {
 //    @SuppressWarnings("deprecation")
 	@Test
     public void run_classPathFileEngine() {
-    	io.qt.QtResources.addSearchPath(".");  // Hmm not sure on the merit of this cwd will be project top-level dir
+    	QResource.addClassPath(".");  // Hmm not sure on the merit of this cwd will be project top-level dir
     	String search_path = null;
     	{
 	        QFileInfo info = new QFileInfo("classpath:io/qt/autotests/TestClassFunctionality.jar");
 	        assertTrue(info.exists());
-	        Utils.println(3, "info.absoluteFilePath() = " + info.absoluteFilePath());
+	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "info.absoluteFilePath() = " + info.absoluteFilePath());
 	
 	        QFile af = new QFile(info.absoluteFilePath());
 	        assertTrue(af.exists());
@@ -113,7 +121,7 @@ public class TestFileEngine extends QApplicationTest {
 	
 	        search_path = info.canonicalFilePath();  // on windows this is in the format "C:/dir1/dir2/TestClassFunctionality.jar"
 	    }
-        io.qt.QtResources.addSearchPath(search_path);
+        QResource.addClassPath(search_path);
         
         {
 	        QFileInfo ne_info = new QFileInfo("classpath:TestClassFunctionality_nosuchfile.txt");
@@ -358,7 +366,7 @@ public class TestFileEngine extends QApplicationTest {
         }finally {
         	if(finalAction!=null)
         		finalAction.run();
-	        io.qt.QtResources.removeSearchPath(search_path);
+	        QResource.removeClassPath(search_path);
         }
     }
 

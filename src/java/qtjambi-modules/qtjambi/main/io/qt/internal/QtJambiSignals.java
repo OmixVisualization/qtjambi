@@ -1912,9 +1912,14 @@ public abstract class QtJambiSignals {
 	            }else {
 	            	if(isQObjectSignal()) {
 	            		QMetaObject metaObject = QMetaObject.forType(declaringClass);
-	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, null);
-	            		if(signalInfo.methodIndex>=0 && signalInfo.signalTypes!=null) {
-            				this.core = new QObjectsSignalCore(signalInfo.signalTypes, signalInfo.methodIndex, metaObjectId(metaObject));
+	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(containingObject(), metaObject, field, null);
+	            		if(signalInfo.methodIndex>=0 && signalInfo.enclosingMetaObject!=0) {
+	            			if(signalInfo.signalTypes!=null) {
+	            				this.core = new QObjectsSignalCore(signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+	            			}else {
+	            				signalTypes = signalTypesByField.computeIfAbsent(field, QtJambiSignals::resolveSignal);
+	            				this.core = new QObjectsSignalCore(signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+	            			}
 	            			return;
 	            		}
 	            	}
@@ -3365,13 +3370,13 @@ public abstract class QtJambiSignals {
 	                							throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
 	                						}
 	                	    				signals.add(signal);
-	                	    				SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, entry.getValue().method);
+	                	    				SignalInfo signalInfo = QtJambiSignals.signalInfo(null, metaObject, field, entry.getValue().method);
 	                	    				signal.setNativeSignal(isNativeSignal);
 	                	    				signal.setQObjectSignal(isQObjectSignal);
 	                	            		if(signalInfo.signalTypes==null) {
 	                	            			signal.setCore(declaringClass, name, resolveSignal(entry.getValue().method), -1, 0);
 	                	            		}else {
-	                	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, metaObjectId(metaObject));
+	                	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
 	                	            		}
 	                    				}
 	                    				signals = Collections.unmodifiableList(signals);
@@ -3382,13 +3387,13 @@ public abstract class QtJambiSignals {
 		                                	while (_cls != QtJambiSignals.AbstractMultiSignal.class) {
 		                                		try {
 		                                			Method emitMethod = _cls.getDeclaredMethod("emit", signalCore.types);
-		                    	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(metaObject, field, emitMethod);
+		                    	            		SignalInfo signalInfo = QtJambiSignals.signalInfo(null, metaObject, field, emitMethod);
 			                	    				signal.setNativeSignal(isNativeSignal);
 			                	    				signal.setQObjectSignal(isQObjectSignal);
 		                    	            		if(signalInfo.signalTypes==null) {
 		                    	            			signal.setCore(declaringClass, name, resolveSignal(emitMethod), -1, 0);
 		                    	            		}else {
-		                    	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, metaObjectId(metaObject));
+		                    	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
 		                    	            		}
 		                                        	break;
 		                                		}catch(Throwable t) {}
@@ -5220,16 +5225,18 @@ public abstract class QtJambiSignals {
 	@NativeAccess
     private static class SignalInfo{
 		@NativeAccess
-    	private SignalInfo(int methodIndex, List<SignalParameterType> signalTypes) {
+    	private SignalInfo(long enclosingMetaObject, int methodIndex, List<SignalParameterType> signalTypes) {
 			super();
+			this.enclosingMetaObject = enclosingMetaObject;
 			this.methodIndex = methodIndex;
 			this.signalTypes = signalTypes;
 		}
 		final int methodIndex;
+		final long enclosingMetaObject;
     	final List<SignalParameterType> signalTypes;
     }
     
-    private static native SignalInfo signalInfo(QMetaObject metaObject, Field field, Method emitMethod);
+    private static native SignalInfo signalInfo(Object containingObject, QMetaObject metaObject, Field field, Method emitMethod);
     
     static final class EmitMethodInfo{
     	public EmitMethodInfo(Method method, long methodId, List<SignalParameterType> parameterTypes) {

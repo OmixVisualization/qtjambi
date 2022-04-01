@@ -38,15 +38,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QObject;
+import io.qt.core.QResource;
 import io.qt.core.QTranslator;
 import io.qt.widgets.QApplication;
 
-public class TestI18N extends QApplicationTest {
+public class TestI18N extends ApplicationInitializer {
 
     @BeforeClass
     public static void testInitialize() throws Exception {
     	Assert.assertTrue("Prerequisite 1 of 1: -encoding UTF-8 is required.  This test class can only be expected to work as intended when javac used -encoding UTF-8 for compling the source code.", "Hello \u00e8".compareTo("Hello è") == 0);
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
     }
 
     @Test
@@ -65,7 +66,7 @@ public class TestI18N extends QApplicationTest {
 
     @Test
     public void TestSimpleNotTranslatedWithTranslationsLoaded() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
         QTranslator translator = new QTranslator();
         assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
         QApplication.installTranslator(translator);
@@ -91,7 +92,7 @@ public class TestI18N extends QApplicationTest {
     
     @Test
     public void testInheritedTranslate() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
         assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
@@ -117,7 +118,7 @@ public class TestI18N extends QApplicationTest {
 
     @Test
     public void TestSimpleTranslated() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
         assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
@@ -131,7 +132,7 @@ public class TestI18N extends QApplicationTest {
 
     @Test
     public void TestSimpleTranslatedWithTranslationsLoaded() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
         assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));

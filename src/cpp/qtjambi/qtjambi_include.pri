@@ -14,13 +14,15 @@ win32*:{
 	}
 }
 
+QTJAMBI_BUILDDIR = $$PWD/../../../$$VERSION/build/
+
 macx:{
-    LIBS += $$PWD/../../../build/qmake-qtjambi/lib/lib$$member(QTJAMBI_LIB_NAME, 0).jnilib
+    LIBS += $$QTJAMBI_BUILDDIR/qmake-qtjambi/lib/lib$$member(QTJAMBI_LIB_NAME, 0).jnilib
     QMAKE_SONAME_PREFIX = @rpath
     QMAKE_RPATHDIR = @loader_path/.
 } else {
     linux-g++*: QMAKE_RPATHDIR = $ORIGIN/.
-    LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib
+    LIBS += -L$$QTJAMBI_BUILDDIR/qmake-qtjambi/lib
     android:{
         armeabi-v7a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_armeabi-v7a
         arm64-v8a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_arm64-v8a
@@ -30,8 +32,6 @@ macx:{
         LIBS += -l$$QTJAMBI_LIB_NAME
     }
 }
-
-QTJAMBI_CPP = ../../../build/generator/out/cpp/
 
 # These option changes are recommended since at least: win32-msvc2005
 win32-msvc* {

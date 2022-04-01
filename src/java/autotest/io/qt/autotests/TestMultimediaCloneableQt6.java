@@ -43,14 +43,12 @@ import org.junit.Test;
 
 import io.qt.internal.QtJambiInternal;
 import io.qt.multimedia.*;
-import io.qt.unittests.support.FilterMultimedia;
 
-public class TestMultimediaCloneableQt6 extends QApplicationTest {
+public class TestMultimediaCloneableQt6 extends ApplicationInitializer {
 
     @BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue(FilterMultimedia.detectStatic());
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithGui();
     }
     
 	@Test

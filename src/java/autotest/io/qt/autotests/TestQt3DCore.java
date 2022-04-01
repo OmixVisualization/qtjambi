@@ -55,7 +55,7 @@ import io.qt.qt3d.extras.QPlaneMesh;
 import io.qt.qt3d.extras.Qt3DWindow;
 import io.qt.qt3d.render.QCamera;
 
-public class TestQt3DCore extends QApplicationTest {
+public class TestQt3DCore extends ApplicationInitializer {
 	/**
 	 * Crashes in Qt 5.15 because of a dangled pointer in GLShader::setGraphicsContext
 	 */

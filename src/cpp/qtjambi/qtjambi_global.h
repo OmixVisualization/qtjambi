@@ -34,7 +34,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qobject.h>
+#include <QtCore/qhashfunctions.h>
 
 //TODO: rewrite
 #if defined(Q_OS_WIN)
@@ -96,7 +96,7 @@ typedef void* (*CopyFunction)(const void *);
 typedef const class QObject* (*PtrOwnerFunction)(const void *);
 #endif
 
-using hash_type = decltype(qHash(QString()));
+using hash_type = decltype(qHash(std::declval<char>()));
 
 extern "C" QTJAMBI_EXPORT JNIEnv *qtjambi_current_environment();
 

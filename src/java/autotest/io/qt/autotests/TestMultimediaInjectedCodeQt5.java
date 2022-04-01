@@ -61,14 +61,12 @@ import io.qt.multimedia.QMediaServiceProviderFactoryInterface;
 import io.qt.multimedia.QMediaServiceProviderPlugin;
 import io.qt.multimedia.QVideoEncoderSettingsControl;
 import io.qt.multimedia.QVideoFrame;
-import io.qt.unittests.support.FilterMultimedia;
 
-public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
+public class TestMultimediaInjectedCodeQt5 extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue(FilterMultimedia.detectStatic());
         QtUtilities.initializePackage("io.qt.multimedia");
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
     }
 	
     @Test
@@ -162,7 +160,7 @@ public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-    	Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
     	QMediaServiceProviderPlugin servicePlugin = pluginLoader.instance(QMediaServiceProviderPlugin.class);
     	Assert.assertTrue(servicePlugin!=null);
     	QJsonValue metaData = pluginLoader.metaData().value("MetaData");
@@ -219,7 +217,7 @@ public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-    	Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
     	QMediaServiceProviderPlugin servicePlugin = pluginLoader.instance(QMediaServiceProviderPlugin.class);
     	Assert.assertTrue(servicePlugin!=null);
     	QJsonValue metaData = pluginLoader.metaData().value("MetaData");
@@ -294,7 +292,7 @@ public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-    	Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
     	QMediaServiceProviderPlugin servicePlugin = pluginLoader.instance(QMediaServiceProviderPlugin.class);
     	Assert.assertTrue(servicePlugin!=null);
     	QJsonValue metaData = pluginLoader.metaData().value("MetaData");
@@ -363,7 +361,7 @@ public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-    	Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
     	QMediaServiceProviderPlugin servicePlugin = pluginLoader.instance(QMediaServiceProviderPlugin.class);
     	Assert.assertTrue(servicePlugin!=null);
     	QJsonValue metaData = pluginLoader.metaData().value("MetaData");
@@ -408,7 +406,7 @@ public class TestMultimediaInjectedCodeQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-    	Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
     	QMediaServiceProviderPlugin servicePlugin = pluginLoader.instance(QMediaServiceProviderPlugin.class);
     	Assert.assertTrue(servicePlugin!=null);
     	QJsonValue metaData = pluginLoader.metaData().value("MetaData");

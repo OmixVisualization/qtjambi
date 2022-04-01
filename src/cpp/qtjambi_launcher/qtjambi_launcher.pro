@@ -4,6 +4,9 @@ TARGET = $$QTJAMBIAPP
 VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 include(../qtjambi/qtjambi_base.pri)
+
+QTJAMBI_BUILDDIR = $$PWD/../../../$$VERSION/build/
+
 TEMPLATE = app
 #CONFIG += console
 DESTDIR = ../bin

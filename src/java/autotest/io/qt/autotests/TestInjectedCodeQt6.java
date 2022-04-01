@@ -51,7 +51,7 @@ import org.junit.Test;
 import io.qt.core.QLineF;
 import io.qt.core.QPointF;
 
-public class TestInjectedCodeQt6 extends QApplicationTest {
+public class TestInjectedCodeQt6 extends ApplicationInitializer {
     
     @Test
     public void testQLineFintersection() {

@@ -20,8 +20,6 @@
 
     <property file="build.properties"/>
 
-    <property name="sourceDir" location="build"/>
-    <property name="outputDir" location="build"/>
     <property name="generatorDir" location="generator"/>
     <property name="docstyle.css" location="docstyle.css"/>
 
@@ -30,33 +28,18 @@
     -->
 
     <import file="setenv.xml"/>
-    <import file="antfiles/bundle.xml"/>
+    <import file="antfiles/generator.xml"/>
+    <import file="antfiles/native.xml"/>
     <import file="antfiles/java.xml"/>
     <import file="antfiles/clean.xml"/>
-    <import file="antfiles/generator.xml"/>
-    <import file="antfiles/qdoc3.xml"/>
     <import file="build_autotests.xml" />
 
     <!-- These properties used to be at the top of build.properties
          but no one is expected to change them.
          -->
+    <property name="antjardir"                   location="antjar"/>
     <property name="java.srcdir"                   location="src/java"/>
-    <property name="java.outdir"                   location="build/java"/>
-    <property name="java.outsrcdir"                location="build/java-src"/>
-    <property name="java8.outsrcdir"                location="build/java8-src"/>
-    <property name="deploymentdir"                 location="deployment"/>
-
-    <property name="qtjambi.builddir"              location="build/qmake-qtjambi"/>
-
-    <property name="generator.builddir"            location="build/qmake-generator"/>
-    <property name="generator.outputdir"           location="build/generator/out"/>
     <property name="generator.xmlmerge.srcdir"     location="generator/typesystem/xml"/>
-    <property name="generator.xmlmerge.outputdir"  location="build/generator"/>
-
-    <property name="juic.builddir"                 location="build/qmake-juic"/>
-    <property name="juic.outputdir"                location="build/juic-out"/>
-
-
     <!--
         Initialization tasks. Note that the init.taskdef task depends on a jar
         task, since ant-qtjambi.jar must be set in order for the
@@ -75,28 +58,53 @@
         <echo message="Build logged to ${build.log.filename}"/>
     </target>
 
-    <target name="init.taskdef" depends="log, jar.ant-qtjambi">
+    <target name="init.taskdef" depends="log">
+        <mkdir dir="${antjardir}/ant-qtjambi"/>
+        <javac debug="true" deprecation="true" source="1.8" target="1.8"
+                fork="true" memorymaximumsize="1024m" verbose="false"
+                includeantruntime="true"
+                destdir="${antjardir}/ant-qtjambi">
+            <compilerarg value="-Xlint:deprecation" />
+            <compilerarg value="-Xlint:unchecked" />
+            <src path="${java.srcdir}/ant-qtjambi"/>
+        </javac>
+        <copy todir="${antjardir}/ant-qtjambi" includeemptydirs="false">
+            <fileset dir="${java.srcdir}/ant-qtjambi">
+                <include name="**/*"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
         <taskdef resource="io/qt/tools/ant/ant-qtjambi.xml">
             <classpath>
-                <pathelement path="${java.outdir}/ant-qtjambi"/>
+                <pathelement path="${antjardir}/ant-qtjambi"/>
             </classpath>
         </taskdef>
     </target>
 
-    <target name="init" depends="log, init.taskdef">
-        <qtjambi-initialize verbose="true"/>
-        <!-- copy jogl to the jar dir. needed for compilation examples  -->
+    <target name="init.properties">
+        <property name="outputDir"                     location="${qtjambi.jar.version}/build"/>
+        <property name="java.outdir"                   location="${qtjambi.jar.version}/build/java"/>
+        <property name="java8.outdir"                  location="${qtjambi.jar.version}/build/java8"/>
+        <property name="java.outsrcdir"                location="${qtjambi.jar.version}/build/java-src"/>
+        <property name="java8.outsrcdir"               location="${qtjambi.jar.version}/build/java8-src"/>
+        <property name="deploymentdir"                 location="${qtjambi.jar.version}/deployment"/>
+
+        <property name="qtjambi.builddir"              location="${qtjambi.jar.version}/build/qmake-qtjambi"/>
+
+        <property name="generator.builddir"            location="${qtjambi.jar.version}/build/qmake-generator"/>
+        <property name="plugins.builddir"              location="${qtjambi.jar.version}/build/qmake-plugins"/>
+        <property name="generator.outputdir"           location="${qtjambi.jar.version}/build/generator/out"/>
+        <property name="generator.xmlmerge.outputdir"  location="${qtjambi.jar.version}/build/generator"/>
     </target>
 
-    <target name="init.test" depends="log, init.taskdef"
-	description="Initializes the Qt Jambi unittest environment." >
-        <qtjambi-initialize verbose="true" test="true"/>
+    <target name="init" depends="log, init.taskdef">
+        <qtjambi-initialize verbose="true"/>
     </target>
 
     <target name="init.build" depends="log, setenv, init.taskdef, init"
-	description="Initializes the Qt Jambi build environment." >
+                                                description="Initializes the Qt Jambi build environment." >
         <qtjambi-initialize-build verbose="true"/>
-        <!--<copy file="version.properties" todir="${java.srcdir}/qtjambi/"/>-->
     </target>
 
     <!--
@@ -107,46 +115,58 @@
         Tools building
     -->
 
-    <target name="tools.juic.qmake" depends="log, init.build">
-        <mkdir dir="${juic.builddir}"/>
-        <qmake dir="${juic.builddir}" pro="${basedir}/juic/juic.pro"
-                config="${qtjambi.configuration}"
-                qmakebinary="${tools.qt.qmake.abspath}"/>
-    </target>
-
-    <target name="tools.juic.make" depends="log, tools.juic.qmake">
-        <make dir="${juic.builddir}" target="${qtjambi.qmake.target.default}"/>
-    </target>
-
-    <macrodef name="dojuic">
-        <attribute name="module"/>
+    <macrodef name="uic">
+        <attribute name="uifile"/>
+        <attribute name="targetpackage"/>
+        <attribute name="targetdirectory"/>
+        <attribute name="libfiles"/>
+        <attribute name="connections"/>
         <sequential>
-            <mkdir dir="${juic.outputdir}/@{module}"/>
-            <juic juicDirectory="${juic.builddir}"
-                message="Running juic for @{module}..." alwaysupdate="true"
-                qtlibdirectory="${tools.qt.libdir}"
-                classpath="${java.srcdir}/@{module}"
-                outputdir="${juic.outputdir}/@{module}">
-                <include name="**/*.jui"/>
-            </juic>
+            <if>
+                <os family="mac"/>
+                <then>
+                    <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
+                </then>
+                <else>
+                    <property name="XstartOnFirstThread" value="-Dx" />
+                </else>
+            </if>
+            <pathconvert property="librarypath">
+                <path>
+                    <pathelement location="${qtjambi.builddir}/lib/"/>
+                    <pathelement location="${tools.qt.bindir}"/>
+                    <pathelement location="${tools.qt.libdir}"/>
+                </path>
+            </pathconvert>
+            <pathconvert property="classpath">
+                <path>
+                    <pathelement location="${qtjambi.builddir}/lib/"/>
+                    <pathelement location="${tools.qt.bindir}"/>
+                    <pathelement location="${tools.qt.libdir}"/>
+                </path>
+            </pathconvert>
+            <java fork="true" classname="io.qt.uic.Main" failonerror="true">
+                <jvmarg value="-Djava.library.path=${librarypath}"/>
+                <jvmarg value="${XstartOnFirstThread}"/>
+                <arg value="-f" />
+                <arg value="-o" />
+                <arg value="@{targetdirectory}" />
+                <arg value="-p" />
+                <arg value="@{targetpackage}" />
+                <arg value="-c" />
+                <arg value="@{connections}" />
+                <arg value="@{uifile}" />
+                <env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+                <classpath>
+                    <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
+                </classpath>
+            </java>
         </sequential>
     </macrodef>
 
-    <target name="library.java.bundle" depends="log, jar.qtjambi">
+    <target name="finished">
+        <echo>QtJambi ${qtjambi.jar.version}</echo>
     </target>
-    <target name="library.java8.bundle" depends="log, jar8.qtjambi">
-    </target>
-
-    <target name="library.designer.bundle" depends="log, jar.qtjambi-designer">
-        <copy file="${deploymentdir}/qtjambi-designer.jar"
-            tofile="qtjambi-designer-${qtjambi.version}.jar"/>
-    </target>
-
-    <target name="examples.bundle" depends="log, jar.qtjambi-examples">
-        <copy file="${deploymentdir}/qtjambi-examples.jar"
-            tofile="qtjambi-examples-${qtjambi.version}.jar"/>
-    </target>
-
     <target name="help" description="log, Provides detailed help.">
         <echo>
 Welcome to Qt Jambi help task.
@@ -174,42 +194,70 @@ Further options:
         provides consistent and easy to use interface for humans to use.
     -->
 
-    <target name="generator.make" depends="log, init.build, tools.generator.make"
-        description="Compiles the generator."/>
+    <target name="generator.make" depends="log, init.build, init.properties, tools.generator.make"
+        description="Compiles the generator.">
+        <antcall target="finished"/>
+    </target>
 
     <target name="generator" depends="log, generator.make, generator.run"
-        description="Compiles and runs the Qt Jambi Generator."/>
+        description="Compiles and runs the Qt Jambi Generator.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="library.native" depends="log, library.native.compile, library.native.bundle"
-        description="Compiles and bundles the Qt Jambi native libraries."/>
+    <target name="library.native" depends="log, library.native.qmake, library.native.make, library.native.bundle"
+        description="Compiles and bundles the Qt Jambi native libraries.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="library.java" depends="log, library.java.bundle"
-        description="Compiles and bundles the Qt Jambi java libraries."/>
+    <target name="library.java" depends="log, init.build, init.properties, javac.excludes, java11.build.qtjambi, java8.build.qtjambi"
+        description="Compiles and bundles the Qt Jambi java libraries.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="library.java8" depends="log, library.java8.bundle"
-        description="Compiles and bundles the Qt Jambi java libraries."/>
-        
-    <target name="library.java.plugins" depends="log, jar.qtjambi.plugins"
-        description="Compiles and bundles the Qt Jambi plugins."/>
+    <target name="plugins.java" depends="log, init.build, init.properties, javac.excludes, java11.build.qtjambiplugins, java8.build.qtjambiplugins"
+        description="Compiles the Qt Jambi plugins.">
+        <antcall target="finished"/>
+    </target>
+    
+    <target name="plugins" depends="log, init.build, init.properties, javac.excludes, java11.build.qtjambiplugins, java8.build.qtjambiplugins, library.native.bundle.plugins"
+        description="Compiles and bundles the Qt Jambi plugins.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="library.designer" depends="log, library.designer.bundle"
-        description="Compiles and bundles the Qt Jambi designer libraries."/>
+    <target name="library.java8" depends="log, init.build, init.properties, javac.excludes, java8.build.qtjambi"
+        description="Compiles and bundles the Qt Jambi java libraries.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="library" depends="log, library.native.compile, library.java, library.java8, library.native.bundle"
+    <target name="library.java11" depends="log, init.build, init.properties, javac.excludes, java11.build.qtjambi"
+        description="Compiles and bundles the Qt Jambi java libraries.">
+        <antcall target="finished"/>
+    </target>
+
+    <target name="library" depends="log, library.native.qmake, library.native.make, library.java, library.java8, library.native.bundle"
         description="Compiles and bundles the Qt Jambi libraries.">
         <!--<copy file="${deploymentdir}/qtjambi-util.jar"
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->
+        <antcall target="finished"/>
     </target>
 
     <target name="all" depends="log, generator, library"
-        description="Generates, builds and bundles the Qt Jambi libraries."/>
+        description="Generates, builds and bundles the Qt Jambi libraries.">
+        <antcall target="finished"/>
+    </target>
 
-    <target name="deploy.snapshot" depends="log, init.build, source.ivy, deploy-snapshot"
-        description="Publishes QtJambi as Maven artifact snapshot."/>
+    <target name="deploy.snapshot" depends="log, init.build, init.properties, source.ivy, deploy-snapshot"
+        description="Publishes QtJambi as Maven artifact snapshot.">
+        <antcall target="finished"/>
+    </target>
         
-    <target name="deploy.release" depends="log, init.build, source.ivy, deploy-release"
-        description="Publishes QtJambi as Maven artifact."/>
+    <target name="deploy.release" depends="log, init.build, init.properties, source.ivy, deploy-release"
+        description="Publishes QtJambi as Maven artifact.">
+        <antcall target="finished"/>
+    </target>
         
-    <target name="deploy.bundle" depends="log, init.build, source.ivy, deploy-bundle"
-        description="Publishes QtJambi as Maven artifact."/>
+    <target name="deploy.bundle" depends="log, init.build, init.properties, source.ivy, deploy-bundle"
+        description="Publishes QtJambi as Maven artifact.">
+        <antcall target="finished"/>
+    </target>
 </project>

@@ -44,7 +44,7 @@ import io.qt.core.QLibraryInfo;
 import io.qt.core.QVersionNumber;
 import io.qt.internal.QtJambiInternal;
 
-public class TestBluetoothInjectedCodeQt5 extends QApplicationTest {
+public class TestBluetoothInjectedCodeQt5 extends ApplicationInitializer {
     @Test
     public void testQBluetoothDeviceInfo()
     {

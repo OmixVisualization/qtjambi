@@ -30,12 +30,18 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QObject;
 import io.qt.widgets.QWidget;
 
-public class TestWidgets extends QApplicationTest {
+public class TestWidgets extends ApplicationInitializer {
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void testWidgetParent() {
     	QWidget widget = new QWidget();

@@ -47,6 +47,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QFlags;
@@ -72,6 +73,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
+import io.qt.core.QResource;
 import io.qt.core.QSize;
 import io.qt.core.QTimer;
 import io.qt.core.QUuid;
@@ -79,7 +81,13 @@ import io.qt.core.Qt;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestClassFunctionality extends QApplicationTest {
+public class TestClassFunctionality extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Before
     public void setUp() {
         QApplication.processEvents();
@@ -553,35 +561,30 @@ public class TestClassFunctionality extends QApplicationTest {
     public void mocTest() {
     	QMetaObject mo = QMetaObject.forType(MocTest.class);
     	mo.enumerators().forEach(enm->{
-    		System.out.println("enumName: "+enm.enumName());
-    		System.out.println("type: "+enm.type());
-    		System.out.println("scope: "+enm.scope());
-    		System.out.println("entries: "+Arrays.toString(enm.entries()));
-    		System.out.println("isFlag: "+enm.isFlag());
-    		System.out.println("flags: "+enm.flags(3));
-    		System.out.println("name: "+enm.name());
+    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, 
+					    		"enumName: "+enm.enumName()+"\n"+
+					    		"type: "+enm.type()+"\n"+
+					    		"scope: "+enm.scope()+"\n"+
+					    		"entries: "+Arrays.toString(enm.entries())+"\n"+
+					    		"isFlag: "+enm.isFlag()+"\n"+
+					    		"flags: "+enm.flags(3)+"\n"+
+					    		"name: "+enm.name());
     	});
     	mo.constructors().forEach(m->{
-    		System.out.println(m.returnClassType() + " " + m.methodSignature() + " = "+m.cppMethodSignature());
-    		System.out.println(m.toReflectedConstructor());
+    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, 
+    				m.returnClassType() + " " + m.methodSignature() + " = " + m.cppMethodSignature() + "\n" + m.toReflectedConstructor());
     	});
     	mo.methods().forEach(m->{
     		if(m.enclosingMetaObject()==mo) {
-	    		System.out.println(m.returnClassType() + " " + m.methodSignature() + " = "+m.cppMethodSignature());
-//	    		System.out.print("3.: "+m.name()+"(");
-//	    		for (int i = 0; i < m.parameterCount(); i++) {
-//	    			if(i > 0) {
-//	    				System.out.print(",");
-//	    			}
-//					System.out.print(m.parameterMetaType(i).name());
-//				}
-//	    		System.out.println(")");
 	    		switch(m.methodType()) {
 				case Method:
 				case Slot:
-					System.out.println(m.toReflectedMethod());
+	    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, 
+	    					m.returnClassType() + " " + m.methodSignature() + " = " + m.cppMethodSignature() + "\n" + m.toReflectedMethod());
 					break;
 				default:
+	    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, 
+	    					m.returnClassType() + " " + m.methodSignature() + " = "+m.cppMethodSignature());
 					break;
 	    		}
     		}
@@ -729,7 +732,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
 	@Test
     public void run_copyConstructor() {
-        io.qt.QtResources.addSearchPath(".");
+		QResource.addClassPath(".");
         QFileInfo file1 = new QFileInfo("classpath:io/qt/autotests/TestClassFunctionality.jar");
         assertTrue(file1.exists());
 

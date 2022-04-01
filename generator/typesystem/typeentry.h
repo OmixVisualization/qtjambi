@@ -98,6 +98,8 @@ class TypeEntry {
             StringType,
             Latin1StringType,
             StringViewType,
+            AnyStringViewType,
+            Utf8StringViewType,
             StringRefType,
             ContainerType,
             IteratorType,
@@ -204,6 +206,14 @@ class TypeEntry {
             return m_type == ObjectType;
         }
         bool isString() const {
+            return m_type == StringType
+                    || m_type == Latin1StringType
+                    || m_type == StringViewType
+                    || m_type == AnyStringViewType
+                    || m_type == Utf8StringViewType
+                    || m_type == StringRefType;
+        }
+        bool isQString() const {
             return m_type == StringType;
         }
         bool isLatin1String() const {
@@ -211,6 +221,12 @@ class TypeEntry {
         }
         bool isStringView() const {
             return m_type == StringViewType;
+        }
+        bool isAnyStringView() const {
+            return m_type == AnyStringViewType;
+        }
+        bool isUtf8StringView() const {
+            return m_type == Utf8StringViewType;
         }
         bool isStringRef() const {
             return m_type == StringRefType;
@@ -401,7 +417,8 @@ class TypeSystemTypeEntry : public TypeEntry {
                   m_includes_used(),
                   m_qtLibrary(),
                   m_module(),
-                  m_requiredTypeSystems() {
+                  m_requiredTypeSystems(),
+                  m_noExports(false) {
         }
 
         TypeSystemTypeEntry(const QString &name, const QString &lib, const QString &module)
@@ -412,7 +429,8 @@ class TypeSystemTypeEntry : public TypeEntry {
                   m_includes_used(),
                   m_qtLibrary(lib),
                   m_module(module),
-                  m_requiredTypeSystems() {
+                  m_requiredTypeSystems(),
+                  m_noExports(false) {
         }
 
         const Include& include() const {
@@ -479,6 +497,14 @@ class TypeSystemTypeEntry : public TypeEntry {
             return m_forwardDeclarations;
         }
 
+        bool isNoExports() const{
+            return m_noExports;
+        }
+
+        void setNoExports(bool noExports) {
+            m_noExports = noExports;
+        }
+
         QList<CodeSnip> snips;
         Include m_include;
         IncludeList m_extra_includes;
@@ -489,6 +515,7 @@ class TypeSystemTypeEntry : public TypeEntry {
         QList<QPair<QString,bool>> m_requiredQtLibraries;
         QString m_description;
         QList<QString> m_forwardDeclarations;
+        bool m_noExports;
 };
 
 class ThreadTypeEntry : public TypeEntry {
@@ -1512,14 +1539,25 @@ private:
 
 class ValueTypeEntry : public ImplementorTypeEntry {
     public:
-        ValueTypeEntry(const QString &name) : ImplementorTypeEntry(name, BasicValueType) { }
+        ValueTypeEntry(const QString &name) : ImplementorTypeEntry(name, BasicValueType), m_skipMetaTypeRegistration(false) { }
 
         bool isValue() const override {
             return true;
         }
 
+        bool skipMetaTypeRegistration() const {
+            return m_skipMetaTypeRegistration;
+        }
+
+        void setSkipMetaTypeRegistration(bool skipMetaTypeRegistration){
+            m_skipMetaTypeRegistration = skipMetaTypeRegistration;
+        }
+
     protected:
-        ValueTypeEntry(const QString &name, Type t) : ImplementorTypeEntry(name, t) { }
+        ValueTypeEntry(const QString &name, Type t) : ImplementorTypeEntry(name, t), m_skipMetaTypeRegistration(false) { }
+
+    private:
+        bool m_skipMetaTypeRegistration;
 };
 
 class StringTypeEntry : public ValueTypeEntry {
@@ -1528,7 +1566,9 @@ class StringTypeEntry : public ValueTypeEntry {
                 : ValueTypeEntry(name,
                                  name=="QString" ? StringType :
                                 (name=="QLatin1String" ? Latin1StringType :
-                                (name=="QStringView" ? StringViewType : StringRefType))) {
+                                (name=="QStringView" ? StringViewType :
+                                (name=="QAnyStringView" ? AnyStringViewType :
+                                (name=="QUtf8StringView" ? Utf8StringViewType : StringRefType))))) {
             setCodeGeneration(GenerateNothing);
         }
 

@@ -44,7 +44,7 @@ import io.qt.widgets.QLayoutItem;
 import io.qt.widgets.QVBoxLayout;
 import io.qt.widgets.QWidget;
 
-public class TestNullPointers extends QApplicationTest {
+public class TestNullPointers extends ApplicationInitializer {
     @Test
     public void testBoxLayoutAddWidget() {
         QVBoxLayout layout = new QVBoxLayout();

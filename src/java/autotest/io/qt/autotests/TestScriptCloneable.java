@@ -40,16 +40,9 @@ import io.qt.script.QScriptContextInfo;
 import io.qt.script.QScriptProgram;
 import io.qt.script.QScriptString;
 import io.qt.script.QScriptValue;
-import io.qt.unittests.support.FilterScript;
 
-public class TestScriptCloneable extends QApplicationTest {
+public class TestScriptCloneable extends ApplicationInitializer {
 
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterScript.detectStatic());
-        QApplicationTest.testInitialize();
-    }
-    
 	@Test
 	public void run_clone_QScriptContextInfo() {
 		QScriptContextInfo org = new QScriptContextInfo();

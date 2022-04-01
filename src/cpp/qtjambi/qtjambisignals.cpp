@@ -608,13 +608,14 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNative)
         QMetaMethod qt_signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
         QObject* receiver = sender;
         connectionType = connectionType & ~Qt::UniqueConnection;
+        QThread* senderAsThread = dynamic_cast<QThread*>(sender);
         if(connectionType==Qt::AutoConnection || connectionType==Qt::DirectConnection){
             connectionType = Qt::DirectConnection;
-            if(sender->metaObject()->inherits(&QThread::staticMetaObject)){
+            if(senderAsThread){
                 receiver = new QObject();
                 receiver->moveToThread(nullptr);
             }
-        }else if(qt_signalMethod.enclosingMetaObject()==&QThread::staticMetaObject && QThreadData::get2(static_cast<QThread*>(sender))->isAdopted){
+        }else if(senderAsThread && QThreadData::get2(senderAsThread)->isAdopted){
             QString _connectionType;
             if(connectionType==Qt::BlockingQueuedConnection){
                 _connectionType = "BlockingQueuedConnection";

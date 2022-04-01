@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QUnsuccessfulInvocationException;
@@ -80,7 +81,12 @@ import io.qt.widgets.QPushButton;
 import io.qt.widgets.QSpinBox;
 import io.qt.widgets.QWidget;
 
-public class TestMetaProgramming extends QApplicationTest {
+public class TestMetaProgramming extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
     @Test
     public void testUserPropertyInQt() {

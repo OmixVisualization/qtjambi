@@ -329,6 +329,16 @@ struct MetaTypeDebugStreamOperatorHelper<T,false,true>{
         return qtjambi_register_debugstream_operator(&f, typeId);
     }
 };
+#else
+template<typename T>
+struct QMetaTypeInterfaceFunctions
+{
+    static inline constexpr const QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr= QtPrivate::QMetaTypeForType<T>::getDefaultCtr();
+    static inline constexpr const QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr= QtPrivate::QMetaTypeForType<T>::getCopyCtr();
+    static inline constexpr const QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr= QtPrivate::QMetaTypeForType<T>::getMoveCtr();
+    static inline constexpr const QtPrivate::QMetaTypeInterface::DtorFn dtor = QtPrivate::QMetaTypeForType<T>::getDtor();
+    static inline constexpr const QtPrivate::QMetaTypeInterface::LegacyRegisterOp  legacyRegisterOp = QtPrivate::QMetaTypeForType<T>::getLegacyRegister();
+};
 #endif
 }
 
@@ -337,6 +347,7 @@ void registerOperators(){
     QtJambiPrivate::RegistryHelper<T>::registerHashFunction();
 }
 
+QTJAMBI_EXPORT void registerCustomMetaObject(const std::type_info& typeId, const QMetaObject& superTypeMetaObject);
 QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner, QMetaMethodRenamer methodRenamer = nullptr);
 QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner,
                                        std::initializer_list<SignalMetaInfo> signalMetaInfos,
@@ -439,7 +450,7 @@ int registerMetaTypeNoMetaObject(const char *typeName,
                               debugStream,
                               dataStreamOutFn,
                               dataStreamInFn,
-                              QtPrivate::QMetaTypeForType<T>::getLegacyRegister(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -500,10 +511,10 @@ int registerMetaTypeNoMetaObject(const char *typeName)
                                QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
                                QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
 #else
-                               QtPrivate::QMetaTypeForType<T>::getDefaultCtr(),
-                               QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
-                               QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
-                               QtPrivate::QMetaTypeForType<T>::getDtor(),
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                                QtPrivate::QEqualityOperatorForType<T>::equals,
                                QtPrivate::QLessThanOperatorForType<T>::lessThan,
                                QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
@@ -526,7 +537,7 @@ int registerMetaTypeNoMetaObject(const char *typeName,
                               defaultCtr,
                               copyCtr,
                               moveCtr,
-                              QtPrivate::QMetaTypeForType<T>::getDtor()
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor
                 );
 }
 #endif
@@ -566,7 +577,7 @@ int registerMetaType(const char *typeName,
                               debugStream,
                               dataStreamOutFn,
                               dataStreamInFn,
-                              QtPrivate::QMetaTypeForType<T>::getLegacyRegister(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -639,7 +650,7 @@ int registerMetaType(const char *typeName,
                               defaultCtr,
                               copyCtr,
                               moveCtr,
-                              QtPrivate::QMetaTypeForType<T>::getDtor(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                               QtPrivate::QEqualityOperatorForType<T>::equals,
                               QtPrivate::QLessThanOperatorForType<T>::lessThan,
                               QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
@@ -657,10 +668,10 @@ int registerMetaType(const char *typeName)
                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
 #else
-                              QtPrivate::QMetaTypeForType<T>::getDefaultCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getDtor(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                               QtPrivate::QEqualityOperatorForType<T>::equals,
                               QtPrivate::QLessThanOperatorForType<T>::lessThan,
                               QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
@@ -705,7 +716,7 @@ int registerMetaType(const QByteArray& typeName,
                               debugStream,
                               dataStreamOutFn,
                               dataStreamInFn,
-                              QtPrivate::QMetaTypeForType<T>::getLegacyRegister(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -744,10 +755,10 @@ int registerMetaType(const QByteArray& typeName)
                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
 #else
-                              QtPrivate::QMetaTypeForType<T>::getDefaultCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
-                              QtPrivate::QMetaTypeForType<T>::getDtor(),
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                               QtPrivate::QEqualityOperatorForType<T>::equals,
                               QtPrivate::QLessThanOperatorForType<T>::lessThan,
                               QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
@@ -825,21 +836,28 @@ const std::type_info& registerQObjectTypeInfo(const char *qt_name, const char *j
     return id;
 }
 
+template <class T, bool supported = QtJambiPrivate::supports_IID<T>::value> constexpr const char * qtjambi_interface_iid(){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+    if constexpr(!supported) return nullptr; else
+#endif
+    return qobject_interface_iid<T*>();
+}
+
 template<typename T>
-const std::type_info& registerInterfaceTypeInfo(const char *qt_name, const char *java_name, const char *interface_iid)
+const std::type_info& registerInterfaceTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerInterfaceTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, interface_iid);
+    registerInterfaceTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, qtjambi_interface_iid<T>());
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
     return id;
 }
 
 template<typename T>
-const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const char *java_name, const char *interface_iid)
+const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerInterfaceValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, interface_iid);
+    registerInterfaceValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, qtjambi_interface_iid<T>());
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
     return id;
@@ -959,10 +977,10 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
         int metaid = registerMetaType(id,
                          id,
                          qt_name,
-                         /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<T>::getDefaultCtr(),
-                         /*.copyCtr=*/ QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
-                         /*.moveCtr=*/ QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
-                         /*.dtor=*/ QtPrivate::QMetaTypeForType<T>::getDtor(),
+                         /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                         /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                         /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                         /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                          /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
                          /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
                          /*.debugStream=*/ nullptr,
@@ -1015,10 +1033,10 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
         int metaid = registerMetaType(id,
                                       id,
                                       flags_qt_name,
-                                      /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getDefaultCtr(),
-                                      /*.copyCtr=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getCopyCtr(),
-                                      /*.moveCtr=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getMoveCtr(),
-                                      /*.dtor=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getDtor(),
+                                      /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<T>>::defaultCtr,
+                                      /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<T>>::copyCtr,
+                                      /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<T>>::moveCtr,
+                                      /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<T>>::dtor,
                                       /*.equals=*/ QtPrivate::QEqualityOperatorForType<QFlags<T>>::equals,
                                       /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QFlags<T>>::lessThan,
                                       /*.debugStream=*/ nullptr,
@@ -1067,10 +1085,10 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
         int metaid = registerMetaType(id,
                          id,
                          qt_name,
-                         /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<T>::getDefaultCtr(),
-                         /*.copyCtr=*/ QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
-                         /*.moveCtr=*/ QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
-                         /*.dtor=*/ QtPrivate::QMetaTypeForType<T>::getDtor(),
+                         /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                         /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                         /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                         /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
                          /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
                          /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
                          /*.debugStream=*/ nullptr,

@@ -33,6 +33,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 
+import org.junit.BeforeClass;
+
 import io.qt.core.QByteArray;
 import io.qt.core.QPoint;
 import io.qt.core.QPointF;
@@ -54,7 +56,12 @@ import io.qt.gui.QPolygon;
 import io.qt.gui.QPolygonF;
 import io.qt.gui.QRegion;
 
-public class TestSwap extends QApplicationTest{
+public class TestSwap extends ApplicationInitializer{
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithGui();
+    }
 	
 	public final static byte[] RED5x5 = {
 		(byte)0xffffff89,(byte)0x50,(byte)0x4e,(byte)0x47,(byte)0xd,(byte)0xa,(byte)0x1a,(byte)0xa,(byte)0x0,(byte)0x0,

@@ -126,6 +126,8 @@ QString CppGenerator::translateType(const AbstractMetaType *java_type, Option op
     } else if (java_type->isTargetLangString()
                || java_type->isTargetLangStringRef()
                || java_type->isTargetLangStringView()
+               || java_type->isTargetLangAnyStringView()
+               || java_type->isTargetLangUtf8StringView()
                || java_type->isTargetLangLatin1String()
                || (java_type->typeEntry()->qualifiedTargetLangName()=="java.lang.String" && java_type->indirections().isEmpty())){
         return "jstring";

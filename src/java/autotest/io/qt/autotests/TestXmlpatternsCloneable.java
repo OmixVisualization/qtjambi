@@ -42,19 +42,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.internal.QtJambiInternal;
-import io.qt.unittests.support.FilterXmlpatterns;
 import io.qt.xmlpatterns.QSourceLocation;
 import io.qt.xmlpatterns.QXmlName;
 import io.qt.xmlpatterns.QXmlNodeModelIndex;
 
-public class TestXmlpatternsCloneable extends QApplicationTest {
+public class TestXmlpatternsCloneable extends ApplicationInitializer {
 
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterXmlpatterns.detectStatic());
-        QApplicationTest.testInitialize();
-    }
-    
 	@Test
 	public void run_clone_QSourceLocation() {
 		QSourceLocation org = new QSourceLocation();

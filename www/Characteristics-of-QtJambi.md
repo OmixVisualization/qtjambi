@@ -886,6 +886,45 @@ translator.load("classpath:com/myapplication/translations/app_de.qm");
 QCoreApplication.installTranslator(translator);
 ```
 
+## Generating User Interfaces
+
+Qt allows to create sophisticated user interfaces in graphical manner by using
+[Designer](https://doc.qt.io/qt/qtdesigner-manual.html). Designer produces a `*.ui` file 
+containing all components and properties of the designed user interface.
+There are two ways to use these designed UIs in your QtJambi java application.
+
+* ...by dynamically loading at runtime. Therefore, use the class [`io.qt.widgets.tools.QUiLoader`](https://doc.qt.io/qt/quiloader.html#QUiLoader) from module `qtjambi.uitools`:
+
+``` java
+QUiLoader loader = new QUiLoader();
+QFile device = new QFile("classpath:com/myapplication/widgets/mainwindow.ui");
+device.open(QIODevice.OpenModeFlag.ReadOnly);
+QWidget widget = loader.load(device);
+device.close();
+```
+
+* ...by generating source code.
+  Therefore, use the tool **UIC** available in module `qtjambi.uic`.
+  Download **qtjambi-uic.jar** from the release of your choice along 
+  with the correponding platform-dependent **qtjambi-uic-native-X.jar** and call:
+
+``` shell
+java -Djava.library.path=<path to Qt libraries>
+     -p qtjambi-6.2.3.jar:qtjambi-uic-6.2.3.jar
+     -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
+```
+
+Alternative way to call it:
+
+``` shell
+java -Djava.library.path=<path to Qt libraries>
+     -cp qtjambi-6.2.3.jar:qtjambi-uic-6.2.3.jar
+     io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
+```
+
+
+**QtJambi UIC** produces the widget class in output directory (`-o`) and target package (`-p`) as java source code file.
+
 ## Platform Specific API
 
 Qt provides a number of classes and functions only available on specific
@@ -1117,20 +1156,30 @@ If you want to provide a custom plugin as jar library you need to
 provide a platform-dependent loader library along with the jar file.
 Therefore, use the *QtJambi plugin deployer tool* to prepare the
 loader library. Download **qtjambi-deployer.jar** from the release
-of your choice along with the platform-dependent **qtjambi-deployer-platform-X.jar**.
-Extract the binaries to a directory called `utilities`. Call the plugin
-deployer as shown below. Make sure the library path points to the *Qt*
+of your choice along with the correponding platform-dependent **qtjambi-deployer-native-X.jar**.
+Call the plugin deployer as shown below. Make sure the library path points to the *Qt*
 and *QtJambi* libraries:
 
 ``` shell
-java -cp qtjambi-deployer-6.2.2.jar;qtjambi-6.2.2.jar;qtjambi-platform-windows-x64-6.2.2.jar;qtjambi-deployer-platform-windows-x64-6.2.2.jar 
-        -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin
-        io.qt.qtjambi.deployer.Main
-        plugin
-        --class-name=my.company.CustomImageIOPlugin
-        --class-path=my-company-library.jar
-        --dir=output directory
-        --meta-data=metadata.json
+java -Djava.library.path=<path to Qt libraries>
+     -p qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     -m qtjambi.deployer plugin
+     --class-name=my.company.CustomImageIOPlugin
+     --class-path=my-company-library.jar
+     --dir=<output directory>
+     --meta-data=metadata.json
+```
+
+Alternative way to call it:
+
+``` shell
+java -Djava.library.path=<path to Qt libraries>
+     -cp qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     io.qt.qtjambi.deployer.Main plugin
+     --class-name=my.company.CustomImageIOPlugin
+     --class-path=my-company-library.jar
+     --dir=<output directory>
+     --meta-data=metadata.json
 ```
 
 The **metadata.json** file contains the keys of the plugin and
@@ -1144,6 +1193,25 @@ additional meta data. Example:
 
 QtJambi plugin deployer tool saves the prepared library and the jar file
 in the specified output directory.
+
+#### Generating Source Code
+
+Alternatively, deployer can generate source code for compiling the plugin library.
+This is especially necessary on macOS (arm64).
+
+``` shell
+java -Djava.library.path=<path to Qt libraries>
+     -p qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     -m qtjambi.deployer plugin
+     --class-name=my.company.CustomImageIOPlugin
+     --class-path=my-company-library.jar
+     --dir=<output directory>
+     --meta-data=metadata.json
+     --source
+```
+
+Now, output directory contains a source code project for the plugin library.
+Call `qmake` and `make` to build the library.
 
 ### JDBC Plugin
 

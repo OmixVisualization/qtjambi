@@ -1,27 +1,42 @@
 package io.qt.autotests;
 
 import static io.qt.autotests.TestConcurrent.COUNT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.QNoImplementationException;
 import io.qt.autotests.generated.FutureHandler;
 import io.qt.concurrent.QtConcurrent;
-import io.qt.concurrent.QtConcurrent.*;
+import io.qt.concurrent.QtConcurrent.QTypedPromiseTaskBuilder1Arg1;
+import io.qt.concurrent.QtConcurrent.QTypedTaskBuilder1Arg1;
 import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QPromise;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
 
-public class TestConcurrentQt6 extends QApplicationTest {
+public class TestConcurrentQt6 extends ApplicationInitializer {
 	
-	QThreadPool pool = new QThreadPool();
+	private static QThreadPool pool = new QThreadPool();
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(pool.activeThreadCount()>0) {
+			System.out.println("Waiting for threads to finish...");
+			pool.waitForDone();
+		}
+		pool.dispose();
+		pool = null;
+		ApplicationInitializer.testDispose();
+    }
 	
 	@Test
     public void testBlockingMappedWithThreadPool() {
@@ -352,6 +367,7 @@ public class TestConcurrentQt6 extends QApplicationTest {
     
     @Test
     public void testSequentialJavaQFutureWithPromise() throws Throwable {
+    	Assume.assumeTrue("Disabled unless you specify qtjambi.autotests.enable.criticals=true", Boolean.getBoolean("qtjambi.autotests.enable.criticals"));
     	Throwable[] throwable = {null};
     	QThread thread = QThread.create(()->FutureHandler.returnSequentialInTheFuture(QtConcurrent.run((QPromise<String> promise)->{
     		try {
@@ -380,10 +396,14 @@ public class TestConcurrentQt6 extends QApplicationTest {
 			}
     	})));
     	thread.start();
-    	thread.join(20000);
-    	Assert.assertFalse("FutureHandler.returnSequentialInTheFuture does not return.", thread.isRunning());
-    	if(throwable[0]!=null)
-    		throw throwable[0];
+    	thread.join(120000);
+    	try {
+	    	Assert.assertFalse("FutureHandler.returnSequentialInTheFuture does not return.", thread.isRunning());
+	    	if(throwable[0]!=null)
+	    		throw throwable[0];
+    	}finally {
+    		thread.interrupt();
+    	}
     }
     
     @Test
@@ -405,7 +425,8 @@ public class TestConcurrentQt6 extends QApplicationTest {
 		boolean[] isSuspending = {false};
     	QtConcurrent.run(()->{
     		try {
-        		while(!promise.isSuspending())
+    			int i=0;
+        		while(!promise.isSuspending() && (i++<30))
         			QThread.msleep(200);
         		isSuspending[0] = promise.isSuspending();
     		}catch(Throwable e) {
@@ -426,7 +447,8 @@ public class TestConcurrentQt6 extends QApplicationTest {
 		boolean[] isSuspended = {true};
     	QtConcurrent.run(()->{
     		try {
-        		while(promise.isSuspended())
+    			int i=0;
+        		while(promise.isSuspended() && (i++<30))
         			QThread.msleep(200);
         		isSuspended[0] = promise.isSuspended();
     		}catch(Throwable e) {
@@ -446,7 +468,8 @@ public class TestConcurrentQt6 extends QApplicationTest {
 		boolean[] isSuspending = {false};
     	QtConcurrent.run(()->{
     		try {
-        		while(!promise.isSuspending())
+    			int i=0;
+        		while(!promise.isSuspending() && (i++<30))
         			QThread.msleep(200);
         		isSuspending[0] = promise.isSuspending();
     		}catch(Throwable e) {
@@ -467,7 +490,8 @@ public class TestConcurrentQt6 extends QApplicationTest {
 		boolean[] isSuspended = {true};
     	QtConcurrent.run(()->{
     		try {
-        		while(promise.isSuspended())
+    			int i=0;
+        		while(promise.isSuspended() && (i++<30))
         			QThread.msleep(200);
         		isSuspended[0] = promise.isSuspended();
     		}catch(Throwable e) {

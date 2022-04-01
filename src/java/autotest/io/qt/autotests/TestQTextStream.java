@@ -43,7 +43,7 @@ import io.qt.core.QTemporaryFile;
 import io.qt.core.QTextStream;
 import io.qt.gui.QPolygonF;
 
-public class TestQTextStream extends QApplicationTest {
+public class TestQTextStream extends ApplicationInitializer {
     // For ARM float/double conversion values must be within precision of a float
     private static final double DELTA = 0.000001;
 

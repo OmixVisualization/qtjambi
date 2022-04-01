@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUninvokable;
@@ -54,7 +55,13 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestInjectedCode extends QApplicationTest {
+public class TestInjectedCode extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     static class IODeviceSubclassSubclass extends IODeviceSubclass {
         public byte buffer[];
         public int inputBufferSize;
@@ -284,7 +291,7 @@ public class TestInjectedCode extends QApplicationTest {
         public QImage read() {
         	QImage image = new QImage();
             this.image = super.read();
-            return this.image!=null && image.load("classpath:io/qt/unittests/blue_angle_swirl.jpg") ? image : null;
+            return this.image!=null && image.load("classpath:io/qt/autotests/blue_angle_swirl.jpg") ? image : null;
         }
 
         @Override
@@ -793,7 +800,7 @@ public class TestInjectedCode extends QApplicationTest {
         assertTrue(iihss.callRead(image));
         
         QImage ref1 = new QImage("classpath:io/qt/autotests/svgcards-example.png");
-        QImage ref2 = new QImage("classpath:io/qt/unittests/blue_angle_swirl.jpg");
+        QImage ref2 = new QImage("classpath:io/qt/autotests/blue_angle_swirl.jpg");
 
         assertEquals(ref2.width(), image.width());
         assertEquals(ref2.height(), image.height());
@@ -914,7 +921,7 @@ public class TestInjectedCode extends QApplicationTest {
 		ac.myActionTriggered.connect(this::myReceiver);
 
 		QMenu menu = new QMenu();
-		QAction action = menu.addAction(null, "blah", ac.myActionTriggered);
+		QAction action = menu.addAction(new QIcon(), "blah", ac.myActionTriggered);
 
 		called = false;
 		action.activate(QAction.ActionEvent.Trigger);
@@ -1489,7 +1496,7 @@ public class TestInjectedCode extends QApplicationTest {
 
     @Test
     public void testIODevicePeek() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
         // This was "classpath:io/qt/autotests/TestInjectedCode.java" by it is not
         // normal to expect *.java files in the classpath.
         QFile qfile = new QFile("classpath:io/qt/autotests/TestInjectedCode.dat");
@@ -1528,7 +1535,7 @@ public class TestInjectedCode extends QApplicationTest {
 
     @Test
     public void testIODeviceGetByteSuccess() {
-    	io.qt.QtResources.addSearchPath(".");
+    	QResource.addClassPath(".");
         // This was "classpath:io/qt/autotests/TestInjectedCode.java" by it is not
         // normal to expect *.java files in the classpath.
         QIODevice file = new QFile("classpath:io/qt/autotests/TestInjectedCode.dat");

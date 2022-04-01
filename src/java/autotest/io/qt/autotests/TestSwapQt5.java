@@ -80,7 +80,7 @@ import io.qt.gui.QTouchEvent;
 import io.qt.internal.QtJambiInternal;
 import io.qt.core.QRegExp;
 
-public class TestSwapQt5 extends QApplicationTest {
+public class TestSwapQt5 extends ApplicationInitializer {
 
 	
 	@org.junit.Test

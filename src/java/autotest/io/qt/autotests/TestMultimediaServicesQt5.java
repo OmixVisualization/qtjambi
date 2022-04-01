@@ -70,14 +70,13 @@ import io.qt.multimedia.QMediaServiceSupportedFormatsInterface;
 import io.qt.multimedia.QMediaTimeRange;
 import io.qt.multimedia.QMultimedia.SupportEstimate;
 import io.qt.multimedia.QRadioTunerControl;
-import io.qt.unittests.support.FilterMultimedia;
 
-public class TestMultimediaServicesQt5 extends QApplicationTest {
+public class TestMultimediaServicesQt5 extends ApplicationInitializer {
+	
     @BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue(FilterMultimedia.detectStatic());
         QtUtilities.initializePackage("io.qt.multimedia");
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
     }
 
     @Test
@@ -114,7 +113,7 @@ public class TestMultimediaServicesQt5 extends QApplicationTest {
 	    	boolean b = pluginLoader.isLoaded() || pluginLoader.load();
 			Assert.assertTrue(pluginLoader.errorString(), b);
     	}
-		Utils.println(2, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QPluginLoader: "+pluginLoader.fileName() + " = " + new QJsonDocument(pluginLoader.metaData()).toJson());
 		{
 			QObject servicePlugin = pluginLoader.instance();
 			Assert.assertTrue(new QFileInfo(pluginLoader.fileName()).fileName() + ": " + servicePlugin.metaObject().className() +" ("+servicePlugin.getClass().getName()+") expected to inherit QMediaServiceProviderPlugin", servicePlugin.metaObject().inherits(QMediaServiceProviderPlugin.staticMetaObject));

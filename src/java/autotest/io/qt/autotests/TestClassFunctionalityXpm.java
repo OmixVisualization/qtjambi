@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QEvent;
@@ -40,7 +41,13 @@ import io.qt.gui.QImage;
 import io.qt.gui.QPixmap;
 import io.qt.widgets.QApplication;
 
-public class TestClassFunctionalityXpm extends QApplicationTest {
+public class TestClassFunctionalityXpm extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Before
     public void setUp() {
         QApplication.processEvents();
@@ -58,24 +65,24 @@ public class TestClassFunctionalityXpm extends QApplicationTest {
     // Check that const char *[] is handled properly by the generated code
     @Test
     public void run_XPMConstructors() {
-Utils.println(3, "run_XPMConstructors() BEGIN");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() BEGIN");
         String qt_plastique_radio[] = { "13 13 2 1", "X c #000000", ". c #ffffff", "....XXXXX....", "..XX.....XX..", ".X.........X.", ".X.........X.", "X...........X", "X...........X",
                 "X...........X", "X...........X", "X...........X", ".X.........X.", ".X.........X.", "..XX.....XX..", "....XXXXX...." };
 
         QImage img = new QImage(qt_plastique_radio);
         assertEquals(img.width(), 13);
         assertEquals(img.height(), 13);
-Utils.println(3, "run_XPMConstructors() QIMAGE TESTING");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() QIMAGE TESTING");
 
         assertEquals(img.pixel(2, 1), 0xff000000);
         assertEquals(img.pixel(0, 0), 0xffffffff);
 
-Utils.println(3, "run_XPMConstructors() QPIXMAP TESTING");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() QPIXMAP TESTING");
         QPixmap pm = new QPixmap(qt_plastique_radio);
         QImage img2 = pm.toImage();
         assertEquals(img2.pixel(2, 1), 0xff000000);
         assertEquals(img2.pixel(12, 12), 0xffffffff);
-Utils.println(3, "run_XPMConstructors() END");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() END");
     }
 
     public static void main(String args[]) {

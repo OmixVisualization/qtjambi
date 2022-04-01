@@ -48,16 +48,18 @@ class QtJambiLink;
 
 class EventDispatcherCheck{
 public:
-    EventDispatcherCheck(QThread* thread, const QWeakPointer<QtJambiLink>& wlink, std::function<void(QPointer<QThread>&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)> _cleaner = std::function<void(QPointer<QThread>&,const QWeakPointer<QtJambiLink>&,QList<std::function<void()>>&&)>());
+    typedef std::function<void(QPointer<QThread>&,JObjectWrapper&&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)> CheckerFunction;
+    EventDispatcherCheck(JObjectWrapper&& jthreadObjectWrapper, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, CheckerFunction&& _cleaner = {});
     ~EventDispatcherCheck();
     
     static QThreadStorage<QSharedPointer<EventDispatcherCheck>> storage;
 private:
+    JObjectWrapper m_jthreadObjectWrapper;
     QPointer<QThread> m_thread;
     QWeakPointer<QtJambiLink> m_wlink;
     QList<std::function<void()>> m_finalActions;
     QMutex m_mutex;
-    std::function<void(QPointer<QThread>&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)> cleaner;
+    CheckerFunction cleaner;
 };
 
 class QThreadUserData : public QtJambiObjectData

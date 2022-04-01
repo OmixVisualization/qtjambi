@@ -4,6 +4,10 @@
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_repository.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
+#include <QtCore/qpropertyprivate.h>
+#endif
+
 namespace Java{
 namespace QtCore
 {

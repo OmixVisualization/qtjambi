@@ -63,6 +63,7 @@ public abstract class Constants {
     public static final String TRANSLATIONSDIR          = "qtjambi.qt.translationsdir";
     public static final String RESOURCESDIR             = "qtjambi.qt.resourcesdir";
     public static final String GENERATOR_PREPROC_DEFINES = "qtjambi.generator.preproc.defines";
+    public static final String GENERATOR_STATICLIBS      = "qtjambi.generator.staticlibs";
     public static final String JAVALIBDIR               = "qtjambi.java.library.path";
     public static final String JAMBILIBDIR              = "qtjambi.jambi.libdir";
     public static final String JAMBIPLUGINSDIR          = "qtjambi.jambi.pluginsdir";
@@ -74,6 +75,8 @@ public abstract class Constants {
     public static final String SUFFIX_VERSION           = "qtjambi.version.suffix";
     public static final String JAVA_HOME_TARGET         = "java.home.target"; // build
     public static final String JAVA8_HOME_TARGET        = "java8.home.target"; // build
+    public static final String JAVA_ARM64_HOME_TARGET   = "java.arm64.home.target"; // build
+    public static final String JAVA_X64_HOME_TARGET     = "java.x64.home.target"; // build
     public static final String JAVA_OSARCH_TARGET       = "java.osarch.target"; // target
     public static final String JAVA_OSCPU               = "java.oscpu"; // build
     public static final String JAVA_OSCPU_TARGET        = "java.oscpu.target"; // target
@@ -120,37 +123,22 @@ public abstract class Constants {
     /*
      * These properties are set inside this task
      */
-    public static final String CLUCENE            = "qtjambi.clucene";
     public static final String COMPILER           = "qtjambi.compiler";
     public static final String CONFIG             = "qtjambi.config";
     public static final String CONFIGURATION      = "qtjambi.configuration";
     public static final String CONFIGURATION_DASH = "qtjambi.configuration.dash";
     public static final String CONFIGURATION_OSGI = "qtjambi.configuration.osgi";
-    public static final String CORE               = "qtjambi.core";         // mandatory with <= 4.7.x
-    public static final String CONCURRENT         = "qtjambi.concurrent";
-    public static final String BLUETOOTH          = "qtjambi.bluetooth";
-    public static final String LOCATION           = "qtjambi.location";
-    public static final String NFC                = "qtjambi.nfc";
-    public static final String POSITIONING        = "qtjambi.positioning";
     public static final String POSITIONINGQUICK   = "qtjambi.positioningquick";
-    public static final String PRINTSUPPORT       = "qtjambi.printsupport";
-    public static final String QML                = "qtjambi.qml";
     public static final String QML_MODELS         = "qtjambi.qmlmodels";
     public static final String QML_WORKERSCRIPT   = "qtjambi.qmlworkerscript";
-    public static final String QUICK              = "qtjambi.quick";
     public static final String QUICKPARTICLES     = "qtjambi.quickparticles";
-    public static final String QUICKCONTROLS2     = "qtjambi.quickcontrols2";
     public static final String QUICKTEMPLATES2    = "qtjambi.quicktemplates2";
     public static final String QUICKTEST          = "qtjambi.quicktest";
-    public static final String QUICKWIDGETS       = "qtjambi.quickwidgets";
     public static final String SENSORS            = "qtjambi.sensors";
     public static final String MULTIMEDIAQUICK    = "qtjambi.multimediaquick";
     public static final String MULTIMEDIAQUICK_P  = "qtjambi.multimediaquick_p";
     public static final String MULTIMEDIAWIDGETS  = "qtjambi.multimediawidgets";
     public static final String MULTIMEDIAGSTTOOLS = "qtjambi.multimediagsttools";
-    public static final String WEBCHANNEL         = "qtjambi.webchannel";
-    public static final String WEBSOCKETS         = "qtjambi.websockets";
-    public static final String SERIALPORT         = "qtjambi.serialport";
     public static final String LIBEGL             = "qtjambi.libegl";
     public static final String LIBGLESV2          = "qtjambi.libglesv2";
     public static final String LIBICUDATA         = "qtjambi.libicudata";
@@ -161,65 +149,16 @@ public abstract class Constants {
     public static final String LIBICUTEST         = "qtjambi.libicutest";
     public static final String LIBICUTO           = "qtjambi.libicutu";
     public static final String LIBICUUC           = "qtjambi.libicuuc";
-    public static final String DBUS               = "qtjambi.dbus";
-    public static final String DESIGNER           = "qtjambi.designer";
-    public static final String DESIGNERCOMPONENTS = "qtjambi.designercomponents";
-    public static final String GUI                = "qtjambi.gui";          // mandatory with <= 4.7.x
-    public static final String WIDGETS            = "qtjambi.widgets";
-    public static final String HELP               = "qtjambi.help";
-    public static final String MULTIMEDIA         = "qtjambi.multimedia";
-    public static final String NETWORK            = "qtjambi.network";      // mandatory with <= 4.7.x
-    public static final String NETWORKAUTH        = "qtjambi.networkauth";      // mandatory with <= 4.7.x
-    public static final String OPENGL             = "qtjambi.opengl";
-    public static final String OPENGLWIDGETS      = "qtjambi.openglwidgets";
     public static final String OPENGLEXTENSIONS   = "qtjambi.openglextensions";
     public static final String PLATFORMSUPPORT    = "qtjambi.platformsupport";
     public static final String OSNAME             = "qtjambi.osname";
     public static final String OSPLATFORM         = "qtjambi.osplatform";   // linux windows macosx
     public static final String OSCPU              = "qtjambi.oscpu";        // i386 x86_64 x86 x32
     public static final String QMAKESPEC          = "qtjambi.qmakespec";
-    public static final String SCRIPT             = "qtjambi.script";
-    public static final String SCRIPTTOOLS        = "qtjambi.scripttools";
-    public static final String SQL                = "qtjambi.sql";
-    public static final String SVG                = "qtjambi.svg";
-    public static final String SVGWIDGETS         = "qtjambi.svgwidgets";
-    public static final String TEST               = "qtjambi.test";
-	public static final String QT3DCORE           = "qtjambi.qt3dcore";			// new for Qt3D
-	public static final String QT3DQUICK          = "qtjambi.qt3dquick";	// new for Qt3D
-	public static final String QT3DINPUT          = "qtjambi.qt3dinput";
-	public static final String QT3DQUICKRENDERER  = "qtjambi.qt3dquickrenderer";
-	public static final String QT3DRENDERER       = "qtjambi.qt3drenderer";
-	public static final String QT3DQUICKRENDER    = "qtjambi.qt3dquickrender";
-	public static final String QT3DQUICKEXTRAS    = "qtjambi.qt3dquickextras";
-	public static final String QT3DEXTRAS         = "qtjambi.qt3dextras";
-	public static final String QT3DQUICKINPUT     = "qtjambi.qt3dquickinput";
-	public static final String QT3DANIMATION      = "qtjambi.qt3danimation";
-	public static final String QT3DQUICKSCENE2D   = "qtjambi.qt3dquickscene2d";
-	public static final String QT3DRENDER         = "qtjambi.qt3drender";
-	public static final String QT3DLOGIC          = "qtjambi.qt3dlogic";
-	public static final String WINEXTRAS          = "qtjambi.winextras";
-	public static final String MACEXTRAS          = "qtjambi.macextras";
-	public static final String X11EXTRAS          = "qtjambi.x11extras";
-    public static final String WEBENGINE          = "qtjambi.webengine";
-    public static final String WEBENGINEQUICK     = "qtjambi.webenginequick";
-    public static final String GAMEPAD            = "qtjambi.gamepad";
-    public static final String WEBENGINECORE      = "qtjambi.webenginecore";
-    public static final String WEBENGINEWIDGETS   = "qtjambi.webenginewidgets";
     public static final String LABSTEMPLATES      = "qtjambi.labstemplates";
     public static final String ANGLE              = "qtjambi.angle";
-    public static final String WEBVIEW            = "qtjambi.webview";
-    public static final String UITOOLS            = "qtjambi.uitools";
-    public static final String DATA_VISUALIZATION = "qtjambi.datavisualization";
-    public static final String CHARTS             = "qtjambi.charts";
-    public static final String UIPLUGIN           = "qtjambi.uiplugin";
-    public static final String SCXML              = "qtjambi.scxml";
-    public static final String STATEMACHINE       = "qtjambi.statemachine";
-    public static final String REMOTEOBJECTS      = "qtjambi.remoteobjects";
-    public static final String XML                = "qtjambi.xml";          // mandatory with <= 4.7.x
-    public static final String XMLPATTERNS        = "qtjambi.xmlpatterns";
     public static final String EGLDEVICEINTEGRATION = "qtjambi.egldeviceintegration";
     public static final String WAYLANDCLIENT 	  = "qtjambi.waylandclient";
-    public static final String XCBQPA	    	  = "qtjambi.xcbqpa";
     public static final String QTCONFIG           = "qtjambi.qtconfig";
 
     public static final String PLUGINS_ACCESSIBLE_QTACCESSIBLEWIDGETS  = "qtjambi.plugins.accessible.qtaccessiblewidgets";

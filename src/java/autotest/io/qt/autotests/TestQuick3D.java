@@ -33,7 +33,7 @@ import org.junit.Test;
 import io.qt.quick3d.*;
 import static org.junit.Assert.*;
 
-public class TestQuick3D extends QApplicationTest {
+public class TestQuick3D extends ApplicationInitializer {
     @Test
     public void test() {
     	QQuick3DObject object1 = new QQuick3DGeometry();

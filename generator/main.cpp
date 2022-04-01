@@ -63,7 +63,7 @@ QString resolveFilePath(const QString &fileName, int opts, const QStringList &li
     QFileInfo fileinfoAbs(fileName);
     if(fileinfoAbs.isAbsolute()) {
         qDebug() << "isAbsolute path: " << fileName;
-        return QString(fileName);
+        return fileName.trimmed();
     }
 
     for(const QString &s : list) {
@@ -75,7 +75,7 @@ QString resolveFilePath(const QString &fileName, int opts, const QStringList &li
         }
         QFileInfo fileinfo(dir, fileName);
         if(fileinfo.isFile())
-            return QString(fileinfo.absoluteFilePath());
+            return fileinfo.absoluteFilePath().trimmed();
         if(opts)
             qDebug() << "Absolute path: " << fileName << " in " << dir << ": No such file";
     }

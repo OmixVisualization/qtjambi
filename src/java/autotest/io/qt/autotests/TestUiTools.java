@@ -3,6 +3,8 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,14 +14,16 @@ import io.qt.gui.*;
 import io.qt.quick.*;
 import io.qt.widgets.*;
 import io.qt.widgets.tools.*;
+import io.qt.internal.QtJambiInternal;
 
-public class TestUiTools extends QApplicationTest {
+public class TestUiTools extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
-		QApplicationTest.testInitialize();
+		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
+		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		ApplicationInitializer.testInitializeWithWidgets();
 	}
     
     @Test
@@ -56,10 +60,11 @@ public class TestUiTools extends QApplicationTest {
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
-	    	if(System.getProperty("io.qt.debug", "").equals("debug")) {
-	    		loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/plugins/designer");
+			String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+	    	if(QtJambiInternal.isDebugBuild()) {
+	    		loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/plugins/designer");
 			}else {
-				loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/release/plugins/designer");
+				loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/plugins/designer");
 			}
 	    	QFile device = new QFile("classpath:io/qt/autotests/ui/customwidgettest.ui");
 	    	Assert.assertTrue(device.open(QIODevice.OpenModeFlag.ReadOnly));

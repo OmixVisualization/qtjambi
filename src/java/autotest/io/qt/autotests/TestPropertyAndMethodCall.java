@@ -65,7 +65,7 @@ import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
-public class TestPropertyAndMethodCall extends QApplicationTest {
+public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	private static PropertyAndMethodCallTest object;
 	private static TestQObject javaObject;
@@ -73,7 +73,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitialize();
 		QMetaType.registerMetaType(TestQObject.DerivedQObject.class);
 		QMetaType.registerMetaType(TestQObject.CustomQtValue.class);
 		QMetaType.registerMetaType(TestQObject.CustomQtInterfaceValue.class);
@@ -97,7 +97,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
     public static void testDispose() throws Exception {
 		object = null;
 		javaObject = null;
-		QApplicationTest.testDispose();
+		ApplicationInitializer.testDispose();
 	}
 
 	@Test

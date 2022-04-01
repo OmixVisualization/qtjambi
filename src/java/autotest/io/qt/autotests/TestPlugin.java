@@ -57,7 +57,7 @@ import io.qt.widgets.QGraphicsWidget;
 import io.qt.widgets.QStyle;
 import io.qt.widgets.QStylePlugin;
 
-public class TestPlugin extends QApplicationTest {
+public class TestPlugin extends ApplicationInitializer {
 	
 	public interface GraphicsPluginFactory extends io.qt.QtObjectInterface{
 		public QGraphicsObject create(QGraphicsItem parent);
@@ -73,7 +73,7 @@ public class TestPlugin extends QApplicationTest {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
     }
 	
 	@Test
@@ -89,7 +89,7 @@ public class TestPlugin extends QApplicationTest {
     
     @Test
     public void testStylePlugin() {
-    	Assume.assumeTrue("windows or macos", QOperatingSystemVersion.currentType()==OSType.Windows || QOperatingSystemVersion.currentType()==OSType.MacOS);
+    	Assume.assumeTrue("windows or macos", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows, OSType.MacOS));
 		QFactoryLoader loader = new QFactoryLoader(QStylePlugin.class, "/styles");
 		Assert.assertFalse(loader.keyMap().isEmpty());
         Assert.assertFalse(loader.keyMap().get(0).isEmpty());
@@ -111,7 +111,7 @@ public class TestPlugin extends QApplicationTest {
     public void testIconEnginePlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QIconEnginePlugin.class, "/iconengines");
 		System.out.println(loader.keyMap());
-		QIconEngine plugin = loader.loadPlugin((QMetaObject.Method2<QIconEnginePlugin,String,QIconEngine>)QIconEnginePlugin::create, "svg", "classpath:io/qt/unittests/svg-cards.svg");
+		QIconEngine plugin = loader.loadPlugin((QMetaObject.Method2<QIconEnginePlugin,String,QIconEngine>)QIconEnginePlugin::create, "svg", "classpath:io/qt/autotests/svg-cards.svg");
 		Assert.assertTrue(plugin!=null);
 	}
 	
@@ -119,17 +119,18 @@ public class TestPlugin extends QApplicationTest {
     public void testCustomPlugin() {
 		QFactoryLoader.registerFactory(GraphicsPluginFactory.class);
 		QPluginLoader.registerStaticPluginFunction(GraphicsPlugin.class);
-		QFactoryLoader loader = new QFactoryLoader(GraphicsPluginFactory.class);
+		QFactoryLoader loader = new QFactoryLoader(GraphicsPluginFactory.class, "/static");
+		Assert.assertEquals(0, loader.indexOf("InterfacePlugin"));
 		QGraphicsItem parent = new QGraphicsWidget();
 		QGraphicsObject plugin = loader.loadPlugin(GraphicsPluginFactory::create, "InterfacePlugin", parent);
-		Assert.assertTrue(plugin instanceof QGraphicsWidget);
+		Assert.assertTrue("InterfacePlugin not a QGraphicsWidget: "+(plugin==null ? "null" : plugin.getClass()), plugin instanceof QGraphicsWidget);
 		plugin = loader.loadPlugin(QGraphicsObject.class, "InterfacePlugin", parent);
 		Assert.assertTrue(plugin instanceof QGraphicsWidget);
     }
     
 //    @Test
     public void testLoadPluginLibrary() {
-		Assume.assumeTrue("macos only", QOperatingSystemVersion.currentType()==OSType.MacOS);
+		Assume.assumeTrue("macos only", QOperatingSystemVersion.current().isAnyOfType(OSType.MacOS));
 		new QDialog().exec();
 		for(String path : QCoreApplication.libraryPaths()) {
 			QFileInfo file = new QFileInfo(path+"/designer/libcustomwidgets.dylib");

@@ -92,7 +92,9 @@
     <enum-type name="QSGGeometry::Type"/>
     <enum-type name="QSGGeometry::DrawingMode"/>
     <enum-type name="QSGGeometry::AttributeType"/>
-    <enum-type name="QSGMaterial::Flag" flags="QSGMaterial::Flags"/>
+    <enum-type name="QSGMaterial::Flag" flags="QSGMaterial::Flags">
+        <reject-enum-value name="CustomCompileStep" since="6.3.0"/>
+    </enum-type>
     <enum-type name="QSGTexture::Filtering"/>
     <enum-type name="QSGTexture::WrapMode"/>
     <enum-type name="QSGTexture::AnisotropyLevel" since="5.9.0"/>

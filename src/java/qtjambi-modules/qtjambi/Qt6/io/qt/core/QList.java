@@ -658,20 +658,45 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
      * @throws NullPointerException if elements are {@code null}
      *
      */
-    @SafeVarargs
+    @SuppressWarnings({ "unchecked" })
+	@SafeVarargs
     public static <T> QList<T> of(T element0, T...elements) {
 		QMetaType metaType = findElementMetaType(element0, elements);
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
 		if(metaType.id()==QMetaType.Type.Void.value())
 			throw new IllegalArgumentException("void cannot be type of QList.");
-		QList<T> result = new QList<>(metaType);
-		result.add(element0);
+		QList<T> result;
+		if(metaType.id()==QMetaType.Type.QString.value())
+			result = (QList<T>)(QList<?>)new QStringList();
+		else
+			result = new QList<>(metaType);
+    	result.reserve(elements.length+1);
+		result.append(element0);
 		for (T t : elements) {
-			result.add(t);
+			result.append(t);
 		}
 		return result;
 	}
+    
+    /**
+     * Returns a QStringList containing given elements.
+     *
+     * @param <E> the {@code QStringList}'s element type
+     * @param element0 the first element
+     * @param elements subsequent elements
+     * @return a {@code QStringList} containing the specified element
+     */
+    @SafeVarargs
+    public static QStringList of(String element0, String...elements) {
+    	QStringList result = new QStringList();
+    	result.reserve(elements.length+1);
+    	result.append(element0);
+    	for (String element : elements) {
+    		result.append(element);
+		}
+    	return result;
+    }
 
     static boolean checkContainerType(QMetaType elementType, java.util.Collection<?> container) {
     	if (container instanceof QList && elementType.equals(((QList<?>) container).elementMetaType())) {

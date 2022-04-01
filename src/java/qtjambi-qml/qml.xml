@@ -274,7 +274,7 @@
         </condition>
         <jar destfile="${outputDir}/tests/${module}.jar" excludes="${jar.excludes}">
             <manifest>
-                <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
+                <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
                 <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
                 <!-- TODO: qtjambi.png -->

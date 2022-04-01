@@ -35,7 +35,7 @@ import org.junit.Test;
 import io.qt.QtObjectInterface;
 import io.qt.quick.QSGGeometry;
 
-public class TestQuickInjectedCode extends QApplicationTest {
+public class TestQuickInjectedCode extends ApplicationInitializer {
     @Test
     public void testQSGGeometry_vertexData_Point2D()
     {

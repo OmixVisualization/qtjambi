@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import io.qt.autotests.generated.NameSpace;
 
-public class TestNamespace extends QApplicationTest {
+public class TestNamespace extends ApplicationInitializer {
     @Test public void exists() throws ClassNotFoundException {
         assertTrue(Class.forName("io.qt.autotests.generated.NameSpace$ObjectA") != null);
         assertTrue(Class.forName("io.qt.autotests.generated.NameSpace$ObjectB") != null);

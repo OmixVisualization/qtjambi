@@ -43,32 +43,33 @@ import io.qt.autotests.generated.MessageHandler;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QLoggingCategory;
+import io.qt.core.QResource;
 import io.qt.core.QThread;
 import io.qt.core.QtMessageHandler;
 import io.qt.core.QtMsgType;
 import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 
-public class TestQMessageHandler{
+public class TestQMessageHandler extends UnitTestInitializer {
 	
-    // We don't use QApplicationTest since that will by default initialize QMessageHandler
+    // We don't use ApplicationInitializer since that will by default initialize QMessageHandler
     @BeforeClass
     public static void testInitialize() throws Exception {
-        Utils.println(2, "TestQMessageHandler.testInitialize(): begin");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "TestQMessageHandler.testInitialize(): begin");
         if(QCoreApplication.instance()==null) {
-			Utils.println(2, "QApplicationTest.testInitialize(): begin");
-		    io.qt.QtResources.addSearchPath(".");
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "ApplicationInitializer.testInitialize(): begin");
+		    QResource.addClassPath(".");
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
 		    QApplication.initialize(new String[]{});
-		    Utils.println(2, "QApplicationTest.testInitialize(): done");
+		    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "ApplicationInitializer.testInitialize(): done");
 	        QThread.currentThread().setObjectName("main");
 		}
-        Utils.println(2, "TestQMessageHandler.testInitialize(): done");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "TestQMessageHandler.testInitialize(): done");
     }
 
     @AfterClass
     public static void testDispose() throws Exception {
-    	QApplicationTest.testDispose();
+    	ApplicationInitializer.testDispose();
     }
     
     @Test

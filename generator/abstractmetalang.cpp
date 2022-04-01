@@ -393,6 +393,19 @@ uint AbstractMetaFunction::compareTo(const AbstractMetaFunction *other) const {
                 same = false;
                 break;
             }
+            if(min_arg->type()->typeEntry()==max_arg->type()->typeEntry()
+                    && min_arg->type()->typeEntry()->isContainer()){
+                if(reinterpret_cast<const ContainerTypeEntry*>(min_arg->type()->typeEntry())->type()==ContainerTypeEntry::InitializerListContainer){
+                    if(min_arg->type()->instantiations().size()==1
+                            && max_arg->type()->instantiations().size()==1){
+                        if (min_arg->type()->instantiations()[0]->typeEntry() != max_arg->type()->instantiations()[0]->typeEntry()
+                                && min_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName() != max_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName()) {
+                            same = false;
+                            break;
+                        }
+                    }
+                }
+            }
         } else {
             if (max_arguments.at(i)->defaultValueExpression().isEmpty()) {
                 same = false;
@@ -1808,6 +1821,30 @@ const ContainerTypeEntry* AbstractMetaClass::findContainerSuperClass(QList<const
     return nullptr;
 }
 
+void AbstractMetaClass::setBaseClass(AbstractMetaClass *base_class) {
+    m_base_class = base_class;
+    if(base_class){
+        base_class->m_has_subClasses = true;
+        if(m_usingProtectedBaseConstructors || m_usingPublicBaseConstructors){
+            for(const AbstractMetaFunction* fun : base_class->functions()){
+                if(fun->isConstructor()){
+                    AbstractMetaFunction* constructor = fun->copy();
+                    constructor->setImplementingClass(this);
+                    constructor->setDeclaringClass(this);
+                    constructor->setName(qualifiedCppName().split("::").last());
+                    constructor->setOriginalName(constructor->name());
+                    if(m_usingPublicBaseConstructors){
+                        constructor->setVisibility(AbstractMetaAttributes::Public);
+                    }else{
+                        constructor->setVisibility(AbstractMetaAttributes::Protected);
+                    }
+                    addFunction(constructor);
+                }
+            }
+        }
+    }
+}
+
 void AbstractMetaClass::setFunctions(const AbstractMetaFunctionList &functions) {
     m_functions = functions;
     sortFunctions();
@@ -1846,15 +1883,24 @@ void AbstractMetaClass::setFunctions(const AbstractMetaFunctionList &functions) 
                 final_functions += f;
             currentName = f->name();
         }
-        if(f->name()=="metaObject" && f->arguments().isEmpty() && f->wasPrivate()){
-            m_has_private_metaObject = true;
-        }else if(f->name()=="qt_metacall"
+        if(f->name()==QLatin1String("metaObject") && f->arguments().isEmpty()){
+            m_has_metaObject = true;
+            m_has_private_metaObject = f->wasPrivate();
+            *f += AbstractMetaAttributes::Private;
+        }else if(f->name()==QLatin1String("qt_metacall")
                  && f->arguments().size()==3
-                 && f->wasPrivate()
-                 && f->arguments()[0]->type()->cppSignature()=="QMetaObject::Call"
-                 && f->arguments()[1]->type()->cppSignature()=="int"
-                 && f->arguments()[2]->type()->cppSignature()=="void**"){
-            m_has_private_metacall = true;
+                 && f->arguments()[0]->type()->cppSignature()==QLatin1String("QMetaObject::Call")
+                 && f->arguments()[1]->type()->cppSignature()==QLatin1String("int")
+                 && f->arguments()[2]->type()->cppSignature()==QLatin1String("void **")){
+            m_has_metacall = true;
+            m_has_private_metacall = f->wasPrivate();
+            *f += AbstractMetaAttributes::Private;
+        }else if(f->name()==QLatin1String("qt_metacast")
+                 && f->arguments().size()==1
+                 && f->arguments()[0]->type()->cppSignature()==QLatin1String("const char *")){
+            m_has_metacast = true;
+            m_has_private_metacast = f->wasPrivate();
+            *f += AbstractMetaAttributes::Private;
         }
     }
 
@@ -2062,8 +2108,8 @@ bool AbstractMetaClass::hasProtectedConstructors() const {
 
 bool AbstractMetaClass::instantiateShellClass() const {
     return !isFinal()
-            && !m_has_private_metacall
-            && !m_has_private_metaObject
+            //&& !m_has_private_metacall
+            //&& !m_has_private_metaObject
             && !(typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
             && (hasVirtualFunctions()
                 || hasVirtualDestructor()
@@ -2075,8 +2121,8 @@ bool AbstractMetaClass::instantiateShellClass() const {
 
 bool AbstractMetaClass::generateShellClass() const {
     return !isFinal()
-            && !m_has_private_metacall
-            && !m_has_private_metaObject
+            //&& !m_has_private_metacall
+            //&& !m_has_private_metaObject
             && !(typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
             && (hasVirtualFunctions()
                 || hasVirtualDestructor()

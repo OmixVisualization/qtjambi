@@ -60,8 +60,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1842,6 +1840,12 @@ public final class QtJambiInternal {
 				else if (t.getCause() instanceof RuntimeException)
 					throw (RuntimeException) t.getCause();
 				throw t;
+			} catch (ExceptionInInitializerError t) {
+				if (t.getCause() instanceof Error && t.getCause() != t)
+					throw (Error) t.getCause();
+				else if (t.getCause() instanceof RuntimeException)
+					throw (RuntimeException) t.getCause();
+				throw t;
 			} catch (ClassNotFoundException e1) {
 				initializedPackages.put(packagePath, Boolean.FALSE);
 				return false;
@@ -2397,78 +2401,13 @@ public final class QtJambiInternal {
 		}
 		return id;
 	}
-
-	private static List<String> unpackPlugins() {
-		// FIXME: The logic of this method is broken. We should be reconfiguring the Qt
-		// libraryPath's
-		// based on the active deployment spec and putting the runtime location of that
-		// at the start
-		// of the paths list.
-		// This method should be renamed if it does not actually do anything about the
-		// "unpacking"
-		// process. Maybe it should be "resolvePluginLocations()"
-		List<String> paths = NativeLibraryManager.unpackPlugins();
-		if (paths != null)
-			return paths;
-
-		// FIXME: enumerate ClassPath look for qtjambi-deployment.xml
-		// FIXME: Use qtjambi-deployment.xml is one exists
-		// FIXME: Make a resolver method (that produces a list of automatic things
-		// found) and another method to set from list
-		// FIXME: The last resort should be to find a plugins/ directory (when we have
-		// no qtjambi-deployment.xml)
-		paths = new ArrayList<String>();
-
-		String classPath = System.getProperty("java.class.path");
-		String[] classPathElements = classPath.split("\\" + File.pathSeparator);
-		for (String element : classPathElements) {
-			File base = new File(element);
-			if (base.isDirectory()) {
-				File descriptorFile = new File(base, "qtjambi-deployment.xml");
-				if (descriptorFile.isFile()) {
-					if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-						java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.FINEST,
-								"resolve Plugin Locations: found qtjambi-deployment.xml at "
-										+ descriptorFile.getAbsolutePath());
-				}
-				// Assume a default plugins layout
-				File pluginsDir = new File(base, "plugins");
-				if (pluginsDir.isDirectory()) {
-					if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-						java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.FINEST,
-								"resolve Plugin Locations: found plugins/ at " + pluginsDir.getAbsolutePath());
-					paths.add(pluginsDir.getAbsolutePath());
-				} else {
-					if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-						java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.FINEST,
-								"resolve Plugin Locations: found DIRECTORY at " + base.getAbsolutePath());
-				}
-			} else if (element.toLowerCase().endsWith(".jar")) {
-				// FIXME: We should only load MANIFEST.MF qtjambi-deployment.xml from the JAR we
-				// activated
-				if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-					java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.FINEST,
-							"resolve Plugin Locations: found JAR at " + base.getAbsolutePath());
-				if (base.exists()) {
-					try {
-						URL url = base.toURI().toURL();
-						url = new URL("jar:" + url.toString() + "!/plugins");
-						paths.add(url.toString());
-					} catch (MalformedURLException e) {
-						if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-							java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
-					}
-				}
-			} else {
-				if (NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug)
-					java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.FINEST,
-							"resolve Plugin Locations: found FILE at " + base.getAbsolutePath());
-			}
-		}
-
-		if (paths.isEmpty())
-			return null;
-		return paths;
+	
+	public static boolean isDebugBuild() {
+		return NativeLibraryManager.configuration() == NativeLibraryManager.Configuration.Debug;
+	}
+	
+	public static String processName() {
+		return RetroHelper.processName();
 	}
 
 	@NativeAccess
@@ -2482,35 +2421,15 @@ public final class QtJambiInternal {
 			if(path!=null && !path.isEmpty() && !result.contains(path))
 				result.add(path);
 		}
-		List<String> paths = unpackPlugins();
-		if (paths != null) {
-			Collections.reverse(paths); // Qt prepends but our list is in highest priority first order
-			for (String p : paths) {
-				if(p!=null && !p.isEmpty() && !result.contains(p))
-					result.add(p);
-			}
-		}
 
 		try {
 			if (io.qt.internal.NativeLibraryManager.isUsingDeploymentSpec()) {
-				paths = new ArrayList<String>();
 
 				List<String> pluginPaths = io.qt.internal.NativeLibraryManager.pluginPaths();
-				if (pluginPaths != null)
-					paths.addAll(pluginPaths);
-
-				List<String> pluginDesignerPaths = io.qt.internal.NativeLibraryManager.pluginDesignerPaths();
-				if (pluginDesignerPaths != null)
-					paths.addAll(pluginDesignerPaths);
-
-				// We don't override the existing values (which are based on envvars)
-				// as envvars should continue to take priority even for Java Qt use.
-				if (paths.size() > 0) {
-					Collections.reverse(paths);
-					for (String p : paths) {
-						if(p!=null && !p.isEmpty() && !result.contains(p))
-							result.add(p);
-					}
+				for (int i = pluginPaths.size()-1; i >= 0; --i) {
+					String p = pluginPaths.get(i);
+					if(p!=null && !p.isEmpty() && !result.contains(p))
+						result.add(p);
 				}
 			}
 		} catch (Exception e) {
@@ -3130,6 +3049,14 @@ public final class QtJambiInternal {
 	
 	public static int qtjambiPatchVersion() {
 		return QtJambiVersion.qtJambiPatch;
+	}
+	
+	public static String qtJambiLibraryPath() {
+		return NativeLibraryManager.qtJambiLibraryPath();
+	}
+
+	public static String qtLibraryPath() {
+		return NativeLibraryManager.qtLibraryPath();
 	}
 
 	public static Object createMetaType(int id, Class<?> javaType, Object copy) {

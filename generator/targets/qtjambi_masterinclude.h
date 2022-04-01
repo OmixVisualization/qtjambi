@@ -65,6 +65,7 @@
 
 #define QSETTINGS_H
 #include <QtCore/QtCore>
+#include <QtCore/qfloat16.h>
 #undef QSETTINGS_H
 #define Q_OS_WIN
 #include <QtCore/QSettings>
@@ -143,10 +144,21 @@
 #include <QtUiTools/QtUiTools>
 #endif
 
+#ifndef QTJAMBI_NO_ACTIVEX
+#ifdef Q_OBJECT_FAKE
+#undef Q_OBJECT_FAKE
+#endif
+#define Q_OBJECT_FAKE
+#include <ActiveQt/ActiveQt>
+#include <QtAxContainer/QtAxContainer>
+#endif
+
 #ifndef QTJAMBI_NO_DESIGNER
+#define DEPRECATED_HEADER_QtDesigner_customwidget_h
 #include <QtUiPlugin/QtUiPlugin>
 #include <QtDesigner/QtDesigner>
 #include <qtjambi_designer/designer.h>
+#include <QtDesigner/private/ui4_p.h>
 #endif
 
 #ifndef QTJAMBI_NO_QML
@@ -175,6 +187,10 @@
 
 #ifndef QTJAMBI_NO_QUICKWIDGETS
 #include <QtQuickWidgets/QtQuickWidgets>
+#endif
+
+#ifndef QTJAMBI_NO_QUICKTEST
+#include <QtQuickTest/QtQuickTest>
 #endif
 
 #ifndef QTJAMBI_NO_QUICKCONTROLS2
@@ -247,7 +263,9 @@
 #include <qtjambi_multimedia/qtjambi_multimedia.h>
 #  include <QtMultimedia/QtMultimedia>
 #if QT_VERSION>=0x050000
+#ifndef QTJAMBI_NO_MULTIMEDIAWIDGETS
 #  include <QtMultimediaWidgets/QtMultimediaWidgets>
+#endif
 #endif
 
 #endif
@@ -466,6 +484,14 @@
 
 #ifndef QTJAMBI_NO_OPENGLWIDGETS
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
+#endif
+
+#ifndef QTJAMBI_NO_PDF
+#include <QtPdf/QtPdf>
+#include <qtjambi_pdf/qtjambi_pdf_qhashes.h>
+#endif
+#ifndef QTJAMBI_NO_PDFWIDGETS
+#include <QtPdfWidgets/QtPdfWidgets>
 #endif
 
 #ifndef QTJAMBI_NO_OPENGL

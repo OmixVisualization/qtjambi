@@ -286,9 +286,14 @@ Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLinkAccessLock, (QReadWriteLock::Recu
 Q_GLOBAL_STATIC(MultiLinkHash, gUserObjectCache)
 Q_GLOBAL_STATIC(LinkHash, gQObjectCache)
 
-QtJambiLinkUserData::QtJambiLinkUserData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
+QtJambiLinkUserData::QtJambiLinkUserData(const QWeakPointer<QtJambiLink> & link)
   :
-    m_link(link),
+    m_link(link)
+ { }
+
+QtJambiMetaObjectLinkUserData::QtJambiMetaObjectLinkUserData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
+  :
+    QtJambiLinkUserData(link),
     m_metaObject(metaObject)
  { }
 
@@ -457,9 +462,9 @@ QList<QMetaMethod> extra_signals(const QMetaObject* metaObject){
     return extraSignals;
 }
 
-const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env, jobject javaObject, QObject *object, bool created_by_java, bool is_shell)
+const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env, jobject javaObject, QObject *object, bool created_by_java, bool is_shell, const QMetaObject* superTypeForCustomMetaObject)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambiLink::createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java)")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambiLink::createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java, bool hasCustomMetaObject)")
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(object);
@@ -469,18 +474,26 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env
     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
     QtJambiLink* qtJambiLink;
-    const QMetaObject* metaObject = object->metaObject();
-    QList<QMetaMethod> extraSignals = extra_signals(metaObject);
-    if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        if(extraSignals.isEmpty())
-            qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, ocurredException);
-        else
-            qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+    if(superTypeForCustomMetaObject){
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            qtJambiLink = new PointerToPendingQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, superTypeForCustomMetaObject, object, created_by_java, false, is_shell, ocurredException);
+        }else{
+            qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, superTypeForCustomMetaObject, object, created_by_java, false, is_shell, ocurredException);
+        }
     }else{
-        if(extraSignals.isEmpty())
-            qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
-        else
-            qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+        const QMetaObject* metaObject = object->metaObject();
+        QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            if(extraSignals.isEmpty())
+                qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, ocurredException);
+            else
+                qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+        }else{
+            if(extraSignals.isEmpty())
+                qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
+            else
+                qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+        }
     }
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -494,30 +507,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env
     return qtJambiLink->getStrongPointer();
 }
 
-const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForPendingQObject(JNIEnv *env, jobject javaObject, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool is_shell)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambiLink::createLinkForPendingQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java)")
-    Q_ASSERT(env);
-    Q_ASSERT(javaObject);
-    Q_ASSERT(object);
-
-    // Initialize the link
-    jobject nativeLink = getNativeLink(env, javaObject);
-    JavaException ocurredException;
-    QtJambiLink* qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
-    if(ocurredException.object()){
-        qtJambiLink->dispose();
-        ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
-    }else{
-        qtJambiLink->init(env);
-    }
-    //qtJambiLink->setCppOwnership(env);
-
-    return qtJambiLink->getStrongPointer();
-}
-
-const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
+const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, JavaException& ocurredException)
 {
     if(!ocurredException.object()){
         Q_ASSERT(env);
@@ -528,26 +518,26 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
         QtJambiLink* qtJambiLink;
-        QList<QMetaMethod> extraSignals = extra_signals(metaObject);
-        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            if(extraSignals.isEmpty()){
-                if(!is_shell && !registeredOriginalMetaObject(typeId)){
-                    qtJambiLink = new PointerToQObjectInterfaceWithDetectedExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, ocurredException);
-                }else{
-                    qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
-                }
+        if(hasCustomMetaObject){
+            if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+                qtJambiLink = new PointerToPendingQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
             }else{
-                qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
+                qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
             }
         }else{
-            if(extraSignals.isEmpty()){
-                if(!is_shell && !registeredOriginalMetaObject(typeId)){
-                    qtJambiLink = new PointerToQObjectWithDetectedExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, ocurredException);
+            QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+            if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+                if(extraSignals.isEmpty()){
+                    qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
                 }else{
-                    qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
+                    qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
                 }
             }else{
-                qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
+                if(extraSignals.isEmpty()){
+                    qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
+                }else{
+                    qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
+                }
             }
         }
         if(ocurredException.object()){
@@ -559,7 +549,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *
     return *gDefaultPointer;
 }
 
-const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSharedPointerToQObject(JNIEnv *env, jobject javaObject, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerQObjectGetterFunction pointerGetter)
+const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSharedPointerToQObject(JNIEnv *env, jobject javaObject, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter pointerDeleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -575,9 +565,9 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSharedPointerToQObj
     Q_ASSERT(object);
     JavaException ocurredException;
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        qtJambiLink = new QSharedPointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
+        qtJambiLink = new QSharedPointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, superTypeForCustomMetaObject, ocurredException);
     }else{
-        qtJambiLink = new QSharedPointerToQObjectLink(env, nativeLink, javaObject, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
+        qtJambiLink = new QSharedPointerToQObjectLink(env, nativeLink, javaObject, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, superTypeForCustomMetaObject, ocurredException);
     }
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -1667,9 +1657,7 @@ void QtJambiLink::dispose(){
 // ### BEGIN #######################  QtJambiLink  ######################### BEGIN ####
 
 QtJambiLink::QtJambiLink(JNIEnv *env, jobject nativeLink, jobject jobj,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                 const char *LINK_NAME_ARG(qt_name)
-#endif
+                                 LINK_NAME_ARG(const char *qt_name)
                                  bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException) :
     m_this(this),
     m_nativeLink(env->NewGlobalRef(nativeLink)),
@@ -2508,7 +2496,7 @@ void PointerToQObjectLink::init(JNIEnv* env){
             bool _isValueOwner = isValueOwner(metaObject);
             QWriteLocker locker(QtJambiLinkUserData::lock());
             Q_UNUSED(locker)
-            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer(), metaObject));
+            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiMetaObjectLinkUserData(getWeakPointer(), metaObject));
             if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
                 QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
             }
@@ -2984,14 +2972,14 @@ void QSharedPointerToObjectLink::onDispose(JNIEnv *env)
 
 // ### BEGIN #################  QSharedPointerToQObjectLink  ################### BEGIN ###
 
-QSharedPointerToQObjectLink::QSharedPointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
+QSharedPointerToQObjectLink::QSharedPointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject, JavaException& ocurredException)
     : QSharedPointerLink(env, nativeLink, jobj,
-                         LINK_NAME_ARG(object->metaObject()->className())
+                         LINK_NAME_ARG(superTypeForCustomMetaObject ? superTypeForCustomMetaObject->className() : object->metaObject()->className())
                          created_by_java, is_shell, ocurredException),
       m_pointerContainer(nullptr)
 {
     jobject local = env->NewLocalRef(jobj);
-    const QMetaObject* metaObject = object->metaObject();
+    const QMetaObject* metaObject = superTypeForCustomMetaObject ? superTypeForCustomMetaObject : object->metaObject();
     /* //if we use dynamic meta object:
     if(QMetaObjectPrivate::get(metaObject)->flags & DynamicMetaObject){
         QObjectPrivate* p = QObjectPrivate::get(object);
@@ -2999,17 +2987,26 @@ QSharedPointerToQObjectLink::QSharedPointerToQObjectLink(JNIEnv *env, jobject na
             p->metaObject = const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(metaObject));
     }*/
     if(!ocurredException.object()){
-        QList<QMetaMethod> extraSignals = extra_signals(metaObject);
-        if(extraSignals.isEmpty())
-            m_pointerContainer = new PointerContainer(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
-        else
-            m_pointerContainer = new PointerContainerWithExtraSignals(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, extraSignals, ocurredException);
+        if(superTypeForCustomMetaObject){
+            m_pointerContainer = new PointerContainerWithPendingExtraSignals(env, local, superTypeForCustomMetaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
+        }else{
+            QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+            if(extraSignals.isEmpty())
+                m_pointerContainer = new PointerContainer(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
+            else
+                m_pointerContainer = new PointerContainerWithExtraSignals(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, extraSignals, ocurredException);
+        }
     }
     if(!ocurredException.object()){
         bool _isValueOwner = isValueOwner(metaObject);
         QWriteLocker locker(QtJambiLinkUserData::lock());
         Q_UNUSED(locker)
-        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer(), metaObject));
+        QtJambiLinkUserData* lud;
+        if(superTypeForCustomMetaObject)
+            lud = new QtJambiLinkUserData(getWeakPointer());
+        else
+            lud = new QtJambiMetaObjectLinkUserData(getWeakPointer(), metaObject);
+        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, lud);
         if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
             QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
         }
@@ -3210,23 +3207,135 @@ jobject PointerToQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
     return qtjambi_arraylist_new(env, 0);
 }
 
-void PointerToPendingQObjectLink::resolveListOfExtraSignal(JNIEnv * env){
+void PointerToPendingQObjectLink::resolveListOfExtraSignal(JNIEnv * env) const{
     JavaException ocurredException;
     if(jobject jobj = getJavaObjectLocalRef(env)){
         if(QObject* object = qobject()){
-            QList<QMetaMethod> extraSignals = extra_signals(object->metaObject());
+            m_metaObject = object->metaObject();
+            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
             m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
             env->DeleteLocalRef(jobj);
         }
     }
-    m_flags.setFlag(Flag::IsPendingObjectResolved);
+    const_cast<PointerToPendingQObjectLink*>(this)->m_flags.setFlag(Flag::IsPendingObjectResolved);
     if(ocurredException.object())
         ocurredException.raise();
 }
 
+PointerToPendingQObjectLink::PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
+    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException),
+      m_metaObject(metaObject)
+{
+}
+
+void PointerToPendingQObjectLink::init(JNIEnv* env){
+    if(!isInitialized()){
+        QtJambiLink::init(env);
+        QObject* object = qobject();
+        Q_ASSERT(object);
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        m_qtTypeName = m_metaObject->className();
+#endif
+        {
+            bool _isValueOwner = isValueOwner(m_metaObject);
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            Q_UNUSED(locker)
+            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer()));
+            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
+                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
+            }
+        }
+        if(createdByQml()){
+            setCppOwnership(env);
+        }else if(createdByJava()){
+            if(object->parent())
+                setCppOwnership(env);
+            else
+                setJavaOwnership(env);
+        }else{
+            if(object->parent())
+                setCppOwnership(env);
+            else
+                setSplitOwnership(env);
+        }
+    }
+}
+
 jobject PointerToPendingQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
     if(!m_flags.testFlag(Flag::IsPendingObjectResolved)){
-        const_cast<PointerToPendingQObjectLink*>(this)->resolveListOfExtraSignal(env);
+        resolveListOfExtraSignal(env);
+    }else if(QObject* object = qobject()){
+        if(m_metaObject != object->metaObject())
+            resolveListOfExtraSignal(env);
+    }
+    jobject result = qtjambi_arraylist_new(env, 0);
+    for(const QtJambiSignalInfo& info : m_extraSignals){
+        if(info.signalObject())
+            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
+    }
+    return result;
+}
+
+PointerToPendingQObjectInterfaceLink::PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
+    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException),
+      m_metaObject(metaObject)
+{
+}
+
+void PointerToPendingQObjectInterfaceLink::init(JNIEnv* env){
+    if(!isInitialized()){
+        QtJambiLink::init(env);
+        QObject* object = qobject();
+        Q_ASSERT(object);
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        m_qtTypeName = m_metaObject->className();
+#endif
+        {
+            bool _isValueOwner = isValueOwner(m_metaObject);
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            Q_UNUSED(locker)
+            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer()));
+            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
+                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
+            }
+        }
+        if(createdByQml()){
+            setCppOwnership(env);
+        }else if(createdByJava()){
+            if(object->parent())
+                setCppOwnership(env);
+            else
+                setJavaOwnership(env);
+        }else{
+            if(object->parent())
+                setCppOwnership(env);
+            else
+                setSplitOwnership(env);
+        }
+    }
+}
+
+void PointerToPendingQObjectInterfaceLink::resolveListOfExtraSignal(JNIEnv * env) const{
+    JavaException ocurredException;
+    if(jobject jobj = getJavaObjectLocalRef(env)){
+        if(QObject* object = qobject()){
+            m_metaObject = object->metaObject();
+            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
+            m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
+            env->DeleteLocalRef(jobj);
+        }
+    }
+    const_cast<PointerToPendingQObjectInterfaceLink*>(this)->m_flags.setFlag(Flag::IsPendingObjectResolved);
+    if(ocurredException.object())
+        ocurredException.raise();
+}
+
+jobject PointerToPendingQObjectInterfaceLink::getListOfExtraSignal(JNIEnv * env) const{
+    if(!m_flags.testFlag(Flag::IsPendingObjectResolved)){
+        resolveListOfExtraSignal(env);
+    }else if(QObject* object = qobject()){
+        if(m_metaObject != object->metaObject())
+            resolveListOfExtraSignal(env);
     }
     jobject result = qtjambi_arraylist_new(env, 0);
     for(const QtJambiSignalInfo& info : m_extraSignals){
@@ -3254,17 +3363,8 @@ jobject PointerToQObjectInterfaceWithExtraSignalsLink::getListOfExtraSignal(JNIE
     return result;
 }
 
-jobject PointerContainer::getListOfExtraSignal(JNIEnv * env) const{
+jobject PointerContainer::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink*) const{
     return qtjambi_arraylist_new(env, 0);
-}
-
-jobject PointerContainerWithExtraSignals::getListOfExtraSignal(JNIEnv * env) const{
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
-    }
-    return result;
 }
 
 QString PointerToObjectLink::describe() const{
@@ -3321,6 +3421,10 @@ QString QSharedPointerToObjectLink::describe() const{
     return strg;
 }
 
+jobject QSharedPointerToQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
+    return m_pointerContainer->getListOfExtraSignal(env, this);
+}
+
 void QSharedPointerToQObjectLink::removeInterface(const std::type_info&){
     setInDestructor();
 }
@@ -3351,6 +3455,53 @@ PointerContainerWithExtraSignals::PointerContainerWithExtraSignals(JNIEnv* env, 
       m_extraSignals(qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException))
 {
 
+}
+
+jobject PointerContainerWithExtraSignals::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink*) const{
+    jobject result = qtjambi_arraylist_new(env, 0);
+    for(const QtJambiSignalInfo& info : m_extraSignals){
+        if(info.signalObject())
+            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
+    }
+    return result;
+}
+
+PointerContainerWithPendingExtraSignals::PointerContainerWithPendingExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
+    : PointerContainer(env, jobj, metaObject, link, ptr_shared_pointer, isShell, shared_pointer_deleter, pointerGetter, ocurredException),
+      m_extraSignals(),
+      m_metaObject(metaObject)
+{
+
+}
+
+void PointerContainerWithPendingExtraSignals::resolveListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const {
+    JavaException ocurredException;
+    if(jobject jobj = link->getJavaObjectLocalRef(env)){
+        if(QObject* object = qobject()){
+            m_metaObject = object->metaObject();
+            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
+            m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
+            env->DeleteLocalRef(jobj);
+        }
+    }
+    const_cast<QSharedPointerToQObjectLink*>(link)->m_flags.setFlag(QtJambiLink::Flag::IsPendingObjectResolved);
+    if(ocurredException.object())
+        ocurredException.raise();
+}
+
+jobject PointerContainerWithPendingExtraSignals::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const{
+    if(!link->m_flags.testFlag(QtJambiLink::Flag::IsPendingObjectResolved)){
+        resolveListOfExtraSignal(env, link);
+    }else if(QObject* object = qobject()){
+        if(m_metaObject != object->metaObject())
+            resolveListOfExtraSignal(env, link);
+    }
+    jobject result = qtjambi_arraylist_new(env, 0);
+    for(const QtJambiSignalInfo& info : m_extraSignals){
+        if(info.signalObject())
+            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
+    }
+    return result;
 }
 
 
@@ -3501,78 +3652,11 @@ QSharedPointerToContainerInterfaceLink::QSharedPointerToContainerInterfaceLink(J
     }
 }
 
-QSharedPointerToQObjectInterfaceLink::QSharedPointerToQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
-    : QSharedPointerToQObjectLink(env, nativeLink, jobj, object, created_by_java, is_shell, ptr_shared_pointer, shared_pointer_deleter, pointerGetter, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
+QSharedPointerToQObjectInterfaceLink::QSharedPointerToQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, QObject* object, bool created_by_java, bool is_shell, void* ptr_shared_pointer, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QMetaObject* superTypeForCustomMetaObject, JavaException& ocurredException)
+    : QSharedPointerToQObjectLink(env, nativeLink, jobj, object, created_by_java, is_shell, ptr_shared_pointer, shared_pointer_deleter, pointerGetter, superTypeForCustomMetaObject, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
 {
     for(QMap<size_t, uint>::key_value_iterator i = m_interfaceOffsets.keyValueBegin(); i!=m_interfaceOffsets.keyValueEnd(); ++i){
         registerPointer(reinterpret_cast<void*>( quintptr(QSharedPointerToQObjectLink::pointer()) + i.base().value() ));
-    }
-}
-
-PointerToPendingQObjectLink::PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException)
-{
-}
-
-void PointerToPendingQObjectLink::init(JNIEnv* env){
-    if(!isInitialized()){
-        QtJambiLink::init(env);
-        QObject* object = qobject();
-        Q_ASSERT(object);
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = "QObject";
-#endif
-        if(createdByQml()){
-            setCppOwnership(env);
-        }else if(createdByJava()){
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setJavaOwnership(env);
-        }else{
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setSplitOwnership(env);
-        }
-    }
-}
-
-PointerToQObjectWithDetectedExtraSignalsLink::PointerToQObjectWithDetectedExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool isDeclarativeCall, JavaException& ocurredException)
-    : PointerToQObjectWithExtraSignalsLink(env, nativeLink, jobj, metaObject, object, created_by_java, isDeclarativeCall, false, {}, ocurredException)
-{
-}
-
-void PointerToQObjectWithDetectedExtraSignalsLink::init(JNIEnv* env)
-{
-    PointerToQObjectWithExtraSignalsLink::init(env);
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = extra_signals(object->metaObject());
-        if(!extraSignals.isEmpty()){
-            JavaException ocurredException;
-            m_extraSignals = qtjambi_resolve_extra_signals(env, this->getJavaObjectLocalRef(env), extraSignals, ocurredException);
-            if(ocurredException.object())
-                ocurredException.raise();
-        }
-    }
-}
-
-PointerToQObjectInterfaceWithDetectedExtraSignalsLink::PointerToQObjectInterfaceWithDetectedExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, JavaException& ocurredException)
-    : PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, false, {}, ocurredException)
-{
-}
-
-void PointerToQObjectInterfaceWithDetectedExtraSignalsLink::init(JNIEnv* env)
-{
-    PointerToQObjectInterfaceWithExtraSignalsLink::init(env);
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = extra_signals(object->metaObject());
-        if(!extraSignals.isEmpty()){
-            JavaException ocurredException;
-            m_extraSignals = qtjambi_resolve_extra_signals(env, this->getJavaObjectLocalRef(env), extraSignals, ocurredException);
-            if(ocurredException.object())
-                ocurredException.raise();
-        }
     }
 }
 
@@ -4007,7 +4091,10 @@ void qtjambi_resolve_signals(JNIEnv *env, jobject java_object, const QMetaObject
                                     if(info.signal_method_index_provider){
                                         signal_method_index = info.signal_method_index_provider();
                                     }
-                                    env->SetObjectArrayElement(signalObjectTypes, jsize(i), resolveClass(env, info.signal_signature, nullptr));
+                                    QString signalSignature = QLatin1String(info.signal_signature);
+                                    if(signalSignature.startsWith('L') && signalSignature.endsWith(';'))
+                                        signalSignature = signalSignature.mid(1, signalSignature.length()-2);
+                                    env->SetObjectArrayElement(signalObjectTypes, jsize(i), resolveClass(env, qPrintable(signalSignature), nullptr));
                                     QMetaMethod metaMethod = metaMethods.take(signal_method_index);
                                     const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, metaMethod);
                                     jobjectArray signalParameterClasses = env->NewObjectArray(jsize(parameterTypeInfos.size()-1), Java::Runtime::Class::getClass(env), nullptr);

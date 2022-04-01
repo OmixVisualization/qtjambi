@@ -52,7 +52,7 @@ import io.qt.gui.QColor;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 
-public class TestSignalOnDispose extends QApplicationTest {
+public class TestSignalOnDispose extends ApplicationInitializer {
 	private final static List<String> tempFiles = new ArrayList<>();
 	
 	@Before

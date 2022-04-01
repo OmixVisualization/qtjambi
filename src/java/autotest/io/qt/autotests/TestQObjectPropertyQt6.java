@@ -45,7 +45,7 @@ import io.qt.widgets.QGraphicsPathItem;
 import io.qt.widgets.QGraphicsProxyWidget;
 import io.qt.widgets.QGraphicsWidget;
 
-public class TestQObjectPropertyQt6 extends QApplicationTest {
+public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     @Test
     public void testQByteProperty() {
     	class PropertyOwner extends QObject{

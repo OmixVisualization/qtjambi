@@ -54,6 +54,7 @@ class Wrapper {
         Wrapper(int argc, char *argv[]);
 
         static QString include_directory;
+        static QString typesystem_directory;
         static bool qtjambi_debug_tools;
         void setDefineUndefineStage(int stage) { defineUndefineStageCurrent = stage; }
 

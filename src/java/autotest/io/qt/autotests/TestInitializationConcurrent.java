@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationConcurrent {
+public class TestInitializationConcurrent extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.concurrent");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.concurrent"));
     }
 }

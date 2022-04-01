@@ -79,7 +79,7 @@ import io.qt.gui.QTouchEvent;
 import io.qt.internal.QtJambiInternal;
 import io.qt.core.QRegExp;
 
-public class TestCloneableQt5 extends QApplicationTest {
+public class TestCloneableQt5 extends ApplicationInitializer {
     @Test
     public void run_clone_QRegExp() {
         QRegExp org = new QRegExp();

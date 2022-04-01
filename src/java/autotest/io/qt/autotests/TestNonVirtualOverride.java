@@ -36,7 +36,7 @@ import io.qt.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 
-public class TestNonVirtualOverride extends QApplicationTest {
+public class TestNonVirtualOverride extends ApplicationInitializer {
 	
 	@Test
     public void testQRunnable() throws Throwable{

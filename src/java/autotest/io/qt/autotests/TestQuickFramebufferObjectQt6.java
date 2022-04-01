@@ -39,13 +39,13 @@ import io.qt.quick.*;
 import io.qt.autotests.TestQuickQt6.*;
 import static io.qt.autotests.TestQuickQt6.*;
 
-public class TestQuickFramebufferObjectQt6 extends QApplicationTest {
+public class TestQuickFramebufferObjectQt6 extends ApplicationInitializer {
 	
 	private static boolean contextIsOpenGL;
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");
 	}

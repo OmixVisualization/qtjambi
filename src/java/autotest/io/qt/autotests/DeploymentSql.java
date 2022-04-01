@@ -33,19 +33,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.Assume;
-
-import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
-import io.qt.core.QDir;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QStringList;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.sql.QSqlDriver;
 import io.qt.sql.QSqlDriverPlugin;
-import io.qt.widgets.QApplication;
 
 public class DeploymentSql {
     public static void main(String args[]) {
@@ -90,79 +84,12 @@ class DeploymentSqlImpl {
 	}
 	
 	static void main(String args[]) {
-    	QApplication.initialize(args);
-    	String path = null;
-    	QDir dir = new QDir(QApplication.applicationDirPath());
-    	if(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.MacOS) {
-    		dir.cd("../../..");
-    	}
-    	if(dir.cd("../../../deployment/native")) {
-    		String osName = System.getProperty("os.name").toLowerCase();
-    		String platform;
-        	if(osName.startsWith("windows")) {
-        		platform = "windows";
-        		switch(System.getProperty("os.arch").toLowerCase()) {
-            	case "arm":
-            	case "arm32":
-            		platform += "-arm32"; break;
-            	case "arm64":
-            	case "aarch64":
-            		platform += "-arm64"; break;
-            	case "x86_64":
-            	case "x64":
-            	case "amd64":
-            		platform += "-x64"; break;
-        		default:
-            		platform += "-x86"; break;
-        		}
-        	}else if(osName.startsWith("mac")) {
-        		platform = "macos";
-        	}else if(osName.startsWith("android")) {
-        		Assume.assumeFalse("Cannot run on android", true);
-        		return;
-        	}else {
-        		platform = "linux";
-        		switch(System.getProperty("os.arch").toLowerCase()) {
-            	case "arm":
-            	case "arm32":
-            		platform += "-arm32"; break;
-            	case "arm64":
-            	case "aarch64":
-            		platform += "-arm64"; break;
-            	case "x86_64":
-            	case "x64":
-            	case "amd64":
-            		platform += "-x64"; break;
-        		default:
-            		platform += "-x86"; break;
-        		}
-        	}
-	    	{
-	    		QDir _dir = dir.clone();
-    			if(_dir.cd(platform + ("debug".equals(System.getProperty("io.qt.debug")) ? "/debug/plugins" : "/release/plugins"))){
-    				if(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.MacOS) {
-    					try {
-    						copyDir(new File(QDir.toNativeSeparators(_dir.canonicalPath())), QtUtilities.jambiDeploymentDir());
-	    					QStringList libraryPaths = QApplication.libraryPaths();
-	    					libraryPaths.removeAll(QApplication.applicationDirPath());
-	    					libraryPaths.removeAll(_dir.canonicalPath());
-	    					libraryPaths.prepend(path = new File(QtUtilities.jambiDeploymentDir(), "plugins").getAbsolutePath());
-	    					QApplication.setLibraryPaths(libraryPaths);
-    					}catch(IOException e) {
-    						e.printStackTrace();
-    					}
-    				}else {
-    					QApplication.addLibraryPath(path = _dir.canonicalPath());
-    				}
-    			}
-	    	}
-    	}
+    	QCoreApplication.initialize(args);
     	try {
     		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
     		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QJDBC");
     		if(plugin==null) {
-        		System.err.println("java.class.path="+System.getProperty("java.class.path"));
-    			throw new AssertionError("plugin==null. LibraryPath="+path);
+    			throw new AssertionError("plugin==null. LibraryPath="+QCoreApplication.libraryPaths()+", java.class.path="+System.getProperty("java.class.path"));
     		}
     		try {
 	    		if(!"io::qt::sql::jdbc::QJdbcSqlDriver".equals(plugin.metaObject().className()))
@@ -170,20 +97,20 @@ class DeploymentSqlImpl {
     		}finally {
     			plugin.dispose();
     		}
-			if(QApplication.arguments().size()>=3) {
-				QFile file = new QFile(QApplication.arguments().get(1));
+			if(QCoreApplication.arguments().size()>=3) {
+				QFile file = new QFile(QCoreApplication.arguments().get(1));
 				if(file.open(QIODevice.OpenModeFlag.WriteOnly)) {
-					file.write(new QByteArray(QApplication.arguments().get(2)));
+					file.write(new QByteArray(QCoreApplication.arguments().get(2)));
 					file.close();
 				}else {
-					System.err.println("File "+QApplication.arguments().get(1)+" not open because: "+file.errorString());
+					System.err.println("File "+QCoreApplication.arguments().get(1)+" not open because: "+file.errorString());
 				}
 				file.dispose();
 	    	}else {
 	    		throw new RuntimeException("Two arguments expected.");
 	    	}
     	}finally {
-    		QApplication.shutdown();
+    		QCoreApplication.shutdown();
     	}
 	}
 }

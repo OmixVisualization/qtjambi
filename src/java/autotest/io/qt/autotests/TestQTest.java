@@ -33,12 +33,19 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.test.QSignalSpy;
 import io.qt.widgets.QCheckBox;
 
-public class TestQTest extends QApplicationTest {
+public class TestQTest extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void test() {
     	QCheckBox box = new QCheckBox();

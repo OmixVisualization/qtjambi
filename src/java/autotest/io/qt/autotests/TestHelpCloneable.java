@@ -45,14 +45,12 @@ import org.junit.Test;
 
 import io.qt.help.QHelpSearchQuery;
 import io.qt.internal.QtJambiInternal;
-import io.qt.unittests.support.FilterHelp;
 
-public class TestHelpCloneable extends QApplicationTest {
+public class TestHelpCloneable extends ApplicationInitializer {
 
     @BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue(FilterHelp.detectStatic());
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
     }
     
 	@Test

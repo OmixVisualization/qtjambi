@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationWebChannel {
+public class TestInitializationWebChannel extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.webchannel");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webchannel"));
     }
 }

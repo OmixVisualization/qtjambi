@@ -1,15 +1,15 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-contains(QT_CONFIG, qtjambi-3dcore):              SUBDIRS += qtjambi_3dcore
-contains(QT_CONFIG, qtjambi-3drender):            SUBDIRS += qtjambi_3drender
-contains(QT_CONFIG, qtjambi-3dinput):             SUBDIRS += qtjambi_3dinput
-contains(QT_CONFIG, qtjambi-3dquick):             SUBDIRS += qtjambi_3dquick
-contains(QT_CONFIG, qtjambi-3dextras):            SUBDIRS += qtjambi_3dextras
-contains(QT_CONFIG, qtjambi-3dquickextras):       SUBDIRS += qtjambi_3dquickextras
-contains(QT_CONFIG, qtjambi-3danimation):         SUBDIRS += qtjambi_3danimation
-contains(QT_CONFIG, qtjambi-3dquickscene2d):      SUBDIRS += qtjambi_3dquickscene2d
-contains(QT_CONFIG, qtjambi-3dlogic):             SUBDIRS += qtjambi_3dlogic
+contains(QT_CONFIG, qtjambi-qt3dcore):              SUBDIRS += qtjambi_3dcore
+contains(QT_CONFIG, qtjambi-qt3drender):            SUBDIRS += qtjambi_3drender
+contains(QT_CONFIG, qtjambi-qt3dinput):             SUBDIRS += qtjambi_3dinput
+contains(QT_CONFIG, qtjambi-qt3dquick):             SUBDIRS += qtjambi_3dquick
+contains(QT_CONFIG, qtjambi-qt3dextras):            SUBDIRS += qtjambi_3dextras
+contains(QT_CONFIG, qtjambi-qt3dquickextras):       SUBDIRS += qtjambi_3dquickextras
+contains(QT_CONFIG, qtjambi-qt3danimation):         SUBDIRS += qtjambi_3danimation
+contains(QT_CONFIG, qtjambi-qt3dquickscene2d):      SUBDIRS += qtjambi_3dquickscene2d
+contains(QT_CONFIG, qtjambi-qt3dlogic):             SUBDIRS += qtjambi_3dlogic
 contains(QT_CONFIG, qtjambi-datavisualization):   SUBDIRS += qtjambi_datavis
 contains(QT_CONFIG, qtjambi-quick3d):             SUBDIRS += qtjambi_quick3d
 

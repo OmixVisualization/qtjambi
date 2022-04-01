@@ -32,6 +32,7 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtPropertyReader;
@@ -48,7 +49,12 @@ import io.qt.widgets.QPushButton;
 import io.qt.widgets.QStandardItemEditorCreator;
 import io.qt.widgets.QWidget;
 
-public class TestItemEditorCreator extends QApplicationTest {
+public class TestItemEditorCreator extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	public static class Editor extends QWidget{
 		public Editor() {

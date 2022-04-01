@@ -258,7 +258,7 @@ public class LibraryEntry extends Task {
         }
         //getProject().log(this, conditionProperty+" = "+condition, Project.MSG_INFO);
         if(condition != null) {
-            if("true".compareToIgnoreCase(condition) == 0){
+            if("true".equalsIgnoreCase(condition)){
                 return true;
             }
             File file = new File(condition);
@@ -554,8 +554,12 @@ public class LibraryEntry extends Task {
         }
         return result;
     }
-
+    
     public static String formatQtName(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    	return formatQtName(name, infix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, false);
+    }
+
+    public static String formatQtName(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion, boolean staticLib) {
         String tmpVersionString;
         if(qtMajorVersion>=5){
     		if(name.startsWith("Qt") && !name.startsWith("Qt"+qtMajorVersion)){
@@ -571,7 +575,14 @@ public class LibraryEntry extends Task {
     		infix = "";
     	}
         String libPrefix = name.startsWith("lib") ? "" : "lib";
-        if(debug) {
+        if(staticLib) {
+        	switch(OSInfo.crossOS()) {
+            case Windows:
+                return name + infix + (debug ? "d" : "") + tmpVersionString + ".lib";
+            default:
+            	return "lib" + name + infix + (debug ? "_debug" : "") + ".a";
+            }
+        }else if(debug) {
             String tmpDotVersionString;
             if(qtMajorVersion>=0){
                 if(qtMinorVersion>=0){

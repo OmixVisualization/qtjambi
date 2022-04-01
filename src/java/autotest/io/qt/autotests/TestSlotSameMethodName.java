@@ -74,7 +74,7 @@ import io.qt.widgets.QWidget;
 //base-class signal implementation is declared "private final".  What appeared
 //to happen is that all signals were disconnected and only the default baseclass
 //one was allowed.
-public class TestSlotSameMethodName extends QApplicationTest {
+public class TestSlotSameMethodName extends ApplicationInitializer {
 
 	@Before
 	public void setUp() {
@@ -119,35 +119,35 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		// This method has the same name as the baseclass method.
 		protected void currentChanged(int index) {   // rename to currentChangedY or currentChanged
 			//int index = -2;
-			Utils.println(2, "**** currentChanged(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChanged(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedI(Integer index) {
-			Utils.println(2, "**** currentChangedI(%1$d) Integer", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedI(%1$d) Integer", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << (index + 8));  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChanged2(int index) {
-			Utils.println(2, "**** currentChanged2(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChanged2(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedI2(Integer index) {
-			Utils.println(2, "**** currentChangedI2(%1$d) Integer", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedI2(%1$d) Integer", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedX(int index) {
-			Utils.println(2, "**** currentChangedX(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedX(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
@@ -175,35 +175,35 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		// This method has the same name as the baseclass method.
 		protected void currentChangedY(int index) {   // rename to currentChangedY or currentChanged
 			//int index = -2;
-			Utils.println(2, "**** currentChangedY(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedY(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedI(Integer index) {
-			Utils.println(2, "**** currentChangedI(%1$d) Integer", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedI(%1$d) Integer", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << (index + 8));  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChanged2(int index) {
-			Utils.println(2, "**** currentChanged2(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChanged2(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedI2(Integer index) {
-			Utils.println(2, "**** currentChangedI2(%1$d) Integer", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedI2(%1$d) Integer", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
 				myNotifiable.orNotify(index);  // testcase sending emit
 		}
 		protected void currentChangedX(int index) {
-			Utils.println(2, "**** currentChangedX(%1$d) int", index);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "**** currentChangedX(%1$d) int", index);
 			if(index < count())
 				myNotifiable.orNotify(1 << index);  // normal tab switch
 			else
@@ -461,7 +461,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		QMainWindow mainWindow = new QMainWindow() {
 			@Override
 			protected void showEvent(QShowEvent arg__1) {
-				Utils.println(2, "showEvent(" + arg__1 + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "showEvent(" + arg__1 + ") " + Thread.currentThread());
 				int switchTab = tabWidget.getSwitchTab();
 				if((switchTab & B_TAB1) == B_TAB1)
 					tabWidget.setCurrentIndex(0);	// tab1
@@ -480,7 +480,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 			@Override
 			protected void closeEvent(QCloseEvent arg__1) {
-				Utils.println(2, "closeEvent(" + arg__1 + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "closeEvent(" + arg__1 + ") " + Thread.currentThread());
 				myNotifiable.orNotify(B_CLOSE);
 				super.closeEvent(arg__1);
 			}
@@ -513,7 +513,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		QMainWindow mainWindow = new QMainWindow() {
 			@Override
 			protected void closeEvent(QCloseEvent arg__1) {
-				Utils.println(2, "closeEvent(" + arg__1 + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "closeEvent(" + arg__1 + ") " + Thread.currentThread());
 				myNotifiable.upNotify(1);
 				super.closeEvent(arg__1);
 		}};
@@ -532,14 +532,14 @@ public class TestSlotSameMethodName extends QApplicationTest {
 			while(true) {
 				int left = (int)(expiry - System.currentTimeMillis());
 				if(left <= 0) {
-					Utils.println(2, "foo() TIMEOUT");
+					java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "foo() TIMEOUT");
 					break;
 				}
 				if(myNotifiable.isUpNotified(1))
 					break;
 				// Sorry this eat 100% CPU due to insufficient Qt API around
 				//  QEventLoop handling.
-				//Utils.println(2, "QApplication.processEvents() left=" + left);
+				//java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "QApplication.processEvents() left=" + left);
 				//if(QApplication.hasPendingEvents()) {
 					//while(QApplication.hasPendingEvents())
 						QApplication.processEvents(flags, left);
@@ -548,7 +548,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 			}
 
 			int left = (int)(expiry - System.currentTimeMillis());
-			Utils.println(2, "foo() END left=" + left);
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "foo() END left=" + left);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -565,21 +565,21 @@ public class TestSlotSameMethodName extends QApplicationTest {
 			synchronized (this) {
 				if(didKind < kind)
 					didKind = kind;
-				Utils.println(2, "doNotify(" + kind + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "doNotify(" + kind + ") " + Thread.currentThread());
 				notifyAll();
 			}
 		}
 		public void orNotify(int kind) {
 			synchronized (this) {
 				didKind |= kind;
-				Utils.println(2, "doNotify(" + kind + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "doNotify(" + kind + ") " + Thread.currentThread());
 				notifyAll();
 			}
 		}
 		public void setNotify(int kind) {
 			synchronized (this) {
 				didKind = kind;
-				Utils.println(2, "doNotify(" + kind + ") " + Thread.currentThread());
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "doNotify(" + kind + ") " + Thread.currentThread());
 				notifyAll();
 			}
 		}
@@ -591,7 +591,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		protected boolean isUpNotified(int kind) {
 			synchronized (this) {
 				if(didKind >= kind) {
-					Utils.println(2, "isNotified(at=" + didKind + "; want=" + kind + ") " + Thread.currentThread());
+					java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "isNotified(at=" + didKind + "; want=" + kind + ") " + Thread.currentThread());
 					return true;
 				}
 			}
@@ -634,7 +634,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		}
 		protected void myMethod() {
 			stop();
-			Utils.println(2, "CloseWindow.myMethod()");
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "CloseWindow.myMethod()");
 			if(notifyObject != null)
 				notifyObject.upNotify(1);
 		}

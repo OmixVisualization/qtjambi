@@ -39,11 +39,11 @@ import io.qt.widgets.*;
 import io.qt.autotests.TestQuickQt6.*;
 import static io.qt.autotests.TestQuickQt6.*;
 
-public class TestQuickWidgetsQt6 extends QApplicationTest {
+public class TestQuickWidgetsQt6 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
     

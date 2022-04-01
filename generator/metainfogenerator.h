@@ -82,6 +82,10 @@ class MetaInfoGenerator : public JavaGenerator {
         void setQtJambiDebugTools(bool bf) { m_qtjambi_debug_tools = bf; }
         bool shouldGenerate(const TypeEntry *entry) const;
         void writeLibraryInitializers();
+
+        void setStaticLibraries(const QStringList& staticLibraries){
+            m_staticLibraries = staticLibraries;
+        }
     private:
         void writeCppFile();
         void buildSkipList();
@@ -98,6 +102,7 @@ class MetaInfoGenerator : public JavaGenerator {
         QString m_cpp_out_dir;
 
         bool m_qtjambi_debug_tools;
+        QStringList m_staticLibraries;
 };
 
 #endif // METAINFOGENERATOR_H

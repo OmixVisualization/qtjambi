@@ -40,7 +40,7 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
-public class TestDefaultSignals extends QApplicationTest {
+public class TestDefaultSignals extends ApplicationInitializer {
     private static class Sender extends QObject {
     	public final Signal2Default1<String, @QtPrimitiveType Integer> signal21 = new Signal2Default1<>(()->7654);
     	public final Signal2Default2<String, @QtPrimitiveType Integer> signal22 = new Signal2Default2<>(()->"No arg", ()->12345);

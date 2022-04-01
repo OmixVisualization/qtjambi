@@ -87,6 +87,7 @@ void Handler::parseTypeSystem(const QDomElement &element){
         m_namespacePrefixes.clear();
         m_defaultPackage = attributeValue(attributes.removeNamedItem("package"));
         m_defaultSuperclass = attributeValue(attributes.removeNamedItem("default-superclass"));
+        bool noExports = convertBoolean(attributeValue(attributes.removeNamedItem("no-exports"), "false"), "no-exports", false);
         QString moduleName = attributeValue(attributes.removeNamedItem("module"));
         QString description = attributeValue(attributes.removeNamedItem("description"));
         if(element.hasChildNodes()){
@@ -144,6 +145,7 @@ void Handler::parseTypeSystem(const QDomElement &element){
         TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(m_defaultPackage,
                                                              attributeValue(attributes.removeNamedItem("qt-library")),
                                                              moduleName);
+        entry->setNoExports(noExports);
         entry->setDescription(description);
         entry->setCodeGeneration(m_generate);
         //qDebug()<<"Adding element->entry (root)"<<element->entry->name();
@@ -972,7 +974,7 @@ void Handler::parseLoadTypeSystem(const QDomElement &element){
                 TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
             }
             ensureNoChildren(element);
-            m_database->parseFile(name, m_importInputDirectoryList, generated, optional);
+            m_database->parseFile(name, m_importInputDirectoryList, m_typeystem_directory, generated, optional);
         }
     }
 }
@@ -1040,6 +1042,8 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
     QString defaultSuperclass = attributeValue(attributes.removeNamedItem("default-superclass"));
     QString genericClass = attributeValue(attributes.removeNamedItem("generic-class"), "no");
     QString limit = attributeValue(attributes.removeNamedItem("expense-limit"), "none");
+    if(defaultSuperclass.isEmpty())
+        defaultSuperclass = m_defaultSuperclass;
     if (!limit.isEmpty() && limit != "none") {
         ExpensePolicy ep;
         bool ok = false;
@@ -2374,6 +2378,7 @@ void Handler::parseValueType(const QDomElement &element){
         std::unique_ptr<ValueTypeEntry> entry(new ValueTypeEntry(name));
         if(!targetName.isEmpty())
             entry->setTargetLangName(targetName);
+        entry->setSkipMetaTypeRegistration(convertBoolean(attributeValue(attributes.removeNamedItem("no-meta-type"), "no"), "no-meta-type", false));
         entry->setIsPolymorphicBase(convertBoolean(attributeValue(attributes.removeNamedItem("polymorphic-base"), "no"), "polymorphic-base", false));
         entry->setPolymorphicIdValue(attributeValue(attributes.removeNamedItem("polymorphic-id-expression")));
         parseAttributesOfComplexType(element, attributes, entry.get());
@@ -2502,9 +2507,11 @@ void Handler::parseInterfaceType(const QDomElement &element){
             }
         }
         std::unique_ptr<ImplementorTypeEntry> otype;
-        if(convertBoolean(attributeValue(attributes.removeNamedItem("is-value"), "no"), "is-value", false))
-            otype.reset(new ValueTypeEntry(InterfaceTypeEntry::implName(name)));
-        else
+        if(convertBoolean(attributeValue(attributes.removeNamedItem("is-value"), "no"), "is-value", false)){
+            ValueTypeEntry* ventry = new ValueTypeEntry(InterfaceTypeEntry::implName(name));
+            ventry->setSkipMetaTypeRegistration(convertBoolean(attributeValue(attributes.removeNamedItem("no-meta-type"), "no"), "no-meta-type", false));
+            otype.reset(ventry);
+        }else
             otype.reset(new ObjectTypeEntry(InterfaceTypeEntry::implName(name)));
         if(!targetName.isEmpty())
             otype->setTargetLangName(targetName);

@@ -57,12 +57,12 @@ public class TestQPaintEngine extends CustomPaintEngine {
     //  just invoke the static methods directly.
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	QApplicationTest.testInitialize();
+    	ApplicationInitializer.testInitializeWithGui();
     }
 
     @AfterClass
     public static void testDispose() throws Exception {
-    	QApplicationTest.testDispose();
+    	ApplicationInitializer.testDispose();
     }
 
     @Override

@@ -44,7 +44,7 @@ import io.qt.network.QNetworkAccessManager;
 import io.qt.network.QNetworkReply;
 
 
-public class TestNetworkConnections extends QApplicationTest
+public class TestNetworkConnections extends ApplicationInitializer
 {
 	static class Auth extends QObject{
 		QAuthenticator authenticator;
@@ -66,7 +66,7 @@ public class TestNetworkConnections extends QApplicationTest
 	@Test
     public void testAuthenticatorPointerJavaCall() {
 		Auth auth = new Auth();
-		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+//		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
     	QNetworkAccessManager accessManager = new QNetworkAccessManager();
     	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired)!=null);
     	QAuthenticator authenticator = new QAuthenticator();
@@ -80,7 +80,7 @@ public class TestNetworkConnections extends QApplicationTest
 	@Test
     public void testAuthenticatorJavaCall() {
 		Auth auth = new Auth();
-		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+//		auth.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
     	QNetworkAccessManager accessManager = new QNetworkAccessManager();
     	assertTrue(accessManager.authenticationRequired.connect(auth::onAuthenticationRequired2)!=null);
     	QAuthenticator authenticator = new QAuthenticator();

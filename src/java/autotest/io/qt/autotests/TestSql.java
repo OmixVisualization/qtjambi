@@ -28,13 +28,10 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.assumeTrue;
-
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QFileInfo;
@@ -46,15 +43,8 @@ import io.qt.sql.QSqlDriver;
 import io.qt.sql.QSqlDriverPlugin;
 import io.qt.sql.QSqlError;
 import io.qt.sql.QSqlQuery;
-import io.qt.unittests.support.FilterSQL;
 
-public class TestSql extends QApplicationTest {
-	
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterSQL.detectStatic());
-        QApplicationTest.testInitialize();
-    }
+public class TestSql extends ApplicationInitializer {
 	
     @Test
     public void testDefaultConnection() {

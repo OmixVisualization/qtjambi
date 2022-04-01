@@ -35,7 +35,7 @@ import io.qt.QInterfaceCannotBeSubclassedException;
 import io.qt.core.QObject;
 import io.qt.qml.QQmlImageProviderBase;
 
-public class TestQmlInterfacesQt5 extends QApplicationTest {
+public class TestQmlInterfacesQt5 extends ApplicationInitializer {
 	
 	public static class IllegalInterfaceImplementation extends QObject implements QQmlImageProviderBase {
 		@Override

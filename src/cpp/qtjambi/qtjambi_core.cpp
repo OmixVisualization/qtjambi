@@ -241,23 +241,23 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread)
                         // Let QThreadStorage-deletion check if an event dispatcher is available and create an empty event dispatcher otherwise.
                         // During deletion of the event dispatcher (which is the latest action in a thread) the java thread is detached.
                         if(!EventDispatcherCheck::storage.hasLocalData() || !EventDispatcherCheck::storage.localData()){
-                            JObjectWrapper jthreadObjectWrapper(env, jthread);
                             EventDispatcherCheck::storage.setLocalData(QSharedPointer<EventDispatcherCheck>(
                                  new EventDispatcherCheck(
+                                     JObjectWrapper(env, jthread),
                                      currentThread,
                                      link,
-                                     [jthreadObjectWrapper](QPointer<QThread>& thread, QWeakPointer<QtJambiLink>&& wlink, QList<std::function<void()>>&& finalActions) {
+                                     [](QPointer<QThread>& thread, JObjectWrapper&& jthreadObjectWrapper, QWeakPointer<QtJambiLink>&& wlink, QList<std::function<void()>>&& finalActions) {
                                           struct ThreadDetacher : public QtJambiObjectData {
                                               JObjectWrapper m_jthreadObjectWrapper;
                                               QPointer<QThread> m_thread;
                                               QWeakPointer<QtJambiLink> m_wlink;
                                               QList<std::function<void()>> m_finalActions;
-                                              ThreadDetacher(const JObjectWrapper& jthreadObjectWrapper,
+                                              ThreadDetacher(JObjectWrapper&& jthreadObjectWrapper,
                                                              QPointer<QThread>& thread,
                                                              QWeakPointer<QtJambiLink>&& wlink,
                                                              QList<std::function<void()>>&& finalActions)
                                                   : QtJambiObjectData(),
-                                                    m_jthreadObjectWrapper(jthreadObjectWrapper),
+                                                    m_jthreadObjectWrapper(std::move(jthreadObjectWrapper)),
                                                     m_thread(),
                                                     m_wlink(std::move(wlink)),
                                                     m_finalActions(std::move(finalActions))
@@ -344,9 +344,9 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread)
                                           }
                                           if(eventDispatcher){
                                                 QWriteLocker locker(QtJambiLinkUserData::lock());
-                                                QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ThreadDetacher), eventDispatcher, new ThreadDetacher(jthreadObjectWrapper, thread, std::move(wlink), std::move(finalActions)));
+                                                QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ThreadDetacher), eventDispatcher, new ThreadDetacher(std::move(jthreadObjectWrapper), thread, std::move(wlink), std::move(finalActions)));
                                           }else{
-                                                ThreadDetacher releaser(jthreadObjectWrapper, thread, std::move(wlink), std::move(finalActions));
+                                                ThreadDetacher releaser(std::move(jthreadObjectWrapper), thread, std::move(wlink), std::move(finalActions));
                                                 Q_UNUSED(releaser)
                                           }
                                       })
@@ -1310,8 +1310,7 @@ QVariant qtjambi_to_qvariant(JNIEnv *env, jobject java_object, bool convert)
                                                                memberReConverter2);
                 if(QSharedPointer<AbstractPairAccess> pairAccess = QSharedPointer<AbstractContainerAccess>(containerAccess, &containerDisposer).dynamicCast<AbstractPairAccess>()){
                     QString qtName = QLatin1String("QPair<%1,%2>");
-                    qtName = qtName.arg(firstType)
-                                   .arg(secondType);
+                    qtName = qtName.arg(firstType, secondType);
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(firstType.contains("*") || secondType.contains("*")){
                         qtjambi_register_container_converter(pairAccess, containerMetaType);
@@ -2841,7 +2840,7 @@ jobject qtjambi_from_qobject_notype(JNIEnv *env, const QObject *const_qt_object,
         if(link && !link->createdByJava()){
             QWriteLocker locker(QtJambiLinkUserData::lock());
             QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
-            if (p && p->metaObject() != qt_object->metaObject()) {
+            if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
                 locker.unlock();
                 delete p;
@@ -3027,7 +3026,7 @@ jobject qtjambi_from_qobject_shared_pointer_notype(JNIEnv *env, const char *clas
             if(!object && !link->createdByJava()){
                 QWriteLocker locker(QtJambiLinkUserData::lock());
                 QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
-                if (p && p->metaObject() != qt_object->metaObject()) {
+                if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
                     QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
                     locker.unlock();
                     delete p;
@@ -3414,9 +3413,26 @@ jstring qtjambi_from_qutf8stringview(JNIEnv *env, QUtf8StringView s)
     return qtjambi_from_qstring(env, s.toString());
 }
 
+namespace QtAnyStringView{
+jstring convert(JNIEnv *env, QUtf8StringView text){
+    return qtjambi_from_qstring(env, text.toString());
+}
+
+jstring convert(JNIEnv *env, QStringView s){
+    Q_ASSERT(s.length()>=0);
+    jstring str = env->NewString(reinterpret_cast<const jchar *>(s.data()), jsize(s.length()));
+    qtjambi_throw_java_exception(env);
+    return str;
+}
+
+jstring convert(JNIEnv *env, QLatin1String s){
+    return qtjambi_from_qstring(env, QString(s));
+}
+}
+
 jstring qtjambi_from_qanystringview(JNIEnv *env, QAnyStringView s)
 {
-    return qtjambi_from_qstring(env, s.toString());
+    return s.visit([env](auto text){return QtAnyStringView::convert(env, text);});
 }
 #endif
 
@@ -4253,8 +4269,8 @@ jobject qtjambi_from_thread(JNIEnv * env, QThread *thread)
         return nullptr;
     {
         QReadLocker locker(QtJambiLinkUserData::lock());
-        if(QtJambiLinkUserData* threadUserData = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, thread)){
-            QSharedPointer<QtJambiLink> link = threadUserData->link();
+        if(QtJambiLinkUserData* userData = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, thread)){
+            QSharedPointer<QtJambiLink> link = userData->link();
             if(link){
                 if(jobject o = link->getJavaObjectLocalRef(env)){
                     locker.unlock();
@@ -4480,6 +4496,8 @@ bool qtjambi_simple_event_notify(void **data);
 bool qtjambi_thread_affine_event_notify(void **data);
 void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonPointerTypeId, int qtMetaType);
 void qtjambi_register_containeraccess_all();
+void qtjambi_shutdown_atexit();
+void registerPluginImporter();
 
 jint qtjambi_startup(JavaVM *vm){
     if(std::atomic<bool>* atm = gIsLoaded){
@@ -4496,6 +4514,7 @@ jint qtjambi_startup(JavaVM *vm){
     }else{
         return JNI_VERSION_1_8;
     }
+    ::atexit(&qtjambi_shutdown_atexit);
     if(JNIEnv * env = qtjambi_current_environment(true)){
         try{
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -4948,6 +4967,7 @@ jint qtjambi_startup(JavaVM *vm){
                 registerContainerTypeInfo<QStack<QVariant>>("QStack", "io/qt/core/QStack", "java/util/Deque");
                 registerEnumTypeInfo<QString::SectionFlag>("QString::SectionFlag", "io/qt/core/QString$SectionFlag", "QFlags<QtString::SectionFlag>", "QtString::SectionFlags", "io/qt/core/QString$SectionFlags");
             }
+            registerPluginImporter();
 
             if(env){
                 bool hasChanged = false;
@@ -5027,6 +5047,17 @@ jint qtjambi_startup(JavaVM *vm){
 void clear_typehandlers_at_shutdown(JNIEnv *env);
 void clear_supertypes_at_shutdown(JNIEnv *env);
 void clear_metaobjects_at_shutdown(JNIEnv * env);
+void clear_pluginimporter_at_shutdown(JNIEnv * env);
+
+/*!
+ * This function is called by Qt Jambi shutdown hook to indicate that
+ * the library is being unloaded. It prevents any access to the
+ * current JNIEnv *.
+ */
+void qtjambi_shutdown_atexit()
+{
+    qtjambi_shutdown(nullptr);
+}
 
 void qtjambi_shutdown(JNIEnv * env)
 {
@@ -5069,6 +5100,7 @@ void qtjambi_shutdown(JNIEnv * env)
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QtJambiVariant::unregisterHandler();
     #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        clear_pluginimporter_at_shutdown(env);
         clear_supertypes_at_shutdown(env);
         clear_metaobjects_at_shutdown(env);
         clear_typehandlers_at_shutdown(env);
@@ -5082,16 +5114,6 @@ void qtjambi_shutdown(JNIEnv * env)
         atm->store(false);
         exception.raise();
     }
-}
-
-/*!
- * This function is called by Qt Jambi shutdown hook to indicate that
- * the library is being unloaded. It prevents any access to the
- * current JNIEnv *.
- */
-void qtjambi_shutdown()
-{
-    qtjambi_shutdown(qtjambi_current_environment(false));
 }
 
 const char* getInterfaceForIID(const char*interface_iid);
@@ -7023,7 +7045,10 @@ public:
     {
         if(0==functional.m_ref++){
             if(QSharedPointer<QtJambiLink> link = m_link.toStrongRef()){
-                link->setCppOwnership(qtjambi_current_environment());
+                if(JNIEnv* env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    link->setCppOwnership(env);
+                }
             }
         }
     }
@@ -7417,7 +7442,7 @@ jobject qtjambi_metamethod_invoke(JNIEnv * env, jobject _metaMethod, jobject _qo
                                 jvalue jval;
                                 jval.l = nullptr;
                                 try{
-                                    ok = parameterTypeInfos[0].convertInternalToExternal(env, &scope, resultPtr, &jval, true);
+                                    ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, &jval, true);
                                 }catch(const JavaException& exn){
                                     exn.raiseInJava(env);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -7581,7 +7606,7 @@ jobject qtjambi_metamethod_invoke_on_gadget
                                 jvalue jval;
                                 jval.l = nullptr;
                                 try{
-                                    ok = parameterTypeInfos[0].convertInternalToExternal(env, &scope, resultPtr, &jval, true);
+                                    ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, &jval, true);
                                 }catch(const JavaException& exn){
                                     exn.raiseInJava(env);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -7818,6 +7843,26 @@ jboolean qtjambi_metaproperty_write_on_gadget(JNIEnv *env, jobject _this, jobjec
         exn.raiseInJava(env);
     }
     return false;
+}
+
+void pre_exit_function(){
+    QtJambiExceptionInhibitor __exnHandler;
+    if(JNIEnv *__jni_env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(__jni_env, 400)
+        try{
+            Java::QtJambi::NativeLibraryManager::resetDeploymentSpecs(__jni_env);
+        }catch(const JavaException& exn){
+            __exnHandler.handle(__jni_env, exn, "postRoutine");
+        }
+    }
+}
+
+void qtjambi_pre_exit(){
+    qAddPostRoutine(&pre_exit_function);
+}
+
+void qtjambi_unexit(){
+    qRemovePostRoutine(&pre_exit_function);
 }
 
 void qtjambi_invalidate_object(JNIEnv *env, QtJambiNativeID nativeId){

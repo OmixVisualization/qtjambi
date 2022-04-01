@@ -30,70 +30,121 @@
 package io.qt.autotests;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtPropertyReader;
+import io.qt.QtPropertyWriter;
 import io.qt.autotests.QtRemoteObjectsPong.NonQtType;
+import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QDataStream;
+import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
+import io.qt.core.QFile;
+import io.qt.core.QFileInfo;
+import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaObject.AbstractPublicSignal0;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
+import io.qt.core.QTextStream;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
+import io.qt.gui.QColorConstants;
 import io.qt.remoteobjects.QRemoteObjectDynamicReplica;
 import io.qt.remoteobjects.QRemoteObjectNode;
 import io.qt.remoteobjects.QRemoteObjectPendingCall;
 import io.qt.remoteobjects.QRemoteObjectPendingReply;
+import io.qt.remoteobjects.QtRemoteObjects;
+import io.qt.internal.QtJambiInternal;
 
-public class TestRemoteObjects {
+public class TestRemoteObjects extends UnitTestInitializer {
 	
 	private static Throwable exception = null;
 	private static Thread pongThread;
 	
 	@BeforeClass
 	public static void testInitialize() throws Throwable {
+		ApplicationInitializer.testInitialize();
 		pongThread = new Thread(() -> {
+			QEventLoop loop = new QEventLoop();
 			try {
 				System.out.println("Deploying QtRemoteObjectsPong...");
-				QApplicationTest.testDeployerApp("QtRemoteObjectsPong", "network", "remoteobjects");
+				ApplicationInitializer.testDeployerApp("QtRemoteObjectsPong", "network", "remoteobjects");
 			} catch (InterruptedException e) {
 			} catch (Throwable e) {
 				exception = e;
+			}finally {
+				loop.dispose();
 			}
 		});
 		pongThread.start();
 		pongThread.join(2000);
-		File testFile = new File(new File(new File(new File(System.getProperty("user.dir"), "build"), "tests"), "tmp"), "touch.test");
+		long t1 = System.currentTimeMillis();
+    	String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		File testFile = new File(new File(new File(new File(new File(System.getProperty("user.dir"), version), "build"), "tests"), "tmp"), "touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
 			pongThread.join(2000);
+			if(System.currentTimeMillis()-t1>25000) {
+				Assume.assumeFalse("Deploying QtRemoteObjectsPong failed", true);
+				break;
+			}
 		}
-		if (exception != null)
-			throw exception;
-		QApplicationTest.testInitialize();
+		if (exception != null) {
+			Throwable _exception = exception;
+			exception = null;
+			throw new org.junit.AssumptionViolatedException("Deploying QtRemoteObjectsPong failed", _exception);
+		}
 	}
 	
 	@AfterClass
     public static void testDispose() throws Throwable {
-		if(pongThread!=null) {
-			pongThread.interrupt();
-			pongThread.join();
-			pongThread = null;
+		try {
+			if(pongThread!=null) {
+				pongThread.interrupt();
+				pongThread.join();
+				pongThread = null;
+			}
+			if (exception != null)
+				throw exception;
+		} finally {
+			{
+				String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+				String jambidir = System.getProperty("user.dir");
+				final File testsDir = new File(new File(new File(jambidir, version), "build"), "tests");
+				final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+				if(new File(targetDir, "pid").isFile()) {
+					String processName = new String(Files.readAllBytes(new File(targetDir, "pid").toPath())).trim();;
+					if(processName!=null && !processName.isEmpty()) {
+						File jambiDeploymentDir = new File(tmpDir, "QtJambi" + version + "_" + System.getProperty("user.name") + "_" + processName);
+						System.out.println("Deleting "+jambiDeploymentDir.getAbsolutePath());
+						if(jambiDeploymentDir.isDirectory())
+							ApplicationInitializer.clearAndDelete(jambiDeploymentDir);
+					}
+				}
+				if(targetDir.isDirectory() && !Boolean.getBoolean("qtjambi.deployer.skip.deletion")) {
+	    			Logger.getLogger("io.qt.autotests").log(Level.FINEST, ()->"Cleaning deployer directory "+targetDir);
+	    			ApplicationInitializer.clearAndDelete(targetDir);
+	    		}
+			}
+			ApplicationInitializer.testDispose();
 		}
-		if (exception != null)
-			throw exception;
-		QApplicationTest.testDispose();
 	}
 	
 	@Test
-    public void test() throws Throwable
+    public void testPingPong() throws Throwable
     {
 		QMetaType.registerMetaType(NonQtType.class);
 		QRemoteObjectNode node = new QRemoteObjectNode(new QUrl("local:ropong"));
@@ -208,4 +259,49 @@ public class TestRemoteObjects {
 		if(exception[0]!=null)
 			throw exception[0];
     }
+	
+	@Test
+    public void testProperties() {
+		class PropertyObject{
+			private String text;
+			private int number;
+			private QColor color;
+			
+			@QtPropertyReader
+			public String text() {
+				return text;
+			}
+			@QtPropertyWriter
+			public void setText(String text) {
+				this.text = text;
+			}
+			@QtPropertyReader
+			public int number() {
+				return number;
+			}
+			@QtPropertyWriter
+			public void setNumber(int number) {
+				this.number = number;
+			}
+			@QtPropertyReader
+			public QColor color() {
+				return color;
+			}
+			@QtPropertyWriter
+			public void setColor(QColor color) {
+				this.color = color;
+			}
+		}
+		PropertyObject po = new PropertyObject();
+		po.setText("test");
+		po.setNumber(5);
+		po.setColor(QColorConstants.Svg.aquamarine());
+		QByteArray data = new QByteArray();
+		QtRemoteObjects.copyStoredProperties(po, new QDataStream(data, QIODevice.OpenModeFlag.WriteOnly));
+		PropertyObject po2 = new PropertyObject();
+		QtRemoteObjects.copyStoredProperties(new QDataStream(data, QIODevice.OpenModeFlag.ReadOnly), po2);
+		Assert.assertEquals(po.text(), po2.text());
+		Assert.assertEquals(po.number(), po2.number());
+		Assert.assertEquals(po.color(), po2.color());
+	}
 }

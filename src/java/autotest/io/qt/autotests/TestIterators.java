@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
@@ -47,7 +48,13 @@ import io.qt.widgets.QTreeWidget;
 import io.qt.widgets.QTreeWidgetItem;
 import io.qt.widgets.QTreeWidgetItemIterator;
 
-public class TestIterators extends QApplicationTest {
+public class TestIterators extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
 	@Test(expected=NullPointerException.class)
     public void test_QTreeWidgetItemIterator_construction_no_widget() {
 		new QTreeWidgetItemIterator((QTreeWidget)null);

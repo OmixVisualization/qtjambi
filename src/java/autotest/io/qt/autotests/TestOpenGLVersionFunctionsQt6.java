@@ -50,7 +50,7 @@ import org.junit.Test;
 import io.qt.opengl.*;
 import io.qt.gui.*;
 
-public class TestOpenGLVersionFunctionsQt6 extends QApplicationTest {
+public class TestOpenGLVersionFunctionsQt6 extends ApplicationInitializer {
 
 	@Test
 	public void test() {

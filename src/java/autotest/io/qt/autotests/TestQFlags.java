@@ -43,7 +43,7 @@ import org.junit.Test;
 import io.qt.QFlags;
 import io.qt.QtFlagEnumerator;
 
-public class TestQFlags extends QApplicationTest {
+public class TestQFlags extends ApplicationInitializer {
     private Collection<DataClear> data;
 
     @Before

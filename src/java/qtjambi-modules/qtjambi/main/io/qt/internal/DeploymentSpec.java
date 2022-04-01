@@ -64,21 +64,10 @@ class DeploymentSpec {
     private File baseDir;
     private URL baseUrl;
     private List<LibraryEntry> libraries;
-    private List<String> pluginPaths;
-    private List<String> pluginDesignerPaths;
+    private boolean hasPluginPaths;
+    private boolean hasQmlPaths;
+    private boolean hasTrPaths;
     private List<String> dirents;
-
-    void addPluginPath(String path) {
-        if (pluginPaths == null)
-            pluginPaths = new ArrayList<String>();
-        pluginPaths.add(path);
-    }
-
-    void addPluginDesignerPath(String path) {
-        if (pluginDesignerPaths == null)
-            pluginDesignerPaths = new ArrayList<String>();
-        pluginDesignerPaths.add(path);
-    }
 
     void addLibraryEntry(LibraryEntry e) {
         if (libraries == null)
@@ -131,24 +120,6 @@ class DeploymentSpec {
     }
     void setLibraries(List<LibraryEntry> libraries) {
         this.libraries = libraries;
-    }
-
-    public List<String> getPluginPaths() {
-        if(pluginPaths == null)
-                return Collections.emptyList();
-        return Collections.unmodifiableList(pluginPaths);
-    }
-    void setPluginPaths(List<String> pluginPaths) {
-        this.pluginPaths = pluginPaths;
-    }
-
-    public List<String> getPluginDesignerPaths() {
-        if(pluginDesignerPaths == null)
-                return Collections.emptyList();
-        return Collections.unmodifiableList(pluginDesignerPaths);
-    }
-    void setPluginDesignerPaths(List<String> pluginDesignerPaths) {
-        this.pluginDesignerPaths = pluginDesignerPaths;
     }
 
     public List<String> getDirents() {
@@ -213,5 +184,29 @@ class DeploymentSpec {
 
 	public void setModule(String module) {
 		this.module = module;
+	}
+
+	public boolean isHasPluginPaths() {
+		return hasPluginPaths;
+	}
+
+	public void setHasPluginPaths(boolean hasPluginPaths) {
+		this.hasPluginPaths = hasPluginPaths;
+	}
+
+	public boolean isHasQmlPaths() {
+		return hasQmlPaths;
+	}
+
+	public void setHasQmlPaths(boolean hasQmlPaths) {
+		this.hasQmlPaths = hasQmlPaths;
+	}
+
+	public boolean isHasTrPaths() {
+		return hasTrPaths;
+	}
+
+	public void setHasTrPaths(boolean hasTrPaths) {
+		this.hasTrPaths = hasTrPaths;
 	}
 }

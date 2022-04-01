@@ -49,7 +49,7 @@ import io.qt.core.QSettings;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
 
-public class TestQSettings extends QApplicationTest implements Serializable {
+public class TestQSettings extends ApplicationInitializer implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Test

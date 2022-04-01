@@ -38,11 +38,11 @@ import io.qt.core.QEventLoop;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestPaintOnWidgetQt5 extends QApplicationTest {
+public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
     

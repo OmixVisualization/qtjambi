@@ -47,7 +47,7 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.widgets.QCompleter;
 
-public class TestMultiSignals extends QApplicationTest {
+public class TestMultiSignals extends ApplicationInitializer {
 	private static class CustomMultiQSender extends QObject{
 		public final class MultiSignal extends QObject.MultiSignal{
 
@@ -7872,7 +7872,7 @@ public class TestMultiSignals extends QApplicationTest {
     	EmbeddingClass.EmbeddedClass.connect(object, completer);
     	completer.activated.connect((String text)->{
     		result[0] = text;
-    		System.out.println(this + completer.objectName());
+    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, this + completer.objectName());
     	});
     }
     

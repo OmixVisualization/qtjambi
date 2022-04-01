@@ -7,7 +7,7 @@ import io.qt.network.*;
 import java.util.*;
 
 
-public class TestNetwork extends QApplicationTest {
+public class TestNetwork extends ApplicationInitializer {
     
     @Test
     public void test_QHostAddress_Equals()

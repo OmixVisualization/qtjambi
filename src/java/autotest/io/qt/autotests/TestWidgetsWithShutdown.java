@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QResource;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
@@ -48,10 +49,9 @@ public class TestWidgetsWithShutdown {
 	
     @Test
     public void test() {
-    	System.setProperty("io.qt.log-messages", "ALL");
-	    io.qt.QtResources.addSearchPath(".");
+	    QResource.addClassPath(".");
 	    QCoreApplication.setApplicationName("QtJambiUnitTest");
-	    QApplication.initialize(new String[]{"arg1", "arg2", "arg3"});
+	    QApplication.initialize(new String[0]);
 	    {
 		    QWidget window = new QWidget();
 			window.setWindowTitle( "Enter your age" );

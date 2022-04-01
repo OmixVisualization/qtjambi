@@ -45,11 +45,11 @@ import io.qt.gui.QPixmap;
 import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
 
-public class TestPaintOnWidget extends QApplicationTest {
+public class TestPaintOnWidget extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
 	
@@ -58,11 +58,12 @@ public class TestPaintOnWidget extends QApplicationTest {
     	QPixmap device = new QPixmap(128, 128);
     	QPainter painter = new QPainter(device);
     	painter.drawLine(1, 1, 5, 5);
-    	{
+    	try{
     		QPainter painter2 = new QPainter();
     		assertFalse(painter2.begin(device));
+    	}finally {
+    		painter.end();
     	}
-    	painter.end();
     }
 	
 	@Test
@@ -71,12 +72,13 @@ public class TestPaintOnWidget extends QApplicationTest {
     	QPainter painter = new QPainter();
     	assertTrue(painter.begin(device));
     	painter.drawLine(1, 1, 5, 5);
-    	{
+    	try{
     		QPainter painter2 = new QPainter();
     		assertFalse(painter2.begin(device));
+    	}finally {
+    		painter.end();
+    		device.dispose();
     	}
-    	device.dispose();
-//    	painter.end();
     }
 	
 	@Test(expected=QPaintingOutsidePaintEventException.class)

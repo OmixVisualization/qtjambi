@@ -30,6 +30,7 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.*;
@@ -37,7 +38,12 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.quick.*;
 
-public class TestQuickThreadAffinity extends QApplicationTest {
+public class TestQuickThreadAffinity extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithGui();
+    }
 	
 	private Throwable throwable;
 	

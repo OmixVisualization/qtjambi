@@ -371,6 +371,9 @@ class _ClassModelItem: public _ScopeModelItem {
 
         void setHas_Q_OBJECT(bool has_Q_OBJECT){m_has_Q_OBJECT = has_Q_OBJECT;}
         bool has_Q_OBJECT() const {return m_has_Q_OBJECT;}
+
+        void setUsingBaseConstructors(CodeModel::AccessPolicy usingBaseConstructors){_M_usingBaseConstructors = usingBaseConstructors;}
+        CodeModel::AccessPolicy usingBaseConstructors() const {return _M_usingBaseConstructors;}
         bool isDeclFinal() const;
         void setDeclFinal(bool declFinal);
         bool isDeclDeprecated() const;
@@ -383,7 +386,8 @@ class _ClassModelItem: public _ScopeModelItem {
         _ClassModelItem(CodeModel *model, int kind = __node_kind)
                 : _ScopeModelItem(model, kind), m_has_Q_GADGET(false), m_has_Q_OBJECT(false), _M_classType(CodeModel::Class),
                   _M_declFinal(false), _M_declDeprecated(false),
-                  _M_accessPolicy(CodeModel::Public) {}
+                  _M_accessPolicy(CodeModel::Public),
+                  _M_usingBaseConstructors(CodeModel::AccessPolicy::Private){}
 
     private:
         bool m_has_Q_GADGET;
@@ -396,6 +400,7 @@ class _ClassModelItem: public _ScopeModelItem {
         bool _M_declDeprecated;
         QString _M_declDeprecatedComment;
         CodeModel::AccessPolicy _M_accessPolicy;
+        CodeModel::AccessPolicy _M_usingBaseConstructors;
 
     private:
         _ClassModelItem(const _ClassModelItem &other);

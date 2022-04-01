@@ -50,6 +50,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QMisfittingSignatureException;
@@ -94,8 +95,13 @@ import io.qt.widgets.QLineEdit;
 import io.qt.widgets.QPushButton;
 import io.qt.widgets.QWidget;
 
-public class TestConnections extends QApplicationTest
+public class TestConnections extends ApplicationInitializer
 {
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     public TestConnections()
     {
     }
@@ -2028,7 +2034,7 @@ public class TestConnections extends QApplicationTest
     public void test_destroyed_signal_queued() throws InterruptedException {
 		QObject object = new QObject();
 		object.destroyed.connect(o -> {
-			System.out.println("destroyed: "+System.identityHashCode(o));
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "destroyed: "+System.identityHashCode(o));
 		}, Qt.ConnectionType.QueuedConnection);
 		System.gc();
         System.runFinalization();
@@ -2101,7 +2107,7 @@ public class TestConnections extends QApplicationTest
 //		receiver.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
 		QObject obj = new QObject();
 		QStringList stringList = new QStringList("TEST");
-		QList<String> stringList2 = QList.of("TEST");
+		QList<String> stringList2 = new QList<>(Arrays.asList("TEST")); // force qlist not to be qstringlist
 		try {
 			sender.objects.connect(receiver, "receiveStrings(List)");
 			Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);

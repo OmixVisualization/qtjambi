@@ -604,7 +604,8 @@ QString QtJambiTypeManager::getInternalTypeName(JNIEnv* env, jclass externalClas
 QString QtJambiTypeManager::getInternalTypeName(JNIEnv* env, const QString &externalTypeName, jobject classLoader, bool useNextSuperclass) {
     jclass cls = nullptr;
     try{
-        cls = resolveClass(env, qPrintable(externalTypeName), classLoader);
+        if(!externalTypeName.contains("*"))
+            cls = resolveClass(env, qPrintable(externalTypeName), classLoader);
     }catch(...){}
     if(cls){
         return getInternalTypeName(env, cls, useNextSuperclass);
@@ -1476,22 +1477,40 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         };
     } else if (Java::QtCore::QMetaType$GenericObject::isSameClass(_env,externalClass)) {
         jint _internalMetaType = internalMetaType.id();
-        return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+        return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
             p->l = qtjambi_from_object(env, in, Java::QtCore::QMetaType$GenericObject::getClass(env), false);
             if(p->l){
                 Java::QtCore::QMetaType$GenericObject::set_type(env, p->l, _internalMetaType);
+                if(scope){
+                    JObjectWrapper obj(env, p->l);
+                    scope->addFinalAction([obj](){
+                        if(JNIEnv* env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                            qtjambi_invalidate_object(env, obj.object());
+                        }
+                    });
+                }
             }
             return true;
         };
     } else if (Java::QtCore::QMetaType$GenericGadget::isSameClass(_env,externalClass)) {
         jint _internalMetaType = internalMetaType.id();
         if(internalMetaType.flags() & QMetaType::PointerToGadget){
-            return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+            return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                 p->l = qtjambi_from_object(env, in, Java::QtCore::QMetaType$GenericGadget::getClass(env), false);
                 if(p->l){
                     Java::QtCore::QMetaType$GenericGadget::set_type(env, p->l, _internalMetaType);
                     jobject mo = qtjambi_cast<jobject>(env, QMetaType::metaObjectForType(_internalMetaType));
                     Java::QtJambi::QtGadget::set_staticMetaObject(env, p->l, mo);
+                    if(scope){
+                        JObjectWrapper obj(env, p->l);
+                        scope->addFinalAction([obj](){
+                            if(JNIEnv* env = qtjambi_current_environment()){
+                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                qtjambi_invalidate_object(env, obj.object());
+                            }
+                        });
+                    }
                 }
                 return true;
             };
@@ -2690,7 +2709,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     };
                 }else{
                     if (internalTypeName.endsWith(QLatin1Char('*'))){
-                        return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+                        return [typeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                             void * const *ptr = reinterpret_cast<void * const *>(in);
                             if(ptr){
                                 // If we found a link for the object, we use the java object
@@ -2718,6 +2737,15 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 }
                                 if(!found){
                                     p->l = qtjambi_from_interface(env, *ptr, *typeId, false);
+                                    if(scope){
+                                        JObjectWrapper object(env, p->l);
+                                        scope->addFinalAction([object](){
+                                            if(JNIEnv* env = qtjambi_current_environment()){
+                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
+                                                qtjambi_invalidate_object(env, object.object(), false);
+                                            }
+                                        });
+                                    }
                                 }
                             }
                             return true;
@@ -3196,8 +3224,17 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 return true;
             };
         }else if(const std::type_info* interfaceTypeId = getTypeByQtName(metaObject->className())){
-            return [interfaceTypeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+            return [interfaceTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                 p->l = qtjambi_from_object(env, in, *interfaceTypeId, true, false);
+                if(scope){
+                    JObjectWrapper object(env, p->l);
+                    scope->addFinalAction([object](){
+                        if(JNIEnv* env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 300)
+                            qtjambi_invalidate_object(env, object.object(), false);
+                        }
+                    });
+                }
                 return true;
             };
         }else if(const std::type_info* interfaceTypeId = getTypeByMetaType(internalMetaType)){
@@ -4149,6 +4186,119 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                         if(!matches)
                             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, Java::QtCore::QMetaType$GenericValue::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
+                        if(_internalMetaType!=given){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                        }
+                    }
+                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        void* nptr = link->pointer();
+                        if(scope && !out){
+                            void* ptr;
+                            out = ptr = QMetaType::create(_internalMetaType, nptr);
+                            scope->addFinalAction([_internalMetaType,ptr](){
+                                QMetaType::destroy(_internalMetaType, ptr);
+                            });
+                        }else if(out){
+                            QMetaType::destruct(_internalMetaType, out);
+                            if(QMetaType::construct(_internalMetaType, out, nptr)!=out){
+                                QByteArray ba;
+                                bool saved;
+                                /* write the copy to the stream */ {
+                                    QDataStream stream(&ba, QIODevice::WriteOnly);
+                                    saved = QMetaType::save(stream, _internalMetaType, nptr);
+                                }
+
+                                /* read it back into the destination */
+                                if(saved){
+                                    QDataStream stream(&ba, QIODevice::ReadOnly);
+                                    QMetaType::load(stream, _internalMetaType, out);
+                                }else{
+                                    return false;
+                                }
+                            }
+                        }else{
+                            out = nptr;
+                        }
+                    }else{
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    }
+                    return true;
+                }else{
+                    if(scope && !out){
+                        void* ptr;
+                        out = ptr = QMetaType::create(_internalMetaType);
+                        scope->addFinalAction([_internalMetaType, ptr](){
+                            QMetaType::destroy(_internalMetaType, ptr);
+                        });
+                    }
+                    return out;
+                }
+            };
+        }
+    } else if (Java::QtCore::QMetaType$GenericObject::isSameClass(_env,externalClass)) {
+        int _internalMetaType = internalMetaType.id();
+        if(internalTypeName.endsWith("*")){
+            return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
+                void* ptr = nullptr;
+                if(val.l){
+                    if(!Java::QtCore::QMetaType$GenericObject::isInstanceOf(env, val.l)){
+                        QString className = qtjambi_object_class_name(env, val.l);
+                        bool matches = false;
+                        if(const std::type_info* typeId = getTypeByJavaName(className)){
+                            if(registeredMetaTypeID(*typeId)==_internalMetaType)
+                                matches = true;
+                        }
+                        if(!matches){
+                            for(int mtype : registeredCustomMetaTypesForJavaClass(className.toLatin1())){
+                                if(mtype==_internalMetaType)
+                                    matches = true;
+                            }
+                        }
+                        if(!matches)
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, Java::QtCore::QMetaType$GenericObject::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
+                        if(_internalMetaType!=given){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                        }
+                    }
+                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        ptr = link->pointer();
+                    }else{
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    }
+                }
+                if(scope && !out){
+                    void** pptr;
+                    out = pptr = new void*(ptr);
+                    scope->addFinalAction([pptr](){
+                        delete pptr;
+                    });
+                }else if(out){
+                    *reinterpret_cast<void**>(out) = ptr;
+                }
+                return out;
+            };
+        }else{
+            return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
+                if(val.l){
+                    if(!Java::QtCore::QMetaType$GenericObject::isInstanceOf(env, val.l)){
+                        QString className = qtjambi_object_class_name(env, val.l);
+                        bool matches = false;
+                        if(const std::type_info* typeId = getTypeByJavaName(className)){
+                            if(registeredMetaTypeID(*typeId)==_internalMetaType)
+                                matches = true;
+                        }
+                        if(!matches){
+                            for(int mtype : registeredCustomMetaTypesForJavaClass(className.toLatin1())){
+                                if(mtype==_internalMetaType)
+                                    matches = true;
+                            }
+                        }
+                        if(!matches)
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, Java::QtCore::QMetaType$GenericObject::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }else{
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){

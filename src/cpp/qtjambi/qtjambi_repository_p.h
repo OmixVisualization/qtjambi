@@ -26,6 +26,12 @@
 #endif
 
 namespace Java{
+    namespace QtQml{
+        namespace Internal{
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlTypes$JarImport,
+                                             QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+        }
+    }
     namespace QtCore{
         namespace Internal{
             QTJAMBI_REPOSITORY_DECLARE_CLASS(QCoreApplication,
@@ -124,9 +130,6 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
         )
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QClassPathEngine,
-                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QMetaObject$Connection)
 
@@ -236,7 +239,21 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(newInstance)
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(addURL))
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(URL,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(URL,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(openConnection))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(URLConnection,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getContentLengthLong))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ZipEntry,
+                                         QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getSize))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(InputStream,
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(close)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(read)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(skip))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MethodHandles$Lookup,)
 
@@ -446,7 +463,9 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(internalAccess)
         )
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeLibraryManager,QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(resetDeploymentSpecs))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeLibraryManager,
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(resetDeploymentSpecs)
+                                         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiEnums,
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(extendEnum)
@@ -597,6 +616,8 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
                       QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(indirections)
                       QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(byteSize)
+                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setVerificationEnabled)
+                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invalidate)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isReadOnly)
                       QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(pointer))
 
@@ -638,6 +659,24 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QInstanceMemberSignals$Signal9,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiResources,
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(classPathDirs)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(makeUrl)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveUrlToMyJarFile)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(pathToJarFiles)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isDirectory)
+                                         )
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiResources$MyJarFile,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(fileTime)
+                                         QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getOrReopen)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(put)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(entryList)
+                                         )
     }
 
     namespace JNA{

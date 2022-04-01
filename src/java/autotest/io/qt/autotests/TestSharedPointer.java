@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtObject;
@@ -58,11 +59,16 @@ import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.QWidgetItem;
 
-public class TestSharedPointer extends QApplicationTest {
+public class TestSharedPointer extends ApplicationInitializer {
 
 	public static void main(String args[]) {
 		org.junit.runner.JUnitCore.main(TestSharedPointer.class.getName());
 	}
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 
 	private SharedPointerTest object = new SharedPointerTest();
 

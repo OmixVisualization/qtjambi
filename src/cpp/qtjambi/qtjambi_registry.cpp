@@ -82,7 +82,7 @@ Q_GLOBAL_STATIC(OwnerFunctionHash, gOwnerFunctionHash)
 struct PolymorphicIdHandler;
 typedef QMultiHash<size_t, const PolymorphicIdHandler* > PolymorphicIdHash;
 Q_GLOBAL_STATIC(PolymorphicIdHash, g_polymorphic_ids)
-typedef QMap<size_t, const std::type_info*> PolymorphicBasesHash;
+typedef QMultiMap<size_t, const std::type_info*> PolymorphicBasesHash;
 Q_GLOBAL_STATIC(PolymorphicBasesHash, gPolymorphicBasesHash)
 
 typedef QMap<size_t, QHashFunctionPtr> HashFunctionHash;
@@ -101,6 +101,7 @@ Q_GLOBAL_STATIC(InterfaceOffsetHash, gInterfaceOffsetHash)
 
 typedef QMap<size_t, const QMetaObject*> MetaObjectHash;
 Q_GLOBAL_STATIC(MetaObjectHash, gOriginalMetaObjectHash)
+Q_GLOBAL_STATIC(MetaObjectHash, gHasCustomMetaObjectHash)
 typedef QHash<const QMetaObject*, QVector<SignalMetaInfo> > SignalMetaInfoHash;
 Q_GLOBAL_STATIC(SignalMetaInfoHash, gSignalMetaInfos)
 typedef QHash<const QMetaObject*, const std::type_info* > TypeIdsByMetaObjectHash;
@@ -1107,10 +1108,10 @@ bool isPolymorphicBase(const std::type_info& typeId){
     return g_polymorphic_ids->contains(typeId.hash_code());
 }
 
-const std::type_info* getPolymorphicBase(const std::type_info& typeId){
+QList<const std::type_info*> getPolymorphicBases(const std::type_info& typeId){
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
-    return gPolymorphicBasesHash->value(typeId.hash_code(), nullptr);
+    return gPolymorphicBasesHash->values(typeId.hash_code());
 }
 
 QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId){
@@ -1303,6 +1304,31 @@ hash_type qHash(const QMetaObject* mo){
         hashCode = hashCode * 31 + qHash(mo->className());
     }
     return hashCode;
+}
+
+void registerCustomMetaObject(const std::type_info& typeId, const QMetaObject& superTypeMetaObject)
+{
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    gHasCustomMetaObjectHash->insert(typeId.hash_code(), &superTypeMetaObject);
+}
+
+bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    if(gHasCustomMetaObjectHash->contains(typeId.hash_code())){
+        if(superTypeMetaObject)
+            *superTypeMetaObject = gHasCustomMetaObjectHash->value(typeId.hash_code(), nullptr);
+        return true;
+    }
+    return false;
+}
+
+const QMetaObject* superTypeForCustomMetaObject(const std::type_info& typeId)
+{
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gHasCustomMetaObjectHash->value(typeId.hash_code(), nullptr);
 }
 
 void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner,
@@ -2076,7 +2102,8 @@ void clear_registry_at_shutdown(JNIEnv * env){
     {
         QWriteLocker locker(gLock());
         Q_UNUSED(locker)
-        polymorphic_ids.swap(*g_polymorphic_ids);
+        if(!g_polymorphic_ids.isDestroyed())
+            polymorphic_ids.swap(*g_polymorphic_ids);
     }
     for(const PolymorphicIdHandler* handler : polymorphic_ids){
         delete handler;
@@ -2086,32 +2113,38 @@ void clear_registry_at_shutdown(JNIEnv * env){
     {
         QWriteLocker locker(gClassLock());
         Q_UNUSED(locker)
-        classIdHash.swap(*gClassHash);
+        if(!gClassHash.isDestroyed())
+            classIdHash.swap(*gClassHash);
     }
     {
         QWriteLocker locker(gEmitMethodLock());
         Q_UNUSED(locker)
-        gEmitMethodHash->clear();
+        if(!gEmitMethodHash.isDestroyed())
+            gEmitMethodHash->clear();
     }
     {
         QWriteLocker locker(gConstructorLock());
         Q_UNUSED(locker)
-        gConstructorHash->clear();
+        if(!gConstructorHash.isDestroyed())
+            gConstructorHash->clear();
     }
     {
         QWriteLocker locker(gQtSuperclassLock());
         Q_UNUSED(locker)
-        gQtSuperclassHash->clear();
+        if(!gQtSuperclassHash.isDestroyed())
+            gQtSuperclassHash->clear();
     }
     {
         QWriteLocker locker(gMethodLock());
         Q_UNUSED(locker)
-        gMethodHash->clear();
+        if(!gMethodHash.isDestroyed())
+            gMethodHash->clear();
     }
     {
         QWriteLocker locker(gFieldLock());
         Q_UNUSED(locker)
-        gFieldHash->clear();
+        if(!gFieldHash.isDestroyed())
+            gFieldHash->clear();
     }
     if(env){
 #ifdef QTJAMBI_LOG_CLASSNAMES

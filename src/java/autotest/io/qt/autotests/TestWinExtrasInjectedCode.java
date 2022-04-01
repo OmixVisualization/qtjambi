@@ -37,12 +37,12 @@ import org.junit.Test;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.winextras.QtWin;
 
-public class TestWinExtrasInjectedCode extends QApplicationTest {
+public class TestWinExtrasInjectedCode extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
-		Assume.assumeTrue("Can only run on Windows.", QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.Windows);
+        ApplicationInitializer.testInitializeWithWidgets();
+		Assume.assumeTrue("Can only run on Windows.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
     }
 	
     @Test

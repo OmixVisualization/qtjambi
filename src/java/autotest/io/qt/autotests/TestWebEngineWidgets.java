@@ -40,11 +40,12 @@ import io.qt.webengine.core.*;
 import io.qt.webengine.widgets.*;
 import io.qt.widgets.*;
 
-public class TestWebEngineWidgets extends QApplicationTest {
+public class TestWebEngineWidgets extends ApplicationInitializer {
+	
     @BeforeClass
     public static void testInitialize() throws Exception {
     	QtUtilities.initializePackage("io.qt.webengine.widgets");
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
     	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {

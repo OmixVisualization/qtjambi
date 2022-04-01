@@ -74,7 +74,7 @@ import io.qt.widgets.QApplication;
 import io.qt.widgets.QCheckBox;
 import io.qt.widgets.QPushButton;
 
-public class TestMetaProgrammingQt5 extends QApplicationTest {
+public class TestMetaProgrammingQt5 extends ApplicationInitializer {
 	
 	private static class FullOfPropertiesSuper extends QObject {
 
@@ -236,7 +236,7 @@ public class TestMetaProgrammingQt5 extends QApplicationTest {
 
         FullOfProperties fop = new FullOfProperties(true);
         for (ExpectedValues e : expectedValues) {
-//            Utils.println(1, "Current property: " + e.name);
+//            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "Current property: " + e.name);
             QMetaProperty property = fop.metaObject().property(e.name);
             assertTrue(property!=null);
             assertEquals(property.name()+" writable", e.writable, property.isWritable());

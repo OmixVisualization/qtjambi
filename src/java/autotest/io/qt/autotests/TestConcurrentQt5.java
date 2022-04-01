@@ -8,7 +8,7 @@ import io.qt.concurrent.QtConcurrent;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QThread;
 
-public class TestConcurrentQt5 extends QApplicationTest {
+public class TestConcurrentQt5 extends ApplicationInitializer {
 	@Test
     public void testSuspendedJavaQFuture() {
     	QFutureInterface<String> promise = new QFutureInterface<>();

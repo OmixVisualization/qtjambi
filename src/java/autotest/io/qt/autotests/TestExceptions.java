@@ -45,7 +45,7 @@ import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
 
-public class TestExceptions extends QApplicationTest {
+public class TestExceptions extends ApplicationInitializer {
 	
     @Test
     public void test_multi_inherited_QRunnable_QObject_Deletion() {

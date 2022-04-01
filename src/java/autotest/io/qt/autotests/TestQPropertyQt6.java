@@ -32,8 +32,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.core.QBindable;
@@ -65,13 +68,14 @@ import io.qt.core.QPropertyChangeHandler;
 import io.qt.core.QShortBindable;
 import io.qt.core.QShortProperty;
 import io.qt.core.QShortPropertyAlias;
+import io.qt.core.QThread;
 import io.qt.core.QVersionNumber;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsPathItem;
 import io.qt.widgets.QGraphicsProxyWidget;
 import io.qt.widgets.QGraphicsWidget;
 
-public class TestQPropertyQt6 extends QApplicationTest {
+public class TestQPropertyQt6 extends ApplicationInitializer {
 	
 	private boolean canAlias = QLibraryInfo.version().compareTo(new QVersionNumber(7,0,0))<0;
 	
@@ -90,6 +94,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value());
     	p2.setValue((byte)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -156,6 +161,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value());
     	p2.setValue(3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -222,6 +228,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value());
     	p2.setValue((short)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -288,6 +295,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value());
     	p2.setValue(3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -354,6 +362,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value());
     	p2.setValue((char)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -421,6 +430,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value(), 0.001);
     	p2.setValue(3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -487,6 +497,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value(), 0.001);
     	p2.setValue(3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -555,6 +566,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	p2.setValue(false);
     	assertEquals(1, changeCounter.intValue());
     	assertFalse(boundProperty.value());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -612,6 +624,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, (byte)boundProperty.value());
     	p2.setValue((byte)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -680,6 +693,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2, changeCounter.intValue());
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, (int)boundProperty.value());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	boundProperty.setValue(1000);
@@ -744,6 +758,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, (short)boundProperty.value());
     	p2.setValue((short)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -810,6 +825,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, (long)boundProperty.value());
     	p2.setValue(3l);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -876,6 +892,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, (char)boundProperty.value());
     	p2.setValue((char)3);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -943,6 +960,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value(), 0.001);
     	p2.setValue(3f);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -1009,6 +1027,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(2*5, boundProperty.value(), 0.001);
     	p2.setValue(3.);
     	assertEquals(2, changeCounter.intValue());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -1077,6 +1096,7 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	p2.setValue(false);
     	assertEquals(1, changeCounter.intValue());
     	assertFalse(boundProperty.value());
+    	handler.dispose();
     	handler = null;
     	System.gc();
     	assertFalse(boundProperty.binding().isNull());
@@ -1150,5 +1170,29 @@ public class TestQPropertyQt6 extends QApplicationTest {
     	assertEquals(null, p.value());
     	decider.setValue(true);
     	assertTrue(p.value() instanceof QGraphicsProxyWidget);
+    }
+    
+    //this is expected to crash from time to time
+    @Test
+    public void testQPropertyChangeHandlerDelete() {
+    	Assume.assumeTrue("Disabled unless you specify qtjambi.autotests.enable.criticals=true", Boolean.getBoolean("qtjambi.autotests.enable.criticals"));
+    	QProperty<String> prop = new QProperty<>("");
+    	List<QPropertyChangeHandler> handlers = new ArrayList<>();
+		for(int i=0; i<10000; ++i) {
+			handlers.add(prop.onValueChanged(()->{}));
+		}
+    	QThread thread = QThread.create(()->{
+    		while(!QThread.interrupted()){
+    			prop.setValue(""+System.nanoTime());
+    		}
+    	});
+    	thread.start();
+    	QThread.yieldCurrentThread();
+		QThread.msleep(1);
+    	for (QPropertyChangeHandler handler : handlers) {
+			QThread.msleep(1);
+			handler.dispose();			
+		}
+    	thread.interrupt();
     }
 }

@@ -57,7 +57,7 @@ import io.qt.core.QLibraryInfo;
 import io.qt.xml.QDomDocument;
 import io.qt.xml.QDomElement;
 
-public class TestXmlInjectedCodeQt5 extends QApplicationTest {
+public class TestXmlInjectedCodeQt5 extends ApplicationInitializer {
 	
 
 

@@ -3,17 +3,15 @@
     <property name="module-name" value="qsqljdbc"/>
     <property name="qtjambi-module-name" value="qtjambi.sql"/>
     <property name="qtjambi-libfiles" value="qtjambi${module.suffix}-${qtjambi.jar.version}.jar,
-                                             qtjambi-core${module.suffix}-${qtjambi.jar.version}.jar,
-                                             qtjambi-gui${module.suffix}-${qtjambi.jar.version}.jar,
-                                             qtjambi-widgets${module.suffix}-${qtjambi.jar.version}.jar,
                                              qtjambi-sql${module.suffix}-${qtjambi.jar.version}.jar"/>
     <target name="build">
         <if>
             <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
             <then>
-                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar1">
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar2">
                     <property name="module" value="${module-name}"/>
-                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}"/>
+                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}/main"/>
+                    <property name="sourcedir2" value="${java.srcdir}/qtjambi-plugins/${module-name}/Qt${qtjambi.soname.version.major}"/>
                     <property name="jar.excludes" value=""/>
                     <property name="module.excludes" value=""/>
                     <property name="plugin.metadata" value="{''Keys'':[''QJDBC'']}"/>

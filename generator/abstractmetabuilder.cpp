@@ -374,14 +374,12 @@ void AbstractMetaBuilder::traverseStreamOperator(FunctionModelItem item) {
                 streamFunction->setType(nullptr);
 
                 setupFunctionDefaults(streamFunction, streamedClass);
-
                 streamedClass->addFunction(streamFunction);
                 streamedClass->typeEntry()->addExtraInclude(streamClass->typeEntry()->include());
                 FunctionModification mod;
                 mod.signature = streamFunction->minimalSignature();
                 mod.modifiers |= Modification::NonFinal;
                 m_current_class->typeEntry()->addFunctionModification(mod);
-
                 m_current_class = old_current_class;
             }
         }
@@ -801,7 +799,6 @@ bool AbstractMetaBuilder::build() {
 
         if ((entry->isValue() || entry->isObject())
                 && !entry->isString()
-                && !entry->isStringRef()
                 && !entry->isChar()
                 && !entry->isContainer()
 //                && !entry->isIterator()
@@ -1910,6 +1907,7 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
 
     traverseEnums(model_dynamic_cast<ScopeModelItem>(namespace_item), meta_class, namespace_item->enumsDeclarations());
     traverseFunctions(model_dynamic_cast<ScopeModelItem>(namespace_item), meta_class);
+    traverseFields(model_dynamic_cast<ScopeModelItem>(namespace_item), meta_class);
 //     traverseClasses(model_dynamic_cast<ScopeModelItem>(namespace_item));
 
     pushScope(model_dynamic_cast<ScopeModelItem>(namespace_item));
@@ -3708,6 +3706,8 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
 
     AbstractMetaClass *meta_class = createMetaClass();
     meta_class->setTypeEntry(type);
+    meta_class->setUsingProtectedBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Protected);
+    meta_class->setUsingPublicBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Public);
     if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
         QList<QPair<QString,bool>> baseClasses = class_item->baseClasses();
         for(int i=0; i<baseClasses.size(); ++i){
@@ -3980,7 +3980,7 @@ AbstractMetaField *AbstractMetaBuilder::traverseField(VariableModelItem field, c
     uint attr = 0;
     if(field->isConstExpr())
         attr |= AbstractMetaAttributes::ConstExpr;
-    if (field->isStatic())
+    if (field->isStatic() || cls->isNamespace())
         attr |= AbstractMetaAttributes::Static;
 
     CodeModel::AccessPolicy policy = field->accessPolicy();
@@ -5869,13 +5869,7 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
     } else if (type->isFunctional()) {
         meta_type->setTypeUsagePattern(AbstractMetaType::FunctionalPattern);
 
-    } else if (type->isStringRef()
-               && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
-        meta_type->setTypeUsagePattern(AbstractMetaType::StringRefPattern);
-
-    } else if (type->isString()
+    } else if (type->isQString()
                && meta_type->indirections().size() == 0
                && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
                    || meta_type->isConstant())) {
@@ -5892,6 +5886,24 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
                && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
                    || meta_type->isConstant())) {
         meta_type->setTypeUsagePattern(AbstractMetaType::StringViewPattern);
+
+    } else if (type->isUtf8StringView()
+               && meta_type->indirections().size() == 0
+               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
+                   || meta_type->isConstant())) {
+        meta_type->setTypeUsagePattern(AbstractMetaType::Utf8StringViewPattern);
+
+    } else if (type->isAnyStringView()
+               && meta_type->indirections().size() == 0
+               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
+                   || meta_type->isConstant())) {
+        meta_type->setTypeUsagePattern(AbstractMetaType::AnyStringViewPattern);
+
+    } else if (type->isStringRef()
+               && meta_type->indirections().size() == 0
+               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
+                   || meta_type->isConstant())) {
+        meta_type->setTypeUsagePattern(AbstractMetaType::StringRefPattern);
 
     } else if (type->isChar()
                && meta_type->indirections().size() == 0
@@ -6081,8 +6093,16 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
                 return expr;
         } else if (expr == "0" || expr == "Q_NULLPTR" || expr == "nullptr" || expr == "NULL") {
             return "null";
-        } else if (type->isTargetLangString() || type->isTargetLangStringView()) {
-            if (expr == "{}" || expr == "QString()" || expr == "QStringRef()" || expr == "QStringView()") {
+        } else if (type->isTargetLangString()
+                   || type->isTargetLangStringView()
+                   || type->isTargetLangAnyStringView()
+                   || type->isTargetLangUtf8StringView()) {
+            if (expr == "{}"
+                    || expr == "QString()"
+                    || expr == "QStringRef()"
+                    || expr == "QStringView()"
+                    || expr == "QAnyStringView()"
+                    || expr == "QUtf8StringView()") {
                 return "\"\"";
             }
             if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
@@ -6151,6 +6171,9 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             }
         }
     }
+    if (defaultValueExpression == QLatin1String("std::nullopt"))
+        return "java.util.Optional.empty()";
+
 
     QString warn = QString("unsupported default value '%3' of argument in function '%1', class '%2'")
                    .arg(function_name).arg(class_name).arg(defaultValueExpression);

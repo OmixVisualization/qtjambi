@@ -47,7 +47,7 @@ import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
 
-public class TestPrivateSignals extends QApplicationTest {
+public class TestPrivateSignals extends ApplicationInitializer {
     private static class DummyModel extends QAbstractItemModel {
         public int columnCount(QModelIndex parent) {
             return 1;

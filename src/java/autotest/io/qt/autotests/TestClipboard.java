@@ -65,15 +65,13 @@ import io.qt.gui.QKeyEvent;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QMainWindow;
 
-public class TestClipboard extends QApplicationTest {
+public class TestClipboard extends ApplicationInitializer {
 	
 	@org.junit.BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("Cannot run on macOS because of using AWT event loop.",
-				QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.MacOS
-					   && QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.IOS
-					   && QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.WatchOS);
+				QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, QOperatingSystemVersion.OSType.IOS, QOperatingSystemVersion.OSType.WatchOS));
 	}
 	
     static class Foo implements ClipboardOwner {

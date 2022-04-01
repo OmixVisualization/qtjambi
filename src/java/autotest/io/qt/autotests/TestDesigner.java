@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QFile;
@@ -18,8 +19,13 @@ import io.qt.widgets.QGridLayout;
 import io.qt.widgets.QToolBox;
 import io.qt.widgets.QWidget;
 
-public class TestDesigner extends QApplicationTest {
+public class TestDesigner extends ApplicationInitializer {
     
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void testFormBuilder()
     {

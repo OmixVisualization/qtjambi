@@ -39,10 +39,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlExpression$ValueIsUndefined,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlIncubationController$WhileFlag,
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(flag,J)
 )
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlTypes,
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(registerModule,(Lio/qt/core/QUrl;Ljava/lang/String;)V)
-)
 }
 
 namespace Runtime {

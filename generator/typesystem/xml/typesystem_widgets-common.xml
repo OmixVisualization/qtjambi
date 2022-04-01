@@ -1186,6 +1186,11 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="takeCentralWidget()" thread-affine="ui">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setMenuBar(QMenuBar*)" thread-affine="ui">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -1279,8 +1284,8 @@
         <modify-function signature="addSection(QString)" thread-affine="yes"/>
         <modify-function signature="addSection(QIcon,QString)" thread-affine="yes"/>
         <modify-function signature="addSeparator()" thread-affine="yes"/>
-        <modify-function signature="addAction(QString)" thread-affine="yes"/>
-        <modify-function signature="addAction(QIcon,QString)" thread-affine="yes"/>
+        <modify-function signature="addAction(QString)" thread-affine="yes"  until="6.2.*"/>
+        <modify-function signature="addAction(QIcon,QString)" thread-affine="yes"  until="6.2.*"/>
         <modify-function signature="addMenu(QMenu*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="add" variable-name="__rcMenus"/>
@@ -1332,14 +1337,12 @@
         <modify-function signature="clear()" thread-affine="yes"/>
         <modify-function signature="setNativeMenuBar(bool)" thread-affine="yes"/>
         <modify-function signature="setVisible(bool)" thread-affine="yes"/>
-        <modify-function signature="addAction(QString)" thread-affine="yes"/>
+        <modify-function signature="addAction(QString)" thread-affine="yes"  until="6.2.*"/>
         <modify-function signature="addMenu(QString)" thread-affine="yes"/>
         <modify-function signature="addMenu(QIcon,QString)" thread-affine="yes"/>
         <modify-function signature="addSeparator()" thread-affine="yes"/>
         <modify-function signature="addAction(QAction *)" remove="all"/>
-        <modify-function signature="addAction(QString,const QObject*,const char*)">
-            <remove/>
-        </modify-function>
+        <modify-function signature="addAction(QString,const QObject*,const char*)" remove="all"  until="6.2.*"/>
         <modify-function signature="addMenu(QMenu*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="add" variable-name="__rcMenus"/>
@@ -1403,6 +1406,11 @@
         <modify-function signature="setWidget(QWidget*)" thread-affine="yes">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="takeWidget()" thread-affine="yes">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="eventFilter(QObject*,QEvent*)">
@@ -2899,6 +2907,14 @@
                 <reference-count action="remove" variable-name="__rcActions"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="addAction(QString)" thread-affine="ui" since="6.3.0"/>
+        <modify-function signature="addAction(QString,QKeySequence)" thread-affine="ui" since="6.3.0"/>
+        <modify-function signature="addAction(QIcon,QString)" thread-affine="ui" since="6.3.0"/>
+        <modify-function signature="addAction(QIcon,QString,QKeySequence)" thread-affine="ui" since="6.3.0"/>
+        <modify-function signature="addAction(QIcon,QString,const QObject*,const char*,Qt::ConnectionType)" remove="all" since="6.3.0"/>
+        <modify-function signature="addAction(QIcon,QString,QKeySequence,const QObject*,const char*,Qt::ConnectionType)" remove="all" since="6.3.0"/>
+        <modify-function signature="addAction(QString,const QObject*,const char*,Qt::ConnectionType)" remove="all" since="6.3.0"/>
+        <modify-function signature="addAction(QString,QKeySequence,const QObject*,const char*,Qt::ConnectionType)" remove="all" since="6.3.0"/>
     </object-type>
 
     <object-type name="QMessageBox">
@@ -3421,14 +3437,10 @@
     <object-type name="QToolBar">
         <modify-function signature="addAction(QAction *)" remove="all"/>
         <modify-function signature="addSeparator()" thread-affine="ui"/>
-        <modify-function signature="addAction(QString)" thread-affine="ui"/>
-        <modify-function signature="addAction(QIcon,QString)" thread-affine="ui"/>
-        <modify-function signature="addAction(QIcon,QString,const QObject*,const char*)">
-            <remove/>
-        </modify-function>
-        <modify-function signature="addAction(QString,const QObject*,const char*)">
-            <remove/>
-        </modify-function>
+        <modify-function signature="addAction(QString)" thread-affine="ui"  until="6.2.*"/>
+        <modify-function signature="addAction(QIcon,QString)" thread-affine="ui"  until="6.2.*"/>
+        <modify-function signature="addAction(QIcon,QString,const QObject*,const char*)" remove="all"  until="6.2.*"/>
+        <modify-function signature="addAction(QString,const QObject*,const char*)" remove="all"  until="6.2.*"/>
         <modify-function signature="addWidget(QWidget*)" thread-affine="ui">
             <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>

@@ -179,7 +179,7 @@ public class Directory extends Task implements Dirent {
             }
         }
         if(condition != null) {
-            if("true".compareToIgnoreCase(condition) == 0){
+            if("true".equalsIgnoreCase(condition)){
                 return true;
             }
             java.io.File file = new java.io.File(condition);

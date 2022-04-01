@@ -2556,7 +2556,7 @@ public final void copyDataTo(float[] values)    {
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="resolveInterface(const char *, int)const" access="private">
+        <modify-function signature="resolveInterface(const char *, int)const" access="private" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">
@@ -3506,7 +3506,12 @@ public final void copyDataTo(float[] values)    {
         </modify-function-->
       <modify-function signature="makeCurrent(QSurface *)" thread-affine="yes">
       </modify-function>
-      <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+      <modify-function signature="getProcAddress(const char*)const">
+          <modify-argument index="1">
+              <replace-type modified-type="java.lang.String"/>
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">
@@ -5214,7 +5219,7 @@ __rcRedirections.remove(%1);
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QWindow___" quote-before-line="}// class"/>
         </inject-code>
         <modify-function signature="requestUpdate()" thread-affine="ui" />
-        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">
@@ -5242,7 +5247,7 @@ __rcRedirections.remove(%1);
             <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
         </extra-includes>
         <modify-function signature="create()" thread-affine="ui" />
-        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">
@@ -5264,7 +5269,7 @@ __rcRedirections.remove(%1);
                 <remove-argument/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">

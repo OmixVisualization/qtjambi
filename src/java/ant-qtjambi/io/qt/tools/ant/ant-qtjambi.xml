@@ -30,10 +30,10 @@
 ****************************************************************************/
 -->
 <antlib>
-    <taskdef name="juic" classname="io.qt.tools.ant.JuicTask"/>
     <taskdef name="qmake" classname="io.qt.tools.ant.QMakeTask"/>
     <taskdef name="make" classname="io.qt.tools.ant.MakeTask"/>
     <taskdef name="create-pom" classname="io.qt.tools.ant.CreatePOMTask"/>
+    <taskdef name="modify-test-results" classname="io.qt.tools.ant.ModifyTestResultsTask"/>
     <taskdef name="create-native-deployment" classname="io.qt.tools.ant.CreateNativeDeploymentTask"/>
     <taskdef name="autotest-module-info" classname="io.qt.tools.ant.AutotestModuleInfoTask"/>
     <taskdef name="generator"

@@ -7,12 +7,15 @@
     <property environment="env"/>
 
     <tstamp/>
-    
-    <fileset id="qtjambi.autotest.classes" dir="src/java/autotest">
-        <include name="io/qt/**/Test*.java"/>
+    <condition property="test.includes" value="${qtjambi.autotests}" else="*">
+      <isset property="qtjambi.autotests"/>
+    </condition>
+    <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotest">
+        <include name="io/qt/**/Test${test.includes}.java"/>
         <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
         <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
         <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
         <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
         <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
         <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
@@ -84,6 +87,9 @@
         <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
         <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
         <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/Test*Pdf.java" unless="${qtjambi.pdf.any.true}"/>
+        <exclude name="io/qt/**/Test*PdfWidgets.java" unless="${qtjambi.pdfwidgets.any.true}"/>
+        <exclude name="io/qt/**/TestActiveX*.java" unless="${qtjambi.activex.any.true}"/>
         <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
         <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
         <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
@@ -141,28 +147,26 @@
     </target>
 
     <target name="reports.clean" description="Cleans the Unit Test results">
-        <delete dir="${outputDir}/tests/junitxml-release"/>
-        <delete dir="${outputDir}/tests/junitxml-debug"/>
-        <delete dir="${outputDir}/tests/TestResults-release"/>
-        <delete dir="${outputDir}/tests/TestResults-debug"/>
+        <delete dir="${outputDir}/tests/junitxml-*"/>
+        <delete dir="${outputDir}/tests/TestResults-*"/>
     </target>
 
     <target name="check.junit">
         <available property="junit.path" type="file" file="${tests.junit}"/>
         <fail message="Path to JUnit is required to build the Unit Tests. Specify the path in tests.properties">
             <condition>
-                    <not>
-                        <isset property="junit.path"/>
-                    </not>
+                <not>
+                    <isset property="junit.path"/>
+                </not>
             </condition>
         </fail>
     </target>
     
     <target name="check.ssl">
-        <available property="qtjambi.ssl" type="file" file="build/generator/out/java/io/qt/network/QSslSocket.java"/>
+        <available property="qtjambi.ssl" type="file" file="${generator.outputdir}/java/io/qt/network/QSslSocket.java"/>
     </target>
 
-    <target name="compile.native.generator" depends="init.build,generator.make,generator.xmlmerge">
+    <target name="compile.native.generator" depends="init.build, init.properties, generator.make, generator.xmlmerge">
         <mkdir dir="${outputDir}/tests/autotest-generator"/>
         <generator dir="${generator.builddir}"
                 debugTools="${qtjambi.debug-tools}"
@@ -170,6 +174,7 @@
                 outputDirectory="${outputDir}/tests/autotest-generator"
                 generatorDirectory="${generator.builddir}"
                 typesystem="${basedir}/autotestlib/typesystem-autotestlib.xml"
+                typesystemsDirectory="${generator.xmlmerge.outputdir}"
                 header="${basedir}/autotestlib/masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
@@ -179,7 +184,19 @@
             />
     </target>
 
-    <target name="compile.native" depends="init.build">
+    <target name="generate.uic" depends="init.build, init.properties">
+        <if>
+            <available file="${deploymentdir}/qtjambi-uic-${qtjambi.jar.version}.jar" type="file"/>
+            <then>
+                <uic uifile="${java.srcdir}/autotest/io/qt/autotests/ui/uitest.ui"
+                     targetpackage="io.qt.autotests.generated"
+                     targetdirectory="${outputDir}/tests/autotest-generator/java"
+                     libfiles=""
+                     connections=""/>
+            </then>
+        </if>
+    </target>
+    <target name="compile.native" depends="init.build, init.properties">
         <qmake  dir="${outputDir}/tests/autotest-generator"
                 pro="${basedir}/autotestlib/autotestlib.pro"
                 config="${qtjambi.configuration}"
@@ -202,7 +219,7 @@
                 includeantruntime="false"
                 source="1.8" target="1.8">
             <classpath>
-                <pathelement location="${basedir}/deployment/qtjambi.jar" />
+                <pathelement location="${deploymentdir}/qtjambi.jar" />
                 <pathelement location="." />
             </classpath>
         </javac> -->
@@ -221,14 +238,21 @@
         </copy>
     </target>
 
-    <target name="compile.java" depends="init.build, compile.deps, check.junit, check.ssl">
+    <target name="compile.java">
         <ant inheritrefs="true" target="compile.java.impl">
-        <property name="module.suffix" value=""/>
+            <property name="module.suffix" value=""/>
             <property name="test.java.outdir" location="${outputDir}/tests/java"/>
             <property name="test.java.srcoutdir" location="${outputDir}/tests/java-src"/>
         </ant>
     </target>
-    <target name="compile.java8" depends="init.build, compile.deps, check.junit, check.ssl">
+    <target name="compile.plugins.java">
+        <ant inheritrefs="true" target="compile.java.plugins.impl">
+            <property name="module.suffix" value=""/>
+            <property name="test.java.outdir" location="${outputDir}/tests/java"/>
+            <property name="test.java.srcoutdir" location="${outputDir}/tests/java-src"/>
+        </ant>
+    </target>
+    <target name="compile.java8">
         <ant inheritrefs="true" target="compile.java.impl">
             <property name="minimum.java.version" value="1.8"/>
             <property name="source.java.version" value="1.8"/>
@@ -238,7 +262,17 @@
             <property name="test.java.srcoutdir" location="${outputDir}/tests/java8-src"/>
         </ant>
     </target>
-    <target name="compile.java.impl" depends="init.build, compile.deps, check.junit, check.ssl">
+    <target name="compile.plugins.java8">
+        <ant inheritrefs="true" target="compile.java.plugins.impl">
+            <property name="minimum.java.version" value="1.8"/>
+            <property name="source.java.version" value="1.8"/>
+            <property name="module.suffix" value="-jre8"/>
+            <property name="java.module.based" value="false"/>
+            <property name="test.java.outdir" location="${outputDir}/tests/java8"/>
+            <property name="test.java.srcoutdir" location="${outputDir}/tests/java8-src"/>
+        </ant>
+    </target>
+    <target name="compile.java.impl">
         <delete dir="${test.java.outdir}" failonerror="no"/>
         <mkdir dir="${test.java.outdir}"/>
         <!-- encoding="UTF-8" required due to some file tests (I18N) using
@@ -287,7 +321,7 @@
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <autotest-module-info outputDirectory="${outputDir}/tests/autotest-generator/java" javaDirectory="${generator.outputdir}/java"/>
+                <autotest-module-info outputDirectory="${test.java.srcoutdir}" javaDirectory="${outputDir}/java"/>
                 <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
                         includeantruntime="false"
                         source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
@@ -297,7 +331,7 @@
                 </javac>
             </then>
             <else>
-            <delete file="${test.java.srcoutdir}/module-info.java"/>
+                <delete file="${test.java.srcoutdir}/module-info.java"/>
                 <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}" excludes="module-info.java"
                         includeantruntime="false"
                         source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
@@ -310,6 +344,8 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotest"/>
         </antcall>
+    </target>
+    <target name="compile.java.plugins.impl" depends="generate.uic">
         <if>
             <istrue value="${qtjambi.qml.any.true}"/>
             <then>
@@ -372,14 +408,14 @@
         </if>
     </target>
 
-    <target name="run.test" depends="init.test, check.junit">
+    <target name="run.test" depends="check.junit">
         <qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
-        <property name="nativeBaseDir" location="${basedir}/deployment/native/${qtjambi.osname}/${kind}"/>
+        <property name="nativeBaseDir" location="${deploymentdir}/native/${qtjambi.osname}/${kind}"/>
         <property name="qtLib"         location="${qtjambi.qt.libdir}"/>
         <property name="qtBin"         location="${qtjambi.qt.bindir}"/>
         <property name="qtTools"       location="${QTDIR}/tools"/>
-        <property name="jambiLib"      location="${basedir}/deployment/native/${qtjambi.osname}/${kind}/lib"/>
-        <property name="jambiBin"      location="${basedir}/deployment/native/${qtjambi.osname}/${kind}/bin"/>
+        <property name="jambiLib"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib"/>
+        <property name="jambiBin"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/bin"/>
         <if>
             <equals arg1="${jdk-exec-version}" arg2="8"/>
             <then>
@@ -393,9 +429,12 @@
                     </else>
                 </if>
                 <if>
-                    <not>
-                        <available file="${test.jvm}" type="file"/>
-                    </not>
+                    <and>
+                        <not>
+                            <available file="${test.jvm}" type="file"/>
+                        </not>
+                        <istrue value="${check.jdk8}"/>
+                    </and>
                     <then>
                         <fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
                     </then>
@@ -413,6 +452,20 @@
                 </path>
             </then>
             <else>
+                <if>
+                    <equals arg1="${jdk-exec-version}" arg2="arm64"/>
+                    <then>
+                        <property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
+                    </then>
+                    <else>
+                        <if>
+                            <equals arg1="${jdk-exec-version}" arg2="x64"/>
+                            <then>
+                                <property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
+                            </then>
+                        </if>
+                    </else>
+                </if>
                 <if>
                     <os family="windows"/>
                     <then>
@@ -444,111 +497,129 @@
                 </path>
             </else>
         </if>
+        
         <if>
-            <os family="windows"/>
+            <or>
+                <equals arg1="${jdk-exec-version}" arg2=""/>
+                <available file="${test.jvm}" type="file"/>
+            </or>
             <then>
-                <property name="absQtPath"         location="${qtBin}" />
-                <property name="absJambiPath"      location="${jambiBin}" />
+                <if>
+                    <os family="windows"/>
+                    <then>
+                        <property name="absQtPath"         location="${qtBin}" />
+                        <property name="absJambiPath"      location="${jambiBin}" />
+                    </then>
+                    <else>
+                        <property name="absQtPath"         location="${qtLib}" />
+                        <property name="absJambiPath"      location="${jambiLib}" />
+                    </else>
+                </if>
+                <condition property="env.qtjambi.debug.trace" value="QTJAMBI_DEBUG_TRACE" else="QTJAMBI_DEBUG_TRACE_DISABLED">
+                    <istrue value="${qtjambi.debug.trace}"/>
+                </condition>
+                <if>
+                    <available type="file" file="${sqlite.jdbc}"/>
+                    <then>
+                    </then>
+                    <else>
+                        <mkdir dir="extjars"/>
+                        <get src="${sqlite.jdbc.download.url}" dest="${sqlite.jdbc}" verbose="true"/>
+                    </else>
+                </if>
+                <if>
+                    <available type="file" file="${jna.lib}"/>
+                    <then>
+                    </then>
+                    <else>
+                        <mkdir dir="extjars"/>
+                        <get src="${jna.lib.download.url}" dest="${jna.lib}" verbose="true"/>
+                    </else>
+                </if>
+                <if>
+                    <os family="mac"/>
+                    <then>
+                        <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
+                    </then>
+                    <else>
+                        <property name="XstartOnFirstThread" value="-Dx" />
+                    </else>
+                </if>
+                <if>
+                    <not>
+                        <isset property="qtjambi.autotests"/>
+                    </not>
+                    <then>
+                        <delete dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}" />
+                    </then>
+                </if>
+                <condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
+                    <istrue value="${qtjambi.autotests.jnicheck}"/>
+                </condition>
+                <if>
+                    <not>
+                        <os family="windows"/>
+                    </not>
+                    <then>
+                        <symlink link="${outputDir}/tests/${kind}/lib" resource="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib"/>
+                    </then>
+                </if>
+                <trycatch>
+                    <try>
+                        <mkdir dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}"/>
+                        <junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
+                            <classpath refid="qtjambi.classpath"/>
+                            <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
+                            <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
+                            <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+                            <jvmarg value="-Dio.qt.log-messages=ALL"/>
+                            <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
+                            <jvmarg value="-Dio.qt.pluginpath=${deploymentdir}/native/${qtjambi.osname}/${kind}/plugins${psep}${outputDir}/tests/${kind}/plugins"/>
+                            <jvmarg value="${XstartOnFirstThread}"/>
+                            <jvmarg value="-Dqtjambi.deployer.test.jdbc=${sqlite.jdbc}"/>
+                            <jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+                            <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+                            from native code (so we can see where/why it crashed) otherwise
+                            the JVM may promote SIGSEGV to NullPointerException, which is
+                            not that useful for debugging. -->
+                            <jvmarg value="${Xcheck_jni}"/>
+                            <jvmarg value="-Dqtjambi.deployer.skip.deletion=${qtjambi.deployer.skip.deletion}"/>
+                            <env key="${env.qtjambi.debug.trace}" value="1"/>
+                            <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
+                            <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
+                            <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
+                <!--            <jvmarg value="-verbose"/> -->
+                            <formatter type="xml" usefile="yes" />
+                            <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
+                                <fileset refid="qtjambi.autotest.classes"/>
+                            </batchtest>
+                        </junit>
+                        <modify-test-results dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
+                    </try>
+                    <finally>
+                        <if>
+                            <not>
+                                <os family="windows"/>
+                            </not>
+                            <then>
+                                <symlink action="delete" link="${outputDir}/tests/${kind}/lib"/>
+                            </then>
+                        </if>
+                    </finally>
+                </trycatch>
             </then>
-            <else>
-                <property name="absQtPath"         location="${qtLib}" />
-                <property name="absJambiPath"      location="${jambiLib}" />
-            </else>
         </if>
-        <condition property="env.qtjambi.debug.trace" value="QTJAMBI_DEBUG_TRACE" else="QTJAMBI_DEBUG_TRACE_DISABLED">
-            <istrue value="${qtjambi.debug.trace}"/>
-        </condition>
-        <if>
-            <available type="file" file="${sqlite.jdbc}"/>
-            <then>
-            </then>
-            <else>
-                <mkdir dir="extjars"/>
-                <get src="${sqlite.jdbc.download.url}" dest="${sqlite.jdbc}" verbose="true"/>
-            </else>
-        </if>
-        <if>
-            <available type="file" file="${jna.lib}"/>
-            <then>
-            </then>
-            <else>
-                <mkdir dir="extjars"/>
-                <get src="${jna.lib.download.url}" dest="${jna.lib}" verbose="true"/>
-            </else>
-        </if>
-        <if>
-            <os family="mac"/>
-            <then>
-                <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
-            </then>
-            <else>
-                <property name="XstartOnFirstThread" value="-Dx" />
-            </else>
-        </if>
-        <delete dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}" />
-        <delete dir="${outputDir}/tests/TestResults-${kind}${jdk-exec-version}" />
-        <mkdir dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}"/>
-        <mkdir dir="${outputDir}/tests/TestResults-${kind}${jdk-exec-version}"/>
-        <if>
-            <not>
-                <os family="windows"/>
-            </not>
-            <then>
-                <symlink link="${outputDir}/tests/${kind}/lib" resource="${basedir}/deployment/native/${qtjambi.osname}/${kind}/lib"/>
-            </then>
-        </if>
-            <junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="480000" showoutput="yes" logfailedtests="yes">
-                <classpath refid="qtjambi.classpath"/>
-                <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
-                <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
-                <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
-                <jvmarg value="-Dio.qt.debug.inhibitNativeResourceThread=true"/>
-                <jvmarg value="-Dio.qt.debug.level=${io.qt.debug.level}"/>
-                <jvmarg value="-Dio.qt.exceptions-for-messages=none"/>
-                <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-                <jvmarg value="-Dio.qt.pluginpath=${basedir}/deployment/native/${qtjambi.osname}/${kind}/plugins${psep}${outputDir}/tests/${kind}/plugins"/>
-                <jvmarg value="${XstartOnFirstThread}"/>
-                <jvmarg value="-Dqtjambi.deployer.test.jdbc=${sqlite.jdbc}"/>
-                <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
-                from native code (so we can see where/why it crashed) otherwise
-                the JVM may promote SIGSEGV to NullPointerException, which is
-                not that useful for debugging. -->
-                <jvmarg value="-Xcheck:jni"/>
-                <env key="${env.qtjambi.debug.trace}" value="1"/>
-                <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
-                <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
-                <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
-    <!--            <jvmarg value="-verbose"/> -->
-                <formatter type="xml" usefile="yes" />
-                <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
-                    <fileset refid="qtjambi.autotest.classes"/>
-                </batchtest>
-            </junit>
-        <if>
-            <not>
-                <os family="windows"/>
-            </not>
-            <then>
-                <symlink action="delete" link="${outputDir}/tests/${kind}/lib"/>
-            </then>
-        </if>
-        <junitreport todir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
-            <fileset dir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${outputDir}/tests/TestResults-${kind}${jdk-exec-version}" />
-        </junitreport>
     </target>
 
-    <target name="run" depends="init">
+    <target name="run">
         <if>
-            <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
+            <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <antcall target="debug.run"/>
             </then>
             <else>
                 <if>
-                    <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
+                    <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
                     <then>
                         <antcall target="release.run"/>
                     </then>
@@ -560,14 +631,39 @@
         </if>
     </target>
     
-    <target name="release.run" depends="init">
+    <target name="release.run">
         <if>
-            <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
+            <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
             <then>
-                <antcall target="run.test">
-                    <param name="jdk-exec-version" value=""/>
-                    <param name="kind"          value="release"/>
-                </antcall>
+                <if>
+                    <os family="mac"/>
+                    <then>
+                        <if>
+                            <isset property="java.arm64.home.target"/>
+                            <then>
+                                <antcall target="run.test">
+                                    <param name="jdk-exec-version" value="arm64"/>
+                                    <param name="kind"          value="release"/>
+                                </antcall>
+                            </then>
+                        </if>
+                        <if>
+                            <isset property="java.x64.home.target"/>
+                            <then>
+                                <antcall target="run.test">
+                                    <param name="jdk-exec-version" value="x64"/>
+                                    <param name="kind"          value="release"/>
+                                </antcall>
+                            </then>
+                        </if>
+                    </then>
+                    <else>
+                        <antcall target="run.test">
+                            <param name="jdk-exec-version" value=""/>
+                            <param name="kind"          value="release"/>
+                        </antcall>
+                    </else>
+                </if>
             </then>
             <else>
                 <fail message="No release build available."/>
@@ -575,14 +671,39 @@
         </if>
     </target>
     
-    <target name="debug.run" depends="init">
+    <target name="debug.run">
         <if>
-            <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
+            <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
             <then>
-                <antcall target="run.test">
-                    <param name="jdk-exec-version" value=""/>
-                    <param name="kind"          value="debug"/>
-                </antcall>
+                <if>
+                    <os family="mac"/>
+                    <then>
+                        <if>
+                            <isset property="java.arm64.home.target"/>
+                            <then>
+                                <antcall target="run.test">
+                                    <param name="jdk-exec-version" value="arm64"/>
+                                    <param name="kind"          value="debug"/>
+                                </antcall>
+                            </then>
+                        </if>
+                        <if>
+                            <isset property="java.x64.home.target"/>
+                            <then>
+                                <antcall target="run.test">
+                                    <param name="jdk-exec-version" value="x64"/>
+                                    <param name="kind"          value="debug"/>
+                                </antcall>
+                            </then>
+                        </if>
+                    </then>
+                    <else>
+                        <antcall target="run.test">
+                            <param name="jdk-exec-version" value=""/>
+                            <param name="kind"          value="debug"/>
+                        </antcall>
+                    </else>
+                </if>
             </then>
             <else>
                 <fail message="No debug build available."/>
@@ -590,12 +711,12 @@
         </if>
     </target>
     
-    <target name="release.run8" depends="init">
+    <target name="release.run8">
         <if>
-            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
+            <available file="${deploymentdir}/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
             <then>
                 <if>
-                    <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
+                    <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
                     <then>
                         <antcall target="run.test">
                             <param name="jdk-exec-version" value="8"/>
@@ -610,12 +731,12 @@
         </if>
     </target>
     
-    <target name="debug.run8" depends="init">
+    <target name="debug.run8">
         <if>
-            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
+            <available file="${deploymentdir}/qtjambi-jre8-${qtjambi.jar.version}.jar"/>
             <then>
                 <if>
-                    <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
+                    <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
                     <then>
                         <antcall target="run.test">
                             <param name="jdk-exec-version" value="8"/>
@@ -630,48 +751,210 @@
         </if>
     </target>
     
+    <target name="tests.report.impl">
+        <delete dir="${basedir}/TestResults"/>
+        <mkdir dir="${basedir}/TestResults"/>
+        <junitreport todir="${basedir}/TestResults">
+            <fileset dir="${basedir}">
+                <include name="*/build/tests/junitxml-*/TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${basedir}/TestResults" />
+        </junitreport>
+    </target>
+    
+    <target name="tests.report"
+            depends="init.build" description="Generates all test reports">
+        <antcall target="tests.report.impl"/>
+        <antcall target="finished"/>
+    </target>
+    
     <target name="tests.generate"
-            depends="init.build, compile.native.generator, compile.native, compile.java, compile.java8" description="Generates and builds all tests"/>
+            depends="init.build, init.properties, compile.deps, check.junit, check.ssl, compile.native.generator, compile.native, compile.java, compile.java8" description="Generates and builds all tests">
+        <antcall target="finished"/>
+    </target>
 
     <target name="tests.compile"
-            depends="init.build, compile.native, compile.java, compile.java8" description="Builds all tests without recalling generator"/>
+            depends="init.build, init.properties, compile.deps, check.junit, check.ssl, compile.native, compile.java, compile.java8, compile.plugins.java, compile.plugins.java8" description="Builds all tests without recalling generator">
+        <antcall target="finished"/>
+    </target>
             
     <target name="tests.compile.native"
-            depends="init.build, compile.native" description="Builds native test components"/>
+            depends="init.build, init.properties, compile.deps, check.junit, check.ssl, compile.native" description="Builds native test components">
+        <antcall target="finished"/>
+    </target>
             
     <target name="tests.compile.java"
-            depends="init.build, compile.java, compile.java8" description="Builds java test components"/>
-
-    <target name="tests.run"
-            depends="init.build, init.test, setenv, run" description="Runs tests and generates report in TestReport subdir"/>
-
-    <target name="tests.run.all"
-            depends="init.build, init.test, setenv, release.run, debug.run, release.run8, debug.run8" description="Runs tests and generates report in TestReport subdir"/>
-
-    <target name="tests.release.run"
-            depends="init.build, init.test, setenv, release.run" description="Runs tests on the release build and generates report in TestReport subdir"/>
-
-    <target name="tests.debug.run"
-            depends="init.build, init.test, setenv, debug.run" description="Runs tests on the debug build and generates report in TestReport subdir"/>
-
-    <target name="tests.release.run8"
-            depends="init.build, init.test, setenv" description="Runs tests on the release build and generates report in TestReport subdir">
-            <antcall target="release.run8">
-                <param name="check.jdk8" value="true"/>
-            </antcall>
+            depends="init.build, init.properties, compile.deps, check.junit, check.ssl, compile.java, compile.java8" description="Builds java test components">
+        <antcall target="finished"/>
     </target>
 
-    <target name="tests.debug.run8"
-            depends="init.build, init.test, setenv" description="Runs tests on the debug build and generates report in TestReport subdir">
-            <antcall target="debug.run8">
-                <param name="check.jdk8" value="true"/>
-            </antcall>
+    <target name="tests.compile.plugins"
+            depends="init.build, init.properties, compile.deps, check.junit, check.ssl, compile.plugins.java, compile.plugins.java8" description="Builds java test components">
+        <antcall target="finished"/>
     </target>
 
-    <target name="tests.release.all.run"
-            depends="init.build, init.test, setenv, release.run, release.run8" description="Runs tests on the release build and generates report in TestReport subdir"/>
+    <target name="tests.run" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="run"/>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
 
-    <target name="tests.debug.all.run"
-            depends="init.build, init.test, setenv, debug.run, debug.run8" description="Runs tests on the debug build and generates report in TestReport subdir"/>
+    <target name="tests.run.all" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="release.run"/>
+                <antcall target="debug.run"/>
+                <antcall target="release.run8"/>
+                <antcall target="debug.run8"/>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
 
+    <target name="tests.release.run" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="release.run"/>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
+
+    <target name="tests.debug.run" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="debug.run"/>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
+
+    <target name="tests.release.run8" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="release.run8">
+                    <param name="check.jdk8" value="true"/>
+                </antcall>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
+
+    <target name="tests.debug.run8" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="debug.run8">
+                    <param name="check.jdk8" value="true"/>
+                </antcall>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
+
+    <target name="tests.release.run.all" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="release.run"/>
+                <antcall target="release.run8">
+                    <param name="check.jdk8" value="true"/>
+                </antcall>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
+    
+    <target name="tests.debug.run.all" depends="init.build, init.properties, setenv" description="Runs tests and generates report in TestReport subdir">
+        <trycatch>
+            <try>
+                <antcall target="debug.run"/>
+                <antcall target="debug.run8">
+                    <param name="check.jdk8" value="true"/>
+                </antcall>
+            </try>
+            <finally>
+                <if>
+                    <not>
+                        <istrue value="${skip.report}"/>
+                    </not>
+                    <then>
+                        <antcall target="tests.report.impl"/>
+                    </then>
+                </if>
+                <antcall target="finished"/>
+            </finally>
+        </trycatch>
+    </target>
 </project>

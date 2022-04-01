@@ -1,6 +1,6 @@
 TARGET = io_qt_autotests_generated
 
-VERSION = $$QT_VERSION
+VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 # Messing with this config setting is what messes up building for Linux and debug_and_release for windows/macosx.
 # So before reinstating this section explain why it is required and the purpose.
@@ -17,7 +17,8 @@ VERSION = $$QT_VERSION
 #}
 
 include(../src/cpp/qtjambi/qtjambi_include.pri)
-include(../build/tests/autotest-generator/cpp/io_qt_autotests_generated/generated.pri)
+exists($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated): 
+    include($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated/generated.pri)
 
 INCLUDEPATH += ./cpp/io_qt_autotests_generated
 

@@ -439,7 +439,7 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
     return methods;
 }
 
-const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *env, jclass object_class, jobject object, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos, const QMetaObject* originalMetaObject, JavaException& ocurredException)
+const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *env, jclass object_class, jobject object, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos, const QMetaObject* originalMetaObject, bool hasCustomMetaObject, JavaException& ocurredException)
 {
     if(!ocurredException.object()){
         try {
@@ -469,8 +469,10 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
                     if(originalMetaObject){
                         const QMetaObject* metaObject = originalMetaObject;
                         if(!env->IsSameObject(superTypeInfos->first().javaClass(), object_class))
-                            metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject);
-                        if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
+                            metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject, hasCustomMetaObject);
+                        if(!metaObject){
+                            table = new FunctionTable(env, object_class, methodsByType.first());
+                        }else if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
                             table = new DynamicMetaObjectFunctionTable(env, object_class, methodsByType.first(), mo);
                         }else{
                             table = new MetaObjectFunctionTable(env, object_class, methodsByType.first(), metaObject);
@@ -482,8 +484,10 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
                     if(originalMetaObject){
                         const QMetaObject* metaObject = originalMetaObject;
                         if(!env->IsSameObject(superTypeInfos->first().javaClass(), object_class))
-                            metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject);
-                        if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
+                            metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject, hasCustomMetaObject);
+                        if(!metaObject){
+                            table = new InterfaceFunctionTable(env, object_class, methodsByType);
+                        }else if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
                             table = new DynamicMetaObjectInterfaceFunctionTable(env, object_class, methodsByType, mo);
                         }else{
                             table = new MetaObjectInterfaceFunctionTable(env, object_class, methodsByType, metaObject);

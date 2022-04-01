@@ -116,6 +116,7 @@ class Exec {
 
     public static final String K_LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
     public static final String K_DYLD_LIBRARY_PATH = "DYLD_LIBRARY_PATH";
+    public static final String K_DYLD_FRAMEWORK_PATH = "DYLD_FRAMEWORK_PATH";
 
     /**
      * This prepends a new value to an environment variable that is a list of paths delimited by pathSeparator.
@@ -142,14 +143,23 @@ class Exec {
     private static void setupEnvironment(Map<String, String> env, PropertyHelper props, String path, String ldpath) {
         String s;
 
-        String envName = whichLDEnvironmentVariable();
-        if(envName != null) {
-            if(ldpath != null) {
-                prependEnvironmentWithPathSeparator(env, envName, ldpath);
+        if(OSInfo.os()==OSInfo.OS.Linux) {
+        	if(ldpath != null) {
+                prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, ldpath);
             } else {
                 s = AntUtil.getPropertyAsString(props, Constants.LIBDIR);
                 if(s != null)
-                    prependEnvironmentWithPathSeparator(env, envName, s);
+                    prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, s);
+            }
+        }else if(OSInfo.os()==OSInfo.OS.MacOS) {
+        	if(ldpath != null) {
+                prependEnvironmentWithPathSeparator(env, K_DYLD_LIBRARY_PATH, ldpath);
+                prependEnvironmentWithPathSeparator(env, K_DYLD_FRAMEWORK_PATH, ldpath);
+            } else {
+                s = AntUtil.getPropertyAsString(props, Constants.LIBDIR);
+                if(s != null)
+                    prependEnvironmentWithPathSeparator(env, K_DYLD_LIBRARY_PATH, s);
+                prependEnvironmentWithPathSeparator(env, K_DYLD_FRAMEWORK_PATH, s);
             }
         }
         

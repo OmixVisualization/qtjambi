@@ -22,6 +22,10 @@ typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*);
 class QtJambiScope;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+namespace QtPrivate{
+    struct AbstractConverterFunction;
+}
+
 QTJAMBI_EXPORT bool qtjambi_register_converter(const QtPrivate::AbstractConverterFunction *f, int from, int to);
 #endif
 

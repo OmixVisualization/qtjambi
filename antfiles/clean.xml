@@ -4,7 +4,6 @@
     -->
 
     <available file="${qtjambi.builddir}/Makefile"   type="file" property="global.makefile.present"/>
-    <available file="${juic.builddir}/Makefile"      type="file" property="juic.makefile.present"/>
     <available file="${generator.builddir}/Makefile" type="file" property="generator.makefile.present"/>
 
     <target name="make.clean.global.make" if="global.makefile.present"
@@ -15,16 +14,6 @@
 
     <target name="make.clean.global" depends="init, make.clean.global.make">
         <delete dir="${qtjambi.builddir}" quiet="true"/>
-    </target>
-
-    <target name="make.clean.juic.make" if="juic.makefile.present"
-        depends="init">
-        <make dir="${juic.builddir}" target="mocclean" failonerror="false"/>
-        <make dir="${juic.builddir}" target="distclean"/>
-    </target>
-
-    <target name="make.clean.juic" depends="init, make.clean.juic.make">
-        <delete dir="${juic.builddir}" quiet="true"/>
     </target>
 
     <target name="make.clean.generator.make" if="generator.makefile.present"
@@ -38,7 +27,7 @@
     </target>
 
     <target name="clean" description="Cleans everything"
-        depends="make.clean.global, make.clean.generator, make.clean.juic">
+        depends="make.clean.global, make.clean.generator">
         <delete dir="${java.outdir}" quiet="true"/>
         <delete dir="${deploymentdir}" quiet="true"/>
         <delete dir="${generator.outputdir}" quiet="true"/>

@@ -46,6 +46,7 @@
 #include "docindex/docindexreader.h"
 
 QString Wrapper::include_directory = QString();
+QString Wrapper::typesystem_directory = QString();
 
 void ReportHandler_message_handler(const std::string &str) {
     ReportHandler::warning(fromStdString(str));
@@ -119,6 +120,9 @@ void Wrapper::handleArguments() {
 
     if (args.contains("qt-include-directory"))
         include_directory = args.value("qt-include-directory");
+
+    if (args.contains("typesystems-directory"))
+        typesystem_directory = args.value("typesystems-directory");
 
     if (args.contains("qt-doc-directory"))
         docsDirectory.setPath(args.value("qt-doc-directory"));
@@ -329,7 +333,7 @@ int Wrapper::runJambiGenerator() {
 
     //parse the type system file
     try{
-        typeDatabase->initialize(typesystemFileName, inputDirectoryList, gs->qtVersion);
+        typeDatabase->initialize(typesystemFileName, inputDirectoryList, typesystem_directory, gs->qtVersion);
     }catch(const TypesystemException& exn){
         fprintf(stderr, "%s\n", exn.what());
         return -1;

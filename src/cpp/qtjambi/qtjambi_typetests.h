@@ -43,6 +43,12 @@
 
 namespace QtJambiPrivate {
 
+template<class T, class = decltype(qobject_interface_iid<T*>())>
+std::true_type  supports_IID_test(const T&);
+std::false_type supports_IID_test(...);
+
+template<class T> struct supports_IID : decltype(supports_IID_test(std::declval<T>())){};
+
 template<class T, class = decltype(std::declval<T>() == std::declval<T>() )>
 std::true_type  supports_equal_test(const T&);
 std::false_type supports_equal_test(...);

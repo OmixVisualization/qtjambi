@@ -57,6 +57,7 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstractfileengine_p.h>
+#include <QtCore/private/qfsfileengine_p.h>
 #include <QtCore/private/qplugin_p.h>
 #include "qtjambi_core.h"
 #include "qtjambi_jobjectwrapper.h"
@@ -83,6 +84,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/private/qplugin_p.h>
 
 #ifdef Q_OS_DARWIN
 #include <pthread.h>
@@ -154,7 +156,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_initializeMultiSignal
 (JNIEnv *env, jclass, jobject multiSignal, jclass declaringClass, jobject reflectedField)
 {
     try{
-        const QMetaObject* mo = qtjambi_metaobject_for_class(env, declaringClass, nullptr);
+        const QMetaObject* mo = qtjambi_metaobject_for_class(env, declaringClass);
         QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(reflectedField));
         if(!signalInfos.isEmpty()){
             jintArray methodIndexes = env->NewIntArray(jsize(signalInfos.size()));
@@ -188,23 +190,45 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_fromReflectedMethod)
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_signalInfo)
-    (JNIEnv *env, jclass, jobject _metaObject, jobject field, jobject emitMethod)
+    (JNIEnv *env, jclass, jobject containingObject, jobject _metaObject, jobject field, jobject emitMethod)
 {
     try{
+        const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(env, _metaObject);
+        QtJambiMetaObject::SignalInfo result;
         if(emitMethod){
-            QtJambiMetaObject::SignalInfo signalInfo = QtJambiMetaObject::signalInfo(qtjambi_cast<const QMetaObject*>(env, _metaObject), env->FromReflectedField(field), env->FromReflectedMethod(emitMethod));
-            return Java::QtJambi::QtJambiSignals$SignalInfo::newInstance(env, signalInfo.methodIndex, signalInfo.signalTypes);
+            result = QtJambiMetaObject::signalInfo(mo, env->FromReflectedField(field), env->FromReflectedMethod(emitMethod));
         }else{
-            QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(qtjambi_cast<const QMetaObject*>(env, _metaObject), env->FromReflectedField(field));
-            QtJambiMetaObject::SignalInfo result;
+            QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(field));
             for(const QtJambiMetaObject::SignalInfo& signalInfo : signalInfos){
                 // in case of default-arg signals take the smallest methodIndex. all subsequent methodIndexes are clones.
                 if(result.methodIndex==-1 || result.methodIndex>signalInfo.methodIndex){
                     result = signalInfo;
                 }
             }
-            return Java::QtJambi::QtJambiSignals$SignalInfo::newInstance(env, result.methodIndex, result.signalTypes);
         }
+        if(result.methodIndex==-1 && !result.signalTypes && Java::QtCore::QObject::isInstanceOf(env, containingObject)){
+            jclass declaringClass = Java::Runtime::Field::getDeclaringClass(env, field);
+            if(const std::type_info* typeId = getTypeByJavaName(qtjambi_class_name(env, declaringClass).replace('.', '/'))){
+                if(hasCustomMetaObject(*typeId)){
+                    if(QObject* object = qtjambi_cast<QObject*>(env, containingObject)){
+                        QByteArray signalName = qtjambi_cast<QString>(env, Java::Runtime::Field::getName(env, field)).toUtf8();
+                        const QMetaObject* containingObjectClass = object->metaObject();
+                        QMap<QByteArray,QMetaMethod> matchingSignals;
+                        for(int i=0, length = containingObjectClass->methodCount(); i<length; ++i){
+                            QMetaMethod method = containingObjectClass->method(i);
+                            if(method.methodType()==QMetaMethod::Signal && signalName==method.name()){
+                                matchingSignals[method.methodSignature()] = method;
+                            }
+                        }
+                        if(matchingSignals.size()==1){
+                            result.metaObject = matchingSignals.first().enclosingMetaObject();
+                            result.methodIndex = matchingSignals.first().methodIndex();
+                        }
+                    }
+                }
+            }
+        }
+        return Java::QtJambi::QtJambiSignals$SignalInfo::newInstance(env, jlong(result.metaObject), result.methodIndex, result.signalTypes);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
         return nullptr;
@@ -1154,16 +1178,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                     QMetaType metaType = createMetaType(typeName,
                                                         true,
-                                                        /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<void*>::getDefaultCtr(),
-                                                        /*.copyCtr=*/ QtPrivate::QMetaTypeForType<void*>::getCopyCtr(),
-                                                        /*.moveCtr=*/ QtPrivate::QMetaTypeForType<void*>::getMoveCtr(),
-                                                        /*.dtor=*/ QtPrivate::QMetaTypeForType<void*>::getDtor(),
+                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
+                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
+                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::moveCtr,
+                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::dtor,
                                                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
                                                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
                                                         /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
                                                         /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
                                                         /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
-                                                        /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<void*>::getLegacyRegister(),
+                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::legacyRegisterOp,
                                                         /*.size=*/ sizeof(void*),
                                                         /*.alignment=*/ alignof(void*),
                                                         /*.typeId=*/ QMetaType::UnknownType,
@@ -1194,16 +1218,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
-                                                            /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<qint16>::getDefaultCtr(),
-                                                            /*.copyCtr=*/ QtPrivate::QMetaTypeForType<qint16>::getCopyCtr(),
-                                                            /*.moveCtr=*/ QtPrivate::QMetaTypeForType<qint16>::getMoveCtr(),
-                                                            /*.dtor=*/ QtPrivate::QMetaTypeForType<qint16>::getDtor(),
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::dtor,
                                                             /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint16>::equals,
                                                             /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint16>::lessThan,
                                                             /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint16>::debugStream,
                                                             /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamOut,
                                                             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<qint16>::getLegacyRegister(),
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::legacyRegisterOp,
                                                             /*.size=*/ sizeof(qint16),
                                                             /*.alignment=*/ alignof(qint16),
                                                             /*.typeId=*/ QMetaType::UnknownType,
@@ -1230,16 +1254,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
-                                                            /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<qint64>::getDefaultCtr(),
-                                                            /*.copyCtr=*/ QtPrivate::QMetaTypeForType<qint64>::getCopyCtr(),
-                                                            /*.moveCtr=*/ QtPrivate::QMetaTypeForType<qint64>::getMoveCtr(),
-                                                            /*.dtor=*/ QtPrivate::QMetaTypeForType<qint64>::getDtor(),
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::dtor,
                                                             /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint64>::equals,
                                                             /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint64>::lessThan,
                                                             /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint64>::debugStream,
                                                             /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamOut,
                                                             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<qint64>::getLegacyRegister(),
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::legacyRegisterOp,
                                                             /*.size=*/ sizeof(qint64),
                                                             /*.alignment=*/ alignof(qint64),
                                                             /*.typeId=*/ QMetaType::UnknownType,
@@ -1266,16 +1290,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
-                                                            /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<qint8>::getDefaultCtr(),
-                                                            /*.copyCtr=*/ QtPrivate::QMetaTypeForType<qint8>::getCopyCtr(),
-                                                            /*.moveCtr=*/ QtPrivate::QMetaTypeForType<qint8>::getMoveCtr(),
-                                                            /*.dtor=*/ QtPrivate::QMetaTypeForType<qint8>::getDtor(),
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::dtor,
                                                             /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint8>::equals,
                                                             /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint8>::lessThan,
                                                             /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint8>::debugStream,
                                                             /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamOut,
                                                             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<qint8>::getLegacyRegister(),
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::legacyRegisterOp,
                                                             /*.size=*/ sizeof(qint8),
                                                             /*.alignment=*/ alignof(qint8),
                                                             /*.typeId=*/ QMetaType::UnknownType,
@@ -1303,16 +1327,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                          QMetaType metaType = createMetaType(typeName,
                                                              true,
-                                                             /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getDefaultCtr(),
-                                                             /*.copyCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getCopyCtr(),
-                                                             /*.moveCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getMoveCtr(),
-                                                             /*.dtor=*/ QtPrivate::QMetaTypeForType<qint32>::getDtor(),
+                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::defaultCtr,
+                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::copyCtr,
+                                                             /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::moveCtr,
+                                                             /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::dtor,
                                                              /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint32>::equals,
                                                              /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint32>::lessThan,
                                                              /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint32>::debugStream,
                                                              /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamOut,
                                                              /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamIn,
-                                                             /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<qint32>::getLegacyRegister(),
+                                                             /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::legacyRegisterOp,
                                                              /*.size=*/ sizeof(qint32),
                                                              /*.alignment=*/ alignof(qint32),
                                                              /*.typeId=*/ QMetaType::UnknownType,
@@ -1341,16 +1365,16 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #else
                     QMetaType metaType = createMetaType(typeName,
                                                         true,
-                                                        /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getDefaultCtr(),
-                                                        /*.copyCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getCopyCtr(),
-                                                        /*.moveCtr=*/ QtPrivate::QMetaTypeForType<qint32>::getMoveCtr(),
-                                                        /*.dtor=*/ QtPrivate::QMetaTypeForType<qint32>::getDtor(),
+                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::defaultCtr,
+                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::copyCtr,
+                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::moveCtr,
+                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::dtor,
                                                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint32>::equals,
                                                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint32>::lessThan,
                                                         /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint32>::debugStream,
                                                         /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamOut,
                                                         /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamIn,
-                                                        /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<qint32>::getLegacyRegister(),
+                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::legacyRegisterOp,
                                                         /*.size=*/ sizeof(qint32),
                                                         /*.alignment=*/ alignof(qint32),
                                                         /*.typeId=*/ QMetaType::UnknownType,
@@ -1476,16 +1500,16 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMeta
 #else
             QMetaType _metaType = createMetaType(typeName,
                                                 true,
-                                                /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<void*>::getDefaultCtr(),
-                                                /*.copyCtr=*/ QtPrivate::QMetaTypeForType<void*>::getCopyCtr(),
-                                                /*.moveCtr=*/ QtPrivate::QMetaTypeForType<void*>::getMoveCtr(),
-                                                /*.dtor=*/ QtPrivate::QMetaTypeForType<void*>::getDtor(),
+                                                /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
+                                                /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
+                                                /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::moveCtr,
+                                                /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::dtor,
                                                 /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
                                                 /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
                                                 /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
                                                 /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
                                                 /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
-                                                /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<void*>::getLegacyRegister(),
+                                                /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::legacyRegisterOp,
                                                 /*.size=*/ sizeof(void*),
                                                 /*.alignment=*/ alignof(void*),
                                                 /*.typeId=*/ QMetaType::UnknownType,
@@ -2233,7 +2257,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getListOfExtraSignal
         if(QSharedPointer<QtJambiLink> sender = QtJambiLink::fromNativeId(sender__id)){
             if(sender->isSharedPointer()){
                 QSharedPointerToQObjectLink* slink = static_cast<QSharedPointerToQObjectLink*>(sender.data());
-                return slink->pointerContainer()->getListOfExtraSignal(env);
+                return slink->getListOfExtraSignal(env);
             }else{
                 PointerToQObjectLink* plink = static_cast<PointerToQObjectLink*>(sender.data());
                 return plink->getListOfExtraSignal(env);
@@ -2245,6 +2269,1128 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getListOfExtraSignal
     return nullptr;
 }
 
+static const char* FileNameDelim = "#";
+static const char* FileNamePrefix1 = "classpath:";
+static const char* FileNamePrefix2 = "/:classpath:";
+
+class QClassPathEntry : public QSharedData{
+public:
+    virtual ~QClassPathEntry();
+    virtual QString classPathEntryName() const = 0;
+};
+
+class QFSEntryEngine final : public QFSFileEngine, public QClassPathEntry {
+public:
+    QFSEntryEngine(const QString& file, const QString& classPathEntryFileName)
+                        : QFSFileEngine(file),
+                          QClassPathEntry(),
+                          m_classPathEntryFileName(classPathEntryFileName)
+    {}
+
+    QString classPathEntryName() const override {
+        return m_classPathEntryFileName;
+    }
+private:
+    QString m_classPathEntryFileName;
+};
+
+class QJarEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
+public:
+    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName);
+    ~QJarEntryEngine() override;
+
+    void setFileName(const QString &file) override;
+
+    bool copy(const QString &newName) override;
+
+    bool caseSensitive() const override {
+        return true;
+    }
+
+    bool close() override;
+
+    qint64 size() const override;
+
+    bool seek(qint64 offset) override;
+
+    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const override;
+
+    FileFlags fileFlags(FileFlags type=FileInfoAll) const override;
+
+    QString fileName(FileName file=DefaultName) const override;
+
+    QDateTime fileTime(FileTime time) const override;
+
+    bool open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+             ,std::optional<QFile::Permissions> permissions = std::nullopt
+#endif
+              ) override;
+
+    qint64 pos() const override;
+
+    qint64 read(char *data, qint64 maxlen) override;
+
+    QString classPathEntryName() const override {
+        return m_classPathEntryFileName;
+    }
+    bool isValid() const { return m_valid; }
+private:
+    bool reset();
+    bool reopen();
+    bool closeInternal();
+    QString m_entryFileName;
+    JObjectWrapper m_entry;
+    JObjectWrapper m_myJarFile;
+    JObjectWrapper m_stream;
+    qint64 m_pos;
+    QIODevice::OpenMode m_openMode;
+    bool m_valid;
+    bool m_directory;
+    QString m_name;
+    bool m_closed;
+    QString m_classPathEntryFileName;
+};
+
+QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName)
+    : QAbstractFileEngine(),
+      QClassPathEntry(),
+      m_entryFileName(),
+      m_entry(),
+      m_myJarFile(env, myJarFile),
+      m_stream(),
+      m_pos(-1),
+      m_openMode(QIODevice::NotOpen),
+      m_valid(false),
+      m_directory(isDirectory),
+      m_name(),
+      m_closed(false),
+      m_classPathEntryFileName(classPathEntryFileName)
+{
+    QJarEntryEngine::setFileName(fileName);
+}
+
+QJarEntryEngine::~QJarEntryEngine(){
+    try {
+        QJarEntryEngine::close();
+    } catch(const JavaException& exn) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            exn.report(env);
+        }
+    } catch(...){}
+}
+
+void QJarEntryEngine::setFileName(const QString &fileName){
+    m_entry = nullptr;
+    if (m_closed)
+         return;
+
+    m_entryFileName = fileName;
+    if (m_entryFileName.isEmpty()) {
+        m_name = "";
+        m_valid = true;
+        m_directory = true;
+        return;
+    }
+
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 400)
+        m_entry = Java::QtJambi::QtJambiResources$MyJarFile::getJarEntry(env, m_myJarFile.object(), qtjambi_cast<jstring>(env, m_entryFileName));
+
+        if (!m_entry.object()) {
+            if(m_directory)
+                m_name = fileName;
+            else
+                m_valid = false;
+        } else {
+            m_name = qtjambi_cast<QString>(env, Java::Runtime::ZipEntry::getName(env, m_entry.object()));
+            m_valid = true;
+        }
+    }
+}
+
+bool QJarEntryEngine::closeInternal() {
+    if(m_stream) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            try {
+                Java::Runtime::InputStream::close(env, m_stream.object());
+            } catch(const JavaException&) {
+            }
+            m_stream = JObjectWrapper();
+            Java::QtJambi::QtJambiResources$MyJarFile::put(env, m_myJarFile.object());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool QJarEntryEngine::copy(const QString &newName){
+
+    QFile newFile(newName);
+    if (newFile.exists())
+        return false;
+
+    if (!open(QFile::ReadOnly))
+        return false;
+
+    if (!newFile.open(QFile::WriteOnly)) {
+        closeInternal();
+        return false;
+    }
+
+    auto sz = size();
+    decltype(sz) i = 0;
+
+    if (sz > 0) {
+        const decltype(sz) BUFFER_SIZE = 64*1024;	// 64Kb will do us
+        char* buffer = new char[BUFFER_SIZE];
+        while (true){
+            auto r = read(buffer, BUFFER_SIZE);
+            if(r>0){
+                i += r;
+                newFile.write(buffer, r);
+            }else{
+                break;
+            }
+        }
+    }
+
+    newFile.close();
+    if (!closeInternal())
+        return false;
+
+    return (i == sz);
+}
+
+bool QJarEntryEngine::close(){
+    bool bf = closeInternal();
+
+    if(!m_closed) {
+        // We really want to do this some how and not leave it to disposed()
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            Java::QtJambi::QtJambiResources$MyJarFile::put(env, m_myJarFile.object());
+        }
+        // the reference this instance already had on construction
+        // We do not null the reference here, since we could need to reopen() on handle
+        // so we record the state separately with boolean m_closed flag.
+        m_closed = true;
+    }
+
+    return bf;
+}
+
+QStringList QJarEntryEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const{
+    QStringList result;
+    if (m_directory){
+        if (!(filters & QDir::NoDotAndDotDot) && (filters & QDir::Dirs)) {
+            result << ".";
+            if (m_entryFileName.length() > 0)
+                result << "..";
+        }
+        if (!(filters & (QDir::Readable | QDir::Writable | QDir::Executable)))
+            filters.setFlag(QDir::Readable);
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            Java::QtJambi::QtJambiResources$MyJarFile::entryList(env, m_myJarFile.object(),
+                                               qtjambi_cast<jobject>(env, &result),
+                                               qtjambi_cast<jobject>(env, filters),
+                                               qtjambi_cast<jobject>(env, filterNames),
+                                               qtjambi_cast<jstring>(env, m_name));
+        }
+    }
+    return result;
+}
+
+QAbstractFileEngine::FileFlags QJarEntryEngine::fileFlags(FileFlags type) const{
+    QAbstractFileEngine::FileFlags flags;
+
+    QFileInfo info;
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+        info = QFileInfo(qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())));
+    }
+     if (info.exists()) {
+         flags |= ExistsFlag;
+         if(info.isReadable()){
+             flags |= ReadUserPerm;
+         }
+         if(info.isWritable()){
+             flags |= WriteUserPerm;
+         }
+         if(info.isExecutable()){
+             flags |= ExeUserPerm;
+         }
+     }
+
+     if (m_directory)
+         flags |= DirectoryType;
+     else
+         flags |= FileType;
+
+
+     return FileFlags(flags & type);
+}
+
+QString QJarEntryEngine::fileName(FileName file) const{
+    QLatin1String fileNamePrefix1(FileNamePrefix1);
+    QLatin1String fileNameDelim(FileNameDelim);
+    QString entryFileName = m_entryFileName;
+
+    QString s;
+#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
+    if (file == LinkName)
+        s = "";
+    else
+#endif
+        if (file == DefaultName
+            || file == AbsoluteName
+            || file == CanonicalName) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            s = fileNamePrefix1 + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + fileNameDelim + entryFileName;
+        }
+    } else if (file == BaseName) {
+        auto pos = m_entryFileName.lastIndexOf("/");
+        s = pos >= 0 ? m_entryFileName.mid(pos + 1) : entryFileName;
+    } else if (file == PathName) {
+        auto pos = m_entryFileName.lastIndexOf("/");
+        s = pos > 0 ? m_entryFileName.mid(0, pos) : "";
+    } else if (file == CanonicalPathName || file == AbsolutePathName) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            s = fileNamePrefix1 + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + fileNameDelim + fileName(PathName);
+        }
+    }
+    return s;
+}
+
+QDateTime QJarEntryEngine::fileTime(FileTime) const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+        if (!m_entry) {
+            QFileInfo info;
+                info = QFileInfo(qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())));
+
+            if (info.exists())
+                return info.lastModified();
+        }else{
+            return qtjambi_cast<QDateTime>(env, Java::QtJambi::QtJambiResources$MyJarFile::fileTime(env, m_entry.object()));
+        }
+    }
+    return QDateTime();
+}
+
+bool QJarEntryEngine::open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+         ,std::optional<QFile::Permissions>
+#endif
+                           ) {
+    bool bf = false;
+    closeInternal();  // reset state to open again
+
+    if (m_entry) {
+        if (!openMode.testFlag(QIODevice::WriteOnly) && !openMode.testFlag(QIODevice::Append)) {
+            if(JNIEnv* env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+                // There is a usage case where the application may have called close() on the handle and is now calling open() again.
+                // This can also happen implicitly if we need to rewind() on the Jar stream
+                int oldRefCount = Java::QtJambi::QtJambiResources$MyJarFile::getOrReopen(env, m_myJarFile.object());  // increment reference while we have stream open
+
+                m_stream = Java::QtJambi::QtJambiResources$MyJarFile::getInputStream(env, m_myJarFile.object(), m_entry.object());
+                if (m_stream) {
+                    //if (openMode.isSet(QIODevice.OpenModeFlag.Text))
+                    //    m_reader = new BufferedReader(new InputStreamReader(m_stream));
+                    m_pos = 0;
+                    m_openMode = openMode;
+                    m_closed = false;  // this maybe due to reopen() or first open()
+                    bf = true;
+                }else{
+                    if(oldRefCount >= 0) {
+                        if(oldRefCount == 0)
+                            Java::QtJambi::QtJambiResources$MyJarFile::put(env, m_myJarFile.object()); // rollback extra reference
+                        Java::QtJambi::QtJambiResources$MyJarFile::put(env, m_myJarFile.object()); // rollback reference
+                    }
+                }
+            }
+        }
+    }
+    return bf;
+}
+
+qint64 QJarEntryEngine::pos() const {
+    return m_pos;
+}
+
+qint64 QJarEntryEngine::size() const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        return m_entry ? Java::Runtime::ZipEntry::getSize(env, m_entry.object()) : 0;
+    }else return 0;
+}
+
+qint64 QJarEntryEngine::read(char *data, qint64 maxlen) {
+    if(m_stream){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            try{
+                QtJambiScope __qtjambi_scope;
+                jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data, jsize(qMin(qint64(INT_MAX), maxlen)));
+                return Java::Runtime::InputStream::read(env, m_stream.object(), _data);
+            }catch(const JavaException& exn){
+                exn.report(env);
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+
+bool QJarEntryEngine::reset() {
+    if (!m_stream)
+        return false;  // not open
+    if (m_pos == 0)
+        return true;  // already open and at start
+    return reopen();
+}
+
+bool QJarEntryEngine::reopen() {
+    if (!m_stream)
+        return false;  // not open
+    QIODevice::OpenMode om = m_openMode;  // saved OpenMode
+    if(closeInternal())
+        return open(om);
+    return false;
+}
+
+bool QJarEntryEngine::seek(qint64 offset) {
+    if(offset < 0)
+        return false;
+
+    if (!open(m_openMode))  // open() will automatically force a close()
+        return false;
+    if (offset < m_pos) {
+        if (!reset())  // auto-rewind
+            return false;
+    }
+
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+        while (m_pos < offset) {
+            qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
+
+            // InputStream#skip(long) may not skip all the requested bytes in a single invocation
+            qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(), skipBytesRemaining);
+            if(skipBytesActual > 0)
+                m_pos += skipBytesActual;	// The actual number of bytes skipped
+            else
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+class QUrlEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
+public:
+    QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName, const QString& classPathEntryFileName);
+
+    ~QUrlEntryEngine() override;
+
+    qint64 read(char *data, qint64 maxlen) override;
+
+    bool open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+             ,std::optional<QFile::Permissions> permissions = std::nullopt
+#endif
+              ) override;
+
+    bool close() override;
+
+    qint64 size() const override{
+        return m_size;
+    }
+
+    QString fileName(FileName=DefaultName) const override{
+        return m_fileName;
+    }
+
+    bool caseSensitive() const override {
+        return true;
+    }
+
+    FileFlags fileFlags(FileFlags) const override {
+        return ExistsFlag | FileType | ReadGroupPerm | ReadOtherPerm | ReadOwnerPerm | ReadUserPerm;
+    }
+
+    QString classPathEntryName() const override {
+        return m_classPathEntryFileName;
+    }
+
+private:
+    QString m_classPathEntryFileName;
+    QString m_fileName;
+    JObjectWrapper m_connection;
+    JObjectWrapper m_inputStream;
+    qint64 m_size;
+};
+
+class QClassPathEngine final : public QAbstractFileEngine {
+
+public:
+    QClassPathEngine(const QString& fileName) {
+        QClassPathEngine::setFileName(fileName);
+    }
+
+    ~QClassPathEngine() override;
+
+    void setFileName(const QString &fileName) override;
+
+    bool copy(const QString& newName) override;
+
+    bool setPermissions(uint perms) override;
+
+    bool caseSensitive() const override{
+        return true;
+    }
+
+    bool close() override;
+
+    QStringList entryList(QDir::Filters filters, const QStringList& filterNames) const override;
+
+    FileFlags fileFlags(FileFlags type=FileInfoAll) const override;
+
+    QString fileName(FileName file=DefaultName) const override;
+
+    QDateTime fileTime(FileTime time) const override;
+
+    bool link(const QString& newName) override;
+
+    bool mkdir(const QString& dirName, bool createParentDirectories
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+               ,std::optional<QFile::Permissions> permissions = std::nullopt
+#endif
+               ) const override;
+
+    bool open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+             ,std::optional<QFile::Permissions> permissions = std::nullopt
+#endif
+              ) override;
+
+    qint64 pos() const override;
+
+    qint64 read(char *data, qint64 maxlen) override;
+
+    qint64 readLine(char *data, qint64 maxlen) override;
+
+    bool remove() override;
+
+    bool rename(const QString& newName) override;
+
+    bool rmdir(const QString& dirName, bool recursive) const override;
+
+    bool seek(qint64 offset) override;
+
+    QString owner(FileOwner owner) const override;
+
+    uint ownerId(FileOwner owner) const override;
+
+    bool isRelativePath() const override {
+        return false;
+    }
+
+    bool isSequential() const override;
+
+    bool setSize(qint64 sz) override;
+
+    qint64 size() const override;
+
+    qint64 write(const char *data, qint64 len) override;
+
+    Iterator* beginEntryList(QDir::Filters filters, const QStringList& nameFilters) override;
+private:
+    bool addFromPath(JNIEnv* env, jobject url, const QString& fileName);
+    QAbstractFileEngine* getFirstEngine() const;
+
+    QString m_fileName = "";
+    QString m_baseName = "";
+    QString m_selectedSource = "*";
+    QList<QAbstractFileEngine*> m_engines;
+    mutable QMutex m_mutex;
+};
+
+class QClassPathEngineIterator final : public QAbstractFileEngineIterator{
+public:
+    QClassPathEngineIterator(const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters);
+    ~QClassPathEngineIterator() override = default;
+    QString next() override;
+    bool hasNext() const override;
+    QString currentFileName() const override;
+    QListIterator<QString> m_iterator;
+    QString m_current;
+};
+
+QClassPathEngineIterator::QClassPathEngineIterator(const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters)
+    : QAbstractFileEngineIterator(filters, nameFilters),
+      m_iterator(entries),
+      m_current(m_iterator.hasNext() ? m_iterator.peekNext() : "")
+{
+}
+
+QString QClassPathEngineIterator::next() {
+    m_current = m_iterator.peekNext();
+    return m_iterator.next();
+}
+
+bool QClassPathEngineIterator::hasNext() const{
+    return m_iterator.hasNext();
+}
+
+QString QClassPathEngineIterator::currentFileName() const{
+    return m_current;
+}
+
+
+QClassPathEntry::~QClassPathEntry(){}
+
+QClassPathEngine::~QClassPathEngine(){
+    try{
+        QClassPathEngine::close();
+    } catch(const JavaException& exn) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            exn.report(env);
+        }
+    } catch(...){}
+    qDeleteAll(m_engines);
+    m_engines.clear();
+}
+
+QAbstractFileEngine* QClassPathEngine::getFirstEngine() const{
+    QMutexLocker locker(&m_mutex);
+    return m_engines.value(0);
+}
+
+void QClassPathEngine::setFileName(const QString &fileName)
+{
+    if (fileName==QClassPathEngine::fileName())
+        return;
+    m_engines.clear();
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+        QLatin1String fileNamePrefix1(FileNamePrefix1);
+        QLatin1String fileNamePrefix2(FileNamePrefix2);
+
+        QClassPathEngine::close();
+        if(fileName.startsWith(fileNamePrefix2)) {
+            m_fileName = fileName.mid(fileNamePrefix2.size());
+        }else {
+            if (!fileName.startsWith(fileNamePrefix1)){
+                JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Invalid format of path: '%1'").arg(fileName)) QTJAMBI_STACKTRACEINFO );
+                return;
+            }
+            m_fileName = fileName.mid(fileNamePrefix1.size());
+        }
+
+        auto idx = m_fileName.indexOf("#");
+        m_selectedSource = "*";
+        if (idx == -1) {
+            m_baseName = m_fileName;
+        } else {
+            m_baseName = m_fileName.mid(idx+1);
+            m_selectedSource = m_fileName.mid(0, idx);
+        }
+
+        auto last = m_baseName.length();
+        decltype(last) first = 0;
+
+        while (first < last && m_baseName[first] == '/')
+            ++first;
+        if (m_baseName.endsWith("/"))
+            --last;
+
+        if (last < first)
+            m_baseName = "";
+        else
+            m_baseName = m_baseName.mid(first, last-first).replace('\\', '/');
+
+        if (m_selectedSource=="*") {
+            jobject pathToJarFiles = Java::QtJambi::QtJambiResources::pathToJarFiles(env, qtjambi_cast<jstring>(env, m_baseName));
+            jobject iter = qtjambi_collection_iterator(env, pathToJarFiles);
+
+            if (qtjambi_iterator_has_next(env, iter)) { // Its at least a directory which exists in jar files
+                while(qtjambi_iterator_has_next(env, iter)) {
+                    QString pathToJar = qtjambi_cast<QString>(env, qtjambi_iterator_next(env, iter));
+                    QUrl qUrl = QUrl::fromLocalFile(pathToJar);
+                    jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, qUrl.toString()));
+                    addFromPath(env, url, m_baseName);
+                }
+            } else { // Its a file or directory, look for jar files which contains its a directory
+
+                QString parentSearch;
+
+                auto pos = m_baseName.lastIndexOf("/");
+                if (pos >= 0)
+                    parentSearch = m_baseName.mid(0, pos);
+
+                // This is all wrong... we need to maintain the ordered list of the mix then attempt
+                //  to populate from each in turn (if we are exhaustive) otherwise
+                pathToJarFiles = Java::QtJambi::QtJambiResources::pathToJarFiles(env, qtjambi_cast<jstring>(env, parentSearch));
+                iter = qtjambi_collection_iterator(env, pathToJarFiles);
+                while(qtjambi_iterator_has_next(env, iter)) {
+                    QString pathToJar = qtjambi_cast<QString>(env, qtjambi_iterator_next(env, iter));
+                    QUrl qUrl = QUrl::fromLocalFile(pathToJar);
+                    jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, qUrl.toString()));
+                    addFromPath(env, url, m_baseName);
+                }
+
+                jobject classPathDirs = Java::QtJambi::QtJambiResources::classPathDirs(env);
+                iter = qtjambi_collection_iterator(env, classPathDirs);
+                while(qtjambi_iterator_has_next(env, iter)) {
+                    try {
+                        jobject path = qtjambi_iterator_next(env, iter);
+                        // FIXME: This maybe already URL or raw dir, I think we should just make this a
+                        //  dir in the native String format
+                        addFromPath(env, Java::QtJambi::QtJambiResources::makeUrl(env, path), m_baseName);
+                    } catch (const JavaException& e) {
+                        e.report(env);
+                    }
+                }
+            }
+        } else{
+            try {
+                jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, m_selectedSource));
+                addFromPath(env, url, m_baseName);
+            } catch (const JavaException& e) {
+                e.report(env);
+            }
+        }
+    }
+}
+
+bool QClassPathEngine::copy(const QString& newName) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->copy(newName);
+    return false;
+}
+
+bool QClassPathEngine::setPermissions(uint perms) {
+    QMutexLocker locker(&m_mutex);
+    for(QAbstractFileEngine* engine : m_engines) {
+        if(engine->setPermissions(perms))
+            return true;
+    }
+    return false;
+}
+
+bool QClassPathEngine::close() {
+    bool result = false;
+    if(QAbstractFileEngine* afe = getFirstEngine()){
+        result |= afe->close();
+    }
+    return result;
+}
+
+QStringList QClassPathEngine::entryList(QDir::Filters filters, const QStringList& filterNames) const {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    QStringList result;
+    for (QAbstractFileEngine* engine : engines) {
+        result << engine->entryList(filters, filterNames);
+    }
+    result.removeDuplicates();
+    return result;
+}
+
+QAbstractFileEngine::FileFlags QClassPathEngine::fileFlags(FileFlags type) const {
+    FileFlags flags;
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+
+    for (QAbstractFileEngine* engine : engines)
+        flags |= engine->fileFlags(type);
+
+    if (fileName(PathName)=="/")
+        flags |= QAbstractFileEngine::RootFlag;
+
+    flags.setFlag(LocalDiskFlag, false);
+
+    return flags;
+}
+
+QString QClassPathEngine::fileName(FileName file) const {
+    QString result;
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    if(QAbstractFileEngine* afe = engines.value(0)){
+        QString classPathEntry;
+        if (engines.size() == 1) {
+            if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
+                classPathEntry = cpe->classPathEntryName();
+            else{
+                if(JNIEnv* env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    JavaException::raiseRuntimeException(env, "Bogus engine in class path file engine" QTJAMBI_STACKTRACEINFO );
+                }else{
+                    qWarning("Bogus engine in class path file engine");
+                }
+            }
+        } else {
+            classPathEntry = "*";
+        }
+
+        switch(file){
+        case DefaultName:
+            result = QLatin1String(FileNamePrefix1) + m_fileName;
+            break;
+        case CanonicalName:
+            result = fileName(CanonicalPathName) + "/" + fileName(BaseName);
+            break;
+        case AbsoluteName:
+#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
+        case LinkName:
+#endif
+            result = QLatin1String(FileNamePrefix1) + classPathEntry + QLatin1String(FileNameDelim) + m_baseName;
+            break;
+        case BaseName:{
+                auto pos = m_baseName.lastIndexOf('/');
+                result = pos > 0 ? m_baseName.mid(pos + 1) : m_baseName;
+            }
+            break;
+        case PathName:{
+                auto pos = m_baseName.lastIndexOf('/');
+                result = pos > 0 ? m_baseName.mid(0, pos) : "";
+            }
+            break;
+        case AbsolutePathName:
+            result = FileNamePrefix1 + classPathEntry + FileNameDelim + fileName(PathName);
+            break;
+        case CanonicalPathName:
+            result = afe->fileName(file);
+            break;
+        default:
+            result = FileNamePrefix1 + classPathEntry + FileNameDelim + fileName(PathName);
+            break;
+        }
+    }
+    return result;
+}
+
+QDateTime QClassPathEngine::fileTime(FileTime time) const {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->fileTime(time);
+    return QDateTime();
+}
+
+bool QClassPathEngine::link(const QString& newName) {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines) {
+        if (engine->link(newName))
+            return true;
+    }
+    return false;
+}
+
+bool QClassPathEngine::mkdir(const QString& dirName, bool createParentDirectories
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+                            ,std::optional<QFile::Permissions> permissions
+#endif
+                             ) const {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines) {
+        if (engine->mkdir(dirName, createParentDirectories
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+                                 ,permissions
+#endif
+                          ))
+            return true;
+    }
+    return false;
+}
+
+bool QClassPathEngine::open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+                    ,std::optional<QFile::Permissions> permissions
+#endif
+                                                 ) {
+    if(QAbstractFileEngine* afe = getFirstEngine()){
+        bool result = afe->open(openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+                                  ,permissions
+#endif
+                                  );
+        if(result){
+            // without this, engine remains at UnspecifiedError which avoids QNetworkAccessManager to work right.
+            setError(QFileDevice::NoError, "");
+        }
+        return result;
+    }
+    return false;
+}
+
+qint64 QClassPathEngine::pos() const {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->pos();
+    return -1;
+}
+
+qint64 QClassPathEngine::read(char *data, qint64 maxlen) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->read(data, maxlen);
+    return -1;
+}
+
+qint64 QClassPathEngine::readLine(char *data, qint64 maxlen) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->readLine(data, maxlen);
+    return -1;
+}
+
+bool QClassPathEngine::remove() {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->remove();
+    return false;
+}
+
+bool QClassPathEngine::rename(const QString& newName) {
+    bool ok = true;
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines)
+        ok = ok && engine->rename(newName);
+    return ok;
+}
+
+bool QClassPathEngine::rmdir(const QString& dirName, bool recursive) const {
+    bool ok = true;
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines)
+        ok = ok && engine->rmdir(dirName, recursive);
+    return ok;
+}
+
+bool QClassPathEngine::seek(qint64 offset) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->seek(offset);
+    return false;
+}
+
+QString QClassPathEngine::owner(FileOwner owner) const {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines){
+        QString result = engine->owner(owner);
+        if(!result.isEmpty())
+            return result;
+    }
+    return "";
+}
+
+uint QClassPathEngine::ownerId(FileOwner owner) const {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines){
+        uint result = engine->ownerId(owner);
+        if (result != uint(-2))
+            return result;
+    }
+    return uint(-2);
+}
+
+bool QClassPathEngine::isSequential() const {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    for (QAbstractFileEngine* engine : engines) {
+        if (engine->isSequential())
+            return true;
+    }
+    return false;
+}
+
+bool QClassPathEngine::setSize(qint64 sz) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->setSize(sz);
+    return false;
+}
+
+qint64 QClassPathEngine::size() const{
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->size();
+    return -1;
+}
+
+qint64 QClassPathEngine::write(const char *data, qint64 maxlen) {
+    if(QAbstractFileEngine* afe = getFirstEngine())
+        return afe->write(data, maxlen);
+    return -1;
+}
+
+QAbstractFileEngineIterator* QClassPathEngine::beginEntryList(QDir::Filters filters, const QStringList& nameFilters) {
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        engines = m_engines;
+    }
+    QStringList entries;
+    for (QAbstractFileEngine* engine : engines){
+        entries << engine->entryList(filters, nameFilters);
+    }
+    return new QClassPathEngineIterator(entries, filters, nameFilters);
+}
+
+bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName) {
+    // If it is a plain file on the disk, just read it from the disk
+    QString urlPath = qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, url));
+    if(urlPath.startsWith("file:")){
+        QFileInfo file(QUrl(urlPath).toLocalFile());
+        if (file.isDir()) {
+            file = QFileInfo(file.dir(), fileName);
+            if(file.exists()){
+                QMutexLocker locker(&m_mutex);
+                m_engines << new QFSEntryEngine(file.absoluteFilePath(), urlPath);
+                return true;
+            }else{
+                return false;
+            }
+        }else if(urlPath.endsWith(".jar")){
+            urlPath = "jar:" + urlPath + "!/";
+            url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, urlPath));
+        }
+    }else if(urlPath.endsWith(".jar")){
+        urlPath = "jar:" + urlPath + "!/";
+        url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, urlPath));
+    }
+    if(urlPath.startsWith("jar:")){
+        jobject jarFile = Java::QtJambi::QtJambiResources::resolveUrlToMyJarFile(env, url);
+        bool isDirectory = Java::QtJambi::QtJambiResources::isDirectory(env, jarFile, qtjambi_cast<jstring>(env, fileName));
+        QJarEntryEngine* engine = new QJarEntryEngine(env, jarFile, fileName, isDirectory, urlPath);
+        if(engine->isValid()) {
+            QMutexLocker locker(&m_mutex);
+            m_engines << engine;
+            return true;
+        }else{
+            delete engine;
+        }
+    }else{
+        urlPath = urlPath + fileName;
+        url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, urlPath));
+        QUrlEntryEngine* engine = new QUrlEntryEngine(env, url, fileName, urlPath);
+        if(engine->size()>0) {
+            QMutexLocker locker(&m_mutex);
+            m_engines << engine;
+            return true;
+        }else{
+            delete engine;
+        }
+    }
+    return false;
+}
+
+QUrlEntryEngine::QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName, const QString& classPathEntryFileName)
+    : QAbstractFileEngine(),
+      QClassPathEntry(),
+      m_classPathEntryFileName(classPathEntryFileName),
+      m_fileName(fileName),
+      m_connection(env, Java::Runtime::URL::openConnection(env, url)),
+      m_inputStream(),
+      m_size(Java::Runtime::URLConnection::getContentLengthLong(env, m_connection.object()))
+{
+}
+
+QUrlEntryEngine::~QUrlEntryEngine(){
+    QUrlEntryEngine::close();
+}
+
+qint64 QUrlEntryEngine::read(char *data, qint64 maxlen) {
+    if(m_inputStream){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 400)
+            try{
+                QtJambiScope __qtjambi_scope;
+                jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data, jsize(qMin(qint64(INT_MAX), maxlen)));
+                return Java::Runtime::InputStream::read(env, m_inputStream.object(), _data);
+            }catch(const JavaException& exn){
+                exn.report(env);
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+
+bool QUrlEntryEngine::open(QIODevice::OpenMode openMode
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+         ,std::optional<QFile::Permissions>
+#endif
+        ) {
+    if((openMode & QIODevice::ReadOnly) && !m_inputStream){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 400)
+            try{
+                m_inputStream = JObjectWrapper(env, Java::Runtime::URLConnection::getInputStream(env, m_connection.object()));
+            }catch(const JavaException& exn){
+                exn.report(env);
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool QUrlEntryEngine::close() {
+    if(m_inputStream){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 400)
+            try{
+                Java::Runtime::InputStream::close(env, m_inputStream.object());
+                m_inputStream = JObjectWrapper();
+                return true;
+            }catch(const JavaException& exn){
+                exn.report(env);
+            }
+        }
+    }
+    return false;
+}
+
 class QClassPathFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
@@ -2252,9 +3398,9 @@ public:
     {
         QAbstractFileEngine *rv;
         if (fileName.startsWith("classpath:"))
-            rv = newClassPathFileEngine(fileName);
+            rv = new QClassPathEngine(fileName);
         else if (fileName.startsWith("/:classpath:"))
-            rv = newClassPathFileEngine(fileName.mid(2));
+            rv = new QClassPathEngine(fileName.mid(2));
         else
             rv = nullptr;
         return rv;
@@ -2262,22 +3408,6 @@ public:
 private:
     QClassPathFileEngineHandler(){}
     ~QClassPathFileEngineHandler() override {}
-    QAbstractFileEngine *newClassPathFileEngine(const QString &fileName) const
-    {
-        if(JNIEnv *env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-            jstring javaFileName = qtjambi_from_qstring(env, fileName);
-            jobject javaFileEngine = Java::QtCore::QClassPathEngine::newInstance(env, javaFileName);
-            QAbstractFileEngine * fileEngine = nullptr;
-            QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaFileEngine);
-            Q_ASSERT(link);
-            if(link){
-                link->setCppOwnership(env);
-                fileEngine = reinterpret_cast<QAbstractFileEngine *>(link->pointer());
-            }
-            return fileEngine;
-        }else return nullptr;
-    }
     static QClassPathFileEngineHandler INSTANCE;
 };
 
@@ -2418,8 +3548,12 @@ void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& cl
         }
         QByteArray cborData = cborValue.toCborValue().toCbor();
         QByteArray rawMetaData;
+#ifdef QT_MOC_EXPORT_PLUGIN_V2
+        rawMetaData.reserve(4 + cborData.size());
+#else
         rawMetaData.reserve(16 + cborData.size());
         rawMetaData.append("QTMETADATA !");
+#endif
         rawMetaData.append(char(0));
         rawMetaData.append(char(QT_VERSION_MAJOR));
         rawMetaData.append(char(QT_VERSION_MINOR));

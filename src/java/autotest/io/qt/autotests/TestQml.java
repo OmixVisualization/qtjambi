@@ -94,12 +94,12 @@ import io.qt.widgets.QGraphicsScene;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
-public class TestQml extends QApplicationTest{
-
+public class TestQml extends ApplicationInitializer{
+	
 	@AfterClass
     public static void testDispose() throws Exception {
 		RandomNumberGenerator.instance = null;
-		QApplicationTest.testDispose();
+		ApplicationInitializer.testDispose();
 	}
 	
 	@SuppressWarnings("serial")
@@ -270,7 +270,7 @@ public class TestQml extends QApplicationTest{
 			QtUtilities.loadQtLibrary("QuickControls2");
 		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickParticles"))
 			QtUtilities.loadQtLibrary("QuickParticles");
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithWidgets();
 	}
 
 	@Before

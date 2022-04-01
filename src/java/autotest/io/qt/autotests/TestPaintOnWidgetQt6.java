@@ -40,11 +40,11 @@ import io.qt.gui.QPainter;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.opengl.widgets.QOpenGLWidget;
 
-public class TestPaintOnWidgetQt6 extends QApplicationTest {
+public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
     

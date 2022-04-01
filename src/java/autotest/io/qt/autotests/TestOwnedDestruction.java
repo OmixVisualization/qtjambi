@@ -42,7 +42,7 @@ import io.qt.core.QThread;
 import io.qt.gui.QTextCursor;
 import io.qt.gui.QTextDocument;
 
-public class TestOwnedDestruction extends QApplicationTest {
+public class TestOwnedDestruction extends ApplicationInitializer {
     @Test
     public void testOwnedValueObjectThreadedDisposeWithoutCrash() throws InterruptedException {
     	long tstart = System.currentTimeMillis();
@@ -52,11 +52,11 @@ public class TestOwnedDestruction extends QApplicationTest {
     	for (int k = 0; k < numberOfTests; k++) {
     		if(System.currentTimeMillis()-tstart>120000)
     			break;
-    		Utils.println(5, "running test "+(k+1));
+    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "running test "+(k+1));
     		QTextDocument document = new QTextDocument();
         	List<QThread> threads = new ArrayList<>();
         	List<List<QTextCursor>> threadDatas = new ArrayList<>();
-        	Utils.println(5, "Test"+(k+1)+": create QTextCursors");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": create QTextCursors");
         	for (int i = 0; i < numberOfThreads; i++) {
         		List<QTextCursor> cursors = new ArrayList<>();
         		for (int j = 0; j < numberOfCursors; j+=2) {
@@ -69,7 +69,7 @@ public class TestOwnedDestruction extends QApplicationTest {
 				}
         		threadDatas.add(cursors);
     		}
-        	Utils.println(5, "Test"+(k+1)+": create deleter threads");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": create deleter threads");
         	for (List<QTextCursor> cursors : threadDatas) {
         		threads.add(QThread.create(()->{
         			for(QTextCursor c : cursors) {
@@ -81,26 +81,26 @@ public class TestOwnedDestruction extends QApplicationTest {
     		}
         	threadDatas.clear();
         	threadDatas = null;
-        	Utils.println(5, "Test"+(k+1)+": start deleter threads");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": start deleter threads");
         	for (QThread thread : threads) {
     			thread.start();
     		}
         	QThread.sleep(2);
-        	Utils.println(5, "Test"+(k+1)+": delete QTextDocument");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": delete QTextDocument");
         	document.dispose();
         	document = null;
 	    	System.gc();
 	    	System.runFinalization();
         	QThread.yieldCurrentThread();
-        	Utils.println(5, "Test"+(k+1)+": send dispose events");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": send dispose events");
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-        	Utils.println(5, "Test"+(k+1)+": wait for finish deleting");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": wait for finish deleting");
         	for (QThread thread : threads) {
     			thread.join(-1);
     		}
         	threads.clear();
         	threads = null;
-        	Utils.println(5, "Test"+(k+1)+": all threads terminated. purging...");
+        	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": all threads terminated. purging...");
 	    	System.gc();
 	    	System.runFinalization();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());

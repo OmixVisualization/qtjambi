@@ -140,7 +140,12 @@ import io.qt.gui.QVector4D;
 import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.*;
 
-public class TestCloneable extends QApplicationTest {
+public class TestCloneable extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 
     @Test
     public void run_clone_QBitArray() {

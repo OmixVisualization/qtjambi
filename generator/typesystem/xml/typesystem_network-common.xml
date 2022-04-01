@@ -130,6 +130,7 @@
     </namespace-type>
 
     <enum-type name="QNetworkInformation::Reachability" since="6.1.0" />
+    <enum-type name="QNetworkInformation::TransportMedium" since="6.3.0" />
     <enum-type name="QNetworkInformation::Feature" flags="QNetworkInformation::Features" since="6.1.0" />
     <object-type name="QNetworkInformation" since="6.1.0"/>
     <object-type name="QAbstractNetworkCache">

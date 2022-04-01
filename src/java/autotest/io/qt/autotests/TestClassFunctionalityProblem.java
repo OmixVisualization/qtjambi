@@ -42,7 +42,7 @@ import io.qt.core.QRect;
 import io.qt.gui.QPaintEvent;
 import io.qt.widgets.QApplication;
 
-public class TestClassFunctionalityProblem extends QApplicationTest {
+public class TestClassFunctionalityProblem extends ApplicationInitializer {
     @Before
     public void setUp() {
         QApplication.processEvents();
@@ -96,7 +96,7 @@ public class TestClassFunctionalityProblem extends QApplicationTest {
 
     @Test
     public void run_testOwnershipTransfer() {
-    	Utils.println(3, "run_testOwnershipTransfer() BEGIN");
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_testOwnershipTransfer() BEGIN");
         OwnershipTransferReceiver receiver = new OwnershipTransferReceiver();
 
 //        for (int i = 0; i < 3; ++i) 
@@ -132,7 +132,7 @@ public class TestClassFunctionalityProblem extends QApplicationTest {
             e.printStackTrace();
         }
 
-Utils.println(3, "run_testOwnershipTransfer() TEST");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_testOwnershipTransfer() TEST");
         synchronized(CustomPaintEvent.class) {
             assertEquals(CustomPaintEvent.finalized, true);
         }
@@ -143,7 +143,7 @@ Utils.println(3, "run_testOwnershipTransfer() TEST");
         assertEquals(2, receiver.rect.y());
         assertEquals(3, receiver.rect.width());
         assertEquals(4, receiver.rect.height());
-Utils.println(3, "run_testOwnershipTransfer() END");
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_testOwnershipTransfer() END");
     }
 
     public static void main(String args[]) {

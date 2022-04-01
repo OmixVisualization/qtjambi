@@ -46,7 +46,7 @@ import io.qt.QNativePointer;
 import io.qt.autotests.generated.NativePointerTester;
 import io.qt.widgets.QTreeWidgetItem;
 
-public class TestNativePointer extends QApplicationTest {
+public class TestNativePointer extends ApplicationInitializer {
     @Before
     public void setUp() {
         data = new Vector<String>();

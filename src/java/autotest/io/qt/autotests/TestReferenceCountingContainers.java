@@ -61,7 +61,7 @@ import io.qt.widgets.QGraphicsEllipseItem;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsPathItem;
 
-public class TestReferenceCountingContainers extends QApplicationTest {
+public class TestReferenceCountingContainers extends ApplicationInitializer {
 	
     @Test
     public void test_new_QList_QObject() throws InterruptedException {

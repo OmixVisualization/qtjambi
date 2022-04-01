@@ -50,7 +50,7 @@ import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
 import io.qt.core.QUnhandledException;
 
-public class TestFuture extends QApplicationTest {
+public class TestFuture extends ApplicationInitializer {
 	
 	static class IncompleteFutureWatcher extends QFutureWatcherBase{
 	}

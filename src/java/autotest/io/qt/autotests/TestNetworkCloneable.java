@@ -50,7 +50,7 @@ import io.qt.network.*;
 import io.qt.core.QDateTime;
 import io.qt.internal.*;
 
-public class TestNetworkCloneable extends QApplicationTest {
+public class TestNetworkCloneable extends ApplicationInitializer {
     @Test
     public void run_clone_QAuthenticator() {
         QAuthenticator org = new QAuthenticator();

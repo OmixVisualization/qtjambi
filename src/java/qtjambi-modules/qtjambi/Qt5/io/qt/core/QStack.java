@@ -201,8 +201,13 @@ public class QStack<T> extends QVector<T> implements Deque<T>
 	@Override
     @QtUninvokable
 	public T pop() {
-		return removeFirst();
+		return removeLast();
 	}
+    
+    @QtUninvokable
+    public final T top() {
+        return last();
+    }
     
     /**
      * Returns a QStack containing given elements.

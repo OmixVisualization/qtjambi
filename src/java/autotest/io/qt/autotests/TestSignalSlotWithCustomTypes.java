@@ -32,6 +32,7 @@ package io.qt.autotests;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtObject;
@@ -47,7 +48,12 @@ import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
-public class TestSignalSlotWithCustomTypes extends QApplicationTest {
+public class TestSignalSlotWithCustomTypes extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	public static class UnregisteredType1{}
 	
