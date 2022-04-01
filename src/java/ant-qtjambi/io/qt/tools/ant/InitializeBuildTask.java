@@ -1580,77 +1580,33 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					}
 				}
 			}else if(modules.get(module).preprocdef!=null){
-				generatorPreProcDefinesList.add(modules.get(module).preprocdef);
-			}
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.macextras.any.true"))){
-			if(skippedModules.contains("macextras")) {
-				generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
-			}else {
-				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
-				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(new File(new File(qtdir), "qtmacextras").isDirectory()
-						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtmacextras").isDirectory()
-								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtmacextras").listFiles().length>0)) {
-					if(generatorIxtraIncludes==null){
-						generatorIxtraIncludes = qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
-					}else{
-						generatorIxtraIncludes += ";"+qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
+				switch(module) {
+				case "macextras":
+				case "x11extras":
+				case "winextras":
+					if(skippedModules.contains(module)) {
+						generatorPreProcDefinesList.add(modules.get(module).preprocdef);
+					}else {
+						String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
+						String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
+						if(new File(new File(qtdir), "qt"+module).isDirectory()
+								|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qt"+module).isDirectory()
+										&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qt"+module).listFiles().length>0)) {
+							if(generatorIxtraIncludes==null){
+								generatorIxtraIncludes = qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qt"+module+"/include";
+							}else{
+								generatorIxtraIncludes += ";"+qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qt"+module+"/include";
+							}
+							AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
+						}else {
+							generatorPreProcDefinesList.add(modules.get(module).preprocdef);
+						}
 					}
-					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
-				}else {
-					generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
+					break;
+				default:
+					generatorPreProcDefinesList.add(modules.get(module).preprocdef);
 				}
 			}
-		}else if(skippedModules.contains("macextras")) {
-			generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.winextras.any.true"))){
-			if(skippedModules.contains("winextras")) {
-				generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
-			}else {
-				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
-				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(new File(new File(qtdir), "qtwinextras").isDirectory()
-						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtwinextras").isDirectory()
-								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtwinextras").listFiles().length>0)) {
-					if(generatorIxtraIncludes==null){
-						generatorIxtraIncludes = qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
-					}else{
-						generatorIxtraIncludes += ";"+qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
-					}
-					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
-				}else {
-					generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
-				}
-			}
-		}else if(skippedModules.contains("winextras")) {
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.x11extras.any.true"))){
-			if(skippedModules.contains("x11extras")) {
-				generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
-			}else {
-				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
-				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(new File(new File(qtdir), "qtx11extras").isDirectory()
-						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtx11extras").isDirectory()
-								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtx11extras").listFiles().length>0)) {
-					if(generatorIxtraIncludes==null){
-						generatorIxtraIncludes = qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
-					}else{
-						generatorIxtraIncludes += ";"+qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
-					}
-					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
-				}else {
-					generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
-				}
-			}
-		}else if(skippedModules.contains("x11extras")) {
-			generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 		}
 
         return true;

@@ -12,7 +12,11 @@
                 <dirname property="antfile.dir" file="${ant.file}"/>
                 <basename property="module" file="${antfile.dir}"/>
                 <condition property="build.module" value="true">
-                    <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                    <or>
+                        <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                        <istrue value="${qtjambi-deploy}"/>
+                        <istrue value="${qtjambi-deploy-bundle}"/>
+                    </or>
                 </condition>
                 <antcall inheritrefs="true" target="build.impl"/>
             </then>

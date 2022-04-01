@@ -1,12 +1,21 @@
 <project default="build">
     <dirname property="modules.dir" file="${ant.file}"/>
     <target name="build">
-        <condition property="module.includes" value="${qtjambi.build.module}" else="*">
-          <isset property="qtjambi.build.module"/>
-        </condition>
-        <subant target="build" inheritall="true" verbose="true">
-            <dirset dir="${modules.dir}" includes="${module.includes}"/>
-        </subant>
+        <if>
+            <isset property="qtjambi.build.module"/>
+            <then>
+                <subant target="build" inheritall="true" verbose="true">
+                    <dirset dir="${modules.dir}" includes="${qtjambi.build.module}"/>
+                </subant>
+            </then>
+            <else>
+                <select-modules property="selected.modules" sourcedir="${modules.dir}" generatordir="${generator.outputdir}/java"/>
+                <subant target="build" inheritall="true" verbose="true">
+                    <filelist dir="${modules.dir}" files="${selected.modules}"/>
+                </subant>
+            </else>
+        </if>
+        
         <if>
             <istrue value="${qtjambi-deploy}"/>
             <then>
