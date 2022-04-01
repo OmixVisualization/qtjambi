@@ -15,7 +15,7 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
 
-QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6.2 in Java on Windows Linux and macOS. 
+QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
 
 ## Support
@@ -35,7 +35,7 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
 * Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8 and 14)
 * Qt 5.15 or 6.x (using the Qt Online Installer)
-* C++ compiler (Clang, MSVC2019)
+* C++ compiler (Gcc, Clang, MSVC2019)
 * chrpath (Linux only)
 * XCode command line tools (macOS only)
 
@@ -89,7 +89,7 @@ This saves compilation time.
 
 ### Example
 
-Add **qtjambi-5.15.4.jar**/**qtjambi-6.2.2.jar** to the classpath of your Java project containing the most 
+Add **qtjambi-VERSION.jar** to the classpath of your Java project containing the most 
 essential Qt Core, Gui and Widgets modules. If you use Maven to build your application simply add following dependency
 to your project:
 
@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.4` or by `6.2.2`).
+(exchange `$VERSION` either by `5.15.5`, `6.2.3` or by `6.3.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,13 +120,13 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.2.2.jar Test.java
+javac -cp qtjambi-6.2.3.jar Test.java
 ```
 
 ### Execute Example
 
 For execution you need the platform dependent binaries of QtJambi either as self-extracting bundle or as library file (e.b. dll). 
-For instance, if you are working on Windows download **qtjambi-native-windows-x64-5.15.4.jar**/**qtjambi-native-windows-x64-6.2.2.jar**
+For instance, if you are working on Windows download **qtjambi-native-windows-x64-VERSION.jar**
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
 
@@ -135,7 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.2.2.jar;qtjambi-native-windows-x64-6.2.2.jar;. 
+java -cp qtjambi-6.2.3.jar;. 
      -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
