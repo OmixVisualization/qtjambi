@@ -350,6 +350,13 @@ Following Qt 6.3 modules are provided by QtJambi:
     * [**qtjambi-qt3dquickscene2d-native-linux-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-linux-x64/6.3.0/jar)
     * [**qtjambi-qt3dquickscene2d-native-macos-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-macos/6.3.0/jar)
 
+### QtJambi Plugins
+
+* JDBC Sql Plugin:
+    * [**qtjambi-plugin-qsqljdbc-windows-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.3.0/jar)
+    * [**qtjambi-plugin-qsqljdbc-linux-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.3.0/jar)
+    * [**qtjambi-plugin-qsqljdbc-macos-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.3.0/jar)
+
 ### QtJambi Tools
 
 * [QtJambi User Interface Compiler (UIC)](https://doc.qt.io/qt-6/designer-using-a-ui-file.html#compile-time-form-processing):
@@ -686,6 +693,13 @@ Following Qt 6.2 modules are provided by QtJambi:
     * [**qtjambi-qt3dquickscene2d-native-windows-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-windows-x64/6.2.3/jar)
     * [**qtjambi-qt3dquickscene2d-native-linux-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-linux-x64/6.2.3/jar)
     * [**qtjambi-qt3dquickscene2d-native-macos-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-macos/6.2.3/jar)
+
+### QtJambi Plugins
+
+* JDBC Sql Plugin:
+    * [**qtjambi-plugin-qsqljdbc-windows-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.2.3/jar)
+    * [**qtjambi-plugin-qsqljdbc-linux-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.2.3/jar)
+    * [**qtjambi-plugin-qsqljdbc-macos-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.2.3/jar)
 
 ### QtJambi Tools
 
@@ -1059,6 +1073,13 @@ Following Qt 5.15 modules are provided by QtJambi:
     * [**qtjambi-qt3dquickscene2d-native-windows-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-windows-x64/5.15.5/jar)
     * [**qtjambi-qt3dquickscene2d-native-linux-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-linux-x64/5.15.5/jar)
     * [**qtjambi-qt3dquickscene2d-native-macos-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-qt3dquickscene2d-native-macos/5.15.5/jar)
+
+### QtJambi Plugins
+
+* JDBC Sql Plugin:
+    * [**qtjambi-plugin-qsqljdbc-windows-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/5.15.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-linux-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/5.15.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-macos-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/5.15.5/jar)
 
 ### QtJambi Tools
 
