@@ -141,7 +141,7 @@ public class InitializeTask extends AbstractInitializeTask {
         if(s != null)
             AntUtil.setNewProperty(propertyHelper, Constants.OSCPU, s);
 
-        decideJava8HomeTarget();
+        decideAlternativeJavaHomesTarget();
         String javaHomeTarget = decideJavaHomeTarget();
         if(javaHomeTarget == null)
             throw new BuildException("Unable to determine JAVA_HOME_TARGET, setup environment variable JAVA_HOME (or JAVA_HOME_TARGET) or edit build.properties");

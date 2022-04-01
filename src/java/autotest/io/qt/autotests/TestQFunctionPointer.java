@@ -57,7 +57,7 @@ import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;
 
-public class TestQFunctionPointer extends QApplicationTest{
+public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@FunctionalInterface
 	interface Fun30 extends QtObjectInterface{
@@ -96,6 +96,15 @@ public class TestQFunctionPointer extends QApplicationTest{
 	@FunctionalInterface
 	interface Fun55 extends QtObjectInterface{
 		UnknownFunction1 invoke(UnknownFunction3 fun);
+	}
+	
+	@FunctionalInterface
+	interface PrintF extends QtObjectInterface{
+		void printf(byte[] format, Object...values);
+		
+		default void printf(String format, Object...values) {
+			printf((format+'\0').getBytes(), values);
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -215,7 +224,7 @@ public class TestQFunctionPointer extends QApplicationTest{
 	
 	@Test
     public void testStructReturningFunctions() throws Throwable {
-		Assume.assumeTrue("Windows only", QOperatingSystemVersion.currentType()==OSType.Windows);
+		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
 		QFunctionPointer fp = FunctionalTest.getFunction(34);
     	Object variant = new Object();
     	Assert.assertEquals(variant, fp.invoke(QGenericArgument.<Object>returning(new QMetaType(QMetaType.Type.QVariant)), QGenericArgument.of(variant).as(new QMetaType(QMetaType.Type.QVariant)).asConstRef()));
@@ -288,8 +297,23 @@ public class TestQFunctionPointer extends QApplicationTest{
 	
 	@Test
     public void testVariadicFunction() throws Throwable {
+    	Assume.assumeTrue("Cannot run variadic function on macOS arm64.", 
+				!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, 
+																QOperatingSystemVersion.OSType.IOS, 
+																QOperatingSystemVersion.OSType.WatchOS)
+				|| "x86_64".equals(System.getProperty("os.arch"))
+				|| "x64".equals(System.getProperty("os.arch"))
+				|| "amd64".equals(System.getProperty("os.arch"))
+			);
     	QFunctionPointer fp = FunctionalTest.getFunction(51);
     	fp.invoke(("print text: %s, integer: %d, double: %f ...\n\0").getBytes(), "string\0".getBytes(), 555, 9.8163);
+	}
+	
+//	@Test
+    public void testVariadicFunctionCast() throws Throwable {
+		QFunctionPointer fp = FunctionalTest.getFunction(51);
+		PrintF printf = fp.cast(PrintF.class);
+		printf.printf("print text: %s, integer: %d, double: %f ...\n", "string\0".getBytes(), 555, 9.8163);
 	}
     	
 	@Test
@@ -350,7 +374,7 @@ public class TestQFunctionPointer extends QApplicationTest{
 	
 	@Test
     public void testStructReturningFunctionPointerCast() throws Throwable {
-		Assume.assumeTrue("Windows only", QOperatingSystemVersion.currentType()==OSType.Windows);
+		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
     	QObject obj = new QObject();
     	obj.setObjectName("QObject Test");
     	

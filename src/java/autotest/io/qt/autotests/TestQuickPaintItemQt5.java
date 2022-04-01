@@ -37,13 +37,12 @@ import io.qt.qml.*;
 import io.qt.quick.*;
 import static io.qt.autotests.TestQuickQt5.*;
 
-public class TestQuickPaintItemQt5 extends QApplicationTest {
+public class TestQuickPaintItemQt5 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
-		io.qt.QtUtilities.loadQtLibrary("OpenGL");
 	}
 	
 	public static class TestPaintedItem extends QQuickPaintedItem{

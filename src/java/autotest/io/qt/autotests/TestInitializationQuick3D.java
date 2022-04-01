@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationQuick3D {
+public class TestInitializationQuick3D extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.quick");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.quick3d"));
     }
 }

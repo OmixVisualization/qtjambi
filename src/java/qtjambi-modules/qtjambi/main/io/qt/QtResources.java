@@ -44,9 +44,14 @@
 ****************************************************************************/
 package io.qt;
 
+import io.qt.core.QResource;
+
 /**
  * Access utility class to the QtJambi &quot;classpath:&quot; resource system.
+ * <br>Deprecated: Use <code>QResource</code> instead.
+ * @see QResource
  */
+@Deprecated
 public final class QtResources {
 
 	private QtResources() {}
@@ -54,16 +59,20 @@ public final class QtResources {
 	/**
      * Adds <code>path</code> to the set of paths in which Qt Jambi should search for resources. 
      * Resources can be accessed using the &quot;classpath:&quot; scheme.
+     * @see QResource#addClassPath(String)
      */
+    @Deprecated
 	public static void addSearchPath(String path) {
-        io.qt.internal.fileengine.QClassPathResourceManager.addSearchPath(path);
+        io.qt.internal.QtJambiResources.addSearchPath(path);
     }
     
     /**
      * Removes <code>path</code> from the set of paths in which Qt Jambi searches
      * for resources.
+     * @see QResource#removeClassPath(String)
      */
+    @Deprecated
 	public static void removeSearchPath(String path) {
-        io.qt.internal.fileengine.QClassPathResourceManager.removeSearchPath(path);
+        io.qt.internal.QtJambiResources.removeSearchPath(path);
     }
 }

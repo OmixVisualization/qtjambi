@@ -39,6 +39,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QInterfaceCannotBeSubclassedException;
@@ -92,7 +93,12 @@ import io.qt.widgets.QGraphicsView;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
-public class TestInterfaces extends QApplicationTest {
+public class TestInterfaces extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	static class GraphicsItem implements QPaintDevice, QGraphicsItem{
 		@SuppressWarnings("unused")
@@ -169,7 +175,7 @@ public class TestInterfaces extends QApplicationTest {
 	@Test
     public void testSubClassTheSubClass() {
 		GraphicsItem item = new GraphicsItem(){};
-		item.metric(io.qt.gui.QPaintDevice.PaintDeviceMetric.PdmDepth);"".length();
+		item.metric(io.qt.gui.QPaintDevice.PaintDeviceMetric.PdmDepth);
 	}
 	
 	@Test

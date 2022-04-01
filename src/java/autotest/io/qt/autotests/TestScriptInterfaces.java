@@ -10,7 +10,7 @@ import io.qt.core.*;
 import io.qt.internal.QtJambiInternal;
 import io.qt.script.*;
 
-public class TestScriptInterfaces extends QApplicationTest {
+public class TestScriptInterfaces extends ApplicationInitializer {
 	
 	static class ScriptableObject extends QObject implements QScriptable{
 	}

@@ -38,7 +38,7 @@ import io.qt.remoteobjects.ClientIoDevice;
 import io.qt.remoteobjects.IoDeviceBase.ReadResult;
 import io.qt.remoteobjects.ServerIoDevice;
 
-public class TestRemoteObjectsInjectedCodeQt5 extends QApplicationTest {
+public class TestRemoteObjectsInjectedCodeQt5 extends ApplicationInitializer {
 	@Test
     public void testIoDeviceBase()
     {

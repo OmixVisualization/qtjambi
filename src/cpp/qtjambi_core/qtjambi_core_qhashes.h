@@ -38,6 +38,12 @@
 #include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QT_JAMBI_RUN)
+bool operator==(QByteArrayView, QByteArray);
+bool operator<(QByteArrayView, QByteArray);
+hash_type qHash(QSizePolicy);
+#endif
+
 class QWidget;
 
 template<class T>
@@ -137,6 +143,37 @@ inline bool operator==(const QOperatingSystemVersion &value1, const QOperatingSy
             && value1.minorVersion()==value2.minorVersion()
             && value1.microVersion()==value2.microVersion();
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+inline hash_type qHash(const QOperatingSystemVersionBase &value)
+{
+    hash_type hashCode = qHash(value.type());
+    hashCode = hashCode * 31 + qHash(value.majorVersion());
+    hashCode = hashCode * 31 + qHash(value.minorVersion());
+    hashCode = hashCode * 31 + qHash(value.microVersion());
+    return hashCode;
+}
+
+inline bool operator==(const QOperatingSystemVersionBase &value1, const QOperatingSystemVersionBase &value2)
+{
+    return value1.type()==value2.type()
+            && value1.majorVersion()==value2.majorVersion()
+            && value1.minorVersion()==value2.minorVersion()
+            && value1.microVersion()==value2.microVersion();
+}
+
+#ifdef QFACTORYLOADER_P_H
+inline hash_type qHash(const QPluginParsedMetaData &value)
+{
+    return qHash(*reinterpret_cast<const QCborValue*>(&value));
+}
+
+inline bool operator==(const QPluginParsedMetaData &value1, const QPluginParsedMetaData &value2)
+{
+    return *reinterpret_cast<const QCborValue*>(&value1)==*reinterpret_cast<const QCborValue*>(&value2);
+}
+#endif
+#endif
 
 inline hash_type qHash(const QCollator &value)
 {

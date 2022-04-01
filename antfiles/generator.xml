@@ -3,7 +3,7 @@
         Building and running the Generator
     -->
 
-    <target name="generator.run" depends="init.build"
+    <target name="generator.run" depends="init.build, init.properties"
         description="Runs the Qt Jambi generator on the Qt headers">
 		<antcall target="generator.xmlmerge"/>
         <mkdir dir="${generator.outputdir}"/>
@@ -13,6 +13,7 @@
                 outputDirectory="${generator.outputdir}"
                 generatorDirectory="${generator.builddir}"
                 typesystem="${generatorDir}/targets/build_all.xml"
+                typesystemsDirectory="${generator.xmlmerge.outputdir}"
                 header="${generatorDir}/targets/qtjambi_masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtdocdirectory="${qtjambi.qt.docdir}"
@@ -34,7 +35,7 @@
           jdoc-enabled
       -->
 
-    <target name="tools.generator.qmake" depends="init.build">
+    <target name="tools.generator.qmake" depends="init.build, init.properties">
         <mkdir dir="${generator.builddir}"/>
 		<condition property="generator.configuration" value="debug" else="release">
 			<or>
@@ -85,6 +86,7 @@
         <xmlmerge victim="xmlpatterns"/>
         <xmlmerge victim="qml"/>
 		<xmlmerge victim="quick"/>
+		<xmlmerge victim="quicktest"/>
 		<xmlmerge victim="quickcontrols2"/>
 		<xmlmerge victim="quickwidgets"/>
 		<xmlmerge victim="printsupport"/>
@@ -137,6 +139,10 @@
 		<xmlmerge victim="quick3d"/>
 		<xmlmerge victim="virtkey"/>
 		<xmlmerge victim="statemachine"/>
+		<xmlmerge victim="pdf"/>
+		<xmlmerge victim="pdfwidgets"/>
+		<xmlmerge victim="activex"/>
+		<xmlmerge victim="ui4"/>
     </target>
 
 </project>

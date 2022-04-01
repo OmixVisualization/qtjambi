@@ -50,6 +50,7 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
@@ -76,13 +77,19 @@ import io.qt.core.QPointF;
 import io.qt.core.QQueue;
 import io.qt.core.QRunnable;
 import io.qt.core.QSet;
+import io.qt.core.QString;
 import io.qt.core.QStringList;
 import io.qt.gui.QColor;
 import io.qt.gui.QLinearGradient;
 import io.qt.widgets.QCheckBox;
 import io.qt.widgets.QWidget;
 
-public class TestContainers extends QApplicationTest {
+public class TestContainers extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
     private Tulip tulip;
 
@@ -94,6 +101,12 @@ public class TestContainers extends QApplicationTest {
     @After
     public void tearDown() throws Exception {
         tulip = null;
+    }
+    
+    @Test
+    public void testStringList(){
+    	Object container = QString.split("A::B", "::");
+    	assertTrue(container instanceof QStringList);
     }
 
     @Test

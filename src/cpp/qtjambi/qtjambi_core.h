@@ -762,6 +762,12 @@ QTJAMBI_EXPORT QVariant qtjambi_to_enumerator(JNIEnv *env, jobject value);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT
 jstring qtjambi_from_qstringref(JNIEnv *env, const QStringRef &s);
+#else
+QTJAMBI_EXPORT
+jstring qtjambi_from_qanystringview(JNIEnv *env, QAnyStringView s);
+
+QTJAMBI_EXPORT
+jstring qtjambi_from_qutf8stringview(JNIEnv *env, QUtf8StringView s);
 #endif
 
 QTJAMBI_EXPORT
@@ -1598,6 +1604,8 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     inline QByteArrayView toByteArrayView() const { return QByteArrayView(constData(), length()); }
     inline operator QByteArrayView() const { return toByteArrayView(); }
+    inline QUtf8StringView toUtf8StringView() const { return QUtf8StringView(constData(), length()); }
+    inline operator QUtf8StringView() const { return toUtf8StringView(); }
 #endif
     inline QLatin1String toLatin1String() const { return QLatin1String(constData(), length()); }
     inline operator QLatin1String() const { return toLatin1String(); }
@@ -1619,6 +1627,10 @@ public:
     inline operator const QChar*() const { return constData(); }
     inline QStringView toStringView() const { return QStringView(constData(), length()); }
     inline operator QStringView() const { return toStringView(); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    inline QAnyStringView toAnyStringView() const { return QAnyStringView(constData(), length()); }
+    inline operator QAnyStringView() const { return toAnyStringView(); }
+#endif
     inline const QChar* data() const { return constData(); }
     inline const QChar* data() { return constData(); }
     int length() const;
@@ -1653,7 +1665,7 @@ QTJAMBI_EXPORT void qtjambi_initialize_native_functional(JNIEnv *env, jclass cal
                                                      size_t size, const std::type_info& typeId, PtrDeleterFunction delete_function);
 
 QTJAMBI_EXPORT void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                                                      size_t size, const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isShell, bool isDeclarativeCall, jvalue* arguments);
+                                                      size_t size, const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, bool isDeclarativeCall, jvalue* arguments);
 
 template<typename T>
 class QTJAMBI_EXPORT QtJambiQmlShellElement final : public T

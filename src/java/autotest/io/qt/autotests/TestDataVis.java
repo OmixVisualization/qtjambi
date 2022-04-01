@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.*;
@@ -42,7 +43,13 @@ import io.qt.gui.*;
 import io.qt.internal.QtJambiInternal.*;
 import static io.qt.internal.QtJambiInternal.*;
 
-public class TestDataVis extends QApplicationTest {
+public class TestDataVis extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void testQ3DBars() {
     	Q3DBars bars = new Q3DBars();

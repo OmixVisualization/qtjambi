@@ -72,38 +72,43 @@ struct JObjectWeakWrapperCleanup{
     constexpr static auto NewRef = &JNIEnv_::NewWeakGlobalRef;
     constexpr static auto DeleteRef = &JNIEnv_::DeleteWeakGlobalRef;
     typedef jweak RefType;
-    constexpr static void(*cleanup)(jobject) = &reference_cleanup<JObjectGlobalWrapperCleanup>;
+    constexpr static void(*cleanup)(jobject) = &reference_cleanup<JObjectWeakWrapperCleanup>;
 };
 
-class JObjectGlobalWrapperData : public JObjectWrapperData{
+template<typename Cleanup>
+class JObjectRefWrapperData : public JObjectWrapperData{
 public:
-    JObjectGlobalWrapperData() = default;
-    JObjectGlobalWrapperData(JNIEnv* env, jobject object);
-    ~JObjectGlobalWrapperData() override = default;
-    void clear(JNIEnv *env) override;
-    jobject data() const override;
+    JObjectRefWrapperData() = default;
+    JObjectRefWrapperData(JNIEnv* env, jobject object)
+        : JObjectWrapperData(), pointer( (env->*Cleanup::NewRef)(object) )
+    {
+    }
+
+    ~JObjectRefWrapperData() override = default;
+    void clear(JNIEnv *env) override{
+        if(pointer.data()){
+            jthrowable throwable = nullptr;
+            if(env->ExceptionCheck()){
+                throwable = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
+            (env->*Cleanup::DeleteRef)(pointer.take());
+            if(throwable)
+                env->Throw(throwable);
+        }
+    }
+
+    jobject data() const override {return pointer.data();}
     const void* array() const override {return nullptr;}
     void* array() override {return nullptr;}
     void commitArray() override {}
     jsize arrayLength() const override {return 0;}
 private:
-    QScopedPointer<_jobject, JObjectGlobalWrapperCleanup> pointer;
+    QScopedPointer<_jobject, Cleanup> pointer;
 };
 
-class JObjectWeakWrapperData : public JObjectWrapperData{
-public:
-    JObjectWeakWrapperData() = default;
-    JObjectWeakWrapperData(JNIEnv* env, jobject object);
-    ~JObjectWeakWrapperData() override = default;
-    void clear(JNIEnv *env) override;
-    jobject data() const override;
-    const void* array() const override {return nullptr;}
-    void* array() override {return nullptr;}
-    void commitArray() override {}
-    jsize arrayLength() const override {return 0;}
-private:
-    QScopedPointer<_jobject, JObjectWeakWrapperCleanup> pointer;
-};
+typedef JObjectRefWrapperData<JObjectGlobalWrapperCleanup> JObjectGlobalWrapperData;
+typedef JObjectRefWrapperData<JObjectWeakWrapperCleanup> JObjectWeakWrapperData;
 
 template<typename JType, typename Cleanup>
 class JArrayWrapperData : public JObjectWrapperData{
@@ -277,8 +282,10 @@ JObjectWrapper::JObjectWrapper(jobject obj)
     if(obj){
         if(JNIEnv* env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-            REF_JOBJECT;
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj));
+            if(!env->IsSameObject(obj, nullptr)){
+                REF_JOBJECT;
+                m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj));
+            }
         }
     }
 }
@@ -286,7 +293,7 @@ JObjectWrapper::JObjectWrapper(jobject obj)
 JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
     : m_data()
 {
-    if(obj){
+    if(!env->IsSameObject(obj, nullptr)){
         REF_JOBJECT;
         m_data = globalRefs ? static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj)) : static_cast<JObjectWrapperData*>(new JObjectWeakWrapperData(env, obj));
     }
@@ -295,7 +302,7 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
 JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const std::type_info& typeId)
  : m_data()
 {
-    if(obj){
+    if(!env->IsSameObject(obj, nullptr)){
         REF_JOBJECT;
         if(globalRefs){
             if(typeId==typeid(jint)){
@@ -546,7 +553,9 @@ jsize JObjectWrapper::arrayLength() const {
 JObjectWrapper& JObjectWrapper::operator=(jobject object) {
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-        if(Java::Runtime::Enum::isInstanceOf(env, object)
+        if(env->IsSameObject(object, nullptr)){
+            m_data.reset();
+        }else if(Java::Runtime::Enum::isInstanceOf(env, object)
            || Java::QtJambi::QtEnumerator::isInstanceOf(env, object)
            || Java::QtJambi::QtShortEnumerator::isInstanceOf(env, object)
            || Java::QtJambi::QtByteEnumerator::isInstanceOf(env, object)
@@ -1308,41 +1317,6 @@ QString JObjectArrayWrapper::toString(bool * ok) const{
     }
     result += QLatin1String("]");
     return result;
-}
-
-JObjectGlobalWrapperData::JObjectGlobalWrapperData(JNIEnv* env, jobject object)
-    : pointer( env->NewGlobalRef(object) ){}
-JObjectWeakWrapperData::JObjectWeakWrapperData(JNIEnv* env, jobject object)
-    : pointer( env->NewWeakGlobalRef(object) ){}
-
-jobject JObjectGlobalWrapperData::data() const {return pointer.data();}
-jobject JObjectWeakWrapperData::data() const {return pointer.data();}
-
-void JObjectGlobalWrapperData::clear(JNIEnv* env) {
-    if(pointer.data()){
-        jthrowable throwable = nullptr;
-        if(env->ExceptionCheck()){
-            throwable = env->ExceptionOccurred();
-            env->ExceptionClear();
-        }
-        env->DeleteGlobalRef(pointer.take());
-        if(throwable)
-            env->Throw(throwable);
-    }
-}
-
-void JObjectWeakWrapperData::clear(JNIEnv* env) {
-    if(pointer.data()){
-        DEREF_JOBJECT;
-        jthrowable throwable = nullptr;
-        if(env->ExceptionCheck()){
-            throwable = env->ExceptionOccurred();
-            env->ExceptionClear();
-        }
-        env->DeleteWeakGlobalRef(pointer.take());
-        if(throwable)
-            env->Throw(throwable);
-    }
 }
 
 QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj){

@@ -1,0 +1,162 @@
+<project name="qtjambi.bundle" default="library.native.bundle">
+
+  <!--
+      ************************************************************
+      Library Compilation etc ...
+      ************************************************************
+  -->
+
+  <!-- 
+      Runs qmake for Jambi source
+  -->
+  <target name="library.native.qmake" depends="init.build, init.properties" description="Runs qmake on the Qt Jambi native library">
+      <mkdir dir="${qtjambi.builddir}"/>
+      <qmake recursive="true"
+          dir="${qtjambi.builddir}"
+          pro="${basedir}/src/cpp/qtjambi.pro"
+          config="${qtjambi.configuration} ${qtjambi.config.jumptable}"
+          qtconfig="${qtjambi.qtconfig}"
+          debugTools="${qtjambi.debug-tools}"
+          qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+  </target>
+
+  <target name="library.native.make" depends="init.build, init.properties">
+      <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
+  </target>
+  
+  <!--
+      Runs make for Jambi source
+  -->
+  <target name="library.native.compile" depends="library.native.qmake, library.native.make">
+  </target>
+  
+  <target name="library.native.makebundle" depends="init.build, init.properties, library.native.make, library.native.bundle">
+  </target>
+
+  <target name="library.native.bundle" depends="init.build, init.properties" description="Creates a .jar file file containing native libraries.">
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+        <then>
+            <antcall target="library.native.bundle.release"/>
+            <antcall target="library.native.bundle.debug"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="release" />
+        <then>
+            <antcall target="library.native.bundle.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="test" />
+        <then>
+            <antcall target="library.native.bundle.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug" />
+        <then>
+            <antcall target="library.native.bundle.debug"/>
+        </then>
+      </if>
+  </target>
+  
+  <target name="library.native.bundle.plugins" depends="init.build, init.properties" description="Creates a .jar file file containing native libraries.">
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+        <then>
+            <antcall target="library.native.bundle.plugins.release"/>
+            <antcall target="library.native.bundle.plugins.debug"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="release" />
+        <then>
+            <antcall target="library.native.bundle.plugins.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="test" />
+        <then>
+            <antcall target="library.native.bundle.plugins.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug" />
+        <then>
+            <antcall target="library.native.bundle.plugins.debug"/>
+        </then>
+      </if>
+  </target>
+
+  <target name="library.native.bundle.release" description="Creates a .jar file file containing native libraries.">
+    <delete dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
+    <mkdir dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-native-bundle-path" value="${deploymentdir}/native/${qtjambi.osname}/release"/>
+        <property name="qtjambi-native-bundle" value="true"/>
+        <property name="platformjar.debug" value="false"/>
+        <property name="platformjar.debug.suffix" value=""/>
+    </ant>
+    <antcall target="library.native.bundle.plugins.release"/>
+  </target>
+
+  <target name="library.native.bundle.plugins.release" description="Creates a .jar file file containing native libraries.">
+    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        <property name="qtjambi.testbuild" value="false"/>
+        <property name="platformjar.debug" value="false"/>
+        <property name="qtjambi.plugin.bundle" value="true"/>
+        <property name="module.suffix" value=""/>
+    </ant>
+    <if>
+        <istrue value="${qtjambi.qml.any.true}"/>
+        <then>
+            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                <property name="qtjambi.testbuild" value="false"/>
+                <property name="platformjar.debug" value="false"/>
+                <property name="qtjambi.qml.bundle" value="true"/>
+                <property name="module.suffix" value=""/>
+            </ant>
+        </then>
+    </if>
+  </target>
+
+  <target name="library.native.bundle.debug" description="Creates a .jar file file containing native libraries.">
+    <delete dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+    <mkdir dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-native-bundle-path" value="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+        <property name="qtjambi-native-bundle" value="true"/>
+        <property name="platformjar.debug" value="true"/>
+        <property name="platformjar.debug.suffix" value="-debug"/>
+        <property name="platformjar.debug.suffix2" value="_debug"/>
+    </ant>
+    <antcall target="library.native.bundle.plugins.debug"/>
+  </target>
+
+  <target name="library.native.bundle.plugins.debug" description="Creates a .jar file file containing native libraries.">
+    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        <property name="qtjambi.testbuild" value="false"/>
+        <property name="platformjar.debug" value="true"/>
+        <property name="qtjambi.plugin.bundle" value="true"/>
+        <property name="module.suffix" value=""/>
+    </ant>
+    <if>
+        <istrue value="${qtjambi.qml.any.true}"/>
+        <then>
+            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                <property name="qtjambi.testbuild" value="false"/>
+                <property name="platformjar.debug" value="true"/>
+                <property name="qtjambi.qml.bundle" value="true"/>
+                <property name="module.suffix" value=""/>
+            </ant>
+        </then>
+    </if>
+  </target>
+</project>

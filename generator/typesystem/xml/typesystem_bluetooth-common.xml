@@ -132,18 +132,6 @@
         <modify-function signature="operator=(QBluetoothTransferRequest)" remove="all"/>
   </value-type>
   <value-type name="QBluetoothUuid">
-        <modify-function signature="toUInt16(bool *) const" access="private">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="toUInt32(bool *) const" access="private">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="toUInt128() const">
-        </modify-function>
         <modify-function signature="operator=(QBluetoothUuid)" remove="all"/>
   </value-type>
   <object-type name="quint128" generate="no"/>

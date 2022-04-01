@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -39,23 +40,25 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
+import io.qt.internal.QtJambiInternal;
 
-public class TestQmlPlugin extends QApplicationTest{
+public class TestQmlPlugin extends ApplicationInitializer{
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
-		io.qt.QtUtilities.initializePackage("io.qt.quick");
+		ApplicationInitializer.testInitializeWithGui();
+		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.quick"));
 	}
 	
 	@Test
     public void run_testQmlPlugin() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		if(System.getProperty("io.qt.debug", "").equals("debug")) {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/qml");
+		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		if(QtJambiInternal.isDebugBuild()) {
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
 		}else {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/release/qml");
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);
@@ -91,10 +94,11 @@ public class TestQmlPlugin extends QApplicationTest{
     public void run_testQmlPlugin2() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; import io.qt.test.garage 2.0; Garage{Car{}}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		if(System.getProperty("io.qt.debug", "").equals("debug")) {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/qml");
+		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		if(QtJambiInternal.isDebugBuild()) {
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
 		}else {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/release/qml");
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);

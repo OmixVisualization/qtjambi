@@ -44,6 +44,74 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.widgets" default-superclass="io.qt.QtObject" module="qtjambi">
+
+    <template name="gui.addAction">
+        public final QAction addAction(%EXTRA String text %INFIX_EXTRA, Object receiver, String method %END_EXTRA %CONNECTION_TYPE) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(receiver, method %USE_CONNECTION_TYPE);
+            return returned;
+        }
+
+        public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Slot0 slot %END_EXTRA %CONNECTION_TYPE) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(slot %USE_CONNECTION_TYPE);
+            return returned;
+        }
+
+        public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Slot1&lt;? super Boolean> slot %END_EXTRA %CONNECTION_TYPE) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(slot %USE_CONNECTION_TYPE);
+            return returned;
+        }
+
+        public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Connectable1&lt;? super Boolean> signal %END_EXTRA %CONNECTION_TYPE) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(signal %USE_CONNECTION_TYPE);
+            return returned;
+        }
+    </template>
+
+    <template name="gui.addAction_with_shortcut">
+        <insert-template name="gui.addAction">
+            <replace from="%POST_CALL" to="returned.setShortcut(shortcut);"/>
+            <replace from=" %END_EXTRA" to=", QKeySequence shortcut"/>
+            <replace from=" %END_CALL_EXTRA" to=""/>
+            <replace from=" %INFIX_EXTRA" to=""/>
+            <replace from=" %CONNECTION_TYPE" to=""/>
+            <replace from=" %USE_CONNECTION_TYPE" to=""/>
+        </insert-template>
+        <insert-template name="gui.addAction">
+            <replace from="%POST_CALL" to=""/>
+            <replace from=" %END_EXTRA" to=""/>
+            <replace from=" %END_CALL_EXTRA" to=""/>
+            <replace from=" %INFIX_EXTRA" to=""/>
+            <replace from=" %CONNECTION_TYPE" to=""/>
+            <replace from=" %USE_CONNECTION_TYPE" to=""/>
+        </insert-template>
+    </template>
+
+    <template name="widget.addAction_with_shortcut">
+        <insert-template name="gui.addAction">
+            <replace from="%POST_CALL" to="returned.setShortcut(shortcut);"/>
+            <replace from=" %END_EXTRA" to=""/>
+            <replace from=" %END_CALL_EXTRA" to=""/>
+            <replace from=" %INFIX_EXTRA" to=", QKeySequence shortcut"/>
+            <replace from=" %CONNECTION_TYPE" to=", Qt.ConnectionType... connectionType"/>
+            <replace from=" %USE_CONNECTION_TYPE" to=", connectionType"/>
+        </insert-template>
+        <insert-template name="gui.addAction">
+            <replace from="%POST_CALL" to=""/>
+            <replace from=" %END_EXTRA" to=""/>
+            <replace from=" %END_CALL_EXTRA" to=""/>
+            <replace from=" %INFIX_EXTRA" to=""/>
+            <replace from=" %CONNECTION_TYPE" to=", Qt.ConnectionType... connectionType"/>
+            <replace from=" %USE_CONNECTION_TYPE" to=", connectionType"/>
+        </insert-template>
+    </template>
     <value-type name="QPainterPath">
        <modify-function signature="operator&amp;=(QPainterPath)" remove="all" />
         <modify-function signature="operator+=(QPainterPath)" remove="all" />
@@ -640,7 +708,7 @@
 
 
     <object-type name="QMenu">
-        <extra-includes>
+        <extra-includes until="6.2.*">
         <include file-name="io.qt.gui.*" location="java"/>
         </extra-includes>
         <inject-code>
@@ -661,80 +729,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 }
         </inject-code>
 
-        <template name="gui.addAction">
-        public final QAction addAction(%EXTRA String text, Object receiver, String method %END_EXTRA) {
-            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
-            %POST_CALL
-            returned.triggered.connect(receiver, method);
-
-            return returned;
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.Slot0 slot %END_EXTRA) {
-            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
-            %POST_CALL
-            returned.triggered.connect(slot);
-            return returned;
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.Slot1&lt;Boolean> slot %END_EXTRA) {
-            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
-            %POST_CALL
-            returned.triggered.connect(slot);
-            return returned;
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.AbstractPublicSignal0 signal %END_EXTRA) {
-            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
-            %POST_CALL
-            returned.triggered.connect(signal);
-            return returned;
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.AbstractPublicSignal1&lt;Boolean> signal %END_EXTRA) {
-            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
-            %POST_CALL
-            returned.triggered.connect(signal);
-            return returned;
-        }
-        </template>
-
-        <template name="gui.addAction_with_shortcut">
-            <insert-template name="gui.addAction">
-                <replace from="%POST_CALL" to="returned.setShortcut(shortcut);"/>
-                <replace from=" %END_EXTRA" to=", QKeySequence shortcut"/>
-                <replace from=" %END_CALL_EXTRA" to=""/>
-            </insert-template>
-
-        public final QAction addAction(%EXTRA String text, Object receiver, String method) {
-            return addAction(%CALL_EXTRA text, receiver, method, new QKeySequence(0));
-        }
-        
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.Slot0 slot) {
-            return addAction(%CALL_EXTRA text, slot, new QKeySequence(0));
-        }
-        
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.Slot1&lt;Boolean> slot) {
-            return addAction(%CALL_EXTRA text, slot, new QKeySequence(0));
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.AbstractPublicSignal0 signal) {
-            return addAction(%CALL_EXTRA text, signal, new QKeySequence(0));
-        }
-
-        public final QAction addAction(%EXTRA String text, io.qt.core.QMetaObject.AbstractPublicSignal1&lt;Boolean> signal) {
-            return addAction(%CALL_EXTRA text, signal, new QKeySequence(0));
-        }
-        </template>
-
-        <inject-code>
+        <inject-code until="6.2.*">
             <insert-template name="gui.addAction_with_shortcut">
                 <replace from="%EXTRA " to=""/>
                 <replace from="%CALL_EXTRA " to=""/>
             </insert-template>
-        </inject-code>
-
-        <inject-code>
             <insert-template name="gui.addAction_with_shortcut">
                 <replace from="%EXTRA" to="QIcon icon,"/>
                 <replace from="%CALL_EXTRA" to="icon,"/>
@@ -761,16 +760,19 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
 
     <object-type name="QMenuBar">
-        <extra-includes>
-            <include file-name="io.qt.gui.*" location="java" since="6.0.0"/>
+        <extra-includes since="6.0.0" until="6.2.*">
+            <include file-name="io.qt.gui.*" location="java"/>
         </extra-includes>
-        <inject-code>
+        <inject-code until="6.2.*">
             <insert-template name="gui.addAction">
                 <replace from="%POST_CALL" to=""/>
                 <replace from=" %END_EXTRA" to=""/>
                 <replace from=" %END_CALL_EXTRA" to=""/>
+                <replace from=" %INFIX_EXTRA" to=""/>
                 <replace from="%EXTRA " to=""/>
                 <replace from="%CALL_EXTRA " to=""/>
+                <replace from=" %CONNECTION_TYPE" to=""/>
+                <replace from=" %USE_CONNECTION_TYPE" to=""/>
             </insert-template>
         </inject-code>
         <modify-function signature="clear()">
@@ -1787,6 +1789,20 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
     </object-type>
 
     <object-type name="QWidget">
+        <extra-includes since="6.3.0">
+        <include file-name="io.qt.core.*" location="java"/>
+        <include file-name="io.qt.gui.*" location="java"/>
+        </extra-includes>
+        <inject-code since="6.3.0">
+            <insert-template name="widget.addAction_with_shortcut">
+                <replace from="%EXTRA " to=""/>
+                <replace from="%CALL_EXTRA " to=""/>
+            </insert-template>
+            <insert-template name="widget.addAction_with_shortcut">
+                <replace from="%EXTRA" to="QIcon icon,"/>
+                <replace from="%CALL_EXTRA" to="icon,"/>
+            </insert-template>
+        </inject-code>
         <modify-function signature="paintEvent(QPaintEvent*)" thread-affine="ui">
             <inject-code class="shell" position="beginning">
             QTJAMBI_ABOUT_TO_PAINT(%env, __java_this)
@@ -2489,7 +2505,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </modify-function>
     </object-type>
     <object-type name="QToolBar">
-        <extra-includes>
+        <extra-includes until="6.2.*">
             <include file-name="io.qt.gui.*" location="java"/>
         </extra-includes>
         <modify-function signature="initStyleOption(QStyleOptionToolBar*)const">
@@ -2503,22 +2519,26 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
+        <inject-code until="6.2.*">
             <insert-template name="gui.addAction">
                 <replace from="%POST_CALL" to=""/>
                 <replace from=" %END_EXTRA" to=""/>
                 <replace from=" %END_CALL_EXTRA" to=""/>
                 <replace from="%EXTRA" to="QIcon icon,"/>
                 <replace from="%CALL_EXTRA" to="icon,"/>
+                <replace from=" %INFIX_EXTRA" to=""/>
+                <replace from=" %CONNECTION_TYPE" to=""/>
+                <replace from=" %USE_CONNECTION_TYPE" to=""/>
             </insert-template>
-        </inject-code>
-        <inject-code>
             <insert-template name="gui.addAction">
                 <replace from="%POST_CALL" to=""/>
                 <replace from=" %END_EXTRA" to=""/>
                 <replace from=" %END_CALL_EXTRA" to=""/>
                 <replace from="%EXTRA " to=""/>
+                <replace from=" %INFIX_EXTRA" to=""/>
                 <replace from="%CALL_EXTRA " to=""/>
+                <replace from=" %CONNECTION_TYPE" to=""/>
+                <replace from=" %USE_CONNECTION_TYPE" to=""/>
             </insert-template>
         </inject-code>
     </object-type>
@@ -2630,7 +2650,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="1" thread-affine="yes"/>
         </modify-function>
         <modify-function signature="aboutQt()" thread-affine="ui"/>
-        <modify-function signature="resolveInterface(const char *, int)const" access="private">
+        <modify-function signature="resolveInterface(const char *, int)const" access="private" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">

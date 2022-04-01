@@ -33,6 +33,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -41,8 +44,13 @@ import org.junit.Test;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
+import io.qt.core.QDir;
+import io.qt.core.QEventLoop;
+import io.qt.core.QFile;
+import io.qt.core.QIODevice;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
+import io.qt.core.QTextStream;
 import io.qt.core.Qt;
 import io.qt.dbus.QDBusConnection;
 import io.qt.dbus.QDBusInterface;
@@ -51,6 +59,7 @@ import io.qt.dbus.QDBusPendingCall;
 import io.qt.dbus.QDBusPendingReply;
 import io.qt.dbus.QDBusReply;
 import io.qt.gui.QColor;
+import io.qt.internal.QtJambiInternal;
 
 public class TestDBusConnect {
 	
@@ -61,43 +70,87 @@ public class TestDBusConnect {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
+		System.out.println("TestDBusConnect::testInitialize()...");
 		sb = QDBusConnection.sessionBus();
 		Assume.assumeTrue("QDBus session bus is not connected: "+sb.lastError().message(), sb.isConnected());
+		ApplicationInitializer.testInitialize();
 		QtDBusPong.registerTypes();
 		pongThread = new Thread(() -> {
+			QEventLoop loop = new QEventLoop();
 			try {
-				System.out.println("Deploying QtDBusPong...");
-				QApplicationTest.testDeployerApp("QtDBusPong", "dbus");
+				System.out.println("TestDBusConnect: Deploying QtDBusPong...");
+				ApplicationInitializer.testDeployerApp("QtDBusPong", "dbus");
+				System.out.println("TestDBusConnect: Deploying QtDBusPong finished");
 			} catch (InterruptedException e) {
 			} catch (Throwable e) {
 				exception = e;
+			}finally {
+				loop.dispose();
 			}
 		});
 		pongThread.start();
 		pongThread.join(2000);
-		File testFile = new File(new File(new File(new File(System.getProperty("user.dir"), "build"), "tests"), "tmp"), "touch.test");
+		long t1 = System.currentTimeMillis();
+		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		File testFile = new File(new File(new File(new File(new File(System.getProperty("user.dir"), version), "build"), "tests"), "tmp"), "touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
 			pongThread.join(2000);
+			if(System.currentTimeMillis()-t1>25000) {
+				Assume.assumeFalse("Deploying QtDBusPong failed", true);
+				break;
+			}
 		}
+		if (exception != null) {
+			Throwable _exception = exception;
+			exception = null;
+			throw new org.junit.AssumptionViolatedException("Deploying QtDBusPong failed", _exception);
+		}
+		System.out.println("TestDBusConnect: Get bus interface...");
 		iface = new QDBusInterface(QtDBusPong.PONG_SERVICE, "/", QtDBusPong.PONG_INTERFACE_NAME, sb);
 		if(!iface.isValid())
 			fail(sb.lastError().message());
+		System.out.println("TestDBusConnect::testInitialize() finished");
 	}
 	
 	@AfterClass
     public static void testDispose() throws Throwable {
-		if(iface!=null) {
-			iface.call("quit");
-			iface.dispose();
-			iface = null;
+		try {
+			if(iface!=null) {
+				iface.call("quit");
+				iface.dispose();
+				iface = null;
+			}
+			if(pongThread!=null) {
+				pongThread.interrupt();
+				pongThread.join();
+				pongThread = null;
+			}
+			if (exception != null)
+				throw exception;
+		} finally {
+			{
+				String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+				String jambidir = System.getProperty("user.dir");
+				final File testsDir = new File(new File(new File(jambidir, version), "build"), "tests");
+				final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+				if(new File(targetDir, "pid").isFile()) {
+					String processName = new String(Files.readAllBytes(new File(targetDir, "pid").toPath())).trim();;
+					if(processName!=null && !processName.isEmpty()) {
+						File jambiDeploymentDir = new File(tmpDir, "QtJambi" + version + "_" + System.getProperty("user.name") + "_" + processName);
+						System.out.println("Deleting "+jambiDeploymentDir.getAbsolutePath());
+						if(jambiDeploymentDir.isDirectory())
+							ApplicationInitializer.clearAndDelete(jambiDeploymentDir);
+					}
+				}
+				
+				if(targetDir.isDirectory() && !Boolean.getBoolean("qtjambi.deployer.skip.deletion")) {
+	    			Logger.getLogger("io.qt.autotests").log(Level.FINEST, ()->"Cleaning deployer directory "+targetDir);
+	    			ApplicationInitializer.clearAndDelete(targetDir);
+	    		}
+			}
+			ApplicationInitializer.testDispose();
 		}
-		if(pongThread!=null) {
-			pongThread.interrupt();
-			pongThread.join();
-			pongThread = null;
-		}
-		if (exception != null)
-			throw exception;
 	}
 	
 	@Test

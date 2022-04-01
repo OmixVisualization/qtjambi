@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUninvokable;
@@ -74,17 +75,12 @@ import io.qt.widgets.QStyleOptionSlider;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.QWidgetItem;
 
-/*
-class CustomStyle extends QWindowsStyle {
-    public static QStyleOption m_option = null;
-
-    @Override
-    public void drawControl(ControlElement element, QStyleOption opt, QPainter p, QWidget w) {
-        m_option = opt;
+public class TestPolymorphicTypes extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
     }
-}*/
-
-public class TestPolymorphicTypes extends QApplicationTest {
 	
 	public static class TestWidget extends QWidget{
 		TestWidget(){

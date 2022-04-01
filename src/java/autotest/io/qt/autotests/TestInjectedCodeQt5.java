@@ -55,7 +55,7 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestInjectedCodeQt5 extends QApplicationTest {
+public class TestInjectedCodeQt5 extends ApplicationInitializer {
     
     @Test
     public void testQLineFintersection() {

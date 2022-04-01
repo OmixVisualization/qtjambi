@@ -56,8 +56,6 @@ import io.qt.core.QVariant;
 import io.qt.sql.QSqlDatabase;
 import io.qt.sql.QSqlField;
 import io.qt.sql.QSqlRecord;
-import io.qt.unittests.support.CategorySQL;
-import io.qt.unittests.support.FilterSQL;
 
 // SQL support is an optional part of API:
 // 1) The javac has to compile this package (this is the usual way the
@@ -65,14 +63,7 @@ import io.qt.unittests.support.FilterSQL;
 // 2) The ANT testrunner looks over the source code folder for tests the
 //    problem is that this class won't load in environment where OpenGL
 //    package does not exist.  FIXME
-@Category(CategorySQL.class)
-public class TestSQLInjectedCodeQt5 extends QApplicationTest {
-
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterSQL.detectStatic());
-        QApplicationTest.testInitialize();
-    }
+public class TestSQLInjectedCodeQt5 extends ApplicationInitializer {
 
     // Used by testSqlTableModelBeforeInsertJava()
 	private void receiveBeforeInsert(QSqlRecord record) {

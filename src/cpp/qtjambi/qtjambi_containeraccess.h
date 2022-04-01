@@ -482,10 +482,10 @@ static int qtjambi_register_container_type(const QByteArray& typeName, const QMe
     if(newMetaType==QMetaType::UnknownType){
         static const QtMetaContainerPrivate::QMetaSequenceInterface defaultInterface = QtMetaContainerPrivate::QMetaSequenceInterface(QtMetaContainerPrivate::QMetaSequenceForContainer<Container>());
         newMetaType = qtjambi_register_container_type(typeName, sizeof(Container), Q_ALIGNOF(Container), size==0, metaType,
-                                                QtPrivate::QMetaTypeForType<Container>::getDefaultCtr(),
-                                                QtPrivate::QMetaTypeForType<Container>::getCopyCtr(),
-                                                QtPrivate::QMetaTypeForType<Container>::getMoveCtr(),
-                                                QtPrivate::QMetaTypeForType<Container>::getDtor(),
+                                                QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::defaultCtr,
+                                                QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::copyCtr,
+                                                QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::moveCtr,
+                                                QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::dtor,
                                                 QtPrivate::QEqualityOperatorForType<Container>::equals,
                                                 QtPrivate::QLessThanOperatorForType<Container>::lessThan,
                                                 QtPrivate::QDebugStreamOperatorForType<Container>::debugStream,
@@ -530,10 +530,10 @@ int qtjambi_register_bicontainer_type(const QByteArray& typeName, const QMetaTyp
     if(newMetaType==QMetaType::UnknownType){
         static const QtMetaContainerPrivate::QMetaAssociationInterface defaultInterface = QtMetaContainerPrivate::QMetaAssociationInterface(QtMetaContainerPrivate::QMetaAssociationForContainer<Container>());
         newMetaType = qtjambi_register_bicontainer_type(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
-                                                        QtPrivate::QMetaTypeForType<Container>::getDefaultCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getCopyCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getMoveCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getDtor(),
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::defaultCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::copyCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::moveCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::dtor,
                                                         QtPrivate::QEqualityOperatorForType<Container>::equals,
                                                         QtPrivate::QLessThanOperatorForType<Container>::lessThan,
                                                         QtPrivate::QDebugStreamOperatorForType<Container>::debugStream,
@@ -560,10 +560,10 @@ static int qtjambi_register_qpair_type(const QByteArray& typeName, const QMetaTy
     int newMetaType = QMetaType::fromName(typeName).id();
     if(newMetaType==QMetaType::UnknownType){
         newMetaType = qtjambi_register_bicontainer_type(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
-                                                        QtPrivate::QMetaTypeForType<Container>::getDefaultCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getCopyCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getMoveCtr(),
-                                                        QtPrivate::QMetaTypeForType<Container>::getDtor(),
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::defaultCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::copyCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::moveCtr,
+                                                        QtJambiPrivate::QMetaTypeInterfaceFunctions<Container>::dtor,
                                                         QtPrivate::QEqualityOperatorForType<Container>::equals,
                                                         QtPrivate::QLessThanOperatorForType<Container>::lessThan,
                                                         QtPrivate::QDebugStreamOperatorForType<Container>::debugStream,

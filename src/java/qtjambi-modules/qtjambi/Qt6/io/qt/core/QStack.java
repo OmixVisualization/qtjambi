@@ -190,6 +190,11 @@ public class QStack<T> extends QList<T> implements Deque<T>
     public final T peekFirst() {
         return first();
     }
+    
+    @QtUninvokable
+    public final T top() {
+        return last();
+    }
 
     @Override
     @QtUninvokable
@@ -206,7 +211,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     @Override
     @QtUninvokable
     public final T pop() {
-        return takeFirst();
+        return takeLast();
     }
     
     /**

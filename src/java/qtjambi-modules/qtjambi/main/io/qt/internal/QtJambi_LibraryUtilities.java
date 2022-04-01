@@ -30,27 +30,101 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import static io.qt.internal.NativeLibraryManager.loadQtCore;
-import static io.qt.internal.NativeLibraryManager.loadQtJambiLibrary;
+import static io.qt.internal.NativeLibraryManager.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Properties;
 
 import io.qt.QtUninvokable;
 
 final class QtJambi_LibraryUtilities {
 	
     static {
+    	Thread shutdownHook = null;
         try {
-        	loadQtCore();
-        	loadQtJambiLibrary();
-        	
         	if(!Boolean.getBoolean("io.qt.no-library-shutdown-hook")) {
-        		Thread shutdownHook = new Thread(QtJambi_LibraryUtilities::shutdown);
-        		shutdownHook.setName("QtJambi_LibraryShutdown");
+        		shutdownHook = RetroHelper.newShutdownThread(QtJambi_LibraryUtilities::shutdown, "QtJambi_LibraryShutdown");
+        		shutdownHook.setContextClassLoader(null);
         		Runtime.getRuntime().addShutdownHook(shutdownHook);
         	}
-        } catch(RuntimeException | Error t) {
+        	File coreLib = loadQtCore();
+        	try{
+        		loadQtJambiLibrary();
+            } catch(UnsatisfiedLinkError t) {
+            	switch(NativeLibraryManager.operatingSystem) {
+            	case MacOSX:
+            		if(coreLib!=null) {
+            			File prl = new File(coreLib.getParentFile(), "Resources/QtCore.prl");
+            			if(prl.exists()) {
+            				Properties prlProp = new Properties();
+            			    try(FileInputStream inStream = new FileInputStream(prl)){
+            			    	prlProp.load(inStream);
+            			    } catch(Throwable t2) {}
+            			    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+            			    if(!version.isEmpty()) {
+            			    	if(!version.startsWith(QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + ".")) {
+            			    		throw new LinkageError("Cannot combine QtJambi " + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + " with Qt " + version + ".", t);
+            			    	}
+            			    }
+            			}
+            		}
+            		break;
+				case Windows:
+					if(coreLib!=null) {
+						File prl = new File(coreLib.getParentFile(), "Qt"+QtJambiVersion.qtMajorVersion+"Core.prl");
+						if(!prl.exists()) {
+							prl = new File(coreLib.getParentFile().getParentFile(), "lib\\Qt"+QtJambiVersion.qtMajorVersion+"Core.prl");
+						}
+            			if(prl.exists()) {
+            				Properties prlProp = new Properties();
+            			    try(FileInputStream inStream = new FileInputStream(prl)){
+            			    	prlProp.load(inStream);
+            			    } catch(Throwable t2) {}
+            			    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+            			    if(!version.isEmpty()) {
+            			    	if(!version.startsWith(QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + ".")) {
+            			    		throw new LinkageError("Cannot combine QtJambi " + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + " with Qt " + version + ".", t);
+            			    	}
+            			    }
+            			}
+						if(new File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || isMinGWBuilt()) {
+							throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead.", t);
+						}else {
+							throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+						}
+					}
+					break;
+				default:
+					if(coreLib!=null) {
+            			File prl = new File(coreLib.getParentFile(), "Qt"+QtJambiVersion.qtMajorVersion+"Core.prl");
+            			if(prl.exists()) {
+            				Properties prlProp = new Properties();
+            			    try(FileInputStream inStream = new FileInputStream(prl)){
+            			    	prlProp.load(inStream);
+            			    } catch(Throwable t2) {}
+            			    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+            			    if(!version.isEmpty()) {
+            			    	if(!version.startsWith(QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + ".")) {
+            			    		throw new LinkageError("Cannot combine QtJambi " + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + " with Qt " + version + ".", t);
+            			    	}
+            			    }
+            			}
+            		}
+					break;
+            	}
+                throw t;
+        	}
+        } catch(Error t) {
+    		if(shutdownHook!=null)
+        		Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        	resetDeploymentSpecs();
             throw t;
         } catch(Throwable t) {
-            throw new RuntimeException(t);
+    		if(shutdownHook!=null)
+        		Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        	resetDeploymentSpecs();
+            throw new ExceptionInInitializerError(t);
         }
     }
 

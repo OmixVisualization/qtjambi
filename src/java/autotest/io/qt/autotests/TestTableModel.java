@@ -28,23 +28,27 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static io.qt.core.QLogging.qWarning;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QAbstractTableModel;
 import io.qt.core.QModelIndex;
-import io.qt.core.QTimer;
 import io.qt.core.Qt.Orientation;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QTableView;
 
-public class TestTableModel extends QApplicationTest {
+public class TestTableModel extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void test() throws InterruptedException, IOException {
     	Set<Integer> roles = new TreeSet<>();

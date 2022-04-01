@@ -43,7 +43,7 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
 
-public class TestContainersQt5 extends QApplicationTest {
+public class TestContainersQt5 extends ApplicationInitializer {
 	
     private Tulip tulip;
 

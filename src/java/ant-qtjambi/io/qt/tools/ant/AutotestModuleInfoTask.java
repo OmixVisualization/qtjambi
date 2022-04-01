@@ -46,21 +46,26 @@ public class AutotestModuleInfoTask extends Task {
     private String msg = "";
     @Override
     public void execute() throws BuildException {
-        getProject().log(this, msg, Project.MSG_INFO);
-		java.io.File directory = new java.io.File(outputDirectory);
+        if(msg!=null && !msg.isEmpty())
+        	getProject().log(this, msg, Project.MSG_INFO);
+		java.io.File outputDirectory = new java.io.File(this.outputDirectory);
+		java.io.File javaDirectory = new java.io.File(this.javaDirectory);
 		Set<String> modules = new HashSet<>();
-		for(java.io.File subdir : new java.io.File(javaDirectory).listFiles()) {
+//		getProject().log(this, "Analyzing modules in "+javaDirectory, Project.MSG_INFO);
+		for(java.io.File subdir : javaDirectory.listFiles()) {
 			if(subdir.isDirectory() 
 					&& (subdir.getName().equals("qtjambi") 
 					 || subdir.getName().startsWith("qtjambi."))) {
 				modules.add(subdir.getName());
 			}
 		}
-		try(PrintWriter writer = new PrintWriter(new FileWriter(new java.io.File(directory, "module-info.java")));){
+//		getProject().log(this, "Writing dependencies to file "+outputDirectory+": "+String.join(", ", modules), Project.MSG_INFO);
+		try(PrintWriter writer = new PrintWriter(new FileWriter(new java.io.File(outputDirectory, "module-info.java")));){
 			writer.println("module qtjambi.autotest{");
 			writer.println("\trequires java.base;");
 			writer.println("\trequires java.logging;");
 			writer.println("\trequires java.desktop;");
+			writer.println("\trequires java.prefs;");
 			writer.println("\trequires junit;");
 			writer.println("\trequires org.hamcrest.core;");
 			for(String pkg : modules){

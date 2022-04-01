@@ -43,6 +43,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +59,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -79,7 +83,90 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     private String libInfix = "";
 
     private final List<String> generatorPreProcDefinesList = new ArrayList<>();
+    private final List<String> generatorStaticLibsList = new ArrayList<>();
     private final Set<String> skippedModules = new HashSet<>();
+    
+    static class ModuleInfo{
+    	ModuleInfo(String preprocdef, String libraryName) {
+			this.preprocdef = preprocdef;
+			this.libraryName = libraryName;
+		}
+		final String preprocdef;
+		final String libraryName;
+    }
+    private static Map<String,ModuleInfo> modules = new TreeMap<>();
+    static {
+	    modules.put("gui", new ModuleInfo("QTJAMBI_NO_GUI","QtGui"));
+	    modules.put("opengl",new ModuleInfo("QTJAMBI_NO_OPENGL", "QtOpenGL"));
+	    modules.put("widgets",new ModuleInfo("QTJAMBI_NO_WIDGETS", "QtWidgets"));
+	    modules.put("openglwidgets",new ModuleInfo("QTJAMBI_NO_OPENGLWIDGETS", "QtOpenGLWidgets"));
+	    modules.put("qml",new ModuleInfo("QTJAMBI_NO_QML", "QtQml"));
+	    modules.put("quick",new ModuleInfo("QTJAMBI_NO_QUICK", "QtQuick"));
+	    modules.put("quicktest",new ModuleInfo("QTJAMBI_NO_QUICKTEST", "QtQuickTest"));
+	    modules.put("quickcontrols2",new ModuleInfo("QTJAMBI_NO_QUICKCONTROLS2", "QtQuickControls2"));
+	    modules.put("quickwidgets",new ModuleInfo("QTJAMBI_NO_QUICKWIDGETS", "QtQuickWidgets"));
+	    modules.put("xml",new ModuleInfo("QTJAMBI_NO_XML", "QtXml"));
+		modules.put("network",new ModuleInfo("QTJAMBI_NO_NETWORK", "QtNetwork"));
+		modules.put("concurrent",new ModuleInfo("QTJAMBI_NO_CONCURRENT", "QtQuickControls2"));
+		modules.put("sql",new ModuleInfo("QTJAMBI_NO_SQL", "QtSql"));
+		modules.put("printsupport",new ModuleInfo("QTJAMBI_NO_PRINTSUPPORT", "QtPrintSupport"));
+		modules.put("networkauth",new ModuleInfo("QTJAMBI_NO_NETWORKAUTH", "QtNetworkAuth"));
+		modules.put("xmlpatterns",new ModuleInfo("QTJAMBI_NO_XMLPATTERNS", "QtXmlPatterns"));
+		modules.put("virtualkeyboard",new ModuleInfo("QTJAMBI_NO_VIRTUAL_KEYBOARD", "QtVirtualKeyboard"));
+		modules.put("quick3d",new ModuleInfo("QTJAMBI_NO_QUICK3D", "QtQuick3D"));
+		modules.put("serialport",new ModuleInfo("QTJAMBI_NO_SERIALPORT", "QtSerialPort"));
+		modules.put("serialbus",new ModuleInfo("QTJAMBI_NO_SERIALBUS", "QtSerialBus"));
+		modules.put("sensors",new ModuleInfo("QTJAMBI_NO_SENSORS", "QtSensors"));
+		modules.put("location",new ModuleInfo("QTJAMBI_NO_LOCATION", "QtLocation"));
+		modules.put("positioning",new ModuleInfo("QTJAMBI_NO_POSITIONING", "QtPositioning"));
+		modules.put("bluetooth",new ModuleInfo("QTJAMBI_NO_BLUETOOTH", "QtBluetooth"));
+		modules.put("script",new ModuleInfo("QTJAMBI_NO_SCRIPT", "QtScript"));
+		modules.put("scripttools",new ModuleInfo("QTJAMBI_NO_SCRIPTTOOLS", "QtScriptTools"));
+		modules.put("multimedia",new ModuleInfo("QTJAMBI_NO_MULTIMEDIA", "QtMultimedia"));
+		modules.put("multimediawidgets",new ModuleInfo("QTJAMBI_NO_MULTIMEDIAWIDGETS", "QtMultimediaWidgets"));
+		modules.put("svg",new ModuleInfo("QTJAMBI_NO_SVG", "QtSvg"));
+		modules.put("svgwidgets",new ModuleInfo("QTJAMBI_NO_SVGWIDGETS", "QtSvgWidgets"));
+		modules.put("dbus",new ModuleInfo("QTJAMBI_NO_DBUS", "QtDBus"));
+		modules.put("test",new ModuleInfo("QTJAMBI_NO_TEST", "QtTest"));
+		modules.put("help",new ModuleInfo("QTJAMBI_NO_HELP", "QtHelp"));
+		modules.put("qt3dcore",new ModuleInfo("QTJAMBI_NO_QT3DCORE", "Qt3DCore"));
+		modules.put("qt3drender",new ModuleInfo("QTJAMBI_NO_QT3DRENDER", "Qt3DRender"));
+		modules.put("qt3dinput",new ModuleInfo("QTJAMBI_NO_QT3DINPUT", "Qt3DInput"));
+		modules.put("qt3dquick",new ModuleInfo("QTJAMBI_NO_QT3DQUICK", "Qt3DQuick"));
+		modules.put("qt3dquickrender",new ModuleInfo("QTJAMBI_NO_QT3DQUICKRENDER", "Qt3DQuickRender"));
+		modules.put("qt3dquickscene2d",new ModuleInfo("QTJAMBI_NO_QT3DQUICKSCENE2D", "Qt3DQuickScene2D"));
+		modules.put("qt3dquickextras",new ModuleInfo("QTJAMBI_NO_QT3DQUICKEXTRAS", "Qt3DQuickExtras"));
+		modules.put("qt3dextras",new ModuleInfo("QTJAMBI_NO_QT3DEXTRAS", "Qt3DExtras"));
+		modules.put("qt3dlogic",new ModuleInfo("QTJAMBI_NO_QT3DLOGIC", "Qt3DLogic"));
+		modules.put("qt3danimation",new ModuleInfo("QTJAMBI_NO_QT3DANIMATION", "Qt3DAnimation"));
+		modules.put("websockets",new ModuleInfo("QTJAMBI_NO_WEBSOCKETS", "QtWebSockets"));
+		modules.put("webchannel",new ModuleInfo("QTJAMBI_NO_WEBCHANNEL", "QtWebChannel"));
+		modules.put("webengine",new ModuleInfo("QTJAMBI_NO_WEBENGINE", "QtWebEngine"));
+		modules.put("webenginequick",new ModuleInfo("QTJAMBI_NO_WEBENGINEQUICK", "QtWebEngineQuick"));
+		modules.put("webenginecore",new ModuleInfo("QTJAMBI_NO_WEBENGINECORE", "QtWebEngineCore"));
+		modules.put("webenginewidgets",new ModuleInfo("QTJAMBI_NO_WEBENGINEWIDGETS", "QtWebEngineWidgets"));
+		modules.put("webview",new ModuleInfo("QTJAMBI_NO_WEBVIEW", "QtWebView"));
+		modules.put("uitools",new ModuleInfo("QTJAMBI_NO_UITOOLS", "QtUiTools"));
+		modules.put("bodymovin",new ModuleInfo("QTJAMBI_NO_LOTTIE", "QtBodymovin"));
+		modules.put("datavisualization",new ModuleInfo("QTJAMBI_NO_DATA_VISUALIZATION", "QtDataVisualization"));
+		modules.put("charts",new ModuleInfo("QTJAMBI_NO_CHARTS", "QtCharts"));
+//		modules.put("uiplugin",new ModuleInfo("QTJAMBI_NO_UIPLUGIN", "QtUiPlugin"));
+		modules.put("designer",new ModuleInfo("QTJAMBI_NO_DESIGNER", "QtDesigner"));
+		modules.put("remoteobjects",new ModuleInfo("QTJAMBI_NO_REMOTEOBJECTS", "QtRemoteObjects"));
+		modules.put("gamepad",new ModuleInfo("QTJAMBI_NO_GAMEPAD", "QtGamepad"));
+		modules.put("scxml",new ModuleInfo("QTJAMBI_NO_SCXML", "QtScxml"));
+		modules.put("statemachine",new ModuleInfo("QTJAMBI_NO_STATEMACHINE", "QtStateMachine"));
+		modules.put("nfc",new ModuleInfo("QTJAMBI_NO_NFC", "QtNfc"));
+		modules.put("texttospeech",new ModuleInfo("QTJAMBI_NO_TEXTTOSPEECH", "QtTextToSpeech"));
+		modules.put("purchasing",new ModuleInfo("QTJAMBI_NO_PURCHASING", "QtPurchasing"));
+		modules.put("xcbqpa",new ModuleInfo(null, "QtXcbQpa"));
+		modules.put("winextras",new ModuleInfo("QTJAMBI_NO_WINEXTRAS", "QtWinExtras"));
+		modules.put("macextras",new ModuleInfo("QTJAMBI_NO_MACEXTRAS", "QtMacExtras"));
+		modules.put("x11extras",new ModuleInfo("QTJAMBI_NO_X11EXTRAS", "QtX11Extras"));
+		modules.put("pdf",new ModuleInfo("QTJAMBI_NO_PDF", "QtPdf"));
+		modules.put("pdfwidgets",new ModuleInfo("QTJAMBI_NO_PDFWIDGETS", "QtPdfWidgets"));
+		modules.put("activex",new ModuleInfo("QTJAMBI_NO_ACTIVEX", "QtAxBase"));
+    }
     
 
     // did somebody mention something about methods never being longer than 10 lines?
@@ -202,18 +289,38 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             }
             mySetProperty(thisVerbose, Constants.DIRECTORY_ABSPATH, null, value, false);
         }
+        
+        {
+        	String value = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.autotests.no.jnicheck");   // used here
+            if(value == null){
+    			value = System.getenv("QTJAMBI_NO_JNICHECK");
+    			AntUtil.setNewProperty(propertyHelper, "qtjambi.autotests.no.jnicheck", Boolean.toString(value!=null));
+    		}
+            value = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.autotests");   // used here
+            if(value == null){
+    			value = System.getenv("QTJAMBI_TEST");
+    			if(value!=null)
+    				AntUtil.setNewProperty(propertyHelper, "qtjambi.autotests", value);
+    		}
+        }
 
-        String QTDIR = System.getenv("QTDIR");   // used here
+        String QTDIR = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");   // used here
         if(QTDIR == null){
-			QTDIR = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-		}else if(AntUtil.getPropertyAsString(propertyHelper, "QTDIR")==null){
-			AntUtil.setNewProperty(propertyHelper, "QTDIR", QTDIR);
+        	QTDIR = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
+        }
+        if(QTDIR == null){
+			QTDIR = System.getenv("QTDIR");
 		}
-		if(QTDIR != null)
-            getProject().log(this, "QTDIR is set: " + prettyValue(QTDIR), Project.MSG_INFO);
-//        else if(OSInfo.os() == OSInfo.OS.Windows || OSInfo.os() == OSInfo.OS.MacOS)
-//            getProject().log(this, "WARNING QTDIR is not set, yet this platform usually requires it to be set", Project.MSG_WARN);
-        else{
+		if(QTDIR != null) {
+			File qtdirDir = new File(QTDIR);
+			if(qtdirDir.isDirectory()) {
+				QTDIR = qtdirDir.getAbsolutePath();
+				getProject().log(this, "QTDIR is set: " + prettyValue(QTDIR), Project.MSG_INFO);
+			}else {
+				QTDIR = null;
+			}
+		}
+		if(QTDIR == null){
         	String value = AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR);
         	if(value!=null){
         		File binDir = new File(value);
@@ -226,6 +333,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         		throw new BuildException("No QTDIR specified.");
         	}
         }
+		if(QTDIR != null){
+			AntUtil.setNewProperty(propertyHelper, "QTDIR", QTDIR);
+			AntUtil.setNewProperty(propertyHelper, "qtjambi.qtdir", QTDIR);
+		}
 
         final String[] emitA = {
             Constants.BINDIR,
@@ -386,6 +497,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         case MacOS: 
         	s = OSInfo.K_MACOS;
         	mySetProperty(0, Constants.QTJAMBI_CONFIG_ISMACOSX, " (set by init)", "true", false);
+        	if(qtMajorVersion>=6 && qtMinorVersion>=2 && AntUtil.getProperty(propertyHelper, "qtjambi.pluginloader.build.from.source")==null) {
+        		AntUtil.setNewProperty(propertyHelper, "qtjambi.pluginloader.build.from.source", "true");
+        	}
         break;
         default: break;
         }
@@ -421,7 +535,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         
         mySetProperty(-1, Constants.EXEC_STRIP, null, null, false);  // report value
 
-        decideJava8HomeTarget();
         String javaHomeTarget = decideJavaHomeTarget();
         if(javaHomeTarget == null)
             throw new BuildException("Unable to determine JAVA_HOME_TARGET, setup environment variable JAVA_HOME (or JAVA_HOME_TARGET) or edit build.properties");
@@ -576,7 +689,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_MINOR,      String.valueOf(qtMinorVersion));
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_MINOR_NEXT, String.valueOf(qtMinorVersion + 1));
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_PATCHLEVEL, String.valueOf(qtPatchlevelVersion));
-
+        decideAlternativeJavaHomesTarget();
 
         versionSuffix = AntUtil.getPropertyAsString(propertyHelper, Constants.SUFFIX_VERSION);
         mySetProperty(-1, Constants.SUFFIX_VERSION, null, null, false);  // report
@@ -713,604 +826,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         }
         mySetProperty(-1, Constants.QTJAMBI_QREALTYPE, qrealSource, qrealtype, false);
 
-        if(detectQtDsoExistAndSetProperty(Constants.CORE, "QtCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null)) {
-        	
-	        boolean xmlAvailable = detectQtDsoExistAndSetProperty(Constants.XML, "QtXml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "xml");
-
-	        boolean networkAvailable = detectQtDsoExistAndSetProperty(Constants.NETWORK, "QtNetwork", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "network");
-
-	        boolean guiAvailable = detectQtDsoExistAndSetProperty(Constants.GUI, "QtGui", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "gui");
-	        
-	        boolean openglAvailable = qtMajorVersion>=6 && detectQtDsoExistAndSetProperty(Constants.OPENGL, "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "opengl");
-	        
-	        boolean widgetsAvailable = detectQtDsoExistAndSetProperty(Constants.WIDGETS, "QtWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "widgets");
-	        
-	        boolean openglwidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.OPENGLWIDGETS, "QtOpenGLWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "openglwidgets");
-	    	
-	        boolean dbusAvailable = detectQtDsoExistAndSetProperty(Constants.DBUS, "QtDBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "dbus");
-
-			boolean luceneAvailable = detectQtDsoExistAndSetProperty(Constants.CLUCENE, "QtCLucene", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean iopluginAvailable = detectQtDsoExistAndSetProperty(Constants.UIPLUGIN, "QtUiPlugin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uiplugin");
-	        
-	        boolean iotoolsAvailable = detectQtDsoExistAndSetProperty(Constants.UITOOLS, "QtUiTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uitools");
-	        
-	        boolean chartsAvailable = detectQtDsoExistAndSetProperty(Constants.CHARTS, "QtCharts", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "charts");
-	        
-	        boolean datavisAvailable = detectQtDsoExistAndSetProperty(Constants.DATA_VISUALIZATION, "QtDataVisualization", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "datavisualization");
-	        
-	        boolean designerAvailable = detectQtDsoExistAndSetProperty(Constants.DESIGNER, "QtDesigner", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "designer");
-
-	        boolean designerCompnentsAvailable = detectQtDsoExistAndSetProperty(Constants.DESIGNERCOMPONENTS, "QtDesignerComponents", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean sqlAvailable = detectQtDsoExistAndSetProperty(Constants.SQL, "QtSql", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "sql");
-
-	        boolean helpAvailable = detectQtDsoExistAndSetProperty(Constants.HELP, "QtHelp", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "help");
-
-	        boolean multimediaAvailable = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIA, "QtMultimedia", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimedia");
-
-	        boolean networkAuthAvailable = detectQtDsoExistAndSetProperty(Constants.NETWORKAUTH, "QtNetworkAuth", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "networkauth");
-			
-	        boolean scriptAvailable = detectQtDsoExistAndSetProperty(Constants.SCRIPT, "QtScript", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "script");
-
-	        boolean scriptToolsAvailable = detectQtDsoExistAndSetProperty(Constants.SCRIPTTOOLS, "QtScriptTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scripttools");
-
-	        boolean svgAvailable = detectQtDsoExistAndSetProperty(Constants.SVG, "QtSvg", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svg");
-	        
-	        boolean svgWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.SVGWIDGETS, "QtSvgWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svgwidgets");
-
-	        boolean testAvailable = detectQtDsoExistAndSetProperty(Constants.TEST, "QtTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "test");
-			
-	        boolean gamepadAvailable = detectQtDsoExistAndSetProperty(Constants.GAMEPAD, "QtGamepad", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "gamepad");
-			
-	        boolean qmlAvailable = detectQtDsoExistAndSetProperty(Constants.QML, "QtQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qml");
-	        
-	        boolean qmlModelsAvailable = detectQtDsoExistAndSetProperty(Constants.QML_MODELS, "QtQmlModels", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qmlmodels");
-	        
-	        boolean quickAvailable = detectQtDsoExistAndSetProperty(Constants.QUICK, "QtQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick");
-	        
-	        boolean quickWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKWIDGETS, "QtQuickWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickwidgets");
-	        
-	        boolean printSupportAvailable = detectQtDsoExistAndSetProperty(Constants.PRINTSUPPORT, "QtPrintSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "printsupport");
-	        
-	        boolean positioningAvailable = detectQtDsoExistAndSetProperty(Constants.POSITIONING, "QtPositioning", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "positioning");
-	        
-	        boolean positioningQuickAvailable = detectQtDsoExistAndSetProperty(Constants.POSITIONINGQUICK, "QtPositioningQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean webChannelAvailable = detectQtDsoExistAndSetProperty(Constants.WEBCHANNEL, "QtWebChannel", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webchannel");
-	        
-	        boolean webengineCoreAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINECORE, "QtWebEngineCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginecore");
-			
-	        boolean webengineAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINE, "QtWebEngine", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webengine");
-	        
-	        boolean webengineQuickAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINEQUICK, "QtWebEngineQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginequick");
-			
-	        boolean webengineWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINEWIDGETS, "QtWebEngineWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginewidgets");
-	        
-	        detectQtDsoExistAndSetProperty("qtjambi.purchasing", "QtPurchasing", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "purchasing");
-			
-	        boolean bodymovinAvailable = detectQtDsoExistAndSetProperty("qtjambi.bodymovin", "QtBodymovin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bodymovin");
-	        
-	        boolean webViewAvailable = detectQtDsoExistAndSetProperty(Constants.WEBVIEW, "QtWebView", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webview");
-	        
-			boolean labTemplatesAvailable = detectQtDsoExistAndSetProperty(Constants.LABSTEMPLATES, "QtLabsTemplates", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "labstemplates");
-			
-			boolean angleAvailable = detectQtDsoExistAndSetProperty(Constants.ANGLE, "QtANGLE", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "angle");
-
-	        boolean xmlPatternsAvailable = detectQtDsoExistAndSetProperty(Constants.XMLPATTERNS, "QtXmlPatterns", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "xmlpatterns");
-	        
-	        detectQtDsoExistAndSetProperty("qtjambi.virtualkeyboard", "QtVirtualKeyboard", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "virtualkeyboard");
-	        
-	        boolean quick3dAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick3d");
-	        boolean quick3dAssetImportAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dUtilsAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "QtQuick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dRuntimeRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean shaderToolsAvailable = detectQtDsoExistAndSetProperty("qtjambi.shadertools", "QtShaderTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean eglDeviceIntegrationAvailable = detectQtDsoExistAndSetProperty(Constants.EGLDEVICEINTEGRATION, "QtEglDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean eglFSDeviceIntegrationAvailable = detectQtDsoExistAndSetProperty("qtjambi.eglfsdeviceintegration", "QtEglFSDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	    	
-	        boolean eglFsKmsSupportAvailable = detectQtDsoExistAndSetProperty("qtjambi.eglfskmssupport", "QtEglFsKmsSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean waylandClientAvailable = detectQtDsoExistAndSetProperty(Constants.WAYLANDCLIENT, "QtWaylandClient", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean waylandCompositorAvailable = detectQtDsoExistAndSetProperty("qtjambi.waylandcompositor", "QtWaylandCompositor", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean xcbQpaAvailable = detectQtDsoExistAndSetProperty(Constants.XCBQPA, "QtXcbQpa", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	    	
-	        boolean winExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.WINEXTRAS, "QtWinExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "winextras");
-	    	
-	        boolean macExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.MACEXTRAS, "QtMacExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "macextras");
-	    	
-	        boolean x11ExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.X11EXTRAS, "QtX11Extras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "x11extras");
-	    	
-	        boolean concurrentAvailable = detectQtDsoExistAndSetProperty(Constants.CONCURRENT, "QtConcurrent", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "concurrent");
-	        
-	        boolean _3DCoreAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DCORE, "Qt3DCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dcore");
-	    	
-	        boolean _3DRenderAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DRENDER, "Qt3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3drender");
-			
-	        boolean _3DQuickRenderAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKRENDER, "Qt3DQuickRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickrender");
-			
-	        boolean _3DQuickInputAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKINPUT, "Qt3DQuickInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickinput");
-	    	
-	        boolean _3DQuickAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICK, "Qt3DQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquick");
-			
-	        boolean _3DExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DEXTRAS, "Qt3DExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dextras");
-	        
-	        boolean _3DQuickExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKEXTRAS, "Qt3DQuickExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickextras");
-	    	
-	        boolean _3DAnimationAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DANIMATION, "Qt3DAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3danimation");
-			
-	        boolean _3DQuickScene2DAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKSCENE2D, "Qt3DQuickScene2D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickscene2d");
-			
-	        boolean _3DLogicAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DLOGIC, "Qt3DLogic", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dlogic");
-			
-	        boolean _3DInputAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DINPUT, "Qt3DInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dinput");
-	    	
-	        boolean quick3DUtilsAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "Qt5Quick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean _3DQuickAnimationAvailable = detectQtDsoExistAndSetProperty("qtjambi.3dquickanimation", "Qt3DQuickAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean quick3DRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean quick3DAssetImportAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean quick3DRuntimeRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        boolean quick3DAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean libEGLAvailable = detectQtDsoExistAndSetProperty(Constants.LIBEGL, "libEGL", libInfix, -1, -1, -1, null);
-	        
-	        boolean libGLESv2Available = detectQtDsoExistAndSetProperty(Constants.LIBGLESV2, "libGLESv2", libInfix, -1, -1, -1, null);
-	        
-	        boolean d3dcompiler_47Available = detectQtDsoExistAndSetProperty("qtjambi.d3dcompiler_47", "d3dcompiler_47", libInfix, -1, -1, -1, null);
-	        
-	        boolean opengl32swAvailable = detectQtDsoExistAndSetProperty("qtjambi.opengl32sw", "opengl32sw", libInfix, -1, -1, -1, null);
-	        
-	        boolean libicudataAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUDATA, "libicudata", libInfix, 56, -1, -1, null);
-
-	        boolean libicui18nAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUI18N, "libicui18n", libInfix, 56, -1, -1, null);
-
-	        boolean libicuioAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUIO, "libicuio", libInfix, 56, -1, -1, null);
-
-	        boolean libiculeAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICULE, "libicule", libInfix, 56, -1, -1, null);
-
-	        boolean libiculxAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICULX, "libiculx", libInfix, 56, -1, -1, null);
-
-	        boolean libicutestAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUTEST, "libicutest", libInfix, 56, -1, -1, null);
-
-	        boolean libicutuAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUTO, "libicutu", libInfix, 56, -1, -1, null);
-
-	        boolean libicuucAvailable = detectQtDsoExistAndSetProperty(Constants.LIBICUUC, "libicuuc", libInfix, 56, -1, -1, null);
-	        
-	        boolean bluetoothAvailable = detectQtDsoExistAndSetProperty(Constants.BLUETOOTH, "QtBluetooth", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bluetooth");
-	        
-	        boolean locationAvailable = detectQtDsoExistAndSetProperty(Constants.LOCATION, "QtLocation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "location");
-	        
-	        boolean webSocketsAvailable = detectQtDsoExistAndSetProperty(Constants.WEBSOCKETS, "QtWebSockets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "websockets");
-	        
-	        boolean serialPortAvailable = detectQtDsoExistAndSetProperty(Constants.SERIALPORT, "QtSerialPort", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "serialport");
-	        
-	        boolean serialBusAvailable = detectQtDsoExistAndSetProperty("qtjambi.serialbus", "QtSerialBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "serialbus");
-	        
-	        boolean sensorsAvailable = detectQtDsoExistAndSetProperty(Constants.SENSORS, "QtSensors", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "sensors");
-	        
-	        boolean quickTestAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKTEST, "QtQuickTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean quickParticlesAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKPARTICLES, "QtQuickParticles", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-			
-	        boolean quickTemplates2Available = detectQtDsoExistAndSetProperty(Constants.QUICKTEMPLATES2, "QtQuickTemplates2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-			
-	        boolean quickControls2Available = detectQtDsoExistAndSetProperty(Constants.QUICKCONTROLS2, "QtQuickControls2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickcontrols2");
-	        
-	        boolean remoteObjectsAvailable = detectQtDsoExistAndSetProperty(Constants.REMOTEOBJECTS, "QtRemoteObjects", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "remoteobjects");
-	        
-	        boolean scxmlAvailable = detectQtDsoExistAndSetProperty(Constants.SCXML, "QtScxml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scxml");
-	        boolean scxmlQmlAvailable = scxmlAvailable && detectQtDsoExistAndSetProperty(Constants.SCXML+"qml", "QtScxmlQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean statemachineAvailable = detectQtDsoExistAndSetProperty(Constants.STATEMACHINE, "QtStateMachine", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "statemachine");
-	        boolean statemachineQmlAvailable = statemachineAvailable && detectQtDsoExistAndSetProperty(Constants.STATEMACHINE+"qml", "QtStateMachineQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean qmlWorkerScriptAvailable = qmlAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QML_WORKERSCRIPT, "QtQmlWorkerScript", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qmlworkerscript");
-	        
-	        boolean nfcAvailable = dbusAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.NFC, "QtNfc", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "nfc");
-	        
-	        boolean openGl5Availability = !openglAvailable && widgetsAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGL+".util", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean multimediaWidgetsAvailability = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS, "QtMultimediaWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimediawidgets");
-	        
-	        if(!openglAvailable && !openGl5Availability && multimediaWidgetsAvailability){
-	            detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS+".opengl", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        }
-	        
-	        boolean multimediaGstToolsAvailable = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAGSTTOOLS, "QtMultimediaGstTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean multimediaQuickAvailable = multimediaAvailable && quickAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAQUICK, "QtMultimediaQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean openGLExtensionsAvailable = detectQtDsoExistAndSetProperty(Constants.OPENGLEXTENSIONS, "QtOpenGLExtensions", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean platformSupportAvailable = detectQtDsoExistAndSetProperty(Constants.PLATFORMSUPPORT, "QtPlatformSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        
-	        boolean textToSpeechAvailable = detectQtDsoExistAndSetProperty("qtjambi.texttospeech", "QtTextToSpeech", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "texttospeech");
-	        
-	        boolean quickShapesAvailable = quickAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quickshapes", "QtQuickShapes", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-                    
-            detectQtDsoExistAndSetProperty("qtjambi.labs.wavefrontmesh", "QtLabsWavefrontMesh", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-            detectQtDsoExistAndSetProperty("qtjambi.labs.sharedimage", "QtLabsSharedImage", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-            detectQtDsoExistAndSetProperty("qtjambi.labs.settings", "QtLabsSettings", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-            detectQtDsoExistAndSetProperty("qtjambi.labs.qmlmodels", "QtLabsQmlModels", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-            detectQtDsoExistAndSetProperty("qtjambi.labs.folderlistmodel", "QtLabsFolderListModel", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-            detectQtDsoExistAndSetProperty("qtjambi.labs.animation", "QtLabsAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-
-	        if(webengineCoreAvailable){
-	        	String trdir = AntUtil.getPropertyAsString(propertyHelper, Constants.TRANSLATIONSDIR);
-	        	if(new File(trdir, "qtwebengine_locales").isDirectory()) {
-	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales", "true");
-	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales.debug", "true");
-	        	}
-	        	if(OSInfo.os() == OSInfo.OS.MacOS && useQtFramework){
-	            	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
-		                String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
-		                boolean noResources = true;
-		                boolean noWebEngineTool = true;
-		                for(File frameworkDir : new File(libdir).listFiles()){
-		                    if(frameworkDir.isDirectory() && frameworkDir.getName().endsWith(".framework")){
-		                        String libName = frameworkDir.getName();
-		                        libName = libName.substring(0, libName.length()-10);
-		                        if(libName.equals("QtWebEngineCore")) {
-		                        	File resources = new File(frameworkDir, "/Resources");
-		                        	if(resources.isDirectory()) {
-			                    		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", resources.getAbsolutePath());
-			                    		noResources = false;
-		                        	}
-		                        	File helper = new File(frameworkDir, "/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess");
-		                        	if(helper.isFile()) {
-		                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", helper.getParentFile().getAbsolutePath());
-		                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess", "QtWebEngineProcess");
-		                        		noWebEngineTool = false;
-		                        	}
-		                        }
-		                    }
-		                }
-		                if(noResources)
-		                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
-		                if(noWebEngineTool) {
-		                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
-		                }
-		                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "true");
-		                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "true");
-	            	}else {
-	            		AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "false");
-	            		AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "false");
-	            	}
-	            }else{
-	                String includedir = AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR);
-	                AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
-	                if(OSInfo.os() == OSInfo.OS.Windows) {
-	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR));
-	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.targetdir", "bin");
-	                }else {
-	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
-	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.targetdir", "libexec");
-	                }
-	                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "true");
-	                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "true");
-	            }
-	        }
-	        
-        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_ACCESSIBLE_QTACCESSIBLEWIDGETS, "accessible", "qtaccessiblewidgets", null, null, null);
-
-        	if(networkAvailable && dbusAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_BEARER_CONNMANBEARER,    "bearer", "qconnmanbearer", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_BEARER_GENERICBEARER,    "bearer", "qgenericbearer", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_BEARER_NATIVEWIFIBEARER, "bearer", "qnativewifibearer", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_BEARER_NMBEARER,         "bearer", "qnmbearer", null, null, null);
+        if(detectQtDsoExistAndSetProperty("qtjambi.core", "QtCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null)) {
+        	Set<String> availableModules = new TreeSet<>();
+        	for (String module : modules.keySet()) {
+        		if(detectQtDsoExistAndSetProperty("qtjambi."+module, modules.get(module).libraryName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, module))
+        			availableModules.add(module);
         	}
-
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_CODECS_CNCODECS, "codecs", "qcncodecs", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_CODECS_JPCODECS, "codecs", "qjpcodecs", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_CODECS_KRCODECS, "codecs", "qkrcodecs", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_CODECS_TWCODECS, "codecs", "qtwcodecs", null, null, null);
-
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GRAPHICSSYSTEMS_GLGRAPHICSSYSTEM,    "graphicssystems", "qglgraphicssystem", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GRAPHICSSYSTEMS_TRACEGRAPHICSSYSTEM, "graphicssystems", "qtracegraphicssystem", null, null, null);
-
-	        if(svgAvailable) {
-	        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_ICONENGINES_SVGICON, "iconengines", "qsvgicon", null, null, null);
-	        }
-
-	        if(guiAvailable) {
-		        // These are only detecting if the plugins exist for these modules,
-		        // lack of a plugins does not necessarily mean Qt doesn't have support
-		        // since the implementation might be statically linked in.
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_GIF,  "imageformats",  "qgif", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_ICO,  "imageformats",  "qico", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_JPEG, "imageformats", "qjpeg", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_MNG,  "imageformats",  "qmng", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_PNG,  "imageformats",  "qpng", null, "probably a built-in", null);
-		        if(svgAvailable) {
-		        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_SVG,  "imageformats",  "qsvg", null, null, null);
-		        }
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_TIFF, "imageformats", "qtiff", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QJP2,                  "imageformats",   "qjp2", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QICNS,                 "imageformats",   "qicns", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QDDS,                  "imageformats",   "qdds", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QTGA,                  "imageformats",   "qtga", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QWBMP,                 "imageformats",   "qwbmp", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_IMAGEFORMATS_QWEBP,                 "imageformats",   "qwebp", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.imageformats.qicns",                 "imageformats",   "qicns", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.imageformats.qmacheif",              "imageformats",   "qmacheif", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.imageformats.qmacjp2",               "imageformats",   "qmacjp2", null, null, null);
-	        }
-
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_INPUTMETHODS_IMSW_MULTI, "inputmethods",  "qimsw-multi", null, null, null);
-
-	        if(quickAvailable) {
-	        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_QMLTOOLING_QMLDBG_TCP,     "qmltooling",   "qmldbg_tcp", null, null, null);
-	        }
-	        
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SCENEFORMATS_QSCENEAI,     "sceneformats",   "qsceneai", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SCENEFORMATS_QSCENEBEZIER, "sceneformats",   "qscenebezier", null, null, null);
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SCENEFORMATS_QSCENEOBJ,    "sceneformats",   "qsceneobj", null, null, null);
-
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SCRIPT_QTSCRIPTDBUS,           "script", "qtscriptdbus", null, null, null);
-
-	        if(sqlAvailable) {
-		        // FIXME: Detect the case when this module was compiled into QtSql
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLITE,   "sqldrivers",   "qsqlite", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLITE2,  "sqldrivers",  "qsqlite2", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLMYSQL, "sqldrivers", "qsqlmysql", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLODBC,  "sqldrivers",  "qsqlodbc", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLPSQL,  "sqldrivers",  "qsqlpsql", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SQLDRIVERS_SQLTDS,   "sqldrivers",   "qsqltds", null, null, null);
-	        }
-	        
-	        if(multimediaAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_AUDIO_QTAUDIO_WINDOWS,              "audio",          "qtaudio_windows", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_AUDIO_QTAUDIO_ALSA,                 "audio",          "qtaudio_alsa", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_AUDIO_QTAUDIO_COREAUDIO,            "audio",          "libqtaudio_coreaudio", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_AUDIO_QTMEDIA_PULSE,                "audio",          "qtmedia_pulse", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLAYLISTFORMATS_QTMULTIMEDIA_M3U,   "playlistformats","qtmultimedia_m3u", null, null, null);
-	        }
-	        
-	        if(guiAvailable) {
-	        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_GENERIC_QTUIOTOUCHPLUGIN,           "generic",        "qtuiotouchplugin", null, null, null);
-	        }
-	        
-	        if(multimediaAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_DSENGINE,              "mediaservice",   "dsengine", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_QTMEDIA_AUDIOENGINE,   "mediaservice",   "qtmedia_audioengine", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_WMFENGINE,             "mediaservice",   "wmfengine", null, null, null);
-		        if(multimediaGstToolsAvailable) {
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_GSTAUDIODECODER,       "mediaservice",   "gstaudiodecoder", null, null, null);
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_GSTCAMERABIN,          "mediaservice",   "gstcamerabin", null, null, null);
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_GSTMEDIACAPTURE,       "mediaservice",   "gstmediacapture", null, null, null);
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_GSTMEDIAPLAYER,        "mediaservice",   "gstmediaplayer", null, null, null);
-		        }
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_AVFMEDIAPLAYER,        "mediaservice",   "qavfmediaplayer", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_MEDIASERVICE_AVFCAMERA,             "mediaservice",   "qavfcamera", null, null, null);
-	        }
-	        
-	        if(guiAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QMINIMAL,                 "platforms",      "qminimal", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QOFFSCREEN,               "platforms",      "qoffscreen", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QWINDOWS,                 "platforms",      "qwindows", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QCOCOA,                 	"platforms",      "qcocoa", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QEGLFS,                 	"platforms",      "qeglfs", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QWEBGL,                 	"platforms",      "qwebgl", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QLINUXFB,                 "platforms",      "qlinuxfb", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QMINIMALEGL,              "platforms",      "qminimalegl", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QXCB,         			"platforms",      "qxcb", null, null, null);
-		        if(waylandClientAvailable) {
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QWAYLAND_EGL,             "platforms",      "qwayland-egl", null, null, null);
-			        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PLATFORMS_QWAYLAND_GENERIC,         "platforms",      "qwayland-generic", null, null, null);
-		        }
-	        }
-	        
-	        if(guiAvailable && dbusAvailable) {
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.platformthemes.qxdgdesktopportal",   "platformthemes", "qxdgdesktopportal", null, null, null);
-	        	detectQtPluginExistAndSetProperty("qtjambi.plugins.platformthemes.qgtk3",   			"platformthemes", "qgtk3", null, null, null);
-	        }
-	        
-	        if(positioningAvailable) {
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.position.qtposition_cl",             "position",       "qtposition_cl", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_POSITION_QTPOSITION_POSITIONPOLL,   "position",       "qtposition_positionpoll", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.position.qtposition_geoclue",   		"position",       "qtposition_geoclue", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.position.qtposition_geoclue2",   	"position",       "qtposition_geoclue2", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.position.qtposition_serialnmea",   	"position",       "qtposition_serialnmea", null, null, null);
-	        }
-	        
-	        if(printSupportAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PRINTSUPPORT_WINDOWSPRINTERSUPPORT, "printsupport",   "windowsprintersupport", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PRINTSUPPORT_CUPSPRINTERSUPPORT,    "printsupport",   "cupsprintersupport", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_PRINTSUPPORT_COCOAPRINTERSUPPORT,   "printsupport",   "cocoaprintersupport", null, null, null);
-	        }
-	        
-	        if(quickAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_QMLTOOLING_QMLDBG_QTQUICK2,         "qmltooling",     "qmldbg_qtquick2", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_debugger",         "qmltooling",     "qmldbg_debugger", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_inspector",        "qmltooling",     "qmldbg_inspector", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_local",            "qmltooling",     "qmldbg_local", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_messages",         "qmltooling",     "qmldbg_messages", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_native",           "qmltooling",     "qmldbg_native", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_nativedebugger",   "qmltooling",     "qmldbg_nativedebugger", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_preview",          "qmltooling",     "qmldbg_preview", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_profiler",         "qmltooling",     "qmldbg_profiler", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_quickprofiler",    "qmltooling",     "qmldbg_quickprofiler", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_server",           "qmltooling",     "qmldbg_server", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.qmltooling.qmldbg_tcp",              "qmltooling",     "qmldbg_tcp", null, null, null);
-	        }
-	        
-	        if(_3DQuickScene2DAvailable) {
-	        	detectQtPluginExistAndSetProperty("qtjambi.plugins.renderplugins.scene2d",              "renderplugins",     "scene2d", null, null, null);
-	        }
-	        
-	        if(_3DQuickAnimationAvailable && _3DInputAvailable && _3DRenderAvailable) {
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.sceneparsers.gltfsceneimport",       "sceneparsers",     "gltfsceneimport", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.sceneparsers.gltfsceneexport",       "sceneparsers",     "gltfsceneexport", null, null, null);
-	        }
-	        
-	        if(sensorsAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SENSORGESTURES_QTSENSORGESTURES_PLUGIN,        "sensorgestures",   "qtsensorgestures_plugin", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SENSORGESTURES_QTSENSORGESTURES_SHAKEPLUGIN,   "sensorgestures",   "qtsensorgestures_shakeplugin", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_SENSORS_QTSENSORS_GENERIC,          "sensors",        "qtsensors_generic", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.sensors.qtsensors_ios",              "sensors",        "qtsensors_ios", null, null, null);
-	        }
-	        
-	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_VIDEO_VIDEONODE_EGLVIDEONODE,       "video/videonode","eglvideonode", null, null, null);
-	        
-	        if(locationAvailable && positioningAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GEOSERVICES_QTGEOSERVICES_MAPBOX,   "geoservices",    "qtgeoservices_mapbox", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GEOSERVICES_QTGEOSERVICES_NOKIA,    "geoservices",    "qtgeoservices_nokia", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GEOSERVICES_QTGEOSERVICES_OSM,      "geoservices",    "qtgeoservices_osm", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geoservices.qtgeoservices_itemsoverlay",     "geoservices",      "qtgeoservices_itemsoverlay", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geoservices.qtgeoservices_mapboxgl", "geoservices",      "qtgeoservices_mapboxgl", null, null, null);
-	        }
-	        
-	        if(widgetsAvailable) {
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_STYLES_QWINDOWSVISTASTYLE,          "styles",         "qwindowsvistastyle", null, null, null);
-		        detectQtPluginExistAndSetProperty(Constants.PLUGINS_STYLES_QMACSTYLE,                   "styles",         "qmacstyle", null, null, null);
-	        }
-	        
-	        if(gamepadAvailable) {
-	        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_GAMEPAD_DARWIN_GAMEPAD,             "gamepad",        "darwingamepad", null, null, null);
-	        }
-	        if(textToSpeechAvailable) {
-	        	detectQtPluginExistAndSetProperty("qtjambi.plugins.texttospeech.qtexttospeech_speechosx",  "texttospeech",        "qtexttospeech_speechosx", null, null, null);
-	        }
-	        if(webViewAvailable) {
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.webview.qtwebview_darwin",           "webview",        "qtwebview_darwin", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.webview.qtwebview_webengine",        "webview",        "qtwebview_webengine", null, null, null);
-	        }
-	        
-	        if(designerAvailable) {
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qquickwidget",              "designer",      "qquickwidget", null, null, null);
-		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qwebengineview",            "designer",      "qwebengineview", null, null, null);
-	        }
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtpassthrucanbus",            "canbus",        "qtpassthrucanbus", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtpeakcanbus",                "canbus",        "qtpeakcanbus", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qttinycanbus",                "canbus",        "qttinycanbus", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtvirtualcanbus",             "canbus",        "qtvirtualcanbus", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geometryloaders.defaultgeometryloader",     "geometryloaders",      "defaultgeometryloader", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geometryloaders.gltfgeometryloader",     "geometryloaders",      "gltfgeometryloader", null, null, null);
-
-	        if(quickAvailable) {
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.qmldir",								                "QtQml",			            "qmldir", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.builtins.qmltypes",								                "",			            "builtins.qmltypes", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QT_LABS_FOLDERLISTMODEL_QMLFOLDERLISTMODELPLUGIN,      	"Qt/labs/folderlistmodel",    	"qmlfolderlistmodelplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QT_LABS_SETTINGS_QMLSETTINGSPLUGIN,      				"Qt/labs/settings",    			"qmlsettingsplugin", null, null, null);
-		        if(_3DCoreAvailable) {
-			        detectQtQmlModuleExistAndSetProperty(Constants.QML_QT3D_QUICK3DCOREPLUGIN,      							"Qt3D",    						"quick3dcoreplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty(Constants.QML_Qt3D_INPUT_QUICK3DINPUTPLUGIN,      						"Qt3D/Input",					"quick3dinputplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty(Constants.QML_Qt3D_RENDERER_QUICK3DRENDERERPLUGIN, 					"Qt3D/Renderer",				"quick3drendererplugin", null, null, null);
-		        }
-		        if(bluetoothAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QtBLUETOOTH_DECLARATIVE_BLUETOOTH,      					"QtBluetooth",    				"declarative_bluetooth", null, null, null);
-		        }
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTCANVAS3D_QTCANVAS3D_DESIGNER,					      	"QtCanvas3D/designer",			"qtcanvas3d", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.qml.QtGraphicalEffects",      								"QtGraphicalEffects",    		"qtgraphicaleffectsplugin", null, null, null);
-		        if(locationAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTLOCATION_DECLARATIVE_LOCATION,							"QtLocation",			    	"declarative_location", null, null, null);
-		        }
-		        if(multimediaAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTMULTIMEDIA_DECLARATIVE_MULTIMEDIA,						"QtMultimedia",			    	"declarative_multimedia", null, null, null);
-		        }
-		        if(nfcAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTNFC_DECLARATIVE_NFC,									"QtNfc",			    		"declarative_nfc", null, null, null);
-		        }
-		        if(positioningAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTPOSITIONING_DECLARATIVE_POSITIONING,					"QtPositioning",			    "declarative_positioning", null, null, null);
-		        }
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.animation",											"Qt/labs/animation",			    "labsanimationplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.folderlistmodel",										"Qt/labs/folderlistmodel",			    "qmlfolderlistmodelplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.settings",											"Qt/labs/settings",			    "qmlsettingsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.platform",											"Qt/labs/platform",			    "qtlabsplatformplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.qmlmodels",											"Qt/labs/qmlmodels",			    "labsmodelsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.sharedimage",											"Qt/labs/sharedimage",			    "sharedimageplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.wavefrontmesh",										"Qt/labs/wavefrontmesh",			    "qmlwavefrontmeshplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.qmlplugin",												"QtQml",			    "qmlplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_MODELS_MODELSPLUGIN,								"QtQml/Models",			    "modelsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_MODELS_2_MODELSPLUGIN,								"QtQml/Models.2",			    "modelsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_STATEMACHINE_QTQMLSTATEMACHINE,					"QtQml/StateMachine",			"qtqmlstatemachine", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.WorkerScript.workerscriptplugin",						"QtQml/WorkerScript",			"workerscriptplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_2_QTQUICK2PLUGIN,								"QtQuick.2",			    	"qtquick2plugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_QTQUICK2PLUGIN,								    "QtQuick",			    	"qtquick2plugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Controls.2.qtquickcontrols2plugin",					"QtQuick/Controls.2",			"qtquickcontrols2plugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Controls.qtquickcontrolsplugin",					    "QtQuick/Controls",			    "qtquickcontrolsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_CONTROLS_STYLES_FLAT_QTQUICKEXTRASFLATPLUGIN,	"QtQuick/Controls/Styles/Flat", "qtquickextrasflatplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_DIALOGS_DIALOGPLUGIN,							"QtQuick/Dialogs",			    "dialogplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_DIALOGS_IMAGES,									"QtQuick/Dialogs/images",	    null, null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_DIALOGS_QML,										"QtQuick/Dialogs/qml",		    null, null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_DIALOGS_PRIVATE_DIALOGSPRIVATEPLUGIN,			"QtQuick/Dialogs/Private",		"dialogsprivateplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_EXTRAS_QTQUICKEXTRASPLUGIN,						"QtQuick/Extras",			    "qtquickextrasplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_LAYOUTS_QQUICKLAYOUTSPLUGIN,						"QtQuick/Layouts",			    "qquicklayoutsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_LOCALSTORAGE_QMLLOCALSTORAGEPLUGIN,				"QtQuick/LocalStorage",			"qmllocalstorageplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PARTICLES_2_PARTICLESPLUGIN,						"QtQuick/Particles.2",			"particlesplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PARTICLES_PARTICLESPLUGIN,						"QtQuick/Particles",			"particlesplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PRIVATEWIDGETS_WIDGETSPLUGIN,					"QtQuick/PrivateWidgets",		"widgetsplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Scene2D.qtquickscene2dplugin",	    				"QtQuick/Scene2D",				"qtquickscene2dplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_SCENE3D_QTQUICKSCENE3DPLUGIN,					"QtQuick/Scene3D",				"qtquickscene3dplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Shapes.qmlshapesplugin",					            "QtQuick/Shapes",				"qmlshapesplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Templates.2.qtquicktemplates2plugin",					"QtQuick/Templates.2",			"qtquicktemplates2plugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.VirtualKeyboard.qtquickvirtualkeyboardplugin",		"QtQuick/VirtualKeyboard",		"qtquickvirtualkeyboardplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_WINDOW_2_WINDOWPLUGIN,							"QtQuick/Window.2",				"windowplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_WINDOW_WINDOWPLUGIN,							    "QtQuick/Window",				"windowplugin", null, null, null);
-		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_XMLLISTMODEL_QMLXMLLISTMODELPLUGIN,				"QtQuick/XmlListModel",			"qmlxmllistmodelplugin", null, null, null);
-		        if(sensorsAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTSENSORS_DECLARATIVE_SENSORS,							"QtSensors",					"declarative_sensors", null, null, null);
-		        }
-		        if(webChannelAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTWEBCHANNEL_DECLARATIVE_WEBCHANNEL,						"QtWebChannel",					"declarative_webchannel", null, null, null);
-		        }
-		        if(webSocketsAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTWEBSOCKETS_DECLARATIVE_QMLWEBSOCKETS,					"QtWebSockets",					"declarative_qmlwebsockets", null, null, null);
-		        }
-		        if(winExtrasAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTWINEXTRAS_QML_WINEXTRAS,								"QtWinExtras",					"qml_winextras", null, null, null);
-		        }
-		        if(multimediaAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTAUDIOENGINE_DECLARATIVE_AUDIOENGINE,					"QtQtAudioEngine",				"declarative_audioengine", null, null, null);
-		        }
-		        if(gamepadAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty("qtjambi.QtGamepad.declarative_gamepad",					            "QtGamepad",				    "declarative_gamepad", null, null, null);
-		        }
-		        if(remoteObjectsAvailable) {
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.RemoteObjects.qtqmlremoteobjects",					    "QtQml/RemoteObjects",		"qtqmlremoteobjects", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.QtRemoteObjects.qtremoteobjects",					            "QtRemoteObjects",		"qtremoteobjects", null, null, null);
-		        }
-		        if(scxmlAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty("qtjambi.QtScxml.declarative_scxml",					            "QtScxml",		"declarative_scxml", null, null, null);
-		        }
-		        if(sensorsAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty("qtjambi.QtSensors.declarative_sensors",					            "QtSensors",		"declarative_sensors", null, null, null);
-		        }
-		        
-		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtTest.qmltestplugin",					            "QtTest",		"qmltestplugin", null, null, null);
-		        
-		        if(webengineAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty("qtjambi.QtWebEngine.qtwebengineplugin",					            "QtWebEngine",		"qtwebengineplugin", null, null, null);
-		        }
-		        if(webViewAvailable) {
-		        	detectQtQmlModuleExistAndSetProperty("qtjambi.QtWebView.declarative_webview",					            "QtWebView",		"declarative_webview", null, null, null);
-		        }
-		        if(_3DCoreAvailable) {
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Animation.quick3danimationplugin",					    "Qt3D/Animation",				"quick3danimationplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Core.quick3dcoreplugin",					                "Qt3D/Core",				"quick3dcoreplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Extras.quick3dextrasplugin",					            "Qt3D/Extras",				"quick3dextrasplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Input.quick3dinputplugin",					            "Qt3D/Input",				"quick3dinputplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Logic.quick3dlogicplugin",					            "Qt3D/Logic",				"quick3dlogicplugin", null, null, null);
-			        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt3D.Render.quick3drenderplugin",					            "Qt3D/Render",				"quick3drenderplugin", null, null, null);
-		        }
-	        }
-	        
+        	
 	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBSTDC___6,     decideQtBinDso(Constants.PACKAGING_DSO_LIBSTDC___6,     "libstdc++-6", null, null, null));
 	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBGCC_S_SEH_1,  decideQtBinDso(Constants.PACKAGING_DSO_LIBGCC_S_SEH_1,  "libgcc_s_seh-1", null, null, null));
 	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_WINPTHREAD,        decideQtBinDso(Constants.PACKAGING_DSO_WINPTHREAD,        "libwinpthread-1", null, null, null));
@@ -1415,8 +937,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                         found++;
                     }
                 }
-                if(found == 0)  // Maybe we should check to see if (QTDIR != null) before warning
-                    getProject().log(this, " WARNING: LD_LIBRARY_PATH environment variable is set, but does not contain a valid location for libQtCore.so.*; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
 
                 // FIXME: Refactor this duplicate code later (we look for !debug here but don't WARNING is we dont find it)
                 filename = LibraryEntry.formatQtName("QtCore", libInfix, !isConfigurationDebug(), qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
@@ -1451,8 +971,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                         found++;
                     }
                 }
-                if(found == 0)
-                    getProject().log(this, " WARNING: PATH environment variable is set, but does not contain a valid location for QtCore*.dll; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
 
                 // FIXME: Refactor this duplicate code later (we look for !debug here but don't WARNING is we dont find it)
                 filename = LibraryEntry.formatQtName("QtCore", libInfix, !isConfigurationDebug(), qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
@@ -1529,16 +1047,41 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         //  message later in the build process.
         if(generatorIncludepaths == null)      // ${generator.includepaths}
             throw new BuildException("ERROR: " + Constants.GENERATOR_INCLUDEPATHS + " property is not configured, please ensure you read and edit build.properties");
-        String qtCore = AntUtil.getPropertyAsString(propertyHelper, Constants.CORE);
-        String qtCoreDebug = AntUtil.getPropertyAsString(propertyHelper, Constants.CORE + ".debug");
+        String qtCore = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.core");
+        String qtCoreDebug = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.core.debug");
         if(qtCore == null && qtCoreDebug == null)
-            throw new BuildException("ERROR: " + Constants.CORE + " or " + Constants.CORE + ".debug property is not configured");
+            throw new BuildException("ERROR: qtjambi.core or qtjambi.core.debug property is not configured");
 		
         if(!decideGeneratorPreProc())
             throw new BuildException("Unable to determine generator pre-processor settings");
         s = listToString(generatorPreProcDefinesList);
         getProject().log(this, Constants.GENERATOR_PREPROC_DEFINES + " is " + ((s != null) ? s : "<unset>"), Project.MSG_VERBOSE);
         AntUtil.setNewProperty(propertyHelper, Constants.GENERATOR_PREPROC_DEFINES, listJoinToString(generatorPreProcDefinesList, ","));
+        s = listToString(generatorStaticLibsList);
+        getProject().log(this, Constants.GENERATOR_STATICLIBS + " is " + ((s != null) ? s : "<unset>"), Project.MSG_VERBOSE);
+        AntUtil.setNewProperty(propertyHelper, Constants.GENERATOR_STATICLIBS, listJoinToString(generatorStaticLibsList, ","));
+        
+        int threads = 1;
+        {
+        	String qtjambiJunitThreads = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.junit.threads");
+        	try {
+        		threads = Integer.parseInt(qtjambiJunitThreads);
+			} catch (Throwable e) {
+				if(Boolean.getBoolean("qtjambi.autotests.multithreaded")){
+					AntUtil.setNewProperty(propertyHelper, "qtjambi.junit.threads", ""+(threads = Runtime.getRuntime().availableProcessors()));
+				}else {
+					AntUtil.setNewProperty(propertyHelper, "qtjambi.junit.threads", "1");
+				}
+			}
+        }
+        {
+        	String qtjambiJunitThreads = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.junit.timeout");
+        	try {
+				Integer.parseInt(qtjambiJunitThreads);
+			} catch (Throwable e) {
+				AntUtil.setNewProperty(propertyHelper, "qtjambi.junit.timeout", ""+(360000 + 60000*threads));
+			}
+        }
     }
     
     public static String listToString(Collection<?> list) {
@@ -2027,75 +1570,21 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         if(compilerString == null)
             return false;
 
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.GUI+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_GUI");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.OPENGL+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_OPENGL");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WIDGETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WIDGETS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.OPENGLWIDGETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_OPENGLWIDGETS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QML+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QML");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICK+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICK");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICKCONTROLS2+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICKCONTROLS2");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICKWIDGETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICKWIDGETS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.XML+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_XML");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NETWORK+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_NETWORK");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.CONCURRENT+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_CONCURRENT");
+        generatorStaticLibsList.add("QtUIC");
+		for (String module : modules.keySet()) {
+			if(Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi."+module+".any.true"))){
+				if(Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi."+module+".staticlib"))){
+					generatorStaticLibsList.add(modules.get(module).libraryName);
+					if("activex".equals(module)) {
+						generatorStaticLibsList.add("QtActiveX");
+					}
+				}
+			}else if(modules.get(module).preprocdef!=null){
+				generatorPreProcDefinesList.add(modules.get(module).preprocdef);
+			}
 		}
 
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SQL+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SQL");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.PRINTSUPPORT+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_PRINTSUPPORT");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NETWORKAUTH+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_NETWORKAUTH");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.XMLPATTERNS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_XMLPATTERNS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.virtualkeyboard.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_VIRTUAL_KEYBOARD");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.quick3d.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICK3D");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.MACEXTRAS+".any.true"))){
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.macextras.any.true"))){
 			if(skippedModules.contains("macextras")) {
 				generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
 			}else {
@@ -2118,7 +1607,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
 		}
 
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WINEXTRAS+".any.true"))){
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.winextras.any.true"))){
 			if(skippedModules.contains("winextras")) {
 				generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
 			}else {
@@ -2141,7 +1630,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
 		}
 
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.X11EXTRAS+".any.true"))){
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.x11extras.any.true"))){
 			if(skippedModules.contains("x11extras")) {
 				generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 			}else {
@@ -2164,182 +1653,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 		}
 
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SERIALPORT+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SERIALPORT");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.serialbus.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SERIALBUS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.sensors.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SENSORS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.location.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_LOCATION");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.positioning.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_POSITIONING");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.bluetooth.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_BLUETOOTH");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCRIPT+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SCRIPT");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCRIPTTOOLS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SCRIPTTOOLS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.MULTIMEDIA+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_MULTIMEDIA");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SVG+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SVG");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SVGWIDGETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SVGWIDGETS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DBUS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_DBUS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.TEST+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_TEST");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.HELP+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_HELP");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DCORE+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DCORE");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DRENDER+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DRENDER");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DINPUT+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DINPUT");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICK+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICK");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKRENDER+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKRENDER");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKSCENE2D+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKSCENE2D");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKEXTRAS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKEXTRAS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DEXTRAS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DEXTRAS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DLOGIC+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DLOGIC");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DANIMATION+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DANIMATION");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBSOCKETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBSOCKETS");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBCHANNEL+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBCHANNEL");
-		}
-
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINE+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINE");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINEQUICK+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINEQUICK");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINECORE+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINECORE");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINEWIDGETS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINEWIDGETS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBVIEW+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBVIEW");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.UITOOLS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_UITOOLS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.bodymovin.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_LOTTIE");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DATA_VISUALIZATION+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_DATA_VISUALIZATION");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.CHARTS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_CHARTS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.UIPLUGIN+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_UIPLUGIN");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DESIGNER+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_DESIGNER");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.REMOTEOBJECTS+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_REMOTEOBJECTS");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.GAMEPAD+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_GAMEPAD");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCXML+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_SCXML");
-		}
-        
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.STATEMACHINE+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_STATEMACHINE");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NFC+".any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_NFC");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.texttospeech.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_TEXTTOSPEECH");
-		}
-		
-		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.purchasing.any.true"))){
-			generatorPreProcDefinesList.add("QTJAMBI_NO_PURCHASING");
-		}
-
         return true;
     }
 
@@ -2350,7 +1663,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         return null;
     }
 
-    private String doesQtDsoExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, String librarydir, Boolean debugValue, boolean prl, String propName) {
+    private String doesQtDsoExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, String librarydir, Boolean debugValue, boolean prl, boolean staticLib, String propName) {
     	if((infix==null || infix.isEmpty()) && OSInfo.crossOS()==OS.Android && !androidAbis.isEmpty()) {
     		infix = "_"+androidAbis.get(0);
     	}
@@ -2376,10 +1689,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             }else{
                 filename = LibraryEntry.formatQtPrlName(name, infix, thisDebug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
             }
-        }else if(useQtFramework && name.startsWith("Qt")){
+        }else if(useQtFramework && name.startsWith("Qt") && !staticLib){
             filename = LibraryEntry.formatQtNameAsFramework(name, infix, thisDebug, majorVersion, minorVersion, patchVersion);
         }else{
-            filename = LibraryEntry.formatQtName(name, infix, thisDebug, majorVersion, minorVersion, patchVersion);
+            filename = LibraryEntry.formatQtName(name, infix, thisDebug, majorVersion, minorVersion, patchVersion, staticLib);
         }
         File testForFile = new File(new File(path.toString()), filename);
         getProject().log(this, "Checking " + testForFile + " " + testForFile.exists(), Project.MSG_VERBOSE);
@@ -2394,17 +1707,34 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     }
 
     private String doesQtBinExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, String librarydir, Boolean debugValue, boolean prl) {
-        return doesQtDsoExist(name, infix, majorVersion, minorVersion, patchVersion, librarydir, debugValue, prl, Constants.BINDIR);
+        return doesQtDsoExist(name, infix, majorVersion, minorVersion, patchVersion, librarydir, debugValue, prl, false, Constants.BINDIR);
     }
     private String doesQtLibExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, String librarydir, Boolean debugValue, boolean prl) {
-        return doesQtDsoExist(name, infix, majorVersion, minorVersion, patchVersion, librarydir, debugValue, prl, Constants.LIBDIR);
+        return doesQtDsoExist(name, infix, majorVersion, minorVersion, patchVersion, librarydir, debugValue, prl, false, Constants.LIBDIR);
+    }
+    private String doesQtStaticLibExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, String librarydir, Boolean debugValue, boolean prl) {
+        return doesQtDsoExist(name, infix, majorVersion, minorVersion, patchVersion, librarydir, debugValue, prl, true, Constants.LIBDIR);
+    }
+    
+    static class LibResult{
+    	private LibResult(String path, boolean isStatic) {
+			this.path = path;
+			this.isStatic = isStatic;
+		}
+		final String path;
+		final boolean isStatic;
     }
 
-    private String doesQtLibOrBinExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, Boolean debugValue) {
+    private LibResult doesQtLibOrBinExist(String name, String infix, int majorVersion, int minorVersion, int patchVersion, Boolean debugValue) {
+    	boolean isStatic = false;
         String path = doesQtLibExist(name, infix, majorVersion, minorVersion, patchVersion, null, debugValue, false);
         if(path == null)
             path = doesQtBinExist(name, infix, majorVersion, minorVersion, patchVersion, null, debugValue, false);
-        return path;
+        if(path == null) {
+            path = doesQtStaticLibExist(name, infix, majorVersion, minorVersion, patchVersion, null, debugValue, false);
+            isStatic = path != null;
+        }
+        return path!=null ? new LibResult(path, isStatic) : null;
     }
     
     private boolean detectQtDsoExistAndSetProperty(String propName, String name, String infix, int majorVersion, int minorVersion, int patchVersion, String addQtConfig, String altLibdir) {
@@ -2417,12 +1747,16 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     			return false;
     		}else if(addQtConfig.startsWith("webengine") && skippedModules.contains("webengine")) {
     			return false;
+    		}else if(addQtConfig.startsWith("pdf") && skippedModules.contains("pdf")) {
+    			return false;
+    		}else if((addQtConfig.equals("opengl") || addQtConfig.startsWith("pdf")) && qtMajorVersion<6) {
+    			return false;
     		}
     	}
         // We detect both non-debug and debug forms manually
         // On Linux the debug and the release are the same DSO name, so we have to look at configuration before detecting which one to detect first
-        String dsoPath;
-        String dsoDebugPath;
+    	LibResult dsoPath;
+    	LibResult dsoDebugPath;
         if(Constants.CONFIG_DEBUG.equals(getConfiguration())) {
             dsoDebugPath = doesQtLibOrBinExist(name, infix, majorVersion, minorVersion, patchVersion, Boolean.TRUE);
             dsoPath = doesQtLibOrBinExist(name, infix, majorVersion, minorVersion, patchVersion, Boolean.FALSE);
@@ -2436,7 +1770,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                 switch(compiler) {
                 case MinGW:
                 case MinGW_W64:
-                	File file = new File(dsoPath);
+                	File file = new File(dsoPath.path);
                 	String _name = file.getName()+".debug";
                 	file = new File(file.getParentFile().getParentFile(), "lib");
                 	file = new File(file, _name);
@@ -2452,25 +1786,41 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         }
 
         String dsoDebugFilename = null;
-        if(dsoDebugPath != null)  // ideally we want to resolve and display the relative path difference
-            dsoDebugFilename = new File(dsoDebugPath).getName();
-
         String sourceValue = null;
-        if(dsoDebugPath != null)
+        if(dsoDebugPath != null && !dsoDebugPath.isStatic) {  // ideally we want to resolve and display the relative path difference
+            dsoDebugFilename = new File(dsoDebugPath.path).getName();
             sourceValue = " (found debug DSO: " + dsoDebugFilename + ")";
-        mySetProperty(((dsoPath != null || dsoDebugPath == null) ? -1 : 0), propName, sourceValue, dsoPath, false);  // silent if null
+        }
+
+        mySetProperty(((dsoPath != null || dsoDebugPath == null) ? -1 : 0), propName, sourceValue, dsoPath != null ? dsoPath.path : null, false);  // silent if null
         if(dsoPath != null) {  // we do this because the setting is used for both the Qt library itself and the JNI linkage DSO
             AntUtil.setNewProperty(propertyHelper, propName + ".true", "true"); // true or not-set
             AntUtil.setNewProperty(propertyHelper, propName + ".any.true", "true"); // true or not-set
         }
 
         sourceValue = null;
-        if(Constants.CONFIG_DEBUG_AND_RELEASE.equals(getConfiguration()) && dsoPath == null && dsoDebugPath != null)
+        if(Constants.CONFIG_DEBUG_AND_RELEASE.equals(getConfiguration()) && dsoPath == null && dsoDebugPath != null && !dsoDebugPath.isStatic)
             sourceValue = " (no release DSO found)";
-        mySetProperty(((dsoPath != null || dsoDebugPath == null) ? 0 : -1), propName + ".debug", sourceValue, dsoDebugPath, false);  // silent unless dsoPath==null
+        mySetProperty(((dsoPath != null || dsoDebugPath == null) ? 0 : -1), propName + ".debug", sourceValue, dsoDebugPath!=null ? dsoDebugPath.path : null, false);  // silent unless dsoPath==null
         if(dsoDebugPath != null) {  // we do this because the setting is used for both the Qt library itself and the JNI linkage DSO
             AntUtil.setNewProperty(propertyHelper, propName + ".debug.true", "true"); // true or not-set
             AntUtil.setNewProperty(propertyHelper, propName + ".any.true", "true"); // true or not-set
+        }
+        if((dsoDebugPath != null && dsoDebugPath.isStatic) || (dsoPath != null && dsoPath.isStatic)) {
+        	AntUtil.setNewProperty(propertyHelper, propName + ".staticlib", "true");
+        	if(dsoPath != null && dsoPath.path!=null && dsoDebugPath==null) {
+        		if(dsoPath.path.endsWith(".a")) {
+        			Path path = new File(dsoPath.path).toPath();
+        			File link = new File(dsoPath.path.substring(0, dsoPath.path.length()-2)+"_debug.a");
+        			if(!link.exists()) {
+        				try {
+							Files.createLink(link.toPath(), path);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+        			}
+        		}
+        	}
         }
 
         if(dsoPath != null || dsoDebugPath != null) {

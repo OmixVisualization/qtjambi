@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationHelp {
+public class TestInitializationHelp extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.help");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.help"));
     }
 }

@@ -32,6 +32,7 @@
 #include <qtjambi/qtjambi_registry.h>
 #include <QtRemoteObjects/private/qconnectionfactories_p.h>
 #include <QtRemoteObjects/QRemoteObjectPendingCall>
+#include <qtjambi/qtjambi_cast.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 using ClientIoDevice = QtROClientIoDevice;
@@ -147,6 +148,80 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredProperties__Lio_qt_core_QMetaObject_2Ljava_lang_Object_2Ljava_lang_Object_2)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ jobject src,
+ jobject dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QtRemoteObjects::copyStoredProperties(mo, src, dst);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredProperties__Lio_qt_core_QMetaObject_2JJ)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ QtJambiNativeID src,
+ QtJambiNativeID dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QtRemoteObjects::copyStoredProperties(mo, qtjambi_from_nativeId(src), qtjambi_from_nativeId(dst));
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredPropertiesStreamOut__Lio_qt_core_QMetaObject_2Ljava_lang_Object_2J)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ jobject src,
+ QtJambiNativeID dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(dst);
+    Q_ASSERT(stream);
+    QtRemoteObjects::copyStoredProperties(mo, src, *stream);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredPropertiesStreamOut__Lio_qt_core_QMetaObject_2JJ)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ QtJambiNativeID src,
+ QtJambiNativeID dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(dst);
+    Q_ASSERT(stream);
+    QtRemoteObjects::copyStoredProperties(mo, qtjambi_from_nativeId(src), *stream);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredPropertiesStreamIn__Lio_qt_core_QMetaObject_2JLjava_lang_Object_2)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ QtJambiNativeID src,
+ jobject dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(src);
+    Q_ASSERT(stream);
+    QtRemoteObjects::copyStoredProperties(mo, *stream, dst);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredPropertiesStreamIn__Lio_qt_core_QMetaObject_2JJ)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject type,
+ QtJambiNativeID src,
+ QtJambiNativeID dst)
+{
+    const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(__jni_env, type);
+    QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(src);
+    Q_ASSERT(stream);
+    QtRemoteObjects::copyStoredProperties(mo, *stream, qtjambi_from_nativeId(dst));
 }
 
 void initialize_meta_info_RemoteObject(){

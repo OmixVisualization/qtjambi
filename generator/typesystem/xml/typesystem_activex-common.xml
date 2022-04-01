@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtActiveX" description="Classes for applications which use ActiveX and COM">
+    <required-library name="QtGui"/>
+    <required-library name="QtWidgets"/>
+    <rejection class="QAxClass"/>
+    <rejection class="QAxFactory"/>
+    <rejection class="QAxAggregated"/>
+    <rejection class="QAxBindable"/>
+    <rejection class="QAxMetaObject"/>
+    <rejection class="IAxServerBase"/>
+    <rejection class="QAxBase::qt_meta_stringdata_QAxBase_t"/>
+    <rejection class="QAxBase" field-name="qt_meta_data_QAxBase"/>
+    <rejection class="QAxBase" field-name="qt_meta_stringdata_QAxBase"/>
+    <object-type name="QAxBaseObject" since="6.0.0">
+        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
+        <modify-function signature="signal(QString, int, void *)" access="private"/>
+    </object-type>
+    <object-type name="QAxBaseWidget" since="6.0.0">
+        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
+        <modify-function signature="signal(QString, int, void *)" access="private"/>
+    </object-type>
+    <object-type name="QAxWidget">
+        <modify-function signature="qt_static_metacall(QObject *, QMetaObject::Call, int, void **)" remove="all" since="6.0.0"/>
+        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
+    </object-type>
+    <interface-type name="QAxObjectInterface">
+    </interface-type>
+    <interface-type name="QAxBase">
+        <modify-function signature="qt_static_metacall(QAxBase *, QMetaObject::Call, int, void **)" remove="all" until="5.15.*"/>
+        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
+        <modify-function signature="operator=(const QProcessEnvironment&amp;)" remove="all"/>
+        <modify-function signature="operator&lt;&lt;(QDataStream&amp;,QAxBase)" remove="all"/>
+        <modify-function signature="operator>>(QDataStream&amp;,QAxBase&amp;)" remove="all"/>
+    </interface-type>
+    <object-type name="QAxObject">
+        <modify-function signature="qt_static_metacall(QObject *, QMetaObject::Call, int, void **)" remove="all" since="6.0.0"/>
+    </object-type>
+    <object-type name="QAxScript">
+    </object-type>
+    <enum-type name="QAxScript::FunctionFlags">
+    </enum-type>
+    <object-type name="QAxScriptEngine">
+        <modify-function signature="queryInterface(QUuid,void**)const" remove="all"/>
+    </object-type>
+    <object-type name="QAxScriptManager">
+    </object-type>
+    <enum-type name="QAxScriptEngine::State">
+    </enum-type>
+    <object-type name="QAxSelect">
+    </object-type>
+    <enum-type name="QAxSelect::SandboxingLevel">
+    </enum-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'IUnknown*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QAxAggregated*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QAxMetaObject*'"/>
+    <suppress-warning text="WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcObjects' in 'QAxScriptManager' but not both."/>
+</typesystem>
+

@@ -43,14 +43,16 @@ import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
 import io.qt.QtObjectInterface;
-import io.qt.QtResources;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
+import io.qt.core.QResource;
 import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
 import io.qt.core.QUrl;
+import io.qt.qml.QQmlExtensionPlugin;
 import io.qt.qml.QtQml;
 
 /**
@@ -70,10 +72,25 @@ public final class QmlTypes {
 		}
 		protected void addURL(URL url) {
 			super.addURL(url);
-			QtResources.addSearchPath(url.toString());
+			QResource.addClassPath(url.toString());
 		}
 	}
 	private static final QmlClassLoader qmlClassLoader = new QmlClassLoader();
+	
+	@SuppressWarnings("unused")
+	private static class JarImport extends QQmlExtensionPlugin{
+		@Override
+		public void registerTypes(String uri) {
+			registerModule(libraryPath, uri);
+		}
+		
+		private final String libraryPath;
+
+		private JarImport(String libraryPath) {
+			super();
+			this.libraryPath = new QFileInfo(libraryPath).absolutePath();
+		}
+	}
 	
 	/**
 	 * Registers all scriptable classes and qml types in the given package.
@@ -323,78 +340,76 @@ public final class QmlTypes {
 	}
 	
 	@NativeAccess
-	private static void registerModule(QUrl baseUrl, String uri) {
-		if(baseUrl.isLocalFile()) {
-			QDir directory = new QDir(baseUrl.toLocalFile());
-	        QFile qmldir = new QFile(directory.filePath("qmldir"));
-	        if(qmldir.exists() && qmldir.open(QIODevice.OpenModeFlag.ReadOnly)){
-	        	QStringList classPath = new QStringList();
-	            QStringList libraryPath = new QStringList();
-	        	try {
-		            QTextStream s = new QTextStream(qmldir);
-		            while(!s.atEnd()){
-		                String line = s.readLine();
-		                if(line.startsWith("classpath ")){
-		                	classPath.clear();
-		                    classPath.append(Arrays.asList(line.substring(10).trim().split(",")));
-		                }else if(line.startsWith("librarypath ")){
-		                	libraryPath.append(Arrays.asList(System.getProperty("java.library.path", "").split(File.pathSeparator)));
-							for(String lp : line.substring(12).trim().split(",")) {
-								lp = QDir.toNativeSeparators(directory.absoluteFilePath(lp));
-								if(!libraryPath.contains(lp)) {
-									libraryPath.append(lp);
-								}
+	private static void registerModule(String libraryDir, String uri) {
+		QDir directory = new QDir(libraryDir);
+        QFile qmldir = new QFile(directory.filePath("qmldir"));
+        if(qmldir.exists() && qmldir.open(QIODevice.OpenModeFlag.ReadOnly)){
+        	QStringList classPath = new QStringList();
+            QStringList libraryPath = new QStringList();
+        	try {
+	            QTextStream s = new QTextStream(qmldir);
+	            while(!s.atEnd()){
+	                String line = s.readLine();
+	                if(line.startsWith("classpath ")){
+	                	classPath.clear();
+	                    classPath.append(Arrays.asList(line.substring(10).trim().split(",")));
+	                }else if(line.startsWith("librarypath ")){
+	                	libraryPath.append(Arrays.asList(System.getProperty("java.library.path", "").split(File.pathSeparator)));
+						for(String lp : line.substring(12).trim().split(",")) {
+							lp = QDir.toNativeSeparators(directory.absoluteFilePath(lp));
+							if(!libraryPath.contains(lp)) {
+								libraryPath.append(lp);
 							}
-		                }
-		            }
-	        	}finally {
-	        		qmldir.close();
-	        	}
-				if(!libraryPath.isEmpty()) {
-					System.setProperty("java.library.path", libraryPath.join(File.pathSeparatorChar));
-				}
-				if(classPath.isEmpty()) {
-					classPath.append(directory.entryList(Arrays.asList("*.jar"), QDir.Filter.Files));
-				}
-				for(String cp : classPath) {
-					File file = new File(QDir.toNativeSeparators(directory.absoluteFilePath(cp)));
-					try {
-						URL url = file.toURI().toURL();
-						if(!Arrays.asList(qmlClassLoader.getURLs()).contains(url)) {
-							qmlClassLoader.addURL(url);
 						}
-					} catch (Throwable e) {
-						Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
+	                }
+	            }
+        	}finally {
+        		qmldir.close();
+        	}
+			if(!libraryPath.isEmpty()) {
+				System.setProperty("java.library.path", libraryPath.join(File.pathSeparatorChar));
+			}
+			if(classPath.isEmpty()) {
+				classPath.append(directory.entryList(Arrays.asList("*.jar"), QDir.Filter.Files));
+			}
+			for(String cp : classPath) {
+				File file = new File(QDir.toNativeSeparators(directory.absoluteFilePath(cp)));
+				try {
+					URL url = file.toURI().toURL();
+					if(!Arrays.asList(qmlClassLoader.getURLs()).contains(url)) {
+						qmlClassLoader.addURL(url);
 					}
+				} catch (Throwable e) {
+					Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
 				}
-				java.lang.Package _package = getDefinedPackage(qmlClassLoader, uri);
-				if(_package==null){
-					QDir classPathDir = new QDir("classpath:"+uri.replace('.', '/'));
-					for(String className : classPathDir.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-						if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
-							className = uri+"."+className.substring(0, className.length()-6);
-							try {
-								Class<?> cls = qmlClassLoader.loadClass(className);
-								_package = cls.getPackage();
-								break;
-							} catch (Exception e) {
-							}
+			}
+			java.lang.Package _package = getDefinedPackage(qmlClassLoader, uri);
+			if(_package==null){
+				QDir classPathDir = new QDir("classpath:"+uri.replace('.', '/'));
+				for(String className : classPathDir.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+					if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+						className = uri+"."+className.substring(0, className.length()-6);
+						try {
+							Class<?> cls = qmlClassLoader.loadClass(className);
+							_package = cls.getPackage();
+							break;
+						} catch (Exception e) {
 						}
 					}
 				}
-				int version = 1;
-				if(_package!=null) {
-					QmlImportMajorVersion importMajorVersion = _package.getAnnotation(QmlImportMajorVersion.class);
-					if(importMajorVersion==null)
-						throw new QmlNoMajorVersionException("No QmlImportMajorVersion annotation in package "+_package.getName());
-					version = importMajorVersion.value();
-					registerPackage(_package, uri, version);
-				}
-				for(String qmlFile : directory.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-					QtQml.qmlRegisterType(new QUrl(directory.absoluteFilePath(qmlFile)), uri, version, 0, qmlFile.substring(0, qmlFile.length()-4));
-				}
-				QtQml.qmlRegisterModule(uri, version, 0);
-	        }
-		}
+			}
+			int version = 1;
+			if(_package!=null) {
+				QmlImportMajorVersion importMajorVersion = _package.getAnnotation(QmlImportMajorVersion.class);
+				if(importMajorVersion==null)
+					throw new QmlNoMajorVersionException("No QmlImportMajorVersion annotation in package "+_package.getName());
+				version = importMajorVersion.value();
+				registerPackage(_package, uri, version);
+			}
+			for(String qmlFile : directory.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+				QtQml.qmlRegisterType(new QUrl(directory.absoluteFilePath(qmlFile)), uri, version, 0, qmlFile.substring(0, qmlFile.length()-4));
+			}
+			QtQml.qmlRegisterModule(uri, version, 0);
+        }
 	}
 }

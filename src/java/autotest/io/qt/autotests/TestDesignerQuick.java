@@ -1,17 +1,20 @@
 package io.qt.autotests;
 
+import java.lang.reflect.Method;
+
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.*;
 import io.qt.designer.*;
 import io.qt.quick.*;
 import io.qt.quick.widgets.*;
 import io.qt.widgets.*;
 
-public class TestDesignerQuick extends QApplicationTest {
+public class TestDesignerQuick extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -19,8 +22,9 @@ public class TestDesignerQuick extends QApplicationTest {
 				|| QLibraryInfo.version().majorVersion()>5 
 				|| !QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-//		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
-		QApplicationTest.testInitialize();
+		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
+		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		ApplicationInitializer.testInitializeWithWidgets();
 		QQuickWidget.staticMetaObject.hashCode();
 	}
     
@@ -38,7 +42,7 @@ public class TestDesignerQuick extends QApplicationTest {
 	    	device.close();
     	}
     	System.gc();
-    	Assert.assertTrue(widget != null);
+    	Assert.assertTrue("QFormBuilder did not load widget", widget != null);
     	Assert.assertEquals(QQuickWidget.staticMetaObject, widget.metaObject());
 		if(!(widget instanceof QQuickWidget)) {
 			QQuickWidget quickWidget = widget.qt_metacast(QQuickWidget.class);
@@ -54,8 +58,6 @@ public class TestDesignerQuick extends QApplicationTest {
     	if(QLibraryInfo.isDebugBuild()) {
     		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
     			lib += "d";
-    		}else {
-    			lib += "_debug";
     		}
     	}
     	QPluginLoader pluginLoader = new QPluginLoader(lib);
@@ -68,6 +70,7 @@ public class TestDesignerQuick extends QApplicationTest {
     		Assert.assertTrue(wdg != null);
     		Assert.assertEquals("QQuickWidget", wdg.name());
     		QWidget widget = wdg.createWidget(null);
+    		Assert.assertTrue("QDesignerCustomWidgetInterface did not create widget", widget != null);
     		Assert.assertEquals(QQuickWidget.staticMetaObject, widget.metaObject());
     		if(!(widget instanceof QQuickWidget)) {
     			QQuickWidget quickWidget = widget.qt_metacast(QQuickWidget.class);

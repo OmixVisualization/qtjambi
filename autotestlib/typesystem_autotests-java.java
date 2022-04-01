@@ -49,7 +49,7 @@ import io.qt.internal.QtJambiObject.QPrivateConstructor;
 import io.qt.core.*;
 
 class QObjectType___ extends QObjectType {
-        if(Utils.isDebugLevel(3)) {
+        if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.logging.Level.FINEST)) {
             Class<?> cls = this.getClass();
             int hash = System.identityHashCode(this);
             destroyed.connect(()->{
@@ -58,7 +58,7 @@ class QObjectType___ extends QObjectType {
                 int i = shortClassName.lastIndexOf('.');
                 if(i > 0)
                     shortClassName = shortClassName.substring(i + 1);
-                Utils.println(3, shortClassName + ".dtor(" + className + "@" + hash + ") thread=" + Thread.currentThread().getId());
+                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, shortClassName + ".dtor(" + className + "@" + hash + ") thread=" + Thread.currentThread().getId());
             });
         }
 }// class

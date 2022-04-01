@@ -39,7 +39,7 @@ import io.qt.core.QObject;
 import io.qt.scxml.QScxmlEvent;
 import io.qt.scxml.QScxmlStateMachine;
 
-public class TestScxml extends QApplicationTest {
+public class TestScxml extends ApplicationInitializer {
 	
     @Test
     public void test() {

@@ -148,6 +148,75 @@ class QtRemoteObjects___ {
     @io.qt.QtUninvokable
     private static native void qRegisterRemoteObjectsServer(java.lang.String id, Class<? extends QConnectionAbstractServer> type, java.lang.reflect.Constructor<?> constructor);
     
+    
+    @SuppressWarnings("unchecked")
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(T src, T dst)
+    {
+        if(src!=null)copyStoredProperties((Class<T>)src.getClass(), src, dst);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(T src, io.qt.core.QDataStream dst)
+    {
+        if(src!=null)copyStoredProperties((Class<T>)src.getClass(), src, dst);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(io.qt.core.QDataStream src, T dst)
+    {
+        if(dst!=null)copyStoredProperties((Class<T>)dst.getClass(), src, dst);
+    }
+    
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(Class<T> type, T src, T dst)
+    {
+        if(io.qt.core.QObject.class.isAssignableFrom(type))
+            throw new IllegalArgumentException("Only gadget types allowed.");
+        if(src instanceof io.qt.QtObjectInterface)
+            copyStoredProperties(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)src), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)dst));
+        else
+            copyStoredProperties(io.qt.core.QMetaObject.forType(type), src, dst);
+    }
+    
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(Class<T> type, T src, io.qt.core.QDataStream dst)
+    {
+        java.util.Objects.requireNonNull(dst);
+        if(io.qt.core.QObject.class.isAssignableFrom(type))
+            throw new IllegalArgumentException("Only gadget types allowed.");
+        if(src instanceof io.qt.QtObjectInterface)
+            copyStoredPropertiesStreamOut(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)src), QtJambi_LibraryUtilities.internal.checkedNativeId(dst));
+        else
+            copyStoredPropertiesStreamOut(io.qt.core.QMetaObject.forType(type), src, QtJambi_LibraryUtilities.internal.checkedNativeId(dst));
+    }
+    
+    @io.qt.QtUninvokable
+    public static <T> void copyStoredProperties(Class<T> type, io.qt.core.QDataStream src, T dst)
+    {
+        java.util.Objects.requireNonNull(src);
+        if(io.qt.core.QObject.class.isAssignableFrom(type))
+            throw new IllegalArgumentException("Only gadget types allowed.");
+        if(dst instanceof io.qt.QtObjectInterface)
+            copyStoredPropertiesStreamIn(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId(src), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)dst));
+        else
+            copyStoredPropertiesStreamIn(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId(src), dst);
+    }
+    
+    @io.qt.QtUninvokable
+    private native static void copyStoredProperties(io.qt.core.QMetaObject type, long src, long dst);
+    @io.qt.QtUninvokable
+    private native static void copyStoredProperties(io.qt.core.QMetaObject type, Object src, Object dst);
+    @io.qt.QtUninvokable
+    private native static void copyStoredPropertiesStreamIn(io.qt.core.QMetaObject type, long src, Object dst);
+    @io.qt.QtUninvokable
+    private native static void copyStoredPropertiesStreamIn(io.qt.core.QMetaObject type, long src, long dst);
+    @io.qt.QtUninvokable
+    private native static void copyStoredPropertiesStreamOut(io.qt.core.QMetaObject type, Object src, long dst);
+    @io.qt.QtUninvokable
+    private native static void copyStoredPropertiesStreamOut(io.qt.core.QMetaObject type, long src, long dst);
 }// class
 
 class QtRemoteObjects_5__ {

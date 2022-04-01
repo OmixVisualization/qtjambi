@@ -32,10 +32,10 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class TestDeployerSql {
+public class TestDeployerSql extends UnitTestInitializer {
     @Test
     public void test() throws InterruptedException, IOException {
-    	QApplicationTest.testDeployerApp("DeploymentSql", "sql");
+    	ApplicationInitializer.testDeployerApp("DeploymentSql", "sql");
     }
 
     public static void main(String args[]) {

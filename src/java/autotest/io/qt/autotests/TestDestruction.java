@@ -37,7 +37,7 @@ import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.internal.*;
 
-public class TestDestruction extends QApplicationTest {
+public class TestDestruction extends ApplicationInitializer {
     private static ReferenceQueue<OrdinaryDestroyed> weakReferenceQueue = new ReferenceQueue<>();
     private static ReferenceQueue<OrdinaryDestroyed> phantomReferenceQueue = new ReferenceQueue<>();
     private static Map<WeakReference<OrdinaryDestroyed>,Integer> weakReferenceMap = new HashMap<>();
@@ -103,14 +103,15 @@ public class TestDestruction extends QApplicationTest {
         if(id == null)
             id = getIdNext();
 
-        if(Utils.isDebugLevel(4)) {
-            String className = o.getClass().getName();
+        Integer _id = id;
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, ()->{
+        	String className = o.getClass().getName();
             String shortClassName = className;
             int i = shortClassName.lastIndexOf('.');
             if(i > 0)
                 shortClassName = shortClassName.substring(i + 1);
-            Utils.println(4, shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
-        }
+            return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+        });
         WeakReference<OrdinaryDestroyed> wr = new WeakReference<>(o, weakReferenceQueue);
         PhantomReference<OrdinaryDestroyed> pr = new PhantomReference<>(o, phantomReferenceQueue);
         synchronized(TestDestruction.class) {
@@ -119,7 +120,7 @@ public class TestDestruction extends QApplicationTest {
             aliveAndUnderTest.add(id);
             alive.add(id);
         }
-        QApplicationTest.instances.add(new WeakReference<>(o));
+        ApplicationInitializer.instances.add(new WeakReference<>(o));
     }
 
     @SuppressWarnings("unused")
@@ -144,7 +145,7 @@ public class TestDestruction extends QApplicationTest {
         while(loop) {
             try {
 //                if(needsEventProcessing()) {
-//                    Utils.println(5, debugPrefix + ": QApplication.processEvents()");
+//                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": QApplication.processEvents()");
 //                    QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 ////                    QApplication.processEvents();
 //                }
@@ -158,7 +159,7 @@ public class TestDestruction extends QApplicationTest {
                     synchronized(TestDestruction.class) {
                         tmpId = weakReferenceMap.remove(thisWr);
                     }
-                    Utils.println(5, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
                 Reference<? extends Object> thisPr;
                 while((thisPr = phantomReferenceQueue.poll()) != null) {
@@ -166,7 +167,7 @@ public class TestDestruction extends QApplicationTest {
                     synchronized(TestDestruction.class) {
                         tmpId = phantomReferenceMap.remove(thisPr);
                     }
-                    Utils.println(5, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
 
                 if(!obtainGoal) {	// Try to obtainGoal
@@ -189,7 +190,7 @@ public class TestDestruction extends QApplicationTest {
                         excessTime = System.currentTimeMillis();	// reset this for excessLimitMillis
                     }
 
-                    Utils.println(5, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
                         "; currentDisposedCount=" + currentDisposedCount +
                         "; currentDestroyedCount=" + currentDestroyedCount +
                         "; obtainGoal=" + obtainGoal
@@ -206,7 +207,7 @@ public class TestDestruction extends QApplicationTest {
                     elapsed = System.currentTimeMillis() - startTime;
                     loop = elapsed < timeLimitMillis;
                 }
-Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtainGoal="+obtainGoal);
+                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtainGoal="+obtainGoal);
 
                 if(loop)
                     Thread.sleep(10);
@@ -216,13 +217,8 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
         }
 
         // Report on status
-        if(Utils.isDebugLevel(4)) {
-            // Print array format [1, 2, 3]
-            synchronized(TestDestruction.class) {
-                Utils.println(4, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
-                        "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
-            }
-        }
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
 
         return obtainGoal;
     }
@@ -459,7 +455,7 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
         	super(counter);
             this.id = id;
             io.qt.QtUtilities.getSignalOnDispose(this).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
-            Utils.println(5, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
         }
 
         public Integer getId() {

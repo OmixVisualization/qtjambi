@@ -46,11 +46,17 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.opengl.*;
 
-public class TestOpenGLCloneable extends QApplicationTest {
+public class TestOpenGLCloneable extends ApplicationInitializer {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitializeWithGui();
+	}
 
     // this test does not make sense because QGLBuffer does not have an equals operator
     //@Test

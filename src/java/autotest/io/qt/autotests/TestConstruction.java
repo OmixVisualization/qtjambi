@@ -29,10 +29,11 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.lang.ref.WeakReference;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QEvent;
@@ -41,12 +42,20 @@ import io.qt.widgets.QMdiArea;
 import io.qt.widgets.QMdiSubWindow;
 import io.qt.widgets.QWidget;
 
-public class TestConstruction extends QApplicationTest {
+public class TestConstruction extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void testQObjectConversionInConstructor() {
+    	QObject[] array = {null};
         QMdiArea area = new QMdiArea() {
             @Override
             public boolean eventFilter(QObject o, QEvent e) {
+            	array[0] = o;
             	return false;
             }
         };
@@ -55,9 +64,11 @@ public class TestConstruction extends QApplicationTest {
         QMdiSubWindow subWindow = area.addSubWindow(new QWidget());
         // Although it seems unlikely, this may actually be false, trust me.
         try{
+        	assertFalse(array[0] instanceof QMdiSubWindow);
         	assertTrue(subWindow instanceof QMdiSubWindow);
         }finally {
         	area.hide();
+        	area.dispose();
         }
     }
     

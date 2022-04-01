@@ -99,10 +99,7 @@
         <modify-function signature="operator=(const QDBusMessage &amp;)" remove="all"/>
     </value-type>
     
-    <object-type name="QDBusInterface" target-type="final class" generate="no-shell"><!-- since 4.2, looks like interface -->
-    <modify-function signature="metaObject() const" remove="all"/>
-    <modify-function signature="qt_metacast(const char *)" remove="all"/>
-    <modify-function signature="qt_metacall(QMetaObject::Call, int, void **)" remove="all"/>
+    <object-type name="QDBusInterface"><!-- since 4.2, looks like interface -->
     </object-type>
 
     <value-type name="QDBusMessage"><!-- since 4.2 -->
@@ -171,8 +168,12 @@
         <modify-function signature="operator=(const QDBusUnixFileDescriptor &amp;)" remove="all"/>
     </value-type>
     <rejection class="QDBusMetaType" />
-    <object-type name="QDBusPendingReplyData" until="5.*"/>
-    <object-type name="QDBusPendingReplyBase" since="6.0.0"/>
+    <object-type name="QDBusPendingReplyData" until="5.*">
+        <interface-polymorphy interface="QDBusPendingCall" condition="false" />
+    </object-type>
+    <object-type name="QDBusPendingReplyBase" since="6.0.0">
+        <interface-polymorphy interface="QDBusPendingCall" condition="false" />
+    </object-type>
 
     <object-type name="QDBusVariant"/><!-- since 4.2, inherits QVariant(private) -->
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*" />

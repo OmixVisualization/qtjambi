@@ -1400,11 +1400,11 @@ bool Parser::parseDeclarator(DeclaratorAST *&node, bool iteratorFor) {
             token_stream.nextToken();
             if (token_stream.lookAhead() == '}') {
                 token_stream.nextToken();
-                ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
+                //ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
             }else{
                 ExpressionAST *node = nullptr;
                 if(parseCommaExpression(node)){
-                    ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
+                    //ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
                     if (token_stream.lookAhead() != '}') {
                         token_stream.rewind(index);
                     }else{
@@ -3649,7 +3649,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
 
-    hasFunSpec = parseFunctionSpecifier(funSpec);
+    hasFunSpec |= parseFunctionSpecifier(funSpec);
 
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);

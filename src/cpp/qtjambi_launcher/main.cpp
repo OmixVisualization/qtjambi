@@ -592,9 +592,9 @@ int main(int argc, char *argv[])
         QFile paramsFile(programDir.absoluteFilePath("../Resources/params.cbor"));
         if(!paramsFile.open(QIODevice::ReadOnly)){
             if(paramsFile.exists())
-                fprintf( stderr, "Unable to read runtime parameters.");
+                fprintf( stderr, "Unable to read runtime parameters.\n");
             else
-                fprintf( stderr, "Launcher does not provide any runtime parameters.");
+                fprintf( stderr, "Launcher does not provide any runtime parameters.\n");
             return -1;
         }
         QCborStreamReader reader(&paramsFile);
@@ -603,11 +603,11 @@ int main(int argc, char *argv[])
     }
 #endif
     if(error.error!=QCborError::NoError){
-        fprintf( stderr, "Error while loading runtime parameters: %s", qPrintable(error.errorString()));
+        fprintf( stderr, "Error while loading runtime parameters: %s\n", qPrintable(error.errorString()));
         return -1;
     }
     if(!value.isMap()){
-        fprintf( stderr, "Launcher does not provide any runtime parameters.");
+        fprintf( stderr, "Launcher does not provide any runtime parameters.\n");
         return -1;
     }
     QString vmLocation;
@@ -927,50 +927,50 @@ int main(int argc, char *argv[])
                 vm_args.version = minimumJNIVersion;
                 int result = ptrGetDefaultJavaVMInitArgs(&vm_args);
                 if(result!=JNI_OK){
-                    fprintf( stderr, "Unable to get default init args for Java Virtual Machine. MinimumJNIVersion=%s, JVMArgs=%s", qPrintable(QString::number(minimumJNIVersion, 16)), options.join(" ").data());
+                    fprintf( stderr, "Unable to get default init args for Java Virtual Machine. MinimumJNIVersion=%s, JVMArgs=%s\n", qPrintable(QString::number(minimumJNIVersion, 16)), options.join(" ").data());
                     return -1;
                 }
 
                 JNIEnv * env = nullptr;
                 result = ptrCreateJavaVM(&javaVM, reinterpret_cast<void**>(&env), &vm_args);
                 if(result!=JNI_OK || !javaVM){
-                    fprintf( stderr, "Unable to create Java Virtual Machine");
+                    fprintf( stderr, "Unable to create Java Virtual Machine\n");
                     return -1;
                 }
                 auto vmdestroyer = qScopeGuard([] { javaVM->DestroyJavaVM(); javaVM = nullptr; });
 
                 QString mainClass = runtimeParameters.value(MainClass).toString();
                 if(mainClass.isEmpty()){
-                    fprintf( stderr, "Main class not specified");
+                    fprintf( stderr, "Main class not specified\n");
                     return -1;
                 }
-                jclass jmainClass = env->FindClass(qPrintable("L"+mainClass.replace('.', '/')+";"));
+                jclass jmainClass = env->FindClass(qPrintable(mainClass.replace('.', '/')));
                 if(env->ExceptionCheck()){
-                    fprintf( stderr, "Exception occurred while loading main class");
+                    fprintf( stderr, "Exception occurred while loading main class:\n");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 if(!jmainClass){
-                    fprintf( stderr, "Main class not found: %s", qPrintable(mainClass));
+                    fprintf( stderr, "Main class not found: %s\n", qPrintable(mainClass));
                     return -1;
                 }
                 jmethodID mainMethod = env->GetStaticMethodID(jmainClass, "main", "([Ljava/lang/String;)V");
                 if(env->ExceptionCheck()){
-                    fprintf( stderr, "Exception occurred while loading main method");
+                    fprintf( stderr, "Exception occurred while loading main method:\n");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
-                jclass stringClass = env->FindClass("Ljava/lang/String;");
+                jclass stringClass = env->FindClass("java/lang/String");
                 if(env->ExceptionCheck()){
-                    fprintf( stderr, "Exception occurred while loading String class");
+                    fprintf( stderr, "Exception occurred while loading String class:\n");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 if(!stringClass){
-                    fprintf( stderr, "Class not found: java.lang.String");
+                    fprintf( stderr, "Class not found: java.lang.String\n");
                     return -1;
                 }
                 jobjectArray mainArgs = env->NewObjectArray(argc-1, stringClass, nullptr);
@@ -979,28 +979,28 @@ int main(int argc, char *argv[])
                     env->SetObjectArrayElement(mainArgs, i-1, s);
                 }
                 if(env->ExceptionCheck()){
-                    fprintf( stderr, "Exception occurred while creating argument array");
+                    fprintf( stderr, "Exception occurred while creating argument array:\n");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 env->CallStaticVoidMethod(jmainClass, mainMethod, mainArgs);
                 if(env->ExceptionCheck()){
-                    fprintf( stderr, "Exception occurred while executing main method");
+                    fprintf( stderr, "Exception occurred while executing main method:\n");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
             }
         }else{
-            fprintf( stderr, "Unable to load JVM: %s", qPrintable(jvmLibrary->errorString()));
+            fprintf( stderr, "Unable to load JVM: %s\n", qPrintable(jvmLibrary->errorString()));
             return -1;
         }
     }else if(!vmLocation.isEmpty()){
-        fprintf( stderr, "Java expected to be installed in %s", qPrintable(vmLocation));
+        fprintf( stderr, "Java expected to be installed in %s\n", qPrintable(vmLocation));
         return -1;
     }else{
-        fprintf( stderr, "Unable to find Java");
+        fprintf( stderr, "Unable to find Java\n");
         return -1;
     }
     return 0;

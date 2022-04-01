@@ -41,7 +41,7 @@ import io.qt.gui.QPolygon;
 import io.qt.gui.QPolygonF;
 import io.qt.gui.QTransform;
 
-public class TestQTransform extends QApplicationTest {
+public class TestQTransform extends ApplicationInitializer {
     class Data {
         public Data(String name, QTransform matrix, QRect src, QPolygon res) {
             this.name = name;

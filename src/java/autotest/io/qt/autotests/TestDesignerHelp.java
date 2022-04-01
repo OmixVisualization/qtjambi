@@ -1,5 +1,6 @@
 package io.qt.autotests;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.Assert;
@@ -11,14 +12,16 @@ import io.qt.designer.*;
 import io.qt.help.*;
 import io.qt.quick.*;
 import io.qt.widgets.*;
+import io.qt.internal.QtJambiInternal;
 
-public class TestDesignerHelp extends QApplicationTest {
+public class TestDesignerHelp extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-//		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
-		QApplicationTest.testInitialize();
+		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
+		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		ApplicationInitializer.testInitializeWithWidgets();
 	}
 	
     @Test
@@ -42,11 +45,9 @@ public class TestDesignerHelp extends QApplicationTest {
     @Test
     public void testHelpWidgets() {
     	String lib = "designer/helpwidgets";
-    	if(System.getProperty("io.qt.debug").equalsIgnoreCase("debug")) {
+    	if(QtJambiInternal.isDebugBuild()) {
     		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
     			lib += "d";
-    		}else {
-    			lib += "_debug";
     		}
     	}
     	QPluginLoader pluginLoader = new QPluginLoader(lib);

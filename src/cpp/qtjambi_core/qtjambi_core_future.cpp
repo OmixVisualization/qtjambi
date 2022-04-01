@@ -669,7 +669,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         jvalue arguments[2];
         arguments[0].l = parent0;
         arguments[1].l = functions;
-        qtjambi_initialize_native_qobject(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), QFutureWatcher_shell::staticMetaObject, true, false, arguments);
+        qtjambi_initialize_native_qobject(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), QFutureWatcher_shell::staticMetaObject, true, false, false, arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)

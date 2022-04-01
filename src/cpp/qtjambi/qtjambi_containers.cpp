@@ -143,18 +143,21 @@ jobject qtjambi_from_QList(JNIEnv *env,
             switch(listType){
             case ListType::QQueue:
                 if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
             case ListType::QStack:
                 if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
 #endif
             default:
                 if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
@@ -167,24 +170,32 @@ jobject qtjambi_from_QList(JNIEnv *env,
                 switch(listType){
                 case ListType::QQueue:
                     if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                        containerAccess->dispose();
                         return obj;
                     }
                     break;
     #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 case ListType::QStack:
                     if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                        containerAccess->dispose();
                         return obj;
                     }
                     break;
     #endif
                 default:
                     if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                        containerAccess->dispose();
                         return obj;
                     }
                     break;
                 }
             }
         }
+    }
+    if(listType==ListType::QList && containerAccess->elementMetaType().id()==QMetaType::QString){
+        bool isConst = containerAccess->isConstant();
+        containerAccess->dispose();
+        return qtjambi_from_QStringList(env, owner, listPtr, copyFunction, deleter, isConst);
     }
     jobject returned = nullptr;
     containerAccess = checkContainerAccess(env, containerAccess);
@@ -282,23 +293,31 @@ jobject qtjambi_from_QList(JNIEnv *env,
             switch(listType){
             case ListType::QQueue:
                 if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
             case ListType::QStack:
                 if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
 #endif
             default:
                 if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
                 break;
             }
         }
+    }
+    if(listType==ListType::QList && containerAccess->elementMetaType().id()==QMetaType::QString){
+        bool isConst = containerAccess->isConstant();
+        containerAccess->dispose();
+        return qtjambi_from_QStringList(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, isConst);
     }
 
     jobject returned = nullptr;
@@ -445,6 +464,7 @@ jobject qtjambi_from_QSet(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -452,6 +472,7 @@ jobject qtjambi_from_QSet(JNIEnv *env,
         if(link && (!copyFunction || link->createdByJava())){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -531,6 +552,7 @@ jobject qtjambi_from_QSet(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -567,12 +589,14 @@ jobject qtjambi_from_QLinkedList(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -637,6 +661,7 @@ jobject qtjambi_from_QLinkedList(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -673,10 +698,12 @@ jobject qtjambi_from_QVector(JNIEnv *env,
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(vectorType==VectorType::QStack){
             if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }else{
             if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -685,10 +712,12 @@ jobject qtjambi_from_QVector(JNIEnv *env,
         jobject obj = link->getJavaObjectLocalRef(env);
         if(vectorType==VectorType::QStack){
             if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }else{
             if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -777,10 +806,12 @@ jobject qtjambi_from_QVector(JNIEnv *env,
             jobject obj = link->getJavaObjectLocalRef(env);
             if(vectorType==VectorType::QStack){
                 if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
             }else{
                 if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
                     return obj;
                 }
             }
@@ -825,12 +856,14 @@ jobject qtjambi_from_QHash(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QHash::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QHash::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -896,6 +929,7 @@ jobject qtjambi_from_QHash(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QHash::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -933,12 +967,14 @@ jobject qtjambi_from_QMultiHash(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -1005,6 +1041,7 @@ jobject qtjambi_from_QMultiHash(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -1042,12 +1079,14 @@ jobject qtjambi_from_QMap(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QMap::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMap::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -1113,6 +1152,7 @@ jobject qtjambi_from_QMap(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMap::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }
@@ -1150,12 +1190,14 @@ jobject qtjambi_from_QMultiMap(JNIEnv *env,
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
         jobject obj = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
+            containerAccess->dispose();
             return obj;
         }
     }
@@ -1222,6 +1264,7 @@ jobject qtjambi_from_QMultiMap(JNIEnv *env,
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
+                containerAccess->dispose();
                 return obj;
             }
         }

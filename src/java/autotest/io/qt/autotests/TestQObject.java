@@ -63,7 +63,7 @@ import io.qt.core.QThread;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.widgets.QApplication;
 
-public class TestQObject extends QApplicationTest {
+public class TestQObject extends ApplicationInitializer {
 	
     private static final int TIMEOUT = 2000;
     private static final Utils.GC_MODE gcMode = Utils.GC_MODE.AGGRESIVE;
@@ -190,7 +190,7 @@ public class TestQObject extends QApplicationTest {
             long expireTime = 0;
             if(timeout >= 0)
                 expireTime = System.currentTimeMillis() + timeout;
-            Utils.println(5, " waitForEmpty(timeout=" + timeout + "; expireTime=" + expireTime + ")");
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " waitForEmpty(timeout=" + timeout + "; expireTime=" + expireTime + ")");
 
             int aliveSize;
             int aliveAndUnderTestSize;
@@ -207,7 +207,7 @@ public class TestQObject extends QApplicationTest {
                     synchronized(DyingObject.class) {
                         tmpId = weakReferenceMap.remove(thisWr);
                     }
-                    Utils.println(5, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
                 Reference<? extends DyingObject> thisPr;
                 while((thisPr = phantomReferenceQueue.poll()) != null) {
@@ -215,7 +215,7 @@ public class TestQObject extends QApplicationTest {
                     synchronized(DyingObject.class) {
                         tmpId = phantomReferenceMap.remove(thisPr);
                     }
-                    Utils.println(5, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
 
                 // Re-evaluate state
@@ -242,7 +242,7 @@ public class TestQObject extends QApplicationTest {
                 if(expireTime > timeNow)
                     left = expireTime - timeNow;
                 if(left <= 100)
-                    Utils.println(5, " timeout=" + timeout + "; expireTime=" + expireTime + "; left=" + left);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " timeout=" + timeout + "; expireTime=" + expireTime + "; left=" + left);
                 if(left <= 0)
                     break;	// expireTime met or exceeded
                 try {
@@ -254,13 +254,8 @@ public class TestQObject extends QApplicationTest {
             }
 
             // Report on status
-            if(Utils.isDebugLevel(4)) {
-                // Print array format [1, 2, 3]
-                synchronized(DyingObject.class) {
-                    Utils.println(4, "alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
-                            "; weakReferenceMap=" + weakReferenceMap.values() + "; phantomReferenceMap=" + phantomReferenceMap.values());
-                }
-            }
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, ()->"alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                        "; weakReferenceMap=" + weakReferenceMap.values() + "; phantomReferenceMap=" + phantomReferenceMap.values());
         }
         public void clear() {
             synchronized(DyingObject.class) {
@@ -330,7 +325,7 @@ public class TestQObject extends QApplicationTest {
         	this.setObjectName(objectName);
         	this.objectName = objectName;
         	instances.add(new WeakReference<>(this));
-            Utils.println(4, "DyingObject#ctor() thread=" + thread() + "; id=" + id);
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "DyingObject#ctor() thread=" + thread() + "; id=" + id);
 
             WeakReference<DyingObject> wr = new WeakReference<DyingObject>(this, counter.weakReferenceQueue);
             PhantomReference<DyingObject> pr = new PhantomReference<DyingObject>(this, counter.phantomReferenceQueue);
@@ -342,7 +337,7 @@ public class TestQObject extends QApplicationTest {
             }
             Object _id = id;
             QtUtilities.getSignalOnDispose(this).connect(()->{
-            	Utils.println(4, "DyingObject#dtor() id=" + _id);
+            	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "DyingObject#dtor() id=" + _id);
             	synchronized(DyingObject.class) {
             		counter.aliveAndUnderTest.remove(_id);
             		counter.alive.remove(_id);

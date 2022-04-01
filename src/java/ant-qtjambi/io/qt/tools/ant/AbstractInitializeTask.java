@@ -71,10 +71,10 @@ public abstract class AbstractInitializeTask extends Task {
     }
 
     public void setVerbose(String verboseLevelString) {
-        if("true".compareToIgnoreCase(verboseLevelString) == 0) {
+        if("true".equalsIgnoreCase(verboseLevelString)) {
             verboseLevel = 1;
             return;
-        } if("false".compareToIgnoreCase(verboseLevelString) == 0) {
+        } if("false".equalsIgnoreCase(verboseLevelString)) {
             verboseLevel = 0;
             return;
         }
@@ -256,7 +256,17 @@ public abstract class AbstractInitializeTask extends Task {
         return result;
     }
     
-    protected String decideJava8HomeTarget() {
+    protected void decideAlternativeJavaHomesTarget() {
+    	int qtMajorVersion = 5;
+    	int qtMinorVersion = 0;
+    	try {
+    		qtMajorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
+		} catch (Exception e) {
+		}
+    	try {
+    		qtMinorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
+		} catch (Exception e) {
+		}
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA8_HOME_TARGET);
         if(s == null) {
@@ -289,9 +299,93 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        String result = s;
-        mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, result, false);
-        return result;
+        mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, false);
+        switch(OSInfo.os()) {
+        case MacOS: 
+        	switch(System.getProperty("os.arch").toLowerCase()) {
+        	case "arm64":
+        	case "aarch64":
+        		if(qtMajorVersion>=6 && qtMinorVersion>=2) {
+        			mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), false);
+        		}
+        		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_X64_HOME_TARGET);
+                if(s == null) {
+                    try {
+                        s = System.getenv("JAVA_X64_HOME_TARGET");
+                        if(s != null) {
+                    		File includeDir = new File(s, "include");
+                    		File jni_h = new File(includeDir, "jni.h");
+                    		if(jni_h.isFile()) {
+                            	sourceValue = " (from envvar:JAVA_X64_HOME_TARGET)";
+                    		}else {
+                    			s = null;
+                    		}
+                        }
+                    } catch(SecurityException eat) {
+                    }
+                }
+                if(s == null) {
+                    try {
+                        s = System.getenv("JAVA_X64_HOME");
+                        if(s != null) {
+                    		File includeDir = new File(s, "include");
+                    		File jni_h = new File(includeDir, "jni.h");
+                    		if(jni_h.isFile()) {
+                    			sourceValue = " (from envvar:JAVA_X64_HOME)";
+                    		}else {
+                    			s = null;
+                    		}
+                        }
+                    } catch(SecurityException eat) {
+                    }
+                }
+                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, s, false);
+        		break;
+        	case "x86_64":
+        	case "x64":
+        	case "amd64":
+                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), false);
+                if(qtMajorVersion>=6 && qtMinorVersion>=2) {
+	        		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_ARM64_HOME_TARGET);
+	                if(s == null) {
+	                    try {
+	                        s = System.getenv("JAVA_ARM64_HOME_TARGET");
+	                        if(s != null) {
+	                    		File includeDir = new File(s, "include");
+	                    		File jni_h = new File(includeDir, "jni.h");
+	                    		if(jni_h.isFile()) {
+	                            	sourceValue = " (from envvar:JAVA_ARM64_HOME_TARGET)";
+	                    		}else {
+	                    			s = null;
+	                    		}
+	                        }
+	                    } catch(SecurityException eat) {
+	                    }
+	                }
+	                if(s == null) {
+	                    try {
+	                        s = System.getenv("JAVA_ARM64_HOME");
+	                        if(s != null) {
+	                    		File includeDir = new File(s, "include");
+	                    		File jni_h = new File(includeDir, "jni.h");
+	                    		if(jni_h.isFile()) {
+	                    			sourceValue = " (from envvar:JAVA_ARM64_HOME)";
+	                    		}else {
+	                    			s = null;
+	                    		}
+	                        }
+	                    } catch(SecurityException eat) {
+	                    }
+	                }
+	                mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, s, false);
+                }
+        		break;
+        	default:
+        		break;            	
+        	}
+        	break;
+        	default: break;
+        }
     }
 
     protected String decideJavaOsarchTarget() {

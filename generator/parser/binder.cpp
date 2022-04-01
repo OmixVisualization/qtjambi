@@ -432,6 +432,16 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
                 it = it->next;
             } while (it != end);
         }
+        if (node->function_specifiers) {
+            const ListNode<std::size_t> *it = node->function_specifiers->toFront();
+            const ListNode<std::size_t> *end = it;
+            do {
+                int kind = _M_token_stream->kind(it->element);
+                if (kind == Token_constexpr)
+                    var->setConstExpr(true);
+                it = it->next;
+            } while (it != end);
+        }
         if (declarator != init_declarator->declarator
                 && init_declarator->declarator->parameter_declaration_clause != nullptr) {
             typeInfo.setFunctionPointer(true);
@@ -847,6 +857,19 @@ void Binder::visitLinkageSpecification(LinkageSpecificationAST *node) {
 }
 
 void Binder::visitUsing(UsingAST *node) {
+    if(_M_current_class){
+        name_cc.run(node->name);
+        QStringList qualifiedName = name_cc.qualifiedName();
+        if(!_M_current_class->baseClasses().isEmpty()){
+            QString baseClassName = _M_current_class->baseClasses().first().first;
+            QString methodName = qualifiedName.takeLast();
+            QString className = qualifiedName.join("::");
+            if((className==baseClassName || className.startsWith(baseClassName+"<"))
+                    && methodName==baseClassName.split("::").last()){
+                _M_current_class->setUsingBaseConstructors(_M_current_access);
+            }
+        }
+    }
     DefaultVisitor::visitUsing(node);
 }
 

@@ -29,13 +29,16 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QSignalAccessException;
@@ -54,7 +57,12 @@ import io.qt.gui.*;
 import io.qt.widgets.*;
 
 @SuppressWarnings("unused")
-public class TestSignals extends QApplicationTest{
+public class TestSignals extends ApplicationInitializer{
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	public static class QObjectSignalOwner extends QObject{
 		final Signal1<String> testSignal = new Signal1<>();
@@ -103,7 +111,7 @@ public class TestSignals extends QApplicationTest{
 			assertEquals("Missing modifier 'final' at signal QObjectNonFinalSignalOwner.testSignal.", e.getMessage());
 		}
 		QObjectSignalOwner obj2 = new QObjectSignalOwner();
-		obj2.metaObject().methods().forEach(System.out::println);
+		obj2.metaObject().methods().forEach(m->java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, m.cppMethodSignature().toString()));
 	}
 	
 	@Test
@@ -375,9 +383,9 @@ public class TestSignals extends QApplicationTest{
     	Object object = new Object();
     	object.visibility.connect(v->{
     		if(v)
-    			System.out.println(arg);
+    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "arg="+arg);
     		else
-    			System.out.println(this);
+    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "arg="+this);
     	});
     }
     

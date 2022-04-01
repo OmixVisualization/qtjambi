@@ -35,7 +35,15 @@ import io.qt.internal.*;
 
 import static org.junit.Assert.*;
 
-public class TestCharts extends QApplicationTest {
+import org.junit.BeforeClass;
+
+public class TestCharts extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     @Test
     public void testBarSeries() {
     	QChart chart = new QChart();

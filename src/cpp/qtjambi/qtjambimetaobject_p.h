@@ -72,7 +72,7 @@ private:
 class QtJambiMetaObject final : public QMetaObject
 {
 public:
-    QtJambiMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler);
+    QtJambiMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject, JavaException& exceptionHandler);
 
     int invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
     int readProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
@@ -105,6 +105,7 @@ public:
     void registerQPropertyField(int index, jfieldID field);
 #endif
     jobject signalTypes(int index) const;
+    bool hasSignals() const;
     static jweak javaInstance(const QtJambiMetaObject* metaObject);
     static void setJavaInstance(const QtJambiMetaObject* metaObject, jweak weak);
     static jclass javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull = false);
@@ -112,13 +113,14 @@ public:
     static const QtJambiMetaObject* cast(const QMetaObject* metaObject);
     static int methodFromJMethod(const QMetaObject* metaObject, jmethodID methodId);
     struct SignalInfo{
+        const QMetaObject* metaObject;
         int methodIndex;
         jobject signalTypes;
         jclass signalClass;
         SignalInfo()
-            : methodIndex(-1), signalTypes(nullptr), signalClass(nullptr) {}
-        SignalInfo(int _methodIndex, jobject _signalTypes, jclass _signalClass)
-            : methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
+            : metaObject(nullptr), methodIndex(-1), signalTypes(nullptr), signalClass(nullptr) {}
+        SignalInfo(const QMetaObject* _metaObject, int _methodIndex, jobject _signalTypes, jclass _signalClass)
+            : metaObject(_metaObject), methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
     };
 
     static SignalInfo signalInfo(const QMetaObject* metaObject, jfieldID fieldId, jmethodID emitMethodID);
@@ -136,7 +138,7 @@ private:
     Q_DECLARE_PRIVATE(QtJambiMetaObject)
     Q_DISABLE_COPY_MOVE(QtJambiMetaObject)
     friend void clear_metaobjects_at_shutdown(JNIEnv * env);
-    friend const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *()>& original_meta_object_provider);
+    friend const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider);
     friend class DynamicMetaObjectFunctionTable;
     friend class DynamicMetaObjectInterfaceFunctionTable;
     friend QtSharedPointer::CustomDeleter<QtJambiMetaObject,QtSharedPointer::NormalDeleter>;

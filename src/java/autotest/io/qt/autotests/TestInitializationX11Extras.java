@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationX11Extras {
+public class TestInitializationX11Extras extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.x11extras");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.x11extras"));
     }
 }

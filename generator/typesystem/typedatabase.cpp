@@ -223,7 +223,7 @@ void TypeDatabase::addType(TypeEntry *e) {
     }
 }
 
-void TypeDatabase::initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion) {
+void TypeDatabase::initialize(const QString &filename, const QStringList &importInputDirectoryList, const QString &typeystem_directory, uint qtVersion) {
     m_qtVersion = qtVersion;
     m_entries.clear();
     m_class_name_counter.clear();
@@ -248,6 +248,18 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
 
         {
             StringTypeEntry *e = new StringTypeEntry("QStringView");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("QAnyStringView");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("QUtf8StringView");
             e->setPreferredConversion(false);
             addType(e);
         }
@@ -557,6 +569,11 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
     @io.qt.QtUninvokable
     public final void sort(Qt.CaseSensitivity cs){
         QtJambiStringListUtil.sort(this, cs);
+    }
+
+    @Override
+    public QStringList clone(){
+        return new QStringList(this);
     }
 )"));
             if(qtVersion < QT_VERSION_CHECK(6,0,0)){
@@ -1126,17 +1143,17 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         glsync->setCodeGeneration(TypeEntry::GenerateNothing);
         addType(glsync);
     }
-    parseFile(filename, importInputDirectoryList);
+    parseFile(filename, importInputDirectoryList, typeystem_directory);
     if(stringListEntry){
         if(TypeSystemTypeEntry * typeSystemTypeEntry = findTypeSystem(stringListEntry->javaPackage()))
             stringListEntry->setCodeGeneration(typeSystemTypeEntry->codeGeneration());
     }
 }
 
-void TypeDatabase::parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate, bool optional) {
-    const QString &filepath = resolveFilePath(filename, 1, importInputDirectoryList);
-    qDebug() << "Resolving file: " << qPrintable(filename) << " => " << qPrintable(filepath);
-    if(optional && filepath.isNull()) {
+void TypeDatabase::parseFile(const QString &filename, const QStringList &importInputDirectoryList, const QString &typeystem_directory, bool generate, bool optional) {
+    const QString &filepath = resolveFilePath(filename, 1, {typeystem_directory});
+    qDebug() << "Resolving file: " << qPrintable(filename) << " => \"" << qPrintable(filepath) << "\"";
+    if(optional && filepath.trimmed().isNull()) {
         qWarning() << "Optional file: " << qPrintable(filename) << ": could not be found";
         return;  // we're still ok
     }
@@ -1145,6 +1162,7 @@ void TypeDatabase::parseFile(const QString &filename, const QStringList &importI
 
     Handler handler(this, generate, m_qtVersion);
     handler.setImportInputDirectoryList(importInputDirectoryList);
+    handler.setTypeystemsDirectory(typeystem_directory);
     handler.parse(filepath);
 
     qsizetype newCount = m_entries.size();

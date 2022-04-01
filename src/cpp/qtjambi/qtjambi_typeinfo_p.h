@@ -585,6 +585,8 @@ private:
     size_t m_shell_size;
     const QVector<const FunctionInfo>* m_virtualFunctions;
     const QMetaObject* m_original_meta_object;
+    const QMetaObject* m_superTypeForCustomMetaObject;
+    friend class QObjectPolymorphicTypeEntry;
 };
 
 class QObjectPolymorphicTypeEntry : public QObjectTypeEntry{
@@ -627,26 +629,6 @@ public:
                      const QMetaObject* original_meta_object);
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const override;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-};
-
-class QObjectPendingTypeEntry : public QObjectTypeEntry{
-public:
-    QObjectPendingTypeEntry(JNIEnv* env,
-                     const std::type_info& typeId,
-                     const char *qt_name,
-                     const char *java_name,
-                     jclass java_class,
-                     jmethodID creator_method,
-                     size_t value_size,
-                     const std::type_info* super_type,
-                     const QList<const std::type_info*>& interface_types,
-                     const QMap<size_t, uint>& interface_offsets,
-                     size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
-                     const QMetaObject* metaObject);
-    bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const override;
-private:
-    const QMetaObject* m_metaObject;
 };
 
 class QObjectAbstractTypeEntry : public QObjectTypeEntry{

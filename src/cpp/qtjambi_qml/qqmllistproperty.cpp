@@ -389,6 +389,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 
 void initialize_meta_info_QQmlListProperty(){
     if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
         if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging-nowarn"))){
             QQmlDebuggingEnabler(false);
         }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging"))){
@@ -428,7 +429,7 @@ void initialize_meta_info_QQmlListProperty(){
     QMetaType::registerNormalizedTypedef("QQmlListProperty", metaTypeID);
 #else
     int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",
-                            QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::getDefaultCtr(),
+                            QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::defaultCtr,
                             [](const QtPrivate::QMetaTypeInterface *, void *where, const void *ptr){
                                 QQmlListProperty<QObject>* listProperty = new(where) QQmlListProperty<QObject>();
                                 if (ptr){

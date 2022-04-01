@@ -273,7 +273,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qWarning(String message, Object...args) {
-    	qWarning(format(message, args));
+    	showMessageFromSupplier(QtMsgType.QtWarningMsg.value(), format(message, args));
     }
     
     /**
@@ -295,7 +295,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qDebug(String message, Object...args) {
-    	qDebug(format(message, args));
+    	showMessageFromSupplier(QtMsgType.QtDebugMsg.value(), format(message, args));
     }
     
     /**
@@ -317,7 +317,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qInfo(String message, Object...args) {
-    	qInfo(format(message, args));
+    	showMessageFromSupplier(QtMsgType.QtInfoMsg.value(), format(message, args));
     }
     
     /**
@@ -339,7 +339,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qCritical(String message, Object...args) {
-    	qCritical(format(message, args));
+    	showMessageFromSupplier(QtMsgType.QtCriticalMsg.value(), format(message, args));
     }
     
     /**
@@ -362,7 +362,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qFatal(String message, Object...args) {
-    	qFatal(format(message, args));
+    	showMessageFromSupplier(QtMsgType.QtFatalMsg.value(), format(message, args));
     }
     
     /**
@@ -385,7 +385,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qCWarning(QLoggingCategory category, String message, Object...args) {
-    	qCWarning(category, format(message, args));
+    	showCMessageFromSupplier(QtMsgType.QtWarningMsg.value(), QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(category)), format(message, args));
     }
     
     /**
@@ -408,7 +408,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qCDebug(QLoggingCategory category, String message, Object...args) {
-    	qCDebug(category, format(message, args));
+    	showCMessageFromSupplier(QtMsgType.QtDebugMsg.value(), QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(category)), format(message, args));
     }
     
     /**
@@ -431,7 +431,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qCInfo(QLoggingCategory category, String message, Object...args) {
-    	qCInfo(category, format(message, args));
+    	showCMessageFromSupplier(QtMsgType.QtInfoMsg.value(), QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(category)), format(message, args));
     }
     
     /**
@@ -454,7 +454,7 @@ public final class QLogging {
      */
     @QtUninvokable
     public static void qCCritical(QLoggingCategory category, String message, Object...args) {
-    	qCCritical(category, format(message, args));
+    	showCMessageFromSupplier(QtMsgType.QtCriticalMsg.value(), QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(category)), format(message, args));
     }
     
     /**

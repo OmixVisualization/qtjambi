@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.MetaObjectQtMetaCast;
@@ -51,7 +52,13 @@ import io.qt.widgets.QLabel;
 import io.qt.widgets.QLayoutItem;
 import io.qt.widgets.QWidget;
 
-public class TestMetaObjectQtMetaCast extends QApplicationTest {
+public class TestMetaObjectQtMetaCast extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
     // Not used
     @SuppressWarnings("unused")
     private static class MyLauncher extends QWidget {

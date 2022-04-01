@@ -46,6 +46,14 @@ inline hash_type qHash(const QScrollerProperties & value)
     return reinterpret_cast<const ScrollerProperties&>(value).hashCode();
 }
 
+inline hash_type qHash(const QTableWidgetSelectionRange& value)
+{
+    hash_type hashCode = qHash(value.topRow());
+    hashCode = hashCode * 31 + qHash(value.leftColumn());
+    hashCode = hashCode * 31 + qHash(value.bottomRow());
+    hashCode = hashCode * 31 + qHash(value.rightColumn());
+    return hashCode;
+}
 
 #endif // QTJAMBI_WIDGETS_CORE_H
 #endif // defined __cplusplus

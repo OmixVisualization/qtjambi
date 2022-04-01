@@ -28,15 +28,49 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.Collections;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject.*;
+import io.qt.core.QMetaObject;
+import io.qt.core.QMetaObject.AbstractPublicSignal0;
+import io.qt.core.QMetaObject.AbstractSignal;
 import io.qt.sensors.QSensorGesture;
 import io.qt.sensors.QSensorGestureManager;
 
-public class TestSensorsQt5 extends QApplicationTest {
+public class TestSensorsQt5 extends ApplicationInitializer {
+	
+	private static class SensorGestureSubclass1 extends QSensorGesture{
+		public SensorGestureSubclass1() {
+			super(Collections.emptyList());
+		}
+	}
+	
+	private static class SensorGestureSubclass2 extends QSensorGesture{
+		@SuppressWarnings("unused")
+		public final Signal0 testSignal = new Signal0();
+		public SensorGestureSubclass2() {
+			super(Collections.emptyList());
+		}
+	}
+	
+	@Test
+    public void testSubclassing() {
+		Assert.assertEquals(QMetaObject.forType(QSensorGesture.class), QSensorGesture.staticMetaObject);
+		Assert.assertEquals(QMetaObject.forType(SensorGestureSubclass1.class), QSensorGesture.staticMetaObject);
+		new SensorGestureSubclass1();
+		try {
+			QMetaObject.forType(SensorGestureSubclass2.class);
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {}
+		try {
+			new SensorGestureSubclass2();
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {}
+	}
+	
     @Test
     public void test() {
     	// Create a QSensorGestureManager
@@ -49,6 +83,12 @@ public class TestSensorsQt5 extends QApplicationTest {
         gesture.detected.connect(d->detected[0] = d);
         gesture.detected.emit("test");
         Assert.assertEquals("test", detected[0]);
+        for(QMetaMethod method : gesture.metaObject().methods()) {
+        	if("detected".equals(method.name().toString())) {
+        		AbstractSignal sig = method.toSignal(gesture);
+        		Assert.assertTrue(sig==gesture.detected);
+        	}
+        }
         for(String signal : gesture.gestureSignals()) {
         	QMetaMethod method = gesture.metaObject().method(signal);
         	Assert.assertTrue(signal, method.isValid());

@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,11 +37,11 @@ import io.qt.core.*;
 import io.qt.qml.*;
 import io.qt.qml.util.QmlTypes;
 
-public class TestQmlTypes extends QApplicationTest{
+public class TestQmlTypes extends ApplicationInitializer{
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
-		io.qt.QtUtilities.initializePackage("io.qt.quick");
+		ApplicationInitializer.testInitializeWithGui();
+		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.quick"));
 	}
 
 	@Test

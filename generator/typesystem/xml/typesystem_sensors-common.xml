@@ -44,10 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSensors" description="Provides access to sensor hardware and motion gesture recognition.">
-    <rejection class="QSensorGesture" function-name="metaObject"/>
-    <rejection class="QSensorGesture" function-name="qt_metacall"/>
-    <object-type name="QSensorGesture" generate="no-shell" until="5.">
-        <modify-function signature="detected(QString)" remove="all"/>
+    <object-type name="QSensorGesture" until="5.">
     </object-type>
     <object-type name="QSensorGestureManager" until="5.">
     </object-type>

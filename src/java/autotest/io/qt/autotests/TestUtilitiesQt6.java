@@ -31,6 +31,7 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QObject;
@@ -38,7 +39,13 @@ import io.qt.core.Qt;
 import io.qt.gui.QAction;
 import io.qt.gui.QKeySequence;
 
-public class TestUtilitiesQt6 extends QApplicationTest {
+public class TestUtilitiesQt6 extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithGui();
+    }
+	
     @Test
     public void testShortcut() {
         QObject obj = new QObject();

@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.widgets.QGraphicsGridLayout;
@@ -36,7 +37,13 @@ import io.qt.widgets.QGraphicsWidget;
 import io.qt.widgets.QGridLayout;
 import io.qt.widgets.QWidget;
 
-public class TestQLayout extends QApplicationTest {
+public class TestQLayout extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
+	
 //    @Test
     public void testLayout() {
     	QWidget parent = new QWidget();

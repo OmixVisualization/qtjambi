@@ -238,20 +238,20 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                         link->setJavaOwnership(env);
                     }
                 }
-                JObjectWrapper jthreadObjectWrapper(env, java_thread);
                 if(!EventDispatcherCheck::storage.hasLocalData() || !EventDispatcherCheck::storage.localData()){
                     EventDispatcherCheck::storage.setLocalData(QSharedPointer<EventDispatcherCheck>(
                          new EventDispatcherCheck(
+                             JObjectWrapper(env, java_thread),
                              qt_thread,
                              link,
-                             [jthreadObjectWrapper](QPointer<QThread>& thread, QWeakPointer<QtJambiLink>&& wlink, QList<std::function<void()>>&& finalActions) {
+                             [](QPointer<QThread>& thread, JObjectWrapper&& jthreadObjectWrapper, QWeakPointer<QtJambiLink>&& wlink, QList<std::function<void()>>&& finalActions){
                                   struct ObjectReleaser : public QtJambiObjectData {
-                                     ObjectReleaser(const JObjectWrapper& _jthreadObjectWrapper,
+                                     ObjectReleaser(JObjectWrapper&& _jthreadObjectWrapper,
                                                     QList<std::function<void()>>&& _finalActions,
                                                     QPointer<QThread>& _thread,
                                                     QWeakPointer<QtJambiLink>&& wlink)
                                          : QtJambiObjectData(),
-                                           jthreadObjectWrapper(_jthreadObjectWrapper),
+                                           jthreadObjectWrapper(std::move(_jthreadObjectWrapper)),
                                            finalActions(std::move(_finalActions)),
                                            m_thread(),
                                            m_wlink(std::move(wlink)) {
@@ -315,9 +315,9 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
                                   }
                                   if(eventDispatcher){
                                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                                       QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ObjectReleaser), eventDispatcher, new ObjectReleaser(jthreadObjectWrapper, std::move(finalActions), thread, std::move(wlink)));
+                                       QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ObjectReleaser), eventDispatcher, new ObjectReleaser(std::move(jthreadObjectWrapper), std::move(finalActions), thread, std::move(wlink)));
                                   }else{
-                                       ObjectReleaser releaser(jthreadObjectWrapper, std::move(finalActions), thread, std::move(wlink));
+                                       ObjectReleaser releaser(std::move(jthreadObjectWrapper), std::move(finalActions), thread, std::move(wlink));
                                        Q_UNUSED(releaser)
                                   }
                               })
@@ -334,7 +334,11 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
 
 QThreadStorage<QSharedPointer<EventDispatcherCheck>> EventDispatcherCheck::storage;
 
-EventDispatcherCheck::EventDispatcherCheck(QThread* thread, const QWeakPointer<QtJambiLink>& wlink, std::function<void(QPointer<QThread>&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)> _cleaner) : m_thread(thread), m_wlink(wlink), cleaner(_cleaner) {
+EventDispatcherCheck::EventDispatcherCheck(JObjectWrapper&& jthreadObjectWrapper, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, std::function<void(QPointer<QThread>&,JObjectWrapper&&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&)>&& _cleaner)
+    : m_jthreadObjectWrapper(std::move(jthreadObjectWrapper)),
+      m_thread(thread),
+      m_wlink(std::move(wlink)),
+      cleaner(std::move(_cleaner)) {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "EventDispatcherCheck::EventDispatcherCheck()")
     QThreadUserData* data;
     {
@@ -360,7 +364,7 @@ EventDispatcherCheck::~EventDispatcherCheck(){
     }
     try{
         if(!QCoreApplicationPrivate::is_app_closing && cleaner){
-            cleaner(m_thread, std::move(m_wlink), std::move(m_finalActions));
+            cleaner(m_thread, std::move(m_jthreadObjectWrapper), std::move(m_wlink), std::move(m_finalActions));
             cleaner = {};
         }else{
             while(!m_finalActions.isEmpty()){

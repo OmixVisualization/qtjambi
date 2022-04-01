@@ -52,10 +52,10 @@ import io.qt.quick.QQuickWindow;
 import io.qt.webview.QtWebView;
 import io.qt.widgets.QApplication;
 
-public class TestWebView extends QApplicationTest {
+public class TestWebView extends ApplicationInitializer {
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	if(QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.MacOS)
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS))
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
 		QtWebView.initialize();
 		QtUtilities.initializePackage("io.qt.quick");
@@ -65,7 +65,7 @@ public class TestWebView extends QApplicationTest {
 			io.qt.QtUtilities.loadQtLibrary("QuickLayouts");
 			io.qt.QtUtilities.loadQtLibrary("WebViewQuick");
 		}
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
         assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     }
 

@@ -41,6 +41,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -54,6 +56,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +73,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import io.qt.NativeAccess;
 import io.qt.QNoSuchSlotException;
+import io.qt.QLibraryNotFoundError;
+import io.qt.QLibraryNotLoadedError;
 import io.qt.QtUninvokable;
 import io.qt.core.QDeclarableSignals;
 
@@ -136,7 +143,10 @@ final class NativeLibraryManager {
 
     private static final boolean VERBOSE_LOADING = Boolean.getBoolean("io.qt.verbose-loading") || Boolean.getBoolean("qtjambi.verbose-loading");
 
-    private static final int[] versionA = {QtJambiVersion.qtMajorVersion, QtJambiVersion.qtMinorVersion};
+    private static final int[] qtVersionArray = {QtJambiVersion.qtMajorVersion, QtJambiVersion.qtMinorVersion};
+    private static final int[] qtjambiVersionArray = {QtJambiVersion.qtMajorVersion, QtJambiVersion.qtMinorVersion, QtJambiVersion.qtJambiPatch};
+    private static final String qtjambiVersion = QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch;
+    
     public static final String ICU_VERSION;
     public static final String LIBINFIX;
     // We use a List<> to make the collection read-only an array would not be suitable
@@ -145,17 +155,25 @@ final class NativeLibraryManager {
     private static final List<String> jniLibdirList;
     private static boolean isMinGWBuilt = false;
     
-    private static final OperatingSystem operatingSystem = decideOperatingSystem();
+	static final OperatingSystem operatingSystem = decideOperatingSystem();
     private static final String osArchName;
     
     private static Configuration configuration = null;
-    private static Boolean dontUseFrameworks = operatingSystem==OperatingSystem.MacOSX ? null : Boolean.FALSE;
+    private static String qtJambiLibraryPath = null;
+    private static String qtLibraryPath = null;
+	private static Boolean dontUseFrameworks = operatingSystem==OperatingSystem.MacOSX ? null : Boolean.FALSE;
     
-    private static final List<DeploymentSpec> deploymentSpec = new ArrayList<>();
+    private static boolean dontSearchDeploymentSpec = false;
+    private static final Set<URL> loadedDeploymentSpecUrls = Collections.synchronizedSet(new HashSet<>());
+    private static final List<DeploymentSpec> deploymentSpec = Collections.synchronizedList(new ArrayList<>());
+    private static final String qtjambiVersionJarSuffix = String.format("-%1$s.%2$s.%3$s.jar", QtJambiVersion.qtMajorVersion, QtJambiVersion.qtMinorVersion, QtJambiVersion.qtJambiPatch);
 
-    private static final Map<String, LibraryEntry> libraryMap = new HashMap<String, LibraryEntry>();
+    private static final Map<String, LibraryEntry> libraryMap = Collections.synchronizedMap(new HashMap<String, LibraryEntry>());
     private static final Reporter reporter = new Reporter();
     private static final File jambiDeploymentDir;
+    private static final File jambiJarDir;
+    private static final boolean isJava8Bundle;
+    private static final List<LibraryEntry> pluginLibraries = Collections.synchronizedList(new ArrayList<>());
 
     public static final String K_SUNOS_X86 = "sunos-x86";
     public static final String K_SUNOS_X64 = "sunos-x64";
@@ -231,9 +249,31 @@ final class NativeLibraryManager {
 		        }
 	        }
 	        deleteTmpDeployment = !keepDeployment;
+	        if(deleteTmpDeployment)
+	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Requires deletion of tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" during pogram termination.");
+    	}
+    	
+		boolean _isJava8Bundle = false;
+    	{
+    		File _jambiJarDir = null;
+        	String classURL = ""+NativeLibraryManager.class.getResource("NativeLibraryManager.class");
+        	int index;
+	    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
+	    		String jarFileURL = classURL.substring(4, index);
+	    		File jarFile = null;
+	    		try {
+					jarFile = new File(new URL(jarFileURL).toURI());
+				} catch (URISyntaxException | MalformedURLException e) {
+				}
+	    		if(jarFile!=null && jarFile.exists()) {
+	    			_jambiJarDir = jarFile.getParentFile();
+	    			_isJava8Bundle = jarFile.getName().startsWith("qtjambi-jre8-");
+	    		}
+	    	}
+	    	isJava8Bundle = _isJava8Bundle;
+	    	jambiJarDir = _jambiJarDir;
     	}
 		
-    	reporter.setReportEnabled(VERBOSE_LOADING);
         String tmpICUVERSION_STRING = null;
         String tmpINFIX_STRING = null;
         List<String> tmpSystemLibrariesList = null;
@@ -286,12 +326,12 @@ final class NativeLibraryManager {
             else
                 tmpJniLibdirList = null;
         } catch(Throwable e) {
-            java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
+            java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
         }finally {
         	ICU_VERSION = tmpICUVERSION_STRING;
-            systemLibrariesList = tmpSystemLibrariesList;
-            jniLibdirBeforeList = tmpJniLibdirBeforeList;
-            jniLibdirList = tmpJniLibdirList;
+            systemLibrariesList = tmpSystemLibrariesList!=null ? Collections.unmodifiableList(tmpSystemLibrariesList) : Collections.emptyList();
+            jniLibdirBeforeList = tmpJniLibdirBeforeList!=null ? Collections.unmodifiableList(tmpJniLibdirBeforeList) : Collections.emptyList();
+            jniLibdirList = tmpJniLibdirList!=null ? Collections.unmodifiableList(tmpJniLibdirList) : Collections.emptyList();
             LIBINFIX = tmpINFIX_STRING;
         }
 
@@ -339,36 +379,90 @@ final class NativeLibraryManager {
             break;
         }
         
+        reporter.setReportEnabled(VERBOSE_LOADING);
+        try{
+        	Preferences preferences = Preferences.userNodeForPackage(NativeLibraryManager.class);
+    		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
+    		if(dirs!=null && !dirs.isEmpty()) {
+    	        preferences.remove("qtjambi.previous.deployment.dir");
+    	        for(String dir : dirs.split("\\"+File.pathSeparator)) {
+        			File jambiTempDir = new File(dir);
+        			if(jambiTempDir.exists() && jambiTempDir.isDirectory())
+        				clearAndDelete(jambiTempDir);
+    	        }
+    		}
+        }catch(Throwable t) {}
+        
     	if(!(Boolean.getBoolean("io.qt.no-deployment-spec") || Boolean.getBoolean("qtjambi.no-deployment-spec"))) {
+            
     		ClassLoader loader = classLoader();
             // Multiple descriptors maybe found
-            Set<URL> specsUrls = new HashSet<>();
             Enumeration<URL> specsFound = Collections.emptyEnumeration();
             try {
 				specsFound = loader.getResources("qtjambi-deployment.xml");
 			} catch (IOException e) {
-				Logger.getLogger("io.qt").log(Level.WARNING, "", e);
+				Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
 			}
-            if(specsFound.hasMoreElements()) {
-            	Preferences preferences = Preferences.userNodeForPackage(NativeLibraryManager.class);
-        		String dir = preferences.get("qtjambi.previous.deployment.dir", null);
-        		if(dir!=null) {
-        	        preferences.remove("qtjambi.previous.deployment.dir");
-        			File jambiTempDir = new File(dir);
-        			if(jambiTempDir.exists() && jambiTempDir.isDirectory())
-        				clearAndDelete(jambiTempDir);
-        		}
-            }
             // FIXME: Want searchForDescriptors/parse/resolve/unpack/load phases separated
+            
+            dontSearchDeploymentSpec = specsFound.hasMoreElements();
+            
+            if(!dontSearchDeploymentSpec && jambiJarDir!=null) {
+            	List<URL> foundURLs = new ArrayList<>();
+            	String postfix;
+            	if("debug".equals(System.getProperty("io.qt.debug"))) {
+            		postfix = "-native-" + osArchName + "-debug" + qtjambiVersionJarSuffix;
+	    			File nativeFile = new File(jambiJarDir, "qtjambi"+postfix);
+	    			if(nativeFile.exists()) {
+	    				try {
+	    					foundURLs.add(new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml"));
+						} catch (IOException e) {
+						}
+	    			}
+            	}else {
+            		postfix = "-native-" + osArchName + qtjambiVersionJarSuffix;
+            		File nativeFile = new File(jambiJarDir, "qtjambi"+postfix);
+	    			if(nativeFile.exists()) {
+	    				try {
+	    					foundURLs.add(new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml"));
+						} catch (IOException e) {
+						}
+	    			}else {
+	            		postfix = "-native-" + osArchName + "-debug" + qtjambiVersionJarSuffix;
+	    				nativeFile = new File(jambiJarDir, "qtjambi"+postfix);
+		    			if(nativeFile.exists()) {
+		    				try {
+		    					foundURLs.add(new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml"));
+							} catch (IOException e) {
+							}
+		    			}
+	    			}
+            	}
+            	String notPostfix = null;
+            	if(_isJava8Bundle)
+            		postfix = "-jre8" + postfix;
+            	else
+            		notPostfix = "-jre8" + postfix;
+            	for(String f : jambiJarDir.list()) {
+					if(f.startsWith("qtjambi-plugin-") && f.endsWith(postfix) && (_isJava8Bundle || !f.endsWith(notPostfix))) {
+						try {
+							foundURLs.add(new URL("jar:"+new File(jambiJarDir, f).toURI()+"!/qtjambi-deployment.xml"));
+						} catch (IOException e) {
+						}
+					}
+				}
+            	if(!foundURLs.isEmpty())
+            		specsFound = Collections.enumeration(foundURLs);
+            }
+            
             while (specsFound.hasMoreElements()) {
                 URL url = specsFound.nextElement();
                 
-                if(specsUrls.contains(url))
+                if(loadedDeploymentSpecUrls.contains(url))
                 	continue;
-                specsUrls.add(url);
+                loadedDeploymentSpecUrls.add(url);
 
-                if (VERBOSE_LOADING)
-                    reporter.report("Found ", url.toString());
+                reporter.report("Found ", url.toString());
 
                 DeploymentSpec spec = null;
                 String protocol = url.getProtocol();
@@ -385,11 +479,10 @@ final class NativeLibraryManager {
                     	try {
 	                        URL jarUrl = new URL(eform.substring(start, end));
 	                        String jarName = new File(jarUrl.getFile()).getName();
-	                        if (VERBOSE_LOADING)
-	                            reporter.report("Loading ", jarName, " from ", eform);
+	                        reporter.report("Loading ", jarName, " from ", eform);
 	                        spec = unpackDeploymentSpec(url, jarName, null);
     					} catch (ParserConfigurationException | SAXException | IOException e) {
-            				Logger.getLogger("io.qt").log(Level.WARNING, "", e);
+            				Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
             			}
                     }
                 } else if (protocol.equals("file")) {
@@ -397,7 +490,7 @@ final class NativeLibraryManager {
                     try {
 						spec = unpackDeploymentSpec(url, null, Boolean.FALSE);
 					} catch (ParserConfigurationException | SAXException | IOException e) {
-        				Logger.getLogger("io.qt").log(Level.WARNING, "", e);
+        				Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
 					}
                 }
                 if(spec != null) {
@@ -417,6 +510,14 @@ final class NativeLibraryManager {
                     configuration = Configuration.Test;
                 else
                 	configuration = Configuration.Release;
+            	switch (operatingSystem) {
+                case Windows:
+                	qtJambiLibraryPath = new File(qtjambiSpec.getBaseDir(), "bin").getAbsolutePath();
+                	break;
+            	default:
+            		qtJambiLibraryPath = new File(qtjambiSpec.getBaseDir(), "lib").getAbsolutePath();
+            		break;
+            	}
             	for(DeploymentSpec spec : deploymentSpec) {
             		if(!spec.getCompiler().equals(qtjambiSpec.getCompiler())) {
             			throw new DeploymentSpecException(String.format("Native deployments of different builts: %1$s and %2$s", qtjambiSpec.getCompiler(), spec.getCompiler()));
@@ -430,19 +531,26 @@ final class NativeLibraryManager {
     	}else {
     		configuration = decideConfiguration();
     	}
+    	
+    	if(VERBOSE_LOADING)
+    		System.out.println(reporter.recentReports());
     }
     
     private static void clearAndDelete(File directory) {
-    	for(File file : directory.listFiles()) {
-    		if(file.getName().equals(".") || file.getName().equals(".."))
-    			continue;
-    		if(file.isDirectory()) {
-    			clearAndDelete(file);
-    		}else {
-    			file.delete();
+    	if(directory!=null) {
+    		if(directory.isDirectory()) {
+		    	for(File file : directory.listFiles()) {
+		    		if(file.getName().equals(".") || file.getName().equals(".."))
+		    			continue;
+		    		if(file.isDirectory() && !Files.isSymbolicLink(file.toPath())) {
+		    			clearAndDelete(file);
+		    		}else {
+		    			file.delete();
+		    		}
+		    	}
     		}
+	    	directory.delete();
     	}
-    	directory.delete();
     }
     
  // The purpose of this method is to resolve the names provided in the list into DSO paths relative to the project.
@@ -572,19 +680,28 @@ final class NativeLibraryManager {
 
     @NativeAccess
 	@QtUninvokable
-	private static void resetDeploymentSpecs() {
+	static void resetDeploymentSpecs() {
         deploymentSpec.clear();
         if(deleteTmpDeployment) {
 	        if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
+	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Deleting tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+".");
 	        	clearAndDelete(jambiDeploymentDir);
 	        	if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
+	        		Logger.getLogger("io.qt.internal").log(Level.FINEST, "Preparing pending deletion...");
 	        		Preferences preferences = Preferences.userNodeForPackage(NativeLibraryManager.class);
-	        		preferences.put("qtjambi.previous.deployment.dir", jambiDeploymentDir.getAbsolutePath());
+	        		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
+	        		if(dirs!=null && !dirs.isEmpty()) {
+	        			preferences.put("qtjambi.previous.deployment.dir", dirs + File.pathSeparator + jambiDeploymentDir.getAbsolutePath());
+	        		}else {
+	        			preferences.put("qtjambi.previous.deployment.dir", jambiDeploymentDir.getAbsolutePath());
+	        		}
 	        	}
+	    	}else {
+	    		Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" does not exist.");
 	    	}
         }
     }
-
+    
     private static class XMLHandler extends DefaultHandler {
         public DeploymentSpec spec;
         private final List<String> direntCurrentPathList = new ArrayList<String>();
@@ -606,9 +723,13 @@ final class NativeLibraryManager {
 
                 e.setDeploymentSpec(spec);
                 
-                if(!e.getName().startsWith("qml/") 
-                		&& !e.getName().startsWith("translations/")
-                		&& !e.getName().startsWith("plugins/")) {
+                if(e.getName().startsWith("qml/")) {
+                	spec.setHasQmlPaths(true);
+                }else if(e.getName().startsWith("plugins/")) {
+                	spec.setHasPluginPaths(true);
+                }else if(e.getName().startsWith("translations/")) {
+                	spec.setHasTrPaths(true);
+                }else{
 	                String fileName = e.getName();
                 	if(fileName.startsWith("lib/") || fileName.startsWith("bin/"))
                 		fileName = fileName.substring(4);
@@ -632,9 +753,13 @@ final class NativeLibraryManager {
 
                 e.setDeploymentSpec(spec);
 
-                if(!e.getName().startsWith("qml/") 
-                		&& !e.getName().startsWith("translations/")
-                		&& !e.getName().startsWith("plugins/")) {
+                if(e.getName().startsWith("qml/")) {
+                	spec.setHasQmlPaths(true);
+                }else if(e.getName().startsWith("plugins/")) {
+                	spec.setHasPluginPaths(true);
+                }else if(e.getName().startsWith("translations/")) {
+                	spec.setHasTrPaths(true);
+                }else{
 	                String fileName = e.getName();
                 	if(fileName.startsWith("lib/") || fileName.startsWith("bin/"))
                 		fileName = fileName.substring(4);
@@ -652,35 +777,19 @@ final class NativeLibraryManager {
 
                 spec.addLibraryEntry(e);
                 reporter.report(" - library: name='", e.getName(), "'");
-
-            } else if (name.equals("plugin")) {
-                String path = attributes.getValue("path");
-                if (path == null) {
-                    throw new DeploymentSpecException("<plugin> element missing required attribute \"path\"");
-                }
-                spec.addPluginPath(path);
-                reporter.report(" - plugin path='", path, "'");
-            } else if (name.equals("plugin-designer")) {
-                String path = attributes.getValue("path");
-                if (path == null) {
-                    throw new DeploymentSpecException("<plugin-designer> element missing required attribute \"path\"");
-                }
-                spec.addPluginDesignerPath(path);
-                reporter.report(" - plugin-designer path='", path, "'");
             } else if (name.equals("qtjambi-deploy")) {
                 String system = attributes.getValue("system");
                 if (system == null || system.length() == 0) {
                     throw new DeploymentSpecException("<qtjambi-deploy> element missing required attribute 'system'");
                 } else if (!system.equals(osArchName)) {
-                    throw new WrongSystemException("trying to load: '" + system
-                                                   + "', expected: '" + osArchName + "'");
+                    throw new WrongSystemException(String.format("Expected version: %1$s, found: %2$s.", osArchName, system));
                 }
                 spec.setSystem(system);
                 String version = attributes.getValue("version");
-                if(!version.equals(QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch)) {
-                    throw new WrongVersionException("trying to load: '" + version
-                            + "', expected: '" + QtJambiVersion.qtMajorVersion + "." + QtJambiVersion.qtMinorVersion + "." + QtJambiVersion.qtJambiPatch + "'");                	
-                }
+                if (version == null || version.length() == 0) {
+                    throw new DeploymentSpecException("<qtjambi-deploy> element missing required attribute 'version'");
+                } else if(!qtjambiVersion.equals(version))
+                	throw new WrongVersionException(String.format("Expected version: %1$s, found: %2$s.", qtjambiVersion, version));
                 spec.setVersion(version);
                 spec.setModule(attributes.getValue("module"));
                 spec.setCompiler(attributes.getValue("compiler"));
@@ -766,50 +875,38 @@ final class NativeLibraryManager {
      * @return The list of plugin paths
      */
     static List<String> pluginPaths() {
+		pluginLibraries.removeIf( l -> {
+			try {
+				l.extract();
+			}catch(Throwable t) {
+				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while extracting library", t);
+			}
+			return true;
+		});
         List<String> paths = new ArrayList<String>();
         for (DeploymentSpec spec : deploymentSpec) {
             File root = spec.getBaseDir();
-            List<String> pluginPaths = spec.getPluginPaths();
-            for (String path : pluginPaths)
-                paths.add(new File(root, path).getAbsolutePath());
+            if(spec.isHasPluginPaths())
+                paths.add(new File(root, "plugins").getAbsolutePath());
         }
         return paths;
     }
 
-
-    /**
-     * Returns the list of all plugin-designer paths that are specified in the
-     * deployment descriptors. If deployment descriptors are not used,
-     * this list will be an empty list.
-     *
-     * @return The list of plugin paths
-     */
-    static List<String> pluginDesignerPaths() {
-        List<String> paths = new ArrayList<String>();
-        for (DeploymentSpec spec : deploymentSpec) {
-            File root = spec.getBaseDir();
-            List<String> pluginDesignerPaths = spec.getPluginDesignerPaths();
-            for (String path : pluginDesignerPaths)
-                paths.add(new File(root, path).getAbsolutePath());
-        }
-        return paths;
-    }
-    
     static void loadLibrary(String library) {
     	switch (operatingSystem) {
         case Windows: 
-        	loadNativeLibrary(Object.class, library + ".dll", Arrays.asList(""));
+        	loadNativeLibrary(Object.class, library + ".dll", Arrays.asList(""), false);
         	break;
         case MacOSX: 
         	try {
-				loadNativeLibrary(Object.class, "lib" + library + ".jnilib", Arrays.asList(""));
+				loadNativeLibrary(Object.class, "lib" + library + ".jnilib", Arrays.asList(""), false);
 			} catch (Throwable e) {
-				loadNativeLibrary(Object.class, "lib" + library + ".dylib", Arrays.asList(""));
+				loadNativeLibrary(Object.class, "lib" + library + ".dylib", Arrays.asList(""), false);
 			}
         	break;
         case Android:
         case Linux:
-        	loadNativeLibrary(Object.class, "lib" + library + ".so", Arrays.asList(""));
+        	loadNativeLibrary(Object.class, "lib" + library + ".so", Arrays.asList(""), false);
         	break;
 		default:
 			break;
@@ -830,8 +927,8 @@ final class NativeLibraryManager {
 
     private static void loadQtJambiLibrary(Class<?> callerClass, String prefix, String library) {
     	List<String> replacements = new ArrayList<>();
-    	String lib = jambiLibraryName(prefix, library, versionA, replacements);
-        loadNativeLibrary(callerClass, lib, replacements);
+    	String lib = jambiLibraryName(prefix, library, qtjambiVersionArray, replacements);
+        loadNativeLibrary(callerClass, lib, replacements, true);
     }
 
     /**
@@ -856,7 +953,7 @@ final class NativeLibraryManager {
      * @param library The name of the library..
      */
     static void loadQtLibrary(String library) {
-    	findAndLoadLibrary(Object.class, "Qt", library, LIBINFIX, versionA);
+    	findAndLoadLibrary(Object.class, "Qt", library, LIBINFIX, qtVersionArray);
     }
     
     static void loadUtilityLibrary(String library, String version) {
@@ -875,25 +972,27 @@ final class NativeLibraryManager {
     		findAndLoadLibrary(Object.class, "icui18n", NativeLibraryManager.ICU_VERSION);
     	}
     	try{
-    		return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+    		File lib = findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
+    		qtLibraryPath = lib.getParentFile().getAbsolutePath();
+    		return lib;
 		} catch (RuntimeException e) {
-			if(configuration==Configuration.Release && deploymentSpec.isEmpty()) {
+			if(configuration==Configuration.Release) {
 				// try to run qtjambi with debug libraries instead
 				configuration=Configuration.Debug;
 				try {
-					return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+					return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
 				} catch (Throwable e1) {
 					e.addSuppressed(e1);
 					configuration=Configuration.Release;
 					if(dontUseFrameworks==null) {
 						dontUseFrameworks = Boolean.TRUE;
 						try {
-							return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+							return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
 						} catch (Throwable e2) {
 							e.addSuppressed(e2);
 							configuration=Configuration.Debug;
 							try {
-								return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+								return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
 							} catch (Throwable e3) {
 								e.addSuppressed(e3);
 								configuration=Configuration.Release;
@@ -908,7 +1007,7 @@ final class NativeLibraryManager {
 				if(dontUseFrameworks==null) {
 					dontUseFrameworks = Boolean.TRUE;
 					try {
-						return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+						return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
 					} catch (Throwable e1) {
 						e.addSuppressed(e1);
 						throw e;
@@ -919,10 +1018,10 @@ final class NativeLibraryManager {
 				    	if(availability.entry!=null){
 				    		isMinGWBuilt = true;
 				    	}else if(availability.file!=null){
-				    		isMinGWBuilt = new File(availability.file.getParentFile(), "Qt5Core.dll").isFile();
+				    		isMinGWBuilt = new File(availability.file.getParentFile(), "Qt"+QtJambiVersion.qtMajorVersion+"Core.dll").isFile();
 				    	}
 				    	if(isMinGWBuilt) {
-				    		return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, versionA);
+				    		return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, qtVersionArray);
 				    	}
 			    	}
 					throw e;
@@ -935,20 +1034,24 @@ final class NativeLibraryManager {
 		}
     }
     
+    public static boolean isMinGWBuilt() {
+		return isMinGWBuilt;
+	}
+    
     private static File findAndLoadLibrary(Class<?> callerClass, String library, String version) {
     	List<String> replacements = new ArrayList<>();
         String lib = qtLibraryName(null, library, null, null, version, configuration, replacements);
-		return loadNativeLibrary(callerClass, lib, replacements);
+		return loadNativeLibrary(callerClass, lib, replacements, false);
     }
     
     private static File findAndLoadLibrary(Class<?> callerClass, String qtprefix, String library, String libInfix, int[] version) {
     	List<String> replacements = new ArrayList<>();
         String lib = qtLibraryName(qtprefix, library, libInfix, version, null, configuration, replacements);
-		return loadNativeLibrary(callerClass, lib, replacements);
+		return loadNativeLibrary(callerClass, lib, replacements, false);
     }
     
     static boolean isAvailableQtLibrary(String library) {
-    	return getLibraryAvailability("Qt", library, LIBINFIX, versionA, null, configuration).isAvailable();
+    	return getLibraryAvailability("Qt", library, LIBINFIX, qtVersionArray, null, configuration).isAvailable();
     }
     
     static boolean isAvailableLibrary(String library, String version) {
@@ -1031,41 +1134,6 @@ final class NativeLibraryManager {
         return new Availability();
     }
 
-    static List<String> unpackPlugins() {
-        if(deploymentSpec != null) {
-            List<String> paths = new ArrayList<String>();
-
-            // Merge pluginPaths
-            for(DeploymentSpec spec : deploymentSpec) {
-                List<String> pluginPaths = spec.getPluginPaths();
-                for(String p : pluginPaths) {
-                    File resolvedFile = spec.buildPath(p);
-                    // Checking it really exists as a directory (before adding it to the list)
-                    //  is kind of a security check.
-                    if(resolvedFile != null && resolvedFile.isDirectory()) {
-                        paths.add(resolvedFile.getAbsolutePath());
-                    }
-                }
-            }
-
-            // Merge pluginDesignerPaths
-            for(DeploymentSpec spec : deploymentSpec) {
-                List<String> pluginDesignerPaths = spec.getPluginDesignerPaths();
-                for(String p : pluginDesignerPaths) {
-                    File resolvedFile = spec.buildPath(p);
-                    // Checking it really exists as a directory (before adding it to the list)
-                    //  is kind of a security check.
-                    if(resolvedFile != null && resolvedFile.isDirectory()) {
-                        paths.add(resolvedFile.getAbsolutePath());
-                    }
-                }
-            }
-
-            return paths;
-        }
-        return null;
-    }
-
     /**
      * Returns a classloader for current context...
      * @return The classloader
@@ -1086,23 +1154,25 @@ final class NativeLibraryManager {
      * call.
      * @param lib The full name of the library to load, such as libQtCore.so.4
      */
-    private static File loadNativeLibrary(Class<?> callerClass, String lib, List<String> replacements) {
+    private static File loadNativeLibrary(Class<?> callerClass, String lib, List<String> replacements, boolean searchSpec) {
     	File result = null;
         try {
-        	result = loadLibrary_helper(callerClass, lib, replacements);
+        	result = loadLibrary_helper(callerClass, lib, replacements, searchSpec);
             if (VERBOSE_LOADING)
                 System.out.println(reporter.recentReports());
         } catch (RuntimeException | Error e) {
-    		throw e;
+        	if(VERBOSE_LOADING)
+        		System.err.println(reporter.recentReports());
+        	throw e;
         } catch (Throwable e) {
     		if(reporter.toString().isEmpty()) {
         		if(e.getMessage().isEmpty()) {
-	        		throw new RuntimeException("Loading library failed.", e);
+	        		throw new QLibraryNotLoadedError("Loading library failed.", e);
             	}else {
-            		throw new RuntimeException(e.getMessage(), e);
+            		throw new QLibraryNotLoadedError(e.getMessage(), e);
 	        	}
         	}else {
-    			throw new RuntimeException("Loading library failed. Progress so far: " + reporter, e);
+    			throw new QLibraryNotLoadedError("Loading library failed. Progress so far: " + reporter, e);
         	}
         }
         return result;
@@ -1124,65 +1194,96 @@ final class NativeLibraryManager {
     		libraryLoader.accept(callerClass, lib);
     	};
     }
+    
+    private static final Map<String,List<String>> javaLibraryPaths = new HashMap<>();
+    private static final Map<String,List<String>> ldLibraryPaths = new HashMap<>();
+    private static final Map<String,List<String>> javaLibraryPathOverrides = new HashMap<>();
+    
+    private static List<String> splitPath(String path){
+    	if(path!=null) {
+    		return Arrays.asList(path.split("\\"+File.pathSeparator));
+    	}else {
+    		return Collections.emptyList();
+    	}
+    }
+    
+    private static final Set<String> loadedLibraries = new TreeSet<>();
+    
+    private static boolean autoExtractQtJambiLibs;
 
-    private static File loadLibrary_helper(Class<?> callerClass, String libFormat, List<String> replacements) {
+    private static File loadLibrary_helper(Class<?> callerClass, final String libFormat, List<String> replacements, boolean searchSpec) {
+    	if(loadedLibraries.contains(libFormat))
+    		return null;
     	File result = null;
         ClassLoader callerClassLoader = callerClass.getClassLoader();
-        String libPaths = System.getProperty("io.qt.library-path-override");
-        if (libPaths != null && libPaths.length() > 0) {
-            reporter.report(" - using 'io.qt.library-path-override'");
-        } else {
-            reporter.report(" - using 'java.library.path'");
-            libPaths = System.getProperty("java.library.path");
-        }
-        List<String> libraryPaths = new ArrayList<>();
-        if (libPaths != null)
-            libraryPaths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
-    	switch (operatingSystem) {
-        case Windows:
-    		libPaths = System.getenv("PATH");
-        	break;
-        case MacOSX: 
-    		libPaths = System.getenv("DYLD_LIBRARY_PATH");
-        	break;
-    	default:
-    		libPaths = System.getenv("LD_LIBRARY_PATH");
-    	}
-        if (libPaths != null)
-            libraryPaths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
-        libraryPaths = mergeJniLibdir(libraryPaths);
-        
         boolean loaded = false;
-        for(String replacement : replacements) {
+        loop1: for(String replacement : replacements) {
         	String library = String.format(libFormat, replacement);
-	        reporter.report("Loading library: '", library, "'...");
 	
 	        LibraryEntry e;
 	        // Try to load via deploy spec...
 	        e = libraryMap.get(library);
 	        if (e != null) {
 	            if (e.isLoaded()) {
-	                reporter.report(" - already loaded, skipping...");
 	                return result;
 	            }
 	
+	            try {
+					e.extract();
+				} catch (Exception e1) {
+					throw new QLibraryNotLoadedError("Unable to extract library "+e.getName(), e1);
+				}
 	            File libFile = e.getDeploymentSpec().buildPath(e.getName());
-	            reporter.report(" - using deployment spec at ", libFile.getAbsolutePath());
-	            if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
-	            		|| callerClassLoader==Object.class.getClassLoader()) {
-	            	Runtime.getRuntime().load(libFile.getAbsolutePath());
-	            }else {
-	            	libraryLoader.accept(callerClass, libFile.getAbsolutePath());
+	            if(libFile!=null && libFile.isFile()) {
+	            	reporter.report("Loading library: '", library, "' from deployment spec at ", libFile.getAbsolutePath());
+		            if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
+		            		|| callerClassLoader==Object.class.getClassLoader()) {
+		            	Runtime.getRuntime().load(libFile.getAbsolutePath());
+		            }else {
+		            	libraryLoader.accept(callerClass, libFile.getAbsolutePath());
+		            }
+		            loadedLibraries.add(libFormat);
+		            result = libFile;
+			        if(operatingSystem==OperatingSystem.MacOSX && (dontUseFrameworks==null || !dontUseFrameworks) && qtLibraryPath==null) {
+			        	result = result.getParentFile().getParentFile().getParentFile();
+			        }
+		            e.setLoaded(true);
+	                loaded = true;
+	                break loop1;
 	            }
-	            result = libFile;
-	            reporter.report(" - ok!");
-	            e.setLoaded(true);
-                loaded = true;
-                break;
-	
 	        // Load via System.load() using default paths..
-	        } else {
-	            for (String path : libraryPaths) {
+	        }
+        }
+        if(!loaded && (!autoExtractQtJambiLibs || !searchSpec)) {
+            loop2: for(String replacement : replacements) {
+            	String library = String.format(libFormat, replacement);
+            	
+            	List<String> libraryPaths = new ArrayList<>();
+                if(qtJambiLibraryPath!=null)
+                	libraryPaths.add(qtJambiLibraryPath);
+                switch (operatingSystem) {
+                case Windows:
+                	libraryPaths.add(new File(jambiDeploymentDir, "bin").getAbsolutePath());
+                	if(jambiJarDir!=null)
+                		libraryPaths.add(new File(jambiJarDir, "bin").getAbsolutePath());
+                	break;
+            	default:
+            		libraryPaths.add(new File(jambiDeploymentDir, "lib").getAbsolutePath());
+                	if(jambiJarDir!=null)
+                		libraryPaths.add(new File(jambiJarDir, "lib").getAbsolutePath());
+            		break;
+            	}
+                
+                if (System.getProperties().contains("io.qt.library-path-override")) {
+//                    reporter.report(" - using 'io.qt.library-path-override'");
+                	libraryPaths.addAll(javaLibraryPathOverrides.computeIfAbsent(System.getProperty("io.qt.library-path-override"), NativeLibraryManager::splitPath));
+                } else {
+//                    reporter.report(" - using 'java.library.path'");
+                	libraryPaths.addAll(javaLibraryPaths.computeIfAbsent(System.getProperty("java.library.path"), NativeLibraryManager::splitPath));
+                }
+                
+                libraryPaths = mergeJniLibdir(libraryPaths);
+            	for (String path : libraryPaths) {
 	                File f = new File(path, library);
 	                if (f.exists()) {
 	                	if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
@@ -1191,22 +1292,161 @@ final class NativeLibraryManager {
 	                	}else {
 	                		libraryLoader.accept(callerClass, f.getAbsolutePath());
 	                	}
-	                    reporter.report(" - ok, path was: ", f.getAbsolutePath());
+	                	loadedLibraries.add(libFormat);
+	                    reporter.report("Loading library: '", library, "'. Path was: ", f.getAbsolutePath());
 	                    result = f;
+	                    if(operatingSystem==OperatingSystem.MacOSX && (dontUseFrameworks==null || !dontUseFrameworks) && qtLibraryPath==null) {
+    			        	result = result.getParentFile().getParentFile().getParentFile();
+    			        }
+	                    loaded = true;
+	                    break loop2;
+	                }
+	            }
+            }
+        }
+        if(!loaded && searchSpec && !dontSearchDeploymentSpec && !(Boolean.getBoolean("io.qt.no-deployment-spec") || Boolean.getBoolean("qtjambi.no-deployment-spec"))) {
+        	String className = callerClass.getName();
+        	int idx = className.lastIndexOf('.');
+        	className = className.substring(idx+1);
+        	String classURL = ""+callerClass.getResource(className+".class");
+        	int index;
+	    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
+	    		String jarFileURL = classURL.substring(4, index);
+	    		File jarFile = null;
+	    		try {
+					jarFile = new File(new URL(jarFileURL).toURI());
+				} catch (URISyntaxException | MalformedURLException e) {
+				}
+	    		if(jarFile!=null && jarFile.exists()) {
+	    			File directory = jarFile.getParentFile();
+	    			String fileName = jarFile.getName();
+	    			if(isJava8Bundle)
+	    				index = fileName.indexOf("-jre8"+qtjambiVersionJarSuffix);
+	    			else
+	    				index = fileName.indexOf(qtjambiVersionJarSuffix);
+	    			if(index>0) {
+	    				String moduleName = fileName.substring(0, index);
+		    			String postfix = "-native-" + osArchName;
+		    			if(configuration==Configuration.Debug)
+		    				postfix += "-debug";
+		    			postfix += qtjambiVersionJarSuffix;
+		    			File nativeFile = new File(directory, moduleName + postfix);
+		    			boolean found = false;
+		    			if(nativeFile.exists()) {
+		    				try {
+								URL nativeFileURL = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml");
+								if(!loadedDeploymentSpecUrls.contains(nativeFileURL)) {
+									loadedDeploymentSpecUrls.add(nativeFileURL);
+									DeploymentSpec spec = unpackDeploymentSpec(nativeFileURL, nativeFile.getName(), null);
+									if(spec != null 
+											&& spec.getConfiguration().equalsIgnoreCase(configuration.name())
+											&& (deploymentSpec.isEmpty() || spec.getCompiler().equals(deploymentSpec.get(0).getCompiler()))) {
+					                	if("qtjambi".equals(spec.getModule()))
+					                		deploymentSpec.add(0, spec);
+					                	else
+					                		deploymentSpec.add(spec);
+					                	if(qtJambiLibraryPath==null) {
+						                	switch (operatingSystem) {
+						                    case Windows:
+						                    	qtJambiLibraryPath = new File(spec.getBaseDir(), "bin").getAbsolutePath();
+						                    	break;
+						                	default:
+						                		qtJambiLibraryPath = new File(spec.getBaseDir(), "lib").getAbsolutePath();
+						                		break;
+						                	}
+					                	}
+					                	found = true;
+					                }
+								}
+							} catch (ParserConfigurationException | SAXException | IOException e) {
+							}
+		    			}
+		    			if(found) {
+		    				loop3: for(String replacement : replacements) {
+		    		        	String library = String.format(libFormat, replacement);
+		    			
+		    			        LibraryEntry e;
+		    			        // Try to load via deploy spec...
+		    			        e = libraryMap.get(library);
+		    			        if (e != null) {
+		    			            if (e.isLoaded()) {
+		    			                return result;
+		    			            }
+		    			
+		    			            try {
+		    							e.extract();
+		    						} catch (Exception e1) {
+		    							throw new QLibraryNotLoadedError("Unable to extract library "+e.getName(), e1);
+		    						}
+		    			            
+		    			            File libFile = e.getDeploymentSpec().buildPath(e.getName());
+		    			            if(libFile!=null && libFile.isFile()) {
+		    			            	reporter.report("Loading library: '", library, "' from deployment spec at ", libFile.getAbsolutePath());
+		    				            if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
+		    				            		|| callerClassLoader==Object.class.getClassLoader()) {
+		    				            	Runtime.getRuntime().load(libFile.getAbsolutePath());
+		    				            }else {
+		    				            	libraryLoader.accept(callerClass, libFile.getAbsolutePath());
+		    				            }
+		    				            autoExtractQtJambiLibs = true;
+		    				            loadedLibraries.add(libFormat);
+		    				            result = libFile;
+		    				            if(operatingSystem==OperatingSystem.MacOSX && (dontUseFrameworks==null || !dontUseFrameworks) && qtLibraryPath==null) {
+				    			        	result = result.getParentFile().getParentFile().getParentFile();
+				    			        }
+		    				            e.setLoaded(true);
+		    			                loaded = true;
+		    			                break loop3;
+		    			            }
+		    			        // Load via System.load() using default paths..
+		    			        }
+		    		        }
+		    			}
+		    		}
+	    		}
+	    	}
+        }
+        if(!loaded && (!autoExtractQtJambiLibs || !searchSpec)) {
+            for(String replacement : replacements) {
+            	String library = String.format(libFormat, replacement);
+            	
+            	List<String> libraryPaths = new ArrayList<>();
+            	switch (operatingSystem) {
+                case Windows:
+                    libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(System.getenv("PATH"), NativeLibraryManager::splitPath));
+                	break;
+                case MacOSX: 
+                    libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(System.getenv("DYLD_LIBRARY_PATH"), NativeLibraryManager::splitPath));
+                	break;
+            	default:
+                    libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(System.getenv("LD_LIBRARY_PATH"), NativeLibraryManager::splitPath));
+            	}
+            	
+            	libraryPaths = mergeJniLibdir(libraryPaths);
+            	for (String path : libraryPaths) {
+	                File f = new File(path, library);
+	                if (f.exists()) {
+	                	if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
+	                    		|| callerClassLoader==Object.class.getClassLoader()) {
+	                		Runtime.getRuntime().load(f.getAbsolutePath());
+	                	}else {
+	                		libraryLoader.accept(callerClass, f.getAbsolutePath());
+	                	}
+	                	loadedLibraries.add(libFormat);
+	                    reporter.report("Loading library: '", library, "'. Path was: ", f.getAbsolutePath());
+	                    result = f;
+	                    if(operatingSystem==OperatingSystem.MacOSX && (dontUseFrameworks==null || !dontUseFrameworks) && qtLibraryPath==null) {
+    			        	result = result.getParentFile().getParentFile().getParentFile();
+    			        }
 	                    loaded = true;
 	                    break;
 	                }
 	            }
-	        }
-	        if(result!=null && operatingSystem==OperatingSystem.MacOSX && (dontUseFrameworks==null || !dontUseFrameworks)) {
-	        	result = result.getParentFile().getParentFile();
-	        }
-	        if(loaded)
-	        	break;
+            }
         }
         if (!loaded) {
         	String lib = String.format(libFormat, replacements.get(0));
-            throw new RuntimeException("Library '" + lib +"' was not found in 'java.library.path=" + libraryPaths + "'");
+            throw new QLibraryNotFoundError("Library '" + lib +"' was not found in 'java.library.path=" + System.getProperty("java.library.path") + "'");
         }
         return result;
     }
@@ -1237,12 +1477,6 @@ final class NativeLibraryManager {
             inStream = url.openStream();
             parser.parse(inStream, handler);
             return spec;
-        } catch (WrongSystemException e) {
-            reporter.report(" - skipping because of wrong system: " + e.getMessage());
-            return null;
-        } catch (WrongVersionException e) {
-            reporter.report(" - skipping because of wrong version: " + e.getMessage());
-            return null;
         } finally {
             if(inStream != null) {
                 inStream.close();
@@ -1250,16 +1484,80 @@ final class NativeLibraryManager {
             }
         }
     }
+    
+    private static class ExecutorThread extends Thread implements Executor{
+    	
+    	private final List<Runnable> commands = new ArrayList<>();
+    	private boolean noMoreExpected = false;
+    	
+		private ExecutorThread() {
+			super();
+			this.setDaemon(true);
+			this.setName("QtJambi_LibraryExtractor");
+		}
 
+		@Override
+		public void execute(Runnable command) {
+			synchronized(this.commands) {
+				this.commands.add(command);
+				this.commands.notifyAll();
+			}
+		}
+
+		@Override
+		public void run() {
+			try {
+				while(true) {
+					synchronized(this.commands) {
+						if(this.commands.isEmpty()) {
+							if(noMoreExpected)
+								break;
+							this.commands.wait();
+						}
+					}
+					List<Runnable> commands = new ArrayList<>();
+					synchronized(this.commands) {
+						commands.addAll(this.commands);
+						this.commands.clear();
+					}
+					for (Runnable runnable : commands) {
+						try {
+							runnable.run();
+						} catch (Throwable e) {
+							if(e instanceof InterruptedException)
+								throw e;
+							java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+						}
+					}
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
+		void setNoMoreExpected() {
+			synchronized(this.commands) {
+				noMoreExpected = true;
+				this.commands.notifyAll();
+			}
+		}
+    }
+    
     private static DeploymentSpec unpackDeploymentSpec(URL deploymentSpec, String jarName, Boolean shouldUnpack) throws ParserConfigurationException, SAXException, IOException{
         if(jarName!=null)
         	reporter.report("Unpacking .jar file: '", jarName, "'");
 
-        DeploymentSpec spec = readDeploySpec(deploymentSpec);
-        if (spec == null)
-            return spec;
+        DeploymentSpec spec = null;
+        try {
+			spec = readDeploySpec(deploymentSpec);
+		} catch (DeploymentSpecException e1) {
+			Logger.getLogger("io.qt.internal").warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
+		}
+        if (spec==null)
+            return null;
         
         File tmpDir = spec.getModule()==null ? jambiTempDirBase(spec) : jambiDeploymentDir;
+        spec.setBaseDir(tmpDir);
+        spec.setBaseUrl(new URL(convertAbsolutePathStringToFileUrlString(tmpDir)));
 
         reporter.report(" - using cache directory: '", tmpDir.getAbsolutePath(), "'");
 
@@ -1275,8 +1573,6 @@ final class NativeLibraryManager {
 	            if (dummyFile.exists()) {
 	                reporter.report(" - cache directory exists");
 	                shouldUnpack = Boolean.FALSE;
-	                spec.setBaseDir(tmpDir);
-	                spec.setBaseUrl(new URL(convertAbsolutePathStringToFileUrlString(tmpDir)));
 	            } else {
 	                shouldUnpack = Boolean.TRUE;
 	            }
@@ -1288,165 +1584,243 @@ final class NativeLibraryManager {
         //  so we can choose which one we are going to activate (and allow enumeration of them).
         if (shouldUnpack.booleanValue()) {
             reporter.report(" - starting to copy content to cache directory...");
+            
+            String urlBase = deploymentSpec.toString();
+            int idx = urlBase.indexOf("!/");
+            if(idx>0) {
+            	urlBase = urlBase.substring(0, idx+2);
+            }
 
             for (String path : spec.getDirents()) {
-                reporter.report(" - copying over: '", path, "'...");
-
-                InputStream in = null;
-                OutputStream out = null;
-                try {
-                    // Why do we use the ClassLoader to lookup the resource?  The DeploymentSpec
-                    //  needs to tightly bind the location of the sub-parts with the location of the spec.
-                    // This means we use the containing JAR url, + path to deployment.xml + path to file we
-                    //  are looking for to always find the path.  This way we will never get any surprised
-                    //  where the classloader chose to provide us with another file instead of the one we expected.
-                    // FIXME
-                    Enumeration<URL> resources = classLoader().getResources(path);
-                    while (resources.hasMoreElements()) {
-                        URL url = resources.nextElement();
-                        String eform = url.toExternalForm();
-                        if (eform.contains(jarName)) {
-                            in = url.openStream();
-                            reporter.report("    - matched url: ", url.toExternalForm());
-                        } else if (VERBOSE_LOADING) {
-                            reporter.report("    - unmatched .jar file: ", eform);
-                        }
-                    }
-
-                    if (in == null) {
-//                            throw new FileNotFoundException("Dirent '" + path
-//                                                            + "' specified in qtjambi-deployment.xml in '"
-//                                                            + jarName + "' does not exist");
-                        continue;
-                    }
-
-                    File outFile = new File(tmpDir, path.replace('/', File.separatorChar));
-                    File outFileDir = outFile.getParentFile();
-                    if (!outFileDir.exists()) {
-                        reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
-                        outFileDir.mkdirs();
-                    }
-
-                    out = new FileOutputStream(outFile);
-                    try {
-                    	reporter.report(" - copying to ", outFile.getAbsolutePath());
-                        copy(in, out);
-                    } finally {
-                        in = null;    // copy() ALWAYS closes it for us
-                        out = null;   // copy() ALWAYS closes it for us
-                    }
-                } finally {
-                    if(in != null) {
+                File outFile = new File(tmpDir, path.replace('/', File.separatorChar));
+                if(!outFile.exists()) {
+	                reporter.report(" - copying over: '", path, "'...");
+	
+	                InputStream in = null;
+	                OutputStream out = null;
+	                try {
+	                	URL entryURL = new URL(urlBase+path);
                         try {
-                            in.close();
-                        } catch(IOException eat) {
-                        }
-                    }
+							in = entryURL.openStream();
+						} catch (Exception e1) {
+							continue;
+						}
+                        reporter.report("    - matched url: ", entryURL.toExternalForm());
+	
+	                    File outFileDir = outFile.getParentFile();
+	                    if (!outFileDir.exists()) {
+	                        reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+	                        outFileDir.mkdirs();
+	                    }
+	
+	                    out = new FileOutputStream(outFile);
+	                    try {
+	                    	reporter.report(" - copying to ", outFile.getAbsolutePath());
+	                        copy(in, out);
+	                    } finally {
+	                        in = null;    // copy() ALWAYS closes it for us
+	                        out = null;   // copy() ALWAYS closes it for us
+	                    }
+	                } finally {
+	                    if(in != null) {
+	                        try {
+	                            in.close();
+	                        } catch(IOException eat) {
+	                        }
+	                    }
+	                }
                 }
             }
-
-            for (LibraryEntry e : spec.getLibraries()) {
-            	if(!(e instanceof SymlinkEntry)) {
-                    reporter.report(" - copying over: '", e.getName(), "'...");
-
-                    InputStream in = null;
-                    OutputStream out = null;
-                    try {
-                        Enumeration<URL> resources = classLoader().getResources(e.getName());
-                        while (resources.hasMoreElements()) {
-                            URL url = resources.nextElement();
-                            String eform = url.toExternalForm();
-                            if (eform.contains(jarName)) {
-                                in = url.openStream();
-                                reporter.report("    - matched url: ", url.toExternalForm());
-                            } else if (VERBOSE_LOADING) {
-                                reporter.report("    - unmatched .jar file: ", eform);
-                            }
-                        }
-
-                        if (in == null) {
-//                            throw new FileNotFoundException("Library '" + e.getName()
-//                                                            + "' specified in qtjambi-deployment.xml in '"
-//                                                            + jarName + "' does not exist");
-                            continue;
-                        }
-
-                        File outFile = new File(tmpDir, e.getName().replace('/', File.separatorChar));
-                        File outFileDir = outFile.getParentFile();
-                        if (!outFileDir.exists()) {
-                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
-                            outFileDir.mkdirs();
-                        }
-
-                        out = new FileOutputStream(outFile);
-                        try {
-                        	reporter.report(" - copying to ", outFile.getAbsolutePath());
-                            copy(in, out);
-                        } finally {
-                            in = null;    // copy() ALWAYS closes it for us
-                            out = null;   // copy() ALWAYS closes it for us
-                        }
-                    } finally {
-                        if(in != null) {
-                            try {
-                                in.close();
-                            } catch(IOException eat) {
-                            }
-                        }
-                    }
-            	}
+            
+            Map<String,LibraryEntry> entries = new TreeMap<>();
+            
+            ExecutorThread executor = null;
+            switch(spec.getModule()) {
+            case "qtjambi":
+            	executor = new ExecutorThread();
+            	executor.start();
+            	break;
             }
-            List<SymlinkEntry> shiftedLinks = new ArrayList<>();
-            for (LibraryEntry e : spec.getLibraries()) {
-            	if(e instanceof SymlinkEntry) {
-            		SymlinkEntry s = (SymlinkEntry)e;
-            		File outFile = new File(tmpDir, s.getName().replace('/', File.separatorChar));
-                    File outFileDir = outFile.getParentFile();
-                    if (!outFileDir.exists()) {
-                        reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
-                        outFileDir.mkdirs();
-                    }
-                    File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
-                    if(target.exists()) {
-                    	reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
-                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
-                    }else {
-                    	shiftedLinks.add(s);
-                    }
-            	}
+            
+            try {
+	            for (LibraryEntry e : spec.getLibraries()) {
+	            	entries.put(e.getName(), e);
+	            	if(!(e instanceof SymlinkEntry)) {
+	            		String libName = e.getName();
+	                    File outFile = new File(tmpDir, libName.replace('/', File.separatorChar));
+	                    if(!outFile.exists()) {
+	                    	boolean isplugin = libName.startsWith("plugins/")
+	                    						|| libName.startsWith("qml/")
+	                    						|| libName.startsWith("translations/");
+	                    	String _urlBase = urlBase;
+	                		if(isplugin) {
+	                			outFile.getParentFile().mkdirs();
+	                			pluginLibraries.add(e);
+	                		}
+	                    	if(executor!=null
+	                    			&& ((!libName.contains("QtJambiGui")
+	                            			&& !libName.contains("QtJambiWidgets"))
+	                            			|| isplugin)) {
+	                    		CompletableFuture<Exception> future = CompletableFuture.supplyAsync(()->{
+	                    			reporter.report(" - copying over: '", libName, "'...");
+	                        		
+	        	                    InputStream in = null;
+	        	                    OutputStream out = null;
+	        	                    try {
+	        	                    	URL entryURL = new URL(_urlBase+libName);
+	        	                        try {
+	        								in = entryURL.openStream();
+	        							} catch (Exception e1) {
+	        								return null;
+	        							}
+	        	
+	        	                        File outFileDir = outFile.getParentFile();
+	        	                        if (!outFileDir.exists()) {
+	        	                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+	        	                            outFileDir.mkdirs();
+	        	                        }
+	        	
+	        	                        out = new FileOutputStream(outFile);
+	        	                        try {
+	        	                        	reporter.report(" - copying to ", outFile.getAbsolutePath());
+	        	                            copy(in, out);
+	        	                        } finally {
+	        	                            in = null;    // copy() ALWAYS closes it for us
+	        	                            out = null;   // copy() ALWAYS closes it for us
+	        	                        }
+	        	                    } catch (IOException e1) {
+	        	                    	return e1;
+	        	                    } finally {
+	        	                        if(in != null) {
+	        	                            try {
+	        	                                in.close();
+	        	                            } catch(IOException eat) {
+	        	                            }
+	        	                        }
+	        	                    }
+	    	                        return null;
+	                        	}, executor);
+	                        	e.addExtractionFunction(()->{
+	                        		Exception exn = future.get();
+	                        		if(exn!=null)
+	                        			throw exn;
+	                        	});
+	                    	}else {
+	                    		e.addExtractionFunction(()->{
+	                    			reporter.report(" - copying over: '", libName, "'...");
+	                        		
+	        	                    InputStream in = null;
+	        	                    OutputStream out = null;
+	        	                    try {
+	        	                    	URL entryURL = new URL(_urlBase+libName);
+	        	                        try {
+	        								in = entryURL.openStream();
+	        							} catch (Exception e1) {
+	        								return;
+	        							}
+	        	
+	        	                        File outFileDir = outFile.getParentFile();
+	        	                        if (!outFileDir.exists()) {
+	        	                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+	        	                            outFileDir.mkdirs();
+	        	                        }
+	        	
+	        	                        out = new FileOutputStream(outFile);
+	        	                        try {
+	        	                        	reporter.report(" - copying to ", outFile.getAbsolutePath());
+	        	                            copy(in, out);
+	        	                        } finally {
+	        	                            in = null;    // copy() ALWAYS closes it for us
+	        	                            out = null;   // copy() ALWAYS closes it for us
+	        	                        }
+	        	                    } finally {
+	        	                        if(in != null) {
+	        	                            try {
+	        	                                in.close();
+	        	                            } catch(IOException eat) {
+	        	                            }
+	        	                        }
+	        	                    }
+	                        	});
+	                    	}
+		            	}
+	            	}
+	            }
+	            List<SymlinkEntry> shiftedLinks = new ArrayList<>();
+	            for (LibraryEntry e : spec.getLibraries()) {
+	            	if(e instanceof SymlinkEntry) {
+		        		File outFile = new File(tmpDir, e.getName().replace('/', File.separatorChar));
+		        		if(!outFile.exists()) {
+		            		SymlinkEntry s = (SymlinkEntry)e;
+		                    File outFileDir = outFile.getParentFile();
+		                    if (!outFileDir.exists()) {
+		                        reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+		                        outFileDir.mkdirs();
+		                    }
+		                    File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
+		                    if(target.exists()) {
+		                    	reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
+		                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
+		                    }else {
+		                    	LibraryEntry linkedEntry = entries.get(s.getTarget());
+		                    	if(linkedEntry!=null) {
+			                    	linkedEntry.addExtractionFunction(()->{
+			                    		reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
+				                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
+				                    	s.extract();
+			                    	});
+		                    	}else {
+		                    		shiftedLinks.add(s);
+		                    	}
+		                    }
+	            		}
+	            	}
+	            }
+	            if(!shiftedLinks.isEmpty()) {
+	            	List<SymlinkEntry> _shiftedLinks = new ArrayList<>();
+	                while(!shiftedLinks.isEmpty()) {
+	                	_shiftedLinks.clear();
+	                	for (SymlinkEntry s : shiftedLinks) {
+	                		File outFile = new File(tmpDir, s.getName().replace('/', File.separatorChar));
+	                        File outFileDir = outFile.getParentFile();
+	                        if (!outFileDir.exists()) {
+	                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+	                            outFileDir.mkdirs();
+	                        }
+	                        File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
+	                        if(target.exists()) {
+	                        	reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
+	                        	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
+	                        }else {
+	                        	LibraryEntry linkedEntry = entries.get(s.getTarget());
+		                    	if(linkedEntry!=null) {
+			                    	linkedEntry.addExtractionFunction(()->{
+			                    		reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
+				                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
+				                    	s.extract();
+			                    	});
+		                    	}else {
+		                    		_shiftedLinks.add(s);
+		                    	}
+	                        }
+						}
+	                	if(_shiftedLinks.size()==shiftedLinks.size()) {
+	                		break;
+	                	}
+	                	shiftedLinks.clear();
+	                	shiftedLinks.addAll(_shiftedLinks);
+	                }
+	            }
+	
+	            if (dummyFile != null && !dummyFile.createNewFile()) {
+	                throw new DeploymentSpecException("Can't create dummy file in cache directory");
+	            }
+	            spec.setBaseDir(tmpDir);
+	            spec.setBaseUrl(new URL(convertAbsolutePathStringToFileUrlString(tmpDir)));
+            }finally {
+            	if(executor!=null)
+            		executor.setNoMoreExpected();
             }
-            if(!shiftedLinks.isEmpty()) {
-            	List<SymlinkEntry> _shiftedLinks = new ArrayList<>();
-                while(!shiftedLinks.isEmpty()) {
-                	_shiftedLinks.clear();
-                	for (SymlinkEntry s : shiftedLinks) {
-                		File outFile = new File(tmpDir, s.getName().replace('/', File.separatorChar));
-                        File outFileDir = outFile.getParentFile();
-                        if (!outFileDir.exists()) {
-                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
-                            outFileDir.mkdirs();
-                        }
-                        File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
-                        if(target.exists()) {
-                        	reporter.report(" - creating symbolic link ", outFile.getAbsolutePath());
-                        	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
-                        }else {
-                        	_shiftedLinks.add(s);
-                        }
-					}
-                	if(_shiftedLinks.size()==shiftedLinks.size()) {
-                		break;
-                	}
-                	shiftedLinks.clear();
-                	shiftedLinks.addAll(_shiftedLinks);
-                }
-            }
-
-            if (dummyFile != null && !dummyFile.createNewFile()) {
-                throw new DeploymentSpecException("Can't create dummy file in cache directory");
-            }
-            spec.setBaseDir(tmpDir);
-            spec.setBaseUrl(new URL(convertAbsolutePathStringToFileUrlString(tmpDir)));
         } else if(spec.getBaseUrl() == null) {
             String path = deploymentSpec.getPath();
             int i = path.lastIndexOf('/');  // URL path
@@ -1696,6 +2070,16 @@ final class NativeLibraryManager {
 	            newList.addAll(jniLibdirList);
 	        middle = newList;
     	}
+    	Set<String> set = new TreeSet<>();
+    	for (int i = 0; i < middle.size(); ++i) {
+    		String a = middle.get(i);
+			if(!set.contains(a))
+				set.add(a);
+			else {
+				middle.remove(i);
+				--i;
+			}
+		}
         return middle;
     }
     
@@ -1727,7 +2111,7 @@ final class NativeLibraryManager {
     /** 
      * Enum for defining the operation system.
      */
-    private enum OperatingSystem {
+    enum OperatingSystem {
         Windows,
         MacOSX,
         Linux,
@@ -1742,6 +2126,14 @@ final class NativeLibraryManager {
         Debug,
         Test;
     }
+    
+    static String qtJambiLibraryPath() {
+		return qtJambiLibraryPath;
+	}
+
+	static String qtLibraryPath() {
+		return qtLibraryPath;
+	}
 }
 
 //!!NOTE!! This class can have no dependencies on Qt since

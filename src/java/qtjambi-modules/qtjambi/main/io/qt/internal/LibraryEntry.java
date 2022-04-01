@@ -44,6 +44,9 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // Package private as we don't expose it outside the package.
 class LibraryEntry {
     private String name;
@@ -70,5 +73,23 @@ class LibraryEntry {
     void setLoaded(boolean loaded) {
         this.loaded = loaded;
     }
+    
+    interface ExtractionFunction{
+    	void extract() throws Exception;
+    }
 
+    private final List<ExtractionFunction> extractionFunctions = new ArrayList<>();
+
+	public void addExtractionFunction(ExtractionFunction loadFunction) {
+		this.extractionFunctions.add(loadFunction);
+	}
+	
+	public void extract() throws Exception {
+		if(!extractionFunctions.isEmpty()) {
+			for(ExtractionFunction f : extractionFunctions) {
+				f.extract();
+			}
+			extractionFunctions.clear();
+		}
+	}
 }

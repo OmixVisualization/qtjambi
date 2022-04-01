@@ -31,13 +31,21 @@ package io.qt.autotests;
 import java.util.List;
 
 import static org.junit.Assert.*;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.Qt.*;
 import io.qt.keyboard.*;
 import io.qt.keyboard.QVirtualKeyboardInputEngine.*;
 
-public class TestVirtualKeyboard extends QApplicationTest {
+public class TestVirtualKeyboard extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithGui();
+    }
+	
     @Test
     public void test() {
     	QVirtualKeyboardInputContext context = new QVirtualKeyboardInputContext();

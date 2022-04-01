@@ -58,7 +58,7 @@ import org.junit.Test;
 
 import io.qt.core.QObject;
 
-public class TestSignalSlotGC extends QApplicationTest {
+public class TestSignalSlotGC extends ApplicationInitializer {
 
 	/** Longest time to wait for garbage collection in ms. */
 	private static final int TIME_LIMIT = 10000;
@@ -207,7 +207,7 @@ public class TestSignalSlotGC extends QApplicationTest {
 		}
 
 		void slot() {
-			Utils.println(1, Receiver.class.getName() + "#slot(): fired");
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, Receiver.class.getName() + "#slot(): fired");
 		}
 	}
 

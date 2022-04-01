@@ -35,7 +35,7 @@ import org.junit.Test;
 import io.qt.core.QCollator;
 import io.qt.core.QCollatorSortKey;
 
-public class TestCollator extends QApplicationTest {
+public class TestCollator extends ApplicationInitializer {
 	
     @Test
     public void test() {

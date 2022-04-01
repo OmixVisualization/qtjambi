@@ -46,17 +46,16 @@ import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
 import io.qt.QtObjectInterface;
-import io.qt.QtResources;
 import io.qt.core.QByteArray;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QJsonDocument;
-import io.qt.core.QJsonObject;
-import io.qt.core.QObject;
 import io.qt.core.QJsonDocument.FromJsonResult;
+import io.qt.core.QJsonObject;
 import io.qt.core.QJsonParseError.ParseError;
+import io.qt.core.QObject;
 import io.qt.core.internal.QtPluginMetaData;
 
 public final class QtJambiPlugins {
@@ -70,7 +69,7 @@ public final class QtJambiPlugins {
 		protected void addURLs(Collection<URL> urls) {
 			for (URL url : urls) {
 				super.addURL(url);
-				QtResources.addSearchPath(url.toString());
+				QtJambiResources.addSearchPath(url.toString());
 			}
 		}
 	}

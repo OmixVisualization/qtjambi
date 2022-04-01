@@ -40,6 +40,7 @@ import java.io.File;
 import java.util.Collections;
 
 import io.qt.core.QMetaObject;
+import io.qt.core.QVersionNumber;
 import io.qt.internal.QtJambiInternal;
 
 /**
@@ -165,4 +166,12 @@ public final class QtUtilities {
      * @return value
      */
     public static native String getenv(String varName);
+    
+    /**
+     * Return the version of QtJambi
+     * @return qtjambi version
+     */
+    public static QVersionNumber qtjambiVersion() {
+    	return new QVersionNumber(QtJambiInternal.majorVersion(), QtJambiInternal.minorVersion(), QtJambiInternal.qtjambiPatchVersion());
+    }
 }

@@ -46,7 +46,7 @@ import io.qt.core.QFutureInterface;
 import io.qt.core.QFutureSynchronizer;
 import io.qt.core.QThread;
 
-public class TestConcurrent extends QApplicationTest {
+public class TestConcurrent extends ApplicationInitializer {
 
     static final int COUNT = 100;
 
@@ -518,7 +518,8 @@ public class TestConcurrent extends QApplicationTest {
 		boolean[] isCanceled = {false};
     	QtConcurrent.run(()->{
     		try {
-        		while(!promise.isCanceled())
+    			int i=0;
+        		while(!promise.isCanceled() && (i++<30))
         			QThread.msleep(200);
         		isCanceled[0] = promise.isCanceled();
     		}catch(Throwable e) {
@@ -538,7 +539,8 @@ public class TestConcurrent extends QApplicationTest {
 		boolean[] isCanceled = {false};
     	QtConcurrent.run(()->{
     		try {
-        		while(!promise.isCanceled())
+    			int i=0;
+        		while(!promise.isCanceled() && (i++<30))
         			QThread.msleep(200);
         		isCanceled[0] = promise.isCanceled();
     		}catch(Throwable e) {

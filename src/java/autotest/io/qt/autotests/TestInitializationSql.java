@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationSql {
+public class TestInitializationSql extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.sql");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.sql"));
     }
 }

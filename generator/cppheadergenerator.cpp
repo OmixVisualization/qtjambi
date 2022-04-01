@@ -447,10 +447,13 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         }
         if(java_class->instantiateShellClass()){
             s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
-            if (java_class->isQObject() && java_class->qualifiedCppName()!="QDBusInterface") {
-                s << "    const QMetaObject *metaObject() const override final;" << Qt::endl
-                  << "    void *qt_metacast(const char *) override final;" << Qt::endl
-                  << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
+            if (java_class->isQObject()) {
+                if(!java_class->hasMetaObjectFunction())
+                    s << "    const QMetaObject *metaObject() const override final;" << Qt::endl;
+                if(!java_class->hasMetaCastFunction())
+                    s << "    void *qt_metacast(const char *) override final;" << Qt::endl;
+                if(!java_class->hasMetaCallFunction())
+                    s << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
             }
         }
         QList<AbstractMetaEnum *> protetedEnums;

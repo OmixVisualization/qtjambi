@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtObjectInterface;
@@ -37,7 +38,12 @@ import io.qt.widgets.QDialog;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsWidget;
 
-public class TestQtjambiCastQt6 extends QApplicationTest {
+public class TestQtjambiCastQt6 extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 
 	@Test
 	public void test() {

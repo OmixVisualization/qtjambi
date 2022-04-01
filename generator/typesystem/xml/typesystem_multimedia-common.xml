@@ -47,6 +47,9 @@
     <description>Classes for audio, video, radio and camera functionality.</description>
     <rejection class="QAbstractVideoBuffer" since="6.0.0"/>
     <rejection class="QVideoFrame" function-name="videoBuffer" since="6.0.0"/>
+    <rejection class="QCamera" function-name="platformCamera" since="6.3.0"/>
+    <rejection class="QImageCapture" function-name="platformImageCapture" since="6.3.0"/>
+    <rejection class="QMediaRecorder" function-name="platformRecoder" since="6.3.0"/>
     <rejection class="QAudioFrame"/>
     <rejection class="QAudioBuffer::StereoFrame"/>
     <rejection class="QAudioBuffer::StereoFrameDefault"/>
@@ -69,6 +72,7 @@
     <enum-type name="QMultimedia::SupportEstimate" until="5.*"/>
     <enum-type name="QVideoFrame::FieldType"/>
     <enum-type name="QVideoFrame::PixelFormat"/>
+    <enum-type name="QVideoFrame::RotationAngle"/>
     <enum-type name="QAbstractVideoBuffer::HandleType" until="5.*"/>
     <enum-type name="QAbstractVideoBuffer::MapMode" until="5.*"/>
     <enum-type name="QAbstractVideoSurface::Error" until="5.*"/>
@@ -113,6 +117,7 @@
     <enum-type name="QMediaPlayer::PlaybackState"/>
     <enum-type name="QMediaPlayer::MediaStatus"/>
     <enum-type name="QMediaPlayer::State"/>
+    <enum-type name="QMediaPlayer::Loops"/>
     <enum-type name="QMediaPlaylist::Error" until="5.*"/>
     <enum-type name="QMediaPlaylist::PlaybackMode" until="5.*"/>
     <enum-type name="QMediaRecorder::Error"/>
@@ -543,4 +548,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function *, unmatched *type 'QRhi*'" since="6.2.0"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function '*' in 'QWaveDecoder'" since="6.2.0"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaMetaData' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." since="6.2.0"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCamera::platformCamera', unmatched return type 'QPlatformCamera*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QImageCapture::platformImageCapture', unmatched return type 'QPlatformImageCapture*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMediaRecorder::platformRecoder', unmatched return type 'QPlatformMediaRecorder*'"/>
 </typesystem>

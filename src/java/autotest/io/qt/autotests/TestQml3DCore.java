@@ -10,7 +10,7 @@ import io.qt.core.QUrl;
 import io.qt.qml.QtQml;
 import io.qt.qt3d.core.quick.QQmlAspectEngine;
 
-public class TestQml3DCore extends QApplicationTest{
+public class TestQml3DCore extends ApplicationInitializer{
 	@Test
     public void testExceptionInInterface_QQmlAspectEngine() {
 		QtQml.qmlClearTypeRegistrations();

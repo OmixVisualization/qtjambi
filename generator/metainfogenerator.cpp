@@ -289,9 +289,9 @@ void MetaInfoGenerator::writeContainerAccess(){
         for(const QString& container : containerTypes){
             QString flatTypeName = container.toLower().mid(1);
             for(uint bit1 : mapBits1){
-                QString targetDir(bit1<=0 ? "QtJambi" : "QtJambiCore");
-                FileOut& h = bit1<=0 ? qtjambi_summary_h : qtjambicore_summary_h;
-                FileOut& cpp = bit1<=0 ? qtjambi_summary_cpp : qtjambicore_summary_cpp;
+                QString targetDir(bit1<=1 ? "QtJambi" : "QtJambiCore");
+                FileOut& h = bit1<=1 ? qtjambi_summary_h : qtjambicore_summary_h;
+                FileOut& cpp = bit1<=1 ? qtjambi_summary_cpp : qtjambicore_summary_cpp;
                 for(uint bit2 : mapBits2){
                     QString fileName = QString("qtjambi_containeraccess_%1_%2_%3.cpp").arg(flatTypeName).arg(bit1).arg(bit2);
                     FileOut f(QString("%1/%2/%3").arg(cppOutputDirectory(), targetDir, fileName));
@@ -632,7 +632,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                             analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, entry, optional);
                                         }
                                         for(const QPair<QString,bool>& pair : ts->requiredQtLibraries()){
-                                            analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.first, pair.second & optional);
+                                            analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.first, pair.second || optional);
                                         }
                                         if(!requiredQtLibraries.contains({ts->qtLibrary(), true})
                                                 && !requiredQtLibraries.contains({ts->qtLibrary(), false}))
@@ -647,7 +647,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, entry, optional);
                                             }
                                             for(const QPair<QString,bool>& pair : ts->requiredQtLibraries()){
-                                                analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.first, pair.second & optional);
+                                                analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.first, pair.second || optional);
                                             }
                                             if(!requiredQtLibraries.contains({ts->qtLibrary(), true})
                                                     && !requiredQtLibraries.contains({ts->qtLibrary(), false}))
@@ -673,15 +673,17 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             for(const QPair<QString,bool>& pair : typeSystemEntry->requiredQtLibraries()){
                                 Analyzer::analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.first, pair.second);
                             }
+                            requiredQtLibraries.removeAll({"QtCore", true});
+                            requiredQtLibraries.removeAll({"QtCore", false});// is always loaded by package io.qt.internal
                             requiredQtLibraries.removeAll({typeSystemEntry->qtLibrary(), true});
                             requiredQtLibraries.removeAll({typeSystemEntry->qtLibrary(), false});
                             requiredQtLibraries.removeAll({"QtUiPlugin", true});
                             requiredQtLibraries.removeAll({"QtUiPlugin", false});// does not exist as library
-                            requiredQtLibraries.removeAll({"QtCore", true});
-                            requiredQtLibraries.removeAll({"QtCore", false});// is always loaded by package io.qt.internal
+                            requiredQtLibraries.removeAll({"QtQmlIntegration", true});
+                            requiredQtLibraries.removeAll({"QtQmlIntegration", false});// does not exist as library
                             QSet<QString> loaded;
                             for(const QPair<QString,bool>& pair : requiredQtLibraries){
-                                if(loaded.contains(pair.first))
+                                if(loaded.contains(pair.first) || m_staticLibraries.contains(pair.first))
                                     continue;
                                 loaded.insert(pair.first);
                                 if(pair.first.startsWith("Qt")){
@@ -695,7 +697,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 }
                             }
                             generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Position3, INDENT);
-                            if(!typeSystemEntry->qtLibrary().isEmpty()){
+                            if(!typeSystemEntry->qtLibrary().isEmpty() && !m_staticLibraries.contains(typeSystemEntry->qtLibrary())){
                                 if(typeSystemEntry->qtLibrary().startsWith("Qt")){
                                     s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\");" << Qt::endl;
                                 }else{
@@ -723,10 +725,10 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
                         }
                     }
-                    s << INDENT << "} catch(RuntimeException | Error t) {" << Qt::endl;
+                    s << INDENT << "} catch(Error t) {" << Qt::endl;
                     s << INDENT << "    throw t;" << Qt::endl;
                     s << INDENT << "} catch(Throwable t) {" << Qt::endl;
-                    s << INDENT << "    throw new RuntimeException(t);" << Qt::endl;
+                    s << INDENT << "    throw new ExceptionInInitializerError(t);" << Qt::endl;
                     s << INDENT << "}" << Qt::endl;
                 }
                 s << INDENT << "}" << Qt::endl << Qt::endl;
@@ -785,7 +787,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                     }
                     fileOut.stream << "    requires java.base;" << Qt::endl;
                     for(const TypeSystemTypeEntry* typeSystem : allTypeSystems[moduleName]){
-                        QList<QString> entries = requiredTypeSystems[typeSystem];
+                        QList<QString>& entries = requiredTypeSystems[typeSystem];
                         entries.removeDuplicates();
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::Position2, INDENT);
                         for(const QString& e : entries){
@@ -797,8 +799,9 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         }
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::Position3, INDENT);
                         generateInitializer(fileOut.stream, typeSystem, TypeSystem::ModuleInfo, CodeSnip::End, INDENT);
-                        for(const QString& e : exports[typeSystem])
-                            fileOut.stream << "    exports " << e << ";" << Qt::endl;
+                        if(!typeSystem->isNoExports())
+                            for(const QString& e : exports[typeSystem])
+                                fileOut.stream << "    exports " << e << ";" << Qt::endl;
                     }
                 }
                 fileOut.stream << "}" << Qt::endl;

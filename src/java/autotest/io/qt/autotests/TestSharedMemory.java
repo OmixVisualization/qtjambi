@@ -36,18 +36,24 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.qt.QNativePointer;
 import io.qt.core.QDataStream;
 import io.qt.core.QIODevice;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSharedMemory;
 import io.qt.core.QThread;
 
-public class TestSharedMemory extends QApplicationTest {
+public class TestSharedMemory extends ApplicationInitializer {
     @Before
     public void setUp() {
+    	Assume.assumeTrue("Cannot run on macOS.", 
+				!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, 
+																QOperatingSystemVersion.OSType.IOS, 
+																QOperatingSystemVersion.OSType.WatchOS));
     }
 
     @Test(expected=IllegalStateException.class)

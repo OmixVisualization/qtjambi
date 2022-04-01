@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.*;
@@ -44,7 +45,12 @@ import io.qt.printsupport.QPrinter;
 import io.qt.printsupport.QPrinterInfo;
 import io.qt.widgets.*;
 
-public class TestThreadAffinity extends QApplicationTest {
+public class TestThreadAffinity extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	private Throwable throwable;
 	

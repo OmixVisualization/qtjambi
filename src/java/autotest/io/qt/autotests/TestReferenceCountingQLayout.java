@@ -41,11 +41,11 @@ import io.qt.core.*;
 import io.qt.gui.QGuiApplication;
 import io.qt.widgets.*;
 
-public class TestReferenceCountingQLayout extends QApplicationTest{
+public class TestReferenceCountingQLayout extends ApplicationInitializer{
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     }
 	

@@ -4,9 +4,6 @@
         <extra-includes>
             <include file-name="qtjambi_sensors_repository.h" location="local"/>
         </extra-includes>
-        <inject-code>
-        public final Signal1&lt;String> detected = new Signal1&lt;>();
-        </inject-code>
         <modify-function signature="gestureSignals() const">
             <modify-argument index="0">
                 <conversion-rule class="native">

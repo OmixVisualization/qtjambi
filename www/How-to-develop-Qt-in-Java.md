@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
 
-Add **qtjambi-5.15.4.jar**/**qtjambi-6.2.2.jar** to the classpath of your Java project containing the most 
+Add **qtjambi-5.15.5.jar**/**qtjambi-6.2.3.jar** to the classpath of your Java project containing the most 
 essential Qt Core, Gui and Widgets modules. If you use Maven to build your application simply add following dependency
 to your project:
 
@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.4` or by `6.2.2`).
+(exchange `$VERSION` either by `5.15.5` or by `6.2.3`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -34,7 +34,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.2.2.jar Test.java
+javac -cp qtjambi-6.2.3.jar Test.java
 ```
 
 For execution you need the platform dependent binaries of *QtJambi*. For
@@ -47,18 +47,18 @@ version (e.g. 5.15 or 6.2).
 
 When running a QtJambi application you have to make the locations of Qt
 and QtJambi libraries known to Java. Therefore, use the **PATH**
-environment (**LD\_LIBRARY\_PATH** on Linux, **DYLD\_LIBRARY\_PATH** on
+environment (**LD\_LIBRARY\_PATH** on Linux, **DYLD\_FRAMEWORK\_PATH** on
 macOS) or the Java runtime property **java.library.path**. The example
 program can be executed this way:
 
 ``` powershell
-java -cp qtjambi-6.2.2.jar;qtjambi-platform-windows-x64-6.2.2.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.2.3.jar;qtjambi-native-windows-x64-6.2.3.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
 On *macOS* you need to use the start parameter `-XstartOnFirstThread`:
 
 ``` bash
-java -XstartOnFirstThread -cp qtjambi-6.2.2.jar:qtjambi-platform-windows-x64-6.2.2.jar:. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -XstartOnFirstThread -cp qtjambi-6.2.3.jar:qtjambi-native-windows-x64-6.2.3.jar:. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
 In general, you can start learning how to use Qt in Java [as it is
@@ -71,9 +71,9 @@ application as executable [as described
 here](How-to-deploy-QtJambi-applications.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.4/)
+Documentation](https://doc.qtjambi.io/5.15.5/)
 and [QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.2/)
+Documentation](https://doc.qtjambi.io/6.2.3/)
 
 ## Useful Java System Properties for QtJambi
 

@@ -51,6 +51,7 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtEnumerator;
@@ -150,7 +151,12 @@ import io.qt.widgets.QSpinBox;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
-public class TestQVariant extends QApplicationTest {
+public class TestQVariant extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	private static boolean convertToQList = QLibraryInfo.version().compareTo(new QVersionNumber(6, 1, 0)) >= 0;
 	
@@ -1712,8 +1718,8 @@ public class TestQVariant extends QApplicationTest {
 		    	assertEquals(((Deque<?>)sentArguments.get("test15")).size(), ((Deque<?>)received).size());
 		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((Deque<?>)received).getFirst()).toArray()));
-		    	((QStack<?>)received).pop();
-		    	((Deque<?>)sentArguments.get("test15")).pop();
+		    	((QStack<?>)received).removeLast();
+		    	((Deque<?>)sentArguments.get("test15")).removeLast();
 		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((QStack<?>)received).getFirst()).toArray()));
 	    	}

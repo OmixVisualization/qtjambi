@@ -63,17 +63,17 @@ import io.qt.core.Qt;
 public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 	
 	public TestFlagsAndEnumParameters() {
-		QApplicationTest.instances.add(new WeakReference<>(this));
+		ApplicationInitializer.instances.add(new WeakReference<>(this));
 	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitialize();
     }
 	
 	@AfterClass
     public static void testDispose() throws Exception {
-		QApplicationTest.testDispose();
+		ApplicationInitializer.testDispose();
 	}
 	
     public static void main(String args[]) {
@@ -87,7 +87,7 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 	private io.qt.core.Qt.WidgetAttribute[] buffer;
 	private final FlagsAndEnumTest flagsAndEnumTest = new FlagsAndEnumTest(){
 		{
-			QApplicationTest.instances.add(new WeakReference<>(this));
+			ApplicationInitializer.instances.add(new WeakReference<>(this));
 		}
 	    @io.qt.QtPropertyWriter(enabled=false)
 		public void setAttributes(io.qt.core.Qt.WidgetAttribute ... attributes){

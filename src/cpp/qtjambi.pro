@@ -5,6 +5,7 @@ SUBDIRS =   qtjambi qtjambi_core qtjambi_plugin
 
 contains(QT_CONFIG, qtjambi-gui):                 SUBDIRS += qtjambi_gui
 contains(QT_CONFIG, qtjambi-widgets):             SUBDIRS += qtjambi_widgets
+contains(QT_CONFIG, qtjambi-activex):             SUBDIRS += qtjambi_activex
 contains(QT_CONFIG, qtjambi-uitools):             SUBDIRS += qtjambi_uitools
 contains(QT_CONFIG, qtjambi-opengl):              SUBDIRS += qtjambi_opengl
 contains(QT_CONFIG, qtjambi-openglwidgets):       SUBDIRS += qtjambi_openglwidgets
@@ -12,6 +13,7 @@ contains(QT_CONFIG, qtjambi-network):             SUBDIRS += qtjambi_network
 contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_qml
 contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_jarimport
 contains(QT_CONFIG, qtjambi-quick):               SUBDIRS += qtjambi_quick
+contains(QT_CONFIG, qtjambi-quicktest):           SUBDIRS += qtjambi_quick_test
 contains(QT_CONFIG, qtjambi-quickwidgets):        SUBDIRS += qtjambi_quick_widgets
 contains(QT_CONFIG, qtjambi-sensors):             SUBDIRS += qtjambi_sensors
 contains(QT_CONFIG, qtjambi-remoteobjects):       SUBDIRS += qtjambi_remoteobjects
@@ -52,13 +54,15 @@ contains(QT_CONFIG, qtjambi-help):                SUBDIRS += qtjambi_help
 contains(QT_CONFIG, qtjambi-websockets):          SUBDIRS += qtjambi_websockets
 contains(QT_CONFIG, qtjambi-webchannel):          SUBDIRS += qtjambi_webchannel
 contains(QT_CONFIG, qtjambi-webview):             SUBDIRS += qtjambi_webview
-contains(QT_CONFIG, qtjambi-designer):            SUBDIRS += qtjambi_designer
+contains(QT_CONFIG, qtjambi-designer):            SUBDIRS += qtjambi_designer qtjambi_ui4
 contains(QT_CONFIG, qtjambi-serialport):          SUBDIRS += qtjambi_serialport
 contains(QT_CONFIG, qtjambi-serialbus):           SUBDIRS += qtjambi_serialbus
 contains(QT_CONFIG, qtjambi-winextras):           SUBDIRS += qtjambi_winextras
 contains(QT_CONFIG, qtjambi-macextras):           SUBDIRS += qtjambi_macextras
 contains(QT_CONFIG, qtjambi-x11extras):           SUBDIRS += qtjambi_x11extras
 contains(QT_CONFIG, qtjambi-gamepad):             SUBDIRS += qtjambi_gamepad
+contains(QT_CONFIG, qtjambi-pdf):                 SUBDIRS += qtjambi_pdf
+contains(QT_CONFIG, qtjambi-pdfwidgets):          SUBDIRS += qtjambi_pdfwidgets
 
 SUBDIRS += qtjambi_qt3d
 

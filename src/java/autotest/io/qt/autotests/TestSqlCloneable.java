@@ -58,15 +58,8 @@ import io.qt.sql.QSqlIndex;
 import io.qt.sql.QSqlQuery;
 import io.qt.sql.QSqlRecord;
 import io.qt.sql.QSqlRelation;
-import io.qt.unittests.support.FilterSQL;
 
-public class TestSqlCloneable extends QApplicationTest {
-
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterSQL.detectStatic());
-        QApplicationTest.testInitialize();
-    }
+public class TestSqlCloneable extends ApplicationInitializer {
 
     @Test
     public void run_clone_QSqlDatabase() {

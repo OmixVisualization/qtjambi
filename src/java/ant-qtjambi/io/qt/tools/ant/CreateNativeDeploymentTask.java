@@ -65,6 +65,13 @@ public class CreateNativeDeploymentTask extends Task {
 		this.debug = debug;
 	}
 
+	public boolean isPlugin() {
+		return plugin;
+	}
+	public void setPlugin(boolean plugin) {
+		this.plugin = plugin;
+	}
+
     private String msg = "";
     
 	@Override
@@ -176,7 +183,19 @@ public class CreateNativeDeploymentTask extends Task {
 					}
 					break;
 				default:
-					libName = LibraryEntry.formatQtJambiJniName(name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
+					if(plugin) {
+						java.io.File pluginDir = new java.io.File(new java.io.File(directory, "plugins"), name);
+						for(String f : pluginDir.list()) {
+							if(!f.equals(".") && !f.equals("..")) {
+								Element libraryElement = doc.createElement("library");
+								libraryElement.setAttribute("name", "plugins/"+name+"/"+f);
+								doc.getDocumentElement().appendChild(libraryElement);
+							}
+						}
+						continue;
+					}else {
+						libName = LibraryEntry.formatQtJambiJniName(name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
+					}
 					break;
 				}
 				if(!libraryIncludes.isEmpty())
@@ -227,7 +246,8 @@ public class CreateNativeDeploymentTask extends Task {
 							switch(name) {
 							case "QtJambiLauncher":
 								try{
-									Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/lib:$ORIGIN/../lib", target.getAbsolutePath()}, targetLibDir, getProject(), true );								}catch(Exception e){
+									Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/lib:$ORIGIN/../lib", target.getAbsolutePath()}, targetLibDir, getProject(), true );
+								}catch(Exception e){
 								}
 								break switch_moduleName;
 							case "qtjambiplugin":
@@ -453,4 +473,5 @@ public class CreateNativeDeploymentTask extends Task {
 	private String moduleName;
 	private String outputDirectory;
 	private boolean debug = false;
+	private boolean plugin = false;
 }

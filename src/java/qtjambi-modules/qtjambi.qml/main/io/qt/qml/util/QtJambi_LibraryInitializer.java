@@ -4,10 +4,10 @@ final class QtJambi_LibraryInitializer {
     static{
         try {
             io.qt.QtUtilities.initializePackage("io.qt.qml");
-        } catch(RuntimeException | Error t) {
+        } catch(Error t) {
             throw t;
         } catch(Throwable t) {
-            throw new RuntimeException(t);
+            throw new ExceptionInInitializerError(t);
         }
     }
     static void init() { };

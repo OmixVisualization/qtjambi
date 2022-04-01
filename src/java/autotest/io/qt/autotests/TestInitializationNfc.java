@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationNfc {
+public class TestInitializationNfc extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.nfc");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.nfc"));
     }
 }

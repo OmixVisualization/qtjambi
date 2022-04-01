@@ -113,7 +113,7 @@ public class QMakeTask extends Task {
 
             // try in $QTDIR/bin if it is configured
             try {
-                String qtDir = System.getenv("QTDIR");
+                String qtDir = AntUtil.getPropertyAsString(PropertyHelper.getPropertyHelper(project), "qtjambi.qtdir");
                 if(qtDir != null) {
                     File exeFile = new File(qtDir, "bin" + File.separator + executableName);
                     if(exeFile.isFile()) {

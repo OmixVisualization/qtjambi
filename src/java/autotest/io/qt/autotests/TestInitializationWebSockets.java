@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationWebSockets {
+public class TestInitializationWebSockets extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.websockets");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.websockets"));
     }
 }

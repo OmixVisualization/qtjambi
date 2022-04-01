@@ -44,6 +44,61 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtDesigner" description="Classes for loading QWidget based forms created in Qt Designer dynamically, at runtime.">
+    <rejection class="QAbstractFormBuilder" function-name="toString" />
+    <rejection class="QAbstractFormBuilder" function-name="propertyMap" />
+    <rejection class="QAbstractFormBuilder" function-name="domPixmap" />
+    <rejection class="QAbstractFormBuilder" function-name="addItem" />
+    <rejection class="QAbstractFormBuilder" function-name="applyProperties" />
+    <rejection class="QAbstractFormBuilder" function-name="applyTabStops" />
+    <rejection class="QAbstractFormBuilder" function-name="computeProperties" />
+    <rejection class="QAbstractFormBuilder" function-name="create" />
+    <rejection class="QAbstractFormBuilder" function-name="createActionRefDom" />
+    <rejection class="QAbstractFormBuilder" function-name="createConnections" />
+    <rejection class="QAbstractFormBuilder" function-name="createCustomWidgets" />
+    <rejection class="QAbstractFormBuilder" function-name="createDom" />
+    <rejection class="QAbstractFormBuilder" function-name="createProperty" />
+    <rejection class="QAbstractFormBuilder" function-name="createResources" />
+    <rejection class="QAbstractFormBuilder" function-name="initialize" />
+    <rejection class="QAbstractFormBuilder" function-name="layoutInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadButtonExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadComboBoxExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadItemViewExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadListWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadTreeWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="loadTableWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveButtonExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveComboBoxExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveItemViewExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveListWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveTreeWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveTableWidgetExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveBrush" />
+    <rejection class="QAbstractFormBuilder" function-name="saveButtonExtraInfo" />
+    <rejection class="QAbstractFormBuilder" function-name="saveButtonGroups" />
+    <rejection class="QAbstractFormBuilder" function-name="saveColorGroup" />
+    <rejection class="QAbstractFormBuilder" function-name="saveConnections" />
+    <rejection class="QAbstractFormBuilder" function-name="saveCustomWidgets" />
+    <rejection class="QAbstractFormBuilder" function-name="saveDom" />
+    <rejection class="QAbstractFormBuilder" function-name="saveResources" />
+    <rejection class="QAbstractFormBuilder" function-name="saveTabStops" />
+    <rejection class="QAbstractFormBuilder" function-name="saveResource" />
+    <rejection class="QAbstractFormBuilder" function-name="saveText" />
+    <rejection class="QAbstractFormBuilder" function-name="toVariant" />
+    <rejection class="QAbstractFormBuilder" function-name="setIconProperty" />
+    <rejection class="QAbstractFormBuilder" function-name="setPixmapProperty" />
+    <rejection class="QAbstractFormBuilder" function-name="setupBrush" />
+    <rejection class="QAbstractFormBuilder" function-name="setupColorGroup" />
+    <rejection class="QAbstractFormBuilder" function-name="domPropertyToIcon" />
+    <rejection class="QAbstractFormBuilder" function-name="domPropertyToPixmap" />
+    <rejection class="QAbstractFormBuilder" function-name="iconToDomProperty" />
+    <rejection class="QFormBuilder" function-name="addItem" />
+    <rejection class="QFormBuilder" function-name="applyProperties" />
+    <rejection class="QFormBuilder" function-name="create" />
+    <rejection class="QFormBuilder" function-name="createConnections" />
+    <rejection class="QDesignerFormWindowToolInterface" function-name="loadFromDom" />
+    <rejection class="QDesignerFormWindowToolInterface" function-name="saveToDom" />
     <rejection class="QDesignerFormWindowInterface" function-name="resourceSet" />
     <rejection class="QDesignerFormWindowInterface" function-name="setResourceSet" />
     <rejection class="QDesignerFormWindowManagerInterface" enum-name="Action" />
@@ -71,12 +126,26 @@
     </value-type>
     <interface-type name="QAbstractExtensionFactory" />
     <interface-type name="QAbstractExtensionManager" />
-    <object-type name="QAbstractFormBuilder" />
+    <object-type name="QAbstractFormBuilder">
+        <extra-includes>
+            <include file-name="QtDesigner/private/ui4_p.h" location="global" suppressed="true"/>
+        </extra-includes>
+    </object-type>
     <object-type name="QDesignerActionEditorInterface" />
     <interface-type name="QDesignerBrushManagerInterface" />
     <interface-type name="QDesignerContainerExtension" />
-    <interface-type name="QDesignerCustomWidgetCollectionInterface" />
-    <interface-type name="QDesignerCustomWidgetInterface" />
+    <interface-type name="QDesignerCustomWidgetCollectionInterface">
+        <extra-includes>
+            <include file-name="customwidget.h" location="global" suppressed="true"/>
+            <include file-name="QtUiPlugin/customwidget.h" location="global"/>
+        </extra-includes>
+    </interface-type>
+    <interface-type name="QDesignerCustomWidgetInterface">
+        <extra-includes>
+            <include file-name="customwidget.h" location="global" suppressed="true"/>
+            <include file-name="QtUiPlugin/customwidget.h" location="global"/>
+        </extra-includes>
+    </interface-type>
     <enum-type name="QDesignerFormWindowCursorInterface::MoveOperation" />
     <enum-type name="QDesignerFormWindowCursorInterface::MoveMode" />
     <interface-type name="QDesignerFormWindowCursorInterface" />
@@ -100,7 +169,13 @@
     <object-type name="QDesignerWidgetFactoryInterface" />
     <object-type name="QExtensionFactory"/>
     <object-type name="QExtensionManager"/>
-    <object-type name="QFormBuilder" />
+    <object-type name="QFormBuilder">
+        <extra-includes>
+            <include file-name="QtDesigner/private/ui4_p.h" location="global" suppressed="true"/>
+            <include file-name="customwidget.h" location="global" suppressed="true"/>
+            <include file-name="QtUiPlugin/customwidget.h" location="global"/>
+        </extra-includes>
+    </object-type>
     <interface-type name="QDesignerDynamicPropertySheetExtension" />
     <interface-type name="QDesignerPromotionInterface" />
     <value-type name="QDesignerPromotionInterface::PromotedClass">

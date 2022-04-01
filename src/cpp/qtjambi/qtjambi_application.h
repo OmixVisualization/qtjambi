@@ -134,7 +134,7 @@ QTJAMBI_EXPORT QMetaMethod qtjambi_metaobject_get_method(const QMetaObject *meta
 
 QTJAMBI_EXPORT jobject qtjambi_metaobject_new_instance(JNIEnv *env, jlong metaObjectPointer, jint methodIndex, jobject argTypes, jobjectArray args);
 
-QTJAMBI_EXPORT const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object);
+QTJAMBI_EXPORT const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object = nullptr, bool hasCustomMetaObject = false);
 
 QTJAMBI_EXPORT QString qtjambi_external_type_name(JNIEnv *env, const QString& internalName);
 
@@ -158,6 +158,10 @@ QTJAMBI_EXPORT void qtjambi_function_pointer_get_parameter_types(JNIEnv * __jni_
 QTJAMBI_EXPORT void qtjambi_function_pointer_convert_parameters(JNIEnv * __jni_env, jobjectArray argumentTypes, jobjectArray args, jobjectArray convertedArgs, jboolean isVarArgs, jboolean forward);
 
 QTJAMBI_EXPORT void qtjambi_function_pointer_dispose(JNIEnv * __jni_env, jlong peer);
+
+QTJAMBI_EXPORT void qtjambi_pre_exit();
+
+QTJAMBI_EXPORT void qtjambi_unexit();
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT const QtPrivate::AbstractDebugStreamFunction * qtjambi_registered_debugstream_operator(int typeId);

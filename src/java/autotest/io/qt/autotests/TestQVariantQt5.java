@@ -42,7 +42,7 @@ import io.qt.QtEnumerator;
 import io.qt.autotests.generated.Variants;
 import io.qt.core.*;
 
-public class TestQVariantQt5 extends QApplicationTest {
+public class TestQVariantQt5 extends ApplicationInitializer {
 	
     @Test
     public void testQVariant_IntVector() {

@@ -209,6 +209,8 @@ class AbstractMetaType {
             StringPattern,
             Latin1StringPattern,
             StringViewPattern,
+            AnyStringViewPattern,
+            Utf8StringViewPattern,
             StringRefPattern,
             CharPattern,
             ObjectPattern,
@@ -345,6 +347,10 @@ class AbstractMetaType {
 
         // returns true if the type was originally a QString or const QString & or equivalent for QLatin1String
         bool isTargetLangStringView() const { return m_pattern == StringViewPattern; }
+
+        bool isTargetLangAnyStringView() const { return m_pattern == AnyStringViewPattern; }
+
+        bool isTargetLangUtf8StringView() const { return m_pattern == Utf8StringViewPattern; }
 
         // returns true if the type was originally a QStringRef or const QStringRef &
         bool isTargetLangStringRef() const { return m_pattern == StringRefPattern; }
@@ -988,8 +994,12 @@ class AbstractMetaClass : public AbstractMetaAttributes {
                 m_functions_fixed(false),
                 m_has_public_destructor(true),
                 m_has_private_destructor(false),
+                m_has_metaObject(false),
+                m_has_metacall(false),
+                m_has_metacast(false),
                 m_has_private_metaObject(false),
                 m_has_private_metacall(false),
+                m_has_private_metacast(false),
                 m_has_virtual_destructor(false),
                 m_has_hash_function(false),
                 m_needs_hash_workaround(false),
@@ -999,6 +1009,8 @@ class AbstractMetaClass : public AbstractMetaAttributes {
                 m_has_Q_GADGET(false),
                 m_has_Q_OBJECT(false),
                 m_has_subClasses(false),
+                m_usingProtectedBaseConstructors(false),
+                m_usingPublicBaseConstructors(false),
                 m_enclosing_class(nullptr),
                 m_base_class(nullptr),
                 m_typeAliasType(nullptr),
@@ -1040,8 +1052,12 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         bool hasUnimplmentablePureVirtualFunction() const {return m_has_unimplmentablePureVirtualFunctions;}
         const QSet<QString>& unimplmentablePureVirtualFunctions() const {return m_unimplmentablePureVirtualFunctions;}
         void setUnimplmentablePureVirtualFunctions(const QSet<QString>& privatePureVirtualFunctions) { m_unimplmentablePureVirtualFunctions = privatePureVirtualFunctions; }
-        bool hasPrivateMetaObject() const { return m_has_private_metaObject; }
-        bool hasPrivateMetaCall() const { return m_has_private_metacall; }
+        bool hasPrivateMetaObjectFunction() const { return m_has_private_metaObject; }
+        bool hasPrivateMetaCallFunction() const { return m_has_private_metacall; }
+        bool hasPrivateMetaCastFunction() const { return m_has_private_metacast; }
+        bool hasMetaObjectFunction() const { return m_has_metaObject; }
+        bool hasMetaCallFunction() const { return m_has_metacall; }
+        bool hasMetaCastFunction() const { return m_has_metacast; }
         bool hasPrivateDestructor() const { return m_has_private_destructor; }
         bool hasVirtualDestructor() const {
             if(baseClass() && baseClass()->hasVirtualDestructor())
@@ -1115,11 +1131,7 @@ class AbstractMetaClass : public AbstractMetaAttributes {
 
         AbstractMetaClass *baseClass() const { return m_base_class; }
         AbstractMetaClass *baseClass() { return m_base_class; }
-        void setBaseClass(AbstractMetaClass *base_class) {
-            m_base_class = base_class;
-            if(base_class)
-                base_class->m_has_subClasses = true;
-        }
+        void setBaseClass(AbstractMetaClass *base_class);
 
         const AbstractMetaClass *enclosingClass() const { return m_enclosing_class; }
         void setEnclosingClass(AbstractMetaClass *cl) { m_enclosing_class = cl; }
@@ -1261,6 +1273,8 @@ class AbstractMetaClass : public AbstractMetaAttributes {
 
         void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
         const QString& deprecatedComment() const { return m_deprecatedComment; }
+        void setUsingProtectedBaseConstructors(bool usingBaseConstructors){m_usingProtectedBaseConstructors = usingBaseConstructors;}
+        void setUsingPublicBaseConstructors(bool usingBaseConstructors){m_usingPublicBaseConstructors = usingBaseConstructors;}
 private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
 
@@ -1278,8 +1292,12 @@ private:
     uint m_functions_fixed : 1;
     uint m_has_public_destructor : 1;
     uint m_has_private_destructor : 1;
+    uint m_has_metaObject : 1;
+    uint m_has_metacall : 1;
+    uint m_has_metacast : 1;
     uint m_has_private_metaObject : 1;
     uint m_has_private_metacall : 1;
+    uint m_has_private_metacast : 1;
     uint m_has_virtual_destructor : 1;
     uint m_has_hash_function : 1;
     uint m_needs_hash_workaround : 1;
@@ -1289,7 +1307,9 @@ private:
     uint m_has_Q_GADGET : 1;
     uint m_has_Q_OBJECT : 1;
     uint m_has_subClasses : 1;
-    uint m_reserved : 17;
+    uint m_usingProtectedBaseConstructors : 1;
+    uint m_usingPublicBaseConstructors : 1;
+    uint m_reserved : 15;
 
         const AbstractMetaClass *m_enclosing_class;
         AbstractMetaClass *m_base_class;

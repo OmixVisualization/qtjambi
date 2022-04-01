@@ -144,9 +144,9 @@ class TypeDatabase {
             return "typesystem.txt";
         }
 
-        void initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion);
+        void initialize(const QString &filename, const QStringList &importInputDirectoryList, const QString &typeystem_directory, uint qtVersion);
 
-        void parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate = true, bool optional = false);
+        void parseFile(const QString &filename, const QStringList &importInputDirectoryList, const QString &typeystem_directory, bool generate = true, bool optional = false);
 
         bool defined(QString name);
 

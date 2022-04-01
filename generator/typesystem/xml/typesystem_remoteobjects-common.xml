@@ -47,6 +47,8 @@
   <rejection class="ExternalIoDevice"/>
   <rejection class="QtROServerFactory"/>
   <rejection class="QtROClientFactory"/>
+  <rejection class="QtRemoteObjects" field-name="dataStreamVersion"/>
+  <rejection class="QtRemoteObjects" field-name="protocolVersion"/>
   <namespace-type name="QRemoteObjectStringLiterals"/>
   <namespace-type name="QtRemoteObjects">
         <modify-function signature="operator&lt;&lt;(QDataStream &amp;, QFlags&lt;QItemSelectionModel::SelectionFlag&gt;)" remove="all">
@@ -73,10 +75,7 @@
   <enum-type name="QRemoteObjectPendingCall::Error"/>
   <object-type name="QRemoteObjectAbstractPersistedStore">
   </object-type>
-  <rejection class="QRemoteObjectDynamicReplica" function-name="metaObject"/>
-  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacall"/>
-  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacast"/>
-  <object-type name="QRemoteObjectDynamicReplica" generate="no-shell">
+  <object-type name="QRemoteObjectDynamicReplica">
   </object-type>
   <object-type name="QRemoteObjectHost">
   </object-type>

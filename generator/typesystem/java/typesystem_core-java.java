@@ -6144,7 +6144,7 @@ class QObject_6__ extends QObject {
         void emitSignal(QProperty<T> property) {}
         boolean hasSignal(QProperty<T> property) { return false; }
         final T value(QBindingStorage bindingStorage, QProperty<T> property){
-            bindingStorage.maybeUpdateBindingAndRegister(property);
+            bindingStorage.registerDependency(property);
             return io.qt.core.QProperty.getValueBypassingBindings(QtJambi_LibraryUtilities.internal.nativeId(property), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType));
         }
         final QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create) {
@@ -6696,7 +6696,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public boolean value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -6977,7 +6977,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public byte value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -7184,7 +7184,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -7259,7 +7258,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public short value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -7468,7 +7467,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -7543,7 +7541,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public int value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -7750,7 +7748,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -7825,7 +7822,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public long value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -8032,7 +8029,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -8107,7 +8103,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public float value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -8314,7 +8310,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -8389,7 +8384,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public double value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -8596,7 +8591,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -8671,7 +8665,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public char value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return this.getValueBypassingBindings();
         }
         
@@ -8878,7 +8872,6 @@ class QObject_6__ extends QObject {
             if(notifySignal==null) {
                 this.signal = NO_SIGNAL;
             }else{
-                int methodIndex = notifySignal.methodIndex();
                 if(notifySignal.parameterCount()==0)
                     this.signal = new EmitSignal0(notifySignal.methodIndex(), notifySignal.enclosingMetaObject().metaObjectPointer);
                 else
@@ -9005,7 +8998,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public T value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.get();
         }
         
@@ -9039,7 +9032,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public boolean value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsBoolean();
         }
         
@@ -9073,7 +9066,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public byte value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsByte();
         }
         
@@ -9113,7 +9106,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public short value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsShort();
         }
         
@@ -9153,7 +9146,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public int value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsInt();
         }
         
@@ -9193,7 +9186,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public long value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsLong();
         }
         
@@ -9233,7 +9226,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public float value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsFloat();
         }
         
@@ -9273,7 +9266,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public double value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsDouble();
         }
         
@@ -9313,7 +9306,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public char value()
         {
-            bindingStorage().maybeUpdateBindingAndRegister(this);
+            bindingStorage().registerDependency(this);
             return getter.getAsChar();
         }
         
@@ -9886,6 +9879,7 @@ class QCoreApplication___ extends QCoreApplication {
         String[] _args = new String[args.length+1];
         if(applicationName!=null && !applicationName.isEmpty()){
             _args[0] = applicationName;
+            setApplicationName(applicationName);
         }else{
             _args[0] = applicationName();
         }
@@ -9924,18 +9918,58 @@ class QCoreApplication___ extends QCoreApplication {
                 throw new io.qt.QThreadAffinityException("Must not call QCoreApplication.shutdown() from outside main thread.", null, app.thread(), currentThread);
             if(app.thread().loopLevel()>0)
                 throw new IllegalStateException("Must not call QCoreApplication.shutdown() in event loop.");
-            if(app instanceof io.qt.widgets.QApplication) {
-                for(io.qt.widgets.QWidget widget : new java.util.ArrayList<>(io.qt.widgets.QApplication.topLevelWidgets())) {
-                    if(widget!=null && !widget.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(widget)) {
-                        widget.dispose();
+            System.gc();
+            System.runFinalization();
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
+            processEvents();    // process quit
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
+            if(app instanceof io.qt.gui.QGuiApplication) {
+                boolean deleted = false;
+                if(app instanceof io.qt.widgets.QApplication) {
+                    for(io.qt.widgets.QWidget widget : new java.util.ArrayList<>(io.qt.widgets.QApplication.topLevelWidgets())) {
+                        if(widget!=null && !widget.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(widget)) {
+                            widget.dispose();
+                            deleted = true;
+                        }
+                    }
+                    // second chance
+                    for(io.qt.widgets.QWidget widget : new java.util.ArrayList<>(io.qt.widgets.QApplication.topLevelWidgets())) {
+                        if(widget!=null && !widget.isDisposed()) {
+                            if(!QtJambi_LibraryUtilities.internal.isJavaOwnership(widget))
+                                QLogging.qWarning("QCoreApplication.shutdown() called before closing all widgets. Deleting widget %1$s [\"%2$s\"] (%3$s).", widget.objectName(), widget.windowTitle(), widget.metaObject().className());
+                            widget.dispose();
+                            deleted = true;
+                        }
                     }
                 }
-            }
-            if(app instanceof io.qt.gui.QGuiApplication) {
+                
                 for(io.qt.gui.QWindow window : new java.util.ArrayList<>(io.qt.gui.QGuiApplication.topLevelWindows())) {
-                    if(window!=null && !window.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(window) && currentThread==window.thread()) {
-                        window.dispose();
+                    if(window!=null && !window.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(window)) {
+                        if(currentThread==window.thread())
+                            window.dispose();
+                        else
+                            window.disposeLater();
+                        deleted = true;
                     }
+                }
+                // second chance
+                for(io.qt.gui.QWindow window : new java.util.ArrayList<>(io.qt.gui.QGuiApplication.topLevelWindows())) {
+                    if(window!=null && !window.isDisposed()) {
+                        if(!QtJambi_LibraryUtilities.internal.isJavaOwnership(window))
+                            QLogging.qWarning("QCoreApplication.shutdown() called before closing all windows. Deleting window %1$s [\"%2$s\"] (%3$s).", window.objectName(), window.title(), window.metaObject().className());
+                        if(currentThread==window.thread())
+                            window.dispose();
+                        else
+                            window.disposeLater();
+                        deleted = true;
+                    }
+                }
+                if(deleted){
+                    System.gc();
+                    System.runFinalization();
+                    QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
+                    processEvents();    // process quit
+                    QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
                 }
             }
             app.dispose();
@@ -9946,8 +9980,8 @@ class QCoreApplication___ extends QCoreApplication {
             processEvents();    // process quit
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
         }
-        if (instance() != null)    // this should be a QtJambi qWarning()
-            java.util.logging.Logger.getLogger("io.qt.core").log(java.util.logging.Level.WARNING, "WARNING: QCoreApplication.shutdown() QCoreApplication.instance()!=null");
+        if (instance() != null)
+            QLogging.qWarning("Failed to delete QCoreApplication instance.");
         System.gc();
         System.runFinalization();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -10058,7 +10092,7 @@ class autoclosedelete {
 
 class QDebug___ extends QDebug {
     
-/**
+    /**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
      */
     @io.qt.QtUninvokable
@@ -10482,7 +10516,8 @@ class QTextStream___ extends QTextStream {
         StringDevice(String string, io.qt.core.QIODevice.OpenMode openMode) {
             super();
             this.string = string;
-            this.open(openMode);
+            openMode.set(QIODevice.OpenModeFlag.Text);
+            this.setOpenMode(openMode);
         }
 
         private final String string;
@@ -10524,17 +10559,388 @@ class QTextStream___ extends QTextStream {
 
         @Override
         public boolean isSequential() {
-            return true;
+            return this.openMode().isSet(QIODevice.OpenModeFlag.WriteOnly);
         }
 
         @Override
         public boolean seek(long pos) {
             if(pos==0) {
+                setOpenMode(QIODevice.OpenModeFlag.ReadOnly, QIODevice.OpenModeFlag.Text);
                 cursor = 0;
             }
             return super.seek(pos);
         }
     }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(java.lang.String s){
+        return writeString(s);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(double v){
+        return writeDouble(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(byte v){
+        return writeByte(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(io.qt.core.QByteArray v){
+        return writeBytes(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(char v){
+        return writeChar(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(float v){
+        return writeFloat(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(int v){
+        return writeInt(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(long v){
+        return writeLong(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QTextStream append(short v){
+        return writeShort(v);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream endl(){
+        endl(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void endl(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream flush(){
+        flush(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void flush(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream reset(){
+        reset(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void reset(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream bin(){
+        bin(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void bin(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream oct(){
+        oct(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void oct(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream hex(){
+        hex(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void hex(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream dec(){
+        dec(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void dec(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream showbase(){
+        showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void showbase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream forcesign(){
+        forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void forcesign(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream forcepoint(){
+        forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void forcepoint(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream noshowbase(){
+        noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noshowbase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream noforcesign(){
+        noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noforcesign(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream noforcepoint(){
+        noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noforcepoint(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream uppercasebase(){
+        uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void uppercasebase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream uppercasedigits(){
+        uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void uppercasedigits(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream lowercasebase(){
+        lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void lowercasebase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream lowercasedigits(){
+        lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void lowercasedigits(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream fixed(){
+        fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void fixed(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream scientific(){
+        scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void scientific(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream left(){
+        left(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void left(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream right(){
+        right(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void right(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream center(){
+        center(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void center(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream bom(){
+        bom(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void bom(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream ws(){
+        ws(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void ws(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream qSetFieldWidth(int width){
+        setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setFieldWidth(long __this__nativeId, int width);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream qSetRealNumberPrecision(int precision){
+        setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setRealNumberPrecision(long __this__nativeId, int precision);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QTextStream qSetPadChar(char ch){
+        setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setPadChar(long __this__nativeId, char ch);
+    
 }// class
 
 class QBitArray___ extends QBitArray {
@@ -11003,6 +11409,277 @@ class QByteArrayView___ extends QByteArray {
     
     private Runnable purgeTask;
     
+    @io.qt.QtUninvokable
+    public final int compare(io.qt.core.QByteArray a){
+    	return compare(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(io.qt.core.QByteArray a, io.qt.core.Qt.CaseSensitivity cs){
+    	return compare(new io.qt.core.QByteArrayView(a), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(byte[] a){
+    	return compare(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(byte[] a, io.qt.core.Qt.CaseSensitivity cs){
+    	return compare(new io.qt.core.QByteArrayView(a), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(java.nio.ByteBuffer a){
+    	return compare(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(java.nio.ByteBuffer a, io.qt.core.Qt.CaseSensitivity cs){
+    	return compare(new io.qt.core.QByteArrayView(a), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(String a){
+    	return compare(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(String a, io.qt.core.Qt.CaseSensitivity cs){
+    	return compare(new io.qt.core.QByteArrayView(a), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean contains(io.qt.core.QByteArray a){
+        return contains(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean contains(byte[] a){
+        return contains(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean contains(String a){
+        return contains(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean contains(java.nio.ByteBuffer a){
+        return contains(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(io.qt.core.QByteArray a){
+        return endsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(byte[] a){
+        return endsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(String a){
+        return endsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(java.nio.ByteBuffer a){
+        return endsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(io.qt.core.QByteArray a){
+        return startsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(byte[] a){
+        return startsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(String a){
+        return startsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(java.nio.ByteBuffer a){
+        return startsWith(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(io.qt.core.QByteArray a){
+        return count(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(byte[] a){
+        return count(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(String a){
+        return count(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(java.nio.ByteBuffer a){
+        return count(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(io.qt.core.QByteArray a){
+        return indexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(byte[] a){
+        return indexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(String a){
+        return indexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(java.nio.ByteBuffer a){
+        return indexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(io.qt.core.QByteArray a, long from){
+        return indexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(byte[] a, long from){
+        return indexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(String a, long from){
+        return indexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(java.nio.ByteBuffer a, long from){
+        return indexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(io.qt.core.QByteArray a){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(byte[] a){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(String a){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(java.nio.ByteBuffer a){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(io.qt.core.QByteArray a, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(byte[] a, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(String a, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(java.nio.ByteBuffer a, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+    }
+}// class
+
+class QStringConverter___{
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(io.qt.core.QByteArray data){
+        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data){
+        return encodingForData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data, char expectedFirstCharacter){
+        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(byte[] data){
+        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data){
+        return encodingForData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
+        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(String data){
+        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data){
+        return encodingForData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
+        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
+        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
+        return encodingForData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
+        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    }
+    
+}// class
+
+class QUuid_63__{
+    
+    public static io.qt.core.QUuid fromRfc4122(io.qt.core.QByteArray data){
+        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static io.qt.core.QUuid fromRfc4122(byte[] data){
+        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static io.qt.core.QUuid fromRfc4122(String data){
+        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static io.qt.core.QUuid fromRfc4122(java.nio.ByteBuffer data){
+        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    }
+    
 }// class
 
 class QIODevice_prefix__ extends QIODevice {
@@ -11010,6 +11687,10 @@ class QIODevice_prefix__ extends QIODevice {
         
         public static QIODevice fromInputStream(java.io.InputStream stream) {
             return new QIODevice() {
+                {
+                    setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
+                }
+                
                 @Override
                 public boolean atEnd() {
                     return super.atEnd();
@@ -11119,6 +11800,10 @@ class QIODevice_infix__ {
         
         public static QIODevice fromOutputStream(java.io.OutputStream stream) {
             return new QIODevice() {
+                {
+                    setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
+                }
+                
                 @Override
                 public boolean atEnd() {
                     return super.atEnd();
@@ -11535,6 +12220,90 @@ class QtFuture_6_1__ {
         promise.reportStarted();
         promise.reportException(exception);
         promise.reportFinished();
+        return promise.future();
+    }
+}// class
+
+class QtFuture_6_3__ {
+    @io.qt.QtUninvokable
+    public static QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
+        if(futures==null || futures.length==0)
+            return makeReadyFuture(java.util.Collections.emptyList());
+        QPromise<QFuture<?>> promise = new QPromise<>();
+        promise.start();
+        java.util.concurrent.atomic.AtomicBoolean ab = new java.util.concurrent.atomic.AtomicBoolean();
+        for (QFuture<?> qFuture : futures) {
+            qFuture.then(f->{
+                if(ab.compareAndExchange(false, true)) {
+                    promise.addResult(f);
+                    promise.finish();
+                }
+            });
+        }
+        return promise.future();
+    }
+    
+    @io.qt.QtUninvokable
+    public static QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
+        if(futures==null || futures.size()==0)
+            return makeReadyFuture(java.util.Collections.emptyList());
+        QPromise<QFuture<?>> promise = new QPromise<>();
+        promise.start();
+        java.util.concurrent.atomic.AtomicBoolean ab = new java.util.concurrent.atomic.AtomicBoolean();
+        for (QFuture<?> qFuture : futures) {
+            qFuture.then(f->{
+                if(ab.compareAndExchange(false, true)) {
+                    promise.addResult(f);
+                    promise.finish();
+                }
+            });
+        }
+        return promise.future();
+    }
+    
+    @io.qt.QtUninvokable
+    public static QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
+        if(futures==null || futures.length==0)
+            return makeReadyFuture(java.util.Collections.emptyList());
+        QPromise<QList<QFuture<?>>> promise = new QPromise<>();
+        promise.start();
+        QList<QFuture<?>> list = new QList<>(QMetaType.Type.QVariant);
+        list.resize(futures.length);
+        java.util.concurrent.atomic.AtomicInteger ai = new java.util.concurrent.atomic.AtomicInteger(futures.length);
+        int i=0;
+        for (QFuture<?> qFuture : futures) {
+            int _i = i++;
+            qFuture.then(f->{
+                list.set(_i, f);
+                if(ai.incrementAndGet()==0) {
+                    promise.addResult(list);
+                    promise.finish();
+                }
+            });
+        }
+        return promise.future();
+    }
+    
+    @io.qt.QtUninvokable
+    public static QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
+        if(futures==null || futures.size()==0)
+            return makeReadyFuture(java.util.Collections.emptyList());
+        QPromise<QList<QFuture<?>>> promise = new QPromise<>();
+        promise.start();
+        QList<QFuture<?>> list = new QList<>(QMetaType.Type.QVariant);
+        list.resize(futures.size());
+        java.util.concurrent.atomic.AtomicInteger ai = new java.util.concurrent.atomic.AtomicInteger(futures.size());
+        int i=0;
+        for (QFuture<?> qFuture : futures) {
+            int _i = i++;
+            qFuture.then(f->{
+                list.set(_i, f);
+                if(ai.incrementAndGet()==0) {
+                    promise.addResult(list);
+                    promise.finish();
+                }
+            });
+        }
         return promise.future();
     }
 }// class
@@ -12840,6 +13609,20 @@ class Qt___ extends Qt {
     
 }// class
 
+class Qt_56__ extends Qt {
+    
+    public native static void qSetGlobalQHashSeed(int newSeed);
+    public native static int qGlobalQHashSeed();
+    
+}// class
+
+class Qt_66__ extends Qt {
+    @Deprecated
+    public native static void qSetGlobalQHashSeed(int newSeed);
+    @Deprecated
+    public native static int qGlobalQHashSeed();
+}// class
+
 class QCollatorSortKey___{
     
     @io.qt.QtUninvokable
@@ -12927,6 +13710,18 @@ class QCborStreamReader_java__{
     
 }// class
 
+class QFactoryLoader_62_{
+    private QJsonValue getIID(int index){
+        return metaData().get(index).value("IID");
+    }
+}// class
+
+class QFactoryLoader_63_{
+    private QJsonValue getIID(int index){
+        return metaData().get(index).toCbor().value(QtPluginMetaDataKeys.IID.value()).toJsonValue();
+    }
+}// class
+
 class QFactoryLoader__{
 
     public static void registerFactory(Class<? extends QtObjectInterface> factoryClass){
@@ -12948,7 +13743,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method2<P, String, R> create, String key) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -12973,7 +13768,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method3<P, String, A, R> create, String key, A a) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -12998,7 +13793,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method4<P, String, A, B, R> create, String key, A a, B b) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13023,7 +13818,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method5<P, String, A, B, C, R> create, String key, A a, B b, C c) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13048,7 +13843,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method6<P, String, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13073,7 +13868,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method7<P, String, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13098,7 +13893,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method8<P, String, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13123,7 +13918,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method9<P, String, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13148,7 +13943,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method1<P, R> create, String key) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13171,7 +13966,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method2<P, A, R> create, String key, A a) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13196,7 +13991,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method3<P, A, B, R> create, String key, A a, B b) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13221,7 +14016,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method4<P, A, B, C, R> create, String key, A a, B b, C c) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13246,7 +14041,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method5<P, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13271,7 +14066,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method6<P, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13296,7 +14091,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method7<P, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13321,7 +14116,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method8<P, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13346,7 +14141,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface, A, B, C, D, E, F, G, H, R> R loadPlugin(QMetaObject.Method9<P, A, B, C, D, E, F, G, H, R> create, String key, A a, B b, C c, D d, E e, F f, G g, H h) {
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
@@ -13375,7 +14170,7 @@ class QFactoryLoader__{
     public <P extends QtObjectInterface> P loadPlugin(Class<P> pluginClass, String key, Object... args){
         int index = indexOf(key);
         if (index != -1) {
-            QJsonValue iidValue = metaData().get(index).value("IID");
+            QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
                 Class<? extends QtObjectInterface> factoryClass = io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid);
@@ -14132,5 +14927,94 @@ class QFunctionPointer__{
     
     @io.qt.QtUninvokable
     static native <R> R invoke_native(io.qt.QtObjectInterface function, Object returnType, Object[] arguments);
+}// class
+
+class QResource__{
+    
+    /**
+     * Adds <code>path</code> to the set of classpaths in which Qt Jambi should search for resources. 
+     * Resources can be accessed using the &quot;classpath:&quot; scheme.
+     */
+    public static void addClassPath(String path) {
+        io.qt.internal.QtJambiResources.addSearchPath(path);
+    }
+    
+    /**
+     * Removes <code>path</code> from the set of classpaths in which Qt Jambi searches
+     * for resources.
+     */
+    public static void removeClassPath(String path) {
+        io.qt.internal.QtJambiResources.removeSearchPath(path);
+    }
+    
+}// class
+
+class QCryptographicHash___{
+    @io.qt.QtUninvokable
+    public final void addData(java.nio.ByteBuffer data){
+        addData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static io.qt.core.QByteArray hash(java.nio.ByteBuffer data, io.qt.core.QCryptographicHash.Algorithm method){
+        return hash(new io.qt.core.QByteArrayView(data), method);
+    }
+    
+    @io.qt.QtUninvokable
+    public final void addData(io.qt.core.QByteArray data){
+        addData(new io.qt.core.QByteArrayView(data));
+    }
+    
+    public static io.qt.core.QByteArray hash(io.qt.core.QByteArray data, io.qt.core.QCryptographicHash.Algorithm method){
+        return hash(new io.qt.core.QByteArrayView(data), method);
+    }
+}// class
+
+class QDataStream___{
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(java.lang.String s){
+        return writeString(s);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(double v){
+        return writeDouble(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(byte v){
+        return writeByte(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(byte[] v){
+        writeBytes(v);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(char v){
+        return writeChar(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(float v){
+        return writeFloat(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(int v){
+        return writeInt(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(long v){
+        return writeLong(v);
+    }
+    
+    @io.qt.QtUninvokable
+    public final QDataStream append(short v){
+        return writeShort(v);
+    }
 }// class
 

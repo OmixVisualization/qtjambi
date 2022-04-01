@@ -1,16 +1,43 @@
-QTJAMBILIB = qtjambiplugin
-TARGET = $$QTJAMBILIB
+TARGET = qtjambiplugin
 
 VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
-CONFIG += skip_target_version_ext
+CONFIG += plugin unversioned_libname skip_target_version_ext
 
-include(../qtjambi/qtjambi_include.pri)
+TEMPLATE = lib
+DESTDIR = ../lib
+DLLDESTDIR = ../bin
+
+CONFIG(debug, debug|release) {
+    win32:{
+        TARGET = $$member(TARGET, 0)d
+    }else{
+        macx:{
+            TARGET = $$member(TARGET, 0)_debug
+        }else{
+            TARGET = $$member(TARGET, 0)_debug
+        }
+    }
+}
 
 QT -= gui widgets
 
+contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
+    # Qt was configued with both debug and release libs
+    CONFIG += debug_and_release build_all
+}
+
 macx:{
-    QMAKE_EXTENSION_SHLIB = dylib
+    contains(QT_CONFIG, x86):CONFIG += x86
+    contains(QT_CONFIG, ppc):CONFIG += ppc
+    contains(QT_CONFIG, x86_64):CONFIG += x86_64
+    contains(QT_CONFIG, ppc64):CONFIG += ppc64
+    contains(QT_CONFIG, arm64):CONFIG += arm64
+    CONFIG -= precompile_header
+    QMAKE_CXXFLAGS += -fpermissive
+    QMAKE_CXXFLAGS += -Wc++14-extensions
+    QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
+
     QMAKE_RPATHDIR =  @loader_path/../../lib
     QMAKE_RPATHDIR += @loader_path/../../../lib
     QMAKE_RPATHDIR += @loader_path/../../../../lib
@@ -24,9 +51,14 @@ macx:{
     }
 }
 
+linux-g++* | freebsd-g++* | win32-g++* {
+    QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+    QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+}
+
 HEADERS += 
 SOURCES += plugin.cpp
 
 DEFINES += QT_NO_VERSION_TAGGING
-
-msvc:QMAKE_CXXFLAGS += /bigobj

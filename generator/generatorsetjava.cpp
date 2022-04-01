@@ -235,6 +235,7 @@ void GeneratorSetJava::generate() {
     if (!no_metainfo) {
         metainfo = new MetaInfoGenerator(priGenerator);
         metainfo->setQtJambiDebugTools(qtjambi_debug_tools);
+        metainfo->setStaticLibraries(m_staticLibraries);
         if (!cppOutDir.isNull())
             metainfo->setCppOutputDirectory(cppOutDir);
         if (!javaOutDir.isNull())

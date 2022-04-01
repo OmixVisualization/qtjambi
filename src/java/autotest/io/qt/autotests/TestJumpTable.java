@@ -58,7 +58,7 @@ import io.qt.core.QIODevice;
 import io.qt.core.QRect;
 import io.qt.core.QTextStream;
 
-public class TestJumpTable extends QApplicationTest {
+public class TestJumpTable extends ApplicationInitializer {
     @Test
     public void testMemberFunctions() {
         QRect r = new QRect(1, 2, 3, 4);

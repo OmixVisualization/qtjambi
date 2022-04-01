@@ -32,6 +32,7 @@ package io.qt.autotests;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
+import io.qt.core.QResource;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.widgets.QApplication;
@@ -46,10 +47,9 @@ public class TestWidgetsWithoutShutdown {
     @Test
     public void test() {
     	{
-	    	System.setProperty("io.qt.log-messages", "ALL");
-		    io.qt.QtResources.addSearchPath(".");
+		    QResource.addClassPath(".");
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
-		    QApplication.initialize(new String[]{"arg1", "arg2", "arg3"});
+		    QApplication.initialize(new String[0]);
 		    QWidget window = new QWidget();
 			window.setWindowTitle( "Enter your age" );
 			QCheckBox checkbox = new QCheckBox("Check &Box");

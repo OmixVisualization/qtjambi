@@ -265,10 +265,13 @@ void clear_supertypes_at_shutdown(JNIEnv *env){
     {
         QWriteLocker locker(gSuperTypeInfosLock());
         Q_UNUSED(locker)
-        superTypeInfosMap.swap(*gSuperTypeInfosMap);
+        if(!gSuperTypeInfosMap.isDestroyed())
+            superTypeInfosMap.swap(*gSuperTypeInfosMap);
     }
-    for(SuperTypeInfos& info : superTypeInfosMap){
-        info.m_interfaceList.clear(env);
+    if(env){
+        for(SuperTypeInfos& info : superTypeInfosMap){
+            info.m_interfaceList.clear(env);
+        }
     }
 }
 

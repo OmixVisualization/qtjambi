@@ -73,6 +73,10 @@ class Handler {
             m_importInputDirectoryList = importInputDirectoryList;
         }
 
+        void setTypeystemsDirectory(const QString &typeystem_directory) {
+            m_typeystem_directory = typeystem_directory;
+        }
+
     private:
         bool convertBoolean(const QString &, const QString &, bool);
 
@@ -120,6 +124,7 @@ class Handler {
         QString m_defaultPackage;
         QString m_defaultSuperclass;
         QStringList m_importInputDirectoryList;
+        QString m_typeystem_directory;
         TypeEntry::CodeGeneration m_generate;
         QList<NamespacePrefix> m_namespacePrefixes;
         QMultiMap<TypeSystemTypeEntry*,QString> m_requiredModules;

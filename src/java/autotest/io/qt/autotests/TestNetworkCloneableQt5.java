@@ -51,7 +51,7 @@ import io.qt.internal.*;
 
 import java.util.*;
 
-public class TestNetworkCloneableQt5 extends QApplicationTest {
+public class TestNetworkCloneableQt5 extends ApplicationInitializer {
 	@Test
 	@Deprecated
 	public void run_clone_QNetworkConfiguration() {

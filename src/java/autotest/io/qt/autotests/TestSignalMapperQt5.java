@@ -34,6 +34,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.SenderQObject;
@@ -46,7 +47,12 @@ import io.qt.core.QObject.Signal2;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.widgets.QWidget;
 
-public class TestSignalMapperQt5 extends QApplicationTest {
+public class TestSignalMapperQt5 extends ApplicationInitializer {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitializeWithWidgets();
+	}
 
     @Before
     public void setUp() {

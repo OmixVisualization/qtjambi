@@ -7,10 +7,6 @@
     <rejection class="JavaGenerator" function-name="retrieveModifications" />
     <rejection class="JavaGenerator" function-name="setupForFunction" />
 
-    <object-type name="JuicDataGenerator">
-        <include file-name="juicdatagenerator.h" location="local" />
-    </object-type>
-
     <object-type name="MetaInfoGenerator">
         <include file-name="metainfogenerator.h" location="local" />
     </object-type>

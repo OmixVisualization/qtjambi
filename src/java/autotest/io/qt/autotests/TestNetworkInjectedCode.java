@@ -48,7 +48,7 @@ import io.qt.network.QTcpSocket;
 import io.qt.network.QTimeoutException;
 import io.qt.network.QUdpSocket;
 
-public class TestNetworkInjectedCode extends QApplicationTest {
+public class TestNetworkInjectedCode extends ApplicationInitializer {
     @Test
     public void testAbstractSocketProxyAuthenticationRequiredFromJavaToCpp()
     {
@@ -186,7 +186,7 @@ public class TestNetworkInjectedCode extends QApplicationTest {
         // Now: 62.116.130.8 (since 22-08-2015)
         // Now: 52.18.144.254 (since ???)
         assertEquals("52.18.144.254", helloObject.fromFirstSlot);
-        Utils.println(2, "RESULT: " + helloObject.fromFirstSlot + " for " + "qt.io");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "RESULT: " + helloObject.fromFirstSlot + " for " + "qt.io");
     }
 
     @Test
@@ -211,7 +211,7 @@ public class TestNetworkInjectedCode extends QApplicationTest {
         // Now: 62.116.130.8 (since 22-08-2015)
         // Now: 52.18.144.254 (since ???)
         assertEquals("52.18.144.254", helloObject.fromFirstSlot);
-        Utils.println(2, "RESULT: " + helloObject.fromFirstSlot + " for " + "qt.io");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "RESULT: " + helloObject.fromFirstSlot + " for " + "qt.io");
     }
 
     @Test
@@ -232,7 +232,7 @@ public class TestNetworkInjectedCode extends QApplicationTest {
         }
 
         assertEquals("52.18.144.254", helloObject.fromSecondSlot);
-        Utils.println(2, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
     }
     
     @Test
@@ -253,7 +253,7 @@ public class TestNetworkInjectedCode extends QApplicationTest {
         }
 
         assertEquals("52.18.144.254", helloObject.fromSecondSlot);
-        Utils.println(2, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
     }
 
     @Test

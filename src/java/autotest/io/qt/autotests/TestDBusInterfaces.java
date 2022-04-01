@@ -11,7 +11,7 @@ import io.qt.internal.QtJambiInternal;
 import io.qt.dbus.*;
 import io.qt.autotests.generated.MetaObjectQtMetaCast;
 
-public class TestDBusInterfaces extends QApplicationTest {
+public class TestDBusInterfaces extends ApplicationInitializer {
 	
 	static class ContextualObject extends QObject implements QDBusContext{
 	}

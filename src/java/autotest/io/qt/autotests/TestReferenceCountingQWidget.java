@@ -46,11 +46,11 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestReferenceCountingQWidget extends QApplicationTest{
+public class TestReferenceCountingQWidget extends ApplicationInitializer{
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     }
 	
@@ -62,7 +62,7 @@ public class TestReferenceCountingQWidget extends QApplicationTest{
 	
 	@Test public void testActionsNull() {
         QWidget w = new QWidget();
-        w.addAction(null);
+        w.addAction((QAction)null);
         w.addActions(null);
         w.removeAction(null);
         assertEquals(0, w.actions().size());

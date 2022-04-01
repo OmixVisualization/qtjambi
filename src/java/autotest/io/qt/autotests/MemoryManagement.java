@@ -66,7 +66,7 @@ import io.qt.widgets.QApplication;
 // class and pass in the abstract type as interface or we could implement
 // the method call in that interface via reflection.
 //@Ignore("abstract and base Java class")
-public abstract class MemoryManagement extends QApplicationTest{
+public abstract class MemoryManagement extends ApplicationInitializer{
     private ReferenceQueue<Object> weakReferenceQueue = new ReferenceQueue<Object>();
     private ReferenceQueue<Object> phantomReferenceQueue = new ReferenceQueue<Object>();
     private Map<WeakReference<Object>,Integer> weakReferenceMap = new HashMap<WeakReference<Object>,Integer>();
@@ -88,7 +88,7 @@ public abstract class MemoryManagement extends QApplicationTest{
     @BeforeClass
     public static void testInitialize() throws Exception {
         org.junit.Assume.assumeTrue("These tests can only run in debug mode or when \"QtJambi\" is compiled with DEFINES += QTJAMBI_DEBUG_TOOLS", QtJambiDebugTools.hasDebugTools());
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitialize();
     }
 
     @Before
@@ -125,13 +125,16 @@ public abstract class MemoryManagement extends QApplicationTest{
 
         Integer id = getIdNext();
 
-        if(Utils.isDebugLevel(4)) {
-            String className = o.getClass().getName();
-            String shortClassName = className;
-            int i = shortClassName.lastIndexOf('.');
-            if(i > 0)
-                shortClassName = shortClassName.substring(i + 1);
-            Utils.println(4, shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
+        {
+        	Integer _id = id;
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, ()->{
+            	String className = o.getClass().getName();
+                String shortClassName = className;
+                int i = shortClassName.lastIndexOf('.');
+                if(i > 0)
+                    shortClassName = shortClassName.substring(i + 1);
+            	return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+            });
         }
         WeakReference<Object> wr = new WeakReference<Object>(o, weakReferenceQueue);
         PhantomReference<Object> pr = new PhantomReference<Object>(o, phantomReferenceQueue);
@@ -732,14 +735,14 @@ public abstract class MemoryManagement extends QApplicationTest{
     // must be specially handled to avoid memory leaks.
     public void nativeDelete_NotCreatedInJava_CppOwnership() {
     	WeakReference<QtObject> ref;
-    	Utils.println(15, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK1");
+    	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK1");
         resetAll();
 
-        Utils.println(15, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK2");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK2");
         {
             ref = createInNativeDisableGCAndDeleteInNative();
         }
-        Utils.println(15, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK3");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "nativeDelete_NotCreatedInJava_CppOwnership(): MARK3");
 
         try {
 	        if(isQObject()) {
@@ -785,9 +788,9 @@ public abstract class MemoryManagement extends QApplicationTest{
     }
 
     private WeakReference<QtObject> createInNativeDisableGCAndDeleteInNative() {
-		Utils.println(15, "createInNativeDisableGCAndDeleteInNative() MARK1 class=" + getClass().getName());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "createInNativeDisableGCAndDeleteInNative() MARK1 class=" + getClass().getName());
 		WeakReference<QtObject> ref = createInNativeDisableGCAndDeleteInNative_internal();
-		Utils.println(15, "createInNativeDisableGCAndDeleteInNative() MARK2");
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "createInNativeDisableGCAndDeleteInNative() MARK2");
         test(className(), ref, false, 
         		0, //cleanCallerCount
         		0, //destructorFunctionCalledCount
@@ -800,7 +803,7 @@ public abstract class MemoryManagement extends QApplicationTest{
         		0, //shellDestroyedCount
         		0 //pointerContainerDestroyedCount
     		);
-        Utils.println(15, "createInNativeDisableGCAndDeleteInNative() MARK3");
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "createInNativeDisableGCAndDeleteInNative() MARK3");
 
         deleteLastInstance();
         test(className(), ref, false, 
@@ -841,7 +844,7 @@ public abstract class MemoryManagement extends QApplicationTest{
         while(loop) {
             try {
                 if (needsEventProcessing()) {
-                    Utils.println(5, debugPrefix + ": QApplication.processEvents()");
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": QApplication.processEvents()");
                     QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
                     QApplication.processEvents();
                 }
@@ -850,7 +853,7 @@ public abstract class MemoryManagement extends QApplicationTest{
                 System.runFinalization();
 
                 if (needsEventProcessing()) {
-                    Utils.println(5, debugPrefix + ": QApplication.processEvents()");
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": QApplication.processEvents()");
                     QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
                     QApplication.processEvents();
                 }
@@ -861,7 +864,7 @@ public abstract class MemoryManagement extends QApplicationTest{
                     synchronized(MemoryManagement.class) {
                         tmpId = weakReferenceMap.remove(thisWr);
                     }
-                    Utils.println(5, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
                 Reference<? extends Object> thisPr;
                 while((thisPr = phantomReferenceQueue.poll()) != null) {
@@ -869,7 +872,7 @@ public abstract class MemoryManagement extends QApplicationTest{
                     synchronized(MemoryManagement.class) {
                         tmpId = phantomReferenceMap.remove(thisPr);
                     }
-                    Utils.println(5, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
 
                 if(!obtainGoal) {	// Try to obtainGoal
@@ -910,7 +913,7 @@ public abstract class MemoryManagement extends QApplicationTest{
                         excessTime = System.currentTimeMillis(); // reset this for excessLimitMillis
                     }
 
-                    Utils.println(5, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
                         "; currentFinalizedCount=" + currentFinalizedCount +
                         "; currentLinkConstructedCount=" + currentLinkConstructedCount +
                         "; currentLinkDestroyedCount=" + currentLinkDestroyedCount +
@@ -930,7 +933,7 @@ public abstract class MemoryManagement extends QApplicationTest{
                     elapsed = System.currentTimeMillis() - startTime;
                     loop = elapsed < timeLimitMillis;
                 }
-                Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtainGoal="+obtainGoal);
+                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtainGoal="+obtainGoal);
 
                 if(loop)
                     Thread.sleep(10);
@@ -940,13 +943,8 @@ public abstract class MemoryManagement extends QApplicationTest{
         }
 
         // Report on status
-        if(Utils.isDebugLevel(4)) {
-            // Print array format [1, 2, 3]
-            synchronized(MemoryManagement.class) {
-                Utils.println(4, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
-                        "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
-            }
-        }
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
 
         return obtainGoal;
     }

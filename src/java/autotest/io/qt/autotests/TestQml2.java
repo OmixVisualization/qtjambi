@@ -48,7 +48,7 @@ import io.qt.qml.QQmlListProperty;
 import io.qt.qml.QtQml;
 import io.qt.quick.QQuickItem;
 
-public class TestQml2 extends QApplicationTest{
+public class TestQml2 extends ApplicationInitializer{
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -64,7 +64,7 @@ public class TestQml2 extends QApplicationTest{
 			QtUtilities.loadQtLibrary("QuickControls2");
 		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickParticles"))
 			QtUtilities.loadQtLibrary("QuickParticles");
-		QApplicationTest.testInitialize();
+		ApplicationInitializer.testInitializeWithGui();
 	}
 	
 	@QtClassInfo(key="DefaultProperty", value="testObjects")

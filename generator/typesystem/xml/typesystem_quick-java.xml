@@ -772,7 +772,7 @@
         <extra-includes>
             <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
         </extra-includes>
-        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface">
+        <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
                 <conversion-rule class="native">

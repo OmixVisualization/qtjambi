@@ -34,7 +34,7 @@ import org.junit.Test;
 import io.qt.InternalAccess;
 import io.qt.autotests.generated.General;
 
-public class TestRetroHelper extends QApplicationTest {
+public class TestRetroHelper extends ApplicationInitializer {
 	
 	private void testCallerClassImpl() {
 		Assert.assertEquals(TestRetroHelper.class, General.internalAccess.callerClassProvider().get());

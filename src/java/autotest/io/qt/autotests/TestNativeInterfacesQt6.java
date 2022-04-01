@@ -31,6 +31,7 @@ package io.qt.autotests;
 import static org.junit.Assert.*;
 import static org.junit.Assert.fail;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
@@ -51,7 +52,13 @@ import io.qt.gui.nativeinterface.QXcbWindow;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.widgets.QApplication;
 
-public class TestNativeInterfacesQt6 extends QApplicationTest {
+public class TestNativeInterfacesQt6 extends ApplicationInitializer {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitializeWithWidgets();
+	}
+	
     @Test
     public void test() {
     	QOpenGLWindow window = new QOpenGLWindow();

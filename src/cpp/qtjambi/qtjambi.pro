@@ -4,9 +4,6 @@ VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
 include(qtjambi_base.pri)
 
-QTJAMBI_CPP = ../../../build/generator/out/cpp/
-include($$QTJAMBI_CPP/QtJambi/generated.pri)
-
 SOURCES += \
     qnativepointer.cpp \
     qtjambi_containeraccess.cpp \
@@ -65,7 +62,6 @@ HEADERS += \
     qtjambi_typeinfo_p.h \
     qtjambi_typetests.h \
     qtjambi_utils.h \
-    qtjambi_utils_p.h \
     qtjambifunctiontable_p.h \
     qtjambimetaobject_p.h \
     qtjambitypemanager_p.h \
@@ -94,6 +90,9 @@ HEADERS += \
     qtjambi_cast_sharedpointer_p.h \
     qtjambi_cast_enum_p.h \
     qtjambidebugtools_p.h
+
+QTJAMBI_BUILDDIR = $$PWD/../../../$$VERSION/build/
+exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/QtJambi/generated.pri)
 
 win32:CONFIG += precompile_header
 win32:PRECOMPILED_HEADER = qtjambi_core.h

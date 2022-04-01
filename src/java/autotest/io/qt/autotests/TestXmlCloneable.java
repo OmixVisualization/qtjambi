@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 import org.junit.*;
 import io.qt.internal.*;
 
-public class TestXmlCloneable extends QApplicationTest {
+public class TestXmlCloneable extends ApplicationInitializer {
     @Test
     public void run_clone_QDomAttr() {
         QDomAttr org = new QDomAttr();

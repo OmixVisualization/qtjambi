@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import io.qt.autotests.generated.QList_int;
 
-public class TestContainersQt6 extends QApplicationTest {
+public class TestContainersQt6 extends ApplicationInitializer {
     @Test
     public void run_testQList_outofbounds() {
     	QList_int list = new QList_int();

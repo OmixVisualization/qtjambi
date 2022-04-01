@@ -8,15 +8,18 @@ import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
+import io.qt.core.QDir;
 import io.qt.core.QFile;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
-import io.qt.core.QThread;
+import io.qt.core.QTextStream;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
-import io.qt.dbus.*;
+import io.qt.dbus.QDBusConnection;
+import io.qt.dbus.QDBusMetaType;
 import io.qt.gui.QColor;
 import io.qt.widgets.QApplication;
 
@@ -72,6 +75,14 @@ public class QtDBusPong {
 				throw new RuntimeException("Cannot connect to the D-Bus session bus: "+sb.lastError().message());
 			System.out.println("QtDBusPong initializing...");
 			QCoreApplication.initialize(args);
+			System.out.println("Writing PID "+QCoreApplication.applicationPid()+" to file "+new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+			QFile libFile = new QFile(new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+			if(libFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
+				QTextStream s = new QTextStream(libFile);
+				s.append(""+QCoreApplication.applicationPid());
+				s.dispose();
+				libFile.close();
+			}
 			try {
 				System.out.println("QtDBusPong register service...");
 				if (!sb.registerService(PONG_SERVICE))
@@ -149,7 +160,6 @@ public class QtDBusPong {
 					}
 					file.dispose();
 				}
-				System.out.println("QtDBusPong waiting...");
 				QTimer.singleShot(100000, QCoreApplication::quit);
 				Thread thread = new Thread(()->{
 					try {
@@ -163,12 +173,13 @@ public class QtDBusPong {
 				});
 				thread.start();
 				try{
+					System.out.println("QtDBusPong waiting...");
 					QCoreApplication.exec();
 				}finally {
 					thread.interrupt();
 				}
-				System.out.println("QtDBusPong shutting down...");
 			}finally {
+				System.out.println("QtDBusPong shutting down...");
 				QCoreApplication.shutdown();
 			}
 		} catch (Exception e) {

@@ -1,31 +1,44 @@
-QTJAMBILIB = jarimport
-TARGET = $$QTJAMBILIB
+TARGET = jarimport
 
 VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 
-CONFIG += skip_target_version_ext
+CONFIG += plugin unversioned_libname skip_target_version_ext
 
-include(../qtjambi/qtjambi_base.pri)
+TEMPLATE = lib
+DESTDIR = ../lib
+DLLDESTDIR = ../bin
 
-win32*:{
-        CONFIG(debug, debug|release) {
-            QTJAMBI_QML_LIB_NAME = QtJambiQmld$$QT_MAJOR_VERSION
+CONFIG(debug, debug|release) {
+    win32:{
+        TARGET = $$member(TARGET, 0)d
+    }else{
+        macx:{
+            TARGET = $$member(TARGET, 0)_debug
         }else{
-            QTJAMBI_QML_LIB_NAME = QtJambiQml$$QT_MAJOR_VERSION
+            TARGET = $$member(TARGET, 0)_debug
         }
-}else{
-        CONFIG(debug, debug|release) {
-            QTJAMBI_QML_LIB_NAME = QtJambiQml_debug
-        }else{
-            QTJAMBI_QML_LIB_NAME = QtJambiQml
-        }
+    }
+}
+
+QT -= gui widgets
+
+contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
+    # Qt was configued with both debug and release libs
+    CONFIG += debug_and_release build_all
 }
 
 macx:{
-    QT -= gui widgets
-    LIBS += $$PWD/../../../build/qmake-qtjambi/lib/lib$$member(QTJAMBI_QML_LIB_NAME, 0).jnilib
+    contains(QT_CONFIG, x86):CONFIG += x86
+    contains(QT_CONFIG, ppc):CONFIG += ppc
+    contains(QT_CONFIG, x86_64):CONFIG += x86_64
+    contains(QT_CONFIG, ppc64):CONFIG += ppc64
+    contains(QT_CONFIG, arm64):CONFIG += arm64
+    CONFIG -= precompile_header
+    QMAKE_CXXFLAGS += -fpermissive
+    QMAKE_CXXFLAGS += -Wc++14-extensions
+    QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
     QMAKE_EXTENSION_SHLIB = dylib
-#    INCLUDEPATH += $$(QTDIR)/lib/QtCore.framework/Headers
+
     QMAKE_RPATHDIR =  @loader_path/../lib
     QMAKE_RPATHDIR += @loader_path/../../lib
     QMAKE_RPATHDIR += @loader_path/../../../lib
@@ -37,28 +50,27 @@ macx:{
     QMAKE_RPATHDIR += @loader_path/../../../../../../../../../lib
     QMAKE_RPATHDIR += @loader_path/../../../../../../../../../../lib
     QMAKE_RPATHDIR += @loader_path/../../../../../../../../../../../lib
-} else {
-    linux-g++*:{
-        QMAKE_RPATHDIR = $ORIGIN/../lib:$ORIGIN/../../lib:$ORIGIN/../../../lib:$ORIGIN/../../../../lib:$ORIGIN/../../../../../lib:$ORIGIN/../../../../../../lib:$ORIGIN/../../../../../../../lib:$ORIGIN/../../../../../../../../lib
+
+    greaterThan(QT_MAJOR_VERSION, 5):{
+        greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 1):{
+            QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+            DEFINES += QTJAMBI_APPLE_MULTI_ARCHS
+        }
     }
-    QT -= gui widgets
-    LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib
-    android:{
-        armeabi-v7a: LIBS += -l$$member(QTJAMBI_QML_LIB_NAME, 0)_armeabi-v7a
-        arm64-v8a: LIBS += -l$$member(QTJAMBI_QML_LIB_NAME, 0)_arm64-v8a
-        x86: LIBS += -l$$member(QTJAMBI_QML_LIB_NAME, 0)_x86
-        x86_64: LIBS += -l$$member(QTJAMBI_QML_LIB_NAME, 0)_x86_64
-    }else{
-        LIBS += -l$$QTJAMBI_QML_LIB_NAME
-    }
+}
+
+linux-g++*:{
+    QMAKE_RPATHDIR = $ORIGIN/../lib:$ORIGIN/../../lib:$ORIGIN/../../../lib:$ORIGIN/../../../../lib:$ORIGIN/../../../../../lib:$ORIGIN/../../../../../../lib:$ORIGIN/../../../../../../../lib:$ORIGIN/../../../../../../../../lib
+}
+
+linux-g++* | freebsd-g++* | win32-g++* {
+    QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+    QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 }
 
 HEADERS += 
 SOURCES += lib.cpp
 
 DEFINES += QT_NO_VERSION_TAGGING
-
-msvc:QMAKE_CXXFLAGS += /bigobj
-
-INCLUDEPATH += $$(QTDIR)/include
-INCLUDEPATH += $$(QTDIR)/include/QtCore

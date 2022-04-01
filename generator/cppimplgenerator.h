@@ -270,8 +270,6 @@ class CppImplGenerator : public CppGenerator {
         QString default_return_statement_qt(const AbstractMetaType *java_type,
                                             Generator::Option options = Generator::NoOption);
     private:
-        QString fromObject(const AbstractMetaType *java_type, const QString &var_name, bool invalidateAfterUse = false,
-                           const QString& __jni_env = "__jni_env");
         bool m_native_jump_table;
         bool m_qtjambi_debug_tools;
 

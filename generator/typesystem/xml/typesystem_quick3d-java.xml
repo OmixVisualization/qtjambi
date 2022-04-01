@@ -43,10 +43,10 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.quick3d" module="qtjambi.quick3d" default-superclass="io.qt.QtObject">
-    <required-library name="QtQuick3DUtils" optional="yes"/>
-    <required-library name="QtQuick3DAssetImport" optional="yes"/>
-    <required-library name="QtQuick3DRender" optional="yes"/>
-    <required-library name="QtShaderTools" optional="yes"/>
+    <required-library name="QtQuick3DUtils" optional="yes" until="6.2.*"/>
+    <required-library name="QtQuick3DAssetImport" optional="yes" until="6.2.*"/>
+    <required-library name="QtQuick3DRender" optional="yes" until="6.2.*"/>
+    <required-library name="QtShaderTools" optional="yes" until="6.2.*"/>
     <object-type name="QQuick3DObject">
         <modify-function signature="itemChange(QQuick3DObject::ItemChange, const QQuick3DObject::ItemChangeData &amp;)">
             <modify-argument index="2">

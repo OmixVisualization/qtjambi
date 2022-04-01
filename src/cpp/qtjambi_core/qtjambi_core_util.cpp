@@ -6,6 +6,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/QModelRoleData>
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
+#include <QtCore/QOperatingSystemVersion>
+#endif
 #include <QtCore/QVariant>
 #include <QtCore/QCalendar>
 #include <qtjambi/qtjambi_application.h>
@@ -366,6 +369,303 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDebug_setPadChar)
 {
     try{
         qtjambi_object_from_nativeId_deref<QDebug>(env, debugId) << qSetPadChar(ch);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_bin)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::bin;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_oct)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::oct;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_dec)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::dec;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_hex)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::hex;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_showbase)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::showbase;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_forcesign)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::forcesign;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_forcepoint)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::forcepoint;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_noshowbase)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::noshowbase;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_noforcesign)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::noforcesign;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_noforcepoint)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::noforcepoint;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_uppercasebase)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::uppercasebase;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_uppercasedigits)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::uppercasedigits;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_lowercasebase)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::lowercasebase;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_lowercasedigits)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::lowercasedigits;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_fixed)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::fixed;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_scientific)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::scientific;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_left)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::left;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_right)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::right;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_center)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::center;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_endl)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::endl;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_flush)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::flush;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_reset)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::reset;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_bom)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::bom;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_ws)
+(JNIEnv *env, jobject, QtJambiNativeID debugId)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << Qt::ws;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_setFieldWidth)
+(JNIEnv *env, jobject, QtJambiNativeID debugId, jint width)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << qSetFieldWidth(width);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_setRealNumberPrecision)
+(JNIEnv *env, jobject, QtJambiNativeID debugId, jint precision)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << qSetRealNumberPrecision(precision);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QTextStream_setPadChar)
+(JNIEnv *env, jobject, QtJambiNativeID debugId, jchar ch)
+{
+    try{
+        qtjambi_object_from_nativeId_deref<QTextStream>(env, debugId) << qSetPadChar(ch);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -2114,7 +2414,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject__1_1qt_1forType)
     (JNIEnv * env, jclass, jclass type)
 {
     try{
-        const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type, nullptr);
+        const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
         return qtjambi_cast<jobject>(env, metaObject);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -5313,7 +5613,12 @@ void initialize_meta_info_QtCore(){
         registerDeleter(typeId, &deleter_QPropertyObserver);
         registerSizeOfShell(typeId, sizeof_QPropertyObserver_shell());
     }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+            registerValueTypeInfo<QOperatingSystemVersionBase>("QOperatingSystemVersion", "io/qt/core/QOperatingSystemVersion");
 #endif
+
+#endif
+
 #endif
 
 }

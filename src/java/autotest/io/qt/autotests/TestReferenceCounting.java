@@ -44,7 +44,7 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
-public class TestReferenceCounting extends QApplicationTest {
+public class TestReferenceCounting extends ApplicationInitializer {
     private static ReferenceQueue<QObject> weakReferenceQueue = new ReferenceQueue<QObject>();
     private static ReferenceQueue<QObject> phantomReferenceQueue = new ReferenceQueue<QObject>();
     private static Map<WeakReference<QObject>,Integer> weakReferenceMap = new HashMap<WeakReference<QObject>,Integer>();
@@ -83,7 +83,7 @@ public class TestReferenceCounting extends QApplicationTest {
                 }
             }
             if(stop > System.currentTimeMillis())
-                Utils.println(3, "AssertEquals.test(timeout=" + timeout + ")  couldStopAt="+couldStopAt+"; diff="+(stop-(couldStopAt!=null?couldStopAt.longValue():0)));
+                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "AssertEquals.test(timeout=" + timeout + ")  couldStopAt="+couldStopAt+"; diff="+(stop-(couldStopAt!=null?couldStopAt.longValue():0)));
             assertTrue(description(), equals());
         }
     }
@@ -111,7 +111,7 @@ public class TestReferenceCounting extends QApplicationTest {
     
     @BeforeClass
     public static void testInitialize() throws Exception {
-        QApplicationTest.testInitialize();
+        ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     }
 
@@ -161,13 +161,17 @@ public class TestReferenceCounting extends QApplicationTest {
         if(id == null)
             id = getIdNext();
 
-        if(Utils.isDebugLevel(4)) {
-            String className = o.getClass().getName();
-            String shortClassName = className;
-            int i = shortClassName.lastIndexOf('.');
-            if(i > 0)
-                shortClassName = shortClassName.substring(i + 1);
-            Utils.println(4, shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
+        {
+        	Integer _id = id;
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, 
+            		() -> { 
+            			String className = o.getClass().getName();
+                        String shortClassName = className;
+                        int i = shortClassName.lastIndexOf('.');
+                        if(i > 0)
+                            shortClassName = shortClassName.substring(i + 1);
+            			return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+            		});
         }
         WeakReference<QObject> wr = new WeakReference<QObject>(o, weakReferenceQueue);
         PhantomReference<QObject> pr = new PhantomReference<QObject>(o, phantomReferenceQueue);
@@ -210,7 +214,7 @@ public class TestReferenceCounting extends QApplicationTest {
                     synchronized(TestReferenceCounting.class) {
                         tmpId = weakReferenceMap.remove(thisWr);
                     }
-                    Utils.println(5, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " weakReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
                 Reference<? extends QObject> thisPr;
                 while((thisPr = phantomReferenceQueue.poll()) != null) {
@@ -218,7 +222,7 @@ public class TestReferenceCounting extends QApplicationTest {
                     synchronized(TestReferenceCounting.class) {
                         tmpId = phantomReferenceMap.remove(thisPr);
                     }
-                    Utils.println(5, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, " phantomReferenceQueue.remove(): dequeued id=" + tmpId);
                 }
 
                 if(!obtainGoal) {	// Try to obtainGoal
@@ -241,7 +245,7 @@ public class TestReferenceCounting extends QApplicationTest {
                         excessTime = System.currentTimeMillis();	// reset this for excessLimitMillis
                     }
 
-                    Utils.println(5, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
+                    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": elapsed=" + elapsed + "; end loop" +
                         "; currentDisposedCount=" + currentDisposedCount +
                         "; currentDestroyedCount=" + currentDestroyedCount +
                         "; obtainGoal=" + obtainGoal
@@ -269,13 +273,9 @@ public class TestReferenceCounting extends QApplicationTest {
         }
 
         // Report on status
-        if(Utils.isDebugLevel(4)) {
-            // Print array format [1, 2, 3]
-            synchronized(TestReferenceCounting.class) {
-                Utils.println(4, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
-                        "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
-            }
-        }
+        long _elapsed = elapsed;
+        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, ()->"elapsed=" + _elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
         return obtainGoal;
     }
 

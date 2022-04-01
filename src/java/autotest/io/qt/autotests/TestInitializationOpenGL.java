@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationOpenGL {
+public class TestInitializationOpenGL extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.opengl");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.opengl"));
     }
 }

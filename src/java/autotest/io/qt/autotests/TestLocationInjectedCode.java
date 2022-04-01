@@ -47,7 +47,7 @@ import io.qt.location.QGeoServiceProviderFactory;
 import io.qt.location.QGeoServiceProviderFactory.Result;
 import io.qt.location.QPlaceManagerEngine;
 
-public class TestLocationInjectedCode extends QApplicationTest {
+public class TestLocationInjectedCode extends ApplicationInitializer {
 	
 	static {
 		QtUtilities.initializePackage(io.qt.location.QGeoServiceProviderFactory.class);

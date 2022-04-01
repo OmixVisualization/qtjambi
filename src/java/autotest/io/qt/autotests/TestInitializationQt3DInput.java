@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationQt3DInput {
+public class TestInitializationQt3DInput extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.qt3d.input");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.qt3d.input"));
     }
 }

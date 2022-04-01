@@ -15,7 +15,7 @@ HEADERS += \
     qtjambi_gui_qhashes.h
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
+exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAMBILIB/generated.pri)
 
 # because qtjambishell_QActionEvent.cpp refers to qaction.h
 macx:{

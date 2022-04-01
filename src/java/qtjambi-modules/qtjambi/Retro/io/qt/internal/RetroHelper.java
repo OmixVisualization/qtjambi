@@ -30,7 +30,10 @@
 package io.qt.internal;
 
 import java.lang.reflect.AnnotatedType;
+import java.net.MalformedURLException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -65,5 +68,24 @@ final class RetroHelper {
     
     static String processName() {
     	return ""+ProcessHandle.current().pid();
+    }
+    
+    static Set<ClassLoader> classLoaders(){
+    	Set<ClassLoader> result = new HashSet<>();
+    	result.add(Thread.currentThread().getContextClassLoader());
+    	result.add(RetroHelper.class.getClassLoader());
+    	result.add(ClassLoader.getSystemClassLoader());
+    	result.add(ClassLoader.getPlatformClassLoader());
+    	return result;
+    }
+    
+    static void findModules(Set<java.net.URL> modules) throws MalformedURLException{
+    	for(Module module : ModuleLayer.boot().modules()) {
+    		modules.add(new java.net.URL("jrt:/"+module.getName()+"/"));
+    	}
+    }
+    
+    static Thread newShutdownThread(Runnable r, String name) {
+    	return new Thread(null, r, name, 0, false);
     }
 }

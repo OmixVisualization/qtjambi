@@ -60,7 +60,6 @@
             Yes, pathnames are hardcoded here. Since this is the only use we
             have for them, there's no need to make properties out of them.
         -->
-        <mkdir dir="tmp"/>
         <mkdir dir="extjars"/>
         <!--
             NOTE about the use of <get> below: there is a usetimestamp property
@@ -71,15 +70,10 @@
             kind of timestamp to tell that yes, the file is there, and not
             download it again.
         -->
-        <get src="${antcontrib.download.url}" dest="tmp/ant-contrib.zip"
-             verbose="true"/>
-        <unzip src="tmp/ant-contrib.zip" dest="tmp"/>
-        <copy file="tmp/${antcontrib.jar.location}"
-              tofile="extjars/ant-contrib.jar"/>
+        <get src="${antcontrib.download.url}" dest="extjars/ant-contrib.jar" verbose="true"/>
         <!--
             ... And remove the temporary directory, which we don't need anymore.
         -->
-        <delete dir="tmp"/>
         <dostamp stampfile="antcontrib"/>
     </target>
 

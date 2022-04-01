@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationBluetooth {
+public class TestInitializationBluetooth extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.bluetooth");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.bluetooth"));
     }
 }

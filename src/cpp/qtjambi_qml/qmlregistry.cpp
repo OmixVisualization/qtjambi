@@ -39,7 +39,6 @@
 #include <qtjambi/qtjambi_functionpointer.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <qtjambi/qtjambi_application.h>
-#include "qtjambi_jarimport.h"
 #include "qtjambi_qml_repository.h"
 #include "qmlcreateparentfunction.h"
 #include "qmlattachedpropertiesfunction.h"
@@ -53,11 +52,11 @@ const QMetaObject * attachedPropertiesMetaObject(JNIEnv * env, jobject method){
     if(!method)
         return nullptr;
     jclass returnType = jclass(Java::Runtime::Method::getReturnType(env, method));
-    const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, returnType, nullptr);
+    const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, returnType);
     if(!meta_object){
         jclass closestClass = resolveClosestQtSuperclass(env, returnType);
         if(closestClass){
-            const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+            const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
             meta_object = qtjambi_metaobject_for_class(env, returnType, original_meta_object);
         }
     }
@@ -108,7 +107,7 @@ int registerQmlListType(const QString& javaName){
 #else
     return registerQmlMetaType({},
                                listName,
-                                /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::getDefaultCtr(),
+                                /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::defaultCtr,
                                 /*.copyCtr=*/ [](const QtPrivate::QMetaTypeInterface *, void * ptr, const void * copy){
                                                   const QQmlListProperty<QObject>* _copy = reinterpret_cast<const QQmlListProperty<QObject>*>(copy);
                                                   QQmlListProperty<QObject>* list = new(ptr) QQmlListProperty<QObject>();
@@ -137,13 +136,13 @@ int registerQmlListType(const QString& javaName){
                                                       list->object = std::move(_copy->object);
                                                   }
                                             },
-                              /*.dtor=*/ QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::getDtor(),
+                              /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::dtor,
                               /*.equals=*/ QtPrivate::QEqualityOperatorForType<QQmlListProperty<QObject>>::equals,
                               /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QQmlListProperty<QObject>>::lessThan,
                               /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QQmlListProperty<QObject>>::debugStream,
                               /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamOut,
                               /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamIn,
-                              /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::getLegacyRegister(),
+                              /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::legacyRegisterOp,
                               /*.size=*/ sizeof(QQmlListProperty<QObject>),
                               /*.alignment=*/ alignof(QQmlListProperty<QObject>),
                               /*.typeId=*/ QMetaType::UnknownType,
@@ -179,16 +178,16 @@ int registerQmlMetaType(const QString& javaName, const QMetaObject *meta_object)
         return definedType.id();
     }
     return registerQmlMetaType(javaName.toLatin1().replace(".", "/"), _javaName,
-                                        /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<QObject*>::getDefaultCtr(),
-                                        /*.copyCtr=*/ QtPrivate::QMetaTypeForType<QObject*>::getCopyCtr(),
-                                        /*.moveCtr=*/ QtPrivate::QMetaTypeForType<QObject*>::getMoveCtr(),
-                                        /*.dtor=*/ QtPrivate::QMetaTypeForType<QObject*>::getDtor(),
+                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QObject*>::defaultCtr,
+                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QObject*>::copyCtr,
+                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QObject*>::moveCtr,
+                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QObject*>::dtor,
                                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<QObject*>::equals,
                                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QObject*>::lessThan,
                                         /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QObject*>::debugStream,
                                         /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<QObject*>::dataStreamOut,
                                         /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<QObject*>::dataStreamIn,
-                                        /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<QObject*>::getLegacyRegister(),
+                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QObject*>::legacyRegisterOp,
                                         /*.size=*/ sizeof(QObject*),
                                         /*.alignment=*/ alignof(QObject*),
                                         /*.typeId=*/ QMetaType::UnknownType,
@@ -239,11 +238,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
     try{
         int objectSize = int(qtjambi_extended_size_for_class(env, clazz));
         QString javaName = qtjambi_class_name(env, clazz);
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -348,11 +347,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
 
-      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
       if(!meta_object){
           jclass closestClass = resolveClosestQtSuperclass(env, clazz);
           if(closestClass){
-              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
               meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
           }
       }
@@ -438,11 +437,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
 
-      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
       if(!meta_object){
           jclass closestClass = resolveClosestQtSuperclass(env, clazz);
           if(closestClass){
-              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
               meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
           }
       }
@@ -532,11 +531,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
           QString javaName = qtjambi_class_name(env, clazz);
           jmethodID constructor = findConstructor(env, clazz, javaName);
 
-          const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+          const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
           if(!meta_object){
               jclass closestClass = resolveClosestQtSuperclass(env, clazz);
               if(closestClass){
-                  const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                  const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                   meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
               }
           }
@@ -629,11 +628,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
           QString javaName = qtjambi_class_name(env, clazz);
           jmethodID constructor = findConstructor(env, clazz, javaName);
 
-          const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+          const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
           if(!meta_object){
               jclass closestClass = resolveClosestQtSuperclass(env, clazz);
               if(closestClass){
-                  const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                  const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                   meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
               }
           }
@@ -723,11 +722,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterRevision
         jmethodID constructor = findConstructor(env, clazz, javaName);
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -822,11 +821,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -834,7 +833,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
         if(!extended_meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
             }
         }
@@ -927,11 +926,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -939,7 +938,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
         if(!extended_meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
             }
         }
@@ -1034,11 +1033,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1046,7 +1045,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
         if(!extended_meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
             }
         }
@@ -1140,11 +1139,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface1
   (JNIEnv * env, jclass, jclass clazz, jstring name){
     try{
         QString typeName = qtjambi_to_qstring(env, name);
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1194,11 +1193,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor){
     try{
         QString _uri = qtjambi_to_qstring(env, uri);
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1252,11 +1251,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
 extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_qml_QtQml_qmlAttachedPropertiesObject
   (JNIEnv * env, jclass, jclass clazz, jobject object, jboolean create){
     try{
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1313,11 +1312,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterAnonymousT
         QString javaName = qtjambi_class_name(env, clazz);
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1469,11 +1468,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1481,7 +1480,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
         if(!extended_meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
             }
         }
@@ -1581,11 +1580,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
 
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1593,7 +1592,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
         if(!extended_meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
             }
         }
@@ -1752,11 +1751,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
 
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
         QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
-        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
             if(closestClass){
-                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
@@ -1817,11 +1816,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
 
-      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+      const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
       if(!meta_object){
           jclass closestClass = resolveClosestQtSuperclass(env, clazz);
           if(closestClass){
-              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+              const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass);
               meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
           }
       }

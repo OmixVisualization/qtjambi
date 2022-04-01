@@ -221,6 +221,11 @@
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="createObject(QObject*,QMap&lt;QString,QVariant>)" block-exceptions="yes" since="6.3.0">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="create(QQmlIncubator &amp;, QQmlContext *, QQmlContext *)" block-exceptions="yes">
         </modify-function>
     </object-type>

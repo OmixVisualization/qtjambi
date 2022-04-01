@@ -47,7 +47,7 @@ import io.qt.network.auth.QAbstractOAuth.Stage;
 import io.qt.qml.QtQml;
 import io.qt.widgets.QLayoutItem;
 
-public class TestAuthInterfaces extends QApplicationTest {
+public class TestAuthInterfaces extends ApplicationInitializer {
 	
 	@Test
 	public void test_MultiInterfaceImpl() {

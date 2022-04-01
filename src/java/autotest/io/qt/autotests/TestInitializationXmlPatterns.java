@@ -29,11 +29,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestInitializationXmlPatterns {
+public class TestInitializationXmlPatterns extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	io.qt.QtUtilities.initializePackage("io.qt.xmlpatterns");
+    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.xmlpatterns"));
     }
 }

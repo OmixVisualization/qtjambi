@@ -52,7 +52,7 @@ import io.qt.gui.QStandardItem;
  * Testing the fake meta object.
  * @author eblomfel
  */
-public class TestMetaObject extends QApplicationTest {
+public class TestMetaObject extends ApplicationInitializer {
     @SuppressWarnings("unused")
     private static class SignalsAndSlotsSubclass extends SignalsAndSlots {
         enum YoYoYo {
