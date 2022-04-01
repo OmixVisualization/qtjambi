@@ -62,5 +62,7 @@
          classname="io.qt.tools.ant.StringReplaceTask"/>
     <typedef name="dependencies-to-classpath"
          classname="io.qt.tools.ant.DependenciesToClassPathTask"/>
+    <typedef name="select-modules"
+         classname="io.qt.tools.ant.JavaModuleSelectorTask"/>
 </antlib>
 
