@@ -55,7 +55,7 @@ This saves compilation time.
 
 `> set PATH=...\apache-ant-1.10.3\bin;%PATH%`
 
-`> set QTDIR=C:\Qt\6.2.0\msvc2019_64`
+`> set QTDIR=C:\Qt\6.3.0\msvc2019_64`
 
 #### Pre-Build Steps On Linux and macOS
 
@@ -65,9 +65,9 @@ This saves compilation time.
 
 `> export JAVA_HOME_TARGET=path to your java jdk`
 
-`> export QTDIR=/opt/Qt/6.2.0/gcc_64` on Linux
+`> export QTDIR=/opt/Qt/6.3.0/gcc_64` on Linux
 
-`> export QTDIR=/opt/Qt/6.2.0/macos` on macOS
+`> export QTDIR=/opt/Qt/6.3.0/macos` on macOS
 
 #### Building Bindings
 
@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.2.3.jar Test.java
+javac -cp qtjambi-6.3.0.jar Test.java
 ```
 
 ### Execute Example
@@ -135,8 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.2.3.jar;. 
-     -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.3.0.jar;. -Djava.library.path=C:\Qt\6.3.0\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)
