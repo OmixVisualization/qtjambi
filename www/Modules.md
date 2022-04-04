@@ -356,6 +356,9 @@ Following Qt 6.3 modules are provided by QtJambi:
     * [**qtjambi-plugin-qsqljdbc-windows-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.3.0/jar)
     * [**qtjambi-plugin-qsqljdbc-linux-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.3.0/jar)
     * [**qtjambi-plugin-qsqljdbc-macos-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.3.0/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-windows-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-windows-x64/6.3.0/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-linux-x64-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-linux-x64/6.3.0/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-macos-6.3.0.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-macos/6.3.0/jar)
 
 ### QtJambi Tools
 
@@ -700,6 +703,9 @@ Following Qt 6.2 modules are provided by QtJambi:
     * [**qtjambi-plugin-qsqljdbc-windows-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.2.3/jar)
     * [**qtjambi-plugin-qsqljdbc-linux-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.2.3/jar)
     * [**qtjambi-plugin-qsqljdbc-macos-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.2.3/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-windows-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-windows-x64/6.2.3/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-linux-x64-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-linux-x64/6.2.3/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-macos-6.2.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-macos/6.2.3/jar)
 
 ### QtJambi Tools
 
@@ -1080,6 +1086,9 @@ Following Qt 5.15 modules are provided by QtJambi:
     * [**qtjambi-plugin-qsqljdbc-windows-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/5.15.5/jar)
     * [**qtjambi-plugin-qsqljdbc-linux-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/5.15.5/jar)
     * [**qtjambi-plugin-qsqljdbc-macos-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/5.15.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-windows-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-windows-x64/5.15.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-linux-x64-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-linux-x64/5.15.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-jre8-macos-5.15.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-jre8-macos/5.15.5/jar)
 
 ### QtJambi Tools
 

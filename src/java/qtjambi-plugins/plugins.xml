@@ -430,7 +430,7 @@
         <if>
             <istrue value="${qtjambi-deploy}"/>
             <then>
-                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}"/>
+                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}${module.suffix}"/>
                 <antcall inheritrefs="true" target="deploy-impl"/>
             </then>
         </if>
@@ -466,13 +466,24 @@
             <istrue value="${qtjambi-deploy}"/>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}"/>
-                <antcall inheritrefs="true" target="deploy-impl"/>
+                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}-jre8"/>
+                <antcall inheritrefs="true" target="deploy-impl">
+                    <param name="module.suffix" value=""/>
+                </antcall>
+                <antcall inheritrefs="true" target="deploy-impl">
+                    <param name="module.suffix" value="-jre8"/>
+                </antcall>
             </then>
         </if>
         <if>
             <istrue value="${qtjambi-deploy-bundle}"/>
             <then>
-                <antcall inheritrefs="true" target="deploy-impl-bundle"/>
+                <antcall inheritrefs="true" target="deploy-impl-bundle">
+                    <param name="module.suffix" value=""/>
+                </antcall>
+                <antcall inheritrefs="true" target="deploy-impl-bundle">
+                    <param name="module.suffix" value="-jre8"/>
+                </antcall>
             </then>
         </if>
     </target>
@@ -546,7 +557,7 @@
     </target>
     <target name="deploy-impl-bundle">
         <mkdir dir="${deploymentdir}/bundles"/>
-        <property name="moduledash" value="qtjambi-plugin-${module}"/>
+        <property name="moduledash" value="qtjambi-plugin-${module}${module.suffix}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <!--copy file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.pom" tofile="${deploymentdir}/pom.xml"/-->
         <!--jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}-bundle.jar">
