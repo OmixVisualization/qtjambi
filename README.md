@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.0.jar Test.java
+javac -cp qtjambi-6.3.1.jar Test.java
 ```
 
 ### Execute Example
@@ -135,7 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.3.0.jar;. -Djava.library.path=C:\Qt\6.3.0\msvc2019_64\bin Test
+java -cp qtjambi-6.3.1.jar;. -Djava.library.path=C:\Qt\6.3.0\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)
