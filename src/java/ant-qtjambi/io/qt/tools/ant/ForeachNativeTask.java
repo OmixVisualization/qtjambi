@@ -13,8 +13,10 @@ public class ForeachNativeTask extends Task{
 			for(String file : dir.list()) {
 				if(file.startsWith(prefix) && file.endsWith(suffix)) {
 					String platform = file.substring(prefix.length(), file.length() - suffix.length());
-					getProject().setProperty("native-spec", platform);
-					getProject().executeTarget(target);
+					if(!platform.endsWith("-debug")) {
+						getProject().setProperty("native-spec", platform);
+						getProject().executeTarget(target);
+					}
 				}
 			}
 		}else {
