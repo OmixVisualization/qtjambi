@@ -45,6 +45,9 @@ GeneratorSet::GeneratorSet() :
 {}
 
 bool GeneratorSet::readParameters(const QMap<QString, QString> args) {
+    if (args.contains("qtjambi-version")) {
+        qtjambiVersionPatch = args.value("qtjambi-version").toUInt();
+    }
     if (args.contains("input-directory")) {
         inDir = args.value("input-directory");
     }

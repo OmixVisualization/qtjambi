@@ -228,7 +228,9 @@ class QMLGenerator {
 		}
 		String packageName = null;
 		try (JarFile jarFile = new JarFile(library)) {
-			for(JarEntry entry : (Iterable<JarEntry>)()->jarFile.entries().asIterator()) {
+			Enumeration<JarEntry> enries = jarFile.entries();
+			while (enries.hasMoreElements()) {
+				JarEntry entry = (JarEntry) enries.nextElement();
 				if(!entry.isDirectory() && entry.getName().endsWith(".class")) {
 					int idx = entry.getName().lastIndexOf('/');
 					if(idx>=0) {

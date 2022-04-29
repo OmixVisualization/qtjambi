@@ -18,6 +18,11 @@ HEADERS += \
 include(../qtjambi/qtjambi_include.pri)
 exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAMBILIB/generated.pri)
 
+win32-msvc*: {
+    PRECOMPILED_HEADER = qtjambi_widgets_pch.h
+    CONFIG += precompile_header
+}
+
 # Some classes (such as QLine) need access to <qtjambi_core_qhashes.h>
 INCLUDEPATH += $$PWD/../qtjambi_core $$PWD/../qtjambi_gui
 
@@ -26,6 +31,3 @@ DEPENDPATH += $$PWD
 
 # libQtGui.so.4.7.4 is only dependant on libQtCore.so.4
 QT = core core-private gui widgets widgets-private
-
-win32:CONFIG += precompile_header
-PRECOMPILED_HEADER = qtjambi_widgets_pch.h

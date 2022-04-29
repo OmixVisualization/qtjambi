@@ -66,19 +66,6 @@ public class InitializeTask extends AbstractInitializeTask {
         }
         mySetProperty(-1, "psep", sourceValue, psep, false);
 
-        final String[] emitA = {
-            Constants.DIRECTORY
-        };
-        for(String emit : emitA) {
-            String value = AntUtil.getPropertyAsString(propertyHelper, emit);
-            File dir = new File(value);
-            if(dir.isDirectory() == false)
-                sourceValue = " (WARNING: path does not exist or is not a directory)";
-            else
-                sourceValue = null;
-            mySetProperty(-1, emit, sourceValue, value, false);
-        }
-
         String detectedOsname = OSInfo.crossOSArchName();
         String osname = AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME);
         if(osname == null) {

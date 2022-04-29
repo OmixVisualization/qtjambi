@@ -111,7 +111,7 @@ public class TestPlugin extends ApplicationInitializer {
     public void testIconEnginePlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QIconEnginePlugin.class, "/iconengines");
 		System.out.println(loader.keyMap());
-		QIconEngine plugin = loader.loadPlugin((QMetaObject.Method2<QIconEnginePlugin,String,QIconEngine>)QIconEnginePlugin::create, "svg", "classpath:io/qt/autotests/svg-cards.svg");
+		QIconEngine plugin = loader.loadPlugin((QMetaObject.Method2<QIconEnginePlugin,String,QIconEngine>)QIconEnginePlugin::create, "svg", ":io/qt/autotests/svg-cards.svg");
 		Assert.assertTrue(plugin!=null);
 	}
 	

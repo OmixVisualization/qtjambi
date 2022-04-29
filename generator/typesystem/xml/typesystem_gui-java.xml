@@ -2408,7 +2408,7 @@ public final void copyDataTo(float[] values)    {
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QDesktopServices___" quote-before-line="}// class"/>
         </inject-code>
         <modify-function signature="unsetUrlHandler(const QString &amp;)">
-            <inject-code>
+            <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 __rcUrlHandlers.remove(%1);
             </inject-code>

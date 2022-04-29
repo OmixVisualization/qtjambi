@@ -41,7 +41,6 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
 
 import io.qt.autotests.ApplicationInitializer;
 import io.qt.core.QDateTime;

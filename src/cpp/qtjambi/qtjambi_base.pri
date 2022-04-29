@@ -20,8 +20,10 @@ isEmpty(TARGET) {
 }
 
 TEMPLATE = lib
-DESTDIR = ../lib
-DLLDESTDIR = ../bin
+isEmpty(DESTDIR) {
+    DESTDIR = ../lib
+    DLLDESTDIR = ../bin
+}
 
 CONFIG(debug, debug|release) {
     win32:{
@@ -75,7 +77,9 @@ contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     INSTALLS = target
 }
 
-win32:CONFIG += precompile_header
+win32-msvc* {
+    CONFIG += precompile_header
+}
 
 macx {
     contains(QT_CONFIG, x86):CONFIG += x86

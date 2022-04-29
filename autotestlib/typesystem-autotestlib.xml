@@ -67,6 +67,8 @@
       <inject-code position="end">
           <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class General___" quote-before-line="}// class"/>
       </inject-code>
+      <modify-function signature="run(QRunnable*)" rethrow-exceptions="yes"/>
+      <modify-function signature="run(QThread*)" rethrow-exceptions="yes"/>
   </object-type>
   <object-type name="MoccedSub1Object"/>
   <object-type name="UnMoccedSub1Object"/>

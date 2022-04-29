@@ -48,8 +48,6 @@ public abstract class Constants {
      * Or rather these binds shouldn't exist, how much of this could be moved to
      * xml side?
      */
-    public static final String DIRECTORY                = "jambi.directory";
-    public static final String DIRECTORY_ABSPATH        = "jambi.directory.abspath";
     public static final String QMAKE                    = "qtjambi.qt.qmake";
     public static final String QMAKE_ABSPATH            = "qtjambi.qt.qmake.abspath";
     public static final String BINDIR                   = "qtjambi.qt.bindir";

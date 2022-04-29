@@ -1,16 +1,34 @@
 <project default="build">
     <target name="build">
-        <dirname property="antfile.dir" file="${ant.file}"/>
-        <basename property="module" file="${antfile.dir}"/>
-        <condition property="build.module" value="true">
-            <available file="${generator.outputdir}/java/${module}" type="dir"/>
-        </condition>
-        <antcall inheritrefs="true" target="build.impl"/>
+        <if>
+            <or>
+                <not>
+                    <istrue value="${qtjambi-native-bundle}"/>
+                </not>
+                <equals arg1="${qtjambi.osname}" arg2="windows-x86"/>
+                <equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
+                <equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
+            </or>
+            <then>
+                <dirname property="antfile.dir" file="${ant.file}"/>
+                <basename property="module" file="${antfile.dir}"/>
+                <condition property="build.module" value="true">
+                    <or>
+                        <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                        <istrue value="${qtjambi-deploy}"/>
+                        <istrue value="${qtjambi-deploy-bundle}"/>
+                    </or>
+                </condition>
+                <antcall inheritrefs="true" target="build.impl"/>
+            </then>
+        </if>
     </target>
     <target name="build.impl" if="build.module">
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
-            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

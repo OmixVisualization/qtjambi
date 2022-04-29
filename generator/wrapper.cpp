@@ -283,10 +283,10 @@ int Wrapper::runJambiGenerator() {
     //removing file here for theoretical case of wanting to parse two master include files here
     QFile::remove(pp_file);
     QMap<QString, QString> features;
-    uint qtVersionMajor = QT_VERSION_MAJOR;
-    uint qtVersionMinor = QT_VERSION_MINOR;
-    uint qtVersionPatch = QT_VERSION_PATCH;
-    std::function<void(std::string,std::string,std::string)> featureRegistry = [&features, &qtVersionMajor, &qtVersionMinor, &qtVersionPatch](std::string macro, std::string definition, std::string file){
+    gs->qtVersionMajor = QT_VERSION_MAJOR;
+    gs->qtVersionMinor = QT_VERSION_MINOR;
+    gs->qtVersionPatch = QT_VERSION_PATCH;
+    std::function<void(std::string,std::string,std::string)> featureRegistry = [&features, this](std::string macro, std::string definition, std::string file){
         QString _macro = QString::fromStdString(macro);
         if(_macro.startsWith("QT_FEATURE_")){
             QString _file = QString::fromStdString(file);
@@ -300,19 +300,19 @@ int Wrapper::runJambiGenerator() {
             bool ok = false;
             uint v = _definition.toUInt(&ok);
             if(ok)
-                qtVersionMajor = v;
+                gs->qtVersionMajor = v;
         }else if(_macro=="QT_VERSION_MINOR"){
             QString _definition = QString::fromStdString(definition);
             bool ok = false;
             uint v = _definition.toUInt(&ok);
             if(ok)
-                qtVersionMinor = v;
+                gs->qtVersionMinor = v;
         }else if(_macro=="QT_VERSION_PATCH"){
             QString _definition = QString::fromStdString(definition);
             bool ok = false;
             uint v = _definition.toUInt(&ok);
             if(ok)
-                qtVersionPatch = v;
+                gs->qtVersionPatch = v;
         }
     };
 
@@ -321,8 +321,6 @@ int Wrapper::runJambiGenerator() {
         fprintf(stderr, "Preprocessor failed on file: '%s'\n", qPrintable(fileName));
         return 1;
     }
-
-    gs->qtVersion = QT_VERSION_CHECK(qtVersionMajor,qtVersionMinor,qtVersionPatch);
 
     if(docsDirectory.exists()){
         gs->m_docModelFuture = QtConcurrent::run([](const QDir& docsDirectory, QThread* targetThread) -> const DocModel* {
@@ -333,7 +331,7 @@ int Wrapper::runJambiGenerator() {
 
     //parse the type system file
     try{
-        typeDatabase->initialize(typesystemFileName, inputDirectoryList, typesystem_directory, gs->qtVersion);
+        typeDatabase->initialize(typesystemFileName, inputDirectoryList, typesystem_directory, QT_VERSION_CHECK(gs->qtVersionMajor,gs->qtVersionMinor,gs->qtVersionPatch));
     }catch(const TypesystemException& exn){
         fprintf(stderr, "%s\n", exn.what());
         return -1;

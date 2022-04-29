@@ -160,7 +160,11 @@ AbstractMetaBuilder::RenamedOperator AbstractMetaBuilder::rename_operator(const 
 AbstractMetaBuilder::AbstractMetaBuilder()
         : m_current_class(nullptr),
           m_features(nullptr),
-          m_qtVersion(QT_VERSION) {
+          m_qtVersionMajor(QT_VERSION_MAJOR),
+          m_qtVersionMinor(QT_VERSION_MINOR),
+          m_qtVersionPatch(QT_VERSION_PATCH),
+          m_qtjambiVersionPatch(0)
+{
 }
 
 AbstractMetaBuilder::~AbstractMetaBuilder() {
@@ -577,12 +581,12 @@ bool AbstractMetaBuilder::build() {
     TypeDatabase *types = TypeDatabase::instance();
     fixQObjectForScope(types, model_dynamic_cast<NamespaceModelItem>(m_dom));
 
-    if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
+    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6, 0, 0)){
         ClassModelItem const_iterator = m_dom->findClass("QVector__const_iterator");
         if(const_iterator){
             m_dom->removeClass(const_iterator);
             ClassModelItem qvec = m_dom->findClass("QVector");
-            if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
                 qvec = m_dom->findClass("QList");
             }
             if(qvec){
@@ -604,7 +608,7 @@ bool AbstractMetaBuilder::build() {
                    << "QMultiHash"
                    << "QSet<T>"
                    << "QSet";
-        if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
             classNames << "QVector<T>"
                        << "QVector"
                        << "QList<T>"
@@ -622,7 +626,7 @@ bool AbstractMetaBuilder::build() {
                         fct->setType(type);
                     }
                 }
-                if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+                if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
                     if(mapClass->name().startsWith("QMap") || mapClass->name().startsWith("QMultiMap")){
                         for(const FunctionModelItem& fct : mapClass->functionMap().values("size")){
                             if(fct->type().qualifiedName().join("::")=="size_type"
@@ -3708,7 +3712,7 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     meta_class->setTypeEntry(type);
     meta_class->setUsingProtectedBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Protected);
     meta_class->setUsingPublicBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Public);
-    if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
         QList<QPair<QString,bool>> baseClasses = class_item->baseClasses();
         for(int i=0; i<baseClasses.size(); ++i){
             if(baseClasses[i].first=="QList<QString>"){
@@ -4320,7 +4324,7 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
             QString complete_name = prefix + publicBaseClasses.first();
             TypeParser::Info info = TypeParser::parse(complete_name);
             QString base_name = info.qualified_name.join("::");
-            if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0) && base_name=="QVector"){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0) && base_name=="QVector"){
                 base_name = "QList";
             }
 

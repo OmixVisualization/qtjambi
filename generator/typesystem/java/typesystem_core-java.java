@@ -41,6 +41,81 @@ import io.qt.*;
 import io.qt.internal.QtJambiObject.QPrivateConstructor;
 import io.qt.core.*;
 
+class QtJambi_LibraryUtilities_2_{
+    if(!Boolean.getBoolean("io.qt.no-library-shutdown-hook")) {
+        shutdownHook = RetroHelper.newShutdownThread(QtJambi_LibraryUtilities::shutdown, "QtJambi_LibraryShutdown");
+        shutdownHook.setContextClassLoader(null);
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
+    java.io.File coreLib = NativeLibraryManager.loadQtCore();
+    try{
+        NativeLibraryManager.loadQtJambiLibrary();
+    } catch(UnsatisfiedLinkError t) {
+        switch(NativeLibraryManager.operatingSystem) {
+        case MacOSX:
+            if(coreLib!=null) {
+                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Resources/QtCore.prl");
+                if(prl.exists()) {
+                    java.util.Properties prlProp = new java.util.Properties();
+                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+                        prlProp.load(inStream);
+                    } catch(Throwable t2) {}
+                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+                    if(!version.isEmpty()) {
+                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                        }
+                    }
+                }
+            }
+            break;
+        case Windows:
+            if(coreLib!=null) {
+                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+qtMajorVersion+"Core.prl");
+                if(!prl.exists()) {
+                    prl = new java.io.File(coreLib.getParentFile().getParentFile(), "lib\\Qt"+qtMajorVersion+"Core.prl");
+                }
+                if(prl.exists()) {
+                    java.util.Properties prlProp = new java.util.Properties();
+                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+                        prlProp.load(inStream);
+                    } catch(Throwable t2) {}
+                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+                    if(!version.isEmpty()) {
+                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                        }
+                    }
+                }
+                if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || NativeLibraryManager.isMinGWBuilt()) {
+                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead.", t);
+                }else {
+                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+                }
+            }
+            break;
+        default:
+            if(coreLib!=null) {
+                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+qtMajorVersion+"Core.prl");
+                if(prl.exists()) {
+                    java.util.Properties prlProp = new java.util.Properties();
+                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+                        prlProp.load(inStream);
+                    } catch(Throwable t2) {}
+                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+                    if(!version.isEmpty()) {
+                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        throw t;
+    }
+}// class
+
 class QObject___ extends QObject {
     
     /**
@@ -9606,8 +9681,12 @@ abstract class QUrl___ extends QUrl{
         return toStringList(uris, ComponentFormattingOption.PrettyDecoded.value());
     }
     
-    public static io.qt.core.QUrl fromClassPath(java.lang.String classspath){
-        return fromLocalFile("/:classpath:"+classspath);
+    /**
+     * @deprecated Use <code>new QUrl("qrc:path")</code> instead.
+     */
+    @Deprecated
+    public static io.qt.core.QUrl fromClassPath(java.lang.String classpath){
+        return new io.qt.core.QUrl("qrc:"+classpath);
     }
 }// class
 
@@ -14397,24 +14476,7 @@ class QThread___{
         @Override
         protected void run() {
             if(runnable!=null){
-                Thread thread = javaThread();
-                try{
-                    runnable.run();
-                }catch(Throwable exn){
-                    if(thread!=null) {
-                        Thread.UncaughtExceptionHandler handler = thread.getUncaughtExceptionHandler();
-                        if(handler==null) {
-                            handler = Thread.getDefaultUncaughtExceptionHandler();
-                        }
-                        if(handler==null) {
-                            exn.printStackTrace();
-                        }else {
-                            handler.uncaughtException(thread, exn);
-                        }
-                    }else {
-                        exn.printStackTrace();
-                    }
-                }
+                runnable.run();
             }
         }
     }
@@ -14933,7 +14995,6 @@ class QResource__{
     
     /**
      * Adds <code>path</code> to the set of classpaths in which Qt Jambi should search for resources. 
-     * Resources can be accessed using the &quot;classpath:&quot; scheme.
      */
     public static void addClassPath(String path) {
         io.qt.internal.QtJambiResources.addSearchPath(path);

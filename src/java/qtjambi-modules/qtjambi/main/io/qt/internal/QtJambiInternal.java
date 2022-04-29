@@ -78,6 +78,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.logging.LogRecord;
 
 import io.qt.InternalAccess;
 import io.qt.InternalAccess.Cleanable;
@@ -926,7 +927,7 @@ public final class QtJambiInternal {
 	private static ReadWriteHandles getReadWriteHandles(Class<?> _cls) {
 		return readWriteHandles.computeIfAbsent(_cls, cls ->{
 			try {
-				Constructor<?> constructor = cls.getConstructor();
+				Constructor<?> constructor = cls.getDeclaredConstructor();
 				Method writeTo;
 				try {
 					writeTo = cls.getMethod("writeTo", QDataStream.class);
@@ -2468,27 +2469,30 @@ public final class QtJambiInternal {
 	}
 
 	@NativeAccess
-	private static void reportException(String message, Throwable e) {
-		try {
+	private static void reportException(String methodName, Throwable e) {
+		if(!(e instanceof ThreadDeath)) try {
 			UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
-			if (handler != null) {
-				while(handler.getClass()==ThreadGroup.class) {
-					try {
-						ThreadGroup tg = (ThreadGroup)handler;
-						ThreadGroup parent = tg.getParent();
-						if(parent!=null)
-							handler = parent;
-						else break;
-					}catch(Throwable e1) {}
-				}
+			while(handler != null && handler.getClass()==ThreadGroup.class) {
+				try {
+					ThreadGroup tg = (ThreadGroup)handler;
+					handler = tg.getParent();
+				}catch(Throwable e1) {break;}
 			}
+			if(handler==null)
+                handler = Thread.getDefaultUncaughtExceptionHandler();
 			if (handler != null && handler.getClass()!=ThreadGroup.class) {
 				handler.uncaughtException(Thread.currentThread(), e);
-			} else {
-				java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, message==null ? "An exception occured in native code" : message, e);
+			} else{
+				LogRecord logRecord = new LogRecord(java.util.logging.Level.SEVERE, e.getClass().getTypeName()+(methodName==null ? " has been thrown" : " has been thrown in "+methodName));
+				logRecord.setThrown(e);
+				if(methodName!=null) {
+					logRecord.setSourceClassName(methodName);
+		    		logRecord.setSourceMethodName("");
+				}
+	    		java.util.logging.Logger.getLogger("io.qt").log(logRecord);
 			}
 		} catch (Throwable e1) {
-			e.printStackTrace();
+			e1.addSuppressed(e);
 			e1.printStackTrace();
 		}
 	}
@@ -3007,16 +3011,16 @@ public final class QtJambiInternal {
         }
 	}
 
-	public static boolean isAvailableQtLibrary(String library) {
-		return NativeLibraryManager.isAvailableQtLibrary(library);
+	public static boolean isAvailableQtLibrary(Class<?> callerClass, String library) {
+		return NativeLibraryManager.isAvailableQtLibrary(callerClass, library);
 	}
 
 	public static boolean isAvailableLibrary(String library, String version) {
 		return NativeLibraryManager.isAvailableLibrary(library, version);
 	}
 
-	public static void loadQtLibrary(String library) {
-		NativeLibraryManager.loadQtLibrary(library);
+	public static void loadQtLibrary(Class<?> callerClass, String library) {
+		NativeLibraryManager.loadQtLibrary(callerClass, library);
 	}
 
 	public static void loadUtilityLibrary(String library, String version) {
@@ -3040,15 +3044,15 @@ public final class QtJambiInternal {
 	}
 
 	public static int majorVersion() {
-		return QtJambiVersion.qtMajorVersion;
+		return QtJambi_LibraryUtilities.qtMajorVersion;
 	}
 	
 	public static int minorVersion() {
-		return QtJambiVersion.qtMinorVersion;
+		return QtJambi_LibraryUtilities.qtMinorVersion;
 	}
 	
 	public static int qtjambiPatchVersion() {
-		return QtJambiVersion.qtJambiPatch;
+		return QtJambi_LibraryUtilities.qtJambiPatch;
 	}
 	
 	public static String qtJambiLibraryPath() {

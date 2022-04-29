@@ -132,7 +132,12 @@ class Generator : public QObject {
         bool hasDefaultConstructor(const AbstractMetaType *type);
         bool hasPublicDefaultConstructor(const AbstractMetaType *type);
         bool hasPublicAssignmentOperator(const AbstractMetaType *type);
-        void setQtVersion(uint qtVersion) {m_qtVersion = qtVersion;}
+        void setQtVersion(uint qtVersionMajor, uint qtVersionMinor, uint qtVersionPatch, uint qtjambiVersionPatch) {
+            m_qtVersionMajor = qtVersionMajor;
+            m_qtVersionMinor = qtVersionMinor;
+            m_qtVersionPatch = qtVersionPatch;
+            m_qtjambiVersionPatch = qtjambiVersionPatch;
+        }
 
     protected:
         void writeInclude(QTextStream &s, const Include &inc, QSet<QString> &dedupe);
@@ -142,7 +147,10 @@ class Generator : public QObject {
         int m_num_generated;
         int m_num_generated_written;
         QString m_out_dir;
-        uint m_qtVersion;
+        uint m_qtVersionMajor;
+        uint m_qtVersionMinor;
+        uint m_qtVersionPatch;
+        uint m_qtjambiVersionPatch;
 };
 
 class Indentor {

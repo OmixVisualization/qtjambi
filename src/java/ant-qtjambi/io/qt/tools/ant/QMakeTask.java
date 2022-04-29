@@ -102,7 +102,7 @@ public class QMakeTask extends Task {
                 // try in ${qtjambi.qt.bindir} if it is configured (caller supplies propertyName=Constants.BINDIR)
                 // try in ${tools.qt.bindir} if it is configured (caller supplies propertyName=Constants.TOOLS_BINDIR)
                 String binDir = project.getProperty(propertyName);
-                if(binDir != null) {
+                if(binDir != null && !binDir.isEmpty()) {
                     File exeFile = new File(binDir, executableName);
                     if(exeFile.isFile()) {
                         // FIXME: Prepend 'binDir' to $PATH (so qmake can find moc)
@@ -114,7 +114,7 @@ public class QMakeTask extends Task {
             // try in $QTDIR/bin if it is configured
             try {
                 String qtDir = AntUtil.getPropertyAsString(PropertyHelper.getPropertyHelper(project), "qtjambi.qtdir");
-                if(qtDir != null) {
+                if(qtDir != null && !qtDir.isEmpty()) {
                     File exeFile = new File(qtDir, "bin" + File.separator + executableName);
                     if(exeFile.isFile()) {
                         // FIXME: Prepend '$QTDIR/bin' to $PATH (so qmake can find moc)

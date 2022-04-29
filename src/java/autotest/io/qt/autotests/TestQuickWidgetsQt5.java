@@ -68,7 +68,7 @@ public class TestQuickWidgetsQt5 extends ApplicationInitializer {
 		    QSurfaceFormat format = component.format();
 		    format.setSamples(16);
 		    component.setFormat(format);
-			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestItem.qml"));
+			component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestItem.qml"));
 			String error = "";
 			for(QQmlError err : component.errors()) {
 				error += err.description() + "\n";

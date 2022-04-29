@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -75,6 +76,7 @@ import io.qt.NativeAccess;
 import io.qt.core.QDate;
 import io.qt.core.QDateTime;
 import io.qt.core.QDir;
+import io.qt.core.QLocale;
 import io.qt.core.QTime;
 
 public final class QtJambiResources {
@@ -98,6 +100,13 @@ public final class QtJambiResources {
 
 	private static JarCache cache;
     private static String currentDirectory;
+    
+    static void addSearchPath(URL url) {
+    	if (url != null) {
+	    	initialize();
+			cache.addPath(url);
+    	}
+    }
 
 	public static void addSearchPath(String path) {
 		initialize();
@@ -122,14 +131,14 @@ public final class QtJambiResources {
 			List<URL> cpUrls = new ArrayList<URL>();
 
 			try {
-				Set<URL> modules = new HashSet<>();
+				/*Set<URL> modules = new HashSet<>();
 				RetroHelper.findModules(modules);
 				for (URL url : modules) {
 					if(!cpUrls.contains(url)) {
 						cache.addPath(url);
 						cpUrls.add(url);
 					}
-				}
+				}*/
 				for(ClassLoader loader : RetroHelper.classLoaders()) {
 					if(loader instanceof URLClassLoader) {
 						for(URL url : ((URLClassLoader) loader).getURLs()) {
@@ -685,7 +694,44 @@ public final class QtJambiResources {
 
         @NativeAccess
         JarEntry getJarEntry(String name) {
-            return jarFile.getJarEntry(name);
+        	JarEntry entry = jarFile.getJarEntry(name);
+        	if(entry==null) {
+        		JarEntry aliasEntry = jarFile.getJarEntry(name+".alias");
+        		if(aliasEntry!=null) {
+        			try(InputStream stream = jarFile.getInputStream(aliasEntry)){
+        				Properties aliasProperties = new Properties();
+        				aliasProperties.load(stream);
+        				QLocale locale = new QLocale();
+        				String localeName = locale.name();
+        				String aliasName = aliasProperties.getProperty(localeName);
+        				if(aliasName==null && !locale.bcp47Name().equals(localeName)) {
+        					aliasName = aliasProperties.getProperty(locale.bcp47Name());
+        				}
+        				if(aliasName==null) {
+        					String[] split = localeName.split("_");
+        					if(split.length>1)
+        						aliasName = aliasProperties.getProperty(split[0]);
+        				}
+        				if(aliasName==null) {
+        					aliasName = aliasProperties.getProperty("default");
+        				}
+        				if(aliasName==null) {
+        					aliasName = aliasProperties.getProperty("");
+        				}
+        				if(aliasName!=null) {
+        					int idx = name.lastIndexOf('/');
+        					if(idx>0) {
+        						String path = name.substring(0, idx+1);
+        						entry = jarFile.getJarEntry(path + aliasName);
+        					}else{
+        						entry = jarFile.getJarEntry(aliasName);
+        					}
+        				}
+        			} catch (Throwable ign) {
+					}
+        		}
+        	}
+            return entry;
         }
 
         @NativeAccess

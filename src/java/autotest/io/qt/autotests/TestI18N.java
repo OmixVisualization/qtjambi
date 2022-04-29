@@ -68,7 +68,7 @@ public class TestI18N extends ApplicationInitializer {
     public void TestSimpleNotTranslatedWithTranslationsLoaded() {
     	QResource.addClassPath(".");
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         QApplication.installTranslator(translator);
 
         SimpleNotTranslated test = new SimpleNotTranslated();
@@ -95,7 +95,7 @@ public class TestI18N extends ApplicationInitializer {
     	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         QApplication.installTranslator(translator);
 
         SubClass test = new SubClass();
@@ -121,7 +121,7 @@ public class TestI18N extends ApplicationInitializer {
     	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         QApplication.installTranslator(translator);
 
         SimpleTranslated test = new SimpleTranslated();
@@ -135,7 +135,7 @@ public class TestI18N extends ApplicationInitializer {
     	QResource.addClassPath(".");
 
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         QApplication.installTranslator(translator);
 
         SimpleTranslated test = new SimpleTranslated();
@@ -166,7 +166,7 @@ public class TestI18N extends ApplicationInitializer {
     @Test
     public void TestQTranslatorNotTranslated() {
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         assertEquals(translator.translate("my context", "do not translate this"), "");
         assertEquals(translator.translate("my context", "do not translate this æøå"), "");
         assertEquals(translator.translate("my context", "do not translate this \u06a0"), "");
@@ -175,7 +175,7 @@ public class TestI18N extends ApplicationInitializer {
     @Test
     public void TestQTranslatorTranslated() {
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         assertEquals(translator.translate("my context", "translate this"), "oversett dette");
         assertEquals(translator.translate("my context", "translate this æøå"), "oversett dette æøå");
         assertEquals(translator.translate("my context", "translate this \u06a0"), "oversett dette \u06a0");
@@ -184,7 +184,7 @@ public class TestI18N extends ApplicationInitializer {
     @Test
     public void TestQTranslatorTranslatedContext() {
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         assertEquals(translator.translate("øæå", "translate this"), "oversett dette");
         assertEquals(translator.translate("\u06a0", "translate this æøå"), "oversett dette æøå");
         assertEquals(translator.translate("\u03c0", "translate this \u03c0"), "oversett dette \u03c0");
@@ -201,7 +201,7 @@ public class TestI18N extends ApplicationInitializer {
             }
 
         };
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         assertEquals(translator.translate("øæå", "translate this"), "OVERSETT DETTE");
         assertEquals(translator.translate("\u06a0", "translate this æøå"), "OVERSETT DETTE ÆØÅ");
         assertEquals(translator.translate("\u03c0", "translate this \u03c0", "Comment"), "OVERSETT DETTE Π");
@@ -210,7 +210,7 @@ public class TestI18N extends ApplicationInitializer {
     @Test
     public void TestQTranslatorAdvancedStrings() {
         QTranslator translator = new QTranslator();
-        assertTrue(translator.load("classpath:io/qt/autotests/i18n.qm"));
+        assertTrue(translator.load(":io/qt/autotests/i18n.qm"));
         assertEquals(translator.translate("strings", "a" + "b" + "c"), "abc");
         assertEquals(translator.translate("strings", "c"
                     +"a" + "" +

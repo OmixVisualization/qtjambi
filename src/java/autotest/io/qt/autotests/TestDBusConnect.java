@@ -44,13 +44,9 @@ import org.junit.Test;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
-import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
-import io.qt.core.QFile;
-import io.qt.core.QIODevice;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
-import io.qt.core.QTextStream;
 import io.qt.core.Qt;
 import io.qt.dbus.QDBusConnection;
 import io.qt.dbus.QDBusInterface;

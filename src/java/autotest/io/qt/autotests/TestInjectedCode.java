@@ -291,7 +291,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         public QImage read() {
         	QImage image = new QImage();
             this.image = super.read();
-            return this.image!=null && image.load("classpath:io/qt/autotests/blue_angle_swirl.jpg") ? image : null;
+            return this.image!=null && image.load(":io/qt/autotests/blue_angle_swirl.jpg") ? image : null;
         }
 
         @Override
@@ -799,8 +799,8 @@ public class TestInjectedCode extends ApplicationInitializer {
         iihss.callRead(null);
         assertTrue(iihss.callRead(image));
         
-        QImage ref1 = new QImage("classpath:io/qt/autotests/svgcards-example.png");
-        QImage ref2 = new QImage("classpath:io/qt/autotests/blue_angle_swirl.jpg");
+        QImage ref1 = new QImage(":io/qt/autotests/svgcards-example.png");
+        QImage ref2 = new QImage(":io/qt/autotests/blue_angle_swirl.jpg");
 
         assertEquals(ref2.width(), image.width());
         assertEquals(ref2.height(), image.height());
@@ -894,7 +894,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testQPixmapCacheFind() {
         {
-            QPixmap pm = new QPixmap("classpath:io/qt/autotests/svgcards-example.png");
+            QPixmap pm = new QPixmap(":io/qt/autotests/svgcards-example.png");
             assertEquals(418, pm.width());
             QPixmapCache.insert("myPixmap", pm);
         }
@@ -1074,7 +1074,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testQImageLoadFromData() {
         QImage img = new QImage();
-        QFile file = new QFile("classpath:io/qt/autotests/svgcards-example.png");
+        QFile file = new QFile(":io/qt/autotests/svgcards-example.png");
 
         assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
 
@@ -1104,9 +1104,9 @@ public class TestInjectedCode extends ApplicationInitializer {
         QCursor cursor = new QCursor(Qt.CursorShape.CrossCursor);
         assertTrue(cursor.bitmap().isNull());
 
-        QBitmap bm = new QBitmap("classpath:io/qt/autotests/svgcards-example.png");
+        QBitmap bm = new QBitmap(":io/qt/autotests/svgcards-example.png");
         cursor = new QCursor(bm,
-                             new QBitmap("classpath:io/qt/autotests/svgcards-example.png"));
+                             new QBitmap(":io/qt/autotests/svgcards-example.png"));
 
         assertFalse(cursor.bitmap().isNull());
         assertEquals(bm.width(), cursor.bitmap().width());
@@ -1120,18 +1120,18 @@ public class TestInjectedCode extends ApplicationInitializer {
 
     @Test
     public void testQImageConstructedFromStringAndStuff() {
-        QImage img = new QImage("classpath:io/qt/autotests/svgcards-example.png", "JPEG");
+        QImage img = new QImage(":io/qt/autotests/svgcards-example.png", "JPEG");
         assertTrue(img.isNull());  // this assert fails when plugins did not load
         assertEquals(0, img.width());
 
-        img = new QImage("classpath:io/qt/autotests/svgcards-example.png", "PNG");
+        img = new QImage(":io/qt/autotests/svgcards-example.png", "PNG");
         assertFalse(img.isNull());
         assertEquals(418, img.width());
     }
 
     @Test
     public void testQImageConstructedFromByteArray() {
-        QImage img = new QImage("classpath:io/qt/autotests/svgcards-example.png");
+        QImage img = new QImage(":io/qt/autotests/svgcards-example.png");
 
         assertFalse(img.isNull());
         
@@ -1167,7 +1167,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         QBuffer buffer = new QBuffer();
         buffer.open(QIODevice.OpenModeFlag.WriteOnly);
 
-        QPixmap pmSave = new QPixmap("classpath:io/qt/autotests/svgcards-example.png");
+        QPixmap pmSave = new QPixmap(":io/qt/autotests/svgcards-example.png");
         assertFalse(pmSave.isNull());
         assertEquals(418, pmSave.width());
         assertTrue(pmSave.save(buffer, "PNG"));
@@ -1366,19 +1366,19 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testQBitmapStringStringConstructor() {
         {
-            QBitmap bm = new QBitmap("classpath:io/qt/autotests/svgcards-example.png", "PNG");
+            QBitmap bm = new QBitmap(":io/qt/autotests/svgcards-example.png", "PNG");
             assertFalse(bm.isNull());
             assertEquals(418, bm.width());
         }
 
         {
-            QBitmap bm = new QBitmap("classpath:io/qt/autotests/svgcards-example.png");
+            QBitmap bm = new QBitmap(":io/qt/autotests/svgcards-example.png");
             assertFalse(bm.isNull());
             assertEquals(418, bm.width());
         }
 
         {
-            QBitmap bm = new QBitmap("classpath:io/qt/autotests/svgcards-misspelling.png");
+            QBitmap bm = new QBitmap(":io/qt/autotests/svgcards-misspelling.png");
             assertTrue(bm.isNull());
         }
     }
@@ -1408,17 +1408,16 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("KLM", buffer.buffer().toString());
     }
 
-    @SuppressWarnings("deprecation")
 	@Test
     public void testQBufferUseBuffer() {
-        QByteArray ba = new QByteArray("CDE");
+        QByteArray ba = new QByteArray("CDE".getBytes());
         QBuffer buffer = new QBuffer(ba);
         assertEquals("CDE", buffer.buffer().toString());
 
         ba.append("fgh");
         assertEquals("CDEfgh", buffer.buffer().toString());
 
-        buffer.setData(new QByteArray("cdeFGH"));
+        buffer.setData(new QByteArray("cdeFGH".getBytes()));
         assertEquals("cdeFGH", ba.toString());
 
         QByteArray ba2 = new QByteArray("HIJ");
@@ -1497,9 +1496,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testIODevicePeek() {
     	QResource.addClassPath(".");
-        // This was "classpath:io/qt/autotests/TestInjectedCode.java" by it is not
+        // This was ":io/qt/autotests/TestInjectedCode.java" by it is not
         // normal to expect *.java files in the classpath.
-        QFile qfile = new QFile("classpath:io/qt/autotests/TestInjectedCode.dat");
+        QFile qfile = new QFile(":io/qt/autotests/TestInjectedCode.dat");
         QIODevice file = qfile;
 
         boolean bf = qfile.exists();
@@ -1536,9 +1535,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testIODeviceGetByteSuccess() {
     	QResource.addClassPath(".");
-        // This was "classpath:io/qt/autotests/TestInjectedCode.java" by it is not
+        // This was ":io/qt/autotests/TestInjectedCode.java" by it is not
         // normal to expect *.java files in the classpath.
-        QIODevice file = new QFile("classpath:io/qt/autotests/TestInjectedCode.dat");
+        QIODevice file = new QFile(":io/qt/autotests/TestInjectedCode.dat");
 
         assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
 
@@ -1593,10 +1592,9 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("hallo", ba2.toString());
     }
 
-    @SuppressWarnings("deprecation")
 	@Test
     public void testByteArrayPushBackString() {
-        QByteArray ba = new QByteArray("hello");
+        QByteArray ba = new QByteArray("hello".getBytes());
 
         ba.append("h nice");
         assertEquals("helloh nice", ba.toString());
@@ -1808,11 +1806,11 @@ public class TestInjectedCode extends ApplicationInitializer {
 
     @Test
     public void testOperatorAssignOtherTypeTemplate() {
-//        QDir in = new QDir("classpath:io/qt/");
-//        QDir other = new QDir("classpath:io/qt/examples/");
+//        QDir in = new QDir(":io/qt/");
+//        QDir other = new QDir(":io/qt/examples/");
 //        assertFalse(other.equals(in));
 //
-//        String out = "classpath:io/qt/examples/";
+//        String out = ":io/qt/examples/";
 //        QDir self = in.operator_assign(out);
 //        assertTrue(self.equals(in));
 //        assertEquals(self.absolutePath(), in.absolutePath());

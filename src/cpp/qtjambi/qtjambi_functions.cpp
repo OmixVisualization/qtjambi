@@ -49,6 +49,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QStaticPlugin>
 #include <QtCore/QCborMap>
 #include <QtCore/QCborValue>
+#include <QtCore/QResource>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
@@ -2269,10 +2270,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getListOfExtraSignal
     return nullptr;
 }
 
-static const char* FileNameDelim = "#";
-static const char* FileNamePrefix1 = "classpath:";
-static const char* FileNamePrefix2 = "/:classpath:";
-
 class QClassPathEntry : public QSharedData{
 public:
     virtual ~QClassPathEntry();
@@ -2296,7 +2293,7 @@ private:
 
 class QJarEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
 public:
-    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName);
+    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName, const QString& prefix);
     ~QJarEntryEngine() override;
 
     void setFileName(const QString &file) override;
@@ -2350,9 +2347,10 @@ private:
     QString m_name;
     bool m_closed;
     QString m_classPathEntryFileName;
+    QString m_prefix;
 };
 
-QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName)
+QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName, const QString& prefix)
     : QAbstractFileEngine(),
       QClassPathEntry(),
       m_entryFileName(),
@@ -2365,7 +2363,8 @@ QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& 
       m_directory(isDirectory),
       m_name(),
       m_closed(false),
-      m_classPathEntryFileName(classPathEntryFileName)
+      m_classPathEntryFileName(classPathEntryFileName),
+      m_prefix(prefix)
 {
     QJarEntryEngine::setFileName(fileName);
 }
@@ -2536,8 +2535,6 @@ QAbstractFileEngine::FileFlags QJarEntryEngine::fileFlags(FileFlags type) const{
 }
 
 QString QJarEntryEngine::fileName(FileName file) const{
-    QLatin1String fileNamePrefix1(FileNamePrefix1);
-    QLatin1String fileNameDelim(FileNameDelim);
     QString entryFileName = m_entryFileName;
 
     QString s;
@@ -2551,7 +2548,7 @@ QString QJarEntryEngine::fileName(FileName file) const{
             || file == CanonicalName) {
         if(JNIEnv* env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 600)
-            s = fileNamePrefix1 + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + fileNameDelim + entryFileName;
+            s = m_prefix + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + "#" + entryFileName;
         }
     } else if (file == BaseName) {
         auto pos = m_entryFileName.lastIndexOf("/");
@@ -2562,7 +2559,7 @@ QString QJarEntryEngine::fileName(FileName file) const{
     } else if (file == CanonicalPathName || file == AbsolutePathName) {
         if(JNIEnv* env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 600)
-            s = fileNamePrefix1 + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + fileNameDelim + fileName(PathName);
+            s = m_prefix + qtjambi_cast<QString>(env, Java::QtJambi::QtJambiResources$MyJarFile::getName(env, m_myJarFile.object())) + "#" + fileName(PathName);
         }
     }
     return s;
@@ -2741,9 +2738,7 @@ private:
 class QClassPathEngine final : public QAbstractFileEngine {
 
 public:
-    QClassPathEngine(const QString& fileName) {
-        QClassPathEngine::setFileName(fileName);
-    }
+    QClassPathEngine(QStringList&& resourceEntries);
 
     ~QClassPathEngine() override;
 
@@ -2813,13 +2808,15 @@ public:
 
     Iterator* beginEntryList(QDir::Filters filters, const QStringList& nameFilters) override;
 private:
-    bool addFromPath(JNIEnv* env, jobject url, const QString& fileName);
+    bool addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix);
     QAbstractFileEngine* getFirstEngine() const;
 
-    QString m_fileName = "";
-    QString m_baseName = "";
+    QString m_prefix;
+    QString m_fileName;
+    QString m_baseName;
     QString m_selectedSource = "*";
     QList<QAbstractFileEngine*> m_engines;
+    const QStringList m_resourceEntries;
     mutable QMutex m_mutex;
 };
 
@@ -2854,8 +2851,12 @@ QString QClassPathEngineIterator::currentFileName() const{
     return m_current;
 }
 
-
 QClassPathEntry::~QClassPathEntry(){}
+
+QClassPathEngine::QClassPathEngine(QStringList&& resourceEntries)
+    : QAbstractFileEngine(),
+      m_resourceEntries(std::move(resourceEntries))
+{}
 
 QClassPathEngine::~QClassPathEngine(){
     try{
@@ -2882,18 +2883,27 @@ void QClassPathEngine::setFileName(const QString &fileName)
     m_engines.clear();
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 600)
-        QLatin1String fileNamePrefix1(FileNamePrefix1);
-        QLatin1String fileNamePrefix2(FileNamePrefix2);
+        QLatin1String fileNamePrefix1("classpath:");
+        QLatin1String fileNamePrefix2("/:classpath:");
+        QLatin1String fileNamePrefix3(":classpath:");
+        QLatin1String fileNamePrefix4(":");
 
         QClassPathEngine::close();
-        if(fileName.startsWith(fileNamePrefix2)) {
-            m_fileName = fileName.mid(fileNamePrefix2.size());
-        }else {
-            if (!fileName.startsWith(fileNamePrefix1)){
-                JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Invalid format of path: '%1'").arg(fileName)) QTJAMBI_STACKTRACEINFO );
-                return;
-            }
+        if(fileName.startsWith(fileNamePrefix1)) {
+            m_prefix = fileNamePrefix1;
             m_fileName = fileName.mid(fileNamePrefix1.size());
+        }else if(fileName.startsWith(fileNamePrefix2)) {
+            m_prefix = fileNamePrefix2;
+            m_fileName = fileName.mid(fileNamePrefix2.size());
+        }else if(fileName.startsWith(fileNamePrefix3)) {
+            m_prefix = fileNamePrefix3;
+            m_fileName = fileName.mid(fileNamePrefix3.size());
+        }else if(fileName.startsWith(fileNamePrefix4)) {
+            m_prefix = fileNamePrefix4;
+            m_fileName = fileName.mid(fileNamePrefix4.size());
+        }else {
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Invalid format of path: '%1'").arg(fileName)) QTJAMBI_STACKTRACEINFO );
+            return;
         }
 
         auto idx = m_fileName.indexOf("#");
@@ -2927,7 +2937,7 @@ void QClassPathEngine::setFileName(const QString &fileName)
                     QString pathToJar = qtjambi_cast<QString>(env, qtjambi_iterator_next(env, iter));
                     QUrl qUrl = QUrl::fromLocalFile(pathToJar);
                     jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, qUrl.toString()));
-                    addFromPath(env, url, m_baseName);
+                    addFromPath(env, url, m_baseName, m_prefix);
                 }
             } else { // Its a file or directory, look for jar files which contains its a directory
 
@@ -2945,7 +2955,7 @@ void QClassPathEngine::setFileName(const QString &fileName)
                     QString pathToJar = qtjambi_cast<QString>(env, qtjambi_iterator_next(env, iter));
                     QUrl qUrl = QUrl::fromLocalFile(pathToJar);
                     jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, qUrl.toString()));
-                    addFromPath(env, url, m_baseName);
+                    addFromPath(env, url, m_baseName, m_prefix);
                 }
 
                 jobject classPathDirs = Java::QtJambi::QtJambiResources::classPathDirs(env);
@@ -2955,7 +2965,7 @@ void QClassPathEngine::setFileName(const QString &fileName)
                         jobject path = qtjambi_iterator_next(env, iter);
                         // FIXME: This maybe already URL or raw dir, I think we should just make this a
                         //  dir in the native String format
-                        addFromPath(env, Java::QtJambi::QtJambiResources::makeUrl(env, path), m_baseName);
+                        addFromPath(env, Java::QtJambi::QtJambiResources::makeUrl(env, path), m_baseName, m_prefix);
                     } catch (const JavaException& e) {
                         e.report(env);
                     }
@@ -2964,7 +2974,7 @@ void QClassPathEngine::setFileName(const QString &fileName)
         } else{
             try {
                 jobject url = Java::QtJambi::QtJambiResources::makeUrl(env, qtjambi_cast<jstring>(env, m_selectedSource));
-                addFromPath(env, url, m_baseName);
+                addFromPath(env, url, m_baseName, m_prefix);
             } catch (const JavaException& e) {
                 e.report(env);
             }
@@ -3001,7 +3011,7 @@ QStringList QClassPathEngine::entryList(QDir::Filters filters, const QStringList
         QMutexLocker locker(&m_mutex);
         engines = m_engines;
     }
-    QStringList result;
+    QStringList result(m_resourceEntries);
     for (QAbstractFileEngine* engine : engines) {
         result << engine->entryList(filters, filterNames);
     }
@@ -3036,6 +3046,9 @@ QString QClassPathEngine::fileName(FileName file) const {
         engines = m_engines;
     }
     if(QAbstractFileEngine* afe = engines.value(0)){
+        if (QFSFileEngine* fsf = dynamic_cast<QFSFileEngine*>(afe)){
+            return fsf->fileName(file);
+        }
         QString classPathEntry;
         if (engines.size() == 1) {
             if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
@@ -3054,35 +3067,29 @@ QString QClassPathEngine::fileName(FileName file) const {
 
         switch(file){
         case DefaultName:
-            result = QLatin1String(FileNamePrefix1) + m_fileName;
+            result = m_prefix + m_fileName;
             break;
         case CanonicalName:
-            result = fileName(CanonicalPathName) + "/" + fileName(BaseName);
+            result = fileName(CanonicalPathName) + QLatin1String("/") + fileName(BaseName);
             break;
         case AbsoluteName:
 #if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
         case LinkName:
 #endif
-            result = QLatin1String(FileNamePrefix1) + classPathEntry + QLatin1String(FileNameDelim) + m_baseName;
+            result = m_prefix + m_baseName;
             break;
         case BaseName:{
                 auto pos = m_baseName.lastIndexOf('/');
                 result = pos > 0 ? m_baseName.mid(pos + 1) : m_baseName;
             }
             break;
-        case PathName:{
-                auto pos = m_baseName.lastIndexOf('/');
-                result = pos > 0 ? m_baseName.mid(0, pos) : "";
-            }
-            break;
-        case AbsolutePathName:
-            result = FileNamePrefix1 + classPathEntry + FileNameDelim + fileName(PathName);
-            break;
         case CanonicalPathName:
-            result = afe->fileName(file);
-            break;
-        default:
-            result = FileNamePrefix1 + classPathEntry + FileNameDelim + fileName(PathName);
+        case AbsolutePathName:
+        case PathName:
+        default:{
+                auto pos = m_baseName.lastIndexOf('/');
+                result = m_prefix + (pos > 0 ? m_baseName.mid(0, pos) : "");
+            }
             break;
         }
     }
@@ -3268,14 +3275,15 @@ QAbstractFileEngineIterator* QClassPathEngine::beginEntryList(QDir::Filters filt
         QMutexLocker locker(&m_mutex);
         engines = m_engines;
     }
-    QStringList entries;
+    QStringList entries(m_resourceEntries);
     for (QAbstractFileEngine* engine : engines){
         entries << engine->entryList(filters, nameFilters);
     }
+    entries.removeDuplicates();
     return new QClassPathEngineIterator(entries, filters, nameFilters);
 }
 
-bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName) {
+bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix) {
     // If it is a plain file on the disk, just read it from the disk
     QString urlPath = qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, url));
     if(urlPath.startsWith("file:")){
@@ -3300,7 +3308,7 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
     if(urlPath.startsWith("jar:")){
         jobject jarFile = Java::QtJambi::QtJambiResources::resolveUrlToMyJarFile(env, url);
         bool isDirectory = Java::QtJambi::QtJambiResources::isDirectory(env, jarFile, qtjambi_cast<jstring>(env, fileName));
-        QJarEntryEngine* engine = new QJarEntryEngine(env, jarFile, fileName, isDirectory, urlPath);
+        QJarEntryEngine* engine = new QJarEntryEngine(env, jarFile, fileName, isDirectory, urlPath, prefix);
         if(engine->isValid()) {
             QMutexLocker locker(&m_mutex);
             m_engines << engine;
@@ -3391,27 +3399,48 @@ bool QUrlEntryEngine::close() {
     return false;
 }
 
+class AccessResource : public QResource{
+public:
+    static bool needsClassPathEngine(const QString &fileName, QStringList& resourceEntries);
+};
+
+bool AccessResource::needsClassPathEngine(const QString &fileName, QStringList& resourceEntries){
+    AccessResource resource;
+    resource.setFileName(fileName);
+    if(resource.isValid()){
+        resourceEntries << resource.children();
+        return !resourceEntries.isEmpty();
+    }
+    return true;
+}
+
 class QClassPathFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override
-    {
-        QAbstractFileEngine *rv;
-        if (fileName.startsWith("classpath:"))
-            rv = new QClassPathEngine(fileName);
-        else if (fileName.startsWith("/:classpath:"))
-            rv = new QClassPathEngine(fileName.mid(2));
-        else
-            rv = nullptr;
-        return rv;
-    }
+    QAbstractFileEngine *create(const QString &fileName) const override;
 private:
-    QClassPathFileEngineHandler(){}
-    ~QClassPathFileEngineHandler() override {}
+    QClassPathFileEngineHandler() = default;
+    ~QClassPathFileEngineHandler() override = default;
     static QClassPathFileEngineHandler INSTANCE;
 };
 
 QClassPathFileEngineHandler QClassPathFileEngineHandler::INSTANCE;
+
+QAbstractFileEngine *QClassPathFileEngineHandler::create(const QString &fileName) const
+{
+    QClassPathEngine *rv = nullptr;
+    bool mightBeResource = false;
+    if (fileName.startsWith("classpath:")
+            || fileName.startsWith("/:classpath:")
+            || (mightBeResource = fileName.startsWith(":"))){
+        QStringList resourceEntries;
+        if(!mightBeResource || AccessResource::needsClassPathEngine(fileName, resourceEntries)){
+            rv = new QClassPathEngine(std::move(resourceEntries));
+            rv->setFileName(fileName);
+        }
+    }
+    return rv;
+}
 
 extern "C" Q_DECL_EXPORT jint JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiDebugTools_objectCount)

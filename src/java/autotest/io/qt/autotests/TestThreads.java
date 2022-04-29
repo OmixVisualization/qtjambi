@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -690,6 +691,37 @@ public class TestThreads extends ApplicationInitializer {
     	QCoreApplication.sendPostedEvents();
     	assertTrue(t[0] instanceof QThreadAffinityException);
     	assertEquals("TEST", result[0]);
+    }
+    
+    @Test
+    public void run_affinity_breach_exceptionhandling() {
+    	QObject obj = new QObject();
+    	QThread thread = new QThread(){
+    		@Override
+    		protected void run() {
+    			obj.startTimer(0);
+    		}
+    	};
+    	Throwable[] occurred = {null};
+    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.start();
+    	thread.join();
+    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
+    	occurred[0] = null;
+    	thread = QThread.create(()->{
+			obj.startTimer(0);
+		});
+    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.start();
+    	thread.join();
+    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
+    	occurred[0] = null;
+    	
+    	thread = QThread.create(()->{
+			obj.startTimer(0);
+		});
+    	thread.start();
+    	thread.join();
     }
 
     public static void main(String args[]) {

@@ -31,7 +31,6 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -39,16 +38,20 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QLocale;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QResource;
+import io.qt.core.QStringList;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
 import io.qt.widgets.QLabel;
@@ -99,16 +102,14 @@ public class TestFileEngine extends ApplicationInitializer {
                 inputStream = null;
             }
         }
-        assertTrue("io/qt/autotests/TestClassFunctionality.jar exists on CLASSAPTH", bf);
+        assertTrue("io/qt/autotests/TestClassFunctionality.jar exists on CLASSPATH", bf);
         // This checks it is not inside a JAR itself but directly accessible as a file
         assertEquals("io/qt/autotests/TestClassFunctionality.jar exists on CLASSPATH and is file:/// URL protocol", "file", urlProtocol);
     }
 
 //    @SuppressWarnings("deprecation")
 	@Test
-    public void run_classPathFileEngine() {
-    	QResource.addClassPath(".");  // Hmm not sure on the merit of this cwd will be project top-level dir
-    	String search_path = null;
+    public void testClassPathFileEngine() {
     	{
 	        QFileInfo info = new QFileInfo("classpath:io/qt/autotests/TestClassFunctionality.jar");
 	        assertTrue(info.exists());
@@ -118,9 +119,16 @@ public class TestFileEngine extends ApplicationInitializer {
 	        assertTrue(af.exists());
 	        assertTrue(af.open(QIODevice.OpenModeFlag.ReadOnly));
 	        af.close();
-	
-	        search_path = info.canonicalFilePath();  // on windows this is in the format "C:/dir1/dir2/TestClassFunctionality.jar"
 	    }
+    	String search_path = null;
+    	try{
+    		URL url = TestFileEngine.class.getResource("TestClassFunctionality.jar");
+        	Assume.assumeTrue(url!=null);
+        	search_path = new java.io.File(url.toURI()).getAbsolutePath();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		Assume.assumeTrue("TestClassFunctionality.jar not found on classpath", false);
+        }
         QResource.addClassPath(search_path);
         
         {
@@ -208,9 +216,8 @@ public class TestFileEngine extends ApplicationInitializer {
 	        	QFileInfo info = new QFileInfo("classpath:TestClassFunctionality_test.txt");
 		        assertTrue(info.exists());
 		        assertEquals(info.size(), 8L);
-		        assertTrue(info.absolutePath().endsWith("#") && info.absolutePath().startsWith("classpath:"));
-		        assertTrue(info.absoluteFilePath().endsWith("#TestClassFunctionality_test.txt") && info.absoluteFilePath().startsWith("classpath:"));
-		        assertNotNull(info.absoluteDir().absolutePath().endsWith("TestClassFunctionality.jar#."));
+		        assertEquals("classpath:", info.absolutePath());
+		        assertEquals("classpath:TestClassFunctionality_test.txt", info.absoluteFilePath());
         	}
 		        
 	        assertTrue(QFile.exists("classpath:TestClassFunctionality_test.txt"));
@@ -369,6 +376,108 @@ public class TestFileEngine extends ApplicationInitializer {
 	        QResource.removeClassPath(search_path);
         }
     }
+	
+	@Test
+    public void testResourceFileEngine() throws Exception {
+		QtUtilities.initializePackage(io.qt.autotests.generated.General.class);
+		QFileInfo info = new QFileInfo(":io/qt/autotests/TestClassFunctionality.jar");
+        assertTrue(info.exists());
+        
+        info = new QFileInfo(":io/qt/autotests/generated/");
+		assertTrue(info.isDir());
+		QStringList content = new QDir(":io/qt/autotests/generated/").entryList(QDir.Filter.NoFilter.asFlags(), QDir.SortFlag.NoSort.asFlags());
+		assertTrue(content.contains("General.class"));
+		assertTrue(content.contains("qjlogo.png"));
+		
+        info = new QFileInfo(":io/qt/autotests/generated/qjlogo.png");
+		assertTrue(info.exists());
+		
+        info = new QFileInfo(":io/qt/autotests/generated/resource.txt");// this is the alias
+		assertFalse(info.exists());
+		
+        info = new QFileInfo(":io/qt/autotests/generated/Text");
+		assertTrue(info.exists());
+		
+		{
+			QFile file = new QFile();
+			try {
+				file.setFileName(info.absoluteFilePath());
+				file.open(QIODevice.OpenModeFlag.ReadOnly);
+				assertEquals("Hello World!", file.readAll().toString());
+			}finally {
+				file.close();
+				file.dispose();
+			}
+		}
+		
+        info = new QFileInfo(":io/qt/autotests/generated/General.class");
+		assertTrue(info.exists());
+		
+        URL url = TestFileEngine.class.getResource("resources.jar");
+        QResource.addClassPath(new java.io.File(url.toURI()).getAbsolutePath());
+        
+        QLocale.setDefault(new QLocale(QLocale.Language.Spanish, QLocale.Country.Argentina));
+        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
+		assertTrue(info.exists());
+		{
+			QFile file = new QFile();
+			try {
+				file.setFileName(info.absoluteFilePath());
+				file.open(QIODevice.OpenModeFlag.ReadOnly);
+				assertEquals("Hello World!", file.readAll().toString());
+			}finally {
+				file.close();
+				file.dispose();
+			}
+		}
+		
+		QLocale.setDefault(new QLocale(QLocale.Language.German, QLocale.Country.Germany));
+        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
+		assertTrue(info.exists());
+		{
+			QFile file = new QFile();
+			try {
+				file.setFileName(info.absoluteFilePath());
+				file.open(QIODevice.OpenModeFlag.ReadOnly);
+				assertEquals("Hallo Welt!", file.readAll().toString());
+			}finally {
+				file.close();
+				file.dispose();
+			}
+		}
+		
+		QLocale.setDefault(new QLocale(QLocale.Language.German, QLocale.Country.Austria));
+        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
+		assertTrue(info.exists());
+		{
+			QFile file = new QFile();
+			try {
+				file.setFileName(info.absoluteFilePath());
+				file.open(QIODevice.OpenModeFlag.ReadOnly);
+				assertEquals("Hallo Welt!", file.readAll().toString());
+			}finally {
+				file.close();
+				file.dispose();
+			}
+		}
+		
+		QDir.addSearchPath("text", ":io/qt/qtjambi/resources/");
+		
+		QLocale.setDefault(new QLocale(QLocale.Language.German, QLocale.Country.Austria));
+        info = new QFileInfo("text:Text.txt");
+		assertTrue(info.exists());
+		{
+			QFile file = new QFile();
+			try {
+				file.setFileName(info.absoluteFilePath());
+				file.open(QIODevice.OpenModeFlag.ReadOnly);
+				assertEquals("Hallo Welt!", file.readAll().toString());
+			}finally {
+				file.close();
+				file.dispose();
+			}
+		}
+	}
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestFileEngine.class.getName());

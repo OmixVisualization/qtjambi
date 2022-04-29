@@ -32,7 +32,7 @@ public class TestDesignerHelp extends ApplicationInitializer {
 			for(String path : QCoreApplication.libraryPaths()) {
 				loader.addPluginPath(path+"/designer");
 			}
-	    	QIODevice device = new QFile("classpath:io/qt/autotests/ui/helptest.ui");
+	    	QIODevice device = new QFile(":io/qt/autotests/ui/helptest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
 	    	device.close();

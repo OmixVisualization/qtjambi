@@ -2,16 +2,17 @@
     <property name="plugin-subdir" value="sqldrivers"/>
     <property name="module-name" value="qsqljdbc"/>
     <property name="qtjambi-module-name" value="qtjambi.sql"/>
-    <property name="qtjambi-libfiles" value="qtjambi${module.suffix}-${qtjambi.jar.version}.jar,
-                                             qtjambi-sql${module.suffix}-${qtjambi.jar.version}.jar"/>
+    <property name="qtjambi.required.modules" value="qtjambi, qtjambi.sql"/>
     <target name="build">
         <if>
             <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
             <then>
-                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar2">
+                <path id="sourcedirs">
+                    <pathelement location="${java.srcdir}/qtjambi-plugins/${module-name}/main"/>
+                    <pathelement location="${java.srcdir}/qtjambi-plugins/${module-name}/Qt${qtjambi.soname.version.major}"/>
+                </path>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="build-plugin">
                     <property name="module" value="${module-name}"/>
-                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}/main"/>
-                    <property name="sourcedir2" value="${java.srcdir}/qtjambi-plugins/${module-name}/Qt${qtjambi.soname.version.major}"/>
                     <property name="jar.excludes" value=""/>
                     <property name="module.excludes" value=""/>
                     <property name="plugin.metadata" value="{''Keys'':[''QJDBC'']}"/>

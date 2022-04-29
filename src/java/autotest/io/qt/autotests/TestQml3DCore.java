@@ -17,7 +17,7 @@ public class TestQml3DCore extends ApplicationInitializer{
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQmlAspectEngine component = new QQmlAspectEngine();
 		try {
-			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
+			component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
 		} catch (AssertionError e) {
 			throw e;

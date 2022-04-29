@@ -318,10 +318,10 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     	final QProcess process = new QProcess();
     	try {
 	    	if(java8) {
-	    		classPath = macosPrefix+"../java8";
-	    		classPath += File.pathSeparator+macosPrefix+"../../../deployment/qtjambi-jre8-"+version+".jar";
+	    		classPath = macosPrefix+"../java";
+	    		classPath += File.pathSeparator+macosPrefix+"../../../deployment/qtjambi-"+version+".jar";
 	    		for(String mod : modules) {
-		    		classPath += File.pathSeparator+macosPrefix+"../../../deployment/qtjambi-"+mod+"-jre8-"+version+".jar";
+		    		classPath += File.pathSeparator+macosPrefix+"../../../deployment/qtjambi-"+mod+"-"+version+".jar";
 		    		if("sql".equals(mod) && !System.getProperty("qtjambi.deployer.test.jdbc", "").isEmpty()) {
 		    			String jdbcPath = targetDir.toPath().toAbsolutePath().relativize(new File(System.getProperty("qtjambi.deployer.test.jdbc")).toPath().toAbsolutePath()).toString();
 			    		classPath += File.pathSeparator+macosPrefix+jdbcPath;

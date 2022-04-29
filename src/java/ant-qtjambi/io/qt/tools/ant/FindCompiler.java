@@ -39,13 +39,16 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.PropertyHelper;
+import org.apache.tools.ant.Task;
 
 public class FindCompiler {
 
 	private String compilerPathValue;
     private Compiler compiler;
     private boolean verbose = false;
-    private final InitializeBuildTask task;
+    private final Task task;
+    private final PropertyHelper propertyHelper;
     private String compilerDetectionLine;
     private String availableCompilers;
 
@@ -176,7 +179,8 @@ public class FindCompiler {
         }
     }
 
-    public FindCompiler(InitializeBuildTask task) {
+    public FindCompiler(PropertyHelper propertyHelper, Task task) {
+        this.propertyHelper = propertyHelper;
         this.task = task;
     }
     
@@ -210,7 +214,8 @@ public class FindCompiler {
                         System.err.println("WARNING: VSINSTALLDIR is set but the path is not found or not a directory; the resulting build output will not attempt to package Visual C redistributable components.");
                         System.err.println("         VSINSTALLDIR=\"" + vcdir + "\"");
                     } else {
-                    	task.mySetProperty(-1, Constants.VSINSTALLDIR, " (taken from environment)", vcdir, false);
+                    	if(task instanceof InitializeBuildTask)
+                    		((InitializeBuildTask)task).mySetProperty(-1, Constants.VSINSTALLDIR, " (taken from environment)", vcdir, true);
 
                         String redistDir;
                         if(compiler == Compiler.MSVC2005_64 || compiler == Compiler.MSVC2008_64 || compiler == Compiler.MSVC2010_64)
@@ -227,8 +232,8 @@ public class FindCompiler {
                         if(!fileRedistDir.isDirectory()) {
                             System.err.println("WARNING: VSINSTALLDIR is set but the path is not found or not a directory; the resulting build output will not attempt to package Visual C redistributable components.");
                             System.err.println("         VSINSTALLDIR=\"" + vcdir + "\" checking for \"" + redistDir + "\"");
-                        } else {
-                        	task.mySetProperty(-1, Constants.VSREDISTDIR, " (taken from VSINSTALLDIR)", fileRedistDir.getAbsolutePath(), false);
+                        } else if(task instanceof InitializeBuildTask){
+                        	((InitializeBuildTask)task).mySetProperty(-1, Constants.VSREDISTDIR, " (taken from VSINSTALLDIR)", fileRedistDir.getAbsolutePath(), true);
                         }
                     }
                 }
@@ -332,7 +337,7 @@ public class FindCompiler {
 			break;
         }
         
-        String compilerPathValue = AntUtil.getPropertyAsString(task.propertyHelper, "tools.compiler.path");
+        String compilerPathValue = AntUtil.getPropertyAsString(propertyHelper, "tools.compiler.path");
     	if(compilerPathValue!=null && !compilerPathValue.isEmpty()) {
     		Compiler crossCompiler = compiler;
     		this.compilerPathValue = new File(compilerPathValue).getAbsolutePath();
@@ -358,14 +363,16 @@ public class FindCompiler {
     		}catch(BuildException e) {
     			throw new BuildException("No cross compiler found in PATH="+this.compilerPathValue+": "+e.getMessage(), e);
     		}
-    		if(compiler!=null) {
-    			task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from tools.compiler.path)", compiler.toString(), false);
-    		}else {
-    			task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", crossCompiler.toString(), false);
+    		if(task instanceof InitializeBuildTask) {
+	    		if(compiler!=null) {
+	    			((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from tools.compiler.path)", compiler.toString(), true);
+	    		}else {
+	    			((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", crossCompiler.toString(), true);
+	    		}
     		}
     		compiler = crossCompiler;
-        }else {
-        	task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", compiler.toString(), false);
+        }else if(task instanceof InitializeBuildTask){
+        	((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", compiler.toString(), true);
         }
 
         if(availableCompilers == null && compiler != null)
@@ -385,8 +392,8 @@ public class FindCompiler {
             	cmd = compilerPathValue+File.separator+cmd;
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-dumpversion");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
-            Util.emitDebugLog(task.getProject(), sA);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[0] != null) {
                 if(match(new String[] { sA[0] }, new String[] { "^3\\.3\\." }))  // sA[0] is stdout
                     return Compiler.OldGCC;
@@ -408,8 +415,8 @@ public class FindCompiler {
             List<String> cmdAndArgs = new ArrayList<String>();
             cmdAndArgs.add("clang");
             cmdAndArgs.add("-dumpversion");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
-            Util.emitDebugLog(task.getProject(), sA);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(propertyHelper.getProject(), sA);
             return Compiler.CLANG;
         } catch(InterruptedException ex) {
             if(verbose)
@@ -443,7 +450,7 @@ public class FindCompiler {
                     break;
                 }
             }
-            task.getProject().log(sb.toString(), Project.MSG_VERBOSE);
+            propertyHelper.getProject().log(sb.toString(), Project.MSG_VERBOSE);
         }
         return bf;
     }
@@ -461,8 +468,8 @@ public class FindCompiler {
             	cmd = compilerPathValue+File.separator+cmd;
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
-            Util.emitDebugLog(task.getProject(), sA);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
                 if(match(new String[] { sA[1] }, new String[] { "mingw" }))  // sA[1] is stderr
                     return Compiler.MinGW;
@@ -492,8 +499,8 @@ public class FindCompiler {
             List<String> cmdAndArgs = new ArrayList<String>();
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
-            Util.emitDebugLog(task.getProject(), sA);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
                 if(match(new String[] { sA[1] }, new String[] { "mingw-w64", "mingw64" }))   // sA[1] is stderr
                     return Compiler.MinGW_W64;
@@ -516,8 +523,8 @@ public class FindCompiler {
             	cmdAndArgs.add(compilerPathValue+File.separator+"cl.exe");
             else
             	cmdAndArgs.add("cl.exe");   // /version ?
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
-            Util.emitDebugLog(task.getProject(), sA);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(propertyHelper.getProject(), sA);
             String stderr = null;
             if(sA != null && sA.length == 2 && sA[1] != null)
                 stderr = sA[1];

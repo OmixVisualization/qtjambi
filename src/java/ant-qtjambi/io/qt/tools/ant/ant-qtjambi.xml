@@ -48,8 +48,6 @@
         classname="io.qt.tools.ant.InitializeBuildTask"/>
     <taskdef name="qtjambi-resolve-path"
         classname="io.qt.tools.ant.ResolvePathTask"/>
-    <taskdef name="qtjambi-version-file"
-        classname="io.qt.tools.ant.VersionFileTask"/>
 
     <!-- Added due to dash in name -->
     <typedef name="plugin-designer"
@@ -64,5 +62,11 @@
          classname="io.qt.tools.ant.DependenciesToClassPathTask"/>
     <typedef name="select-modules"
          classname="io.qt.tools.ant.JavaModuleSelectorTask"/>
+    <typedef name="foreach-version"
+         classname="io.qt.tools.ant.ForeachVersionTask"/>
+    <typedef name="foreach-native"
+         classname="io.qt.tools.ant.ForeachNativeTask"/>
+    <typedef name="gpg"
+         classname="io.qt.tools.ant.GPGTask"/>
 </antlib>
 

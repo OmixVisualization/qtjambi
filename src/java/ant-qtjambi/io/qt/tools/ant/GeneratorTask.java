@@ -75,6 +75,7 @@ public class GeneratorTask extends Task {
     private String generatorExe;
     private String includePaths;
 	private String targetJavaVersion;
+	private String qtjambiVersion;
     private boolean debugTools;
     private boolean useNativeIds = true;
     private List<String> commandList = new ArrayList<String>();
@@ -213,6 +214,9 @@ public class GeneratorTask extends Task {
 
         if(outputPreprocessFile != null)
             commandList.add("--output-preprocess-file=" + outputPreprocessFile);
+        
+        if(qtjambiVersion!=null)
+        	commandList.add("--qtjambi-version=" + qtjambiVersion);
 
         if(debugTools)
             commandList.add("--qtjambi-debug-tools");
@@ -404,5 +408,13 @@ public class GeneratorTask extends Task {
 
 	public void setTypesystemsDirectory(String typesystemsDirectory) {
 		this.typesystemsDirectory = typesystemsDirectory;
+	}
+
+	public String getQtjambiVersion() {
+		return qtjambiVersion;
+	}
+
+	public void setQtjambiVersion(String qtjambiVersion) {
+		this.qtjambiVersion = qtjambiVersion;
 	}
 }

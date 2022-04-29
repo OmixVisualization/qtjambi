@@ -49,177 +49,100 @@
         </copy>
     </target>
 
-    <target name="compile" depends="jar_init">
+    <target name="build-qml">
+        <if>
+            <istrue value="${qtjambi.qml.bundle}"/>
+            <then>
+                <antcall inheritrefs="true" target="bundle-qml"/>
+            </then>
+            <else>
+                <antcall inheritrefs="true" target="compile-qml"/>
+            </else>
+        </if>
+    </target>
+    <target name="compile-qml" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
+        <pathconvert pathsep=","
+            property="multiroot.basedirs">
+            <path refid="sourcedirs"/>
+        </pathconvert>
         <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/qml/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
+        <copy todir="${java.outdir}/qml/${module}" includeemptydirs="false">
+            <multirootfileset basedirs="${multiroot.basedirs}"
+                              excludes="**/.*,
+                                                pom.xml,
+                                                build.xml,
+                                                build.properties,
+                                                **/*.java,
+                                                **/*.jui,
+                                                ${jar.excludes},
+                                                ${qtjambi.jar.excludes}"/>
+        </copy>
+        <condition property="module.info.exclude" value="" else="module-info.java">
+            <istrue value="${java.module.based}"/>
+        </condition>
+        <copy todir="${java.outsrcdir}/qml/${module}" includeemptydirs="false">
+            <multirootfileset basedirs="${multiroot.basedirs}" 
+                              excludes="pom.xml,
+                                                    build.xml,
+                                                    build.properties,
+                                                    ${jar.excludes},
+                                                    ${module.info.exclude},
+                                                    ${module.excludes},
+                                                    ${qtjambi.jar.excludes}"/>
+        </copy>
+        <pathconvert pathsep="${psep}"
+            property="sourcedirs2">
+            <path refid="sourcedirs"/>
+        </pathconvert>
+        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                <javac source="8" target="8" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/qml/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <modulepath refid="qtjambi.modulepath"/>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
+                        includeantruntime="false"
+                        srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"
                         destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <classpath refid="qtjambi.modulepath"/>
+                    <compilerarg value="-Xlint:-module,-options" />
+                    <classpath>
+                        <fileset dir="${deploymentdir}" includes="${qtjambi.dependencies}"/>
+                    </classpath>
                 </javac>
-            </else>
-        </if>
-    </target>
-
-    <!-- Same as "compile" target but with 2 sourcedirs -->
-    <target name="compile2" depends="jar_init">
-        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/qml/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
+                        includeantruntime="false"
+                        srcdir="${sourcedirs2}"
+                        includes="module-info.java"
                         destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <modulepath refid="qtjambi.modulepath"/>
+                    <compilerarg value="-Xlint:-module,-options" />
+                    <modulepath>
+                        <fileset dir="${deploymentdir}" includes="${qtjambi.dependencies}"/>
+                    </modulepath>
                 </javac>
             </then>
             <else>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
+                        includeantruntime="false"
+                        srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"
                         destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <classpath refid="qtjambi.modulepath"/>
+                    <classpath>
+                        <fileset dir="${deploymentdir}" includes="${qtjambi.dependencies}"/>
+                    </classpath>
                 </javac>
             </else>
         </if>
-    </target>
-
-    <!-- Same as "compile" target but with 3 sourcedirs -->
-    <target name="compile3" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/qml/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/qml/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <modulepath refid="qtjambi.modulepath"/>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/qml/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <classpath refid="qtjambi.modulepath"/>
-                </javac>
-            </else>
-        </if>
-    </target>
-
-    <target name="createjar1">
-        <if>
-            <istrue value="${qtjambi.qml.bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="bundle-qml"/>
-            </then>
-            <else>
-                <antcall inheritrefs="true" target="compile"/>
-                <antcall inheritrefs="true" target="createjar"/>
-            </else>
-        </if>
-    </target>
-    <target name="createjar2">
-        <if>
-            <istrue value="${qtjambi.qml.bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="bundle-qml"/>
-            </then>
-            <else>
-                <antcall inheritrefs="true" target="compile2"/>
-                <antcall inheritrefs="true" target="createjar"/>
-            </else>
-        </if>
-    </target>
-    <target name="createjar3">
-        <if>
-            <istrue value="${qtjambi.qml.bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="bundle-qml"/>
-            </then>
-            <else>
-                <antcall inheritrefs="true" target="compile3"/>
-                <antcall inheritrefs="true" target="createjar"/>
-            </else>
-        </if>
-    </target>
-    
-    <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
         <if>
             <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
@@ -322,6 +245,7 @@
         </if>
         <java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
             <jvmarg value="-Djava.library.path=${librarypath}"/>
+            <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
             <!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->
             <jvmarg value="${XstartOnFirstThread}"/>
             <!--jvmarg value="-Xint"/>

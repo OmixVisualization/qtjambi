@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,4 +44,13 @@
 ****************************************************************************/
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
+#include <qtjambi/qtjambi_containers.h>
+#include <qtjambi/qtjambi_containeraccess.h>
+#include <qtjambi/qtjambi_containeraccess_map.h>
+#include <qtjambi/qtjambi_containeraccess_hash.h>
+#include <qtjambi/qtjambi_containeraccess_multimap.h>
+#include <qtjambi/qtjambi_containeraccess_multihash.h>
+#include "qtjambi_core_repository.h"
 #include <qobject.h>
+#include <QtCore/QtCore>

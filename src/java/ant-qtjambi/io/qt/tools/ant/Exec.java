@@ -177,19 +177,19 @@ class Exec {
         	prependEnvironmentWithPathSeparator(env, key, path);
         }else{
 			s = AntUtil.getPropertyAsString(props, Constants.BINDIR);
-			if(s != null)
+			if(s != null && !s.isEmpty())
 				prependEnvironmentWithPathSeparator(env, key, s);
 		}
         if(!System.getenv().containsKey("QTDIR")){
 	        s = AntUtil.getPropertyAsString(props, Constants.BINDIR);
-	        if(s != null)
+	        if(s != null && !s.isEmpty())
 	            env.put("QTDIR", new File(s).getParent());
         }
         s = AntUtil.getPropertyAsString(props, Constants.JAVA_HOME_TARGET);
-        if(s != null)
+        if(s != null && !s.isEmpty())
             env.put("JAVA_HOME_TARGET", s);
         s = AntUtil.getPropertyAsString(props, Constants.JAVA_OSARCH_TARGET);
-        if(s != null)
+        if(s != null && !s.isEmpty())
             env.put("JAVA_OSARCH_TARGET", s);
     }
     

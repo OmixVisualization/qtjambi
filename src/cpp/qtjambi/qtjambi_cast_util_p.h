@@ -403,7 +403,7 @@ struct LessThan<T,true>{
 
 template<bool is_pointer, bool is_const, bool is_reference, bool buffer, class Container>
 struct create_container_pointer{
-    static Container create(JNIEnv *, QtJambiScope*, nullptr_t){
+    static Container create(JNIEnv *, QtJambiScope*, std::nullptr_t){
         Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
     }
     static Container create(JNIEnv *, QtJambiScope*, Container*){
@@ -420,7 +420,7 @@ struct create_container_pointer{
 template<bool is_const, class Container>
 struct create_container_pointer<true, is_const, false, false, Container>{
     typedef typename std::conditional<is_const, typename std::add_const<Container>::type, Container>::type Container_const;
-    static Container* create(JNIEnv *, QtJambiScope*, nullptr_t){
+    static Container* create(JNIEnv *, QtJambiScope*, std::nullptr_t){
         return nullptr;
     }
     static Container* create(JNIEnv *, QtJambiScope*, Container* t){
@@ -437,7 +437,7 @@ struct create_container_pointer<true, is_const, false, false, Container>{
 
 template<bool is_const, class Container>
 struct create_container_pointer<true, is_const, false, true, Container>{
-    static Container* create(JNIEnv *, QtJambiScope*, nullptr_t){
+    static Container* create(JNIEnv *, QtJambiScope*, std::nullptr_t){
         return nullptr;
     }
     static Container* create(JNIEnv *, QtJambiScope*, Container* t){
@@ -488,7 +488,7 @@ struct create_container_pointer<false, true, true, buffer, Container>{
 
 template<class Container>
 struct create_container_pointer<false, false, true, true, Container>{
-    static Container& create(JNIEnv * env, QtJambiScope* scope, nullptr_t){
+    static Container& create(JNIEnv * env, QtJambiScope* scope, std::nullptr_t){
         if(!scope)
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container))))) QTJAMBI_STACKTRACEINFO );
         Container* result = new Container();

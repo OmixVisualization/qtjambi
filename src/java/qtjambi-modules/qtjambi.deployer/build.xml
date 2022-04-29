@@ -2,15 +2,15 @@
     <target name="build">
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
-        <condition property="build.module" value="true">
-            <available file="${generator.outputdir}/java/${module}" type="dir"/>
-        </condition>
         <antcall inheritrefs="true" target="build.impl"/>
     </target>
-    <target name="build.impl" if="build.module">
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
-            <property name="sourcedir" value="${antfile.dir}"/>
-            <property name="sourcedir2" value="${generator.outputdir}/java/${module}"/>
+    <target name="build.impl">
+        <mkdir dir="${generator.outputdir}/java/${module}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
             <property name="application.mainclass" value="io.qt.qtjambi.deployer.Main"/>

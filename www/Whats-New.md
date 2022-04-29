@@ -1,32 +1,23 @@
-# What's new in QtJambi 6.3.0 / 6.2.3 / 5.15.5
+# What's new in QtJambi 6.3.1 / 6.2.4 / 5.15.6
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 15](../../../issues/15): Crash during shutdown on some linux systems is solved now (verified).
-* [Issue 18](../../../issues/18): FileAlreadyExistsException fixed
+* [Issue 51](../../../issues/51): UIC: tabwidget conversion problem
+* [Issue 48](../../../issues/48): iconfont does not work as expected
+* [Issue 27](../../../issues/27): Building QtJambi on windows using mingw
+* [Issue 52](../../../issues/52): The qtjambi-deployer module does not work with jre8
+* [Issue 53](../../../issues/53): Child thread executes custom signal and crashes when updating interface content
 
 ## New Features
 
-* Module **QtQuickTest** now available
-* Module **ActiveQt** now available
-* Module **QtPDF** now available for Qt 6.3
-* Module **QtUiTools** now also available for QtJambi 5
-* `io.qt.QtResources` is now deprecated. Its functions are moved to `io.qt.core.QResource`. 
-* `QHashSeed` is now available
-* `QList.of(T...)` now returns `QStringList` if `T` is `String`.
-* Adding missing functions:
-    * `QUuid::fromString`
-    * `QStringConverter::encodingForHtml`
-    * `QStringConverter::encodingForData`
-    * `QBluetoothUuid::toUInt16`
-    * `QBluetoothUuid::toUInt32`
-    * `endl` on `QTextStream`
-    * `QStack::top`
-* QtJambi now gives information when trying to combine MinGW and MSVC compiled libraries.
-* Tool **UIC** for QtJambi ([Issue 17](../../../issues/17))
-* Deployer now generates source code for compiling plugin library
+* Comining qtjambi* and qtjambi*-jre8 modules.
+* Subsuming classpath resources under Qt resources identified with colon path `":path/to/resource"`. You can continue to use `"classpath:path/to/resource"` but it is subject to be removed in the future. Classpath resources as `QUrl` is specified by `qrc` scheme: `new QUrl("qrc:path/to/resource")`.
+* Allowing to combine QtJambi 6.3.1 with QtJambi modules of different version 6.3.x
+* Adding operator functions for QPoint, QSize, QCborArray, QJsonArray, QDeadlineTimer, QPainterPath and QJSPrimitiveValue to be used in Kotlin.
+* Removing outdated source code of examples and utilities
+* Improved exception handling in QThreads
 
 ## Compatibility
 
-QtJambi 6.2.3 and 5.15.5 are source- and binary-compatible to its predecessor releases. 
+QtJambi 6.3.1, 6.2.4 and 5.15.6 are source- and binary-compatible to its predecessor releases. 

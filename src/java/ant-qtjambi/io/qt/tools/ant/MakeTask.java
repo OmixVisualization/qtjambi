@@ -169,7 +169,6 @@ public class MakeTask extends Task {
     	        }
             	Exec.execute(this, commandArray, dirExecute, getProject(), path, ldpath);
             }
-            Exec.execute(this, commandArray, dirExecute, getProject(), null, ldpath);
         } catch(BuildException e) {
             if(failOnError)
                 throw e;

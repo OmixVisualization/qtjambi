@@ -577,7 +577,7 @@ void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonP
             && nonPointerTypeId!=typeid(JCollectionWrapper)
             && nonPointerTypeId!=typeid(JMapWrapper)
             && nonPointerTypeId!=typeid(JIteratorWrapper)
-            && nonPointerTypeId!=typeid(nullptr_t)){
+            && nonPointerTypeId!=typeid(std::nullptr_t)){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         JObjectWrapperConverter::registerConverter(nonPointerTypeId, qtMetaType);
 #else

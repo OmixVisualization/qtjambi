@@ -140,7 +140,12 @@ class AbstractMetaBuilder {
         const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
         void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
-        void setQtVersion(uint qtVersion) {m_qtVersion = qtVersion;}
+        void setQtVersion(uint qtVersionMajor, uint qtVersionMinor, uint qtVersionPatch, uint qtjambiVersionPatch) {
+            m_qtVersionMajor = qtVersionMajor;
+            m_qtVersionMinor = qtVersionMinor;
+            m_qtVersionPatch = qtVersionPatch;
+            m_qtjambiVersionPatch = qtjambiVersionPatch;
+        }
         const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage() const { return m_typeSystemByPackage; }
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
@@ -214,7 +219,10 @@ class AbstractMetaBuilder {
         QList<MissingIterator> m_missing_iterators;
         const QMap<QString, QString>* m_features;
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
-        uint m_qtVersion;
+        uint m_qtVersionMajor;
+        uint m_qtVersionMinor;
+        uint m_qtVersionPatch;
+        uint m_qtjambiVersionPatch;
 };
 
 struct Operator {

@@ -20,64 +20,42 @@
         TODO: refactor. Names are horrible, atleast
     -->
 
-    <target name="java11.build.qtjambi">
-        <ant inheritrefs="true" target="java.build.qtjambi.impl">
-            <property name="module.suffix" value=""/>
-        </ant>
-    </target>
-    <target name="java8.build.qtjambi">
-        <ant inheritrefs="true" target="java.build.qtjambi.impl">
-            <property name="minimum.java.version" value="1.8"/>
-            <property name="source.java.version" value="1.8"/>
-            <property name="java.module.based" value="false"/>
-            <property name="module.suffix" value="-jre8"/>
-            <property name="java.outdir" location="${java8.outdir}"/>
-            <property name="java.outsrcdir" location="${java8.outsrcdir}"/>
-        </ant>
-    </target>
-    
-    <target name="java11.build.qtjambiplugins">
-        <ant inheritrefs="true" target="java.build.qtjambiplugins.impl">
-            <property name="module.suffix" value=""/>
-        </ant>
-    </target>
-    <target name="java8.build.qtjambiplugins">
-        <ant inheritrefs="true" target="java.build.qtjambiplugins.impl">
-            <property name="minimum.java.version" value="1.8"/>
-            <property name="source.java.version" value="1.8"/>
-            <property name="java.module.based" value="false"/>
-            <property name="module.suffix" value="-jre8"/>
-            <property name="java.outdir" location="${java8.outdir}"/>
-            <property name="java.outsrcdir" location="${java8.outsrcdir}"/>
-        </ant>
-    </target>
-
-    <target name="java.build.qtjambi.impl">
+    <target name="java.build.qtjambi">
         <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-build" value="true"/>
         </ant>
-        <antcall target="java.build.qtjambiplugins.impl"/>
+        <antcall target="java.build.qtjambiplugins"/>
     </target>
     
-    <target name="java.build.qtjambiplugins.impl" unless="qtjambi.build.module">
-        <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
-            <property name="qtjambi.testbuild" value="false"/>
-            <property name="qtjambi.plugin.bundle" value="false"/>
-            <property name="qtjambi-build" value="true"/>
-        </ant>
+    <target name="java.build.qtjambiplugins">
         <if>
-            <istrue value="${qtjambi.qml.any.true}"/>
+            <or>
+                <not>
+                    <isset property="qtjambi.build.module"/>
+                </not>
+                <equals arg1="${qtjambi.build.module}" arg2=""/>
+            </or>
             <then>
-                <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
                     <property name="qtjambi.testbuild" value="false"/>
-                    <property name="qtjambi.qml.bundle" value="false"/>
+                    <property name="qtjambi.plugin.bundle" value="false"/>
                     <property name="qtjambi-build" value="true"/>
                 </ant>
+                <if>
+                    <istrue value="${qtjambi.qml.any.true}"/>
+                    <then>
+                        <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                            <property name="qtjambi.testbuild" value="false"/>
+                            <property name="qtjambi.qml.bundle" value="false"/>
+                            <property name="qtjambi-build" value="true"/>
+                        </ant>
+                    </then>
+                </if>
             </then>
         </if>
     </target>
     
-    <target name="deploy-snapshot" depends="init.build, init.properties">
+    <target name="deploy-snapshot" depends="init.build">
         <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy" value="true"/>
             <property name="qtjambi-deploy-snapshot" value="true"/>
@@ -88,7 +66,7 @@
         </ant>
     </target>
     
-    <target name="deploy-release" depends="init.build, init.properties">
+    <target name="deploy-release" depends="init.build">
         <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy" value="true"/>
             <property name="qtjambi-deploy-snapshot" value="false"/>
@@ -99,7 +77,7 @@
         </ant>
     </target>
     
-    <target name="deploy-bundle" depends="init.build, init.properties">
+    <target name="deploy-bundle" depends="init.build">
         <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy-bundle" value="true"/>
         </ant>
@@ -108,7 +86,7 @@
         </ant>
     </target>
 
-    <target name="javac.excludes" depends="init.build, init.properties">
+    <target name="javac.excludes" depends="init.build">
         <!-- exclude java classes, which were not build, depending on qtjambi config -->
         <condition property="javac.opengl.excludes" value="**/opengl/**/*.java," else="">
             <isfalse value="${qtjambi.opengl.any.true}"/>
@@ -186,30 +164,28 @@ ${javac.qml.excludes}
 ${javac.quick.excludes}
 ${javac.declarative.excludes}
 ${javac.extra.excludes}"/>
-    </target>
-  <target name="javadocs" depends="init.build, init.properties" description="Generates the Java Doc pages for QtJambi">
+  </target>
+  <target name="javadocs-impl" depends="init.build">
     <delete dir="${outputDir}/javadocs" failonerror="no"/>
     <mkdir dir="${outputDir}/javadocs"/>
     <tstamp>
         <format property="year" pattern="yyyy"/>
     </tstamp>
-    <path id="java.source.dirs">
-        <dirset dir="${outputDir}/java-src" includes="qtjambi*"/>
-    </path>
     <pathconvert pathsep=","             
-        property="java.source.dirs2"             
-        refid="java.source.dirs">
+        property="java.source.dirs2">
+        <path>
+            <dirset dir="${java.outsrcdir}" includes="qtjambi*"/>
+        </path>
     </pathconvert>
     <if>
         <istrue value="${java.module.based}"/>
         <then>
-            <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
-                <include name="**/*.java"/>
-                <exclude name="**/QtJambi_LibraryInitializer.java"/>
-            </multirootfileset>
             <pathconvert pathsep="${line.separator}"             
-                property="java.source.files.flat"             
-                refid="java.source.files">
+                property="java.source.files.flat">
+                <multirootfileset basedirs="${java.source.dirs2}">
+                    <include name="**/*.java"/>
+                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
+                </multirootfileset>
             </pathconvert>
             <javadoc 
             additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords --module-source-path ${java.outsrcdir}"
@@ -243,14 +219,13 @@ ${javac.extra.excludes}"/>
             </javadoc>
         </then>
         <else>
-            <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
-                <include name="**/*.java"/>
-                <exclude name="module-info.java"/>
-                <exclude name="**/QtJambi_LibraryInitializer.java"/>
-            </multirootfileset>
             <pathconvert pathsep="${line.separator}"             
-                property="java.source.files.flat"             
-                refid="java.source.files">
+                property="java.source.files.flat">
+                <multirootfileset basedirs="${java.source.dirs2}">
+                    <include name="**/*.java"/>
+                    <exclude name="module-info.java"/>
+                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
+                </multirootfileset>
             </pathconvert>
             <javadoc 
             additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine -keywords"
@@ -290,16 +265,18 @@ ${javac.extra.excludes}"/>
     <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
     <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
     <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#2c4557;" value="#000000;"/>
-    <echo>${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
+    <echo>creating ${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
     <delete file="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
     <zip destfile="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip">
         <fileset dir="${outputDir}/javadocs/all"/>
     </zip>
-    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+    <!--ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
         <property name="qtjambi-javadoc" value="true"/>
-    </ant>
+    </ant-->
   </target>
-  <target name="single.javadocs" depends="init.build, init.properties" description="Generates the Java Doc pages for QtJambi">
+  <target name="single.javadocs-impl" depends="init.build,single.javadocs-impl2">
+  </target>
+  <target name="single.javadocs-impl2">
     <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
         <property name="qtjambi-javadoc" value="true"/>
     </ant>

@@ -54,6 +54,22 @@
     QLogging.initialize();
     QThread.initialize();
     </inject-code>
+    <inject-code class="java" package="io.qt.internal" position="beginning">
+        final static java.util.Properties properties = new java.util.Properties();
+        
+        @io.qt.QtUninvokable private static native void shutdown();
+    </inject-code>
+    <inject-code class="java" package="io.qt.internal" position="1">
+        Thread shutdownHook = null;
+    </inject-code>
+    <inject-code class="java" package="io.qt.internal" position="2">
+        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QtJambi_LibraryUtilities_2_" quote-before-line="}// class"/>
+    </inject-code>
+    <inject-code class="java" package="io.qt.internal" position="4">
+        if(shutdownHook!=null)
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        NativeLibraryManager.resetDeploymentSpecs();
+    </inject-code>
     <inject-code class="module-info" position="end">
     requires transitive java.logging;
     requires java.xml;
@@ -5028,10 +5044,6 @@
             </modify-argument>
         </modify-function>
     </value-type>
-<!--    <object-type name="QFSFileEngine" package="io.qt.internal.fileengine"/>
-    <object-type name="QAbstractFileEngine" package="io.qt.internal.fileengine"/>
-    <object-type name="QAbstractFileEngineHandler" package="io.qt.internal.fileengine"/>
-    <object-type name="QAbstractFileEngineIterator" package="io.qt.internal.fileengine"/>-->
     <interface-type name="QNativeInterface::QAndroidApplication" java-name="QAndroidApplication" package="io.qt.core.nativeinterface" is-native-interface="yes">
     </interface-type>
 </typesystem>

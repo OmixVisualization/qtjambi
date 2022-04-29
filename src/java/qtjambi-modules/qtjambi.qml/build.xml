@@ -11,10 +11,12 @@
         <condition property="qtjambi-qml-retro" value="retro" else="retroJDK8">
             <istrue value="${java.module.based}"/>
         </condition>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl3">
-            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}/main"/>
-            <property name="sourcedir3" value="${antfile.dir}/${qtjambi-qml-retro}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}/main"/>
+            <pathelement location="${antfile.dir}/${qtjambi-qml-retro}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

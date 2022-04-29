@@ -96,6 +96,17 @@ void General::callPaintCellNull(QCalendarWidget *w) {
 }
 #endif
 
+class Runner : public QThread{
+public: void runMe(){run();}
+};
+void General::run(QThread* runnable){
+    if(runnable)static_cast<Runner*>(runnable)->runMe();
+}
+
+void General::run(QRunnable* runnable){
+    if(runnable)runnable->run();
+}
+
 void General::qtjambi_jni_test(jobject object){
     if(JNIEnv* env = qtjambi_current_environment()){
         jclass cls = env->FindClass("Ljava/lang/String;");
@@ -1481,7 +1492,7 @@ void fun8(QObject* obj){
     qInfo() << "arg: " << (obj ? obj->objectName() : "null");
 }
 
-void fun9(nullptr_t n){
+void fun9(std::nullptr_t n){
     qInfo() << "arg: " << (n==nullptr ? "null" : "not null");
 }
 
@@ -1521,7 +1532,7 @@ void fun18(char, QObject* obj){
     qInfo() << "arg: " << (obj ? obj->objectName() : "null");
 }
 
-void fun19(char, nullptr_t n){
+void fun19(char, std::nullptr_t n){
     qInfo() << "arg: " << (n==nullptr ? "null" : "not null");
 }
 

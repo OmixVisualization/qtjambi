@@ -26,7 +26,7 @@
         <delete dir="${generator.builddir}" quiet="true"/>
     </target>
 
-    <target name="clean" description="Cleans everything"
+    <target name="clean-impl" description="Cleans everything"
         depends="make.clean.global, make.clean.generator">
         <delete dir="${java.outdir}" quiet="true"/>
         <delete dir="${deploymentdir}" quiet="true"/>
@@ -38,7 +38,6 @@
                 <include name="*.jar"/>
             </fileset>
         </delete>
-        <delete file="${java.srcdir}/qtjambi/org/qtjambi/qt/internal/version.properties" quiet="true"/>
         <delete dir="${basedir}/build" quiet="true"/>
     </target>
 
@@ -46,13 +45,13 @@
         <delete dir="${qtjambi.builddir}" quiet="true" failonerror="false"/>
     </target>
 
-    <target name="realclean" description="Cleans final outputs"
-        depends="clean">
+    <target name="realclean-impl"
+        depends="clean-impl">
         <delete dir="${deploymentdir}" quiet="true"/>
     </target>
 
-    <target name="distclean" description="Cleans really everything"
-        depends="realclean">
+    <target name="distclean-impl"
+        depends="realclean-impl">
         <delete dir="${basedir}/extjars" quiet="true"/><!-- Try not to download this too much -->
         <delete dir="${basedir}/buildlogs" quiet="true"/>
     </target>

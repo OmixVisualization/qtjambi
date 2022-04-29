@@ -43,7 +43,6 @@ import org.junit.BeforeClass;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.ApplicationInitializer;
-import io.qt.autotests.Utils;
 import io.qt.core.QByteArray;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
@@ -196,7 +195,7 @@ public class TestPluginImageFormats extends ApplicationInitializer {
 		} finally {
 		}
 
-		String res = "classpath:io/qt/autotests/TestClassFunctionality.jar";
+		String res = ":io/qt/autotests/TestClassFunctionality.jar";
 		try {
 			QFileInfo fileinfo = new QFileInfo(res);
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testFoobar2(res=\"" + res + "\"; fileinfo=\"" + fileinfo + "\")");
@@ -229,10 +228,10 @@ public class TestPluginImageFormats extends ApplicationInitializer {
 		} finally {
 		}
 
-		String res = "classpath:io/qt/autotests/TestClassFunctionality.jar";
+		String res = ":io/qt/autotests/TestClassFunctionality.jar";
 		try {
-			// classpath:io/qt/autotests/TestClassFunctionality.jar
-			// classpath:io/qt/autotests/svgcards-example.png
+			// :io/qt/autotests/TestClassFunctionality.jar
+			// :io/qt/autotests/svgcards-example.png
 			QFile file = new QFile(res);
 
 			boolean bf = file.open(QIODevice.OpenModeFlag.ReadOnly);

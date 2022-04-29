@@ -9,18 +9,19 @@
         <antcall inheritrefs="true" target="build.impl"/>
     </target>
     <target name="build.impl" if="build.module">
-        <qtjambi-version-file targetdir="${generator.outputdir}/java/qtjambi"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <condition property="qtjambi-retro" value="Retro" else="RetroJDK8">
             <istrue value="${java.module.based}"/>
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl4">
-            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}/main"/>
-            <property name="sourcedir3" value="${antfile.dir}/${qtjambi-retro}"/>
-            <property name="sourcedir4" value="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}/main"/>
+            <pathelement location="${antfile.dir}/${qtjambi-retro}"/>
+            <pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

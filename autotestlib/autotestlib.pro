@@ -16,9 +16,12 @@ VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 #    }
 #}
 
+DESTDIR = ../../qtjambi/lib
 include(../src/cpp/qtjambi/qtjambi_include.pri)
 exists($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated): 
     include($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated/generated.pri)
+
+DESTDIR = ../lib
 
 INCLUDEPATH += ./cpp/io_qt_autotests_generated
 
@@ -69,11 +72,11 @@ SOURCES += \
     tulip.cpp \
     variants.cpp
 
-win32 {
+win32-msvc*: {
     PRECOMPILED_HEADER = global.h
     CONFIG += precompile_header
+    QMAKE_CXXFLAGS += /bigobj
 }
-msvc:QMAKE_CXXFLAGS += /bigobj
 
 win32-g++* {
     QMAKE_CXXFLAGS += -Wa,-mbig-obj
@@ -114,3 +117,6 @@ contains(QT_CONFIG, qtjambi-quick):   QT += quick
 else:                                 DEFINES += QTJAMBI_NO_QUICK
 
 CONFIG += warn_on
+
+RESOURCES += \
+    resources.qrc

@@ -57,8 +57,8 @@ public class TestQXmlPatterns extends ApplicationInitializer {
     QXmlSerializer serializer;
     QXmlResultItems xmlResultItems;
     QXmlFormatter formatter;
-    String samplePath1 = "doc('file:/:classpath:/io/qt/autotests/xquerySample1.xml')";
-    String samplePath2 = "doc('file:/:classpath:/io/qt/autotests/xmlSample2.xml')";
+    String samplePath1 = "doc('qrc:/io/qt/autotests/xquerySample1.xml')";
+    String samplePath2 = "doc('qrc:/io/qt/autotests/xmlSample2.xml')";
 
     //@BeforeClass
     //public static void init() {

@@ -32,7 +32,7 @@ public class TestDesigner extends ApplicationInitializer {
     	QWidget widget;
     	{
     		QFormBuilder loader = new QFormBuilder();
-	    	QFile device = new QFile("classpath:io/qt/autotests/ui/dialogtest.ui");
+	    	QFile device = new QFile(":io/qt/autotests/ui/dialogtest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
 	    	device.close();

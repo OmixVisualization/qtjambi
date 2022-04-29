@@ -333,3 +333,35 @@ public static class WhileFlag{
 
 class QQmlIncubationController_native__{
 }// class
+
+class QJSPrimitiveValue__{
+    @io.qt.QtUninvokable
+    @Deprecated
+    public final io.qt.qml.QJSPrimitiveValue modulo(io.qt.qml.QJSPrimitiveValue rhs){
+        return mod(rhs);
+    }
+    
+    @io.qt.QtUninvokable
+    @Deprecated
+    public final io.qt.qml.QJSPrimitiveValue multiplied(io.qt.qml.QJSPrimitiveValue rhs){
+        return times(rhs);
+    }
+    
+    @io.qt.QtUninvokable
+    @Deprecated
+    public final io.qt.qml.QJSPrimitiveValue added(io.qt.qml.QJSPrimitiveValue rhs){
+        return plus(rhs);
+    }
+    
+    @io.qt.QtUninvokable
+    @Deprecated
+    public final io.qt.qml.QJSPrimitiveValue divided(io.qt.qml.QJSPrimitiveValue rhs){
+        return div(rhs);
+    }
+    
+    @io.qt.QtUninvokable
+    @Deprecated
+    public final io.qt.qml.QJSPrimitiveValue substracted(io.qt.qml.QJSPrimitiveValue rhs){
+        return minus(rhs);
+    }
+}// class

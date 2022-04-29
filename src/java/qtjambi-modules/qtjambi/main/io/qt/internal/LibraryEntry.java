@@ -67,11 +67,17 @@ class LibraryEntry {
         this.deploymentSpec = deploymentSpec;
     }
 
+    public boolean isExtracting() {
+        return !extractionFunctions.isEmpty();
+    }
+    
     public boolean isLoaded() {
         return loaded;
     }
     void setLoaded(boolean loaded) {
         this.loaded = loaded;
+        if(loaded)
+        	extractionFunctions.clear();
     }
     
     interface ExtractionFunction{

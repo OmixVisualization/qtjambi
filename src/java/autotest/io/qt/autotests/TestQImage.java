@@ -62,9 +62,9 @@ public class TestQImage extends ApplicationInitializer {
 	private QImage anSVGImage;
 	private QImage anotherSVGImage;
 	private String qimage64Path = ":/qt-project.org/qmessagebox/images/qtlogo-64.png";
-	private String blueAngleJPGPath = "classpath:io/qt/autotests/blue_angle_swirl.jpg";
-	private String anSVGImagePath = "classpath:io/qt/autotests/Logo-ubuntu_cof-orange-hex.svg";
-	private String anotherSVGImagePath = "classpath:io/qt/autotests/svg-cards.svg";
+	private String blueAngleJPGPath = ":io/qt/autotests/blue_angle_swirl.jpg";
+	private String anSVGImagePath = ":io/qt/autotests/Logo-ubuntu_cof-orange-hex.svg";
+	private String anotherSVGImagePath = ":io/qt/autotests/svg-cards.svg";
 	
 	@org.junit.BeforeClass
 	public static void init() {
@@ -86,10 +86,10 @@ public class TestQImage extends ApplicationInitializer {
 	
 	@org.junit.Before
 	public void setUp() throws Exception {
-		qimage32 = new QImage("classpath:io/qt/autotests/svgcards-example.png");
+		qimage32 = new QImage(":io/qt/autotests/svgcards-example.png");
 		qimage64PNG = new QImage();
 		sample = new QImage(3, 3, Format.Format_Indexed8);
-		mandelbrot = new QImage("classpath:io/qt/autotests/mandelbrot.png");
+		mandelbrot = new QImage(":io/qt/autotests/mandelbrot.png");
 		blueAngleJPG = new QImage();
 		anSVGImage = new QImage();
 		anotherSVGImage = new QImage();

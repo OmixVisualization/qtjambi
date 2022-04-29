@@ -2079,7 +2079,7 @@ public class WriteInitialization extends TreeWalker {
 	}
 	
 	private void addQtFlagsInitializer(Item item, Map<String, DomProperty> properties, String name) {
-		addQtFlagsInitializer(item, properties, name, 0);
+		addQtFlagsInitializer(item, properties, name, -1);
 	}
 	
 	private void addQtFlagsInitializer(Item item, Map<String, DomProperty> properties, String name, int column) {
@@ -2131,7 +2131,7 @@ public class WriteInitialization extends TreeWalker {
 	}
 	
 	private void addCommonInitializers(Item item, Map<String, DomProperty> properties) {
-		addCommonInitializers(item, properties, 0);
+		addCommonInitializers(item, properties, -1);
 	}
 	
 	private void addCommonInitializers(Item item, Map<String, DomProperty> properties, int column) {
@@ -2561,10 +2561,10 @@ public class WriteInitialization extends TreeWalker {
 	        else
 	            writePixmapFunctionIcon(m_output, iconName, m_indent, i);
 	        return iconName;
-	    }else if(i.attributeTheme().startsWith("classpath:") || i.attributeTheme().startsWith("/:classpath:")) {
+	    }else if(i.attributeTheme().startsWith(":") || i.attributeTheme().startsWith("classpath:") || i.attributeTheme().startsWith("/:classpath:")) {
 	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon(").append(formatString(i.attributeTheme())).append(");").endl();
 	    	return iconName;
-	    }else if(i.attributeResource().startsWith("classpath:") || i.attributeResource().startsWith("/:classpath:")) {
+	    }else if(i.attributeResource().startsWith(":") || i.attributeResource().startsWith("classpath:") || i.attributeResource().startsWith("/:classpath:")) {
 	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon(").append(formatString(i.attributeResource())).append(");").endl();
 	    	return iconName;
 	    }
