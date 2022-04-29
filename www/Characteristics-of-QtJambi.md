@@ -837,8 +837,21 @@ in a Java package and access it from classpath:
 ``` java
 QAction newFileAction = new QAction(new QIcon("classpath:com/myapplication/icons/newFile.png"), "New File");
 QFile cpResourceFile = new QFile("classpath:com/myapplication/icons/data.dat");
+```
+
+If you want to specify an URL referring to classpath resource use `fromClassPath`
+
+``` java
 QUrl url = QUrl.fromClassPath("com/myapplication/icons/data.dat");
 ```
+
+...or specify it as file URL:
+
+``` java
+QUrl url = new QUrl("file:///:classpath:/com/myapplication/icons/data.dat");
+```
+
+If you want to use classpath resources in QML you always need to specify it this way.
 
 ## Internationalization
 
@@ -910,7 +923,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.2.3.jar:qtjambi-uic-6.2.3.jar
+     -p qtjambi-6.3.1.jar:qtjambi-uic-6.3.1.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -918,7 +931,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.2.3.jar:qtjambi-uic-6.2.3.jar
+     -cp qtjambi-6.3.1.jar:qtjambi-uic-6.3.1.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1162,7 +1175,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     -p qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1174,7 +1187,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     -cp qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1201,7 +1214,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.2.3.jar:qtjambi-deployer-6.2.3.jar
+     -p qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

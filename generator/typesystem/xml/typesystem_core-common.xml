@@ -1088,22 +1088,22 @@
     </value-type>
 
     <value-type name="QPoint">
-        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator-(QPoint)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QPoint)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(int)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(double)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(qreal)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-()" rename="unaryMinus" since="6.0.0"/>
+        <modify-function signature="operator+()" rename="unaryPlus" since="6.0.0"/>
+        <modify-function signature="operator-(QPoint)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QPoint)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator*(int)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator*(float)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator*(double)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator/(qreal)" rename="div" since="6.0.0"/>
     </value-type>
     <value-type name="QPointF">
-        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator-(QPointF)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QPointF)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(qreal)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(qreal)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-()" rename="unaryMinus" since="6.0.0"/>
+        <modify-function signature="operator+()" rename="unaryPlus" since="6.0.0"/>
+        <modify-function signature="operator-(QPointF)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QPointF)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator*(qreal)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator/(qreal)" rename="div" since="6.0.0"/>
     </value-type>
 
     <value-type name="QRect">
@@ -1170,10 +1170,10 @@
 
 
     <value-type name="QSize">
-        <modify-function signature="operator-(QSize)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QSize)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(qreal)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(qreal)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-(QSize)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QSize)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator/(qreal)" rename="div" since="6.0.0"/>
+        <modify-function signature="operator*(qreal)" rename="times" since="6.0.0"/>
         <modify-function signature="operator*=(qreal)" rename="multiply">
             <modify-argument index="return" replace-value="this">
                 <replace-type modified-type="io.qt.core.QSize" />
@@ -1203,10 +1203,10 @@
     </value-type>
 
     <value-type name="QSizeF">
-        <modify-function signature="operator-(QSizeF)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QSizeF)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(qreal)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(qreal)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-(QSizeF)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QSizeF)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator/(qreal)" rename="div" since="6.0.0"/>
+        <modify-function signature="operator*(qreal)" rename="times" since="6.0.0"/>
         <modify-function signature="operator*=(qreal)" rename="multiply">
             <modify-argument index="return" replace-value="this">
                 <replace-type modified-type="io.qt.core.QSizeF" />
@@ -1403,7 +1403,7 @@
                 <replace-type modified-type="void"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="operator+(QCborValue) const" remove="all"/>
+        <modify-function signature="operator+(QCborValue) const" rename="plus"/>
         <modify-function signature="operator+=(QCborValue)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QCborValue)" remove="all"/>
     </value-type>
@@ -1488,7 +1488,7 @@
     <value-type name="QJsonArray">
         <modify-function signature="operator=(const QJsonArray&amp;)" remove="all"/>
         <modify-function signature="operator+=(const QJsonValue &amp;)" remove="all"/>
-        <modify-function signature="operator+(const QJsonValue &amp;) const" remove="all"/>
+        <modify-function signature="operator+(const QJsonValue &amp;) const" rename="plus"/>
         <!--<modify-function signature="operator[](int) const" remove="all"/>
         <modify-function signature="operator[](int)" remove="all"/>-->
         <modify-function signature="operator&lt;&lt;(const QJsonValue &amp;)" remove="all"/>
@@ -1788,11 +1788,6 @@
     <functional-type name="QEasingCurve::EasingFunction"/>
 
     <value-type name="QItemSelection">
-        <!--modify-function signature="operator+(const QList&lt;QItemSelectionRange&gt;&amp;)const" remove="all"/>
-        <modify-function signature="operator+=(const QList&lt;QItemSelectionRange&gt;&amp;)" remove="all"/>
-        <modify-function signature="operator+=(const QItemSelectionRange&amp;)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(const QList&lt;QItemSelectionRange&gt;&amp;)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QItemSelectionRange)" remove="all"/-->
     </value-type>
     <value-type name="QItemSelectionRange" thread-affine="model()">
         <modify-function signature="operator=(QItemSelectionRange)" remove="all" until="5.*"/>
@@ -2333,7 +2328,7 @@
         <modify-function signature="exec()" thread-affine="no"/>
         <modify-function signature="exit(int)" thread-affine="no"/>
         <modify-function signature="quit()" thread-affine="no"/>
-        <modify-function signature="run()" thread-affine="no"/>
+        <modify-function signature="run()" thread-affine="no" no-except="yes" block-exceptions="yes"/>
         <modify-function signature="setPriority(QThread::Priority)" thread-affine="no"/>
         <modify-function signature="priority()const" thread-affine="no"/>
         <modify-function signature="eventDispatcher()const" thread-affine="no"/>
@@ -2722,7 +2717,7 @@
     <object-type name="QThreadPool" />
 
     <interface-type name="QRunnable">
-        <modify-function signature="run()" no-except="yes"/>
+        <modify-function signature="run()" no-except="yes" block-exceptions="yes"/>
     </interface-type>
 
     <!-- QXmlStream* classes were moved from QtXml to QtCore between 4.3.x and 4.4.x -->
@@ -2963,8 +2958,8 @@
         <!--custom-constructor type="default">
             new(placement) QDeadlineTimer();
         </custom-constructor-->
-        <modify-function signature="operator-(QDeadlineTimer)" remove="all"/>
-        <modify-function signature="operator-(long long)" remove="all"/>
+        <modify-function signature="operator-(QDeadlineTimer)" rename="minus"/>
+        <modify-function signature="operator-(long long)" rename="minus"/>
     </value-type>
     <object-type name="QConcatenateTablesProxyModel" since="5.13.0">
         <modify-function signature="addSourceModel(QAbstractItemModel*)">

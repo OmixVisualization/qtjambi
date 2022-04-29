@@ -8,9 +8,11 @@
         <antcall inheritrefs="true" target="build.impl"/>
     </target>
     <target name="build.impl" if="build.module">
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
-            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

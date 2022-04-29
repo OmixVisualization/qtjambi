@@ -72,7 +72,7 @@ public class TestMultimediaInjectedCodeQt5 extends ApplicationInitializer {
     @Test
     public void testQAbstractVideoBuffer_map()
     {
-    	QFile file = new QFile("classpath:io/qt/autotests/svgcards-example.png");
+    	QFile file = new QFile(":io/qt/autotests/svgcards-example.png");
     	assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
     	QByteArray imageData = file.readAll();
     	file.close();
@@ -98,7 +98,7 @@ public class TestMultimediaInjectedCodeQt5 extends ApplicationInitializer {
     @Test
     public void testQAbstractVideoBuffer_mapPlanes()
     {
-    	QFile file = new QFile("classpath:io/qt/autotests/svgcards-example.png");
+    	QFile file = new QFile(":io/qt/autotests/svgcards-example.png");
     	assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
     	QByteArray imageData = file.readAll();
     	file.close();

@@ -94,11 +94,6 @@ SOURCES += \
 
 QT = core xml network concurrent
 
-win32{
-        PRECOMPILED_HEADER = generator_pch.h
-        CONFIG += precompile_header
-}
-
 # These option changes are recommended since at least: win32-msvc.net
 win32-msvc* {
         QMAKE_CXXFLAGS += -Zm500
@@ -111,7 +106,6 @@ mac {
     contains(QT_CONFIG, ppc):CONFIG += ppc
     contains(QT_CONFIG, x86_64):CONFIG += x86_64
     contains(QT_CONFIG, ppc64):CONFIG += ppc64
-    CONFIG -= precompile_header
 	# this option is necessary to properly compile on mountain lion because of std::string to char* casts
 	QMAKE_CXXFLAGS += -fpermissive
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual

@@ -9,7 +9,6 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
-import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;

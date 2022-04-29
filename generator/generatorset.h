@@ -70,7 +70,11 @@ class GeneratorSet : public QObject {
         QString outDir;
         bool printStdout;
         QString docsUrl;
-        uint qtVersion;
+        uint qtVersionMajor;
+        uint qtVersionMinor;
+        uint qtVersionPatch;
+        uint qtjambiVersionPatch;
+        // gs->qtVersion = QT_VERSION_CHECK(gs->qtVersionMajor,gs->qtVersionMinor,gs->qtVersionPatch);
         QFuture<const DocModel*> m_docModelFuture;
         QStringList m_staticLibraries;
 };

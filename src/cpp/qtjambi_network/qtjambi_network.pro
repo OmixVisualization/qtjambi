@@ -6,9 +6,6 @@ VERSION = $$section(QT_VERSION, ., 0, 1).$$QTJAMBI_PATCH_VERSION
 include(../qtjambi/qtjambi_include.pri)
 exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAMBILIB/generated.pri)
 
-win32:CONFIG += precompile_header
-PRECOMPILED_HEADER = qtjambi_network_pch.h
-
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
@@ -22,3 +19,8 @@ HEADERS += \
 SOURCES += \
     qtjambi_network_repository.cpp \
     qtjambi_network_util.cpp
+
+win32-msvc*: {
+    PRECOMPILED_HEADER = qtjambi_network_pch.h
+    CONFIG += precompile_header
+}

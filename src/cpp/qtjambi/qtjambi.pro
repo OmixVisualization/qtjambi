@@ -94,9 +94,11 @@ HEADERS += \
 QTJAMBI_BUILDDIR = $$PWD/../../../$$VERSION/build/
 exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/QtJambi/generated.pri)
 
-win32:CONFIG += precompile_header
-win32:PRECOMPILED_HEADER = qtjambi_core.h
-msvc:QMAKE_CXXFLAGS += /bigobj
+win32-msvc*: {
+    PRECOMPILED_HEADER = qtjambi_pch.h
+    CONFIG += precompile_header
+    QMAKE_CXXFLAGS += /bigobj
+}
 
 win32-g++* {
     QMAKE_CXXFLAGS += -Wa,-mbig-obj

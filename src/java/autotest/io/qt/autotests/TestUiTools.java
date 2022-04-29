@@ -32,7 +32,7 @@ public class TestUiTools extends ApplicationInitializer {
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
-	    	QFile device = new QFile("classpath:io/qt/autotests/ui/dialogtest.ui");
+	    	QFile device = new QFile(":io/qt/autotests/ui/dialogtest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
 	    	device.close();
@@ -66,7 +66,7 @@ public class TestUiTools extends ApplicationInitializer {
 			}else {
 				loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/plugins/designer");
 			}
-	    	QFile device = new QFile("classpath:io/qt/autotests/ui/customwidgettest.ui");
+	    	QFile device = new QFile(":io/qt/autotests/ui/customwidgettest.ui");
 	    	Assert.assertTrue(device.open(QIODevice.OpenModeFlag.ReadOnly));
 	    	widget = loader.load(device);
 	    	device.close();

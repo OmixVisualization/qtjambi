@@ -44,11 +44,9 @@
 
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.*;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import io.qt.internal.QtJambiInternal;
 import io.qt.sql.QSqlDatabase;

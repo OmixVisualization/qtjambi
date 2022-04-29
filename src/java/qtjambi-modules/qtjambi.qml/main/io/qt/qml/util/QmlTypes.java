@@ -134,7 +134,7 @@ public final class QmlTypes {
 	public static void registerPackage(Package pkg, String uri, int versionMajor) {
 		if(uri==null)
 			uri = pkg.getName();
-		QDir classPath = new QDir("classpath:"+pkg.getName().replace('.', '/'));
+		QDir classPath = new QDir(":"+pkg.getName().replace('.', '/'));
 		for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 			if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 				className = pkg.getName()+"."+className.substring(0, className.length()-6);
@@ -159,7 +159,7 @@ public final class QmlTypes {
 			}
 		}
 		for(String qmlFile : classPath.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-			QtQml.qmlRegisterType(QUrl.fromClassPath(pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
+			QtQml.qmlRegisterType(new QUrl("qrc:"+pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
 		}
 	}
 	
@@ -189,7 +189,7 @@ public final class QmlTypes {
 			_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null){
-			QDir classPath = new QDir("classpath:"+pkg.replace('.', '/'));
+			QDir classPath = new QDir(":"+pkg.replace('.', '/'));
 			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 					className = pkg+"."+className.substring(0, className.length()-6);
@@ -385,7 +385,7 @@ public final class QmlTypes {
 			}
 			java.lang.Package _package = getDefinedPackage(qmlClassLoader, uri);
 			if(_package==null){
-				QDir classPathDir = new QDir("classpath:"+uri.replace('.', '/'));
+				QDir classPathDir = new QDir(":"+uri.replace('.', '/'));
 				for(String className : classPathDir.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 					if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 						className = uri+"."+className.substring(0, className.length()-6);

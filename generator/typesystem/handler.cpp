@@ -301,7 +301,9 @@ void Handler::parseTypeSystem(const QDomElement &element){
                             {"4", CodeSnip::Position4},
                             {"end", CodeSnip::End}
                         };
-                        parseInjectCode(childElement, languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
+                        parseInjectCode(childElement, languageNames, positionNames, [entry](const QString& subTypeSystem, const CodeSnip &snip){
+                            entry->addCodeSnip(subTypeSystem, snip);
+                        }, false, true);
                     }else if(childElement.localName()=="suppress-warning"){
                         parseSuppressedWarning(childElement);
                     }else if(childElement.localName()=="template"){
@@ -660,12 +662,12 @@ void Handler::parseInjectCode(const QDomElement &element, ComplexTypeEntry* entr
             return result;
         }(languageNames);
         if(entry->designatedInterface()){
-            return parseInjectCode(element, _languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip); entry->designatedInterface()->addCodeSnip(snip);});
+            return parseInjectCode(element, _languageNames, positionNames, [&entry](const QString&,const CodeSnip &snip){entry->addCodeSnip(snip); entry->designatedInterface()->addCodeSnip(snip);});
         }else{
-            return parseInjectCode(element, _languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
+            return parseInjectCode(element, _languageNames, positionNames, [&entry](const QString&,const CodeSnip &snip){entry->addCodeSnip(snip);});
         }
     }else{
-        return parseInjectCode(element, languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
+        return parseInjectCode(element, languageNames, positionNames, [&entry](const QString&,const CodeSnip &snip){entry->addCodeSnip(snip);});
     }
 }
 
@@ -700,14 +702,17 @@ void Handler::parseInjectCode(const QDomElement &element, FunctionalTypeEntry* e
         {"tostring", CodeSnip::ToString},
         {"end", CodeSnip::End}
     };
-    return parseInjectCode(element, languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
+    return parseInjectCode(element, languageNames, positionNames, [&entry](const QString&,const CodeSnip &snip){entry->addCodeSnip(snip);});
 }
 
 void Handler::parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
                               const QHash<QString, CodeSnip::Position>& positionNames,
-                              const std::function<void(const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed){
+                              const std::function<void(const QString&,const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed, bool allowPackage){
     QDomNamedNodeMap attributes = element.attributes();
     if (checkQtVersion(attributes)){
+        QString subTypeSystem;
+        if(allowPackage)
+            subTypeSystem = attributeValue(attributes.removeNamedItem("package"), "");
         QString className = attributeValue(attributes.removeNamedItem("class"), "java").toLower();
         if (!languageNames.contains(className)) {
             TypesystemException::raise(QString("Invalid class specifier '%1' of tag <%2> in line %3").arg(className).arg(element.localName()).arg(element.lineNumber()));
@@ -786,7 +791,7 @@ void Handler::parseInjectCode(const QDomElement &element,const QHash<QString, Ty
             default: break;
             }
         }
-        appendCodeSnip(snip);
+        appendCodeSnip(subTypeSystem, snip);
     }
 }
 
@@ -1926,7 +1931,7 @@ void Handler::parseModifyFunction(const QDomElement &element, ComplexTypeEntry* 
                     parseInjectCode(childElement,
                                         languageNames,
                                         positionNames,
-                                        [&mod](const CodeSnip &snip){mod.snips << snip;},
+                                        [&mod](const QString&,const CodeSnip &snip){mod.snips << snip;},
                                         true);
                 }else{
                     TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(item.toElement().localName()).arg(item.lineNumber()));
@@ -2667,7 +2672,7 @@ void Handler::parseEnumType(const QDomElement &element){
                         {"4", CodeSnip::Position4},
                         {"end", CodeSnip::End}
                     };
-                    parseInjectCode(childElement, languageNames, positionNames, [&eentry](const CodeSnip &snip){eentry->addCodeSnip(snip);});
+                    parseInjectCode(childElement, languageNames, positionNames, [&eentry](const QString&,const CodeSnip &snip){eentry->addCodeSnip(snip);});
                 }else{
                     TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.localName()).arg(childElement.lineNumber()));
                 }

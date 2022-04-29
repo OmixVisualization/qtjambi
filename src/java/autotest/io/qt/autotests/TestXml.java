@@ -81,7 +81,7 @@ public class TestXml extends ApplicationInitializer {
     @Test
     public void readDocument() {
         QDomDocument doc = new QDomDocument("mydocument");
-        QFile file = new QFile("classpath:generator/typesystem_core.txt");
+        QFile file = new QFile(":generator/typesystem_core.txt");
         if (!file.open(QIODevice.OpenModeFlag.ReadOnly))
             return;
         Result res = doc.setContent(file);

@@ -2,7 +2,12 @@
     <dirname property="modules.dir" file="${ant.file}"/>
     <target name="build">
         <if>
-            <isset property="qtjambi.build.module"/>
+            <and>
+                <isset property="qtjambi.build.module"/>
+                <not>
+                    <equals arg1="${qtjambi.build.module}" arg2=""/>
+                </not>
+            </and>
             <then>
                 <subant target="build" inheritall="true" verbose="true">
                     <dirset dir="${modules.dir}" includes="${qtjambi.build.module}"/>
@@ -32,122 +37,27 @@
             </then>
         </if>
     </target>
-    <target name="build.impl2">
-        <loadproperties srcFile="${sourcedir}/build.properties"/>
+    <target name="build-impl">
+        <pathconvert pathsep=","
+            property="multiroot.basedirs">
+            <path refid="sourcedirs"/>
+        </pathconvert>
+        <pathconvert pathsep=","
+            property="build.properties.first">
+            <multirootfileset basedirs="${multiroot.basedirs}"
+                              includes="build.properties"/>
+        </pathconvert>
+        <if>
+            <available file="${build.properties.first}"/>
+            <then>
+                <echo>loading properties ${build.properties.first}</echo>
+                <loadproperties srcFile="${build.properties.first}"/>
+            </then>
+        </if>
         <if>
             <istrue value="${qtjambi-build}"/>
             <then>
-                <antcall inheritrefs="true" target="compile2"/>
-                <antcall inheritrefs="true" target="createjar"/>
-                <antcall inheritrefs="true" target="createsrcjar2"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-javadoc}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-javadoc"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy}"/>
-            <then>
-                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
-                <antcall inheritrefs="true" target="deploy-impl"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="deploy-impl-bundle"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-native-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-native-bundle-impl"/>
-            </then>
-        </if>
-    </target>
-    <target name="build.impl3">
-        <loadproperties srcFile="${sourcedir}/build.properties"/>
-        <if>
-            <istrue value="${qtjambi-build}"/>
-            <then>
-                <antcall inheritrefs="true" target="compile3"/>
-                <antcall inheritrefs="true" target="createjar"/>
-                <antcall inheritrefs="true" target="createsrcjar3"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-javadoc}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-javadoc"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="deploy-impl-bundle"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy}"/>
-            <then>
-                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
-                <antcall inheritrefs="true" target="deploy-impl"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-native-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-native-bundle-impl"/>
-            </then>
-        </if>
-    </target>
-    <target name="build.impl4">
-        <loadproperties srcFile="${sourcedir}/build.properties"/>
-        <if>
-            <istrue value="${qtjambi-build}"/>
-            <then>
-                <antcall inheritrefs="true" target="compile4"/>
-                <antcall inheritrefs="true" target="createjar"/>
-                <antcall inheritrefs="true" target="createsrcjar4"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-javadoc}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-javadoc"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="deploy-impl-bundle"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-deploy}"/>
-            <then>
-                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
-                <antcall inheritrefs="true" target="deploy-impl"/>
-            </then>
-        </if>
-        <if>
-            <istrue value="${qtjambi-native-bundle}"/>
-            <then>
-                <antcall inheritrefs="true" target="qtjambi-native-bundle-impl"/>
-            </then>
-        </if>
-    </target>
-    <target name="build.impl7">
-        <loadproperties srcFile="${sourcedir}/build.properties"/>
-        <if>
-            <istrue value="${qtjambi-build}"/>
-            <then>
-                <antcall inheritrefs="true" target="compile7"/>
-                <antcall inheritrefs="true" target="createjar"/>
-                <antcall inheritrefs="true" target="createsrcjar7"/>
+                <antcall inheritrefs="true" target="compile-impl"/>
             </then>
         </if>
         <if>
@@ -187,101 +97,65 @@
         </fail>
     </target>
     
-    <target name="copy-resources">
+    <target name="compile-impl" depends="jar_init">
+        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <copy todir="${java.outdir}/${module}" includeemptydirs="false">
-            <fileset dir="${modulesrc}" excludes="**/.*,
+                <multirootfileset basedirs="${multiroot.basedirs}"
+                                  excludes="**/.*,
                                                     pom.xml,
                                                     build.xml,
                                                     build.properties,
                                                     **/*.java,
                                                     **/*.jui,
                                                     ${jar.excludes},
-                                                    ${qtjambi.jar.excludes}">
-            </fileset>
+                                                    ${qtjambi.jar.excludes}"/>
         </copy>
-    </target>
-
-    <target name="copy-src-resources">
-        <mkdir dir="${java.outsrcdir}/${module}"/>
         <condition property="module.info.exclude" value="" else="module-info.java">
             <istrue value="${java.module.based}"/>
         </condition>
         <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
-            <fileset dir="${modulesrc}" excludes="pom.xml,
+            <multirootfileset basedirs="${multiroot.basedirs}" 
+                              excludes="pom.xml,
                                                     build.xml,
                                                     build.properties,
                                                     ${jar.excludes},
                                                     ${module.info.exclude},
                                                     ${module.excludes},
-                                                    ${qtjambi.jar.excludes}">
-            </fileset>
+                                                    ${qtjambi.jar.excludes}"/>
         </copy>
-    </target>
-
-    <target name="compile" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
+        <pathconvert pathsep="${psep}"
+            property="sourcedirs2">
+            <path refid="sourcedirs"/>
+        </pathconvert>
+        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
+        <echo message="Compiling java classes: ${sourcedirs2} classpath: ${qtjambi.dependencies}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                <javac source="8" target="8" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <modulepath refid="qtjambi.modulepath"/>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
+                        includeantruntime="false"
                         excludes="${module.excludes},module-info.java"
+                        srcdir="${sourcedirs2}"
                         destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <classpath refid="qtjambi.modulepath"/>
+                    <compilerarg value="-Xlint:-module,-options" />
+                    <classpath>
+                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
+                    </classpath>
                 </javac>
-            </else>
-        </if>
-    </target>
-
-    <!-- Same as "compile" target but with 2 sourcedirs -->
-    <target name="compile2" depends="jar_init">
-        <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <dependencies-to-classpath property="qtjambi.dependencies" ismodulebased="${java.module.based}" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
-        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} classpath: ${qtjambi.dependencies}"/>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
+                        includeantruntime="false"
+                        includes="module-info.java"
+                        srcdir="${sourcedirs2}"
                         destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <compilerarg value="-Xlint:-module,-options" />
                     <modulepath>
                         <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </modulepath>
@@ -290,209 +164,32 @@
             <else>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                         fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
+                        includeantruntime="false"
+                        srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"
                         destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                     <classpath>
                         <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
                     </classpath>
                 </javac>
             </else>
         </if>
-    </target>
-
-    <!-- Same as "compile" target but with 3 sourcedirs -->
-    <target name="compile3" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <dependencies-to-classpath property="qtjambi.dependencies" ismodulebased="${java.module.based}" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
-        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2}, ${sourcedir3} classpath: ${qtjambi.dependencies}"/>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <modulepath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
-                    </modulepath>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-                    <classpath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
-                    </classpath>
-                </javac>
-            </else>
-        </if>
-    </target>
         
-    <!-- Same as "compile" target but with 5 sourcedirs -->
-    <target name="compile4" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <mkdir dir="${java.outdir}/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir4}"/>
-        </antcall>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <src path="${sourcedir4}"/>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <src path="${sourcedir4}"/>
-                </javac>
-            </else>
-        </if>
-    </target>
-
-    <!-- Same as "compile" target but with 7 sourcedirs -->
-    <target name="compile7" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <mkdir dir="${java.outdir}/${module}"/>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir4}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir5}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir6}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-resources">
-            <param name="modulesrc" value="${sourcedir7}"/>
-        </antcall>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <src path="${sourcedir4}"/>
-                    <src path="${sourcedir5}"/>
-                    <src path="${sourcedir6}"/>
-                    <src path="${sourcedir7}"/>
-                </javac>
-            </then>
-            <else>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="true"
-                        excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <src path="${sourcedir}"/>
-                    <src path="${sourcedir2}"/>
-                    <src path="${sourcedir3}"/>
-                    <src path="${sourcedir4}"/>
-                    <src path="${sourcedir5}"/>
-                    <src path="${sourcedir6}"/>
-                    <src path="${sourcedir7}"/>
-                </javac>
-            </else>
-        </if>
-    </target>
-        
-    <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
-        <property name="destdir" value="${deploymentdir}"/>
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
-        <delete file="${destdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar" verbose="true"/>
-        <mkdir dir="${destdir}"/>
+        
+        <delete file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" verbose="true"/>
         <echo message="Creating jar: excludes: ${jar.excludes},${qtjambi.jar.excludes}"/>
-        <dependencies-to-classpath property="qtjambi.jar.classpath" ismodulebased="${java.module.based}" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}" formanifest="true"/>
+        
+        <property name="qtjambi.jar.classpath" value="${qtjambi.dependencies}"/>
+        <stringreplace property="qtjambi.jar.classpath" target="," replacement=" "/>
         <if>
             <isset property="application.mainclass"/>
             <then>
-                <jar destfile="${destdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar" index="true">
+                <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" index="true">
                     <manifest>
                         <attribute name="Main-Class" value="${application.mainclass}"/>
                         <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
@@ -521,13 +218,13 @@
                             <arg value="${qtjambi.jar.version}"/>
                             <arg value="--update"/>
                             <arg value="--file"/>
-                            <arg value="${destdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar"/>
+                            <arg value="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar"/>
                         </exec>
                     </then>
                </if>
             </then>
             <else>
-                <jar destfile="${destdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar" index="true">
+                <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" index="true">
                     <manifest>
                         <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
         <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
@@ -539,134 +236,19 @@
                         <attribute name="Bundle-ManifestVersion"  value="2"/>
                         <attribute name="Bundle-Name"             value="${module} API"/>
                         <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
-                        <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
+                        <attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
                         <attribute name="Class-Path"          value="${qtjambi.jar.classpath}"/>
                     </manifest>
                     <fileset dir="${java.outdir}/${module}" excludes="build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
                 </jar>
             </else>
         </if>
-    </target>
-    <target name="createsrcjar">
-        <property name="moduledash" value="${module}"/>
-        <stringreplace property="moduledash" target="." replacement="-"/>
+        
         <echo message="Creating source file for ${module}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
+        <delete file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
+        <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Description"      value="${module} sources"/>
-            </manifest>
-            <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
-        </jar>
-    </target>
-    <target name="createsrcjar2">
-        <property name="moduledash" value="${module}"/>
-        <stringreplace property="moduledash" target="." replacement="-"/>
-        <echo message="Creating source file for ${module}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
-            <manifest>
-                <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Name"             value="${module} sources"/>
-                <attribute name="Bundle-Description"      value="${module} sources"/>
-            </manifest>
-            <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
-        </jar>
-    </target>
-    <target name="createsrcjar3">
-        <property name="moduledash" value="${module}"/>
-        <stringreplace property="moduledash" target="." replacement="-"/>
-        <echo message="Creating source file for ${module}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
-            <manifest>
-                <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Name"             value="${module} sources"/>
-                <attribute name="Bundle-Description"      value="${module} sources"/>
-            </manifest>
-            <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
-        </jar>
-    </target>
-    <target name="createsrcjar4">
-        <property name="moduledash" value="${module}"/>
-        <stringreplace property="moduledash" target="." replacement="-"/>
-        <echo message="Creating source file for ${module}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir4}"/>
-        </antcall>
-        <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
-            <manifest>
-                <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Name"             value="${module} sources"/>
-                <attribute name="Bundle-Description"      value="${module} sources"/>
-            </manifest>
-            <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
-        </jar>
-    </target>
-    <target name="createsrcjar7">
-        <property name="moduledash" value="${module}"/>
-        <stringreplace property="moduledash" target="." replacement="-"/>
-        <echo message="Creating source file for ${module}"/>
-        <mkdir dir="${deploymentdir}"/>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir2}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir3}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir4}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir5}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir6}"/>
-        </antcall>
-        <antcall inheritrefs="true" target="copy-src-resources">
-            <param name="modulesrc" value="${sourcedir7}"/>
-        </antcall>
-        <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
-            <manifest>
-                <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Name"             value="${module} sources"/>
                 <attribute name="Bundle-Description"      value="${module} sources"/>
             </manifest>
             <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.xml,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
@@ -679,13 +261,12 @@
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <multirootfileset basedirs="${java.outsrcdir}/${module}" id="java.source.files2">
-                    <include name="**/*.java"/>
-                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
-                </multirootfileset>
                 <pathconvert pathsep="${line.separator}"             
-                    property="java.source.files2.flat"             
-                    refid="java.source.files2">
+                    property="java.source.files2.flat">
+                    <multirootfileset basedirs="${java.outsrcdir}/${module}">
+                        <include name="**/*.java"/>
+                        <exclude name="**/QtJambi_LibraryInitializer.java"/>
+                    </multirootfileset>
                 </pathconvert>
                 <javadoc    additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords --module-source-path ${java.outsrcdir}"
                             access="protected" 
@@ -717,25 +298,15 @@
                                 </font>
                             ]]></bottom>
                 </javadoc>
-                <delete file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-javadoc.jar"/>
-                <jar destfile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-javadoc.jar">
-                    <manifest>
-                        <attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                        <attribute name="Bundle-Name"      value="${module} javadoc"/>
-                        <attribute name="Bundle-Description"      value="${module} javadoc"/>
-                    </manifest>
-                    <fileset dir="${outputDir}/javadocs/${moduledash}"/>
-                </jar>
             </then>
             <else>
-                <multirootfileset basedirs="${java.outsrcdir}/${module}" id="java.source.files">
-                    <include name="**/*.java"/>
-                    <exclude name="module-info.java"/>
-                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
-                </multirootfileset>
                 <pathconvert pathsep="${line.separator}"             
-                    property="java.source.files.flat"             
-                    refid="java.source.files">
+                    property="java.source.files.flat">
+                    <multirootfileset basedirs="${java.outsrcdir}/${module}">
+                        <include name="**/*.java"/>
+                        <exclude name="module-info.java"/>
+                        <exclude name="**/QtJambi_LibraryInitializer.java"/>
+                    </multirootfileset>
                 </pathconvert>
                 <javadoc    additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine -keywords"
                             access="protected" 
@@ -796,7 +367,7 @@
                 <attribute name="Bundle-Name"      value="${module} platform bundle"/>
                 <attribute name="Bundle-Description"      value="${module} platform bundle"/>
                 <attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-                <attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+                <attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
                 <attribute name="Bundle-ManifestVersion" value="2"/>
             </manifest>
             <fileset dir="${qtjambi-native-bundle-path}" includes="${library.includes}"/>
@@ -807,23 +378,81 @@
         <mkdir dir="${deploymentdir}/bundles"/>
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
-        <!--copy file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.pom" tofile="${deploymentdir}/pom.xml"/-->
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+        <condition property="snap" value="-SNAPSHOT" else="">
+            <istrue value="${qtjambi-deploy-snapshot}"/>
+        </condition>
+        <if>
+            <and>
+                <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar"/>
+                <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
+            </and>
+            <then>
+                <if>
+                    <not>
+                        <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
+                    </not>
+                    <then>
+                        <antcall target="qtjambi-javadoc"/>
+                    </then>
+                </if>
+                <if>
+                    <not>
+                        <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}.pom"/>
+                    </not>
+                    <then>
+                        <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
+                    </then>
+                </if>
+                <if>
+                    <and>
+                        <istrue value="${qtjambi-deploy-snapshot}"/>
+                        <not>
+                            <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}.jar"/>
+                        </not>
+                    </and>
+                    <then>
+                        <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}.jar"/>
+                        <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}-sources.jar"/>
+                        <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}-javadoc.jar"/>
+                    </then>
+                </if>
+                <gpg>
+                    <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                </gpg>
+                <jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}${snap}-bundle.jar">
+                    <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                </jar>
+            </then>
+        </if>
+        <foreach-native dir="${deploymentdir}" module="${moduledash}" version="${qtjambi.jar.version}" target="deploy-impl-bundle-native"/>
+    </target>
+    
+    <target name="deploy-impl-bundle-native">
+        <if>
+            <not>
+                <available file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.pom"/>
+            </not>
+            <then>
+                <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
+            </then>
+        </if>
+        <if>
+            <and>
+                <istrue value="${qtjambi-deploy-snapshot}"/>
+                <not>
+                    <available file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
+                </not>
+            </and>
+            <then>
+                <copy file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
+            </then>
+        </if>
+        <gpg>
+            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+        </gpg>
+        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
+            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </jar>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-jre8-${qtjambi.jar.version}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-jre8-${qtjambi.jar.version}*" followsymlinks="false"/>
-        </jar>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-windows-x64-${qtjambi.jar.version}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-windows-x64-${qtjambi.jar.version}*" followsymlinks="false"/>
-        </jar>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-macos-${qtjambi.jar.version}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-macos-${qtjambi.jar.version}*" followsymlinks="false"/>
-        </jar>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-linux-x64-${qtjambi.jar.version}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-linux-x64-${qtjambi.jar.version}*" followsymlinks="false"/>
-        </jar>
-        <!--delete file="${deploymentdir}/pom.xml"/-->
     </target>
     
     <target name="deploy-impl">
@@ -835,13 +464,12 @@
                 <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT.jar"/>
                 <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-sources.jar"/>
                 <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-javadoc.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-native-windows-x64-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-windows-x64-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-native-linux-x64-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-linux-x64-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-native-macos-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-macos-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT-sources.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-jre8-${qtjambi.jar.version}-SNAPSHOT-javadoc.jar"/>
+                <foreach-native dir="${deploymentdir}" module="${moduledash}" version="${qtjambi.jar.version}" target="qtjambi-deploy-snapshot-native"/>
             </then>
         </if>
+    </target>
+    
+    <target name="qtjambi-deploy-snapshot-native">
+        <copy file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}-SNAPSHOT.jar"/>
     </target>
 </project>

@@ -38,7 +38,10 @@
 #if defined __cplusplus
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qwidget.h>
+#include "qtjambi_widgets_core.h"
+#include "qtjambi_widgets_repository.h"
 
 #endif //defined __cplusplus
 

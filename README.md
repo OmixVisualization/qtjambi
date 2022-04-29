@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.5`, `6.2.3` or by `6.3.0`).
+(exchange `$VERSION` either by `5.15.6`, `6.2.4` or by `6.3.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 

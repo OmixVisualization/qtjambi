@@ -36,7 +36,7 @@ public class TestDesignerQuick extends ApplicationInitializer {
 			for(String path : QCoreApplication.libraryPaths()) {
 				loader.addPluginPath(path+"/designer");
 			}
-	    	QIODevice device = new QFile("classpath:io/qt/autotests/ui/quicktest.ui");
+	    	QIODevice device = new QFile(":io/qt/autotests/ui/quicktest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
 	    	device.close();

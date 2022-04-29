@@ -31,6 +31,7 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
@@ -46,6 +47,24 @@ import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
 
 public class TestExceptions extends ApplicationInitializer {
+	
+	@Test
+    public void test_runnable_run() {
+		try {
+			General.run(()->{
+				throw new NegativeArraySizeException();
+			});
+			Assert.assertFalse(true);
+		} catch (NegativeArraySizeException e) {
+		}
+		try {
+			General.run(QThread.create(()->{
+				throw new NegativeArraySizeException();
+			}));
+			Assert.assertFalse(true);
+		} catch (NegativeArraySizeException e) {
+		}
+	}
 	
     @Test
     public void test_multi_inherited_QRunnable_QObject_Deletion() {

@@ -520,7 +520,7 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
                         || container->type()==ContainerTypeEntry::ByteArrayListContainer){
                     s = "io.qt.core.QList";
                 }else{
-                    if(m_qtVersion>=QT_VERSION_CHECK(6,0,0) && container->type()==ContainerTypeEntry::VectorContainer){
+                    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,0,0) && container->type()==ContainerTypeEntry::VectorContainer){
                         s = "io.qt.core.QList";
                     }else{
                         s = "io.qt.core."+java_type->typeEntry()->qualifiedCppName();
@@ -6231,7 +6231,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
               << INDENT << "@io.qt.QtUninvokable" << Qt::endl
               << INDENT << "public int indexOf(Object e){" << Qt::endl
               << INDENT << "    return e instanceof " << boxedType << " ? ";
-            if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
                 s << "(int)longIndexOf";
             }else{
                 s << "indexOf";
@@ -6242,7 +6242,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
               << INDENT << "@io.qt.QtUninvokable" << Qt::endl
               << INDENT << "public int lastIndexOf(Object e){" << Qt::endl
               << INDENT << "    return e instanceof " << boxedType << " ? ";
-            if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
                 s << "(int)lastLongIndexOf";
             }else{
                 s << "lastIndexOf";
@@ -6286,7 +6286,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
                   << INDENT << "@io.qt.QtUninvokable" << Qt::endl
                   << INDENT << "public int indexOf(Object e){" << Qt::endl
                   << INDENT << "    return e instanceof " << boxedType << " ? ";
-                if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+                if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
                     s << "(int)longIndexOf";
                 }else{
                     s << "indexOf";
@@ -6298,7 +6298,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
                   << INDENT << "@io.qt.QtUninvokable" << Qt::endl
                   << INDENT << "public int lastIndexOf(Object e){" << Qt::endl
                   << INDENT << "    return e instanceof " << boxedType << " ? ";
-                if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+                if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
                     s << "(int)lastLongIndexOf";
                 }else{
                     s << "lastIndexOf";
@@ -6306,7 +6306,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
                 s << "((" << boxedType << ")e) : -1;" << Qt::endl
                   << INDENT << "}" << Qt::endl
                   << Qt::endl;
-            }else if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+            }else if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
                 s << INDENT << "public int indexOf(Object e){" << Qt::endl
                   << INDENT << "    return (int)longIndexOf(e);" << Qt::endl
                   << INDENT << "}" << Qt::endl
@@ -6326,7 +6326,7 @@ void JavaGenerator::writeAbstractListFunctions(QTextStream &s, const AbstractMet
           << INDENT << "    return at(index);" << Qt::endl
           << INDENT << "}" << Qt::endl
           << Qt::endl;
-        if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
             s << INDENT << "@Override" << Qt::endl
               << INDENT << "@io.qt.QtUninvokable" << Qt::endl
               << INDENT << "public final int size(){" << Qt::endl
@@ -6663,7 +6663,7 @@ void JavaGenerator::writeAbstractMapFunctions(QTextStream &s, const AbstractMeta
                   << Qt::endl;
             }
         }
-        if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
             s << INDENT << "@Override" << Qt::endl
               << INDENT << "@io.qt.QtUninvokable" << Qt::endl
               << INDENT << "public final int size(){" << Qt::endl
@@ -6726,7 +6726,7 @@ void JavaGenerator::writeAbstractMultiMapFunctions(QTextStream &s, const Abstrac
               << INDENT << "    }else return null;" << Qt::endl
               << INDENT << "}" << Qt::endl
               << Qt::endl;
-            if(m_qtVersion < QT_VERSION_CHECK(6,0,0)){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6,0,0)){
                 if(java_class->templateBaseClassInstantiations().at(1)->isPrimitive()){
                     QString primitiveValueType = java_class->templateBaseClassInstantiations().at(1)->typeEntry()->targetLangName();
                     s << INDENT << "@Override" << Qt::endl
@@ -6776,7 +6776,7 @@ void JavaGenerator::writeAbstractMultiMapFunctions(QTextStream &s, const Abstrac
               << INDENT << "    }else return null;" << Qt::endl
               << INDENT << "}" << Qt::endl
               << Qt::endl;
-            if(m_qtVersion < QT_VERSION_CHECK(6,0,0)){
+            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6,0,0)){
                 if(java_class->templateBaseClassInstantiations().at(1)->isPrimitive()){
                     QString primitiveValueType = java_class->templateBaseClassInstantiations().at(1)->typeEntry()->targetLangName();
                     s << INDENT << "@Override" << Qt::endl
@@ -6795,7 +6795,7 @@ void JavaGenerator::writeAbstractMultiMapFunctions(QTextStream &s, const Abstrac
                 }
             }
         }
-        if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
             s << INDENT << "@Override" << Qt::endl
               << INDENT << "@io.qt.QtUninvokable" << Qt::endl
               << INDENT << "public boolean containsValue(Object value){" << Qt::endl

@@ -278,12 +278,13 @@ QString ContainerTypeEntry::targetLangName() const {
             //     case MultiHashCollectio: return "MultiHash";
         case PairContainer: return "QPair";
         case std_optional: return "Optional";
+        case std_atomic: return "Atomic";
         case QQmlListPropertyContainer: return "QQmlListProperty"; // new for QtQml module
         default:
-            qWarning("bad type... %d", m_type);
+            qWarning("bad container type for %s: %d", qPrintable(ComplexTypeEntry::targetLangName()), m_type);
             break;
     }
-    return QString();
+    return ComplexTypeEntry::targetLangName();
 }
 
 QString ContainerTypeEntry::qualifiedCppName() const {

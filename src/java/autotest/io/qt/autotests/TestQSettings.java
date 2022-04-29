@@ -37,6 +37,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -45,13 +47,145 @@ import org.junit.Test;
 
 import io.qt.autotests.generated.SettingsTest;
 import io.qt.core.QByteArray;
+import io.qt.core.QScopedPointer;
 import io.qt.core.QSettings;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
 
-public class TestQSettings extends ApplicationInitializer implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
+public class TestQSettings extends ApplicationInitializer {
+	
+	private static class Value implements Serializable{
+		private static final long serialVersionUID = -2628993626755402425L;
+		private String s = "VALUE";
+		private double d = 5.9;
+		private int i = 2;
+
+		@Override
+		public String toString() {
+			return "Value [s=" + s + ", d=" + d + ", i=" + i + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(d);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			result = prime * result + i;
+			result = prime * result + ((s == null) ? 0 : s.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Value other = (Value) obj;
+			if (Double.doubleToLongBits(d) != Double.doubleToLongBits(other.d))
+				return false;
+			if (i != other.i)
+				return false;
+			if (s == null) {
+				if (other.s != null)
+					return false;
+			} else if (!s.equals(other.s))
+				return false;
+			return true;
+		}
+	}
+	
+	private static class Value2{
+		private String s = "VALUE";
+		private double d = 5.9;
+		private int i = 2;
+		
+		@io.qt.QtUninvokable
+		private void writeTo(io.qt.core.QDataStream stream){
+			stream.append(s).append(d).append(i);
+		}
+		
+		@io.qt.QtUninvokable
+	    private void readFrom(io.qt.core.QDataStream stream){
+			s = stream.readString();
+			d = stream.readDouble();
+			i = stream.readInt();
+		}
+
+		@Override
+		public String toString() {
+			return "Value [s=" + s + ", d=" + d + ", i=" + i + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(d);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			result = prime * result + i;
+			result = prime * result + ((s == null) ? 0 : s.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Value2 other = (Value2) obj;
+			if (Double.doubleToLongBits(d) != Double.doubleToLongBits(other.d))
+				return false;
+			if (i != other.i)
+				return false;
+			if (s == null) {
+				if (other.s != null)
+					return false;
+			} else if (!s.equals(other.s))
+				return false;
+			return true;
+		}
+	}
+	
+	@Test
+    public void testIOSerializable() throws IOException {
+		File file = File.createTempFile("QtJambiTest_testIOSerializable", ".ini");
+		File file2 = File.createTempFile("QtJambiTest_testIOSerializable", ".ini");
+		try {
+			Value value = new Value();
+			value.i = 7;
+			value.s = "STRING";
+			Value2 value2 = new Value2();
+			value2.i = 7;
+			value2.s = "STRING";
+			try(QScopedPointer<QSettings> ptr = QScopedPointer.disposing(new QSettings(file.getAbsolutePath(), QSettings.Format.IniFormat))){
+				QSettings settings = ptr.data();
+				settings.setValue("Value", value);
+				settings.setValue("Value2", value2);
+				settings.sync();
+			}
+			Files.copy(file.toPath(), file2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			try(QScopedPointer<QSettings> ptr = QScopedPointer.disposing(new QSettings(file2.getAbsolutePath(), QSettings.Format.IniFormat))){
+				QSettings settings = ptr.data();
+				assertEquals(value, settings.value("Value"));
+				assertEquals(value2, settings.value("Value2"));
+				assertTrue(value!=settings.value("Value"));
+				assertTrue(value2!=settings.value("Value2"));
+			}
+		}finally {
+			file.delete();
+			file2.delete();
+		}
+	}
+	
     @Test
     public void writeReadSettingsSimple() {
         {
@@ -116,7 +250,7 @@ public class TestQSettings extends ApplicationInitializer implements Serializabl
 		settings.dispose();
     }
 
-    public class Custom implements Serializable {
+    public static class Custom implements Serializable {
         private static final long serialVersionUID = 1L;
 
         String name;

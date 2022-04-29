@@ -3,15 +3,15 @@
     <property name="module-name" value="multimediawidgets"/>
     <property name="qtjambi-module-name" value="qtjambi.designer"/>
     <property name="qtjambi-module-name2" value="qtjambi.multimedia"/>
-    <property name="qtjambi-libfiles" value="qtjambi${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-xml${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-sql${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-network${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-opengl${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-openglwidgets${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-designer${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-multimedia${module.suffix}-${qtjambi.jar.version}.jar
-                                             qtjambi-multimediawidgets${module.suffix}-${qtjambi.jar.version}.jar"/>
+    <property name="qtjambi.required.modules" value="qtjambi,
+                                             qtjambi.xml,
+                                             qtjambi.sql,
+                                             qtjambi.network,
+                                             qtjambi.opengl,
+                                             qtjambi.openglwidgets,
+                                             qtjambi.designer,
+                                             qtjambi.multimedia,
+                                             qtjambi.multimediawidgets"/>
     <target name="build">
         <if>
             <and>
@@ -19,9 +19,11 @@
                 <available file="${generator.outputdir}/java/${qtjambi-module-name2}" type="dir"/>
             </and>
             <then>
-                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar1">
+                <path id="sourcedirs">
+                    <pathelement location="${java.srcdir}/qtjambi-plugins/${module-name}"/>
+                </path>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="build-plugin">
                     <property name="module" value="${module-name}"/>
-                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}"/>
                     <property name="jar.excludes" value=""/>
                     <property name="module.excludes" value=""/>
                     <property name="plugin.metadata" value="{''Keys'':[''MultimediaWidgets'']}"/>

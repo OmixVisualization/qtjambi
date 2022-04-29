@@ -49,7 +49,7 @@ public class TestQPdfWidgets extends ApplicationInitializer {
     @Test
     public void test() {
     	QPdfDocument document = new QPdfDocument();
-    	QPdfDocument.DocumentError error = document.load("classpath:io/qt/autotests/test.pdf");
+    	QPdfDocument.DocumentError error = document.load(":io/qt/autotests/test.pdf");
     	Assert.assertEquals(QPdfDocument.DocumentError.NoError, error);
     	Assert.assertEquals(QPdfDocument.Status.Ready, document.status());
         QPdfSelection allText = document.getSelectionAtIndex(0, 9, 7);

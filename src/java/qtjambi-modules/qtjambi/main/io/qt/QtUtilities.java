@@ -55,7 +55,7 @@ public final class QtUtilities {
 	private QtUtilities() {}
 	
     public static boolean isAvailableQtLibrary(String library) {
-        return QtJambiInternal.isAvailableQtLibrary(library);
+        return QtJambiInternal.isAvailableQtLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
     
     public static boolean isAvailableUtilityLibrary(String library) {
@@ -67,7 +67,7 @@ public final class QtUtilities {
     }
     
     public static void loadQtLibrary(String library) {
-    	QtJambiInternal.loadQtLibrary(library);
+    	QtJambiInternal.loadQtLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
 
     public static void loadUtilityLibrary(String library) {

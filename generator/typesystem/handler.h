@@ -91,7 +91,7 @@ class Handler {
         void parseInjectCode(const QDomElement &element, FunctionalTypeEntry* entry);
         void parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
                              const QHash<QString, CodeSnip::Position>& positionNames,
-                             const std::function<void(const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed = false);
+                             const std::function<void(const QString&,const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed = false, bool allowPackage = false);
         void parseConversionRule(const QDomElement &element, const std::function<void(const CodeSnip&)>& appendCodeSnip);
         void parseImportFile(const QDomElement &element, const std::function<void(const QString&)>& consumeCode);
         void parseInsertTemplate(const QDomElement &element, const std::function<void(TemplateInstance*)>& consumeTemplateInstance);

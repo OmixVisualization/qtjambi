@@ -7,8 +7,8 @@
 
 <project name="qtjambi.setenv" default="setenv">
 
-    <property file="${jambi.directory}/build.properties"/>
-    <property file="${jambi.directory}/antcontrib.properties"/>
+    <property file="${basedir}/antcontrib.properties"/>
+    <property name="timestamp.dir" location="${basedir}/buildlogs"/>
 
     <!--
         We want the environment variables and we want a timestamp for jars.
@@ -111,8 +111,8 @@
 
     <target name="setup-properties">
         <!-- these are used by examples/generator/hello_world_generator/** not by QtJambi to build itself -->
-        <property name="qtjambi.jambi.libdir"       value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}lib"/>
-        <property name="qtjambi.jambi.pluginsdir"   value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}plugins"/>
+        <property name="qtjambi.jambi.libdir"       value="${basedir}${file.separator}build${file.separator}qmake-qtjambi${file.separator}lib"/>
+        <property name="qtjambi.jambi.pluginsdir"   value="${basedir}${file.separator}build${file.separator}qmake-qtjambi${file.separator}plugins"/>
     </target>
 
     <target name="setenv" depends="source.antcontrib, setup-properties"/>

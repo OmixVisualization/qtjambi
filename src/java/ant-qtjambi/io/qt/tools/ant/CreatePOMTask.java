@@ -274,6 +274,8 @@ public class CreatePOMTask extends Task {
 					
 					if(!libraries.isEmpty()){
 						Element profiles = doc.createElement("profiles");
+						if(!_moduleId.equals("qtjambi-x11extras")
+								&& !_moduleId.equals("qtjambi-macextras"))
 						{
 							Element profile = doc.createElement("profile");
 							Element pid = doc.createElement("id");
@@ -307,6 +309,9 @@ public class CreatePOMTask extends Task {
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
+						if(!_moduleId.equals("qtjambi-winextras")
+								&& !_moduleId.equals("qtjambi-macextras")
+								&& !_moduleId.equals("qtjambi-activex"))
 						{
 							Element profile = doc.createElement("profile");
 							Element pid = doc.createElement("id");
@@ -340,6 +345,9 @@ public class CreatePOMTask extends Task {
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
+						if(!_moduleId.equals("qtjambi-winextras")
+								&& !_moduleId.equals("qtjambi-x11extras")
+								&& !_moduleId.equals("qtjambi-activex"))
 						{
 							Element profile = doc.createElement("profile");
 							Element pid = doc.createElement("id");
@@ -392,7 +400,7 @@ public class CreatePOMTask extends Task {
 								Element dversion = doc.createElement("version");
 								dversion.setTextContent(qtjambiVersion);
 								dependencyEl.appendChild(dversion);
-								if(!"qtjambi".equals(dependency) && !"qtjambi-jre8".equals(dependency)) {
+								if(!"qtjambi".equals(dependency)) {
 									Element opt = doc.createElement("optional");
 									opt.setTextContent("true");
 									dependencyEl.appendChild(opt);
@@ -420,16 +428,6 @@ public class CreatePOMTask extends Task {
 						StreamResult result = new StreamResult(fos);
 						transformer.transform(new DOMSource(doc), result);
 					}
-					
-					artifactId.setTextContent(_moduleId+"-jre8");
-					name.setTextContent(_moduleName + " for Java 8");
-					for(Element element : dependencyElements) {
-						element.setTextContent(element.getTextContent()+"-jre8");
-					}
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-jre8-"+qtjambiVersion+".pom"))){
-						StreamResult result = new StreamResult(fos);
-						transformer.transform(new DOMSource(doc), result);
-					}
 				}
 				
 				/*platform*/{
@@ -447,16 +445,13 @@ public class CreatePOMTask extends Task {
 					groupId.setTextContent("io.qtjambi");
 					doc.getDocumentElement().appendChild(groupId);
 					Element artifactId = doc.createElement("artifactId");
-					artifactId.setTextContent(_moduleId+"-native-windows-x64");
 					doc.getDocumentElement().appendChild(artifactId);
 					Element name = doc.createElement("name");
-					name.setTextContent(_moduleName+" native components for Windows");
 					doc.getDocumentElement().appendChild(name);
 					Element version = doc.createElement("version");
 					version.setTextContent(qtjambiVersion);
 					doc.getDocumentElement().appendChild(version);
 					Element description = doc.createElement("description");
-					description.setTextContent("Native components for Windows");
 					doc.getDocumentElement().appendChild(description);				
 					Element url = doc.createElement("url");
 					url.setTextContent("https://www.qtjambi.io");
@@ -520,25 +515,56 @@ public class CreatePOMTask extends Task {
 					parent.appendChild(dversion);
 					doc.getDocumentElement().appendChild(parent);
 					
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-windows-x64-"+qtjambiVersion+".pom"))){
-						StreamResult result = new StreamResult(fos);
-						transformer.transform(new DOMSource(doc), result);
-					}
-					
-					artifactId.setTextContent(_moduleId+"-native-linux-x64");
-					name.setTextContent(_moduleName+" native components for Linux x64");
-					description.setTextContent("Native components for Linux x64");
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-linux-x64-"+qtjambiVersion+".pom"))){
-						StreamResult result = new StreamResult(fos);
-						transformer.transform(new DOMSource(doc), result);
-					}
-					
-					artifactId.setTextContent(_moduleId+"-native-macos");
-					name.setTextContent(_moduleName+" native components for macOS");
-					description.setTextContent("Native components for macOS");
-					try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-macos-"+qtjambiVersion+".pom"))){
-						StreamResult result = new StreamResult(fos);
-						transformer.transform(new DOMSource(doc), result);
+					{
+						String prefix = _moduleId + "-native-";
+						String suffix = "-" + qtjambiVersion + ".jar";
+						String prohibited = "-debug-" + qtjambiVersion + ".jar";
+						for(String file : directory.list()) {
+							if(file.startsWith(prefix) && file.endsWith(suffix) && !file.endsWith(prohibited)) {
+								String platform = file.substring(prefix.length(), file.length() - suffix.length());
+								if(platform.equals("macos")) {
+									name.setTextContent(_moduleName+" native components for macOS");
+									description.setTextContent("Native components for macOS");									
+								}else if(platform.equals("android")) {
+									name.setTextContent(_moduleName+" native components for Android");
+									description.setTextContent("Native components for Android");									
+								}else if(platform.startsWith("windows")) {
+									name.setTextContent(_moduleName+" native components for Windows");
+									description.setTextContent("Native components for Windows");
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x64");
+										description.setTextContent(description.getTextContent()+" x64");
+									}else if(platform.endsWith("-x32")) {
+										name.setTextContent(name.getTextContent()+" x32");
+										description.setTextContent(description.getTextContent()+" x32");
+									}else if(platform.endsWith("-amd64")) {
+										name.setTextContent(name.getTextContent()+" amd64");
+										description.setTextContent(description.getTextContent()+" amd64");
+									}
+								}else if(platform.startsWith("linux")) {
+									name.setTextContent(_moduleName+" native components for Linux");
+									description.setTextContent("Native components for Linux");
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x64");
+										description.setTextContent(description.getTextContent()+" x64");
+									}else if(platform.endsWith("-x32")) {
+										name.setTextContent(name.getTextContent()+" x32");
+										description.setTextContent(description.getTextContent()+" x32");
+									}else if(platform.endsWith("-amd64")) {
+										name.setTextContent(name.getTextContent()+" amd64");
+										description.setTextContent(description.getTextContent()+" amd64");
+									}
+								}else {
+									name.setTextContent(_moduleName+" native components for "+platform);
+									description.setTextContent("Native components for "+platform);
+								}
+								artifactId.setTextContent(_moduleId+"-native-"+platform);
+								try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-"+platform+"-"+qtjambiVersion+".pom"))){
+									StreamResult result = new StreamResult(fos);
+									transformer.transform(new DOMSource(doc), result);
+								}
+							}
+						}
 					}
 				}
 			}

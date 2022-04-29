@@ -528,7 +528,7 @@ class PluginGenerator {
 		subdir.mkpath(pluginName);
 		subdir.cd(pluginName);
 		String fileName = subdir.absoluteFilePath("plugin.cpp");
-		QFile filein = new QFile("classpath:io/qt/qtjambi/deployer/plugin.cpp");
+		QFile filein = new QFile(":io/qt/qtjambi/deployer/plugin.cpp");
 		QFile fileout = new QFile(fileName);
 		if(filein.open(QIODevice.OpenModeFlag.ReadOnly)) {
 			try {
@@ -580,7 +580,7 @@ class PluginGenerator {
 		
 		fileName = subdir.absoluteFilePath("plugin.pro");
 		fileout = new QFile(fileName);
-		filein = new QFile("classpath:io/qt/qtjambi/deployer/plugin.pro");
+		filein = new QFile(":io/qt/qtjambi/deployer/plugin.pro");
 		if(filein.open(QIODevice.OpenModeFlag.ReadOnly)) {
 			try {
 				if(fileout.open(QIODevice.OpenModeFlag.WriteOnly, QIODevice.OpenModeFlag.Text)) {

@@ -631,7 +631,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             TreeMap<String, Method> propertyBindables = new TreeMap<>();
             TreeMap<String, Field> propertyMembers = new TreeMap<>();
             TreeMap<String, Field> propertyQPropertyFields = new TreeMap<>();
-
+            TreeMap<String, Field> signals = new TreeMap<>();
+            
             // First we get all enums actually declared in the class
             Hashtable<String, Class<?>> enums = new Hashtable<String, Class<?>>();
             queryEnums(clazz, enums);
@@ -768,6 +769,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                        	signalIsClone.add(Boolean.FALSE);
 	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
                         		metaData.signalInfos.add(new SignalInfo(declaredField, new ArrayList<>(signalTypes), signalClass, new int[signalTypes.size()], methodId));
+                        		signals.put(declaredField.getName(), declaredField);
 		                        Runnable addDefaultSignal = ()->{
 		                        	signalTypes.remove(signalTypes.size()-1);
 	                        		signalParameterInfos.remove(signalParameterInfos.size()-1);
@@ -928,6 +930,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
             						_signalClass = signalClasses.getPrivateSignal(emitMethodInfo.parameterTypes.size());
             					}
 	                        	metaData.signalInfos.add(new SignalInfo(declaredField, new ArrayList<>(signalTypes), _signalClass, new int[signalTypes.size()], emitMethodInfo.methodId));
+	                        	signals.put(declaredField.getName(), declaredField);
 	                        }
             			}
 	            	}else{
@@ -1289,6 +1292,9 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                 continue;
                             }
                         }
+                        Field signalField = signals.get(name);
+                        if(signalField!=null && QtJambiSignals.AbstractSignal.class.isAssignableFrom(returnType))
+                        	continue;
 
                         propertyReaders.put(name, declaredMethod);
                         propertyDesignableResolvers.put(name, isDesignable(declaredMethod, clazz));

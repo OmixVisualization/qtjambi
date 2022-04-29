@@ -733,7 +733,7 @@ public class TestClassFunctionality extends ApplicationInitializer {
 	@Test
     public void run_copyConstructor() {
 		QResource.addClassPath(".");
-        QFileInfo file1 = new QFileInfo("classpath:io/qt/autotests/TestClassFunctionality.jar");
+        QFileInfo file1 = new QFileInfo(":io/qt/autotests/TestClassFunctionality.jar");
         assertTrue(file1.exists());
 
         QFileInfo file2 = new QFileInfo(file1);

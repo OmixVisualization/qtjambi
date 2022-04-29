@@ -500,7 +500,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickWidget component = new QQuickWidget();
 		try {
-			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
+			component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
 		} catch (AssertionError e) {
 			throw e;
@@ -516,7 +516,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickView component = new QQuickView();
 		try {
-			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
+			component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
 		} catch (AssertionError e) {
 			throw e;
@@ -1101,7 +1101,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlClearTypeRegistrations();
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.loadUrl(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
+		component.loadUrl(QUrl.fromLocalFile(":io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QQuickItem item = component.create(QQuickItem.class);

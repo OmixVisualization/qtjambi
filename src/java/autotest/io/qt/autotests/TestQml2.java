@@ -135,7 +135,7 @@ public class TestQml2 extends ApplicationInitializer{
 		QQuickItem.Flag.values();// ensures QtQuick to be loaded
 		QQmlEngine engine = new QQmlEngine();
 	    QQmlComponent component = new QQmlComponent(engine);
-	    component.loadUrl(QUrl.fromClassPath("io/qt/autotests/qml/Root.qml"));
+	    component.loadUrl(new QUrl("qrc:/io/qt/autotests/qml/Root.qml"));
 	    QObject root = component.create();
 	    Assert.assertTrue(component.errorString(), root!=null);
 	    Assert.assertEquals("root", root.objectName());

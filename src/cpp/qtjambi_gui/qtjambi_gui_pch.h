@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +38,11 @@
 #if defined __cplusplus
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qpainter.h>
+#include "qtjambi_gui.h"
+#include "qtjambi_gui_qhashes.h"
+#include "qtjambi_gui_repository.h"
 
 #endif //defined __cplusplus
 

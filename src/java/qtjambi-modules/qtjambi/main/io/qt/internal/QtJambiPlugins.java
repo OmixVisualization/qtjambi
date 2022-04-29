@@ -69,7 +69,7 @@ public final class QtJambiPlugins {
 		protected void addURLs(Collection<URL> urls) {
 			for (URL url : urls) {
 				super.addURL(url);
-				QtJambiResources.addSearchPath(url.toString());
+				QtJambiResources.addSearchPath(url);
 			}
 		}
 	}
@@ -114,7 +114,7 @@ public final class QtJambiPlugins {
 		QtPluginMetaData pluginMetaData = pluginClass.getAnnotation(QtPluginMetaData.class);
 		if (pluginMetaData != null) {
 			if (!pluginMetaData.file().isEmpty()) {
-				QFile pluginMetaDataFile = new QFile("classpath:" + pluginClass.getPackage().getName().replace('.', '/')
+				QFile pluginMetaDataFile = new QFile(":" + pluginClass.getPackage().getName().replace('.', '/')
 						+ "/" + pluginMetaData.file());
 				if (pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
 					FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());

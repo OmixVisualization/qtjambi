@@ -53,7 +53,7 @@ public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer {
 		QEventLoop loop = new QEventLoop();
 		QThread thread = QThread.create(()->{
 			try{
-				widget.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
+				widget.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 		});

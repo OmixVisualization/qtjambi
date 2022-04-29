@@ -29,7 +29,12 @@ SOURCES +=\
 
 QT = core core-private
 
-msvc:QMAKE_CXXFLAGS += /bigobj
+win32-msvc*: {
+    PRECOMPILED_HEADER = qtjambi_core_pch.h
+    CONFIG += precompile_header
+    QMAKE_CXXFLAGS += /bigobj
+}
+
 win32-g++* {
     QMAKE_CXXFLAGS += -Wa,-mbig-obj
     CONFIG(debug, debug|release) {

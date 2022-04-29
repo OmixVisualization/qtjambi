@@ -12,20 +12,18 @@
                 <dirname property="antfile.dir" file="${ant.file}"/>
                 <basename property="module" file="${antfile.dir}"/>
                 <condition property="build.module" value="true">
-                    <or>
-                        <available file="${generator.outputdir}/java/${module}" type="dir"/>
-                        <istrue value="${qtjambi-deploy}"/>
-                        <istrue value="${qtjambi-deploy-bundle}"/>
-                    </or>
+                    <available file="${generator.outputdir}/java/${module}" type="dir"/>
                 </condition>
                 <antcall inheritrefs="true" target="build.impl"/>
             </then>
         </if>
     </target>
     <target name="build.impl" if="build.module">
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
-            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
-            <property name="sourcedir2" value="${antfile.dir}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>

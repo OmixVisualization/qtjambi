@@ -33,7 +33,7 @@ public class TestUiToolsHelp extends ApplicationInitializer {
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
-	    	QFile device = new QFile("classpath:io/qt/autotests/ui/helptest.ui");
+	    	QFile device = new QFile(":io/qt/autotests/ui/helptest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
 	    	device.close();

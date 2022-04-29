@@ -17,7 +17,7 @@ HEADERS += \
 include(../qtjambi/qtjambi_include.pri)
 exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAMBILIB/generated.pri)
 
-# because qtjambishell_QActionEvent.cpp refers to qaction.h
+# because QActionEvent refers to qaction.h
 macx:{
     INCLUDEPATH += $$(QTDIR)/lib/QtGui.framework/Headers/qpa
     INCLUDEPATH += $$(QTDIR)/lib/QtWidgets.framework/Headers
@@ -32,10 +32,12 @@ DEPENDPATH += $$PWD
 # libQtGui.so.4.7.4 is only dependant on libQtCore.so.4
 QT = core core-private gui gui-private
 
-win32:CONFIG += precompile_header
-PRECOMPILED_HEADER = qtjambi_gui_pch.h
+win32-msvc*: {
+    PRECOMPILED_HEADER = qtjambi_gui_pch.h
+    CONFIG += precompile_header
+    QMAKE_CXXFLAGS += /bigobj
+}
 
-msvc:QMAKE_CXXFLAGS += /bigobj
 win32-g++* {
     QMAKE_CXXFLAGS += -Wa,-mbig-obj
     CONFIG(debug, debug|release) {

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/io/qt/autotests/generated">
+        <file>qjlogo.png</file>
+        <file alias="Text">resource.txt</file>
+    </qresource>
+</RCC>

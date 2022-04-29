@@ -485,8 +485,8 @@ class TypeSystemTypeEntry : public TypeEntry {
             m_requiredQtLibraries.append({entry,optional});
         }
 
-        void addCodeSnip(const CodeSnip &snip) {
-            snips << snip;
+        void addCodeSnip(const QString& package, const CodeSnip &snip) {
+            snips[package] << snip;
         }
 
         void addForwardDeclaration(const QString &forwardDeclaration) {
@@ -505,7 +505,7 @@ class TypeSystemTypeEntry : public TypeEntry {
             m_noExports = noExports;
         }
 
-        QList<CodeSnip> snips;
+        QMap<QString,QList<CodeSnip>> snips;
         Include m_include;
         IncludeList m_extra_includes;
         QHash<QString, bool> m_includes_used;

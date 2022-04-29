@@ -129,7 +129,7 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
 }
 
 void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const QString pp_file) {
-    builder.setQtVersion(qtVersion);
+    builder.setQtVersion(qtVersionMajor, qtVersionMinor, qtVersionPatch, qtjambiVersionPatch);
     builder.setFileName(pp_file);
     if (!outDir.isNull())
         builder.setOutputDirectory(outDir);
@@ -250,7 +250,7 @@ void GeneratorSetJava::generate() {
     QList<QFuture<void>> generated;
     for (int i = 0; i < generators.size(); ++i) {
         Generator *generator = generators.at(i);
-        generator->setQtVersion(qtVersion);
+        generator->setQtVersion(qtVersionMajor, qtVersionMinor, qtVersionPatch, qtjambiVersionPatch);
 
         if (generator->outputDirectory().isNull())
             generator->setOutputDirectory(outDir);
@@ -274,7 +274,7 @@ void GeneratorSetJava::generate() {
     }
 
     ReportHandler::setContext("PriGenerator");
-    priGenerator->setQtVersion(qtVersion);
+    priGenerator->setQtVersion(qtVersionMajor, qtVersionMinor, qtVersionPatch, qtjambiVersionPatch);
     if (priGenerator->outputDirectory().isNull())
         priGenerator->setOutputDirectory(outDir);
     priGenerator->setClasses(builder.classes());

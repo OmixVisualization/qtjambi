@@ -108,7 +108,7 @@ QString CppImplGenerator::default_return_statement_qt(const AbstractMetaType *ja
                     s << "*reinterpret_cast<";
                     writeTypeInfo(s, java_type, SkipName);
                     s << "*>(QMetaType::";
-                    if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
+                    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6, 0, 0)){
                         s << "fromName(\"";
                         writeTypeInfo(s, java_type, SkipName);
                         s << "\")";
@@ -485,7 +485,7 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaFunctional *java_
             s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
         }
         writeCodeInjections(s, java_class->typeEntry(), CodeSnip::Position1, TypeSystem::NativeCode);
-        if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
             if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                     || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
                 writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
@@ -1168,7 +1168,7 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
             s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
         }
         CppHeaderGenerator::writeInjectedCode(s, java_class, {CodeSnip::Position1});
-        if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
             if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                     || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
                 writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
@@ -2934,7 +2934,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                                                         s << " __qt_return_value = *reinterpret_cast<";
                                                         writeTypeInfo(s, function_type, SkipName);
                                                         s << "*>(QMetaType::";
-                                                        if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
+                                                        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6, 0, 0)){
                                                             s << "fromName(\"";
                                                             writeTypeInfo(s, function_type, SkipName);
                                                             s << "\")";
@@ -3143,6 +3143,8 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
             }
             if(java_function->isAbstract()){
                 s << INDENT << "}" << Qt::endl;
+                if(java_function->isBlockExceptions())
+                    s << INDENT << "__qt_exceptionBlocker.release(__jni_env);" << Qt::endl;
                 if (originalReferenceFunctionType) {
                     s << INDENT << "throw \"Call of pure virtual method " << implementor->typeEntry()->qualifiedCppName() << "::" << java_function->minimalSignature() << ".\";" << Qt::endl;
                 }else if (function_type) {
@@ -3153,7 +3155,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                 {
                     INDENTATION(INDENT)
                     s << INDENT << "QTJAMBI_DEBUG_TRACE(\"(shell) -> super()\")" << Qt::endl;
-                    if(java_function->isBlockExceptions()){
+                    if(java_function->isBlockExceptions() && function_type){
                         s << INDENT;
                         writeTypeInfo(s, function_type);
                         s << " __qt_return_value = ";
@@ -4765,7 +4767,7 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
                 QString accessName = ctype->qualifiedCppName();
                 switch(ctype->type()){
                 case ContainerTypeEntry::StackContainer:
-                    if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
+                    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6, 0, 0)){
                         accessName = "QVector";
                         break;
                     }
@@ -11389,7 +11391,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     QString accessName = ctype->qualifiedCppName();
                     switch(ctype->type()){
                     case ContainerTypeEntry::StackContainer:
-                        if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
+                        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) < QT_VERSION_CHECK(6, 0, 0)){
                             accessName = "QVector";
                             break;
                         }

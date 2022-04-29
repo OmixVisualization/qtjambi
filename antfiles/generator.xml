@@ -3,23 +3,23 @@
         Building and running the Generator
     -->
 
-    <target name="generator.run" depends="init.build, init.properties"
-        description="Runs the Qt Jambi generator on the Qt headers">
-		<antcall target="generator.xmlmerge"/>
+    <target name="tools.generator.run">
+		<antcall target="generator.xmlmerge-impl"/>
         <mkdir dir="${generator.outputdir}"/>
         <generator dir="${generator.builddir}"
                 debugTools="${qtjambi.debug-tools}"
-                inputDirectory="${generatorDir}"
+                inputDirectory="generator"
                 outputDirectory="${generator.outputdir}"
                 generatorDirectory="${generator.builddir}"
-                typesystem="${generatorDir}/targets/build_all.xml"
+                typesystem="generator/targets/build_all.xml"
                 typesystemsDirectory="${generator.xmlmerge.outputdir}"
-                header="${generatorDir}/targets/qtjambi_masterinclude.h"
+                header="generator/targets/qtjambi_masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtdocdirectory="${qtjambi.qt.docdir}"
                 qtlibdirectory="${tools.qt.libdir}"
                 qtbindirectory="${tools.qt.bindir}"
                 targetJavaVersion="${target.java.version}"
+                qtjambiVersion="${qtjambi.patchversion}"
                 includepaths="${generator.includepaths};${generator.extra.includes}"
                 options="${qtjambi.generator.jumptable}"/>
     </target>
@@ -35,7 +35,7 @@
           jdoc-enabled
       -->
 
-    <target name="tools.generator.qmake" depends="init.build, init.properties">
+    <target name="tools.generator.qmake" depends="init.build">
         <mkdir dir="${generator.builddir}"/>
 		<condition property="generator.configuration" value="debug" else="release">
 			<or>
@@ -62,8 +62,8 @@
     <macrodef name="xmlmerge">
         <attribute name="victim"/>
         <sequential>
-            <xslt force="true" style="${generator.xmlmerge.srcdir}/merge.xsl"
-                in="${generator.xmlmerge.srcdir}/typesystem_@{victim}-common.xml"
+            <xslt force="true" style="generator/typesystem/xml/merge.xsl"
+                in="generator/typesystem/xml/typesystem_@{victim}-common.xml"
                 out="${generator.xmlmerge.outputdir}/typesystem_@{victim}.xml">
                 <param name="source"
                     expression="typesystem_@{victim}-java.xml"/>
@@ -71,7 +71,7 @@
         </sequential>
     </macrodef>
 
-    <target name="generator.xmlmerge"
+    <target name="generator.xmlmerge-impl"
         description="Merges the XML files used by the Qt Jambi generator.">
         <xmlmerge victim="core"/>
 		<xmlmerge victim="concurrent"/>

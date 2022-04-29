@@ -1584,8 +1584,8 @@
 
     <value-type name="QPainterPath">
         <modify-function signature="operator=(QPainterPath)" remove="all"/>
-        <modify-function signature="operator-(const QPainterPath &amp;)const" remove="all"/>
-        <modify-function signature="operator+(const QPainterPath &amp;)const" remove="all"/>
+        <modify-function signature="operator-(const QPainterPath &amp;)const" rename="minus"/>
+        <modify-function signature="operator+(const QPainterPath &amp;)const" rename="plus"/>
         <modify-function signature="operator|(const QPainterPath &amp;)const" remove="all"/>
         <modify-function signature="operator|=(const QPainterPath &amp;)" remove="all"/>
         <modify-function signature="operator&amp;(const QPainterPath &amp;)const" remove="all"/>
@@ -1691,10 +1691,10 @@
         <modify-function signature="operator^=(QRegion)" remove="all"/>
         <modify-function signature="operator|=(QRegion)" remove="all"/>
         <modify-function signature="operator&amp;(QRegion)const" remove="all"/>
-        <modify-function signature="operator+(QRegion)const" remove="all"/>
+        <modify-function signature="operator+(QRegion)const" rename="plus"/>
         <modify-function signature="operator&amp;(QRect)const" remove="all"/>
-        <modify-function signature="operator+(QRect)const" remove="all"/>
-        <modify-function signature="operator-(QRegion)const" remove="all"/>
+        <modify-function signature="operator+(QRect)const" rename="plus"/>
+        <modify-function signature="operator-(QRegion)const" rename="minus"/>
         <modify-function signature="operator^(QRegion)const" remove="all"/>
         <modify-function signature="operator|(QRegion)const" remove="all"/>
         <modify-function signature="operator&amp;=(QRect)" remove="all" />
@@ -1734,27 +1734,12 @@
         <modify-function signature="find(QString,QPixmap&amp;)" remove="all" until="5.*"/>
     </object-type>
 
-<!-- according to the documentation QPlatformSystemTrayIcon is part of the public API but
-     it is only to be found in the private headers section -->
-<!--
-    <enum-type name="QPlatformSystemTrayIcon::ActivationReason"/>
-    <enum-type name="QPlatformSystemTrayIcon::MessageIcon"/>
-    <object-type name="QPlatformSystemTrayIcon">
-    </object-type>
--->
-
     <value-type name="QPolygon">
         <modify-function signature="operator=(const QPolygon &amp;)" remove="all" until="5.*"/>
-        <!--modify-function signature="operator+(QVector&lt;QPoint&gt;)const" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QPoint)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QVector&lt;QPoint&gt;)" remove="all"/-->
     </value-type>
 
     <value-type name="QPolygonF">
         <modify-function signature="operator=(const QPolygonF &amp;)" remove="all" until="5.*"/>
-        <!--modify-function signature="operator+(QVector&lt;QPointF&gt;)const" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QPointF)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QVector&lt;QPointF&gt;)" remove="all"/-->
     </value-type>
 
     <value-type name="QQuaternion">
@@ -2141,35 +2126,35 @@
     <value-type name="QVector2D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator-(QVector2D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QVector2D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(QVector2D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(QVector2D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-()" rename="unaryMinus" since="6.0.0"/>
+        <modify-function signature="operator-(QVector2D)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QVector2D)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator*(QVector2D)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator*(float)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator/(QVector2D)" rename="div" since="6.0.0"/>
+        <modify-function signature="operator/(float)" rename="div" since="6.0.0"/>
     </value-type>
     <value-type name="QVector3D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator-(QVector3D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QVector3D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(QVector3D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(QVector3D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-()" rename="unaryMinus" since="6.0.0"/>
+        <modify-function signature="operator-(QVector3D)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QVector3D)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator*(QVector3D)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator*(float)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator/(QVector3D)" rename="div" since="6.0.0"/>
+        <modify-function signature="operator/(float)" rename="div" since="6.0.0"/>
     </value-type>
     <value-type name="QVector4D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
-        <modify-function signature="operator-(QVector4D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator+(QVector4D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(QVector4D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(QVector4D)" remove="all" since="6.0.0"/>
-        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-()" rename="unaryMinus" since="6.0.0"/>
+        <modify-function signature="operator-(QVector4D)" rename="minus" since="6.0.0"/>
+        <modify-function signature="operator+(QVector4D)" rename="plus" since="6.0.0"/>
+        <modify-function signature="operator*(QVector4D)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator*(float)" rename="times" since="6.0.0"/>
+        <modify-function signature="operator/(QVector4D)" rename="div" since="6.0.0"/>
+        <modify-function signature="operator/(float)" rename="div" since="6.0.0"/>
     </value-type>
 
     <object-type name="QWindow">

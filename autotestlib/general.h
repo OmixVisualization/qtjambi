@@ -86,6 +86,10 @@ public:
     static QList<bool> start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text);
 
     static void qtjambi_jni_test(jobject object);
+
+    static void run(QRunnable* runnable);
+
+    static void run(QThread* runnable);
 };
 
 class FunctionalTest{

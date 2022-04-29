@@ -101,7 +101,7 @@ struct QPropertyInfo{
 };
 
 typedef QHash<hash_type, jobject> SignalTypesHash;
-typedef QHash<hash_type, QList<ParameterTypeInfo>> ParameterTypeHash;
+typedef QHash<hash_type, const QList<ParameterTypeInfo>*> ParameterTypeHash;
 Q_GLOBAL_STATIC(QReadWriteLock, gJMethodInfoInfosLock)
 Q_GLOBAL_STATIC(ParameterTypeHash, gParameterTypeInfos)
 typedef QHash<int, const QMetaObject *> MetaObjectHash;
@@ -1286,20 +1286,15 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
             }
         }
     }
-    QList<ParameterTypeInfo>* result = nullptr;
+    const QList<ParameterTypeInfo>* cresult = nullptr;
     hash_type key = hashSum({qHash(qintptr(method.enclosingMetaObject())), qHash(method.methodIndex())});
     {
         QReadLocker locker(gJMethodInfoInfosLock());
         Q_UNUSED(locker)
-        if(gParameterTypeInfos->contains(key)){
-            result = &(*gParameterTypeInfos)[key];
-        }
+        cresult = (*gParameterTypeInfos)[key];
     }
-    if(!result){
-        QWriteLocker locker(gJMethodInfoInfosLock());
-        Q_UNUSED(locker)
-        gParameterTypeInfos->insert(key, QList<ParameterTypeInfo>());
-        result = &(*gParameterTypeInfos)[key];
+    if(!cresult){
+        QList<ParameterTypeInfo>* result = new QList<ParameterTypeInfo>();
         ParameterInfoProvider ptip = registeredParameterInfoProvider(method.enclosingMetaObject());
         QList<ParameterInfo> parameterInfos;
         if(ptip && ptip(method, parameterInfos)){
@@ -1794,9 +1789,13 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                 }
             }
         }
+        QWriteLocker locker(gJMethodInfoInfosLock());
+        Q_UNUSED(locker)
+        gParameterTypeInfos->insert(key, result);
+        cresult = result;
     }
-    Q_ASSERT(result);
-    return *result;
+    Q_ASSERT(cresult);
+    return *cresult;
 }
 
 int QtJambiMetaObject::methodFromJMethod(const QMetaObject* metaObject, jmethodID methodId){
@@ -2562,14 +2561,18 @@ jobject qtjambi_get_signal_types(JNIEnv *env, jobject signal, const QMetaMethod&
 void clear_metaobjects_at_shutdown(JNIEnv * env)
 {
     SignalTypesHash signalTypes;
+    QList<const QList<ParameterTypeInfo>*> list;
     {
         QWriteLocker locker(gJMethodInfoInfosLock());
         Q_UNUSED(locker)
-        if(!gParameterTypeInfos.isDestroyed())
+        if(!gParameterTypeInfos.isDestroyed()){
+            list = gParameterTypeInfos->values();
             gParameterTypeInfos->clear();
+        }
         if(!gSignalTypes.isDestroyed())
             signalTypes.swap(*gSignalTypes);
     }
+    qDeleteAll(list);
     if(env){
         for(jobject obj : signalTypes){
             if(obj)

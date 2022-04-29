@@ -29,6 +29,8 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static io.qt.core.QObject.tr;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -54,14 +56,16 @@ public class TestWidgetsWithShutdown {
 	    QApplication.initialize(new String[0]);
 	    {
 		    QWidget window = new QWidget();
-			window.setWindowTitle( "Enter your age" );
-			QCheckBox checkbox = new QCheckBox("Check &Box");
+			window.setWindowTitle(tr("Enter your age"));
+			QCheckBox checkbox = new QCheckBox(tr("Check &Box"));
 			QSpinBox spinbox = new QSpinBox();
 			spinbox.setRange( 0, 130 );
 			spinbox.setValue( 35 );
 			QSlider slider = new QSlider( Qt.Orientation.Horizontal );
 			slider.setRange( 0, 130 );
 			slider.setValue( 35 );
+			slider.valueChanged.connect(spinbox::setValue);
+			spinbox.valueChanged.connect(slider::setValue);
 			QHBoxLayout layout = new QHBoxLayout();
 			layout.addWidget( spinbox );
 			layout.addWidget( slider );

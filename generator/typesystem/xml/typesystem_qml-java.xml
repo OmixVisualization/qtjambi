@@ -418,6 +418,11 @@
             </modify-argument>
         </modify-function>
     </interface-type>
+    <value-type name="QJSPrimitiveValue">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QJSPrimitiveValue__" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />

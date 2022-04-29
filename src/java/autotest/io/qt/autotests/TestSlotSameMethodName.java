@@ -62,7 +62,6 @@ import io.qt.gui.QCloseEvent;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPalette;
 import io.qt.gui.QShowEvent;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QMainWindow;
 import io.qt.widgets.QTabWidget;

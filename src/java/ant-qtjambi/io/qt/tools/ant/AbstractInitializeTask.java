@@ -88,7 +88,7 @@ public abstract class AbstractInitializeTask extends Task {
     protected String mySetProperty(int verboseMode, String attrName, String sourceValue, String newValue, boolean forceNewValue) throws BuildException {
         String currentValue = AntUtil.getPropertyAsString(propertyHelper, attrName);
         if(newValue != null) {
-            if(currentValue != null) {
+            if(currentValue != null && !currentValue.isEmpty()) {
                 String s;
                 if(currentValue.equals(newValue))
                     s = " (already set to same value)";
@@ -99,7 +99,7 @@ public abstract class AbstractInitializeTask extends Task {
                 else
                     sourceValue = s;
                 // Don't error if we don't have to i.e. the two values are the same
-                if(forceNewValue && newValue.equals(currentValue) == false)
+                if(forceNewValue && !newValue.equals(currentValue))
                     throw new BuildException("Unable to overwrite property " + attrName + " with value " + newValue + " (current value is: " + currentValue + ")");
             } else {
                 if(forceNewValue)
@@ -155,7 +155,7 @@ public abstract class AbstractInitializeTask extends Task {
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
         String error = null;
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA_HOME_TARGET");
                 if(s != null) {
@@ -171,7 +171,7 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA_HOME");
                 if(s != null) {
@@ -189,7 +189,7 @@ public abstract class AbstractInitializeTask extends Task {
             }
         }
 //        System.getProperties().forEach((a,b)->System.out.println(a+"="+b));
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
         	s = System.getProperty("java.home");
         	if(s != null) {
         		File includeDir = new File(s, "include");
@@ -206,7 +206,7 @@ public abstract class AbstractInitializeTask extends Task {
         	throw new BuildException(error);
         }
         String result = s;
-        mySetProperty(-1, Constants.JAVA_HOME_TARGET, sourceValue, result, false);
+        mySetProperty(-1, Constants.JAVA_HOME_TARGET, sourceValue, result, true);
         String targetJavaVersion = this.getProject().getProperty("target.java.version");
         if(targetJavaVersion==null || targetJavaVersion.isEmpty()) {
 	        Properties properties = new Properties();
@@ -217,7 +217,7 @@ public abstract class AbstractInitializeTask extends Task {
 			}
 			targetJavaVersion = "11";
 			String javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
-			if(javaVersion!=null) {
+			if(javaVersion!=null && !javaVersion.isEmpty()) {
 				int offset = 0;
 				if(javaVersion.startsWith("\"")) {
 					++offset;
@@ -237,20 +237,21 @@ public abstract class AbstractInitializeTask extends Task {
                     }
                 }
 				PropertyHelper.setNewProperty(getProject(), "target.java.version", ""+targetJavaVersion);
-				mySetProperty(-1, "target.java.version", " (auto-detected)", targetJavaVersion, false);
+				mySetProperty(-1, "target.java.version", " (auto-detected)", targetJavaVersion, true);
 			}
 			if(!targetJavaVersion.startsWith("1.")) {
 				if(Integer.parseInt(targetJavaVersion)>9) {
-					this.getProject().setProperty("java.module.based", "true");
+					mySetProperty(-1, "java.module.based", " (auto-detected)", "true", true);
+//					this.getProject().setProperty("java.module.based", "true");
 				}
 			}
 			String minJavaVersion = this.getProject().getProperty("minimum.java.version");
 			if(minJavaVersion==null || minJavaVersion.isEmpty()) {
-				mySetProperty(-1, "minimum.java.version", " (auto-detected)", minJavaVersion = targetJavaVersion, false);
+				mySetProperty(-1, "minimum.java.version", " (auto-detected)", minJavaVersion = targetJavaVersion, true);
 			}
 			String srcJavaVersion = this.getProject().getProperty("source.java.version");
 			if(srcJavaVersion==null || srcJavaVersion.isEmpty()) {
-				mySetProperty(-1, "source.java.version", " (auto-detected)", minJavaVersion, false);
+				mySetProperty(-1, "source.java.version", " (auto-detected)", minJavaVersion, true);
 			}
         }
         return result;
@@ -269,7 +270,7 @@ public abstract class AbstractInitializeTask extends Task {
 		}
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA8_HOME_TARGET);
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA8_HOME_TARGET");
                 if(s != null) {
@@ -284,7 +285,7 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA8_HOME");
                 if(s != null) {
@@ -299,17 +300,17 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, false);
+        mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, true);
         switch(OSInfo.os()) {
         case MacOS: 
         	switch(System.getProperty("os.arch").toLowerCase()) {
         	case "arm64":
         	case "aarch64":
         		if(qtMajorVersion>=6 && qtMinorVersion>=2) {
-        			mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), false);
+        			mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), true);
         		}
         		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_X64_HOME_TARGET);
-                if(s == null) {
+                if(s == null || s.isEmpty()) {
                     try {
                         s = System.getenv("JAVA_X64_HOME_TARGET");
                         if(s != null) {
@@ -324,7 +325,7 @@ public abstract class AbstractInitializeTask extends Task {
                     } catch(SecurityException eat) {
                     }
                 }
-                if(s == null) {
+                if(s == null || s.isEmpty()) {
                     try {
                         s = System.getenv("JAVA_X64_HOME");
                         if(s != null) {
@@ -339,15 +340,15 @@ public abstract class AbstractInitializeTask extends Task {
                     } catch(SecurityException eat) {
                     }
                 }
-                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, s, false);
+                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, s, true);
         		break;
         	case "x86_64":
         	case "x64":
         	case "amd64":
-                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), false);
+                mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), true);
                 if(qtMajorVersion>=6 && qtMinorVersion>=2) {
 	        		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_ARM64_HOME_TARGET);
-	                if(s == null) {
+	                if(s == null || s.isEmpty()) {
 	                    try {
 	                        s = System.getenv("JAVA_ARM64_HOME_TARGET");
 	                        if(s != null) {
@@ -362,7 +363,7 @@ public abstract class AbstractInitializeTask extends Task {
 	                    } catch(SecurityException eat) {
 	                    }
 	                }
-	                if(s == null) {
+	                if(s == null || s.isEmpty()) {
 	                    try {
 	                        s = System.getenv("JAVA_ARM64_HOME");
 	                        if(s != null) {
@@ -377,7 +378,7 @@ public abstract class AbstractInitializeTask extends Task {
 	                    } catch(SecurityException eat) {
 	                    }
 	                }
-	                mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, s, false);
+	                mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, s, true);
                 }
         		break;
         	default:
@@ -392,7 +393,7 @@ public abstract class AbstractInitializeTask extends Task {
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_OSARCH_TARGET);
 
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA_OSARCH_TARGET");
                 if(s != null)
@@ -401,11 +402,11 @@ public abstract class AbstractInitializeTask extends Task {
             }
         }
 
-        if(s == null) {    // auto-detect using what we find
+        if(s == null || s.isEmpty()) {    // auto-detect using what we find
             // This is based on a token observation that the include directory
             //  only had one sub-directory (this is needed for jni_md.h).
             String javaHomeTarget = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
-            if(javaHomeTarget != null) {
+            if(javaHomeTarget != null && !javaHomeTarget.isEmpty()) {
                 File includeDir = new File(javaHomeTarget, "include");
                 File found = null;
                 int foundCount = 0;
@@ -428,7 +429,7 @@ public abstract class AbstractInitializeTask extends Task {
         }
 
         String result = s;
-        mySetProperty(-1, Constants.JAVA_OSARCH_TARGET, sourceValue, result, false);
+        mySetProperty(-1, Constants.JAVA_OSARCH_TARGET, sourceValue, result, true);
         return result;
     }
 
@@ -436,7 +437,7 @@ public abstract class AbstractInitializeTask extends Task {
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_OSCPU);
 
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA_OSCPU");
                 if(s != null)
@@ -444,7 +445,7 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getProperty("os.arch");
                 if(s != null)
@@ -454,7 +455,7 @@ public abstract class AbstractInitializeTask extends Task {
         }
 
         String result = s;
-        mySetProperty(-1, Constants.JAVA_OSCPU, sourceValue, result, false);
+        mySetProperty(-1, Constants.JAVA_OSCPU, sourceValue, result, true);
         return result;
     }
 
@@ -462,7 +463,7 @@ public abstract class AbstractInitializeTask extends Task {
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_OSCPU_TARGET);
 
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getenv("JAVA_OSCPU_TARGET");
                 if(s != null)
@@ -470,12 +471,12 @@ public abstract class AbstractInitializeTask extends Task {
             } catch(SecurityException eat) {
             }
         }
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_OSCPU);
             if(s != null)
                 sourceValue = " (inherited from ${" + Constants.JAVA_OSCPU + "})";
         }
-        if(s == null) {
+        if(s == null || s.isEmpty()) {
             try {
                 s = System.getProperty("os.arch");
                 if(s != null)
@@ -485,7 +486,7 @@ public abstract class AbstractInitializeTask extends Task {
         }
 
         String result = s;
-        mySetProperty(-1, Constants.JAVA_OSCPU_TARGET, sourceValue, result, false);
+        mySetProperty(-1, Constants.JAVA_OSCPU_TARGET, sourceValue, result, true);
         return result;
     }
 
