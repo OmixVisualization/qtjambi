@@ -31,8 +31,22 @@
             <istrue value="${qtjambi-deploy-bundle}"/>
             <then>
                 <mkdir dir="${deploymentdir}/bundles"/>
-                <jar destfile="${deploymentdir}/bundles/qtjambi-parent-${qtjambi.jar.version}-bundle.jar">
-                    <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                <condition property="snap" value="-SNAPSHOT" else="">
+                    <istrue value="${qtjambi-deploy-snapshot}"/>
+                </condition>
+                <if>
+                    <not>
+                        <available file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.pom"/>
+                    </not>
+                    <then>
+                        <create-pom outputDirectory="${deploymentdir}" module="parent"/>
+                    </then>
+                </if>
+                <gpg>
+                    <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}${snap}.pom" followsymlinks="false"/>
+                </gpg>
+                <jar destfile="${deploymentdir}/bundles/qtjambi-parent-${qtjambi.jar.version}${snap}-bundle.jar">
+                    <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
                 </jar>
             </then>
         </if>

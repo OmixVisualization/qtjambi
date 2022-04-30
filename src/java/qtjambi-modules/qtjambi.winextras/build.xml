@@ -5,8 +5,8 @@
                 <not>
                     <istrue value="${qtjambi-native-bundle}"/>
                 </not>
-                <equals arg1="${qtjambi.osname}" arg2="windows-x86"/>
-                <equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
+                <equals arg1="${java.osarch.target}" arg2="windows-x86"/>
+                <equals arg1="${java.osarch.target}" arg2="windows-x64"/>
             </or>
             <then>
                 <dirname property="antfile.dir" file="${ant.file}"/>

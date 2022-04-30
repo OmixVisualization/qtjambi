@@ -1,15 +1,12 @@
 <project default="build">
     <target name="build">
         <if>
-            <and>
-                <or>
-                    <not>
-                        <istrue value="${qtjambi-native-bundle}"/>
-                    </not>
-                    <equals arg1="${qtjambi.osname}" arg2="macos"/>
-                </or>
-                <available file="${generator.outputdir}/java/${module}"/>
-            </and>
+            <or>
+                <not>
+                    <istrue value="${qtjambi-native-bundle}"/>
+                </not>
+                <equals arg1="${java.osarch.target}" arg2="macos"/>
+            </or>
             <then>
                 <dirname property="antfile.dir" file="${ant.file}"/>
                 <basename property="module" file="${antfile.dir}"/>
