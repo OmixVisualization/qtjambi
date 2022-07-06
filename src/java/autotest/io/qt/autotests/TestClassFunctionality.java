@@ -97,8 +97,7 @@ public class TestClassFunctionality extends ApplicationInitializer {
     public void tearDown() {
         QApplication.processEvents();
 
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
     }
 
     static class GraphicsSceneSubclassSubclass extends GraphicsSceneSubclass {
@@ -299,121 +298,113 @@ public class TestClassFunctionality extends ApplicationInitializer {
     @Test
     public void test_GC_versus_access_SplitOwnership() throws InterruptedException {
     	Set<Integer> hashes = new HashSet<>();
-    	Thread thread = new Thread(()->{
-			try {
-	    		while(true) {
-						System.gc();
-						Thread.sleep(6);
-	    		}
-			} catch (InterruptedException e) {}
-    	});
-    	thread.setPriority(Thread.NORM_PRIORITY-1);
-    	thread.start();
-    	for (int i = 0; i < 500; i++) {
+    	for (int i = 0; i < 50 && hashes.size()<=1; i++) {
     		{
+				ApplicationInitializer.runGC();
 	    		QObject globalObject = OrdinaryDestroyed.getGlobalQObjectSplitOwnership();
 	    		assertTrue(globalObject!=null);
 	    		assertTrue(General.internalAccess.isSplitOwnership(globalObject));
 	    		hashes.add(System.identityHashCode(globalObject));
 	    		globalObject = null;
     		}
-    		Thread.sleep(5);
+			Thread.yield();
+    		Thread.sleep(25);
 		}
     	assertTrue("Expect to create more than one java objects for global QObject with split ownership.", hashes.size()>1);
-    	thread.interrupt();
     }
 
     @Test
-    public void run_testDestruction() {
-        // Delete from Java
-        {
-            DisposeCounter counter = new DisposeCounter();
-            {
-                new OrdinarySubclass(counter);
-            }
-            System.gc();
-            System.runFinalization();
-            try {
-                for(int i = 0; i < 60; i++) {  
-                    synchronized(this) {
-                        if(counter.disposedCount() != 0)
-                            break;
-                    }
-                    Thread.sleep(10);
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-
-            assertEquals(1, counter.disposedCount());
-        }
-
-        // Delete from C++
-        {
-        	DisposeCounter counter = new DisposeCounter();
-            OrdinarySubclass sc = new OrdinarySubclass(counter);
-            OrdinaryDestroyed.deleteFromCpp(sc);
-            assertEquals(1, counter.disposedCount());
-            assertTrue(sc.isDisposed());
-        }
-
-        // Delete through virtual destructor
-        {
-        	DisposeCounter counter = new DisposeCounter();
-            OrdinarySuperclass sc = new OrdinarySubclass(counter);
-            OrdinaryDestroyed.deleteFromCppOther(sc);
-            assertEquals(1, counter.disposedCount());
-            assertTrue(sc.isDisposed());
-        }
-
-        // Delete QObject from Java
-        {
-            DisposeCounter counter = new DisposeCounter();
-            QObjectSubclass qobject = new QObjectSubclass(counter, null);
-            qobject.dispose();
-            assertEquals(1, counter.disposedCount());
-            assertTrue(qobject.isDisposed());
-        }
-
-        // Delete QObject from parent
-        {
-            DisposeCounter counter = new DisposeCounter();
-            QObject parent = new QObject();
-            QObject qobject = new QObjectSubclass(counter, parent);
-            parent.dispose();
-            assertEquals(1, counter.disposedCount());
-            assertTrue(qobject.isDisposed());
-        }
-
-        // Delete QObject later
-        {
-            DisposeCounter counter = new DisposeCounter();
-            QObject qobject = new QObjectSubclass(counter, null);
-            qobject.disposeLater();
-            QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-
-            assertEquals(1, counter.disposedCount());
-            assertTrue(qobject.isDisposed());
-        }
-
-        // Delete QObject from C++
-        {
-            DisposeCounter counter = new DisposeCounter();
-            QObjectSubclass qobject = new QObjectSubclass(counter, null);
-            QObjectDestroyed.deleteFromCpp(qobject);
-            assertEquals(1, counter.disposedCount());
-            assertTrue(qobject.isDisposed());
-        }
-
-        // Delete QObject from C++ through virtual destructor
-        {
-            DisposeCounter counter = new DisposeCounter();
-            QObject qobject = new QObjectSubclass(counter, null);
-            QObjectDestroyed.deleteFromCppOther(qobject);
-            assertEquals(1, counter.disposedCount());
-            assertTrue(qobject.isDisposed());
-        }
+    public void testDestructionCppDelete_Ordinary(){
+    	DisposeCounter counter = new DisposeCounter();
+        OrdinarySubclass sc = new OrdinarySubclass(counter);
+        OrdinaryDestroyed.deleteFromCpp(sc);
+        assertEquals(1, counter.disposedCount());
+        assertTrue(sc.isDisposed());
     }
+
+    @Test
+    public void testDestructionByVirtualDestructor_Ordinary(){
+    	DisposeCounter counter = new DisposeCounter();
+        OrdinarySuperclass sc = new OrdinarySubclass(counter);
+        OrdinaryDestroyed.deleteFromCppOther(sc);
+        assertEquals(1, counter.disposedCount());
+        assertTrue(sc.isDisposed());
+    }
+
+    @Test
+    public void testDestructionByDispose_QObject()
+    {
+        DisposeCounter counter = new DisposeCounter();
+        QObjectSubclass qobject = new QObjectSubclass(counter, null);
+        qobject.dispose();
+        assertEquals(1, counter.disposedCount());
+        assertTrue(qobject.isDisposed());
+    }
+
+    @Test
+    public void testDestructionByParent_QObject()
+    {
+        DisposeCounter counter = new DisposeCounter();
+        QObject parent = new QObject();
+        QObject qobject = new QObjectSubclass(counter, parent);
+        parent.dispose();
+        assertEquals(1, counter.disposedCount());
+        assertTrue(qobject.isDisposed());
+    }
+
+    @Test
+    public void testDestructionByDisposeLater_QObject()
+    {
+        DisposeCounter counter = new DisposeCounter();
+        QObject qobject = new QObjectSubclass(counter, null);
+        qobject.disposeLater();
+        QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+
+        assertEquals(1, counter.disposedCount());
+        assertTrue(qobject.isDisposed());
+    }
+
+    @Test
+    public void testDestructionCppDelete_QObject()
+    {
+        DisposeCounter counter = new DisposeCounter();
+        QObjectSubclass qobject = new QObjectSubclass(counter, null);
+        QObjectDestroyed.deleteFromCpp(qobject);
+        assertEquals(1, counter.disposedCount());
+        assertTrue(qobject.isDisposed());
+    }
+
+    @Test
+    public void testDestructionByVirtualDestructor_QObject(){
+        DisposeCounter counter = new DisposeCounter();
+        QObject qobject = new QObjectSubclass(counter, null);
+        QObjectDestroyed.deleteFromCppOther(qobject);
+        assertEquals(1, counter.disposedCount());
+        assertTrue(qobject.isDisposed());
+    }
+    
+    @Test
+    public void testDestructionByJavaGC(){
+        DisposeCounter counter = new DisposeCounter();
+        {
+            new OrdinarySubclass(counter);
+        }
+        try {
+            for(int i = 0; i < 60; i++) {  
+                ApplicationInitializer.runGC();
+                synchronized(this) {
+                    if(counter.disposedCount() != 0)
+                        break;
+                }
+                Thread.sleep(10);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1, counter.disposedCount());
+    }
+
 
     /**
      * Test that calling a private virtual function gives you an exception
@@ -712,8 +703,7 @@ public class TestClassFunctionality extends ApplicationInitializer {
         SenderTester tester = new SenderTester();
         QTimer.singleShot(1000, tester::timeoutSlot);
 
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
 
         try {
             while (tester.timeouted.elapsed() < 1500) {

@@ -53,8 +53,7 @@ public class TestClassFunctionalityProblem extends ApplicationInitializer {
         QApplication.processEvents();
         QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
     }
 
     // Tests the ownership transfer that we need to have objects like
@@ -107,8 +106,7 @@ public class TestClassFunctionalityProblem extends ApplicationInitializer {
 
         // To attempt deletion of the QPaintEvent, should not happen at
         // this time...
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
         synchronized(CustomPaintEvent.class) {
             assertEquals(CustomPaintEvent.finalized, false);
         }
@@ -118,8 +116,7 @@ public class TestClassFunctionalityProblem extends ApplicationInitializer {
 
         // To provoke collection of the java side of the object, now
         // that C++ has released its hold on it
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
         try {
             for(int i = 0; i < 60; i++) {
                 synchronized(CustomPaintEvent.class) {

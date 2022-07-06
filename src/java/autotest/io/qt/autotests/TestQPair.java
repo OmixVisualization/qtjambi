@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import io.qt.core.QPair;
+import io.qt.internal.QtJambiInternal;
 
 public class TestQPair extends UnitTestInitializer {
 
@@ -89,9 +90,15 @@ public class TestQPair extends UnitTestInitializer {
 
 	@org.junit.Test
 	public void testToString() {
-		assertEquals("qp1", "Pair(3,5)",       qp1.toString());
-		assertEquals("qp3", "Pair(1,null)",    qp3.toString());
-		assertEquals("qp4", "Pair(null,true)", qp4.toString());
+		if(QtJambiInternal.majorVersion()>5) {
+			assertEquals("qp1", "std::pair(3,5)",       qp1.toString());
+			assertEquals("qp3", "std::pair(1,null)",    qp3.toString());
+			assertEquals("qp4", "std::pair(null,true)", qp4.toString());
+		}else {
+			assertEquals("qp1", "QPair(3,5)",       qp1.toString());
+			assertEquals("qp3", "QPair(1,null)",    qp3.toString());
+			assertEquals("qp4", "QPair(null,true)", qp4.toString());
+		}
 	}
 
 	@org.junit.Test

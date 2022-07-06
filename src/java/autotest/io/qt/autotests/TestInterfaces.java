@@ -788,11 +788,11 @@ public class TestInterfaces extends ApplicationInitializer {
 			ft.thread();
 	    	FunctionalTest functionalTest = new FunctionalTest();
 	    	assertEquals(4*9, functionalTest.convert(ft, 4, true));
-	    	System.gc();
+	    	ApplicationInitializer.runGC();
 	    	assertEquals(-1, functionalTest.convert(ft, 4, false));
 	    	FunctionalTest.TestFunction1 last1 = functionalTest.last1();
 	    	assertEquals(ft, last1);
-	    	System.gc();
+	    	ApplicationInitializer.runGC();
 			ft.thread();
 	    	ft.dispose();
 	    	assertEquals(0, functionalTest.convertWithLast1(5, true));
@@ -805,15 +805,11 @@ public class TestInterfaces extends ApplicationInitializer {
 	    	assertEquals(0, ai.get());
 	    	last1 = null;
 	    	ft = null;
-	    	System.gc();
-	    	System.runFinalization();
+	    	ApplicationInitializer.runGC();
 	    	Thread.sleep(20);
 	    	ft = null;
 		}
-    	System.gc();
-    	System.runFinalization();
-    	System.gc();
-    	System.runFinalization();
+    	ApplicationInitializer.runGC();
     	assertEquals(1, ai.get());
     	QApplication.processEvents();
     	QApplication.processEvents();

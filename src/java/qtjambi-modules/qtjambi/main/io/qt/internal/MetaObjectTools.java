@@ -34,7 +34,7 @@ import static io.qt.internal.QtJambiInternal.internalTypeNameOfClass;
 import static io.qt.internal.QtJambiInternal.registerMetaType;
 import static io.qt.internal.QtJambiInternal.registerRefMetaType;
 
-import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -121,7 +121,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
     }
     
     static class QPropertyTypeInfo{
-		QPropertyTypeInfo(Class<?> propertyType, Type genericPropertyType, AnnotatedType annotatedPropertyType, boolean isPointer,
+		QPropertyTypeInfo(Class<?> propertyType, Type genericPropertyType, AnnotatedElement annotatedPropertyType, boolean isPointer,
 				boolean isReference, boolean isWritable) {
 			super();
 			this.propertyType = propertyType;
@@ -133,7 +133,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
 		}
 		final Class<?> propertyType;
     	final Type genericPropertyType;
-    	final AnnotatedType annotatedPropertyType;
+    	final AnnotatedElement annotatedPropertyType;
     	final boolean isPointer;
     	final boolean isReference;
     	final boolean isWritable;
@@ -680,7 +680,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                        for (int j = 0; j < signalTypes.size(); j++) {
 	                        	emitParameterTypes.add(Object.class);
 	                            QtJambiSignals.SignalParameterType signalType = signalTypes.get(j);
-	                            QtMetaType metaTypeDecl = signalType.annotatedType.getAnnotation(QtMetaType.class);
+	                            QtMetaType metaTypeDecl = signalType.annotatedType!=null ? signalType.annotatedType.getAnnotation(QtMetaType.class) : null;
 	                            int metaTypeId = 0;
 	                            String typeName;
 	                            if(metaTypeDecl!=null) {
@@ -848,7 +848,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                        for (int j = 0; j < signalTypes.size(); j++) {
 	                            QtJambiSignals.SignalParameterType signalType = signalTypes.get(j);
 	                            signalClassTypes.add(signalType.type);
-	                            QtMetaType metaTypeDecl = signalType.annotatedType.getAnnotation(QtMetaType.class);
+	                            QtMetaType metaTypeDecl = signalType.annotatedType==null ? null : signalType.annotatedType.getAnnotation(QtMetaType.class);
 	                            int metaTypeId = 0;
 	                            String typeName;
 	                            if(metaTypeDecl!=null) {
@@ -966,19 +966,24 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     	List<String> cppTypes = new ArrayList<>();
                         List<ParameterInfo> constructorParameterInfos = new ArrayList<>();
                         Type[] genericParameterTypes = constructor.getGenericParameterTypes();
-                        AnnotatedType[] annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
+                        AnnotatedElement[] annotatedParameterTypes = null;
+                        if(QtJambiInternal.useAnnotatedType) {
+                        	annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
+                        }
                         for (int j = 0; j < parameterTypes.length; j++) {
                             boolean isPointer = false;
                             boolean isReference = false;
-                            if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
-                            	isPointer = true;
-                            }
-                            QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
-                            if(referenceType!=null && !referenceType.isConst()) {
-                            	isReference = true;
+                            if(annotatedParameterTypes!=null && annotatedParameterTypes[j]!=null) {
+	                            if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
+	                            	isPointer = true;
+	                            }
+	                            QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
+	                            if(referenceType!=null && !referenceType.isConst()) {
+	                            	isReference = true;
+	                            }
                             }
                             String typeName;
-                            QtMetaType metaTypeDecl = annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
+                            QtMetaType metaTypeDecl = annotatedParameterTypes==null || annotatedParameterTypes[j]==null ? null : annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
                             int metaTypeId = 0;
                             if(metaTypeDecl!=null) {
                 				if(metaTypeDecl.id()!=0) {
@@ -1030,7 +1035,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
     	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
     	                                metaTypeId = registerMetaType(parameterTypes[j], 
     	                                        genericParameterTypes[j],
-    	                                        annotatedParameterTypes[j],
+    	                                        annotatedParameterTypes!=null ? annotatedParameterTypes[j] : null,
     	                                        isPointer,
     	                                        isReference);
     	                            }
@@ -1085,17 +1090,26 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
                 	boolean isPointer = false;
                     boolean isReference = false;
-                    if(declaredMethod.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)
-                    		|| declaredMethod.isAnnotationPresent(QtPointerType.class)) {
+                    if(QtJambiInternal.useAnnotatedType
+                    		&& (declaredMethod.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)
+                            		|| declaredMethod.isAnnotationPresent(QtPointerType.class))) {
                     	isPointer = true;
                     }
-                    QtReferenceType referenceType = declaredMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
+                    QtReferenceType referenceType = null;
+                    if(QtJambiInternal.useAnnotatedType) {
+                    	if(declaredMethod.getAnnotatedReturnType()!=null)
+                    		referenceType = declaredMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
+                    }
                     if(referenceType==null)
                     	referenceType = declaredMethod.getAnnotation(QtReferenceType.class);
                     if(referenceType!=null && !referenceType.isConst()) {
                     	isReference = true;
                     }
-                    QtMetaType metaTypeDecl = declaredMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+                    QtMetaType metaTypeDecl = null;
+                    if(QtJambiInternal.useAnnotatedType) {
+                    	if(declaredMethod.getAnnotatedReturnType()!=null)
+                    		metaTypeDecl = declaredMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+                    }
                     int metaTypeId = 0;
                     String typeName;
                     if(metaTypeDecl!=null) {
@@ -1146,10 +1160,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                    	metaTypeId = QtJambiInternal.findMetaType(typeName);
 	                        if(metaTypeId==QMetaType.Type.UnknownType.value() || !(declaredMethod.getGenericReturnType() instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                        	AnnotatedElement ae = null;
+	                        	if(QtJambiInternal.useAnnotatedType)
+	                        		ae = declaredMethod.getAnnotatedReturnType();
 	                        	metaTypeId = registerMetaType(
 	                                    declaredMethod.getReturnType(), 
 	                                    declaredMethod.getGenericReturnType(), 
-	                                    declaredMethod.getAnnotatedReturnType(),
+	                                    ae,
 	                                    isPointer,
 	                                    isReference);
 	                        }
@@ -1164,20 +1181,25 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     List<String> cppTypes = new ArrayList<>();
                     Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
                     Type[] genericParameterTypes = declaredMethod.getGenericParameterTypes();
-                    AnnotatedType[] annotatedParameterTypes = declaredMethod.getAnnotatedParameterTypes();
+                    AnnotatedElement[] annotatedParameterTypes = null;
+                    if(QtJambiInternal.useAnnotatedType) {
+                    	annotatedParameterTypes = declaredMethod.getAnnotatedParameterTypes();
+                    }
                     for (int j = 0; j < parameterTypes.length; j++) {
                     	metaTypeId = 0;
                         isPointer = false;
                         isReference = false;
-                        if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
-                        	isPointer = true;
-                        	
+                        if(annotatedParameterTypes!=null && annotatedParameterTypes[j]!=null) {
+	                        if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
+	                        	isPointer = true;
+	                        	
+	                        }
+	                        referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
+	                        if(referenceType!=null && !referenceType.isConst()) {
+	                        	isReference = true;
+	                        }
+	                        metaTypeDecl = annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
                         }
-                        referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
-                        if(referenceType!=null && !referenceType.isConst()) {
-                        	isReference = true;
-                        }
-                    	metaTypeDecl = annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
                     	if(metaTypeDecl!=null) {
             				if(metaTypeDecl.id()!=0) {
             					metaTypeId = metaTypeDecl.id();
@@ -1228,7 +1250,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
 	                                metaTypeId = registerMetaType(parameterTypes[j], 
 	                                        genericParameterTypes[j],
-	                                        annotatedParameterTypes[j],
+	                                        annotatedParameterTypes==null ? null : annotatedParameterTypes[j],
 	                                        isPointer,
 	                                        isReference);
 	                            }
@@ -1318,7 +1340,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     if ( writer != null 
                             && writer.enabled()
                             && isValidSetter(declaredMethod)) {
-                        propertyWriters.computeIfAbsent(writer.name(), name->new ArrayList<>()).add(declaredMethod);
+                        propertyWriters.computeIfAbsent(writer.name(), QtJambiInternal.getArrayListFactory()).add(declaredMethod);
                     }
                 }
 
@@ -1352,7 +1374,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             reader = PropertyAnnotation.readerAnnotation(readerMethod);
                             if (reader == null) {
                                 propertyReaders.put(propertyName, readerMethod);
-                                propertyWriters.computeIfAbsent(propertyName, name->new ArrayList<>()).add(declaredMethod);
+                                propertyWriters.computeIfAbsent(propertyName, QtJambiInternal.getArrayListFactory()).add(declaredMethod);
 
                                 propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
                                 propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
@@ -1767,7 +1789,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         List<Method> writers = propertyWriters.get(propertyName);
                         Class<?> propertyType;
                         Type genericPropertyType;
-                        AnnotatedType annotatedPropertyType;
+                        AnnotatedElement annotatedPropertyType = null;
                         boolean isPointer;
                         boolean isReference;
                         boolean isMemberWritable = false;
@@ -1776,14 +1798,16 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(reader!=null) {
                         	propertyType = reader.getReturnType();
                         	genericPropertyType = reader.getGenericReturnType();
-                        	annotatedPropertyType = reader.getAnnotatedReturnType();
+                        	if(QtJambiInternal.useAnnotatedType) {
+                        		annotatedPropertyType = reader.getAnnotatedReturnType();
+                        	}
                         	isPointer = reader.isAnnotationPresent(QtPointerType.class)
-                                    || reader.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class);
+                                    || (annotatedPropertyType!=null && annotatedPropertyType.isAnnotationPresent(QtPointerType.class));
                         	QtReferenceType referenceType = reader.getAnnotation(QtReferenceType.class);
-                        	if(referenceType==null)
-                        		referenceType = reader.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
+                        	if(referenceType==null && annotatedPropertyType!=null)
+                        		referenceType = annotatedPropertyType.getAnnotation(QtReferenceType.class);
                         	isReference = referenceType!=null && !referenceType.isConst();
-                        	metaTypeDecl = reader.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+                        	metaTypeDecl = annotatedPropertyType==null ? null : annotatedPropertyType.getAnnotation(QtMetaType.class);
                         }else if(propertyMemberField!=null) {
                         	if(isValidQProperty(propertyMemberField)) {
                         		qPropertyField = propertyMemberField;
@@ -1805,16 +1829,18 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	}else {
                             	propertyType = propertyMemberField.getType();
                             	genericPropertyType = propertyMemberField.getGenericType();
-                            	annotatedPropertyType = propertyMemberField.getAnnotatedType();
+                            	if(QtJambiInternal.useAnnotatedType) {
+                            		annotatedPropertyType = propertyMemberField.getAnnotatedType();
+                            	}
                             	isPointer = propertyMemberField.isAnnotationPresent(QtPointerType.class)
-                                        || propertyMemberField.getAnnotatedType().isAnnotationPresent(QtPointerType.class);
+                                        || (annotatedPropertyType!=null && annotatedPropertyType.isAnnotationPresent(QtPointerType.class));
                             	QtReferenceType referenceType = propertyMemberField.getAnnotation(QtReferenceType.class);
-                            	if(referenceType==null)
-                            		referenceType = propertyMemberField.getAnnotatedType().getAnnotation(QtReferenceType.class);
+                            	if(referenceType==null && annotatedPropertyType!=null)
+                            		referenceType = annotatedPropertyType.getAnnotation(QtReferenceType.class);
                             	isReference = referenceType!=null && !referenceType.isConst();
                             	isMemberWritable = !Modifier.isFinal(propertyMemberField.getModifiers());
                             	isMemberReadable = true;
-                            	metaTypeDecl = propertyMemberField.getAnnotatedType().getAnnotation(QtMetaType.class);
+                            	metaTypeDecl = annotatedPropertyType!=null ? annotatedPropertyType.getAnnotation(QtMetaType.class) : null;
                         	}
                         }else if(qPropertyField!=null){
                         	QPropertyTypeInfo info = getQPropertyTypeInfo(qPropertyField);
@@ -1862,10 +1888,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         		if(writer!=null) {
                         			propertyType = writer.getParameterTypes()[0];
                         			genericPropertyType = writer.getGenericParameterTypes()[0];
-                                	isPointer = writer.getAnnotatedParameterTypes()[0].isAnnotationPresent(QtPointerType.class);
-                                	QtReferenceType referenceType = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtReferenceType.class);
-                                	isReference = referenceType!=null && !referenceType.isConst();
-                                	metaTypeDecl = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtMetaType.class);
+                        			if(QtJambiInternal.useAnnotatedType) {
+                        				isPointer = writer.getAnnotatedParameterTypes()[0].isAnnotationPresent(QtPointerType.class);
+                        				QtReferenceType referenceType = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtReferenceType.class);
+	                                	isReference = referenceType!=null && !referenceType.isConst();
+	                                	metaTypeDecl = writer.getAnnotatedParameterTypes()[0].getAnnotation(QtMetaType.class);
+                        			}
                         		}else {
                         			continue;
                         		}

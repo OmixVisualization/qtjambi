@@ -63,12 +63,12 @@ public final class QIntBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| metaType.sizeOf()!=4
 					|| (metaType.id()!=QMetaType.Type.Int.value()
 						&& metaType.id()!=QMetaType.Type.Long.value()
 						&& metaType.id()!=QMetaType.Type.ULong.value()
 						&& metaType.id()!=QMetaType.Type.UInt.value()
-						&& metaType.id()!=QMetaType.Type.Char32.value())) {
+						&& metaType.id()!=QMetaType.Type.Char32.value()
+						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}

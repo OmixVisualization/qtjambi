@@ -59,6 +59,7 @@ import io.qt.QtExtensibleEnum;
 import io.qt.QtLongEnumerator;
 import io.qt.QtObjectInterface;
 import io.qt.QtShortEnumerator;
+import io.qt.internal.QtJambiInternal;
 
 /**
  * The QVariant class contains a set of static methods to convert between datatypes.
@@ -292,24 +293,25 @@ public final class QVariant {
     public static int type(Object obj) {
         if(obj==null)
             return QMetaType.Type.Nullptr.value();
-        if(obj.getClass()==QList.class) {
+        Class<?> objClass = QtJambiInternal.getClass(obj);
+        if(objClass==QList.class) {
             return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType()).id();
-        }else if(obj.getClass()==QQueue.class) {
+        }else if(objClass==QQueue.class) {
             return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType()).id();
-        }else if(obj.getClass()==QStack.class) {
+        }else if(objClass==QStack.class) {
             return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType()).id();
-        }else if(obj.getClass()==QSet.class) {
+        }else if(objClass==QSet.class) {
             return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType()).id();
-        }else if(obj.getClass()==QMultiMap.class) {
+        }else if(objClass==QMultiMap.class) {
             return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType()).id();
-        }else if(obj.getClass()==QMap.class) {
+        }else if(objClass==QMap.class) {
             return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType()).id();
-        }else if(obj.getClass()==QMultiHash.class) {
+        }else if(objClass==QMultiHash.class) {
             return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType()).id();
-        }else if(obj.getClass()==QHash.class) {
+        }else if(objClass==QHash.class) {
             return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType()).id();
         }
-        return QMetaType.fromType(obj.getClass()).id();
+        return QMetaType.fromType(objClass).id();
     }
 
     private static void setOk(boolean ok[], boolean isOk)

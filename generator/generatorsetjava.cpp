@@ -213,6 +213,7 @@ void GeneratorSetJava::generate() {
 
     if (!no_cpp_impl) {
         cpp_impl_generator = new CppImplGenerator(priGenerator);
+        cpp_impl_generator->setContainerBaseClasses(builder.containerBaseClasses());
         cpp_impl_generator->setNativeJumpTable(native_jump_table);
         cpp_impl_generator->setQtJambiDebugTools(qtjambi_debug_tools);
         if (!cppOutDir.isNull())

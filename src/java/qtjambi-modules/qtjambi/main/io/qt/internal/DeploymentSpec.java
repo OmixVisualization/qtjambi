@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.qt.core.QPair;
+
 // NOTE the use of package level security on this class for any methods that may cause modification 
 class DeploymentSpec {
     private String compiler;
@@ -67,7 +69,18 @@ class DeploymentSpec {
     private boolean hasPluginPaths;
     private boolean hasQmlPaths;
     private boolean hasTrPaths;
-    private List<String> dirents;
+    private List<QPair<String,Boolean>> dirents;
+    private List<String> qmlLibraries;
+
+	public List<String> qmlLibraries() {
+		return qmlLibraries==null ? Collections.emptyList() : Collections.unmodifiableList(qmlLibraries);
+	}
+
+    void addQmlLibrary(String name) {
+        if (qmlLibraries == null)
+        	qmlLibraries = new ArrayList<>();
+    	qmlLibraries.add(name);
+    }
 
     void addLibraryEntry(LibraryEntry e) {
         if (libraries == null)
@@ -75,10 +88,10 @@ class DeploymentSpec {
         libraries.add(e);
     }
 
-    void addDirentPath(String direntAsString) {
+    void addDirentPath(String direntAsString, boolean isExecutable) {
         if (dirents == null)
-            dirents = new ArrayList<String>();
-        dirents.add(direntAsString);
+            dirents = new ArrayList<>();
+        dirents.add(new QPair<>(direntAsString, isExecutable));
     }
 
     public File buildPath(String relativePath) {
@@ -122,13 +135,10 @@ class DeploymentSpec {
         this.libraries = libraries;
     }
 
-    public List<String> getDirents() {
+    public List<QPair<String,Boolean>> getDirents() {
         if(dirents == null)
                 return Collections.emptyList();
         return Collections.unmodifiableList(dirents);
-    }
-    void setDirents(List<String> dirents) {
-        this.dirents = dirents;
     }
     public String getCompiler() {
 		return compiler;

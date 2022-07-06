@@ -40,9 +40,7 @@ QObject* attachedProperties(const JObjectWrapper& clazzWrapper, jmethodID qmlAtt
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         jobject result = env->CallStaticObjectMethod(jclass(clazzWrapper.object()), qmlAttachedProperties, qtjambi_from_QObject(env, parent));
         qtjambi_throw_java_exception(env);
-        qtjambi_rethrowing(env,
-            return qtjambi_to_qobject(env, result);
-        )
+        return qtjambi_to_qobject(env, result);
     }
     return nullptr;
 }
@@ -55,7 +53,7 @@ QQmlAttachedPropertiesFunc attachedPropertiesFunc(JNIEnv * env, jclass clazz, jo
     hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
     jmethodID qmlAttachedProperties = env->FromReflectedMethod(method);
     JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<64,QObject*(QObject*)>([clazzWrapper, qmlAttachedProperties](QObject* parent) -> QObject* {
+    return qtjambi_function_pointer<16,QObject*(QObject*)>([clazzWrapper, qmlAttachedProperties](QObject* parent) -> QObject* {
         return attachedProperties(clazzWrapper, qmlAttachedProperties, parent);
     }, hash);
 }

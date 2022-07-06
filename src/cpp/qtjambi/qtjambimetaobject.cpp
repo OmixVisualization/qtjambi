@@ -30,6 +30,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include "qtjambi_functionpointer.h"
 #include "qtjambimetaobject_p.h"
 #include "qtjambi_core.h"
 #include "qtjambi_application.h"
@@ -37,7 +38,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_repository_p.h"
 #include "qtjambi_registry_p.h"
 #include "qtjambitypemanager_p.h"
-#include "qtjambi_functionpointer.h"
 #include "qtjambi_thread_p.h"
 #include "qtjambilink_p.h"
 
@@ -346,12 +346,7 @@ void static_metacall_any_type(const QtJambiMetaObject* q, QObject * o, QMetaObje
 typedef void (*StaticMetacallFunction)(const QtJambiMetaObject* q, QObject * o, QMetaObject::Call cl, int idx, void ** argv);
 
 StaticMetaCallFunction create_static_metacall(const QtJambiMetaObject* q, StaticMetacallFunction fct){
-#ifdef QT_DEBUG
-#define COUNT 32
-#else
-#define COUNT 512  /* = 32768 options */
-#endif
-    return qtjambi_function_pointer<COUNT,void(QObject *, QMetaObject::Call, int, void **)>(
+    return qtjambi_function_pointer<16,void(QObject *, QMetaObject::Call, int, void **)>(
                 [q,fct](QObject * o, QMetaObject::Call cl, int idx, void ** argv){
                     fct(q, o, cl, idx, argv);
                 },
@@ -1108,34 +1103,39 @@ void QtJambiMetaObjectPrivate::invokeMethod(JNIEnv *env, jobject object, const J
  */
 void QtJambiMetaObjectPrivate::invokeConstructor(JNIEnv *env, const JMethodInfo& methodInfo, void **_a) const
 {
+    QtJambiExceptionHandler __exceptionHandler;
     QTJAMBI_JNI_LOCAL_FRAME(env, 100)
     QtJambiScope scope(nullptr);
-    QVector<jvalue> converted_arguments(methodInfo.parameterTypeInfos.size() - 1);
-    bool success = true;
+    try{
+        QVector<jvalue> converted_arguments(methodInfo.parameterTypeInfos.size() - 1);
+        bool success = true;
 
-    for (int i = 0; i < converted_arguments.size(); ++i) {
-        const ParameterTypeInfo& parameterTypeInfo = methodInfo.parameterTypeInfos[i + 1];
-        converted_arguments[i].l = nullptr;
-        if (!parameterTypeInfo.convertInternalToExternal(env, &scope, _a[i+1], &converted_arguments[i], !Java::Runtime::Class::isPrimitive(env, parameterTypeInfo.javaClass()))) {
-            success = false;
-            break;
+        for (int i = 0; i < converted_arguments.size(); ++i) {
+            const ParameterTypeInfo& parameterTypeInfo = methodInfo.parameterTypeInfos[i + 1];
+            converted_arguments[i].l = nullptr;
+            if (!parameterTypeInfo.convertInternalToExternal(env, &scope, _a[i+1], &converted_arguments[i], !Java::Runtime::Class::isPrimitive(env, parameterTypeInfo.javaClass()))) {
+                success = false;
+                break;
+            }
         }
-    }
 
-    if (success) {
-        jvalue *args = converted_arguments.data();
-        jobject object = env->NewObjectA(m_clazz, methodInfo.methodId, args);
-        qtjambi_throw_java_exception(env);
-        if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, m_clazz)){
-            void* &pointer = *reinterpret_cast<void**>(_a[0]);
-            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object))
-                pointer = link->pointer();
-        }else{
-            jobject &pointer = *reinterpret_cast<jobject*>(_a[0]);
-            pointer = object;
+        if (success) {
+            jvalue *args = converted_arguments.data();
+            jobject object = env->NewObjectA(m_clazz, methodInfo.methodId, args);
+            qtjambi_throw_java_exception(env);
+            if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, m_clazz)){
+                void* &pointer = *reinterpret_cast<void**>(_a[0]);
+                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object))
+                    pointer = link->pointer();
+            }else{
+                jobject &pointer = *reinterpret_cast<jobject*>(_a[0]);
+                pointer = object;
+            }
+        } else {
+            qWarning("QtJambiMetaObject::invokeConstructor: Failed to convert arguments");
         }
-    } else {
-        qWarning("QtJambiMetaObject::invokeConstructor: Failed to convert arguments");
+    }catch(const JavaException& exn){
+        __exceptionHandler.handle(env, exn, nullptr);
     }
 }
 

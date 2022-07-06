@@ -8,9 +8,5 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 
 QT += widgets uiplugin designer
 
-HEADERS +=  \
-            designer.h \
-            qtjambiresourcebrowser.h
-
 SOURCES += \
     qtjambi_designer_util.cpp

@@ -709,7 +709,6 @@ public:
      int registerContainer(const QByteArray& containerTypeName) override {
          return registerMetaType<QMap<K,T>>(containerTypeName);
      }
-    PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMap,K,T>::function;}
 
     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
         return BiContainerBegin<QMap, K, T>::function(env, ownerId, container);
@@ -874,7 +873,6 @@ public:
          int registerContainer(const QByteArray& containerTypeName) override {
              return registerMetaType<QMultiMap<K,T>>(containerTypeName);
          }
-    PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMultiMap,K,T>::function;}
 
     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
         return BiContainerBegin<QMultiMap, K, T>::function(env, ownerId, container);
@@ -1084,7 +1082,6 @@ public:
          int registerContainer(const QByteArray& containerTypeName) override {
              return registerMetaType<QHash<K,T>>(containerTypeName);
          }
-     PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QHash,K,T>::function;}
 
      jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
          return BiContainerBegin<QHash, K, T>::function(env, ownerId, container);
@@ -1230,7 +1227,6 @@ public:
          int registerContainer(const QByteArray& containerTypeName) override {
              return registerMetaType<QMultiHash<K,T>>(containerTypeName);
          }
-     PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMultiHash,K,T>::function;}
 
      jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
          return BiContainerBegin<QMultiHash, K, T>::function(env, ownerId, container);

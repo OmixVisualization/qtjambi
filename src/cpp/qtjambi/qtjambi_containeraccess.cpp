@@ -7,6 +7,18 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 
 #include "qtjambi_containeraccess_p.h"
+#include "qtjambi_containeraccess_list.h"
+#include "qtjambi_containeraccess_hash.h"
+#include "qtjambi_containeraccess_map.h"
+#include "qtjambi_containeraccess_multimap.h"
+#include "qtjambi_containeraccess_multihash.h"
+#include "qtjambi_containeraccess_pair.h"
+#include "qtjambi_containeraccess_set.h"
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#include "qtjambi_containeraccess_linkedlist.h"
+#include "qtjambi_containeraccess_vector.h"
+#endif
+#include "qtjambi_functionpointer.h"
 #include "qtjambi_core.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambi_containers.h"
@@ -261,16 +273,43 @@ AccessType* createOwnedAccess(AccessType* containerAccess, OwnerFunctional&& key
 
 
 
-bool isPointerType(const QMetaType& metaType){
+bool qtjambi_is_pointer_type(const QMetaType& metaType){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QByteArray name = metaType.name();
-    return name.endsWith("*");
+    if(metaType.sizeOf()==sizeof(void*)){
+        const std::type_info* typeId = getTypeByMetaType(metaType.id());
+        QByteArray name = metaType.name();
+        if(!typeId)
+            typeId = getTypeByQtName(name);
+        if(typeId){
+            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId)){
+                if(typeInfo->isPointer){
+                    return true;
+                }
+            }
+        }
+        if(name.endsWith("*"))
+            return true;
+        int idx = name.indexOf("(*)");
+        if(idx<0)
+            idx = name.indexOf("(__cdecl*)");
+        if(idx>0){
+            QByteArray prefix = name.left(idx);
+            return prefix.count('<')==prefix.count('>');
+        }
+    }
+    return false;
 #else
     return metaType.flags().testFlag(QMetaType::IsPointer);
 #endif
 }
 
-AbstractContainerAccess* createContainerAccess(ContainerType containerType, const QMetaType& memberMetaType){
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(ContainerType containerType, const QMetaType& type);
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(MapType containerType, const QMetaType& keyType, const QMetaType& valueType);
+void registerContainerAccessFactory(ContainerType containerType, const QMetaType& elementType, std::function<AbstractContainerAccess*()>&& factory);
+void registerContainerAccessFactory(MapType containerType, const QMetaType& keyType, const QMetaType& valueType, std::function<AbstractContainerAccess*()>&& factory);
+
+AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, ContainerType containerType, const QMetaType& memberMetaType){
+    Q_UNUSED(env)
     AbstractContainerAccess* containerAccess = nullptr;
     switch(memberMetaType.id()){
     case QMetaType::UnknownType:
@@ -501,50 +540,334 @@ AbstractContainerAccess* createContainerAccess(ContainerType containerType, cons
             break;
         }
         break;
-    default:{
-            bool isPointer = isPointerType(memberMetaType);
-            size_t size = 0;
-            size_t align = 0;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            bool isStaticType = true;
-#endif
-            if(!isPointer){
-                size = size_t(memberMetaType.sizeOf());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                const std::type_info* t = getTypeByMetaType(memberMetaType.id());
-                if(!t)
-                    t = getTypeByQtName(memberMetaType.name());
-                if(t){
-                    align = getValueAlignment(*t);
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t)){
-                        isStaticType = typeInfo->isStatic;
-                    }
-                }
-#else
-                align = size_t(memberMetaType.alignOf());
-#endif
-            }
-            QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
-            if(ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(containerType, align, size
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                                 , isStaticType
-#else
-                                                                                                 , false
-#endif
-                                                                                                 )){
-                containerAccess = accessFactory(memberMetaType,
-                                                hashFunction,
-                                                InternalToExternalConverter(),
-                                                ExternalToInternalConverter());
-            }
-        }
+    default:
         break;
+    }
+    if(!containerAccess){
+        if(std::function<AbstractContainerAccess*()> containerAccessFactory = getContainerAccessFactory(containerType, memberMetaType))
+            containerAccess = containerAccessFactory();
     }
     return containerAccess;
 }
 
-AbstractContainerAccess* createContainerAccess(MapType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
-    bool isPointer1 = isPointerType(memberMetaType1);
+AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, MapType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
+    Q_UNUSED(env)
+    AbstractContainerAccess* containerAccess = nullptr;
+    if(std::function<AbstractContainerAccess*()> containerAccessFactory = getContainerAccessFactory(mapType, memberMetaType1, memberMetaType2))
+        containerAccess = containerAccessFactory();
+    return containerAccess;
+}
+
+ContainerAccessFactory qtjambi_get_access_factory(JNIEnv* env, ContainerType containerType, size_t align, size_t size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                  bool isStatic,
+#endif
+                                                                  JavaException& occurredException);
+BiContainerAccessFactory qtjambi_get_access_factory(JNIEnv* env, MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2, JavaException& occurredException);
+
+AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, ContainerType containerType,
+                                                         const QMetaType& metaType,
+                                                         size_t align, size_t size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                         bool isStaticType,
+#endif
+                                                         bool isPointer,
+                                                         const QHashFunction& hashFunction,
+                                                         const InternalToExternalConverter& memberConverter,
+                                                         const ExternalToInternalConverter& memberReConverter){
+    if(isPointer){
+        size = 0;
+        align = 0;
+    }
+    AbstractContainerAccess* containerAccess = nullptr;
+    if(!isPointer){
+        switch(containerType){
+        case ContainerType::QSet:
+            containerAccess = new AutoSetAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         metaType.id(),
+                                         align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
+#else
+                                         metaType,
+#endif
+                                         hashFunction,
+                                         memberConverter,
+                                         memberReConverter);
+            break;
+        case ContainerType::QStack:
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        case ContainerType::QVector:
+            containerAccess = new AutoVectorAccess(
+                                         metaType.id(),
+                                         align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
+                                         hashFunction,
+                                         memberConverter,
+                                         memberReConverter);
+            break;
+        case ContainerType::QLinkedList:
+            containerAccess = new AutoLinkedListAccess(
+                                         metaType.id(),
+                                         align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
+                                         hashFunction,
+                                         memberConverter,
+                                         memberReConverter);
+            break;
+#endif
+        case ContainerType::QQueue:
+        case ContainerType::QList:
+            containerAccess = new AutoListAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         metaType.id(),
+                                         align ? align : qMin<size_t>(size, alignof(std::max_align_t)), isStaticType,
+#else
+                                         metaType,
+#endif
+                                         hashFunction,
+                                         memberConverter,
+                                         memberReConverter);
+            break;
+        default: break;
+        }
+    }
+
+    if(!containerAccess){
+        JavaException occurredException;
+        if(ContainerAccessFactory accessFactory = qtjambi_get_access_factory(env, containerType, align, size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                                             isStaticType,
+#endif
+                                                                                             occurredException)){
+            QMetaType voidPtr(QMetaType::VoidStar);
+            containerAccess = accessFactory(isPointer && !metaType.isValid() ? voidPtr : metaType,
+                                            hashFunction,
+                                            memberConverter,
+                                            memberReConverter);
+        }else{
+            occurredException.raise();
+        }
+    }
+    if(containerAccess && metaType.isValid()){
+        QSharedPointer<AbstractContainerAccess> access(containerAccess->clone(), &containerDisposer);
+        registerContainerAccessFactory(containerType, metaType, [access]() -> AbstractContainerAccess* {
+                                           return access->clone();
+                                       });
+    }
+    return containerAccess;
+}
+
+AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, MapType mapType,
+                                                         const QMetaType& memberMetaType1,
+                                                         size_t align1, size_t size1,
+                                                         bool isPointer1,
+                                                         const QHashFunction& hashFunction1,
+                                                         const InternalToExternalConverter& memberConverter1,
+                                                         const ExternalToInternalConverter& memberReConverter1,
+                                                         const QMetaType& memberMetaType2,
+                                                         size_t align2, size_t size2,
+                                                         bool isPointer2,
+                                                         const QHashFunction& hashFunction2,
+                                                         const InternalToExternalConverter& memberConverter2,
+                                                         const ExternalToInternalConverter& memberReConverter2){
+    if(isPointer1){
+        size1 = 0;
+        align1 = 0;
+    }
+    if(isPointer2){
+        size2 = 0;
+        align2 = 0;
+    }
+    AbstractContainerAccess* containerAccess = nullptr;
+    if(!isPointer1 || !isPointer2){
+        switch(mapType){
+        case MapType::QPair:
+            containerAccess =new AutoPairAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
+                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
+#else
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
+#endif
+                                         hashFunction1,
+                                         memberConverter1,
+                                         memberReConverter1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
+                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
+#else
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
+#endif
+                                         hashFunction2,
+                                         memberConverter2,
+                                         memberReConverter2);
+            break;
+        case MapType::QHash:
+            containerAccess = new AutoHashAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
+                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
+#else
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
+#endif
+                                         hashFunction1,
+                                         memberConverter1,
+                                         memberReConverter1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
+                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
+#else
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
+#endif
+                                         hashFunction2,
+                                         memberConverter2,
+                                         memberReConverter2);
+            break;
+        case MapType::QMap:
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            containerAccess = new AutoMapAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
+                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
+#else
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
+#endif
+                                         hashFunction1,
+                                         memberConverter1,
+                                         memberReConverter1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
+                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
+#else
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
+#endif
+                                         hashFunction2,
+                                         memberConverter2,
+                                         memberReConverter2);
+#endif
+            break;
+        case MapType::QMultiHash:
+        {
+            AbstractMultiHashAccess* access = new AutoMultiHashAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
+                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
+#else
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
+#endif
+                                         hashFunction1,
+                                         memberConverter1,
+                                         memberReConverter1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
+                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
+#else
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
+#endif
+                                         hashFunction2,
+                                         memberConverter2,
+                                         memberReConverter2);
+            containerAccess = access;
+        }
+            break;
+        case MapType::QMultiMap:
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        {
+            AbstractMultiMapAccess* access = new AutoMultiMapAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
+                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
+#else
+                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
+#endif
+                                         hashFunction1,
+                                         memberConverter1,
+                                         memberReConverter1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
+                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
+#else
+                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
+#endif
+                                         hashFunction2,
+                                         memberConverter2,
+                                         memberReConverter2);
+            containerAccess = access;
+        }
+#endif
+            break;
+        default: break;
+        }
+    }
+
+    if(!containerAccess){
+        JavaException occurredException;
+        if(BiContainerAccessFactory accessFactory = qtjambi_get_access_factory(env, mapType, align1, size1, align2, size2, occurredException)){
+            QMetaType voidPtr(QMetaType::VoidStar);
+            containerAccess = accessFactory(
+                                           isPointer1 && !memberMetaType1.isValid() ? voidPtr : memberMetaType1,
+                                           hashFunction1,
+                                           memberConverter1,
+                                           memberReConverter1,
+                                           isPointer2 && !memberMetaType2.isValid() ? voidPtr : memberMetaType2,
+                                           hashFunction2,
+                                           memberConverter2,
+                                           memberReConverter2);
+        }else{
+            occurredException.raise();
+        }
+    }
+    return containerAccess;
+}
+
+AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, ContainerType containerType, const QMetaType& memberMetaType){
+    AbstractContainerAccess* containerAccess = qtjambi_create_container_access(env, containerType, memberMetaType);
+    if(!containerAccess){
+        bool isPointer = qtjambi_is_pointer_type(memberMetaType);
+        size_t size = 0;
+        size_t align = 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        bool isStaticType = false;
+#endif
+        if(!isPointer){
+            size = size_t(memberMetaType.sizeOf());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            const std::type_info* t = getTypeByMetaType(memberMetaType.id());
+            if(!t)
+                t = getTypeByQtName(memberMetaType.name());
+            if(t){
+                align = getValueAlignment(*t);
+                if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
+                    isStaticType = typeInfo->isStatic;
+            }
+            if(align==0)
+                align = QtJambiTypeManager::getInternalAlignment(memberMetaType.name());
+#else
+            align = size_t(memberMetaType.alignOf());
+#endif
+        }
+        QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+        containerAccess = qtjambi_create_container_access(env, containerType,
+                                                                 memberMetaType,
+                                                                 align, size,
+        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                 isStaticType,
+        #endif
+                                                                 isPointer,
+                                                                 hashFunction,
+                                                                 [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                                                      return false;
+                                                                 },
+                                                                 [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                                                      return false;
+                                                                 });
+    }
+    return containerAccess;
+}
+
+AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, MapType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
+    AbstractContainerAccess* containerAccess = qtjambi_create_container_access(env, mapType, memberMetaType1, memberMetaType2);
+    if(containerAccess)
+        return containerAccess;
+    bool isPointer1 = qtjambi_is_pointer_type(memberMetaType1);
     size_t size1 = 0;
     size_t align1 = 0;
     if(!isPointer1){
@@ -555,11 +878,13 @@ AbstractContainerAccess* createContainerAccess(MapType mapType, const QMetaType&
         if(t){
             align1 = getValueAlignment(*t);
         }
+        if(align1==0)
+            align1 = QtJambiTypeManager::getInternalAlignment(memberMetaType1.name());
 #else
         align1 = size_t(memberMetaType1.alignOf());
 #endif
     }
-    bool isPointer2 = isPointerType(memberMetaType2);
+    bool isPointer2 = qtjambi_is_pointer_type(memberMetaType2);
     size_t size2 = 0;
     size_t align2 = 0;
     if(!isPointer2){
@@ -570,23 +895,38 @@ AbstractContainerAccess* createContainerAccess(MapType mapType, const QMetaType&
         if(t){
             align2 = getValueAlignment(*t);
         }
+        if(align2==0)
+            align2 = QtJambiTypeManager::getInternalAlignment(memberMetaType2.name());
 #else
         align2 = size_t(memberMetaType2.alignOf());
 #endif
     }
-    AbstractContainerAccess* containerAccess = nullptr;
-    if(BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(mapType, align1, size1, align2, size2)){
-        QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, memberMetaType1.id());
-        QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, memberMetaType2.id());
-        containerAccess = accessFactory( memberMetaType1,
-                                         hashFunction1,
-                                         InternalToExternalConverter(),
-                                         ExternalToInternalConverter(),
-                                         memberMetaType2,
-                                         hashFunction2,
-                                         InternalToExternalConverter(),
-                                         ExternalToInternalConverter());
-    }
+    QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, memberMetaType1.id());
+    QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, memberMetaType2.id());
+    QMetaType voidPtr(QMetaType::VoidStar);
+    containerAccess = qtjambi_create_container_access(
+                                   env, mapType,
+                                   isPointer1 && !memberMetaType1.isValid() ? voidPtr : memberMetaType1,
+                                   align1, size1,
+                                   isPointer1,
+                                   hashFunction1,
+                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                        return false;
+                                   },
+                                   [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                        return false;
+                                   },
+                                   isPointer2 && !memberMetaType2.isValid() ? voidPtr : memberMetaType2,
+                                   align2,
+                                   size2,
+                                   isPointer2,
+                                   hashFunction2,
+                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                        return false;
+                                   },
+                                   [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                        return false;
+                                   });
     return containerAccess;
 }
 
@@ -601,7 +941,7 @@ struct TypeAnalysisResult{
 
 void containerDisposer(AbstractContainerAccess* _access){_access->dispose();}
 
-TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& typeName){
+TypeAnalysisResult analyzeType(JNIEnv* env, const QMetaType& metaType, const QByteArray& typeName){
     bool hasPointer = false;
     if((typeName.startsWith("QList<")
             || typeName.startsWith("QSet<")
@@ -618,7 +958,7 @@ TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& type
 #else
         QMetaType instantiationMetaType = QMetaType::fromName(instantiation);
 #endif
-        TypeAnalysisResult result = analyzeType(instantiationMetaType, instantiation);
+        TypeAnalysisResult result = analyzeType(env, instantiationMetaType, instantiation);
         hasPointer = result.hasPointers;
         if(result.ownerFunctional){
             QSharedPointer<AbstractContainerAccess> sharedAccess;
@@ -627,21 +967,21 @@ TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& type
                     || typeName.startsWith("QStack<")
 #endif
                     || typeName.startsWith("QQueue<")){
-                if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(createContainerAccess(ContainerType::QList, instantiationMetaType))){
+                if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(createPreparedContainerAccess(env, ContainerType::QList, instantiationMetaType))){
                     sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result.ownerFunctional)), &containerDisposer);
                 }
             }else if(typeName.startsWith("QSet<")){
-                if(AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(createContainerAccess(ContainerType::QSet, instantiationMetaType))){
+                if(AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(createPreparedContainerAccess(env, ContainerType::QSet, instantiationMetaType))){
                     sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result.ownerFunctional)), &containerDisposer);
                 }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             }else if(typeName.startsWith("QLinkedList<")){
-                if(AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(createContainerAccess(ContainerType::QLinkedList, instantiationMetaType))){
+                if(AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(createPreparedContainerAccess(env, ContainerType::QLinkedList, instantiationMetaType))){
                     sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result.ownerFunctional)), &containerDisposer);
                 }
             }else if(typeName.startsWith("QVector<")
                      || typeName.startsWith("QStack<")){
-                if(AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(createContainerAccess(ContainerType::QVector, instantiationMetaType))){
+                if(AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(createPreparedContainerAccess(env, ContainerType::QVector, instantiationMetaType))){
                     sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result.ownerFunctional)), &containerDisposer);
                 }
 #endif
@@ -666,25 +1006,25 @@ TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& type
                 QMetaType instantiationMetaType1 = QMetaType::fromName(instantiations[0]);
                 QMetaType instantiationMetaType2 = QMetaType::fromName(instantiations[1]);
 #endif
-                TypeAnalysisResult result1 = analyzeType(instantiationMetaType1, instantiations[0]);
-                TypeAnalysisResult result2 = analyzeType(instantiationMetaType2, instantiations[1]);
+                TypeAnalysisResult result1 = analyzeType(env, instantiationMetaType1, instantiations[0]);
+                TypeAnalysisResult result2 = analyzeType(env, instantiationMetaType2, instantiations[1]);
                 hasPointer = result1.hasPointers || result2.hasPointers;
                 if(result1.ownerFunctional || result2.ownerFunctional){
                     QSharedPointer<AbstractContainerAccess> sharedAccess;
                     if(typeName.startsWith("QMap<")){
-                        if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(createContainerAccess(MapType::QMap, instantiationMetaType1, instantiationMetaType2))){
+                        if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(createPreparedContainerAccess(env, MapType::QMap, instantiationMetaType1, instantiationMetaType2))){
                             sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional)), &containerDisposer);
                         }
                     }else if(typeName.startsWith("QHash<")){
-                        if(AbstractHashAccess* containerAccess = dynamic_cast<AbstractHashAccess*>(createContainerAccess(MapType::QHash, instantiationMetaType1, instantiationMetaType2))){
+                        if(AbstractHashAccess* containerAccess = dynamic_cast<AbstractHashAccess*>(createPreparedContainerAccess(env, MapType::QHash, instantiationMetaType1, instantiationMetaType2))){
                             sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional)), &containerDisposer);
                         }
                     }else if(typeName.startsWith("QMultiMap<")){
-                        if(AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(createContainerAccess(MapType::QMultiMap, instantiationMetaType1, instantiationMetaType2))){
+                        if(AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(createPreparedContainerAccess(env, MapType::QMultiMap, instantiationMetaType1, instantiationMetaType2))){
                             sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional)), &containerDisposer);
                         }
                     }else if(typeName.startsWith("QMultiHash<")){
-                        if(AbstractMultiHashAccess* containerAccess = dynamic_cast<AbstractMultiHashAccess*>(createContainerAccess(MapType::QMultiHash, instantiationMetaType1, instantiationMetaType2))){
+                        if(AbstractMultiHashAccess* containerAccess = dynamic_cast<AbstractMultiHashAccess*>(createPreparedContainerAccess(env, MapType::QMultiHash, instantiationMetaType1, instantiationMetaType2))){
                             sharedAccess.reset(createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional)), &containerDisposer);
                         }
                     }
@@ -707,7 +1047,7 @@ TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& type
                 }
             }else{
                 if(metaType.isValid()){
-                    hasPointer = isPointerType(metaType);
+                    hasPointer = qtjambi_is_pointer_type(metaType);
                 }else{
                     hasPointer = typeName.endsWith("*");
                 }
@@ -723,16 +1063,15 @@ TypeAnalysisResult analyzeType(const QMetaType& metaType, const QByteArray& type
 }
 
 AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperListAccess*>(containerAccess)){
         if(containerAccess->elementMetaType().id() >= QMetaType::HighestInternalId
                 || containerAccess->elementMetaType().id() == QMetaType::QObjectStar
                 || containerAccess->elementMetaType().id() == QMetaType::VoidStar){
-            if(isPointerType(containerAccess->elementMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->elementMetaType())){
                 containerAccess = new PointerRCListAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
                 if(result.hasPointers)
                     containerAccess = new NestedPointersRCListAccess(containerAccess);
                 containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional));
@@ -743,17 +1082,16 @@ AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* conta
 }
 
 AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperSetAccess*>(containerAccess)){
         int id = containerAccess->elementMetaType().id();
         if(id != QMetaType::QPoint
             && id != QMetaType::QPointF
             && id != QMetaType::QString){
-            if(isPointerType(containerAccess->elementMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->elementMetaType())){
                 containerAccess = new PointerRCSetAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
                 if(result.hasPointers)
                     containerAccess = new NestedPointersRCSetAccess(containerAccess);
                 containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional));
@@ -765,13 +1103,12 @@ AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* contain
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 AbstractLinkedListAccess* checkContainerAccess(JNIEnv * env, AbstractLinkedListAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperLinkedListAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->elementMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->elementMetaType())){
             containerAccess = new PointerRCLinkedListAccess(containerAccess);
         }else{
-            TypeAnalysisResult result = analyzeType(containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
+            TypeAnalysisResult result = analyzeType(env, containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
             if(result.hasPointers)
                 containerAccess = new NestedPointersRCLinkedListAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional));
@@ -781,13 +1118,12 @@ AbstractLinkedListAccess* checkContainerAccess(JNIEnv * env, AbstractLinkedListA
 }
 
 AbstractVectorAccess* checkContainerAccess(JNIEnv * env, AbstractVectorAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperVectorAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->elementMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->elementMetaType())){
             containerAccess = new PointerRCVectorAccess(containerAccess);
         }else{
-            TypeAnalysisResult result = analyzeType(containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
+            TypeAnalysisResult result = analyzeType(env, containerAccess->elementMetaType(), containerAccess->elementMetaType().name());
             if(result.hasPointers)
                 containerAccess = new NestedPointersRCVectorAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional));
@@ -797,14 +1133,13 @@ AbstractVectorAccess* checkContainerAccess(JNIEnv * env, AbstractVectorAccess* c
 }
 #endif
 AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperHashAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->keyMetaType())){
-            if(isPointerType(containerAccess->valueMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->keyMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
                 containerAccess = new PointersRCHashAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
                 if(result.hasPointers){
                     containerAccess = new NestedPointersRCHashAccess(containerAccess);
                 }else{
@@ -812,8 +1147,8 @@ AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* conta
                 }
                 containerAccess = createOwnedAccess(containerAccess, OwnerFunctional(), std::move(result.ownerFunctional));
             }
-        }else if(isPointerType(containerAccess->valueMetaType())){
-            TypeAnalysisResult result = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+        }else if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
+            TypeAnalysisResult result = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
             if(result.hasPointers){
                 containerAccess = new NestedPointersRCHashAccess(containerAccess);
             }else{
@@ -821,8 +1156,8 @@ AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* conta
             }
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional), OwnerFunctional());
         }else{
-            TypeAnalysisResult result1 = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
-            TypeAnalysisResult result2 = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+            TypeAnalysisResult result1 = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+            TypeAnalysisResult result2 = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
             if(result1.hasPointers || result2.hasPointers)
                 containerAccess = new NestedPointersRCHashAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional));
@@ -832,14 +1167,13 @@ AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* conta
 }
 
 AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperMapAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->keyMetaType())){
-            if(isPointerType(containerAccess->valueMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->keyMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
                 containerAccess = new PointersRCMapAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
                 if(result.hasPointers){
                     containerAccess = new NestedPointersRCMapAccess(containerAccess);
                 }else{
@@ -847,8 +1181,8 @@ AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* contain
                 }
                 containerAccess = createOwnedAccess(containerAccess, OwnerFunctional(), std::move(result.ownerFunctional));
             }
-        }else if(isPointerType(containerAccess->valueMetaType())){
-            TypeAnalysisResult result = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+        }else if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
+            TypeAnalysisResult result = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
             if(result.hasPointers){
                 containerAccess = new NestedPointersRCMapAccess(containerAccess);
             }else{
@@ -856,8 +1190,8 @@ AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* contain
             }
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional), OwnerFunctional());
         }else{
-            TypeAnalysisResult result1 = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
-            TypeAnalysisResult result2 = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+            TypeAnalysisResult result1 = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+            TypeAnalysisResult result2 = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
             if(result1.hasPointers || result2.hasPointers)
                 containerAccess = new NestedPointersRCMapAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional));
@@ -867,14 +1201,13 @@ AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* contain
 }
 
 AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperMultiHashAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->keyMetaType())){
-            if(isPointerType(containerAccess->valueMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->keyMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
                 containerAccess = new PointersRCMultiHashAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
                 if(result.hasPointers){
                     containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
                 }else{
@@ -882,8 +1215,8 @@ AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAcc
                 }
                 containerAccess = createOwnedAccess(containerAccess, OwnerFunctional(), std::move(result.ownerFunctional));
             }
-        }else if(isPointerType(containerAccess->valueMetaType())){
-            TypeAnalysisResult result = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+        }else if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
+            TypeAnalysisResult result = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
             if(result.hasPointers){
                 containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
             }else{
@@ -891,8 +1224,8 @@ AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAcc
             }
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional), OwnerFunctional());
         }else{
-            TypeAnalysisResult result1 = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
-            TypeAnalysisResult result2 = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+            TypeAnalysisResult result1 = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+            TypeAnalysisResult result2 = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
             if(result1.hasPointers || result2.hasPointers)
                 containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional));
@@ -902,14 +1235,13 @@ AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAcc
 }
 
 AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess){
-    Q_UNUSED(env)
-    Q_ASSERT(containerAccess);
+    qtjambi_check_resource(env, containerAccess);
     if(!dynamic_cast<WrapperMultiMapAccess*>(containerAccess)){
-        if(isPointerType(containerAccess->keyMetaType())){
-            if(isPointerType(containerAccess->valueMetaType())){
+        if(qtjambi_is_pointer_type(containerAccess->keyMetaType())){
+            if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
                 containerAccess = new PointersRCMultiMapAccess(containerAccess);
             }else{
-                TypeAnalysisResult result = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+                TypeAnalysisResult result = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
                 if(result.hasPointers){
                     containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
                 }else{
@@ -917,8 +1249,8 @@ AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAcces
                 }
                 containerAccess = createOwnedAccess(containerAccess, OwnerFunctional(), std::move(result.ownerFunctional));
             }
-        }else if(isPointerType(containerAccess->valueMetaType())){
-            TypeAnalysisResult result = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+        }else if(qtjambi_is_pointer_type(containerAccess->valueMetaType())){
+            TypeAnalysisResult result = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
             if(result.hasPointers){
                 containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
             }else{
@@ -926,8 +1258,8 @@ AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAcces
             }
             containerAccess = createOwnedAccess(containerAccess, std::move(result.ownerFunctional), OwnerFunctional());
         }else{
-            TypeAnalysisResult result1 = analyzeType(containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
-            TypeAnalysisResult result2 = analyzeType(containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
+            TypeAnalysisResult result1 = analyzeType(env, containerAccess->keyMetaType(), containerAccess->keyMetaType().name());
+            TypeAnalysisResult result2 = analyzeType(env, containerAccess->valueMetaType(), containerAccess->valueMetaType().name());
             if(result1.hasPointers || result2.hasPointers)
                 containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
             containerAccess = createOwnedAccess(containerAccess, std::move(result1.ownerFunctional), std::move(result2.ownerFunctional));
@@ -939,7 +1271,56 @@ AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAcces
 AbstractContainerAccess::AbstractContainerAccess(){}
 AbstractContainerAccess::~AbstractContainerAccess(){}
 void AbstractContainerAccess::dispose(){}
+AbstractIteratorAccess::~AbstractIteratorAccess(){}
+AbstractIteratorAccess::AbstractIteratorAccess(){}
 const QObject* AbstractContainerAccess::getOwner(const void*){ return nullptr; }
+void* AbstractIteratorAccess::createContainer() {return nullptr;}
+void* AbstractIteratorAccess::copyContainer(const void*) {return nullptr;}
+void AbstractIteratorAccess::assign(void*, const void*) {}
+void AbstractIteratorAccess::deleteContainer(void*) {}
+int AbstractIteratorAccess::registerContainer(const QByteArray&) {return QMetaType::UnknownType;}
+
+AbstractBiIteratorAccess::~AbstractBiIteratorAccess(){}
+AbstractBiIteratorAccess::AbstractBiIteratorAccess(){}
+
+void* AbstractBiIteratorAccess::createContainer() {return nullptr;}
+void* AbstractBiIteratorAccess::copyContainer(const void*) {return nullptr;}
+void AbstractBiIteratorAccess::assign(void*, const void*) {}
+void AbstractBiIteratorAccess::deleteContainer(void*) {}
+int AbstractBiIteratorAccess::registerContainer(const QByteArray&) {
+    return QMetaType::UnknownType;
+}
+
+AbstractListAccess::~AbstractListAccess(){}
+AbstractListAccess::AbstractListAccess(){}
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+AbstractVectorAccess::~AbstractVectorAccess(){}
+AbstractVectorAccess::AbstractVectorAccess(){}
+AbstractLinkedListAccess::~AbstractLinkedListAccess(){}
+AbstractLinkedListAccess::AbstractLinkedListAccess(){}
+#endif
+
+AbstractSetAccess::~AbstractSetAccess(){}
+AbstractSetAccess::AbstractSetAccess(){}
+
+AbstractMapAccess::~AbstractMapAccess(){}
+AbstractMapAccess::AbstractMapAccess(){}
+
+AbstractMultiMapAccess::~AbstractMultiMapAccess(){}
+AbstractMultiMapAccess::AbstractMultiMapAccess(){}
+
+AbstractHashAccess::~AbstractHashAccess(){}
+AbstractHashAccess::AbstractHashAccess(){}
+
+AbstractMultiHashAccess::~AbstractMultiHashAccess(){}
+AbstractMultiHashAccess::AbstractMultiHashAccess(){}
+
+AbstractPairAccess::~AbstractPairAccess(){}
+AbstractPairAccess::AbstractPairAccess(){}
+
+RCSet::RCSet() {};
+RCSet::~RCSet() {}
 
 RCSet::RCSet(const RCSet& other)
       : RCSet() {
@@ -989,6 +1370,9 @@ void RCSet::removeRC(JNIEnv * env, jobject value){
     }
 }
 
+RCMap::RCMap() {}
+RCMap::~RCMap() {}
+
 RCMap::RCMap(JNIEnv * env, jobject otherRCMap)
       : RCMap() {
     Java::Runtime::Map::putAll(env, rcMap(env), otherRCMap);
@@ -1029,6 +1413,9 @@ void RCMap::removeRC(JNIEnv * env, jobject key){
         Java::Runtime::Map::remove(env, m_rcMap.object(), key);
     }
 }
+
+RCMultiMap::RCMultiMap(){}
+RCMultiMap::~RCMultiMap(){}
 
 RCMultiMap::RCMultiMap(JNIEnv * env, jobject otherRCMap)
       : RCMultiMap() {
@@ -1111,6 +1498,8 @@ void RCMultiMap::removeRC(JNIEnv * env, jobject key, jobject value){
     }
 }
 
+PointerRCListAccess::~PointerRCListAccess(){}
+
 PointerRCListAccess::PointerRCListAccess(AbstractListAccess* containerAccess)
     : WrapperListAccess(containerAccess), RCSet() {
     Q_ASSERT(containerAccess!=this);
@@ -1165,13 +1554,6 @@ void PointerRCListAccess::appendList(JNIEnv * env, void* container, jobject list
     WrapperListAccess::appendList(env, container, list);
     if(list)
         addAllRC(env, list);
-}
-
-jobject PointerRCListAccess::takeAt(JNIEnv * env, void* container, jint index) {
-    jobject result = WrapperListAccess::takeAt(env, container, index);
-    if(result && !WrapperListAccess::contains(env, container, result))
-        removeRC(env, result);
-    return result;
 }
 
 void PointerRCListAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
@@ -1262,6 +1644,8 @@ void PointerRCListAccess::fill(JNIEnv * env, void* container, jobject value, jin
         addRC(env, value);
 }
 #endif
+
+PointerRCSetAccess::~PointerRCSetAccess(){}
 
 PointerRCSetAccess::PointerRCSetAccess(AbstractSetAccess* containerAccess)
     : WrapperSetAccess(containerAccess), RCSet() {}
@@ -1363,6 +1747,8 @@ void PointerRCSetAccess::unite(JNIEnv * env, void* container, jobject other){
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+
+PointerRCLinkedListAccess::~PointerRCLinkedListAccess(){}
 
 PointerRCLinkedListAccess::PointerRCLinkedListAccess(AbstractLinkedListAccess* containerAccess)
     : WrapperLinkedListAccess(containerAccess), RCSet() {}
@@ -1467,6 +1853,8 @@ jobject PointerRCLinkedListAccess::takeLast(JNIEnv * env, void* container) {
     return result;
 }
 
+PointerRCVectorAccess::~PointerRCVectorAccess(){}
+
 PointerRCVectorAccess::PointerRCVectorAccess(AbstractVectorAccess* containerAccess)
     : WrapperVectorAccess(containerAccess), RCSet() {}
 
@@ -1519,13 +1907,6 @@ void PointerRCVectorAccess::appendVector(JNIEnv * env, void* container, jobject 
     WrapperVectorAccess::appendVector(env, container, list);
     if(list)
         addAllRC(env, list);
-}
-
-jobject PointerRCVectorAccess::takeAt(JNIEnv * env, void* container, jint index) {
-    jobject result = WrapperVectorAccess::takeAt(env, container, index);
-    if(result && !WrapperVectorAccess::contains(env, container, result))
-        removeRC(env, result);
-    return result;
 }
 
 void PointerRCVectorAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
@@ -1617,6 +1998,8 @@ void PointerRCVectorAccess::fill(JNIEnv * env, void* container, jobject value, j
 
 #endif
 
+KeyPointerRCMapAccess::~KeyPointerRCMapAccess(){}
+
 KeyPointerRCMapAccess::KeyPointerRCMapAccess(AbstractMapAccess* containerAccess)
     : WrapperMapAccess(containerAccess), RCSet() {}
 
@@ -1682,6 +2065,8 @@ jobject KeyPointerRCMapAccess::take(JNIEnv *env, void* container, jobject key) {
     removeRC(env, key);
     return result;
 }
+
+ValuePointerRCMapAccess::~ValuePointerRCMapAccess(){}
 
 ValuePointerRCMapAccess::ValuePointerRCMapAccess(AbstractMapAccess* containerAccess)
     : WrapperMapAccess(containerAccess), RCSet() {}
@@ -1817,6 +2202,8 @@ jobject PointersRCMapAccess::take(JNIEnv *env, void* container, jobject key) {
     removeRC(env, key);
     return result;
 }
+
+KeyPointerRCMultiMapAccess::~KeyPointerRCMultiMapAccess(){}
 
 KeyPointerRCMultiMapAccess::KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
     : WrapperMultiMapAccess(containerAccess), RCSet() {}
@@ -2127,6 +2514,7 @@ jobject PointersRCMultiMapAccess::take(JNIEnv *env, void* container, jobject key
     return result;
 }
 
+KeyPointerRCHashAccess::~KeyPointerRCHashAccess(){}
 
 KeyPointerRCHashAccess::KeyPointerRCHashAccess(AbstractHashAccess* containerAccess)
     : WrapperHashAccess(containerAccess), RCSet() {}
@@ -2328,6 +2716,8 @@ jobject PointersRCHashAccess::take(JNIEnv *env, void* container, jobject key) {
     removeRC(env, key);
     return result;
 }
+
+KeyPointerRCMultiHashAccess::~KeyPointerRCMultiHashAccess(){}
 
 KeyPointerRCMultiHashAccess::KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
     : WrapperMultiHashAccess(containerAccess), RCSet() {}
@@ -2678,12 +3068,6 @@ void NestedPointersRCListAccess::updateRC(JNIEnv * env, const void* container){
     addAllRC(env, set);
 }
 
-jobject NestedPointersRCListAccess::takeAt(JNIEnv * env, void* container, jint index) {
-    jobject result = WrapperListAccess::takeAt(env, container, index);
-    updateRC(env, container);
-    return result;
-}
-
 void NestedPointersRCListAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
     WrapperListAccess::replace(env, container, index, value);
     updateRC(env, container);
@@ -3010,17 +3394,6 @@ void NestedPointersRCVectorAccess::appendVector(JNIEnv * env, void* container, j
     unfoldAndAddContainer(env, rcSet(env), list);
 }
 
-jobject NestedPointersRCVectorAccess::takeAt(JNIEnv * env, void* container, jint index) {
-    jobject result = WrapperVectorAccess::takeAt(env, container, index);
-    updateRC(env, container);
-    return result;
-}
-
-void NestedPointersRCVectorAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
-    WrapperVectorAccess::replace(env, container, index, value);
-    updateRC(env, container);
-}
-
 jboolean NestedPointersRCVectorAccess::removeOne(JNIEnv * env, void* container, jobject value) {
     jboolean result = WrapperVectorAccess::removeOne(env, container, value);
     if(result){
@@ -3081,6 +3454,11 @@ void NestedPointersRCVectorAccess::insert(JNIEnv * env, void* container, jint in
 void NestedPointersRCVectorAccess::fill(JNIEnv * env, void* container, jobject value, jint size){
     WrapperVectorAccess::fill(env, container, value, size);
     unfoldAndAddContainer(env, rcSet(env), value);
+}
+
+void NestedPointersRCVectorAccess::replace(JNIEnv * env, void* container, jint index, jobject value){
+    WrapperVectorAccess::replace(env, container, index, value);
+    updateRC(env, container);
 }
 
 #endif
@@ -3432,6 +3810,31 @@ jobject NestedPointersRCMultiHashAccess::take(JNIEnv *env, void* container, jobj
     jobject result = WrapperMultiHashAccess::take(env, container, key);
     updateRC(env, container);
     return result;
+}
+
+void qtjambi_register_containeraccess_0(){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    ContainerAccessFactoryHelper<QLinkedList, 0, 0, false>::registerContainerAccessFactory();
+    ContainerAccessFactoryHelper<QVector, 0, 0, false>::registerContainerAccessFactory();
+    ContainerAccessFactoryHelper<QList, 0, 0, true>::registerContainerAccessFactory();
+#endif
+    ContainerAccessFactoryHelper<QList, 0, 0, false>::registerContainerAccessFactory();
+    ContainerAccessFactoryHelper<QSet, 0, 0, false>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QHash,0, 0, 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMap,0, 0, 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiMap,0, 0, 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiHash,0, 0, 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QPair,0, 0, 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QPair, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QMultiHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    BiContainerAccessFactoryHelper<QPair, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

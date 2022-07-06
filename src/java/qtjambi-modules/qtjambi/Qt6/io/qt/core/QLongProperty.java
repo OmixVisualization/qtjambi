@@ -39,11 +39,11 @@ public final class QLongProperty extends QLongPropertyData {
 	
 	static boolean checkType(QMetaType metaType){
 		return metaType!=null 
-				&& metaType.sizeOf()==8
 				&& (metaType.id()==QMetaType.Type.LongLong.value()
 					|| metaType.id()==QMetaType.Type.ULongLong.value()
 					|| metaType.id()==QMetaType.Type.Long.value()
-					|| metaType.id()==QMetaType.Type.ULong.value());
+					|| metaType.id()==QMetaType.Type.ULong.value()
+							|| metaType.id()==QMetaType.Type.QVariant.value());
 	}
 
     /**

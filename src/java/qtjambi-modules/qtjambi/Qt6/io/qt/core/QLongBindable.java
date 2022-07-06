@@ -63,11 +63,11 @@ public final class QLongBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| metaType.sizeOf()!=8
 					|| (metaType.id()!=QMetaType.Type.LongLong.value()
 						&& metaType.id()!=QMetaType.Type.Long.value()
 						&& metaType.id()!=QMetaType.Type.ULong.value()
-						&& metaType.id()!=QMetaType.Type.ULongLong.value())) {
+						&& metaType.id()!=QMetaType.Type.ULongLong.value()
+						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}

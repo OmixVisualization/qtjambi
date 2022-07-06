@@ -30,16 +30,21 @@ public class TestUiToolsHelp extends ApplicationInitializer {
     @Test
     public void test()
     {
+    	String errorString = null;
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
+	    	for(String path : QCoreApplication.libraryPaths()) {
+				loader.addPluginPath(path);
+			}
 	    	QFile device = new QFile(":io/qt/autotests/ui/helptest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
+	    	errorString = loader.errorString();
 	    	device.close();
     	}
-    	System.gc();
-    	Assert.assertTrue(widget instanceof QHelpSearchQueryWidget);
+    	ApplicationInitializer.runGC();
+    	Assert.assertTrue((widget==null ? "widget is null: "+errorString : "widget is "+widget.getClass().getName()), widget instanceof QHelpSearchQueryWidget);
     	Assert.assertEquals(QHelpSearchQueryWidget.staticMetaObject, widget.metaObject());
     }
 }

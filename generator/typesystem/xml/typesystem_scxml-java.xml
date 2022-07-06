@@ -57,7 +57,6 @@
     }
     </template>
     <template name="scxml.bool_ptr_to_AtomicBoolean">
-    jobject %out = nullptr;
     if(%in){
         %out = Java::Runtime::AtomicBoolean::newInstance(%env, *%in);
         %scope.addFinalAction([%env,%in,%out](){
@@ -71,12 +70,6 @@
     <inject-code class="metainfo" until="5.11">
     initialize_meta_info_ForeachLoopBody();
     </inject-code>
-    <template name="scxml::event_from_object">
-        jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-    </template>
-    <template name="scxml::event_to_object">
-        QScxmlEvent *%out = qtjambi_cast&lt;QScxmlEvent *>(%env, %in);
-    </template>
     <value-type name="QScxmlExecutableContent::InvokeInfo">
         <modify-field name="finalize" rename="finalizeId" />
     </value-type>
@@ -134,10 +127,10 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.scxml.QScxmlEvent"/>
                 <conversion-rule class="shell">
-                    <insert-template name="scxml::event_from_object"/>
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
-                    <insert-template name="scxml::event_to_object"/>
+                    QScxmlEvent *%out = qtjambi_cast&lt;QScxmlEvent *>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -306,10 +299,10 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.scxml.QScxmlEvent"/>
                 <conversion-rule class="shell">
-                    <insert-template name="scxml::event_from_object"/>
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
-                    <insert-template name="scxml::event_to_object"/>
+                    QScxmlEvent *%out = qtjambi_cast&lt;QScxmlEvent *>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

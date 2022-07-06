@@ -43,7 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.qt3d.render" module="qtjambi.qt3drender" default-superclass="io.qt.QtObject">
-    <required-library name="QtConcurrent" optional="no"/>
     <object-type name="Qt3DRender::QMaterial">
         <modify-function signature="setTextureParameter(QString,Qt3DRender::QAbstractTextureProvider*)" until="5.6">
             <modify-argument index="2">
@@ -109,7 +108,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.core.QList&lt;io.qt.qt3d.render.QRayCasterHit>"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
                     %out = qtjambi_cast&lt;Qt3DRender::QAbstractRayCaster::Hits*>(%env, %in);
@@ -122,7 +121,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.core.QList&lt;io.qt.qt3d.render.QRayCasterHit>"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
                     %out = qtjambi_cast&lt;Qt3DRender::QAbstractRayCaster::Hits*>(%env, %in);
@@ -135,7 +134,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.core.QList&lt;io.qt.qt3d.render.QRayCasterHit>"/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     const Qt3DRender::QAbstractRayCaster::Hits&amp; %out = qtjambi_cast&lt;const Qt3DRender::QAbstractRayCaster::Hits&amp;>(%env, %scope, %in);
@@ -146,7 +145,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.core.QList&lt;io.qt.qt3d.render.QRayCasterHit>"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -176,7 +175,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.qt3d.render.QTextureImageData"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

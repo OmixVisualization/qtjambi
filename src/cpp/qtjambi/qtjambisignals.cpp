@@ -743,6 +743,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                 if(JNIEnv* env = qtjambi_current_environment()){
                     QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                     QtJambiLinkScope scope(link);
+                    QtJambiExceptionHandler __qt_exnhandler;
                     try{
                         if(link->isQObject()){
                             const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, _this->m_signal);
@@ -776,7 +777,9 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                         if(_this->m_nothrow){
                             exn.report(env);
                         }else{
-                            throw;
+                            //QString message("connection to %1::%2");
+                            //message = message.arg(QLatin1String(_this->m_signal.enclosingMetaObject()->className()), QLatin1String(_this->m_signal.methodSignature()));
+                            __qt_exnhandler.handle(env, exn, "signal connection");
                         }
                     }
                 }

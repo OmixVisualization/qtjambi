@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 <typesystem package="io.qt.serialbus" module="qtjambi.serialbus" default-superclass="io.qt.QtObject">
-    <required-library name="QtNetwork"/>
-    <required-library name="QtSerialPort"/>
     <object-type name="QCanBus">
         <extra-includes>
             <include file-name="qtjambi_serialbus.h" location="local"/>
@@ -26,11 +24,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="3" meta-name="%3"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%3){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -39,7 +37,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
         <modify-function signature="availableDevices(const QString &amp;, QString *) const" throws="QCanBusException">
@@ -57,11 +55,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -70,7 +68,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
     </object-type>
@@ -98,11 +96,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -111,7 +109,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
         <modify-function signature="availableDevices(QString *) const" throws="QCanBusException" since="6.2.0">
@@ -129,11 +127,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="1" meta-name="%1"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%1){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -142,7 +140,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
     </interface-type>
@@ -170,11 +168,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -183,7 +181,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
         <modify-function signature="availableDevices(QString *) const" throws="QCanBusException">
@@ -201,11 +199,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="1" meta-name="%1"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%1){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
@@ -214,7 +212,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
     </interface-type>
@@ -379,7 +377,7 @@
                     QTcpSocket* %out = qtjambi_to_object&lt;QTcpSocket>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_from_object(%env, reinterpret_cast&lt;void*>(%in), "io/qt/network/QTcpSocket", false, false);
+                    %out = qtjambi_from_object(%env, reinterpret_cast&lt;void*>(%in), "io/qt/network/QTcpSocket", false, false);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

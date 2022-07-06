@@ -173,7 +173,7 @@ public class TestClipboard extends ApplicationInitializer {
 	                System.out.println("keyPressEvent() event.key()="+key);
 	                if(key == Qt.Key.Key_G.value()) {
 	                    System.out.println("keyPressEvent(): GC");
-	                    System.gc();
+	                    ApplicationInitializer.runGC();
 	                }
 	                if(key == Qt.Key.Key_T.value()) {
 	                    System.out.println("keyPressEvent(): THREAD");

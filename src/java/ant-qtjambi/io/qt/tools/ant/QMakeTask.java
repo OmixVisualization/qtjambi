@@ -45,7 +45,6 @@
 package io.qt.tools.ant;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +118,14 @@ public class QMakeTask extends Task {
                     if(exeFile.isFile()) {
                         // FIXME: Prepend '$QTDIR/bin' to $PATH (so qmake can find moc)
                         return exeFile.getAbsolutePath();
+                    }else {
+                    	if(executableName.endsWith(".exe")) {
+                    		exeFile = new File(qtDir, "bin" + File.separator + executableName.replace(".exe", ".bat"));
+                    		if(exeFile.isFile()) {
+                                // FIXME: Prepend '$QTDIR/bin' to $PATH (so qmake can find moc)
+                                return exeFile.getAbsolutePath();
+                            }
+            			}
                     }
                 }
             } catch(SecurityException eat) {
@@ -167,6 +174,8 @@ public class QMakeTask extends Task {
         }
         
         parameters.add("QTJAMBI_PATCH_VERSION=" + getProject().getProperty("qtjambi.patchversion"));
+        parameters.add("QTJAMBI_PLATFORM_BUILDDIR=" + getProject().getProperty("qtjambi.builddir"));
+        parameters.add("QTJAMBI_GENERATOR_OUTPUT_DIR=" + getProject().getProperty("generator.outputdir"));
 
         String macSdk = getProject().getProperty(Constants.QTJAMBI_MACOSX_MAC_SDK);
         if(macSdk != null && macSdk.length() > 0)
@@ -226,7 +235,8 @@ public class QMakeTask extends Task {
         final List<String> command =  new ArrayList<String>();
 
         command.add(resolveExecutableAbsolutePath());
-        command.add(proFile);
+        if(proFile!=null && !proFile.isEmpty())
+        	command.add(proFile);
 
         List<String> arguments = parseArguments();
         if(!arguments.isEmpty())
@@ -280,21 +290,6 @@ public class QMakeTask extends Task {
 	            	env = new HashMap<>();
 	            	File nrkRootFile = new File(ndkRoot);
 	            	env.put("ANDROID_NDK_ROOT", nrkRootFile.getAbsolutePath());
-            		File dummyInclude = new File(new File(AntUtil.getPropertyAsString(propertyHelper, "outputDir"), "androidjdk"), "include");
-            		File dummyJni = new File(dummyInclude, "jni.h");
-            		if(!dummyJni.exists()) {
-	            		dummyInclude.mkdirs();
-		            	File jni_h = new File(new File(new File(new File(nrkRootFile, "sysroot"), "usr"), "include"), "jni.h");
-		            	if(jni_h.exists()) {
-		            		try {
-								Util.copy(jni_h, dummyJni);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-		            	}
-            		}
-	            	env.put("JAVA_HOME", dummyInclude.getParentFile().getAbsolutePath());
-	            	env.put("JAVA_HOME_TARGET", dummyInclude.getParentFile().getAbsolutePath());
 	            	command.add("\"ANDROID_ABIS="+AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_ABIS)+"\"");
         		}
         	}

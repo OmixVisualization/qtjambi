@@ -33,8 +33,10 @@ import java.util.Collection;
 import java.util.Objects;
 
 import io.qt.QNoNativeResourcesException;
+import io.qt.QNoImplementationException;
 import io.qt.QtUninvokable;
 import io.qt.NativeAccess;
+import io.qt.internal.QtJambiInternal;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qlist.html">QList</a></p>
@@ -75,7 +77,7 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
     
     public QList(Collection<T> other) {
         super(null);
-        QMetaType metaType = findElementMetaType(other);
+        QMetaType metaType = findElementMetaType(Objects.requireNonNull(other));
         if(metaType==null || metaType.id()==0)
             throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
         if(metaType.id()==QMetaType.Type.Void.value())
@@ -424,13 +426,10 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
 
     @QtUninvokable
     public final T takeAt(int i)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
-        return __qt_QList_takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
+    	T result = at(i);
+    	removeAt(i);
+        return result;
     }
-    @QtUninvokable
-    private static native <T> T __qt_QList_takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T takeFirst()    {
@@ -474,12 +473,29 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
 
     @Override
     @QtUninvokable
-    public int hashCode() {
-        int hashCode = getClass().hashCode();
-        for (T e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    public int hashCode() { 
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
     @Override
     @QtUninvokable
@@ -547,10 +563,10 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
     
     @QtUninvokable
     public final QSet<T> toSet()    {
-        return __qt_QList_toSet(QtJambi_LibraryUtilities.internal.nativeId(this));
+		QSet<T> set = new QSet<>(elementMetaType());
+		set.unite(this);
+        return set;
     }
-    @QtUninvokable
-    private static native <T> QSet<T> __qt_QList_toSet(long __this__nativeId);
     
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
@@ -624,16 +640,20 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
         }
         return result;
     }
+    
+    static String pairPrefix() {
+    	return "QPair";
+    }
 
     static boolean checkContainerType(QMetaType elementType, java.util.Collection<?> container) {
-        if (container instanceof QList) {
-            return elementType.equals(((QList<?>) container).elementMetaType());
-        } else if (container instanceof QSet) {
-            return elementType.equals(((QSet<?>) container).elementMetaType());
-        } else if (container instanceof QVector) {
-            return elementType.equals(((QVector<?>) container).elementMetaType());
-        } else if (container instanceof QLinkedList) {
-            return elementType.equals(((QLinkedList<?>) container).elementMetaType());
+        if (container instanceof QList && elementType.equals(((QList<?>) container).elementMetaType())) {
+            return true;
+        } else if (container instanceof QSet && elementType.equals(((QSet<?>) container).elementMetaType())) {
+            return true;
+        } else if (container instanceof QVector && elementType.equals(((QVector<?>) container).elementMetaType())) {
+            return true;
+        } else if (container instanceof QLinkedList && elementType.equals(((QLinkedList<?>) container).elementMetaType())) {
+            return true;
         } else {
             Class<?> type = elementType.javaType();
             if (type.isPrimitive()) {
@@ -698,13 +718,14 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
     }
     
     static QMetaType findElementMetaType(Collection<?> elements){
-        if(elements.getClass()==QList.class) {
+		Class<?> cls = QtJambiInternal.getClass(elements);
+        if(cls==QList.class) {
             return ((QList<?>)elements).elementMetaType();
-        }else if(elements.getClass()==QQueue.class) {
+        }else if(cls==QQueue.class) {
             return ((QQueue<?>)elements).elementMetaType();
-        }else if(elements.getClass()==QStack.class) {
+        }else if(cls==QStack.class) {
             return ((QStack<?>)elements).elementMetaType();
-        }else if(elements.getClass()==QSet.class) {
+        }else if(cls==QSet.class) {
             return ((QSet<?>)elements).elementMetaType();
         }else {
             QMetaType result = new QMetaType();
@@ -744,23 +765,24 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
     static QMetaType getMetaType(Object obj){
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
-        if(obj.getClass()==QList.class) {
+    	Class<?> objClass = QtJambiInternal.getClass(obj);
+        if(objClass==QList.class) {
             return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
-        }else if(obj.getClass()==QQueue.class) {
+        }else if(objClass==QQueue.class) {
             return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
-        }else if(obj.getClass()==QStack.class) {
+        }else if(objClass==QStack.class) {
             return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
-        }else if(obj.getClass()==QSet.class) {
+        }else if(objClass==QSet.class) {
             return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
-        }else if(obj.getClass()==QMultiMap.class) {
+        }else if(objClass==QMultiMap.class) {
             return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
-        }else if(obj.getClass()==QMap.class) {
+        }else if(objClass==QMap.class) {
             return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
-        }else if(obj.getClass()==QMultiHash.class) {
+        }else if(objClass==QMultiHash.class) {
             return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
-        }else if(obj.getClass()==QHash.class) {
+        }else if(objClass==QHash.class) {
             return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
-        }else if(obj.getClass()==QPair.class) {
+        }else if(objClass==QPair.class) {
             return QMetaType.fromType(QPair.class, getMetaType(((QPair<?,?>)obj).first), getMetaType(((QPair<?,?>)obj).second));
         }else if(obj instanceof java.util.List) {
             java.util.List<?> list = (java.util.List<?>)obj;
@@ -784,7 +806,7 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T> implements Clo
                     return QMetaType.fromType(QHash.class, metaTypes.first, metaTypes.second);
             }
         }
-        QMetaType metaType = QMetaType.fromType(obj.getClass());
+        QMetaType metaType = QMetaType.fromType(objClass);
         return metaType;
     }
 }

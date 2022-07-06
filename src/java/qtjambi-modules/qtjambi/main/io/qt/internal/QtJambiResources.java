@@ -101,6 +101,8 @@ public final class QtJambiResources {
 	private static JarCache cache;
     private static String currentDirectory;
     
+    private static native String androidSourceDir();
+    
     static void addSearchPath(URL url) {
     	if (url != null) {
 	    	initialize();
@@ -237,6 +239,7 @@ public final class QtJambiResources {
 						cache.addPath(url);
 				}
 			}
+			
 
 			// If there are no paths set in java.class.path, we do what Java does and
 			// add the current directory; at least ask Java what the current directory

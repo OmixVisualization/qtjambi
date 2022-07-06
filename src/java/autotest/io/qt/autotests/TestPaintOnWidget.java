@@ -36,13 +36,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
+import io.qt.core.QEventLoop;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPaintEvent;
 import io.qt.gui.QPainter;
 import io.qt.gui.QPaintingOutsidePaintEventException;
 import io.qt.gui.QPixmap;
-import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
 
 public class TestPaintOnWidget extends ApplicationInitializer {
@@ -84,27 +85,38 @@ public class TestPaintOnWidget extends ApplicationInitializer {
 	@Test(expected=QPaintingOutsidePaintEventException.class)
     public void testPaintingOutsideViaConstructor() {
     	QWidget widget = new QWidget();
-    	widget.show();
-    	QPainter painter = new QPainter(widget);
-    	painter.drawLine(1, 1, 5, 5);
-    	painter.end();
+    	widget.setVisible(true);
+    	try {
+	    	QPainter painter = new QPainter(widget);
+	    	painter.drawLine(1, 1, 5, 5);
+	    	painter.end();
+    	}finally {
+        	widget.setVisible(false);
+    		widget.dispose();
+    	}
     }
 	
 	@Test
     public void testPaintingOutsideViaBegin() {
     	QWidget widget = new QWidget();
-    	widget.show();
-    	QPainter painter = new QPainter();
-    	boolean began = painter.begin(widget);
-		if(began)
-			painter.end();
-		assertFalse(began);
+    	widget.setVisible(true);
+    	try {
+	    	QPainter painter = new QPainter();
+	    	boolean began = painter.begin(widget);
+			if(began)
+				painter.end();
+			assertFalse(began);
+    	}finally {
+        	widget.setVisible(false);
+    		widget.dispose();
+    	}
     }
     
     @Test(expected=QThreadAffinityException.class)
     public void testPaintingInThreadViaConstructor() {
     	QThreadAffinityException[] exn = {null};
-    	QDialog widget = new QDialog() {
+    	QEventLoop loop = new QEventLoop();
+    	QWidget widget = new QWidget() {
     		@Override
 			protected void paintEvent(QPaintEvent event) {
     	    	QThread t = QThread.create(()->{
@@ -116,10 +128,13 @@ public class TestPaintOnWidget extends ApplicationInitializer {
     	    	});
     	    	t.start();
     	    	t.join();
-    	    	accept();
+    	    	loop.quit();
     		}
     	};
-    	widget.exec();
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
     	if(exn[0]!=null)
     		throw exn[0];
     }
@@ -127,7 +142,8 @@ public class TestPaintOnWidget extends ApplicationInitializer {
     @Test(expected=QThreadAffinityException.class)
     public void testPaintingInThreadViaBegin() {
     	QThreadAffinityException[] exn = {null};
-    	QDialog widget = new QDialog() {
+    	QEventLoop loop = new QEventLoop();
+    	QWidget widget = new QWidget() {
     		@Override
 			protected void paintEvent(QPaintEvent event) {
     	    	QThread t = QThread.create(()->{
@@ -140,42 +156,52 @@ public class TestPaintOnWidget extends ApplicationInitializer {
     	    	});
     	    	t.start();
     	    	t.join();
-    	    	accept();
+    	    	loop.quit();
     		}
     	};
-    	widget.exec();
-    	System.gc();
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
+    	ApplicationInitializer.runGC();
     	if(exn[0]!=null)
     		throw exn[0];
     }
     
     @Test
     public void testPaintingViaBeginUnended() {
-    	QDialog widget = new QDialog() {
+    	QEventLoop loop = new QEventLoop();
+    	QWidget widget = new QWidget() {
     		@Override
 			protected void paintEvent(QPaintEvent event) {
 	    		QPainter painter = new QPainter();
     			painter.begin(this);
-    	    	accept();
+    	    	loop.quit();
     		}
     	};
-    	widget.exec();
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
     }
     
     @Test
     public void testPaintingInsideViaConstructor() {
     	QPainter[] activePainter = {null};
-    	QDialog widget = new QDialog() {
+    	QEventLoop loop = new QEventLoop();
+    	QWidget widget = new QWidget() {
 			@Override
 			protected void paintEvent(QPaintEvent event) {
 		    	QPainter painter = new QPainter(this);
 		    	painter.drawLine(1, 1, 5, 5);
 		    	activePainter[0] = painter;
 				super.paintEvent(event);
-    	    	accept();
+    	    	loop.quit();
 			}
     	};
-    	widget.exec();
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
@@ -183,7 +209,8 @@ public class TestPaintOnWidget extends ApplicationInitializer {
     @Test
     public void testPaintingInsideViaBegin() {
     	QPainter[] activePainter = {null};
-    	QDialog widget = new QDialog() {
+    	QEventLoop loop = new QEventLoop();
+    	QWidget widget = new QWidget() {
 			@Override
 			protected void paintEvent(QPaintEvent event) {
 		    	QPainter painter = new QPainter();
@@ -191,10 +218,13 @@ public class TestPaintOnWidget extends ApplicationInitializer {
 		    	painter.drawLine(1, 1, 5, 5);
 		    	activePainter[0] = painter;
 				super.paintEvent(event);
-    	    	accept();
+    	    	loop.quit();
 			}
     	};
-    	widget.exec();
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }

@@ -23,7 +23,7 @@
                             }
                         }
                     }
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -37,7 +37,7 @@
                             %in[i].replace("QString", "java.lang.String");
                         }
                     }
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

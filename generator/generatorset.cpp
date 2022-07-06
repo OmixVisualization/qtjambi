@@ -41,6 +41,10 @@ GeneratorSet::GeneratorSet() :
         outDir("."),
         printStdout(false),
         docsUrl("@docRoot/"),
+        qtVersionMajor(QT_VERSION_MAJOR),
+        qtVersionMinor(QT_VERSION_MINOR),
+        qtVersionPatch(QT_VERSION_PATCH),
+        qtjambiVersionPatch(0),
         m_staticLibraries()
 {}
 

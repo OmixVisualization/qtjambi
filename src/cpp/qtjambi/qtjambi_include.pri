@@ -14,7 +14,7 @@ win32*:{
 	}
 }
 
-QTJAMBI_BUILDDIR = $$PWD/../../../$$VERSION/build/
+QTJAMBI_BUILDDIR = $$clean_path($$PWD/../../../$$VERSION/build/)
 
 macx:{
     LIBS += $$DESTDIR/lib$$member(QTJAMBI_LIB_NAME, 0).jnilib
@@ -25,11 +25,10 @@ macx:{
     linux-g++*: QMAKE_RPATHDIR = $ORIGIN/.
 
     android:{
-        LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_$$ANDROID_ABI
-#        armeabi-v7a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_armeabi-v7a
-#        arm64-v8a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_arm64-v8a
-#        x86: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86
-#        x86_64: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86_64
+        armeabi-v7a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_armeabi-v7a
+        arm64-v8a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_arm64-v8a
+        x86: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86
+        x86_64: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86_64
     }else{
         LIBS += -l$$QTJAMBI_LIB_NAME
     }

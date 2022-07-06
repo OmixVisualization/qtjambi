@@ -217,45 +217,45 @@ QTJAMBI_EXPORT void setCurrentMetaData(uint i, const MetaData& metaData);
         };
 #endif
 
-typedef hash_type(*HashWrapper)(const void* ptr, QHashFunction hashFunction);
-typedef hash_type(*HashWrapper2)(const void* ptr, QHashFunction hashFunction1, QHashFunction hashFunction2);
+typedef hash_type(*HashWrapper)(const void* ptr, hash_type seed, QHashFunction hashFunction);
+typedef hash_type(*HashWrapper2)(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2);
 
 template<typename Container>
-hash_type qtjambi_container_hash(const void* ptr, QHashFunction hashFunction)
+hash_type qtjambi_container_hash(const void* ptr, hash_type seed, QHashFunction hashFunction)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + qHash(container.size());
+    hash_type result = seed;
+    result = prime * result + qHash(container.size(), result);
     for(typename Container::const_iterator iter = container.begin();
         iter != container.end(); ++iter){
-        result = prime * result + hashFunction(& (*iter));
+        result = prime * result + hashFunction(& (*iter), result);
     }
     return result;
 }
 
 template<typename Container>
-hash_type qtjambi_bicontainer_hash(const void* ptr, QHashFunction hashFunction1, QHashFunction hashFunction2)
+hash_type qtjambi_bicontainer_hash(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + qHash(container.size());
+    hash_type result = seed;
+    result = prime * result + qHash(container.size(), result);
     for(typename Container::const_iterator iter = container.begin();
         iter != container.end(); ++iter){
-        result = prime * result + hashFunction1(&iter.key());
-        result = prime * result + hashFunction2(&iter.value());
+        result = prime * result + hashFunction1(&iter.key(), result);
+        result = prime * result + hashFunction2(&iter.value(), result);
     }
     return result;
 }
 
 template<typename Container>
-hash_type pairHashWrapper(const void* ptr, QHashFunction hashFunction1, QHashFunction hashFunction2){
+hash_type pairHashWrapper(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2){
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + hashFunction1(&container.first);
-    result = prime * result + hashFunction2(&container.second);
+    hash_type result = seed;
+    result = prime * result + hashFunction1(&container.first, result);
+    result = prime * result + hashFunction2(&container.second, result);
     return result;
 }
 
@@ -627,7 +627,7 @@ public:
     friend struct MetaTypeInfoLocker;
 };
 
-QTJAMBI_EXPORT hash_type pointerHashFunction(const void* ptr);
+QTJAMBI_EXPORT hash_type pointerHashFunction(const void* ptr, hash_type seed);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT bool pointerLessFunction(const void* ptr1, const void* ptr2);
 QTJAMBI_EXPORT bool pointerEqualFunction(const void* ptr1, const void* ptr2);
@@ -693,7 +693,7 @@ struct MetaTypeInfoLocker<index,true>{
 QTJAMBI_EXPORT QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr);
 QTJAMBI_EXPORT QDataStream & containerElementDataStreamIn(QDataStream & stream, uint i, void* ptr);
 QTJAMBI_EXPORT QDataStream & containerElementDataStreamOut(QDataStream & stream, uint i, const void* ptr);
-QTJAMBI_EXPORT hash_type containerElementHash(uint i, const void* ptr);
+QTJAMBI_EXPORT hash_type containerElementHash(uint i, const void* ptr, hash_type seed);
 QTJAMBI_EXPORT bool containerElementEqual(uint i, const void* ptr, const void* ptr2);
 QTJAMBI_EXPORT bool containerElementLess(uint i, const void* ptr, const void* ptr2);
 QTJAMBI_EXPORT void constructContainerElement(uint i, void* ptr, const void* copy = nullptr);
@@ -835,8 +835,8 @@ QDataStream & operator>>(QDataStream & s, ContainerElement<size, i, isStatic, al
 }
 
 template<size_t size, uint i, bool isStatic, size_t align, bool useAlignment>
-hash_type qHash(const ContainerElement<size, i, isStatic, align, useAlignment>& value){
-    return containerElementHash(i, &value);
+hash_type qHash(const ContainerElement<size, i, isStatic, align, useAlignment>& value, hash_type seed = 0){
+    return containerElementHash(i, &value, seed);
 }
 
 template<size_t size, uint i, bool isStatic, size_t align, bool useAlignment>
@@ -1024,18 +1024,40 @@ struct BiContainerAccessFac{
 
 }
 
-class QTJAMBI_EXPORT ContainerAccessFactories{
-public:
-    static ContainerAccessFactory getAccessFactory(ContainerType containerType, size_t align, size_t size, bool isStatic);
-    static BiContainerAccessFactory getAccessFactory(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2);
-    static void registerAccessFactory(ContainerType containerType, size_t align, size_t size, bool isStatic, ContainerAccessFactory factory);
-    static void registerAccessFactory(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2, BiContainerAccessFactory factory);
-};
+QTJAMBI_EXPORT bool qtjambi_is_pointer_type(const QMetaType& metaType);
+QTJAMBI_EXPORT AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, ContainerType containerType, const QMetaType& memberMetaType);
+QTJAMBI_EXPORT AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, MapType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2);
+QTJAMBI_EXPORT AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, ContainerType containerType,
+                                                         const QMetaType& metaType,
+                                                         size_t align, size_t size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                          bool isStaticType,
+#endif
+                                                         bool isPointer,
+                                                         const QHashFunction& hashFunction,
+                                                         const InternalToExternalConverter& memberConverter,
+                                                         const ExternalToInternalConverter& memberReConverter);
+QTJAMBI_EXPORT AbstractContainerAccess* qtjambi_create_container_access(JNIEnv* env, MapType mapType,
+                                                                        const QMetaType& memberMetaType1,
+                                                                        size_t align1, size_t size1,
+                                                                        bool isPointer1,
+                                                                        const QHashFunction& hashFunction1,
+                                                                        const InternalToExternalConverter& memberConverter1,
+                                                                        const ExternalToInternalConverter& memberReConverter1,
+                                                                        const QMetaType& memberMetaType2,
+                                                                        size_t align2, size_t size2,
+                                                                        bool isPointer2,
+                                                                        const QHashFunction& hashFunction2,
+                                                                        const InternalToExternalConverter& memberConverter2,
+                                                                        const ExternalToInternalConverter& memberReConverter2);
+
+QTJAMBI_EXPORT void qtjambi_register_access_factory(ContainerType containerType, size_t align, size_t size, bool isStatic, ContainerAccessFactory factory);
+QTJAMBI_EXPORT void qtjambi_register_access_factory(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2, BiContainerAccessFactory factory);
 
 template<template<typename> class Container, size_t align, size_t size, bool isStatic, bool = (align<=size && align <= alignof(std::max_align_t) && (!isStatic || size <= sizeof(void*))) >
 struct ContainerAccessFactoryHelper{
     static void registerContainerAccessFactory(){
-        ContainerAccessFactories::registerAccessFactory(ContainerAnalyzer<Container>::type, align, size, isStatic, QtJambiPrivate::ContainerAccessFac<Container, align, size, isStatic>::factory());
+        qtjambi_register_access_factory(ContainerAnalyzer<Container>::type, align, size, isStatic, QtJambiPrivate::ContainerAccessFac<Container, align, size, isStatic>::factory());
     }
 };
 
@@ -1048,7 +1070,7 @@ struct ContainerAccessFactoryHelper<Container, align, size, isStatic, false>{
 template<template<typename,typename> class Container, size_t align1, size_t size1, size_t align2, size_t size2, bool = (align1<=size1 && align2<=size2 && align1 <= alignof(std::max_align_t) && align2 <= alignof(std::max_align_t)) >
 struct BiContainerAccessFactoryHelper{
     static void registerContainerAccessFactory(){
-        ContainerAccessFactories::registerAccessFactory(MapAnalyzer<Container>::type, align1, size1, align2, size2, QtJambiPrivate::BiContainerAccessFac<Container, align1, size1, align2, size2>::factory());
+        qtjambi_register_access_factory(MapAnalyzer<Container>::type, align1, size1, align2, size2, QtJambiPrivate::BiContainerAccessFac<Container, align1, size1, align2, size2>::factory());
     }
 };
 
@@ -1057,93 +1079,4 @@ struct BiContainerAccessFactoryHelper<Container, align1, size1, align2, size2, f
     static void registerContainerAccessFactory(){
     }
 };
-
-#define ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,D)\
-    BiContainerAccessFactoryHelper<HASH,A,B,C,D>::registerContainerAccessFactory();
-
-#define ELEMENT_CONVERTER_HASH_IMPL0(HASH,C,D)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,0,0,C,D)
-#define ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,C)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,0)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,1)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,2)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,4)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,8)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,16)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,24)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,32)\
-    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,64)
-#define ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,B)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,0)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,1)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,2)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,4)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,8)\
-    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,16)
-#define ELEMENT_CONVERTER_HASH_IMPL4(HASH,A)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,0)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,1)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,2)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,4)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,8)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,16)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,24)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,32)\
-    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,64)
-#define ELEMENT_CONVERTER_HASH_IMPL(HASH)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,0)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,1)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,2)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,4)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,8)\
-    ELEMENT_CONVERTER_HASH_IMPL4(HASH,16)
-
-#define ELEMENT_SIZE_ACTIONS\
-    ELEMENT_SIZE_ACTION(0)\
-    ELEMENT_SIZE_ACTION(1)\
-    ELEMENT_SIZE_ACTION(2)\
-    ELEMENT_SIZE_ACTION(4)\
-    ELEMENT_SIZE_ACTION(6)\
-    ELEMENT_SIZE_ACTION(8)\
-    ELEMENT_SIZE_ACTION(10)\
-    ELEMENT_SIZE_ACTION(12)\
-    ELEMENT_SIZE_ACTION(14)\
-    ELEMENT_SIZE_ACTION(16)\
-    ELEMENT_SIZE_ACTION(24)\
-    ELEMENT_SIZE_ACTION(32)\
-    ELEMENT_SIZE_ACTION(48)\
-    ELEMENT_SIZE_ACTION(56)\
-    ELEMENT_SIZE_ACTION(64)\
-    ELEMENT_SIZE_ACTION(72)\
-    ELEMENT_SIZE_ACTION(96)\
-    ELEMENT_SIZE_ACTION(128)
-
-#define ELEMENT_ALIGNSIZE_ACTION2(size)\
-    ELEMENT_ALIGNSIZE_ACTION(0,size);\
-    ELEMENT_ALIGNSIZE_ACTION(1,size);\
-    ELEMENT_ALIGNSIZE_ACTION(2,size);\
-    ELEMENT_ALIGNSIZE_ACTION(4,size);\
-    ELEMENT_ALIGNSIZE_ACTION(8,size);\
-    ELEMENT_ALIGNSIZE_ACTION(16,size);
-
-#define ELEMENT_ALIGNSIZE_ACTIONS\
-    ELEMENT_ALIGNSIZE_ACTION2(0);\
-    ELEMENT_ALIGNSIZE_ACTION2(1);\
-    ELEMENT_ALIGNSIZE_ACTION2(2);\
-    ELEMENT_ALIGNSIZE_ACTION2(4);\
-    ELEMENT_ALIGNSIZE_ACTION2(6);\
-    ELEMENT_ALIGNSIZE_ACTION2(8);\
-    ELEMENT_ALIGNSIZE_ACTION2(10);\
-    ELEMENT_ALIGNSIZE_ACTION2(12);\
-    ELEMENT_ALIGNSIZE_ACTION2(14);\
-    ELEMENT_ALIGNSIZE_ACTION2(16);\
-    ELEMENT_ALIGNSIZE_ACTION2(24);\
-    ELEMENT_ALIGNSIZE_ACTION2(32);\
-    ELEMENT_ALIGNSIZE_ACTION2(48);\
-    ELEMENT_ALIGNSIZE_ACTION2(56);\
-    ELEMENT_ALIGNSIZE_ACTION2(64);\
-    ELEMENT_ALIGNSIZE_ACTION2(72);\
-    ELEMENT_ALIGNSIZE_ACTION2(96);\
-    ELEMENT_ALIGNSIZE_ACTION2(128);
-
 #endif // QTJAMBI_CONTAINERACCESS_H

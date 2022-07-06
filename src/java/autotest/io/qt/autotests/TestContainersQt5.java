@@ -33,15 +33,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.qt.QNativePointer;
 import io.qt.QNoNativeResourcesException;
-import io.qt.autotests.generated.*;
-import io.qt.core.*;
+import io.qt.autotests.generated.QVector_int;
+import io.qt.autotests.generated.Tulip;
+import io.qt.core.QLinkedList;
+import io.qt.core.QList;
+import io.qt.core.QMetaType;
+import io.qt.core.QPoint;
+import io.qt.core.QRunnable;
+import io.qt.core.QSet;
+import io.qt.core.QVector;
+import io.qt.widgets.QGraphicsItem;
 
 public class TestContainersQt5 extends ApplicationInitializer {
 	
@@ -244,7 +256,6 @@ public class TestContainersQt5 extends ApplicationInitializer {
     	pointList.prepend(new QPoint(0,0));
     	QSet<QPoint> set = pointList.toSet();
     	assertEquals(4, set.size());
-    	
     }
 
     public static void main(String args[]) {

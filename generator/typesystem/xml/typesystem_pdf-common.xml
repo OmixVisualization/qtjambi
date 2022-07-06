@@ -43,8 +43,10 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtPdf" description="Classes and functions for rendering PDF documents.">
+    <required-library name="QtNetwork"/>
     <enum-type name="QPdfSearchModel::Role" />
-    <enum-type name="QPdfDocument::DocumentError" />
+    <enum-type name="QPdfDocument::DocumentError" until="6.3.*"/>
+    <enum-type name="QPdfDocument::Error" since="6.4.0"/>
     <enum-type name="QPdfBookmarkModel::StructureMode" />
     <enum-type name="QPdfBookmarkModel::Role" />
     <object-type name="QPdfBookmarkModel">

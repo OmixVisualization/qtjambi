@@ -28,7 +28,9 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -37,11 +39,13 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.QNativePointer;
+import io.qt.QUnsuccessfulInvocationException;
 import io.qt.QtMetaType;
 import io.qt.QtObjectInterface;
 import io.qt.QtReferenceType;
 import io.qt.autotests.generated.FunctionalTest;
 import io.qt.core.QDir;
+import io.qt.core.QEasingCurve;
 import io.qt.core.QFunctionPointer;
 import io.qt.core.QGenericArgument;
 import io.qt.core.QList;
@@ -56,8 +60,30 @@ import io.qt.core.Qt;
 import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;
+import io.qt.internal.QtJambiInternal;
 
 public class TestQFunctionPointer extends ApplicationInitializer{
+	
+	@Test
+    public void testFunctionExtraction() {
+		List<QEasingCurve.EasingFunction> list = new ArrayList<>();
+		
+		QEasingCurve c = new QEasingCurve();
+		c.setType(QEasingCurve.Type.Custom);
+		for (int i = 0; i < 5; ++i) {
+			int _i = i;
+			QEasingCurve.EasingFunction f = d->d/(_i+1);
+			c.setCustomType(f);
+			Assert.assertEquals(0.2/(_i+1), c.valueForProgress(0.2), 0.001);
+			list.add(f);
+		}
+		c.dispose();
+		
+		for (int i = list.size()-1; i >= 0; --i) {
+			list.get(i).dispose();
+		}
+		list.clear();
+	}
 	
 	@FunctionalInterface
 	interface Fun30 extends QtObjectInterface{
@@ -174,7 +200,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     	fp.invoke((byte)0, QGenericArgument.defaultOf(new QMetaType(QMetaType.type("JNIEnv*"))));
     	fp = FunctionalTest.getFunction(37);
     	fp.invoke('A', 1, 2, 3, Qt.GlobalColor.blue, Qt.AlignmentFlag.AlignTop.combined(Qt.AlignmentFlag.AlignLeading));
-    	System.gc();
+    	ApplicationInitializer.runGC();
 	}
 	
 	@Test
@@ -331,7 +357,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     	}
     	
     	fp = FunctionalTest.getFunction(54);
-    	{
+    	try{
     		Fun54 fun54 = fp.cast(Fun54.class);
     		fun54.hashCode();
     		int[] iresult = {0};
@@ -350,6 +376,12 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     		Assert.assertEquals(0.0001, 9.12345, dresult[0]);
     		Assert.assertEquals(new QColor(Qt.GlobalColor.blue), cresult[0]);
     		Assert.assertEquals(Qt.AlignmentFlag.AlignLeft.combined(Qt.AlignmentFlag.AlignTop), aresult[0]);
+    	}catch(AssertionError e) {
+    		throw e;
+    	}catch(QUnsuccessfulInvocationException e) {
+    		if(QtJambiInternal.useAnnotatedType || !String.format("Type %1$s not supported without pointer or reference arithmetic.", QColor.class.getName()).equals(e.getMessage())) {
+    			throw e;
+    		}
     	}
     	fp = FunctionalTest.getFunction(55);
     	{

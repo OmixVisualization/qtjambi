@@ -374,18 +374,92 @@
     <target name="qtjambi-native-bundle-impl">
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
-        <create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" debug="${platformjar.debug}" module="${module}" libraries="${qtjambi.bundle.libraries}"/>
-        <jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
-            <manifest>
-                <attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-                <attribute name="Bundle-Name"      value="${module} platform bundle"/>
-                <attribute name="Bundle-Description"      value="${module} platform bundle"/>
-                <attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-                <attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
-                <attribute name="Bundle-ManifestVersion" value="2"/>
-            </manifest>
-            <fileset dir="${qtjambi-native-bundle-path}" includes="${library.includes}"/>
-        </jar>
+        <if>
+			<equals arg1="${qtjambi.osname}" arg2="android"/>
+			<then>
+                <antcall inheritrefs="true" target="create-native-deployment-impl">
+					<param name="qtjambi.osname" value="android-arm"/>
+				</antcall>
+                <antcall inheritrefs="true" target="create-native-deployment-impl">
+					<param name="qtjambi.osname" value="android-arm64"/>
+				</antcall>
+                <antcall inheritrefs="true" target="create-native-deployment-impl">
+					<param name="qtjambi.osname" value="android-x86"/>
+				</antcall>
+                <antcall inheritrefs="true" target="create-native-deployment-impl">
+					<param name="qtjambi.osname" value="android-x64"/>
+				</antcall>
+			</then>
+			<else>
+                <antcall inheritrefs="true" target="create-native-deployment-impl"/>
+			</else>
+        </if>
+    </target>
+    <target name="create-native-deployment-impl">
+		<condition property="qtjambi-native-bundle-path" value="${deploymentdir}/native/${qtjambi.osname}/debug" else="${deploymentdir}/native/${qtjambi.osname}/release">
+			<istrue value="${platformjar.debug}"/>
+		</condition>
+        <if>
+            <and>
+				<equals arg1="${module}" arg2="qtjambi.deployer"/>
+				<or>
+					<available file="${qtjambi.qtdir}/jar/QtAndroid.jar"/>
+					<available file="${qtjambi.qtdir}/jar/Qt6Android.jar"/>
+				</or>
+				<available file="${qtjambi.android.ndk}/../../platforms/android-31/android.jar"/>
+			</and>
+            <then>
+				<if>
+					<available file="${qtjambi.qtdir}/src/android/java/src/org/kde/necessitas/ministro/IMinistro.aidl"/>
+					<then>
+						<mkdir dir="${java.outsrcdir}/ministro/"/>
+						<aidl path="${java.outsrcdir}/ministro/"/>
+					</then>
+				</if>
+				<condition property="androidbindings-srcdirs" 
+						   value="${qtjambi.qtdir}/src/android/java/src${psep}${java.outsrcdir}/ministro" 
+						   else="${qtjambi.qtdir}/src/android/java/src">
+					<available file="${qtjambi.qtdir}/src/android/java/src/org/kde/necessitas/ministro/IMinistro.aidl"/>
+				</condition>
+				<mkdir dir="${java.outdir}/androidbindings"/>
+                <javac source="8" target="8" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="false"
+                        excludes=""
+                        srcdir="${androidbindings-srcdirs}"
+                        destdir="${java.outdir}/androidbindings">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <compilerarg value="-Xlint:-module,-options,-deprecation" />
+                    <classpath>
+                        <filelist dir="${qtjambi.qtdir}/jar/" files="QtAndroid.jar,Qt6Android.jar"/>
+                        <filelist dir="${qtjambi.android.ndk}/../../platforms/android-31" files="android.jar"/>
+                    </classpath>
+                </javac>
+                <jar destfile="${qtjambi-native-bundle-path}/utilities/QtAndroidBindings.jar">
+                    <fileset dir="${java.outdir}/androidbindings" includes="**" followsymlinks="false"/>
+                </jar>
+            </then>
+        </if>
+		<create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" debug="${platformjar.debug}" module="${module}" libraries="${qtjambi.bundle.libraries}"/>
+        <if>
+			<not>
+				<equals arg1="${library.includes}" arg2=""/>
+			</not>
+			<then>
+				<jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+					<manifest>
+						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+						<attribute name="Bundle-Name"      value="${module} platform bundle"/>
+						<attribute name="Bundle-Description"      value="${module} platform bundle"/>
+						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+						<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
+						<attribute name="Bundle-ManifestVersion" value="2"/>
+					</manifest>
+					<fileset dir="${qtjambi-native-bundle-path}" includes="${library.includes}"/>
+				</jar>
+			</then>
+        </if>
     </target>
     
     <target name="deploy-impl-bundle">

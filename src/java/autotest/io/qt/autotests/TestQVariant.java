@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
@@ -1762,11 +1763,12 @@ public class TestQVariant extends ApplicationInitializer {
     public void testVariantGC() throws Exception {
     	QObject carrier = new QObject();
     	{
-	    	boolean[] destroyed = {false};
+    		AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QObject prop = new QObject();
-	    		prop.destroyed.connect(()->destroyed[0] = true);
+	    		prop.destroyed.connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1774,43 +1776,22 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 	    	carrier.setProperty("customProperty", null);
     	}
     	{
-	    	boolean[] destroyed = {false};
-	    	{
-	    		QColor prop = new QColor(0xff23ad);
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
-	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
-	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
-	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
-	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
-	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
-	    	}
-	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
-	        	synchronized (carrier) {
-					Thread.sleep(100);
-				}
-				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
-			}
-	    	assertTrue(destroyed[0]);
-			carrier.setProperty("customProperty", null);
-    	}
-    	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QColor prop = new QColor(0xff23ab){};
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1818,21 +1799,22 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded);
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1840,21 +1822,22 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded){};
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1862,17 +1845,17 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		class Prop extends QObject implements QRunnable, QPaintDevice{
 					@Override
@@ -1885,8 +1868,9 @@ public class TestQVariant extends ApplicationInitializer {
 					}
 	    		}
 	    		Prop prop = new Prop();
-	    		prop.destroyed.connect(()->destroyed[0] = true);
+	    		prop.destroyed.connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1894,17 +1878,17 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		class Prop extends QEvent implements QRunnable, QPaintDevice{
 					public Prop() {
@@ -1921,8 +1905,9 @@ public class TestQVariant extends ApplicationInitializer {
 					}
 	    		}
 	    		Prop prop = new Prop();
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1930,22 +1915,23 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QRunnable prop = ()->{};
 	    		prop.isDisposed();
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1953,22 +1939,23 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		QPaintDevice prop = ()->null;
 	    		prop.isDisposed();
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1976,17 +1963,17 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     	{
-        	boolean[] destroyed = {false};
+        	AtomicBoolean destroyed = new AtomicBoolean(false);
 	    	{
 	    		class Prop extends QtObject implements QRunnable, QPaintDevice{
 					public Prop() {
@@ -2003,8 +1990,9 @@ public class TestQVariant extends ApplicationInitializer {
 					}
 	    		}
 	    		Prop prop = new Prop();
-	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -2012,13 +2000,41 @@ public class TestQVariant extends ApplicationInitializer {
 	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
 	    	}
 	    	for (int i = 0; i < 5; i++) {
-	        	System.gc();
+	        	ApplicationInitializer.runGC();
 	        	synchronized (carrier) {
 					Thread.sleep(100);
 				}
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
 			}
-	    	assertFalse(destroyed[0]);
+	    	assertFalse(destroyed.get());
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+	    	AtomicBoolean destroyed = new AtomicBoolean(false);
+	    	{
+	    		QColor prop = new QColor(0xff23ad);
+	    		QMetaObject.Connection connection = QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
+	    		assertTrue("not connected", connection!=null && connection.isConnected());
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(QMetaType.fromType(QColor.class), Variants.propertyType(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    		prop = null;
+	    	}
+	    	for (int i = 0; i < 25; i++) {
+	    		if(destroyed.get())
+	    			break;
+	        	ApplicationInitializer.runGC();
+	        	synchronized (carrier) {
+	        		Thread.yield();
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertTrue(destroyed.get());
 			carrier.setProperty("customProperty", null);
     	}
     }

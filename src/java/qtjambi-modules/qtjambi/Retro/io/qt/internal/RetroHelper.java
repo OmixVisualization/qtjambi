@@ -29,13 +29,13 @@
 
 package io.qt.internal;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -48,15 +48,18 @@ final class RetroHelper {
 		Supplier<Class<?>> callerClassProvider();
 		IntFunction<io.qt.InternalAccess.CallerContext> classAccessChecker();
 		String processName();
-		AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType);
+		<T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType);
 	}
 	
 	private static class DefaultImplementor implements Implementor{
 		private final StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
 	    private final Supplier<Class<?>> callerClassProvider = stackWalker::getCallerClass;
 	    private final IntFunction<io.qt.InternalAccess.CallerContext> classAccessChecker = number->{
-	    	if(number>0) {
-		        Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(number).skip(number-1).findFirst());
+	    	if(number>=0) {
+		        Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(number+2).skip(number+1).findFirst());
+		        if(stackFrame.isPresent() && stackFrame.get().getDeclaringClass()==RetroHelper.class) {
+		        	stackFrame = stackWalker.walk(stream->stream.limit(number+3).skip(number+2).findFirst());
+		        }
 		        if(stackFrame.isPresent()) {
 		            return new io.qt.InternalAccess.CallerContext(
 		                stackFrame.get().getDeclaringClass(),
@@ -83,43 +86,51 @@ final class RetroHelper {
 	    	return processName;
 	    }
 	    
-	    @Override
-	    public AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType) {
+	    @SuppressWarnings("unchecked")
+		@Override
+	    public <T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType){
 	        try {
-				return actualType.getAnnotatedOwnerType();
+	        	if(actualType instanceof java.lang.reflect.AnnotatedType)
+	        		return (T)((java.lang.reflect.AnnotatedType)actualType).getAnnotatedOwnerType();
 			} catch (Throwable e) {
-				return null;
 			}
+			return null;
 	    }
 	}
 	
 	private static class Java8Implementor implements Implementor{
 	    Java8Implementor() {
 			super();
-			MethodHandle _getAnnotatedOwnerTypeHandle = null;
+			Method getAnnotatedOwnerType = null;
 	        try {
-	            Method getAnnotatedOwnerType = AnnotatedType.class.getMethod("getAnnotatedOwnerType");
-	            _getAnnotatedOwnerTypeHandle = QtJambiInternal.getMethodHandle(getAnnotatedOwnerType);
+	            getAnnotatedOwnerType = java.lang.reflect.AnnotatedType.class.getMethod("getAnnotatedOwnerType");
 	        } catch (Throwable e2) {
 	        }
-	        this.getAnnotatedOwnerTypeHandle = _getAnnotatedOwnerTypeHandle;
+	        this.getAnnotatedOwnerTypeSupplier = getAnnotatedOwnerType==null ? null : QtJambiInternal.functionFromMethod(getAnnotatedOwnerType);
 	        
 	        this.classAccessChecker = number->{
                 StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                ++number; // for getStackTrace()
+                boolean postStackTrace = false;
                 for (StackTraceElement element : stackTrace) {
-                    if(!element.getClassName().startsWith("jdk.internal.reflect")
-                            && !element.getClassName().startsWith("java.lang.reflect")
-                            && !element.getClassName().startsWith("io.qt.internal.RetroHelper$$Lambda$"))
-                        --number;
-                    if(number==0){
-                        try {
-                            return new io.qt.InternalAccess.CallerContext(Class.forName(element.getClassName()), element.getMethodName(), element.getLineNumber());
-                        } catch (ClassNotFoundException e) {
-                            //e.printStackTrace();
-                            ++number;
-                        }
-                    }
+                	if(!postStackTrace) {
+                		if(element.getClassName().equals(Thread.class.getName())
+                				&& element.getMethodName().equals("getStackTrace")) {
+                			postStackTrace = true;
+                		}
+                	}else {
+	                    if(!element.getClassName().startsWith("jdk.internal.reflect")
+	                            && !element.getClassName().startsWith("java.lang.reflect")
+	                            && !element.getClassName().startsWith("io.qt.internal.RetroHelper")) {
+		                    if(number==0){
+		                        try {
+		                            return new io.qt.InternalAccess.CallerContext(Class.forName(element.getClassName()), element.getMethodName(), element.getLineNumber());
+		                        } catch (ClassNotFoundException e) {
+		                            ++number;
+		                        }
+		                    }
+	                        --number;
+	                    }
+                	}
                 }
                 return null;
             };
@@ -127,20 +138,14 @@ final class RetroHelper {
 			try {
 				Class<?> reflectionClass = Class.forName("sun.reflect.Reflection");
 				Method getCallerClass = reflectionClass.getMethod("getCallerClass", int.class);
-				MethodHandle getCallerClassHandle = QtJambiInternal.getMethodHandle(getCallerClass).bindTo(4);
+				Function<Integer,Class<?>> getCallerClassFun = QtJambiInternal.functionFromMethod(getCallerClass);
 				_callerClassProvider = ()->{
-				    try {
-				        return (Class<?>)getCallerClassHandle.invoke();
-				    } catch (RuntimeException | Error e) {
-				        throw e;
-				    } catch (Throwable e) {
-				        throw new RuntimeException(e);
-				    }
+			        return getCallerClassFun.apply(4);
 				};
 			} catch (Throwable e) {
 				_callerClassProvider = ()->{
 	                Class<?> result = Object.class;
-	                io.qt.InternalAccess.CallerContext info = classAccessChecker().apply(4);
+	                io.qt.InternalAccess.CallerContext info = classAccessChecker().apply(1);
 	                if(info!=null && info.declaringClass!=null) {
 	                    result = info.declaringClass;
 	                }
@@ -168,7 +173,7 @@ final class RetroHelper {
 		private final IntFunction<io.qt.InternalAccess.CallerContext> classAccessChecker;
 	    private final Supplier<Class<?>> callerClassProvider;
 	    private final String processName;
-	    private final MethodHandle getAnnotatedOwnerTypeHandle;
+	    private final Function<AnnotatedElement, AnnotatedElement> getAnnotatedOwnerTypeSupplier;
 
 		@Override
 		public Supplier<Class<?>> callerClassProvider() {
@@ -185,11 +190,13 @@ final class RetroHelper {
 	    	return processName;
 	    }
 		
+		@SuppressWarnings("unchecked")
 		@Override
-	    public AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType) {
-			if(getAnnotatedOwnerTypeHandle!=null) {
+		public <T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType) {
+			if(getAnnotatedOwnerTypeSupplier!=null) {
 	            try{
-	                return (AnnotatedType)getAnnotatedOwnerTypeHandle.invoke(actualType);
+	            	if(actualType instanceof java.lang.reflect.AnnotatedType)
+	            		return (T)getAnnotatedOwnerTypeSupplier.apply(actualType);
 	            } catch (RuntimeException | Error e) {
 	                throw e;
 	            } catch (Throwable e) {
@@ -219,7 +226,11 @@ final class RetroHelper {
         return implementor.classAccessChecker();
     }
     
-    static AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType) {
+    static Supplier<CallerContext> callerContextProvider() {
+    	return ()->implementor.classAccessChecker().apply(0);
+    }
+    
+    static <T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType) {
 		return implementor.getAnnotatedOwnerType(actualType);
     }
     

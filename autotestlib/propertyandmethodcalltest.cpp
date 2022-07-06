@@ -16,13 +16,14 @@ PropertyAndMethodCallTest::PropertyAndMethodCallTest(QObject *parent) :
 {
 }
 
-bool PropertyAndMethodCallTest::connectSignals(QObject* sender){
+bool PropertyAndMethodCallTest::connectSignals(QObject* sender, bool useAnnotatedType){
     bool connected = true;
     connected &= bool(QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper))));
     connected &= bool(QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper))));
     connected &= bool(QObject::connect(sender, SIGNAL(customQtFlagsChanged(JObjectWrapper)), this, SLOT(receiveQtFlags(JObjectWrapper))));
     connected &= bool(QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customColorPtrChanged(QColor*)), this, SLOT(receiveColorPtr(QColor*))));
+    if(useAnnotatedType)
+        connected &= bool(QObject::connect(sender, SIGNAL(customColorPtrChanged(QColor*)), this, SLOT(receiveColorPtr(QColor*))));
     connected &= bool(QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*))));
     connected &= bool(QObject::connect(sender, SIGNAL(customQtInterfaceValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*))));
     connected &= bool(QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));

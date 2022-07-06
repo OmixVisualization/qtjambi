@@ -35,9 +35,9 @@
 
 package io.qt.tools.ant;
 
-import static io.qt.tools.ant.PlatformJarTask.getOtoolOut;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,8 +48,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
-
-import io.qt.tools.ant.PlatformJarTask.OToolOut;
 
 public class InstallNameToolTask extends Task {
 
@@ -215,4 +213,78 @@ public class InstallNameToolTask extends Task {
 	public void setSuffix(String suffix) {
 		this.suffix = suffix;
 	}
+    
+    public static class OToolOut{
+		String id = null;
+		Set<String> loadDylibs = new TreeSet<>();
+		Set<String> rpaths = new TreeSet<>();    	
+    }
+    
+    public static OToolOut getOtoolOut(Task task, String libpath, File outdir) {
+    	task.getProject().log(task, "- analyzing: " + libpath, Project.MSG_INFO);
+    	OToolOut result = null;
+    	try {
+    		String[] out = Exec.executeCaptureOutput(task, Arrays.asList("otool", "-l", libpath), outdir, task.getProject(), null, null, false);
+    		if(out.length==2 && out[0]!=null) {
+        		result = new OToolOut();
+    			try(BufferedReader reader = new BufferedReader(new StringReader(out[0]))){
+    				while(true) {
+    					String line = reader.readLine();
+    					if(line==null) {
+    						break;
+    					}else {
+    						line = line.trim();
+    						if(line.equals("cmd LC_ID_DYLIB")) {
+    							line = reader.readLine(); // cmdsize line
+    							if(line!=null && line.trim().startsWith("cmdsize ")) {
+    								line = reader.readLine(); // name line
+        							if(line!=null && (line = line.trim()).startsWith("name ")) {
+        								line = line.substring(5);
+        								int idx = line.indexOf(" (");
+        								if(idx>0) {
+        									result.id = line.substring(0, idx).trim();
+        								}
+        							}
+    							}
+    						}else if(line.equals("cmd LC_LOAD_DYLIB")) {
+    							line = reader.readLine(); // cmdsize line
+    							if(line!=null && line.trim().startsWith("cmdsize ")) {
+    								line = reader.readLine(); // name line
+        							if(line!=null && (line = line.trim()).startsWith("name ")) {
+        								line = line.substring(5);
+        								int idx = line.indexOf(" (");
+        								if(idx>0) {
+        									result.loadDylibs.add(line.substring(0, idx).trim());
+        								}
+        							}
+    							}
+    						}else if(line.equals("cmd LC_RPATH")) {
+    							line = reader.readLine(); // cmdsize line
+    							if(line!=null && line.trim().startsWith("cmdsize ")) {
+    								line = reader.readLine(); // path line
+        							if(line!=null && (line = line.trim()).startsWith("path ")) {
+        								line = line.substring(5);
+        								int idx = line.indexOf(" (");
+        								if(idx>0) {
+        									result.rpaths.add(line.substring(0, idx).trim());
+        								}
+        							}
+    							}
+    						}
+    					}
+    				}
+    			}
+    			if(result.id==null && result.loadDylibs.isEmpty() && result.rpaths.isEmpty()) {
+    				result = null;
+    			}
+    		}
+    	}
+        catch ( Exception e )
+        {
+        	task.getProject().log(task, " - " + e.getMessage() , Project.MSG_INFO);
+        }
+//    	if(result!=null)
+//    		task.getProject().log(task, "  rpaths: " + result.rpaths, Project.MSG_INFO);
+    	return result;
+    }
 }

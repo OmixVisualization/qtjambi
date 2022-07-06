@@ -4,7 +4,7 @@
 #include "qtjambi_registry.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambilink_p.h"
-#include "qtjambi_internal.h"
+#include "qtjambi_metainfo.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 namespace QtPrivate{

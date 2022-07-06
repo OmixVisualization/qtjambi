@@ -9,10 +9,10 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct IntermediateBiContainer : Container<K,T>{
     IntermediateBiContainer(JNIEnv *env, jobject object, QtJambiScope& scope) : Container<K,T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
     ~IntermediateBiContainer(){
-        try{
+        QTJAMBI_TRY_ANY{
             if(JNIEnv *env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                try{
+                QTJAMBI_TRY{
                     jobject object = env->NewLocalRef(m_object);
                     if(!env->IsSameObject(object, nullptr)){
                         qtjambi_map_clear(env, object);
@@ -22,15 +22,13 @@ struct IntermediateBiContainer : Container<K,T>{
                             qtjambi_map_put(env, object, key, val);
                         }
                     }
-                }catch(const JavaException& exn){
+                }QTJAMBI_CATCH(const JavaException& exn){
                     exn.raiseInJava(env);
-                }
+                }QTJAMBI_TRY_END
             }
-        }catch(const std::exception& exn){
-            printf("An exception occurred: %s\n", exn.what());
-        }catch(...){
+        }QTJAMBI_CATCH_ANY{
             printf("An unknown exception occurred.\n");
-        }
+        }QTJAMBI_TRY_END
     }
     QtJambiScope& m_scope;
     jobject m_object;

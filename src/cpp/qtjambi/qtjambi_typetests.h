@@ -857,7 +857,7 @@ struct qtjambi_type{
 
 template<typename O, bool = std::is_pointer<O>::value>
 struct pointer_from{
-    typedef typename std::add_lvalue_reference<O>::type In;
+    typedef typename std::add_lvalue_reference<typename std::add_const<O>::type>::type In;
     typedef typename std::add_pointer<O>::type Out;
     static const void* from(In o){
         return &o;
@@ -866,6 +866,8 @@ struct pointer_from{
 
 template<typename O>
 struct pointer_from<O,true>{
+    typedef O In;
+    typedef O Out;
     static const void* from(O o){
         return o;
     }
@@ -873,8 +875,10 @@ struct pointer_from<O,true>{
 
 #if !defined(Q_CC_MSVC) && !defined(QT_JAMBI_RUN)
 template<typename RET, typename... ARGS>
-struct pointer_from<RET (*)(ARGS...),true>{
-    static const void* from(RET (*o)(ARGS...)){
+struct pointer_from<RET(*)(ARGS...),true>{
+    typedef RET(*In)(ARGS...);
+    typedef RET(*Out)(ARGS...);
+    static const void* from(In o){
         return reinterpret_cast<const void*>(o);
     }
 };

@@ -44,7 +44,12 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.uic.ui4" module="qtjambi.uic" default-superclass="io.qt.QtObject" no-exports="true">
-    <required-library name="QtDesigner"/>
+    <inject-code class="metainfo" position="1">
+    void initialize_meta_info_UIC();
+    </inject-code>
+    <inject-code class="metainfo" position="end">
+    initialize_meta_info_UIC();
+    </inject-code>
     <object-type name="DomButtonGroup" implements="DomAttributeInterface"/>
     <object-type name="DomAction" implements="DomAttributeInterface"/>
     <object-type name="DomActionGroup" implements="DomAttributeInterface"/>

@@ -168,13 +168,29 @@ void Handler::parseTypeSystem(const QDomElement &element){
                         QDomNamedNodeMap attributes = childElement.attributes();
                         if (checkQtVersion(attributes)){
                             QString libraryName = attributeValue(attributes.removeNamedItem("name"));
-                            bool optional = convertBoolean(attributeValue(attributes.removeNamedItem("optional"), "false"), "optional", false);
+                            QString _mode = attributeValue(attributes.removeNamedItem("mode"), "");
+                            Dependency::Mode mode = Dependency::Mandatory;
+                            if(!_mode.isEmpty()){
+                                if(_mode=="optional"){
+                                    mode = Dependency::Optional;
+                                }else if(_mode=="provide-only"){
+                                    mode = Dependency::ProvideOnly;
+                                }else if(_mode=="mandatory"){
+                                    mode = Dependency::Mandatory;
+                                }else{
+                                    TypesystemException::raise(QString("Unexpected value '%1' of attribute 'mode' in line %2").arg(element.lineNumber()));
+                                }
+                            }
+                            QStringList platforms;
+                            QString _platforms = attributeValue(attributes.removeNamedItem("platforms"));
+                            if(!_platforms.isEmpty())
+                                platforms << _platforms.split(",");
                             if(attributes.count()){
                                 TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
                             }
                             if(libraryName.isEmpty())
                                 ReportHandler::warning("required-library with no name specified");
-                            entry->addRequiredQtLibrary(libraryName, optional);
+                            entry->addRequiredQtLibrary(std::move(libraryName), mode, std::move(platforms));
                         }
                     }else if(childElement.localName()=="required-package"){
                         QDomNamedNodeMap attributes = childElement.attributes();
@@ -2289,6 +2305,7 @@ void Handler::parseFunctionalType(const QDomElement &element){
             TypesystemException::raise(QString("Cannot convert count='%1' to integer in tag <%2> in line %3").arg(_count).arg(element.localName()).arg(element.lineNumber()));
         }
         fentry->setCount(count);
+
         QDomNodeList childNodes = element.childNodes();
         for(int i=0; i<childNodes.length(); ++i){
             QDomNode item = childNodes.item(i);

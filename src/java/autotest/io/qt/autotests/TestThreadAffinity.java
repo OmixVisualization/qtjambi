@@ -70,8 +70,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }
@@ -93,8 +92,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }
@@ -116,8 +114,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }
@@ -139,8 +136,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }
@@ -162,8 +158,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }
@@ -187,8 +182,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 		thread.start();
 		loop.exec();
 		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(100);
             }

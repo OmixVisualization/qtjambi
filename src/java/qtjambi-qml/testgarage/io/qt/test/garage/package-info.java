@@ -27,5 +27,5 @@
 **
 ****************************************************************************/
 
-@io.qt.qml.util.QmlImportMajorVersion(2)
+@io.qt.qml.util.QmlImport(majorVersion = 2, classes = {Garage.class})
 package io.qt.test.garage;

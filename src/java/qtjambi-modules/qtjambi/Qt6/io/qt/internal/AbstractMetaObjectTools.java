@@ -30,9 +30,8 @@ package io.qt.internal;
 
 import static io.qt.internal.QtJambiInternal.registerMetaType;
 
-import java.lang.invoke.MethodHandle;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -114,34 +113,80 @@ class AbstractMetaObjectTools {
     		return new MetaObjectTools.QPropertyTypeInfo(char.class, char.class, null, false, false, field.getType()==QObject.QCharProperty.class);
     	}else if(field.getType()==QObject.QProperty.class
     			|| field.getType()==QObject.QComputedProperty.class) {
-        	AnnotatedType t = field.getAnnotatedType();
-        	if (t instanceof AnnotatedParameterizedType) {
-            	AnnotatedParameterizedType p = (AnnotatedParameterizedType) t;
-            	AnnotatedType actualTypes[] = p.getAnnotatedActualTypeArguments();
-            	if(actualTypes.length==1) {
-            		AnnotatedType actualType = actualTypes[0];
-                	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
-                	boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
-                	QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
-                	boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
-                	if(!isPrimitive) {
-                		AnnotatedType annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
-                		if(annotatedOwnerType!=null) {
-                			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
-                		}
-                	}
-                	Type type = actualType.getType();
-                    Class<?> rawType;
-                    if (type instanceof Class) {
-                        rawType = (Class<?>) type;
-                    }else if (type instanceof ParameterizedType) {
-                    	ParameterizedType ptype = (ParameterizedType)type;
-                        rawType = (Class<?>)ptype.getRawType();
-                    } else {
-                    	return null;
-                    }
-                    if(isPrimitive) {
-                    	if(rawType==Integer.class) {
+    		if(QtJambiInternal.useAnnotatedType) {
+	        	AnnotatedElement t = field.getAnnotatedType();
+	        	if (t instanceof AnnotatedParameterizedType) {
+	            	AnnotatedParameterizedType p = (AnnotatedParameterizedType) t;
+	            	AnnotatedElement actualTypes[] = p.getAnnotatedActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		AnnotatedElement actualType = actualTypes[0];
+	                	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
+	                	boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
+	                	QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
+	                	boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
+	                	if(!isPrimitive) {
+	                		AnnotatedElement annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
+	                		if(annotatedOwnerType!=null) {
+	                			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
+	                		}
+	                	}
+	                	Type type = ((java.lang.reflect.AnnotatedType)actualType).getType();
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(isPrimitive) {
+	                    	if(rawType==Integer.class) {
+	                    		rawType = int.class;
+	                    		type = int.class;
+	                    	}else if(rawType==Short.class) {
+	                    		rawType = short.class;
+	                    		type = short.class;
+	                    	}else if(rawType==Byte.class) {
+	                    		rawType = byte.class;
+	                    		type = byte.class;
+	                    	}else if(rawType==Long.class) {
+	                    		rawType = long.class;
+	                    		type = long.class;
+	                    	}else if(rawType==Double.class) {
+	                    		rawType = double.class;
+	                    		type = double.class;
+	                    	}else if(rawType==Float.class) {
+	                    		rawType = float.class;
+	                    		type = float.class;
+	                    	}else if(rawType==Boolean.class) {
+	                    		rawType = boolean.class;
+	                    		type = boolean.class;
+	                    	}else if(rawType==Character.class) {
+	                    		rawType = char.class;
+	                    		type = char.class;
+	                    	}
+	                    }
+	                    return new MetaObjectTools.QPropertyTypeInfo(rawType, type, actualType, isPointer, isReference, field.getType()==QObject.QProperty.class);
+	            	}
+	        	}
+    		}else {
+    			Type t = field.getGenericType();
+            	if (t instanceof ParameterizedType) {
+                	ParameterizedType p = (ParameterizedType) t;
+                	Type actualTypes[] = p.getActualTypeArguments();
+                	if(actualTypes.length==1) {
+                		Type type = actualTypes[0];
+                        Class<?> rawType;
+                        if (type instanceof Class) {
+                            rawType = (Class<?>) type;
+                        }else if (type instanceof ParameterizedType) {
+                        	ParameterizedType ptype = (ParameterizedType)type;
+                            rawType = (Class<?>)ptype.getRawType();
+                        } else {
+                        	return null;
+                        }
+                        if(rawType==Integer.class) {
                     		rawType = int.class;
                     		type = int.class;
                     	}else if(rawType==Short.class) {
@@ -166,10 +211,10 @@ class AbstractMetaObjectTools {
                     		rawType = char.class;
                     		type = char.class;
                     	}
-                    }
-                    return new MetaObjectTools.QPropertyTypeInfo(rawType, type, actualType, isPointer, isReference, field.getType()==QObject.QProperty.class);
+                        return new MetaObjectTools.QPropertyTypeInfo(rawType, type, null, false, false, field.getType()==QObject.QProperty.class);
+                	}
             	}
-        	}
+    		}
     	}
     	return null;
     }
@@ -187,7 +232,7 @@ class AbstractMetaObjectTools {
     private final static Map<Class<?>, List<PropertyInfo>> propertyFieldsByClasses = Collections.synchronizedMap(new HashMap<>());
     
     static QtJambiPropertyInfo analyzeProperty(QObject containingObject, QtObject property) {
-		List<PropertyInfo> propertyFields = propertyFieldsByClasses.computeIfAbsent(containingObject.getClass(), cls->{
+		List<PropertyInfo> propertyFields = propertyFieldsByClasses.computeIfAbsent(QtJambiInternal.getClass(containingObject), cls->{
 			List<PropertyInfo> fields = Collections.emptyList();
 			while (QObject.class.isAssignableFrom(cls)) {
 				QMetaObject metaObject = QMetaObject.forType(cls);
@@ -220,8 +265,7 @@ class AbstractMetaObjectTools {
 		QList<QMetaProperty> remainingProperties = containingObject.metaObject().properties();
 		for (PropertyInfo info : propertyFields) {
 			try {
-				MethodHandle fieldGetter = QtJambiInternal.getFieldGetterHandle(info.field);
-				if(fieldGetter.invoke(containingObject)==property) {
+				if(QtJambiInternal.fetchField(containingObject, info.field)==property) {
 					if(info.propertyIndex>=0) {
 						QMetaProperty metaProperty = containingObject.metaObject().properties().at(info.propertyIndex);
 						remainingProperties.removeOne(metaProperty);

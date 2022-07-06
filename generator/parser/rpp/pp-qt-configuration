@@ -7,6 +7,8 @@
 #define QTMETAMACROS_H
 #define QFLAGS_H
 #define decltype(A) DECL_TYPE
+#define QT6_ONLY(...)
+#define QT7_ONLY(...)
 
 // not yet supported
 #define Q_COMPILER_DELETE_MEMBERS

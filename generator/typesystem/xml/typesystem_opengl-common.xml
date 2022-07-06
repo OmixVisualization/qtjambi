@@ -44,6 +44,10 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtOpenGL" description="Classes that make it easy to use OpenGL in Qt applications."> 
+    <required-library name="libGLESv2" mode="optional"/>
+    <required-library name="libEGL" mode="optional"/>
+    <required-library name="opengl32sw" mode="optional"/>
+    <required-library name="d3dcompiler_47" mode="optional"/>
     <rejection class="QOpenGLFunctions_*Backend"/>
     <rejection class="PFNGL*"/>
     <rejection class="GLDEBUGPROCAMD"/>
@@ -267,7 +271,14 @@
     <object-type name="QOpenGLVertexArrayObject">
     </object-type>
 
-    <object-type name="QOpenGLVertexArrayObject::Binder">
+    <object-type name="QOpenGLVertexArrayObject::Binder" implements="AutoCloseable">
+		<inject-code class="java">
+		@Override
+		@io.qt.QtUninvokable
+		public final void close(){
+			dispose();
+		}
+		</inject-code>
     </object-type>
     <enum-type name="QOpenGLTextureBlitter::Origin" since="5.8.0"/>
     <object-type name="QOpenGLTextureBlitter" since="5.8.0">

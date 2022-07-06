@@ -43,38 +43,104 @@ import io.qt.core.QDebug;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
 import io.qt.core.QVariant;
 import io.qt.gui.QColor;
 import io.qt.gui.QWindow;
 
 public class TestMetaType extends ApplicationInitializer {
-    @Test
+    @SuppressWarnings("serial")
+	@Test
     public void testRegisterStreams() {
-    	QMetaType.registerDataStreamOperators((QDataStream s, MetaValue value)->{
-    		s.writeInt(value.i);
-    		s.writeDouble(value.d);
-    		s.writeString(value.s);
-    	}, s->{
-    		MetaValue value = new MetaValue();
-    		value.i = s.readInt();
-    		value.d = s.readDouble();
-    		value.s = s.readString();
-    		return value;
-    	});
     	try {
-			QMetaType.registerDataStreamOperators((QDataStream s, MetaValue value)->{}, s->null);
-			fail("RuntimeException expected to be thrown.");
-		} catch (RuntimeException e) {
+			QMetaType.registerDataStreamOperators((QDataStream s, MetaValue value)->{
+				s.writeInt(value.i);
+				s.writeDouble(value.d);
+				s.writeString(value.s);
+			}, s->{
+				MetaValue value = new MetaValue();
+				value.i = s.readInt();
+				value.d = s.readDouble();
+				value.s = s.readString();
+				return value;
+			});
+			try {
+				QMetaType.registerDataStreamOperators((QDataStream s, MetaValue value)->{}, s->null);
+				fail("RuntimeException expected to be thrown.");
+			} catch (RuntimeException e) {
+			}
+		} catch (IllegalArgumentException e1) {
+			if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+				QMetaType.registerDataStreamOperators(new QMetaType.DataStreamInFn<MetaValue>(){
+					@Override
+					public void accept(QDataStream s, MetaValue value) {
+						s.writeInt(value.i);
+						s.writeDouble(value.d);
+						s.writeString(value.s);
+					}
+				},
+				new QMetaType.DataStreamOutFn<MetaValue>(){
+					@Override
+					public MetaValue apply(QDataStream s) {
+						MetaValue value = new MetaValue();
+						value.i = s.readInt();
+						value.d = s.readDouble();
+						value.s = s.readString();
+						return value;
+					}
+				});
+			}else {
+				throw e1;
+			}
 		}
-    	QMetaType.registerDebugStreamOperator((QDebug d, MetaValue value)->{
-    		d.append("MetaValue [i=" + value.i + ", d=" + value.d + ", s=" + value.s + "]");
-    	});
+		QMetaType.registerDataStreamOperators(new QMetaType.DataStreamInFn<MetaValue2>(){
+													@Override
+													public void accept(QDataStream s, MetaValue2 value) {
+														s.writeInt(value.i);
+														s.writeDouble(value.d);
+														s.writeString(value.s);
+														s.writeFloat(value.f);
+													}
+												},
+												new QMetaType.DataStreamOutFn<MetaValue2>(){
+													@Override
+													public MetaValue2 apply(QDataStream s) {
+														MetaValue2 value = new MetaValue2();
+														value.i = s.readInt();
+														value.d = s.readDouble();
+														value.s = s.readString();
+														value.f = s.readFloat();
+														return value;
+													}
+												});
     	try {
-			QMetaType.registerDebugStreamOperator((QDebug s, MetaValue value)->{});
-			fail("RuntimeException expected to be thrown.");
-		} catch (RuntimeException e) {
+	    	QMetaType.registerDebugStreamOperator((QDebug d, MetaValue value)->{
+	    		d.append("MetaValue [i=" + value.i + ", d=" + value.d + ", s=" + value.s + "]");
+	    	});
+	    	try {
+				QMetaType.registerDebugStreamOperator((QDebug s, MetaValue value)->{});
+				fail("RuntimeException expected to be thrown.");
+			} catch (RuntimeException e) {
+			}
+		} catch (IllegalArgumentException e1) {
+			if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+				QMetaType.registerDebugStreamOperator(new QMetaType.DebugStreamFn<MetaValue>(){
+					@Override
+					public void accept(QDebug d, MetaValue value) {
+						d.append("MetaValue [i=" + value.i + ", d=" + value.d + ", s=" + value.s + "]");
+					}
+				});
+			}else {
+				throw e1;
+			}
 		}
+    	QMetaType.registerDebugStreamOperator(new QMetaType.DebugStreamFn<MetaValue2>(){
+			@Override
+			public void accept(QDebug d, MetaValue2 value) {
+				d.append("MetaValue2 [i=" + value.i + ", d=" + value.d + ", s=" + value.s + ", f=" + value.f + "]");
+			}
+		});
     	QMetaType.registerMetaType(SerializableMetaValue.class);
     	MetaValue mvalue = new MetaValue();
     	mvalue.i = 5;
@@ -166,6 +232,13 @@ class MetaValue{
 	int i;
 	double d;
 	String s;
+}
+
+class MetaValue2{
+	int i;
+	double d;
+	String s;
+	float f;
 }
 
 class SerializableMetaValue implements Serializable{

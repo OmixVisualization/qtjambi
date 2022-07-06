@@ -607,6 +607,19 @@ QVariant Variants::getSpinBox(){
 #endif
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QMetaType Variants::propertyType(const QObject* object, const QString& propertyName){
+    QVariant variant = object->property(qPrintable(propertyName));
+    return variant.metaType();
+    return QMetaType(variant.userType());
+}
+#else
+int Variants::propertyType(const QObject* object, const QString& propertyName){
+    QVariant variant = object->property(qPrintable(propertyName));
+    return variant.userType();
+}
+#endif
+
 QColor Variants::fetchColorProperty(const QObject* object, const QString& propertyName){
     QVariant variant = object->property(qPrintable(propertyName));
     return variant.value<QColor>();

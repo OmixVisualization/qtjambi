@@ -28,6 +28,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,8 +76,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -87,8 +87,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -110,8 +109,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -122,8 +120,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -145,8 +142,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -157,8 +153,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -180,8 +175,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -192,8 +186,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -215,8 +208,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -227,8 +219,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -250,8 +241,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -262,8 +252,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -285,8 +274,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -297,8 +285,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -320,8 +307,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -332,8 +318,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -355,8 +340,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -367,8 +351,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -390,8 +373,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -402,8 +384,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -425,8 +406,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -437,8 +417,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -460,8 +439,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -472,8 +450,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -498,8 +475,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -510,8 +486,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -536,8 +511,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -548,8 +522,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -574,8 +547,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -586,8 +558,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -609,8 +580,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -621,8 +591,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -644,8 +613,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -656,8 +624,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -679,8 +646,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -691,8 +657,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -714,8 +679,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -726,8 +690,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -749,8 +712,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -761,8 +723,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -784,8 +745,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -796,8 +756,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -822,8 +781,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -834,8 +792,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -860,8 +817,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -872,8 +828,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -898,8 +853,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -910,8 +864,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 20 && counter.get()<200; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -933,8 +886,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -945,8 +897,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -968,8 +919,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -980,8 +930,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1015,8 +964,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(i+1, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1027,8 +975,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1062,8 +1009,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(i, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1074,8 +1020,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1107,8 +1052,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(i+1, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1119,8 +1063,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1152,8 +1095,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(i, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1164,8 +1106,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1187,8 +1128,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1199,8 +1139,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1222,8 +1161,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1234,8 +1172,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1257,8 +1194,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1269,8 +1205,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1292,8 +1227,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1304,8 +1238,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1327,8 +1260,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1339,8 +1271,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1362,8 +1293,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1374,8 +1304,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1397,8 +1326,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1409,8 +1337,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1432,8 +1359,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1444,8 +1370,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1467,8 +1392,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1479,8 +1403,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1502,8 +1425,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1514,8 +1436,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1538,8 +1459,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1550,8 +1470,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1574,8 +1493,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1586,8 +1504,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(50);
@@ -1610,8 +1527,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -1622,8 +1538,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1646,8 +1561,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(50);
@@ -1659,8 +1573,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -1698,8 +1611,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(0, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
@@ -1711,8 +1623,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1749,8 +1660,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(0, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
@@ -1762,8 +1672,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1800,8 +1709,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(0, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
@@ -1813,8 +1721,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1830,6 +1737,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
     	AtomicInteger counter = new AtomicInteger();
     	TreeMap<Integer,Double> calls = new TreeMap<>();
     	{
+    		List<QEasingCurve.EasingFunction> f = new ArrayList<>();
 	    	QHash<String,QList<QEasingCurve.EasingFunction>> container = new QHash<>(String.class, QMetaType.fromType(QList.class, QMetaType.fromType(QEasingCurve.EasingFunction.class)));
 	    	Assert.assertTrue(container!=null);
 	    	for(int i=0; i<100; ++i) {
@@ -1838,21 +1746,21 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 					calls.put(_i, progress);
 					return 0;
 	    		};
+	    		f.add(object);
 	    		container.put(""+i, QList.of(object));
 	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
 	    	for(QList<QEasingCurve.EasingFunction> list : container.values()) {
-		    	Tulip.testEasingFunctions(list);
+    			Tulip.testEasingFunctions(list);
 	    	}
 	        Assert.assertEquals(100, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
 	        	Assert.assertEquals(0, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
@@ -1864,8 +1772,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -1902,8 +1809,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        	Assert.assertEquals(0, calls.get(i).intValue());
 			}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
@@ -1915,8 +1821,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
@@ -2050,8 +1955,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(50);
@@ -2063,8 +1967,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -2087,8 +1990,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -2100,8 +2002,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        Assert.assertTrue(Variants.compare(variantHolder, "dynamicVariant", container));
 	        container = null;
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -2112,8 +2013,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        variantHolder = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<100; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }
@@ -2132,8 +2032,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
     		QtUtilities.getSignalOnDispose(container.first).connect(counter::incrementAndGet);
     		QtUtilities.getSignalOnDispose(container.second).connect(counter::incrementAndGet);
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -2145,8 +2044,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        Assert.assertTrue(Variants.compare(variantHolder, "dynamicVariant", container));
 	        container = null;
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
 	            	Thread.sleep(25);
 	            }
@@ -2157,8 +2055,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        variantHolder = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<2; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
             	Thread.sleep(25);
             }

@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS =   qtjambi qtjambi_core qtjambi_plugin
+SUBDIRS =  qtjambi/fp qtjambi qtjambi_core qtjambi_plugin
 
 contains(QT_CONFIG, qtjambi-gui):                 SUBDIRS += qtjambi_gui
 contains(QT_CONFIG, qtjambi-widgets):             SUBDIRS += qtjambi_widgets
@@ -66,7 +66,7 @@ contains(QT_CONFIG, qtjambi-pdfwidgets):          SUBDIRS += qtjambi_pdfwidgets
 
 SUBDIRS += qtjambi_qt3d
 
-SUBDIRS += qtjambi_launcher
+!android:SUBDIRS += qtjambi_launcher
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     # Qt was configued with both debug and release libs

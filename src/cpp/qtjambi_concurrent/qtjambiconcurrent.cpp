@@ -42,6 +42,7 @@
 **
 ****************************************************************************/
 
+#define QFUTURE_TEST
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include "qtjambiconcurrent_p.h"
@@ -62,6 +63,13 @@ public:
     {
     }
 
+    Functor(Functor &&other) : m_functor(std::move(other.m_functor))
+    {
+    }
+
+    Functor& operator=(const Functor &other) = delete;
+    Functor& operator=(Functor &&other) = delete;
+
     virtual ~Functor()
     {
     }
@@ -76,6 +84,7 @@ class MapFunctor: public Functor {
 public:
     MapFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
     MapFunctor(const MapFunctor &other) : Functor(other) {}
+    MapFunctor(MapFunctor &&other) : Functor(std::move(other)) {}
 
     void operator ()(const QVariant &wrapper)
     {
@@ -102,7 +111,8 @@ public:
     typedef QVariant result_type;
 
     MappedFunctor(JNIEnv *env, jobject javaMappedFunctor) : Functor(env, javaMappedFunctor) {}
-    MappedFunctor(const MapFunctor &other) : Functor(other) {}
+    MappedFunctor(const MappedFunctor &other) : Functor(other) {}
+    MappedFunctor(MappedFunctor &&other) : Functor(std::move(other)) {}
 
     QVariant operator ()(const QVariant &wrapper)
     {
@@ -130,6 +140,7 @@ class ReducedFunctor: public Functor {
 public:
     ReducedFunctor(JNIEnv *env, jobject javaReducedFunctor) : Functor(env, javaReducedFunctor), m_first_call(true) {}
     ReducedFunctor(const ReducedFunctor &other) : Functor(other), m_first_call(other.m_first_call) {}
+    ReducedFunctor(ReducedFunctor &&other) : Functor(std::move(other)), m_first_call(other.m_first_call) {}
 
     void operator()(QVariant &result, const QVariant &wrapper)
     {
@@ -170,6 +181,7 @@ class FilteredFunctor: public Functor {
 public:
     FilteredFunctor(JNIEnv *env, jobject javaFilteredFunctor) : Functor(env, javaFilteredFunctor) {}
     FilteredFunctor(const FilteredFunctor &other) : Functor(other) {}
+    FilteredFunctor(FilteredFunctor &&other) : Functor(std::move(other)) {}
 
     bool operator()(const QVariant &wrapper) {
         if (JNIEnv *env = qtjambi_current_environment()) {
@@ -329,18 +341,34 @@ struct RunFunctorInvoker<9,PromisePolicy::TypedPromise> : Java::QtConcurrent::Qt
 
 template<typename ...Args>
 struct RunFunctorInvocationDecider : RunFunctorInvoker<sizeof...(Args),PromisePolicy::NoPromise>{
-    static void handleException(JNIEnv *env, const JavaException& exn){exn.report(env);}
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static void handleException(QSharedPointer<QFutureInterfaceBase>& future, std::exception_ptr exception, Args...){
+        while(!future->isValid())
+            QThread::msleep(50);
+        future->reportException(exception);
+    }
+#endif
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<typename ...Args>
 struct RunFunctorInvocationDecider<QPromise<void>&, Args...> : RunFunctorInvoker<sizeof...(Args),PromisePolicy::VoidPromise>{
-    static void handleException(JNIEnv *, const JavaException& exn){exn.raise();}
+#ifdef Q_OS_ANDROID
+    static void handleException(QSharedPointer<QFutureInterfaceBase>&, std::exception_ptr exception, QPromise<void>& promise, Args...){
+        QFutureInterfaceBase& future = reinterpret_cast<QFutureInterfaceBase&>(promise);
+        future.reportException(exception);
+    }
+#endif
 };
 
 template<typename T, typename ...Args>
 struct RunFunctorInvocationDecider<QPromise<T>&, Args...> : RunFunctorInvoker<sizeof...(Args),PromisePolicy::TypedPromise>{
-    static void handleException(JNIEnv *, const JavaException& exn){exn.raise();}
+#ifdef Q_OS_ANDROID
+    static void handleException(QSharedPointer<QFutureInterfaceBase>&, std::exception_ptr exception, QPromise<T>& promise, Args...){
+        QFutureInterfaceBase& future = reinterpret_cast<QFutureInterfaceBase&>(promise);
+        future.reportException(exception);
+    }
+#endif
 };
 #endif
 
@@ -348,8 +376,11 @@ template<typename ...Args>
 class RunFunctor: public Functor {
 public:
     typedef void result_type;
-    RunFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
-    RunFunctor(const MapFunctor &other) : Functor(other) {}
+    RunFunctor(JNIEnv *env, jobject javaMapFunctor, const QSharedPointer<QFutureInterfaceBase>& futurePointer)
+        : Functor(env, javaMapFunctor),
+          future(futurePointer) {}
+    RunFunctor(const RunFunctor &other) : Functor(other), future(other.future) {}
+    RunFunctor(RunFunctor &&other) : Functor(std::move(other)), future(std::move(other.future)) {}
 
     void operator ()(Args... args)
     {
@@ -357,17 +388,25 @@ public:
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
                 QtJambiScope scope;
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 try {
+#endif
                     RunFunctorInvocationDecider<Args...>::run(env, functor, qtjambi_cast<jobject>(env, scope, args)...);
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 } catch (const JavaException& exn) {
-                    RunFunctorInvocationDecider<Args...>::handleException(env, exn);
+                    RunFunctorInvocationDecider<Args...>::handleException(future, std::make_exception_ptr(QUnhandledException(std::make_exception_ptr(exn))), args...);
+                } catch (...) {
+                    RunFunctorInvocationDecider<Args...>::handleException(future, std::current_exception(), args...);
                 }
+#endif
             } else {
                 qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
                          env, m_functor.object());
             }
         }
     }
+private:
+    QSharedPointer<QFutureInterfaceBase> future;
 };
 
 template<int i>
@@ -423,8 +462,12 @@ template<typename ...Args>
 class CallableFunctor: public Functor {
 public:
     typedef QVariant result_type;
-    CallableFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
-    CallableFunctor(const MapFunctor &other) : Functor(other) {}
+    CallableFunctor(JNIEnv *env, jobject javaMapFunctor, const QSharedPointer<QFutureInterfaceBase>& futurePointer)
+        : Functor(env, javaMapFunctor),
+          future(futurePointer) {
+    }
+    CallableFunctor(const CallableFunctor &other) : Functor(other), future(other.future) {}
+    CallableFunctor(CallableFunctor &&other) : Functor(std::move(other)), future(std::move(other.future)) {}
 
     QVariant operator ()(Args... args)
     {
@@ -433,11 +476,17 @@ public:
             if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
                 jobject javaResult = nullptr;
                 QtJambiScope scope;
-                try{
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                try {
+#endif
                     javaResult = CallableFunctorInvoker<sizeof...(Args)>::call(env, functor, qtjambi_cast<jobject>(env, scope, args)...);
-                }catch(const JavaException& exn){
-                    exn.report(env);
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                } catch (const JavaException& exn) {
+                    RunFunctorInvocationDecider<Args...>::handleException(future, std::make_exception_ptr(QUnhandledException(std::make_exception_ptr(exn))), args...);
+                } catch (...) {
+                    RunFunctorInvocationDecider<Args...>::handleException(future, std::current_exception(), args...);
                 }
+#endif
                 return javaResult ? QVariant::fromValue(JObjectWrapper(env, javaResult)) : QVariant();
             } else {
                 qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
@@ -446,6 +495,8 @@ public:
         }
         return QVariant();
     }
+private:
+    QSharedPointer<QFutureInterfaceBase> future;
 };
 
 struct JavaSequence{
@@ -627,15 +678,15 @@ const QVariant &JavaSequence::const_iterator::operator*() const{
             if(JNIEnv *env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 jobject result = nullptr;
-                try{
+                QTJAMBI_TRY{
                     result = qtjambi_list_get(env, _object, m_cursor);
-                }catch(const JavaException&){
+                }QTJAMBI_CATCH(const JavaException&){
                     jobject iterator = qtjambi_collection_iterator(env, _object);
                     for(int i=0; i<m_cursor; ++i){
                         qtjambi_iterator_next(env, iterator);
                     }
                     result = qtjambi_iterator_next(env, iterator);
-                }
+                }QTJAMBI_TRY_END
                 m_current = QVariant::fromValue(JObjectWrapper(env, result));
             }else{
                 m_current = QVariant();
@@ -722,15 +773,20 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaMapFunctor)
 {
-    THREADPOOL(_threadPool)
-    FutureWatcher<void>* watcher = new FutureWatcher<void>(env, javaSequence, true);
+    try{
+        THREADPOOL(_threadPool)
+        FutureWatcher<void>* watcher = new FutureWatcher<void>(env, javaSequence, true);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        watcher->setFuture(QtConcurrent::map(threadPool, watcher->sequence, MapFunctor(env, javaMapFunctor)));
-    else
+        if(threadPool)
+            watcher->setFuture(QtConcurrent::map(threadPool, watcher->sequence, MapFunctor(env, javaMapFunctor)));
+        else
 #endif
-        watcher->setFuture(QtConcurrent::map(watcher->sequence, MapFunctor(env, javaMapFunctor)));
-    return qtjambi_cast<jobject>(env, watcher->future());
+            watcher->setFuture(QtConcurrent::map(watcher->sequence, MapFunctor(env, javaMapFunctor)));
+        return qtjambi_cast<jobject>(env, watcher->future());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1blockingMap)
@@ -740,14 +796,18 @@ extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_
  jobject javaSequence,
  jobject javaMapFunctor)
 {
-    THREADPOOL(_threadPool)
-    JavaSequence sequence(env, javaSequence);
+    try{
+        THREADPOOL(_threadPool)
+        JavaSequence sequence(env, javaSequence);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        QtConcurrent::blockingMap(threadPool, sequence, MapFunctor(env, javaMapFunctor));
-    else
+        if(threadPool)
+            QtConcurrent::blockingMap(threadPool, sequence, MapFunctor(env, javaMapFunctor));
+        else
 #endif
-        QtConcurrent::blockingMap(sequence, MapFunctor(env, javaMapFunctor));
+            QtConcurrent::blockingMap(sequence, MapFunctor(env, javaMapFunctor));
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1mapped)
@@ -757,15 +817,20 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaMappedFunctor)
 {
-    THREADPOOL(_threadPool)
-    FutureWatcher<QVariant>* watcher = new FutureWatcher<QVariant>(env, javaSequence, false);
+    try{
+        THREADPOOL(_threadPool)
+        FutureWatcher<QVariant>* watcher = new FutureWatcher<QVariant>(env, javaSequence, false);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        watcher->setFuture(QtConcurrent::mapped(threadPool, watcher->sequence, MappedFunctor(env, javaMappedFunctor)));
-    else
+        if(threadPool)
+            watcher->setFuture(QtConcurrent::mapped(threadPool, watcher->sequence, MappedFunctor(env, javaMappedFunctor)));
+        else
 #endif
-        watcher->setFuture(QtConcurrent::mapped(watcher->sequence, MappedFunctor(env, javaMappedFunctor)));
-    return qtjambi_cast<jobject>(env, watcher->future());
+            watcher->setFuture(QtConcurrent::mapped(watcher->sequence, MappedFunctor(env, javaMappedFunctor)));
+        return qtjambi_cast<jobject>(env, watcher->future());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 
@@ -776,14 +841,19 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaMappedFunctor)
 {
-    THREADPOOL(_threadPool)
-    JavaSequence sequence(env, javaSequence);
-    JavaSequence result =
+    try{
+        THREADPOOL(_threadPool)
+        JavaSequence sequence(env, javaSequence);
+        JavaSequence result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            threadPool ? QtConcurrent::blockingMapped<JavaSequence>(threadPool, sequence, MappedFunctor(env, javaMappedFunctor)) :
+                threadPool ? QtConcurrent::blockingMapped<JavaSequence>(threadPool, sequence, MappedFunctor(env, javaMappedFunctor)) :
 #endif
-                         QtConcurrent::blockingMapped<JavaSequence>(sequence, MappedFunctor(env, javaMappedFunctor));
-    return env->NewLocalRef(result.object());
+                             QtConcurrent::blockingMapped<JavaSequence>(sequence, MappedFunctor(env, javaMappedFunctor));
+        return env->NewLocalRef(result.object());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1blockingMappedReduced)
@@ -795,22 +865,27 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaReducedFunctor,
  jint options)
 {
-    THREADPOOL(_threadPool)
-    QVariant result =
+    try{
+        THREADPOOL(_threadPool)
+        QVariant result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            threadPool ? QtConcurrent::blockingMappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
-                                                threadPool,
-                                                JavaSequence(env, javaSequence),
-                                                MappedFunctor(env, javaMappedFunctor),
-                                                ReducedFunctor(env, javaReducedFunctor),
-                                                QtConcurrent::ReduceOptions(options)) :
+                threadPool ? QtConcurrent::blockingMappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
+                                                    threadPool,
+                                                    JavaSequence(env, javaSequence),
+                                                    MappedFunctor(env, javaMappedFunctor),
+                                                    ReducedFunctor(env, javaReducedFunctor),
+                                                    QtConcurrent::ReduceOptions(options)) :
 #endif
-                                         QtConcurrent::blockingMappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
-                                                JavaSequence(env, javaSequence),
-                                                MappedFunctor(env, javaMappedFunctor),
-                                                ReducedFunctor(env, javaReducedFunctor),
-                                                QtConcurrent::ReduceOptions(options));
-    return qtjambi_cast<jobject>(env, result);
+                                             QtConcurrent::blockingMappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
+                                                    JavaSequence(env, javaSequence),
+                                                    MappedFunctor(env, javaMappedFunctor),
+                                                    ReducedFunctor(env, javaReducedFunctor),
+                                                    QtConcurrent::ReduceOptions(options));
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1mappedReduced)
@@ -822,22 +897,27 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaReducedFunctor,
  jint options)
 {
-    THREADPOOL(_threadPool)
-    QFuture<QVariant> result =
+    try{
+        THREADPOOL(_threadPool)
+        QFuture<QVariant> result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            threadPool ? QtConcurrent::mappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
-                                                        threadPool,
-                                                        JavaSequence(env, javaSequence),
-                                                        MappedFunctor(env, javaMappedFunctor),
-                                                        ReducedFunctor(env, javaReducedFunctor),
-                                                        QtConcurrent::ReduceOptions(options)) :
+                threadPool ? QtConcurrent::mappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
+                                                            threadPool,
+                                                            JavaSequence(env, javaSequence),
+                                                            MappedFunctor(env, javaMappedFunctor),
+                                                            ReducedFunctor(env, javaReducedFunctor),
+                                                            QtConcurrent::ReduceOptions(options)) :
 #endif
-                                                  QtConcurrent::mappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
-                                                      JavaSequence(env, javaSequence),
-                                                      MappedFunctor(env, javaMappedFunctor),
-                                                      ReducedFunctor(env, javaReducedFunctor),
-                                                      QtConcurrent::ReduceOptions(options));
-    return qtjambi_cast<jobject>(env, result);
+                                                      QtConcurrent::mappedReduced<QVariant, JavaSequence, MappedFunctor, ReducedFunctor>(
+                                                          JavaSequence(env, javaSequence),
+                                                          MappedFunctor(env, javaMappedFunctor),
+                                                          ReducedFunctor(env, javaReducedFunctor),
+                                                          QtConcurrent::ReduceOptions(options));
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1filter)
@@ -847,15 +927,20 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    THREADPOOL(_threadPool)
-    FutureWatcher<void>* watcher = new FutureWatcher<void>(env, javaSequence);
+    try{
+        THREADPOOL(_threadPool)
+        FutureWatcher<void>* watcher = new FutureWatcher<void>(env, javaSequence);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        watcher->setFuture(QtConcurrent::filter(threadPool, watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
-    else
+        if(threadPool)
+            watcher->setFuture(QtConcurrent::filter(threadPool, watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
+        else
 #endif
-    watcher->setFuture(QtConcurrent::filter(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
-    return qtjambi_cast<jobject>(env, watcher->future());
+        watcher->setFuture(QtConcurrent::filter(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
+        return qtjambi_cast<jobject>(env, watcher->future());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1filtered)
@@ -865,15 +950,20 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    THREADPOOL(_threadPool)
-    FutureWatcher<QVariant>* watcher = new FutureWatcher<QVariant>(env, javaSequence, false);
+    try{
+        THREADPOOL(_threadPool)
+        FutureWatcher<QVariant>* watcher = new FutureWatcher<QVariant>(env, javaSequence, false);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        watcher->setFuture(QtConcurrent::filtered(threadPool, watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
-    else
+        if(threadPool)
+            watcher->setFuture(QtConcurrent::filtered(threadPool, watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
+        else
 #endif
-        watcher->setFuture(QtConcurrent::filtered(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
-    return qtjambi_cast<jobject>(env, watcher->future());
+            watcher->setFuture(QtConcurrent::filtered(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
+        return qtjambi_cast<jobject>(env, watcher->future());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1blockingFiltered)
@@ -883,13 +973,18 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    THREADPOOL(_threadPool)
-    JavaSequence result =
+    try{
+        THREADPOOL(_threadPool)
+        JavaSequence result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            threadPool ? QtConcurrent::blockingFiltered(threadPool, JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor)) :
+                threadPool ? QtConcurrent::blockingFiltered(threadPool, JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor)) :
 #endif
-                         QtConcurrent::blockingFiltered(JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor));
-    return env->NewLocalRef(result.object());
+                             QtConcurrent::blockingFiltered(JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor));
+        return env->NewLocalRef(result.object());
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1blockingFilter)
@@ -899,15 +994,18 @@ extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    THREADPOOL(_threadPool)
-    JavaSequence sequence(env, javaSequence, true);
+    try{
+        THREADPOOL(_threadPool)
+        JavaSequence sequence(env, javaSequence, true);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    if(threadPool)
-        QtConcurrent::blockingFilter(threadPool, sequence, FilteredFunctor(env, javaFilteredFunctor));
-    else
+        if(threadPool)
+            QtConcurrent::blockingFilter(threadPool, sequence, FilteredFunctor(env, javaFilteredFunctor));
+        else
 #endif
-        QtConcurrent::blockingFilter(sequence, FilteredFunctor(env, javaFilteredFunctor));
-
+            QtConcurrent::blockingFilter(sequence, FilteredFunctor(env, javaFilteredFunctor));
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1filteredReduced)
@@ -919,22 +1017,27 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaReducedFunctor,
  jint options)
 {
-    THREADPOOL(_threadPool)
-    QFuture<QVariant> result =
+    try{
+        THREADPOOL(_threadPool)
+        QFuture<QVariant> result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            threadPool ? QtConcurrent::filteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
-                                                        threadPool,
-                                                        JavaSequence(env, javaSequence),
-                                                        FilteredFunctor(env, javaFilteredFunctor),
-                                                        ReducedFunctor(env, javaReducedFunctor),
-                                                        QtConcurrent::ReduceOptions(options)) :
+                threadPool ? QtConcurrent::filteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
+                                                            threadPool,
+                                                            JavaSequence(env, javaSequence),
+                                                            FilteredFunctor(env, javaFilteredFunctor),
+                                                            ReducedFunctor(env, javaReducedFunctor),
+                                                            QtConcurrent::ReduceOptions(options)) :
 #endif
-            QtConcurrent::filteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
-                                                        JavaSequence(env, javaSequence),
-                                                        FilteredFunctor(env, javaFilteredFunctor),
-                                                        ReducedFunctor(env, javaReducedFunctor),
-                                                        QtConcurrent::ReduceOptions(options));
-    return qtjambi_cast<jobject>(env, result);
+                QtConcurrent::filteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
+                                                            JavaSequence(env, javaSequence),
+                                                            FilteredFunctor(env, javaFilteredFunctor),
+                                                            ReducedFunctor(env, javaReducedFunctor),
+                                                            QtConcurrent::ReduceOptions(options));
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent__1blockingFilteredReduced)
@@ -946,300 +1049,417 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
  jobject javaReducedFunctor,
  jint options)
 {
-    THREADPOOL(_threadPool)
-    QVariant result =
+    try{
+        THREADPOOL(_threadPool)
+        QVariant result =
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                    threadPool ? QtConcurrent::blockingFilteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
-                                                threadPool,
-                                                JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor),
-                                                ReducedFunctor(env, javaReducedFunctor),
-                                                QtConcurrent::ReduceOptions(options)) :
+                        threadPool ? QtConcurrent::blockingFilteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
+                                                    threadPool,
+                                                    JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor),
+                                                    ReducedFunctor(env, javaReducedFunctor),
+                                                    QtConcurrent::ReduceOptions(options)) :
 #endif
-        QtConcurrent::blockingFilteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
-                                                JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor),
-                                                ReducedFunctor(env, javaReducedFunctor),
-                                                QtConcurrent::ReduceOptions(options));
-    return qtjambi_cast<jobject>(env, result);
+            QtConcurrent::blockingFilteredReduced<QVariant, JavaSequence, FilteredFunctor, ReducedFunctor>(
+                                                    JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor),
+                                                    ReducedFunctor(env, javaReducedFunctor),
+                                                    QtConcurrent::ReduceOptions(options));
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid0)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool, RunFunctor<>(env, javaRunnable))
-                                      : QtConcurrent::run(RunFunctor<>(env, javaRunnable));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool, RunFunctor<>(env, javaRunnable, futurePointer))
+                                          : QtConcurrent::run(RunFunctor<>(env, javaRunnable, futurePointer));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid1)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)))
-                                      : QtConcurrent::run(RunFunctor<QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)))
+                                          : QtConcurrent::run(RunFunctor<QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid2)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid3)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid4)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid5)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid6)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid7)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid8)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid9)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)))
-                                      : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)))
+                                          : QtConcurrent::run(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 #endif
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run0)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaCallable)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool, CallableFunctor<>(env, javaCallable))
-                                                : QtConcurrent::run(CallableFunctor<>(env, javaCallable));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool, CallableFunctor<>(env, javaCallable, futurePointer))
+                                                    : QtConcurrent::run(CallableFunctor<>(env, javaCallable, futurePointer));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run1)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run2)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run3)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run4)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run5)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -1247,1196 +1467,1684 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run6)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run7)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run8)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run9)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
-                                                          CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)))
-                                      : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)));
-    return qtjambi_cast<jobject>(env, result);
+    try{
+        QThreadPool *threadPool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = threadPool ? QtConcurrent::run(threadPool,
+                                                              CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)))
+                                          : QtConcurrent::run(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid0)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
-    using Fun = RunFunctor<QPromise<void>&>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid1)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
-    using Fun = RunFunctor<QPromise<void>&,QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&,QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer), QVariant::fromValue(JObjectWrapper(env, a)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable), QVariant::fromValue(JObjectWrapper(env, a)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid2)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
-    using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid3)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid4)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid5)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid6)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid7)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid8)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid9)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant,
-                                            QVariant, QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<void>&, QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant,
+                                                QVariant, QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<void> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise0)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise1)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise2)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise3)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise4)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise5)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise6)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise7)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise8)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise9)
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant,
-                                                      QVariant, QVariant, QVariant>;
-    QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
-    if(!pool){
-        pool = QThreadPool::globalInstance();
+    try{
+        using Fun = RunFunctor<QPromise<QVariant>&, QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant,
+                                                          QVariant, QVariant, QVariant>;
+        QThreadPool *pool = qtjambi_to_QObject<QThreadPool>(env, _threadPool);
+        if(!pool){
+            pool = QThreadPool::globalInstance();
+        }
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable, futurePointer),
+                                                              QVariant::fromValue(JObjectWrapper(env, a)),
+                                                              QVariant::fromValue(JObjectWrapper(env, b)),
+                                                              QVariant::fromValue(JObjectWrapper(env, c)),
+                                                              QVariant::fromValue(JObjectWrapper(env, d)),
+                                                              QVariant::fromValue(JObjectWrapper(env, e)),
+                                                              QVariant::fromValue(JObjectWrapper(env, f)),
+                                                              QVariant::fromValue(JObjectWrapper(env, g)),
+                                                              QVariant::fromValue(JObjectWrapper(env, h)),
+                                                              QVariant::fromValue(JObjectWrapper(env, i)));
+        *futurePointer = result.d;
+        return qtjambi_cast<jobject>(env, result);
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
-    QFuture<QVariant> result = QtConcurrent::run(pool, Fun(env, javaRunnable),
-                                                          QVariant::fromValue(JObjectWrapper(env, a)),
-                                                          QVariant::fromValue(JObjectWrapper(env, b)),
-                                                          QVariant::fromValue(JObjectWrapper(env, c)),
-                                                          QVariant::fromValue(JObjectWrapper(env, d)),
-                                                          QVariant::fromValue(JObjectWrapper(env, e)),
-                                                          QVariant::fromValue(JObjectWrapper(env, f)),
-                                                          QVariant::fromValue(JObjectWrapper(env, g)),
-                                                          QVariant::fromValue(JObjectWrapper(env, h)),
-                                                          QVariant::fromValue(JObjectWrapper(env, i)));
-    return qtjambi_cast<jobject>(env, result);
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid0Arg0_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
-    auto task = QtConcurrent::task(RunFunctor<>(env, javaRunnable))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<>(env, javaRunnable, futurePointer))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid1Arg1_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid2Arg2_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid3Arg3_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid4Arg4_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid5Arg5_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid6Arg6_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid7Arg7_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid8Arg8_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid9Arg9_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)),
-                       QVariant::fromValue(JObjectWrapper(env, i)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)),
+                           QVariant::fromValue(JObjectWrapper(env, i)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder0Arg0_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
-    auto task = QtConcurrent::task(CallableFunctor<>(env, javaRunnable))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<>(env, javaRunnable, futurePointer))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder1Arg1_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder2Arg2_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder3Arg3_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder4Arg4_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder5Arg5_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder6Arg6_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder7Arg7_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder8Arg8_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder9Arg9_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)),
-                       QVariant::fromValue(JObjectWrapper(env, i)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(CallableFunctor<QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)),
+                           QVariant::fromValue(JObjectWrapper(env, i)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid0Arg0_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&>(env, javaRunnable))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&>(env, javaRunnable, futurePointer))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid1Arg1_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid2Arg2_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid3Arg3_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid4Arg4_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid5Arg5_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid6Arg6_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid7Arg7_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid8Arg8_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid9Arg9_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)),
-                       QVariant::fromValue(JObjectWrapper(env, i)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<void> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<void> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<void>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)),
+                           QVariant::fromValue(JObjectWrapper(env, i)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<void> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<void> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder0Arg0_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&>(env, javaRunnable))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&>(env, javaRunnable, futurePointer))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder1Arg1_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder2Arg2_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder3Arg3_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder4Arg4_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder5Arg5_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder6Arg6_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder7Arg7_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder8Arg8_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder9Arg9_spawn)
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
-    auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable))
-            .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
-                       QVariant::fromValue(JObjectWrapper(env, b)),
-                       QVariant::fromValue(JObjectWrapper(env, c)),
-                       QVariant::fromValue(JObjectWrapper(env, d)),
-                       QVariant::fromValue(JObjectWrapper(env, e)),
-                       QVariant::fromValue(JObjectWrapper(env, f)),
-                       QVariant::fromValue(JObjectWrapper(env, g)),
-                       QVariant::fromValue(JObjectWrapper(env, h)),
-                       QVariant::fromValue(JObjectWrapper(env, i)))
-            .withPriority(priority);
-    if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
-        QFuture<QVariant> result = task.onThreadPool(*t).spawn();
-        return qtjambi_cast<jobject>(env, result);
-    }else{
-        QFuture<QVariant> result = task.spawn();
-        return qtjambi_cast<jobject>(env, result);
+    try{
+        QSharedPointer<QFutureInterfaceBase> futurePointer(new QFutureInterfaceBase);
+        auto task = QtConcurrent::task(RunFunctor<QPromise<QVariant>&,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant>(env, javaRunnable, futurePointer))
+                .withArguments(QVariant::fromValue(JObjectWrapper(env, a)),
+                           QVariant::fromValue(JObjectWrapper(env, b)),
+                           QVariant::fromValue(JObjectWrapper(env, c)),
+                           QVariant::fromValue(JObjectWrapper(env, d)),
+                           QVariant::fromValue(JObjectWrapper(env, e)),
+                           QVariant::fromValue(JObjectWrapper(env, f)),
+                           QVariant::fromValue(JObjectWrapper(env, g)),
+                           QVariant::fromValue(JObjectWrapper(env, h)),
+                           QVariant::fromValue(JObjectWrapper(env, i)))
+                .withPriority(priority);
+        if(QThreadPool* t = qtjambi_to_QObject<QThreadPool>(env, _threadPool)){
+            QFuture<QVariant> result = task.onThreadPool(*t).spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }else{
+            QFuture<QVariant> result = task.spawn();
+            *futurePointer = result.d;
+            return qtjambi_cast<jobject>(env, result);
+        }
+    } catch (const JavaException& exn) {
+        exn.raiseInJava(env);
     }
+    return nullptr;
 }
 
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

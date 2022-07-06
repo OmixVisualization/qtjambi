@@ -78,6 +78,7 @@ public class TestPlugin extends ApplicationInitializer {
 	
 	@Test
     public void testGenericPlugin() {
+		Assume.assumeFalse("not android", QOperatingSystemVersion.current().isAnyOfType(OSType.Android));
 		Assume.assumeTrue("QtNetwork unavailable", QtUtilities.initializePackage("io.qt.network"));
 		QFactoryLoader loader = new QFactoryLoader(QGenericPlugin.class, "/generic");
 		QObject plugin = loader.loadPlugin(QGenericPlugin::create, "TuioTouch", "");

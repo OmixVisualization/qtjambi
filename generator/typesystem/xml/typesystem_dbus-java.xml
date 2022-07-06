@@ -11,7 +11,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="io.qt.dbus.QDBusPendingCall" />
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -456,7 +456,7 @@
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jstring %out = qtjambi_cast&lt;jstring>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jstring>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -474,7 +474,7 @@
                 <replace-type modified-type="io.qt.dbus.QDBusVariant"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -492,7 +492,7 @@
                 <replace-type modified-type="io.qt.dbus.QDBusObjectPath"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -510,7 +510,7 @@
                 <replace-type modified-type="io.qt.dbus.QDBusObjectPath"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -528,7 +528,7 @@
                 <replace-type modified-type="io.qt.dbus.QDBusUnixFileDescriptor"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -546,7 +546,7 @@
                 <replace-type modified-type="java.util.List&lt;java.lang.String>"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -564,7 +564,7 @@
                 <replace-type modified-type="io.qt.core.QByteArray"/>
                 <conversion-rule class="native">
                     Q_UNUSED(__qt_return_value)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
+                    %out = qtjambi_cast&lt;jobject>(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
           <modify-argument index="1">
@@ -623,7 +623,7 @@
             <modify-argument index="return">
                     <replace-type modified-type="io.qt.dbus.QDBusPendingCall" />
                     <conversion-rule class="native">
-                        jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                        %out = qtjambi_cast&lt;jobject>(%env, %in);
                     </conversion-rule>
             </modify-argument>
         </modify-function>

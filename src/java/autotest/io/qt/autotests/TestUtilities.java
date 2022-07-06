@@ -48,7 +48,7 @@ public class TestUtilities extends UnitTestInitializer {
         try {
             QtUtilities.loadQtJambiLibrary(lib);
             return true;
-        } catch (QLibraryNotFoundError e) {
+        } catch (UnsatisfiedLinkError | QLibraryNotFoundError e) {
             java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
             return false;
         }

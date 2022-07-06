@@ -1,15 +1,16 @@
-!exists($$(JAVA_HOME_TARGET)) {
-    # Ant/Maven should set this up (this can't be a symlink)
-    exists($$(JAVA_HOME)) {
-        JAVA_HOME_TARGET = $$(JAVA_HOME)
+!android:{
+    !exists($$(JAVA_HOME_TARGET)) {
+        # Ant/Maven should set this up (this can't be a symlink)
+        exists($$(JAVA_HOME)) {
+            JAVA_HOME_TARGET = $$(JAVA_HOME)
+        } else {
+            error("Please set your JAVA_HOME_TARGET or JAVA_HOME environment variable to point to the directory of your Java SDK. Current JAVA_HOME_TARGET: $$(JAVA_HOME_TARGET) JAVA_HOME: $$(JAVA_HOME)")
+        }
     } else {
-        error("Please set your JAVA_HOME_TARGET or JAVA_HOME environment variable to point to the directory of your Java SDK. Current JAVA_HOME_TARGET: $$(JAVA_HOME_TARGET) JAVA_HOME: $$(JAVA_HOME)")
+        # This has the effect of making $$JAVA_HOME_TARGET work in this file as used below
+        JAVA_HOME_TARGET = $$(JAVA_HOME_TARGET)
     }
-} else {
-    # This has the effect of making $$JAVA_HOME_TARGET work in this file as used below
-    JAVA_HOME_TARGET = $$(JAVA_HOME_TARGET)
 }
-
 
 VER_MAJ = $$section(VERSION, ., 0, 0)
 VER_MIN = $$section(VERSION, ., 1, 1)
@@ -51,7 +52,7 @@ macx:{
 	# this option is necessary to properly compile on mountain lion because of std::string to char* casts
 	QMAKE_CXXFLAGS += -fpermissive 
 } else {
-    INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include)
+    !android:INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include)
     win32 {
         INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/win32)
     }
@@ -80,6 +81,13 @@ contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
 win32-msvc* {
     CONFIG += precompile_header
 }
+
+android:CONFIG += rtti
+android:CONFIG += exceptions
+android:QMAKE_CXXFLAGS_EXCEPTIONS_ON += -fexceptions
+android:QMAKE_CXXFLAGS += -fexceptions -frtti
+android:QMAKE_LFLAGS += -Wl,--export-dynamic -Wl,--exclude-libs,libgcc_real.a -Wl,--exclude-libs,libunwind.a -Wl,--exclude-libs,libgcc.a -lunwind
+android:QMAKE_CXXFLAGS += -funwind-tables
 
 macx {
     contains(QT_CONFIG, x86):CONFIG += x86

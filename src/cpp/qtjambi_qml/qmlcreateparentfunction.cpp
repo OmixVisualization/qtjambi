@@ -37,9 +37,7 @@ QObject* createParent(const JObjectWrapper& clazzWrapper, jmethodID constructor,
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         jobject result = env->NewObject(jclass(clazzWrapper.object()), constructor, qtjambi_from_QObject(env, parent));
         qtjambi_throw_java_exception(env);
-        qtjambi_rethrowing(env,
-            return qtjambi_to_qobject(env, result);
-        )
+        return qtjambi_to_qobject(env, result);
     }
     return nullptr;
 }
@@ -49,7 +47,7 @@ CreateParentFunction createParentFunction(JNIEnv * env, jclass clazz, jmethodID 
     hash = 31 * hash + qHash(qint64(constructor));
     hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
     JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<64,QObject*(QObject*)>([clazzWrapper, constructor](QObject* parent) -> QObject* {
+    return qtjambi_function_pointer<16,QObject*(QObject*)>([clazzWrapper, constructor](QObject* parent) -> QObject* {
         return createParent(clazzWrapper, constructor, parent);
     }, hash);
 }

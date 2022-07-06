@@ -72,6 +72,8 @@ public class FindCompiler {
         MSVC2017_64("msvc2017x64"),
         MSVC2019("msvc2019"),
         MSVC2019_64("msvc2019x64"),
+        MSVC2022("msvc2022"),
+        MSVC2022_64("msvc2022x64"),
         MinGW("mingw"),
         MinGW_W64("mingw-w64"),
         OldGCC("gcc3.3"),
@@ -108,6 +110,8 @@ public class FindCompiler {
             if(name.equals("msvc2017x64")) return MSVC2017_64;
             if(name.equals("msvc2019")) return MSVC2019;
             if(name.equals("msvc2019x64")) return MSVC2019_64;
+            if(name.equals("msvc2022")) return MSVC2022;
+            if(name.equals("msvc2022x64")) return MSVC2022_64;
             if(name.equals("mingw")) return MinGW;
             if(name.equals("mingw-w64")) return MinGW_W64;
             if(name.equals("gcc3.3")) return OldGCC;
@@ -185,7 +189,7 @@ public class FindCompiler {
     }
     
     void checkCompilerDetails() {
-        switch(compiler) {
+        if(compiler!=null) switch(compiler) {
         case MSVC2005:
         case MSVC2005_64:
         case MSVC2008:
@@ -575,6 +579,11 @@ public class FindCompiler {
                     if(stderr.contains("x64"))
                         return Compiler.MSVC2019_64;
                     return Compiler.MSVC2019;
+                }
+				if(stderr.contains("19.3")) {
+                    if(stderr.contains("x64"))
+                        return Compiler.MSVC2022_64;
+                    return Compiler.MSVC2022;
                 }
                 throw new BuildException("Failed to detect Visual Studio version\n  \"" + stderr + "\"");
             }

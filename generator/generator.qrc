@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/io/qt/generator">
-        <file>parser/rpp/pp-qt-configuration</file>
+    <qresource prefix="/io/qt/qtjambi/generator">
+        <file alias="pp-qt-configuration">parser/rpp/pp-qt-configuration</file>
     </qresource>
 </RCC>

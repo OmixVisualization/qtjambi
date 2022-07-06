@@ -110,9 +110,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_bicontainer_type<QMultiHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());
     }
-    PtrDeleterFunction containerDeleter() override {
-        return nullptr;
-    }
     bool isConstant() override {return false;}
     const QMetaType& keyMetaType() override {return m_keyMetaTypeInfo.metaType();}
     const QMetaType& valueMetaType() override {return m_valueMetaTypeInfo.metaType();}
@@ -253,18 +250,22 @@ public:
     jobject keys(JNIEnv * env, const void* container) override {
         QTJAMBI_KEY_VALUE_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align1, size1,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_keyMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList,
+                                                     m_keyMetaTypeInfo.metaType(),
+                                                     align1, size1,
+                                                     qtjambi_is_pointer_type(m_keyMetaTypeInfo.metaType()),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                     qtjambi_is_static_type(m_keyMetaTypeInfo.metaType()),
 #endif
-                                                                                       )){
+                                                     m_keyMetaTypeInfo.hashFunction(),
+                                                     m_keyInternalToExternalConverter,
+                                                     m_keyExternalToInternalConverter
+                                                    );
+        if(access){
             const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->keys());
-            result = qtjambi_from_QList(env, keys, factory(m_keyMetaTypeInfo.metaType(),
-                                                           m_keyMetaTypeInfo.hashFunction(),
-                                                           m_keyInternalToExternalConverter,
-                                                           m_keyExternalToInternalConverter));
+            result = qtjambi_from_QList(env, keys, access);
         }
         return result;
     }
@@ -272,13 +273,20 @@ public:
     jobject keys(JNIEnv * env, const void* container, jobject value) override {
         QTJAMBI_KEY_VALUE_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align1, size1,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_keyMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList,
+                                                     m_keyMetaTypeInfo.metaType(),
+                                                     align1, size1,
+                                                     qtjambi_is_pointer_type(m_keyMetaTypeInfo.metaType()),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                     qtjambi_is_static_type(m_keyMetaTypeInfo.metaType()),
 #endif
-                                                                                       )){
+
+                                                     m_keyMetaTypeInfo.hashFunction(),
+                                                     m_keyInternalToExternalConverter,
+                                                     m_keyExternalToInternalConverter);
+        if(access){
             jvalue jv;
             jv.l = value;
             T _qvalue;
@@ -302,10 +310,7 @@ public:
                 }
                 const void* keys = _keys;
 #endif
-                result = qtjambi_from_QList(env, keys, factory(m_keyMetaTypeInfo.metaType(),
-                                                               m_keyMetaTypeInfo.hashFunction(),
-                                                               m_keyInternalToExternalConverter,
-                                                               m_keyExternalToInternalConverter));
+                result = qtjambi_from_QList(env, keys, access);
             }
         }
         return result;
@@ -424,18 +429,22 @@ public:
     jobject values(JNIEnv * env, const void* container) override {
         QTJAMBI_KEY_VALUE_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align2, size2,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_valueMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_valueMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList,
+                                                     m_valueMetaTypeInfo.metaType(),
+                                                     align2, size2,
+                                                     qtjambi_is_pointer_type(m_valueMetaTypeInfo.metaType()),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                     qtjambi_is_static_type(m_valueMetaTypeInfo.metaType()),
 #endif
-                                                                                )){
+                                                     m_valueMetaTypeInfo.hashFunction(),
+                                                     m_valueInternalToExternalConverter,
+                                                     m_valueExternalToInternalConverter
+                                                     );
+        if(access){
             const void* values = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container)->values());
-            result = qtjambi_from_QList(env, values, factory(m_valueMetaTypeInfo.metaType(),
-                                                             m_valueMetaTypeInfo.hashFunction(),
-                                                             m_valueInternalToExternalConverter,
-                                                             m_valueExternalToInternalConverter));
+            result = qtjambi_from_QList(env, values, access);
         }
         return result;
     }
@@ -443,18 +452,22 @@ public:
     jobject uniqueKeys(JNIEnv * env, const void* container) override {
         QTJAMBI_KEY_VALUE_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align1, size1,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_keyMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList,
+                                                     m_keyMetaTypeInfo.metaType(),
+                                                     align1, size1,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                     qtjambi_is_static_type(m_keyMetaTypeInfo.metaType()),
 #endif
-                                                                                       )){
+                                                     qtjambi_is_pointer_type(m_keyMetaTypeInfo.metaType()),
+                                                     m_keyMetaTypeInfo.hashFunction(),
+                                                     m_keyInternalToExternalConverter,
+                                                     m_keyExternalToInternalConverter
+                                                    );
+        if(access){
             const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->uniqueKeys());
-            result = qtjambi_from_QList(env, keys, factory(m_keyMetaTypeInfo.metaType(),
-                                                           m_keyMetaTypeInfo.hashFunction(),
-                                                           m_keyInternalToExternalConverter,
-                                                           m_keyExternalToInternalConverter));
+            result = qtjambi_from_QList(env, keys, access);
         }
         return result;
     }
@@ -462,23 +475,26 @@ public:
     jobject values(JNIEnv * env, const void* container, jobject key) override {
         QTJAMBI_KEY_VALUE_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align2, size2,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_valueMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_valueMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList, m_valueMetaTypeInfo.metaType(),
+                                                                                align2, size2,
+                                                                                qtjambi_is_pointer_type(m_valueMetaTypeInfo.metaType()),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                                qtjambi_is_static_type(m_valueMetaTypeInfo.metaType()),
 #endif
-                                                                                    )){
+                                                                                m_valueMetaTypeInfo.hashFunction(),
+                                                                                m_valueInternalToExternalConverter,
+                                                                                m_valueExternalToInternalConverter
+                                                                               );
+        if(access){
             jvalue jv;
             jv.l = key;
             K _qkey;
             void *_qkeyPtr = &_qkey;
             if(m_keyExternalToInternalConverter(env, nullptr, jv, _qkeyPtr, jValueType::l)){
                 const void* values = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container)->values(_qkey));
-                result = qtjambi_from_QList(env, values, factory(m_valueMetaTypeInfo.metaType(),
-                                                                 m_valueMetaTypeInfo.hashFunction(),
-                                                                 m_valueInternalToExternalConverter,
-                                                                 m_valueExternalToInternalConverter));
+                result = qtjambi_from_QList(env, values, access);
             }
         }
         return result;

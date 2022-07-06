@@ -307,6 +307,7 @@ public abstract class AbstractInitializeTask extends Task {
         	case "arm64":
         	case "aarch64":
         		if(qtMajorVersion>=6 && qtMinorVersion>=2) {
+        			sourceValue = " (from "+Constants.JAVA_HOME_TARGET+")";
         			mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), true);
         		}
         		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_X64_HOME_TARGET);
@@ -345,6 +346,7 @@ public abstract class AbstractInitializeTask extends Task {
         	case "x86_64":
         	case "x64":
         	case "amd64":
+        		sourceValue = " (from "+Constants.JAVA_HOME_TARGET+")";
                 mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), true);
                 if(qtMajorVersion>=6 && qtMinorVersion>=2) {
 	        		s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_ARM64_HOME_TARGET);

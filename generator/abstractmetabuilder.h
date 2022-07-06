@@ -147,6 +147,7 @@ class AbstractMetaBuilder {
             m_qtjambiVersionPatch = qtjambiVersionPatch;
         }
         const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage() const { return m_typeSystemByPackage; }
+        const QMap<TypeSystemTypeEntry *,QSet<QString>>& containerBaseClasses() const { return m_containerBaseClasses; }
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
@@ -219,6 +220,7 @@ class AbstractMetaBuilder {
         QList<MissingIterator> m_missing_iterators;
         const QMap<QString, QString>* m_features;
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
+        QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
         uint m_qtVersionMajor;
         uint m_qtVersionMinor;
         uint m_qtVersionPatch;

@@ -15,7 +15,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     Q_UNUSED(__this)
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QScxmlStateMachine *__qt_this = qtjambi_object_from_nativeId<QScxmlStateMachine>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         const QString&  __qt_scxmlStateName0 = qtjambi_to_qstring(__jni_env, scxmlStateName0);
@@ -36,11 +37,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
                 }
             }, Qt::ConnectionType(type2));
         }
-        return qtjambi_cast<jobject>(__jni_env, connection);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, connection);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)
@@ -54,7 +55,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     Q_UNUSED(__this)
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QScxmlStateMachine *__qt_this = qtjambi_object_from_nativeId<QScxmlStateMachine>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         const QString&  __qt_scxmlStateName0 = qtjambi_to_qstring(__jni_env, scxmlStateName0);
@@ -76,9 +78,9 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
             }, Qt::ConnectionType(type2));
         }
 
-        return qtjambi_cast<jobject>(__jni_env, connection);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, connection);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }

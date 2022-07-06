@@ -262,6 +262,7 @@ void AbstractMetaBuilder::registerHashFunction(FunctionModelItem function_item) 
     for(int i=1; i<arguments.size(); i++){
         if(arguments.at(i)->type().qualifiedName().join("::")=="QHashDummyValue"){
             isWorkaround = true;
+            hasDefaultArgs = true;
         }else{
             hasDefaultArgs &= arguments.at(i)->defaultValue();
         }
@@ -3022,7 +3023,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
     QSet<AbstractMetaClass *> classes;
     QSet<AbstractMetaClass *> repeatClasses;
     QSet<QString> warnings;
-    for(AbstractMetaClass *c : m_meta_classes) {
+    for(AbstractMetaClass *c : qAsConst(m_meta_classes)) {
         figureOutEnumValuesForClass(c, &classes, &repeatClasses, &warnings);
     }
     if(!repeatClasses.isEmpty()){
@@ -3030,7 +3031,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
         QSet<AbstractMetaClass *> _repeatClasses;
         while(i<3){
             warnings.clear();
-            for(AbstractMetaClass *c : repeatClasses) {
+            for(AbstractMetaClass *c : qAsConst(repeatClasses)) {
                 figureOutEnumValuesForClass(c, &classes, &_repeatClasses, &warnings);
             }
             if(_repeatClasses.isEmpty() || _repeatClasses==repeatClasses){
@@ -3042,7 +3043,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
             repeatClasses.swap(_repeatClasses);
             _repeatClasses.clear();
         }
-        for(const QString& w : warnings){
+        for(const QString& w : qAsConst(warnings)){
             ReportHandler::warning(w);
         }
 
@@ -3060,7 +3061,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
 }
 
 void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
-    for(AbstractMetaClass *meta_class : m_meta_classes) {
+    for(AbstractMetaClass *meta_class : qAsConst(m_meta_classes)) {
         QString package = meta_class->typeEntry()->javaPackage();
         AbstractMetaClass *global = m_meta_classes.findClass(meta_class->typeEntry()->targetTypeSystem() + "." + GLOBAL_PACKAGE);
 
@@ -3133,12 +3134,10 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
 
                         if (ev) {
                             new_expr = QString("%1.%2")
-                                       .arg(ev->getEnum()->typeEntry()->qualifiedTargetLangName())
-                                       .arg(ev->name());
+                                       .arg(ev->getEnum()->typeEntry()->qualifiedTargetLangName(), ev->name());
                         } else if (e) {
                             new_expr = QString("%1.%2")
-                                       .arg(e->typeEntry()->qualifiedTargetLangName())
-                                       .arg(lst.last());
+                                       .arg(e->typeEntry()->qualifiedTargetLangName(), lst.last());
                         } else {
                             ReportHandler::warning("Cannot find enum constant for value '" + expr + "' in '" + meta_class->name() + "' or any of its super classes");
                         }
@@ -3192,17 +3191,15 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                         e = cl->findEnumForValue(enumValueName);
                         if(e){
                             new_expr = QString("%1.%2")
-                                   .arg(e->typeEntry()->qualifiedTargetLangName())
-                                   .arg(lst.last());
+                                   .arg(e->typeEntry()->qualifiedTargetLangName(), lst.last());
                         }else if(cl->isFake()){
                             new_expr = QString("%1.%2")
-                                   .arg(arg->type()->name())
-                                   .arg(lst.last());
+                                   .arg(arg->type()->name(), lst.last());
                         }else{
                             new_expr = QString("%1.%2.%3")
-                                   .arg(cl->typeEntry()->qualifiedTargetLangName())
-                                   .arg(arg->type()->name())
-                                   .arg(lst.last());
+                                   .arg(cl->typeEntry()->qualifiedTargetLangName(),
+                                        arg->type()->name(),
+                                        lst.last());
                         }
                     }
 
@@ -3220,9 +3217,9 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                             if(v->value().userType()==QMetaType::QString){
                                 new_expr = v->value().toString();
                                 ReportHandler::warning(QString("possible compilation error in enum value %1 when parsing default value of '%2' in class '%3'")
-                                                       .arg(new_expr)
-                                                       .arg(meta_function->name())
-                                                       .arg(meta_function->implementingClass()->name()));
+                                                       .arg(new_expr,
+                                                            meta_function->name(),
+                                                            meta_function->implementingClass()->name()));
                             }else{
                                 new_expr = QString::number(v->value().value<qint32>());
                             }
@@ -3712,19 +3709,28 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     meta_class->setTypeEntry(type);
     meta_class->setUsingProtectedBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Protected);
     meta_class->setUsingPublicBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Public);
-    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
-        QList<QPair<QString,bool>> baseClasses = class_item->baseClasses();
-        for(int i=0; i<baseClasses.size(); ++i){
+    QList<QPair<QString,bool>> baseClasses = class_item->baseClasses();
+    TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(meta_class->targetTypeSystem());
+    for(int i=0; i<baseClasses.size(); ++i){
+        if(baseClasses[i].first.startsWith("QList<")
+                || baseClasses[i].first.startsWith("QSet<")
+                || baseClasses[i].first.startsWith("QMap<")
+                || baseClasses[i].first.startsWith("QLinkedList<")
+                || baseClasses[i].first.startsWith("QVector<")
+                || baseClasses[i].first.startsWith("QHash<")
+                || baseClasses[i].first.startsWith("QMultiMap<")
+                || baseClasses[i].first.startsWith("QMultiHash<")){
+            m_containerBaseClasses[ts] << baseClasses[i].first;
+        }
+        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
             if(baseClasses[i].first=="QList<QString>"){
                 baseClasses[i].first = "QStringList";
             }else if(baseClasses[i].first=="QByteArrayList"){
                 baseClasses[i].first = "QList<QByteArray>";
             }
         }
-        meta_class->setBaseClassNames(baseClasses);
-    }else{
-        meta_class->setBaseClassNames(class_item->baseClasses());
     }
+    meta_class->setBaseClassNames(baseClasses);
     meta_class->setHas_Q_GADGET(class_item->has_Q_GADGET());
     meta_class->setHas_Q_OBJECT(class_item->has_Q_OBJECT());
     *meta_class += AbstractMetaAttributes::Public;
@@ -4019,8 +4025,10 @@ void AbstractMetaBuilder::setupFunctionDefaults(AbstractMetaFunction *meta_funct
     // to function properly. Such as function modifications
     meta_function->setImplementingClass(meta_class);
 
-    if (meta_function->originalName() == "operator==")
-        meta_class->setHasEqualsOperator(true);
+    if (meta_function->originalName() == "operator=="){
+        if(!meta_function->wasPrivate())
+            meta_class->setHasEqualsOperator(true);
+    }
 }
 
 void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractMetaClass *meta_class) {
@@ -4794,6 +4802,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         meta_function->setInvalid(true);
     } else if (strip_template_args(function_name) == stripped_class_name) {
         meta_function->setFunctionType(AbstractMetaFunction::ConstructorFunction);
+        meta_function->setExplicit(function_item->isExplicit());
         meta_function->setName(m_current_class->simpleName());
     } else {
         bool ok = false;

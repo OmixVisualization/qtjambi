@@ -392,7 +392,7 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                             "vtable setup conversion to reflected method failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
                     if(thr)
-                        JavaException(env, thr).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                        JavaException(env, thr).raise();
                     methods << nullptr;
                 }
             }else{
@@ -430,7 +430,7 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                     fprintf(stderr, "vtable setup failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
                     if(thr)
-                        JavaException(env, thr).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                        JavaException(env, thr).raise();
                 }
                 methods << nullptr;
             }

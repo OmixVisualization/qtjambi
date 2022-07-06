@@ -11,11 +11,7 @@
 namespace Java{
 namespace QtCore
 {
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QException,
-                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
-                                     )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
-                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                                      )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QDebug,
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice))
@@ -257,6 +253,10 @@ namespace Runtime{
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toByteArray))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Class,
                   QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName))
+    namespace Private{
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(Long,
+                      QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(hashCode))
+    }
 }
 }
 

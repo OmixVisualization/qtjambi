@@ -110,7 +110,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.core.QMarginsF"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, QMarginsF(left, top, right, bottom));
+                    %out = qtjambi_cast&lt;jobject>(%env, QMarginsF(left, top, right, bottom));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

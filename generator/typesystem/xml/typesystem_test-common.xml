@@ -43,6 +43,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtTest" description="Classes for unit testing Qt applications and libraries.">
+    <required-library name="QtDBus" mode="optional"/>
+    <required-library name="QtWidgets"/>
     <rejection class="QTest" function-name="compare_ptr_helper" /><!-- not public API -->
     <rejection class="QTestData" />
     <rejection class="QSignalSpy" function-name="initArgs" /><!-- not public API -->

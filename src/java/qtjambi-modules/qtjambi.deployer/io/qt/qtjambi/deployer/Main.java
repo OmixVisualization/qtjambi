@@ -99,21 +99,26 @@ public class Main {
 				    parser.addHelpOption();
 				    parser.addVersionOption();
 					//common
+				    QCommandLineOption platformOption = new QCommandLineOption(QList.of("platform"), "Target platform", "platform");
 				    QCommandLineOption dirOption = new QCommandLineOption(QList.of("d", "dir", "target-directory"), "Target directory", "dir");
 				    QCommandLineOption classPathOption = new QCommandLineOption(QList.of("cp", "class-path"), "Class path for plugin/app execution", "path");
 				    QCommandLineOption configurationOption = new QCommandLineOption(QList.of("c", "configuration"), "Library configuration", "debug|release", "release");
 					switch(args[0]) {
 					case "plugin":
+					case "pluginlib":
 						PluginGenerator.generate(parser, 
 												args,
-									    		dirOption,
+												platformOption,
+												dirOption,
 									    		classPathOption,
 												configurationOption);
 						break;
 					case "qml":
+					case "qmllib":
 						QMLGenerator.generate(parser, 
 												args,
-									    		dirOption,
+												platformOption,
+												dirOption,
 									    		classPathOption,
 												configurationOption);
 						break;
@@ -121,12 +126,29 @@ public class Main {
 					case "application":
 						AppGenerator.generate(parser, 
 												args,
-									    		dirOption,
+												platformOption,
+												dirOption,
 									    		classPathOption,
 												configurationOption);
 						break;
+					case "qt":
+					case "qtlib":
+					case "qtbundles":
+						BundleGenerator.generate(parser, 
+												args,
+												platformOption,
+												dirOption,
+												configurationOption);
+						break;
+					case "container":
+					case "containeraccess":
+					case "ca":
+						ContainerAccessGenerator.generate(parser, 
+								args,
+								dirOption);
+						break;
 						default: 
-							throw new Error("QtJambi Deployer, illegal argument: "+args[0]+", expected: one of plugin|qml|application");
+							throw new Error("QtJambi Deployer, illegal argument: "+args[0]+", expected: one of plugin|qml|application|qtbundles|containeraccess");
 					}
 				}
 			} catch (Error e) {
@@ -135,7 +157,7 @@ public class Main {
 			}
 		}else{
 			String version = QtUtilities.qtjambiVersion().toString();
-			System.out.println("Usage: deployer [plugin|qml|application]");
+			System.out.println("Usage: deployer [plugin|qml|application|qt]");
 			System.out.println(String.format("QtJambi Deployer version %1$s", version));
 		}
 	}

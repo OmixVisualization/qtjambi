@@ -37,7 +37,7 @@ public class TestDesigner extends ApplicationInitializer {
 	    	widget = loader.load(device);
 	    	device.close();
     	}
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	Assert.assertTrue(widget != null);
     	assertEquals(null, widget.parent());
     	assertTrue(widget instanceof QDialog);

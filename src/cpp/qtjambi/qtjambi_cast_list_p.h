@@ -853,22 +853,6 @@ struct ContainerSwap{
     }
 };
 
-template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
-struct ContainerTakeAt{
-    static jobject function(JNIEnv * env, void*, jint) {
-        JavaException::raiseUnsupportedOperationException(env, "takeAt(index)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerTakeAt<Container, T, true>{
-    static jobject function(JNIEnv * env, void* ptr, jint index) {
-        Container<T> *container = static_cast<Container<T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->takeAt(index), nullptr, nullptr);
-    }
-};
-
 template<template<typename T> class Container, typename T>
 struct ContainerValues{
     static jobject function(JNIEnv * env, const void* ptr) {
@@ -900,7 +884,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QList<T>>(containerTypeName);
     }
-    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QList,T>::function;}
 
     void append(JNIEnv * env, void*, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::append" QTJAMBI_STACKTRACEINFO );
@@ -927,12 +910,6 @@ public:
         return ContainerToSet<QList, T>::function(env, container);
     }
 #endif
-
-    jobject takeAt(JNIEnv * env, void*, jint) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::takeAt" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-
     void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::swapItemsAt" QTJAMBI_STACKTRACEINFO );
     }
@@ -1044,8 +1021,8 @@ public:
     }
 
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
-        for(auto element : *reinterpret_cast<const QList<T>*>(container)){
-            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+        for(typename pointer_from<T>::In element : *reinterpret_cast<const QList<T>*>(container)){
+            if(!analyzer(pointer_from<T>::from(element), data)){
                 break;
             }
         }
@@ -1074,10 +1051,6 @@ public:
 
     void appendList(JNIEnv * env, void* container, jobject list) override {
         ContainerAppendList<T>::function(env, container, list);
-    }
-
-    jobject takeAt(JNIEnv * env, void* container, jint index) override {
-        return ContainerTakeAt<QList, T>::function(env, container, index);
     }
 
     void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override {
@@ -1166,7 +1139,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QVector<T>>(qPrintable(containerTypeName));
     }
-    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QVector,T>::function;}
 
     void append(JNIEnv * env, void*, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QVector::append" QTJAMBI_STACKTRACEINFO );
@@ -1190,11 +1162,6 @@ public:
 
     jobject toSet(JNIEnv * env,const void* container) override {
         return ContainerToSet<QVector, T>::function(env, container);
-    }
-
-    jobject takeAt(JNIEnv * env, void*, jint) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::takeAt" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
     }
 
     void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
@@ -1306,8 +1273,8 @@ public:
     }
 
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
-        for(auto element : *reinterpret_cast<const QVector<T>*>(container)){
-            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+        for(typename pointer_from<T>::In element : *reinterpret_cast<const QVector<T>*>(container)){
+            if(!analyzer(pointer_from<T>::from(element), data)){
                 break;
             }
         }
@@ -1336,10 +1303,6 @@ public:
 
     void appendVector(JNIEnv * env, void* container, jobject list) override {
         ContainerAppendVector<T>::function(env, container, list);
-    }
-
-    jobject takeAt(JNIEnv * env, void* container, jint index) override {
-        return ContainerTakeAt<QVector, T>::function(env, container, index);
     }
 
     void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override {
@@ -1426,7 +1389,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QLinkedList<T>>(qPrintable(containerTypeName));
     }
-    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QLinkedList,T>::function;}
 
     void append(JNIEnv * env, void*, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QLinkedList::append" QTJAMBI_STACKTRACEINFO );
@@ -1509,8 +1471,8 @@ public:
     }
 
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
-        for(auto element : *reinterpret_cast<const QLinkedList<T>*>(container)){
-            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+        for(typename pointer_from<T>::In element : *reinterpret_cast<const QLinkedList<T>*>(container)){
+            if(!analyzer(pointer_from<T>::from(element), data)){
                 break;
             }
         }
@@ -1595,7 +1557,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QSet<T>>(containerTypeName);
     }
-    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QSet,T>::function;}
 
     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
         return ContainerBegin<QSet, T>::function(env, ownerId, container);
@@ -1659,8 +1620,8 @@ public:
     }
 
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
-        for(auto element : *reinterpret_cast<const QSet<T>*>(container)){
-            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+        for(typename pointer_from<T>::In element : *reinterpret_cast<const QSet<T>*>(container)){
+            if(!analyzer(pointer_from<T>::from(element), data)){
                 break;
             }
         }

@@ -29,17 +29,19 @@ public class TestUiTools extends ApplicationInitializer {
     @Test
     public void test()
     {
+    	String errorString = null;
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
 	    	QFile device = new QFile(":io/qt/autotests/ui/dialogtest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
+	    	errorString = loader.errorString();
 	    	device.close();
     	}
-    	System.gc();
+    	ApplicationInitializer.runGC();
+    	assertTrue((widget==null ? "widget is null: "+errorString : "widget is "+widget.getClass().getName()), widget instanceof QDialog);
     	assertEquals(null, widget.parent());
-    	assertTrue(widget instanceof QDialog);
     	QDialog dialog = (QDialog)widget;
     	QList<QObject> chidren = dialog.children();
     	assertEquals(4, chidren.size());
@@ -57,6 +59,7 @@ public class TestUiTools extends ApplicationInitializer {
     @Test
     public void testCustomWidgetPlugin()
     {
+    	String errorString = null;
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
@@ -66,13 +69,17 @@ public class TestUiTools extends ApplicationInitializer {
 			}else {
 				loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/plugins/designer");
 			}
+	    	for(String path : QCoreApplication.libraryPaths()) {
+				loader.addPluginPath(path);
+			}
 	    	QFile device = new QFile(":io/qt/autotests/ui/customwidgettest.ui");
 	    	Assert.assertTrue(device.open(QIODevice.OpenModeFlag.ReadOnly));
 	    	widget = loader.load(device);
+	    	errorString = loader.errorString();
 	    	device.close();
     	}
-    	System.gc();
-    	Assert.assertTrue(widget instanceof QWidget);
+    	ApplicationInitializer.runGC();
+    	Assert.assertTrue((widget==null ? "widget is null: "+errorString : "widget is "+widget.getClass().getName()), widget instanceof QWidget);
     	Assert.assertEquals("io::qt::designer::customwidgets::CustomWidget", widget.metaObject().className());
     	Assert.assertEquals(new QRect(3, 6, 12, 24), widget.property("customRect"));
     	Assert.assertEquals("This is custom text", widget.property("customText"));

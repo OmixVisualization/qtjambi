@@ -49,8 +49,8 @@ public class TestQPdfWidgets extends ApplicationInitializer {
     @Test
     public void test() {
     	QPdfDocument document = new QPdfDocument();
-    	QPdfDocument.DocumentError error = document.load(":io/qt/autotests/test.pdf");
-    	Assert.assertEquals(QPdfDocument.DocumentError.NoError, error);
+    	Enum<?> error = document.load(":io/qt/autotests/test.pdf");
+    	Assert.assertTrue(error.name().equals("NoError") || error.name().equals("None"));
     	Assert.assertEquals(QPdfDocument.Status.Ready, document.status());
         QPdfSelection allText = document.getSelectionAtIndex(0, 9, 7);
         Assert.assertEquals("Ownership of QPdfSelection", QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(allText));

@@ -10,10 +10,10 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 QT = core sql
 
 macx:{
-    INCLUDEPATH += $$(QTDIR)/lib/QtWidgets.framework/Headers
-    INCLUDEPATH += $$(QTDIR)/include
+    INCLUDEPATH += $$[QT_INSTALL_LIBS]/QtWidgets.framework/Headers
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 }
-INCLUDEPATH += $$(QTDIR)/include/QtWidgets
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtWidgets
 
 HEADERS += qtjambi_sql_hashes.h
 

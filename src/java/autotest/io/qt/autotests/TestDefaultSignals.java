@@ -38,7 +38,9 @@ import org.junit.Test;
 import io.qt.QtPrimitiveType;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
+import io.qt.core.QMetaObject.Connection;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 
 public class TestDefaultSignals extends ApplicationInitializer {
     private static class Sender extends QObject {
@@ -114,7 +116,7 @@ public class TestDefaultSignals extends ApplicationInitializer {
     	assertTrue(con!=null);
     	assertEquals(QMetaMethod.fromSignal(sender.signal22), io.qt.internal.QtJambiSignals.signal(con));
     	method.invoke(sender, "TEST");
-    	assertTrue(receiver.received);
+    	assertTrue("did not receive", receiver.received);
     	assertEquals(Integer.valueOf(12345), receiver.received2);
     	assertEquals("TEST", receiver.received1);
     	receiver.received = false;
@@ -133,7 +135,7 @@ public class TestDefaultSignals extends ApplicationInitializer {
     	assertTrue(con!=null);
     	assertEquals(QMetaMethod.fromSignal(sender.signal22), io.qt.internal.QtJambiSignals.signal(con));
     	method.invoke(sender, "TEST");
-    	assertTrue(receiver.received);
+    	assertTrue("did not receive", receiver.received);
     	assertEquals(null, receiver.received2);
     	assertEquals("TEST", receiver.received1);
     	QObject.disconnect(con);
@@ -173,153 +175,167 @@ public class TestDefaultSignals extends ApplicationInitializer {
     public void test_emit_DefaultSignal() {
     	Sender sender = new Sender();
     	Receiver receiver = new Receiver();
-    	assertTrue(sender.signal22.connect(receiver::receive2)!=null);
-    	assertTrue(sender.signal21.connect(receiver::receive1)!=null);
+    	Connection connection1 = sender.signal21.connect(receiver::receive1);
+    	Connection connection2 = sender.signal22.connect(receiver::receive2);
+    	assertTrue("signal22 not connected", connection2!=null && connection2.isConnected());
+    	assertTrue("signal21 not connected", connection1!=null && connection1.isConnected());
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("received", receiver.received);
     	sender.signal22.emit("TEST", 5);
-    	assertEquals("TEST", receiver.received1);
-    	assertEquals(Integer.valueOf(5), receiver.received2);
-    	assertTrue(receiver.received);
+    	assertEquals("received1", "TEST", receiver.received1);
+    	assertEquals("received2", Integer.valueOf(5), receiver.received2);
+    	assertTrue("received", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit("TEST");
     	assertEquals("TEST", receiver.received1);
     	assertEquals(Integer.valueOf(12345), receiver.received2);
-    	assertTrue(receiver.received);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit();
     	assertEquals("No arg", receiver.received1);
     	assertEquals(Integer.valueOf(12345), receiver.received2);
-    	assertTrue(receiver.received);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST", 5);
     	assertEquals("TEST", receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST");
     	assertEquals("TEST", receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertTrue(sender.signal22.disconnect(receiver::receive2));
-    	assertTrue(sender.signal21.disconnect(receiver::receive1));
-    	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		assertTrue(QObject.disconnect(connection1));
+    		assertTrue(QObject.disconnect(connection2));
+    	}else {
+	    	assertTrue(sender.signal22.disconnect(receiver::receive2));
+	    	assertTrue(sender.signal21.disconnect(receiver::receive1));
+    	}
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST");
     	sender.signal22.emit("TEST");
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
 
-    	assertTrue(sender.signal22.connect(receiver::receive1)!=null);
-    	assertTrue(sender.signal21.connect(receiver::receive0)!=null);
+    	connection1 = sender.signal21.connect(receiver::receive0);
+    	connection2 = sender.signal22.connect(receiver::receive1);
+    	assertTrue("signal22 not connected", connection2!=null && connection2.isConnected());
+    	assertTrue("signal21 not connected", connection1!=null && connection1.isConnected());
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit("TEST", 5);
     	assertEquals("TEST", receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit("TEST");
     	assertEquals("TEST", receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit();
     	assertEquals("No arg", receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST", 5);
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST");
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();    	
     	
-    	assertTrue(sender.signal22.disconnect(receiver::receive1));
-    	assertTrue(sender.signal21.disconnect(receiver::receive0));
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		assertTrue(QObject.disconnect(connection1));
+    		assertTrue(QObject.disconnect(connection2));
+    	}else {
+	    	assertTrue(sender.signal22.disconnect(receiver::receive1));
+	    	assertTrue(sender.signal21.disconnect(receiver::receive0));
+    	}
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal21.emit("TEST");
     	sender.signal22.emit("TEST");
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
 
-    	assertTrue(sender.signal22.connect(receiver::receive0)!=null);
+    	connection2 = sender.signal22.connect(receiver::receive0);
+    	assertTrue(connection2!=null && connection2.isConnected());
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit("TEST", 5);
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit("TEST");
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     	
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertFalse(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertFalse("did receive unexpectedly", receiver.received);
     	sender.signal22.emit();
-    	assertNull(receiver.received1);
-    	assertNull(receiver.received2);
-    	assertTrue(receiver.received);
+    	assertNull("received1 not null", receiver.received1);
+    	assertNull("received2 not null", receiver.received2);
+    	assertTrue("did not receive", receiver.received);
     	receiver.reset();
     }
 

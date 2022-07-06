@@ -43,14 +43,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_Q
  jbooleanArray ok0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlDataModel::ForeachLoopBody::run(bool * ok)")
-    try{
+    QTJAMBI_TRY{
         QScxmlDataModel::ForeachLoopBody *__qt_this = qtjambi_object_from_nativeId<QScxmlDataModel::ForeachLoopBody>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         JBooleanArrayPointer boolPointer(__jni_env, ok0);
         __qt_this->run(boolPointer.pointer());
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 void deleter_ForeachLoopBody(void* ptr){

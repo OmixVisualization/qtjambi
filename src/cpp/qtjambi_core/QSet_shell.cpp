@@ -36,6 +36,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <qtjambi/qtjambi_containers.h>
 #include <QtCore/QSet>
 #include <QtCore/QVariant>
+#include <qtjambi/qtjambi_application.h>
+#include "qtjambi_core_repository.h"
 #include <qtjambi/qtjambi_cast.h>
 
 // emitting  (functionsInTargetLang writeFinalFunction)
@@ -43,17 +45,27 @@ QT_WARNING_DISABLE_DEPRECATED
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSet_initialize)
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)
 {
-    initialize_QSet(env, _this, elementType, elementMetaType, other);
+    QTJAMBI_TRY{
+        initialize_QSet(env, _this, elementType, elementMetaType, other);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSet_elementMetaType)
 (JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
 {
-    QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
-    qtjambi_check_resource(env, container.first, typeid(QSet<QVariant>));
-    AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
-    Q_ASSERT(containerAccess);
-    return qtjambi_cast<jobject>(env, containerAccess->elementMetaType());
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(env, container.first, typeid(QSet<QVariant>));
+        AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        result = qtjambi_cast<jobject>(env, containerAccess->elementMetaType());
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::insert(const T & t)
@@ -64,15 +76,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::insert(const T & t)")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->insert(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::begin() const
@@ -82,16 +94,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::begin() const")
-    try{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->begin(__jni_env, __this_nativeId, container.first);
-    }catch(const JavaException& exn){
+        result = containerAccess->begin(__jni_env, __this_nativeId, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::capacity() const
@@ -101,16 +114,17 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::begin() const")
-    try{
+    jint result{0};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->capacity(__jni_env, container.first);
-    }catch(const JavaException& exn){
+        result = containerAccess->capacity(__jni_env, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return 0;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::clear()
@@ -120,15 +134,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::clear()")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->clear(__jni_env, container.first);
-    }catch(const JavaException& exn){
+        containerAccess->clear(__jni_env, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::contains(const T & t) const
@@ -139,16 +153,17 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::contains(const T & t) const")
-    try{
+    jboolean result{false};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->contains(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+        result = containerAccess->contains(__jni_env, container.first, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::intersect(const QSet<T> &other)
@@ -159,15 +174,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::intersect(const QSet<T> &other)")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->intersect(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::unite(const QSet<T> &other)
@@ -178,15 +193,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::unite(const QSet<T> &other)")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->unite(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::subtract(const QSet<T> &other)
@@ -197,15 +212,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::subtract(const QSet<T> &other)")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->subtract(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::intersects(const QSet<T> &other) const
@@ -216,16 +231,17 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::intersects(const QSet<T> &other) const")
-    try{
+    jboolean result{false};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->intersects(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+        result = containerAccess->intersects(__jni_env, container.first, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::end() const
@@ -235,16 +251,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::end() const")
-    try{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->end(__jni_env, __this_nativeId, container.first);
-    }catch(const JavaException& exn){
+        result = containerAccess->end(__jni_env, __this_nativeId, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::operator==(const QSet & l) const
@@ -255,16 +272,17 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject l0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::operator==(const QSet<T> & l) const")
-    try{
+    jboolean result{false};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->equal(__jni_env, container.first, l0);
-    }catch(const JavaException& exn){
+        result = containerAccess->equal(__jni_env, container.first, l0);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::remove(const T & t)
@@ -275,16 +293,17 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::remove(const T & t)")
-    try{
+    jboolean result{false};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->remove(__jni_env, container.first, t0);
-    }catch(const JavaException& exn){
+        result = containerAccess->remove(__jni_env, container.first, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::reserve(int size)
@@ -295,15 +314,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jint size0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::reserve(int size)")
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->reserve(__jni_env, container.first, size0);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QSet<T>::size() const
@@ -313,16 +332,17 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::size() const")
-    try{
+    jint result{0};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->size(__jni_env, container.first);
-    }catch(const JavaException& exn){
+        result = containerAccess->size(__jni_env, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return 0;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QSet<T>::values() const
@@ -332,16 +352,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSet<T>::values() const")
-    try{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
         Q_ASSERT(containerAccess);
-        return containerAccess->values(__jni_env, container.first);
-    }catch(const JavaException& exn){
+        result = containerAccess->values(__jni_env, container.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 
@@ -352,7 +373,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID stream0)
 {
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
@@ -372,9 +393,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
             containerName.prepend("QDataStream& << ");
             JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
         }
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSet__1_1qt_1QSet_1readFrom)
@@ -383,7 +404,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID stream0)
 {
-    try{
+    QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
         qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
         AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
@@ -395,7 +416,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
         containerName += ">";
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         int metaType = containerAccess->registerContainer(containerName);
-        if(!QMetaType::save(*stream, metaType, container.first)){
+        if(!QMetaType::load(*stream, metaType, container.first)){
 #else
         QMetaType metaType(containerAccess->registerContainer(containerName));
         if(!metaType.load(*stream, container.first)){
@@ -403,9 +424,75 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
             containerName.prepend("QDataStream& >> ");
             JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
         }
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSet_toString)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId)
+{
+    jstring result = nullptr;
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
+        AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QString strg;
+        {
+            QDebug stream(&strg);
+            QByteArray containerName = "QSet<";
+            containerName += containerAccess->elementMetaType().name();
+            containerName += ">";
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            int metaType = containerAccess->registerContainer(containerName);
+            debug_stream(stream, metaType, container.first);
+            if(strg.isEmpty()){
+                containerName.prepend("QDebug >> ");
+                JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            }
+#else
+            QMetaType metaType(containerAccess->registerContainer(containerName));
+            if(!metaType.debugStream(stream, container.first)){
+                containerName.prepend("QDebug >> ");
+                JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            }
+#endif
+        }
+        result = qtjambi_from_qstring(__jni_env, strg);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSet_hashCode)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId)
+{
+    jint result{0};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QSet<QVariant>));
+        AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QByteArray containerName = "QSet<";
+        containerName += containerAccess->elementMetaType().name();
+        containerName += ">";
+        QMetaType metaType(containerAccess->registerContainer(containerName));
+        hash_type h = qHash(metaType, container.first);
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        result = jint(quint64(h) ^ quint64(h) >> 32);
+#else
+        result = jint(h);
+#endif
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // emitting (AbstractMetaClass::NormalFunctions|AbstractMetaClass::AbstractFunctions writeFinalFunction)

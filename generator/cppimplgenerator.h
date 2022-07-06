@@ -269,12 +269,14 @@ class CppImplGenerator : public CppGenerator {
         }
         QString default_return_statement_qt(const AbstractMetaType *java_type,
                                             Generator::Option options = Generator::NoOption);
+        void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QSet<QString>>& containerBaseClasses) { m_containerBaseClasses = containerBaseClasses; }
     private:
         bool m_native_jump_table;
         bool m_qtjambi_debug_tools;
 
         QMap<QString,QSet<QString>> javaToQtConverterInfos;
         QMap<QString,QSet<QString>> qtToJavaConverterInfos;
+        QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
 };
 
 #endif // CPPIMPLGENERATOR_H

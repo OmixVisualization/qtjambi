@@ -26,19 +26,22 @@ public class TestDesignerHelp extends ApplicationInitializer {
 	
     @Test
     public void testHelpWidget() {
+    	String errorString = null;
     	QWidget widget;
     	{
 			QFormBuilder loader = new QFormBuilder();
 			for(String path : QCoreApplication.libraryPaths()) {
+				loader.addPluginPath(path);
 				loader.addPluginPath(path+"/designer");
 			}
 	    	QIODevice device = new QFile(":io/qt/autotests/ui/helptest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
+	    	errorString = loader.errorString();
 	    	device.close();
     	}
-    	System.gc();
-    	Assert.assertTrue(widget instanceof QHelpSearchQueryWidget);
+    	ApplicationInitializer.runGC();
+    	Assert.assertTrue(errorString, widget instanceof QHelpSearchQueryWidget);
     	Assert.assertEquals(QHelpSearchQueryWidget.staticMetaObject, widget.metaObject());
     }
     
@@ -50,6 +53,8 @@ public class TestDesignerHelp extends ApplicationInitializer {
     			lib += "d";
     		}
     	}
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    		lib = "plugins/"+lib;
     	QPluginLoader pluginLoader = new QPluginLoader(lib);
     	if(!pluginLoader.load())
     		Assert.assertTrue(pluginLoader.errorString()+" "+lib, false);

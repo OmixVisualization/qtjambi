@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -71,6 +72,7 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QStandardItemModel;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QAbstractButton;
 import io.qt.widgets.QAbstractSpinBox;
 import io.qt.widgets.QApplication;
@@ -83,9 +85,12 @@ import io.qt.widgets.QWidget;
 
 public class TestMetaProgramming extends ApplicationInitializer {
 	
+	private static boolean hasSerializableLambdas;
+	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	hasSerializableLambdas = QtJambiInternal.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
     @Test
@@ -443,6 +448,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_Queued() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
     	QMetaObject.invokeMethod(b::invokableSlot0, Qt.ConnectionType.QueuedConnection);
 		Assert.assertFalse(b.invoked);
@@ -469,6 +475,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_BlockingQueued_threaded() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -484,6 +491,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_Queued_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -501,6 +509,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_Direct_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -516,6 +525,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_Auto_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -533,6 +543,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Slot0_BlockingQueued() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		try {
 			QMetaObject.invokeMethod(b::invokableSlot0, Qt.ConnectionType.BlockingQueuedConnection);
@@ -663,6 +674,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Queued() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		try {
 	    	QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
@@ -674,6 +686,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Direct() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		String result = QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.DirectConnection, 2.0, 4f, 7);
 		Assert.assertTrue(b.invoked);
@@ -683,6 +696,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Auto() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		String result = QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.AutoConnection, 2.0, 4f, 7);
 		Assert.assertTrue(b.invoked);
@@ -692,6 +706,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_BlockingQueued_threaded() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -708,6 +723,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Queued_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -724,6 +740,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Direct_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -740,6 +757,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_Auto_threaded() throws InterruptedException {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		QThread thread = new QThread();
 		try {
@@ -756,6 +774,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	
 	@Test
     public void testQMetaObject_invokeMethod_Method3_BlockingQueued() {
+		Assume.assumeTrue(hasSerializableLambdas);
 		InvocationTest b = new InvocationTest();
 		try {
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.BlockingQueuedConnection, 2.0, 4f, 7);
@@ -999,13 +1018,13 @@ public class TestMetaProgramming extends ApplicationInitializer {
         	metaMethod = b.metaObject().method("setIntList", List.class);
         	Assert.assertTrue(metaMethod!=null);
         	metaMethod.invoke(b, new ArrayList<>());
-        	Assert.assertEquals(QList.class, b.intList.getClass());
+        	Assert.assertEquals(QList.class, QtJambiInternal.getClass(b.intList));
     	}
     	{
     		metaProperty = b.metaObject().property("intList");
         	Assert.assertTrue(metaProperty!=null);
         	metaProperty.write(b, new LinkedList<>());
-    		Assert.assertTrue(List.class.isAssignableFrom(b.intList.getClass()));
+    		Assert.assertTrue(List.class.isAssignableFrom(QtJambiInternal.getClass(b.intList)));
     	}
     	{
         	metaMethod = b.metaObject().method("setIndex", QModelIndex.class);

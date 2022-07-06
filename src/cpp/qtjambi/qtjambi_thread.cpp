@@ -106,12 +106,15 @@ void qtjambi_initialize_main_thread(JNIEnv *__jni_env)
 
 void qtjambi_initialize_current_thread(JNIEnv *env)
 {
-    QThread* currentQThread = QThread::currentThread();
-    QReadLocker locker(QtJambiLinkUserData::lock());
-    if(!QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentQThread)){
-        locker.unlock();
-        qtjambi_cast<jobject>(env, currentQThread);
-        locker.relock();
+    if(QThread* currentQThread = QThread::currentThread()){
+        QReadLocker locker(QtJambiLinkUserData::lock());
+        if(!QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentQThread)){
+            locker.unlock();
+            qtjambi_cast<jobject>(env, currentQThread);
+            locker.relock();
+        }
+    }else{
+        fprintf(stderr, "QThread::currentThread() returning nullptr");
     }
 }
 

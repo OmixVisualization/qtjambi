@@ -72,7 +72,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
                 garbage.add(System.currentTimeMillis());
 
-                gc();
+                ApplicationInitializer.runGC();
                 if(couldStopAt == null && equals()) {
                     couldStopAt = Long.valueOf(System.currentTimeMillis());
                 //    break;
@@ -104,11 +104,6 @@ public class TestReferenceCounting extends ApplicationInitializer {
         }
     }
 
-    private void gc() {
-        System.gc();
-        System.runFinalization();
-    }
-    
     @BeforeClass
     public static void testInitialize() throws Exception {
         ApplicationInitializer.testInitializeWithWidgets();
@@ -124,12 +119,10 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
     @After
     public void tearDown() {
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         QApplication.processEvents();
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         QApplication.processEvents();
     }
@@ -205,8 +198,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
         while(loop) {
             try {
 
-                System.gc();
-                System.runFinalization();
+                ApplicationInitializer.runGC();
 
                 Reference<? extends QObject> thisWr;
                 while((thisWr = weakReferenceQueue.poll()) != null) {
@@ -342,11 +334,11 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
         assertEquals("source model", proxy.sourceModel().objectName());
     }
 
@@ -414,7 +406,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
         }.test();
 
@@ -484,11 +476,11 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
         assertEquals("source model", proxy.sourceModel().objectName());
     }
 
@@ -499,7 +491,6 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
             @Override
             public QModelIndex mapFromSource(QModelIndex sourceIndex) {
-
                 return null;
             }
 
@@ -554,7 +545,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
         }.test();
 
@@ -584,12 +575,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(box.completer() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
     }
 
     @Test public final void testQComboBoxEditableSetCompleter() {
@@ -605,12 +596,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(box.completer() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
     }
 
 
@@ -646,7 +637,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
         }.test();
     }
@@ -664,12 +655,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
             long millis = System.currentTimeMillis();
             while (System.currentTimeMillis() - millis < 1000) {
-            	gc();
+            	ApplicationInitializer.runGC();
             	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             }
 
             assertEquals(box.completer(), null); // the completer wil newer be set because of missing line edit.
-            assertEquals(0, deleted); // and not deleted, since it has been set.
+            assertEquals(0, getDeletedCount()); // and not deleted, since it has been set.
     }
 
     @Test public final void testQLineEditSetCompleter() {
@@ -684,12 +675,14 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(lineEdit.completer() != null);
-        assertEquals(0, deleted);
+        synchronized(TestReferenceCounting.class) {
+        	assertEquals(0, getDeletedCount());
+        }
     }
 
     @Test public final void testQLineEditSetCompleterNull() {
@@ -723,7 +716,9 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+            	synchronized(TestReferenceCounting.class) {
+            		return 1 == getDeletedCount();
+            	}
             }
         }.test();
     }
@@ -752,7 +747,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+        		return 1 == getDeletedCount();
             }
         }.test();
 
@@ -783,12 +778,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(lineEdit.completer() != null);
-        assertEquals(0, deleted);
+    	assertEquals(0, getDeletedCount());
     }
 
     @Test public final void testQLineEditComboBoxSetCompleterNull() {
@@ -824,7 +819,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+        		return 1 == getDeletedCount();
             }
         }.test();
     }
@@ -854,12 +849,17 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
+        	Thread.yield();
+            try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+			}
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(box.itemDelegate() != null);
-        assertEquals(0, deleted);
+    	assertEquals(0, getDeletedCount());
     }
 
     @Test public final void testQComboBoxSetItemDelegateNull() {
@@ -899,13 +899,20 @@ public class TestReferenceCounting extends ApplicationInitializer {
         }
 
         long millis = System.currentTimeMillis();
-        while (System.currentTimeMillis() - millis < 1000) {
-            gc();
+        while (System.currentTimeMillis() - millis < 2000) {
+            ApplicationInitializer.runGC();
+            Thread.yield();
+            try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+			}
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            if(getDeletedCount()==1)
+            	break;
         }
 
         assertTrue(box.itemDelegate() != null);
-        assertEquals(1, deleted);
+    	assertEquals(1, getDeletedCount());
     }
 
     @Test public final void testQComboBoxSetModel() {
@@ -920,10 +927,10 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000)
-            gc();
+            ApplicationInitializer.runGC();
 
         assertTrue(box.model() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
 
     }
 
@@ -947,12 +954,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(box.validator() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
     }
 
     @Test public final void testQComboBoxSetValidatorNull() {
@@ -994,7 +1001,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
         }.test();
     }
@@ -1039,7 +1046,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             @Override
             protected boolean equals() {
               //  return 1 == deleted;  // this wan't work because box will probably remember the validator.
-                return 0 == deleted;
+                return 0 == getDeletedCount();
             }
         }.test();
     }
@@ -1053,12 +1060,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
             group.addButton(button = new QPushButton("button" + i));
             button.destroyed.connect(this::increaseDeleted);
             button = null;
-            gc();
+            ApplicationInitializer.runGC();
         }
 
         List<QAbstractButton> buttons = group.buttons();
         assertEquals(COUNT, buttons.size());
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
         assertEquals("button" + COUNT / 2, buttons.get(COUNT / 2).text());
     }
 
@@ -1071,12 +1078,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
             group.addButton(button = new QPushButton("button" + i), i);
             button.destroyed.connect(this::increaseDeleted);
             button = null;
-            gc();
+            ApplicationInitializer.runGC();
         }
 
         List<QAbstractButton> buttons = group.buttons();
         assertEquals(COUNT, buttons.size());
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
         assertEquals(COUNT / 2, group.id(buttons.get(COUNT / 2)));
         assertEquals("button" + COUNT / 2, buttons.get(COUNT / 2).text());
     }
@@ -1090,7 +1097,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
         	button.destroyed.connect(this::increaseDeleted);
             group.addButton(button);
             group.removeButton(button);
-            gc();
+            ApplicationInitializer.runGC();
         }
 
         new AssertEquals() {
@@ -1111,7 +1118,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return COUNT == deleted;
+                return COUNT == getDeletedCount();
             }
         }.test();
     }
@@ -1188,12 +1195,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(view.itemDelegate() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
 
     }
 
@@ -1288,7 +1295,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
             }
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
         }.test();
     }
@@ -1351,12 +1358,12 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000) {
-        	gc();
+        	ApplicationInitializer.runGC();
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         }
 
         assertTrue(view.model() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
     }
 
     @Test public final void testQAbstractItemViewSetSelectionModelThenSetModel() {
@@ -1432,7 +1439,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
         new AssertEquals() {
             @Override
             protected boolean equals() {
-                return 1 == deleted;
+                return 1 == getDeletedCount();
             }
             @Override
             protected String description() {
@@ -1504,10 +1511,10 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         long millis = System.currentTimeMillis();
         while (System.currentTimeMillis() - millis < 1000)
-            gc();
+            ApplicationInitializer.runGC();
 
         assertTrue(view.selectionModel() != null);
-        assertEquals(0, deleted);
+        assertEquals(0, getDeletedCount());
 
 
     }
@@ -1540,7 +1547,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
 
         for (int i=0; i<100; ++i) {
             w.addItem(new QListWidgetItem(new QIcon(new MyIconEngine(i)), "" + i));
-            gc();
+            ApplicationInitializer.runGC();
         }
 
         // Don't crash

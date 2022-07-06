@@ -73,7 +73,7 @@ class PropertyAndMethodCallTest : public QObject
 public:
     explicit PropertyAndMethodCallTest(QObject *parent = nullptr);
     
-    bool connectSignals(QObject* sender);
+    bool connectSignals(QObject* sender, bool useAnnotatedType);
     static void dumpMetaObject(const QMetaObject* metaObject);
 
     JEnumWrapper receivedCustomEnum();

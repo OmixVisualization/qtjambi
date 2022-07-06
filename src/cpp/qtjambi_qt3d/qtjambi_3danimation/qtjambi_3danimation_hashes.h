@@ -61,45 +61,59 @@ inline bool operator==(const QAnimationClipData &lhs, const QAnimationClipData &
     return false;
 }
 #endif
-}
 
-inline hash_type qHash(const Qt3DAnimation::QKeyFrame &value)
+#ifndef QT_JAMBI_RUN
+inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.coordinates());
-    hashCode = hashCode * 31 + qHash(value.interpolationType());
+    hash_type hashCode = seed;
+    hashCode = hashCode * 31 + qHash(value.coordinates());
+    hashCode = hashCode * 31 + ::qHash(value.interpolationType());
     hashCode = hashCode * 31 + qHash(value.leftControlPoint());
     hashCode = hashCode * 31 + qHash(value.rightControlPoint());
     return hashCode;
 }
 
-inline hash_type qHash(const Qt3DAnimation::QChannelComponent &value)
+inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.keyFrameCount());
-    for(const Qt3DAnimation::QKeyFrame & f : value){
+    hash_type hashCode = seed;
+    hashCode = hashCode * 31 + qHash(value.name());
+    hashCode = hashCode * 31 + ::qHash(value.keyFrameCount());
+    for(const QKeyFrame & f : value){
         hashCode = hashCode * 31 + qHash(f);
     }
     return hashCode;
 }
 
-inline hash_type qHash(const Qt3DAnimation::QChannel &value)
+inline hash_type qHash(const QChannel &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.channelComponentCount());
-    for(const Qt3DAnimation::QChannelComponent & c : value){
+    hash_type hashCode = seed;
+    hashCode = hashCode * 31 + qHash(value.name());
+    hashCode = hashCode * 31 + ::qHash(value.channelComponentCount());
+    for(const QChannelComponent & c : value){
         hashCode = hashCode * 31 + qHash(c);
     }
     return hashCode;
 }
 
-inline hash_type qHash(const Qt3DAnimation::QAnimationClipData &value)
+inline hash_type qHash(const QAnimationClipData &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.channelCount());
-    for(const Qt3DAnimation::QChannel & c : value){
+    hash_type hashCode = seed;
+    hashCode = hashCode * 31 + qHash(value.name());
+    hashCode = hashCode * 31 + ::qHash(value.channelCount());
+    for(const QChannel & c : value){
         hashCode = hashCode * 31 + qHash(c);
     }
     return hashCode;
 }
+
+#endif
+
+}
+#ifdef QT_JAMBI_RUN
+hash_type qHash(const Qt3DAnimation::QKeyFrame &value, hash_type seed = 0);
+hash_type qHash(const Qt3DAnimation::QChannelComponent &value, hash_type seed = 0);
+hash_type qHash(const Qt3DAnimation::QChannel &value, hash_type seed = 0);
+hash_type qHash(const Qt3DAnimation::QAnimationClipData &value, hash_type seed = 0);
+#endif
 
 #endif // QTJAMBI_3DANIMATION_HASHES_H

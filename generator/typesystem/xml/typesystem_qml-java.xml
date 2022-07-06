@@ -74,7 +74,7 @@
           <modify-argument index="0">
             <replace-type modified-type="io.qt.qml.QJSManagedValue" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
                 qtjambi_set_java_ownership(%env, %out);
             </conversion-rule>
           </modify-argument>
@@ -83,7 +83,7 @@
           <modify-argument index="0">
             <replace-type modified-type="io.qt.qml.QJSManagedValue" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
                 qtjambi_set_java_ownership(%env, %out);
             </conversion-rule>
           </modify-argument>
@@ -92,7 +92,7 @@
           <modify-argument index="0">
             <replace-type modified-type="io.qt.qml.QJSManagedValue" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
                 qtjambi_set_java_ownership(%env, %out);
             </conversion-rule>
           </modify-argument>
@@ -144,7 +144,7 @@
         <modify-argument index="0">
             <replace-type modified-type="java.lang.Double"/>
             <conversion-rule class="native">
-                jobject %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
+                %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
             </conversion-rule>
         </modify-argument>
         <modify-argument index="1">
@@ -159,7 +159,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Boolean"/>
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_from_boolean(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_from_boolean(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="1">
@@ -177,7 +177,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QList&lt;QQmlError>  %out = qtjambi_cast&lt;QList&lt;QQmlError>>(%env, %in);
@@ -282,15 +282,6 @@
         </modify-function>
     </interface-type>
     <object-type name="QQmlApplicationEngine">
-        <modify-function signature="objectCreated(QObject*, const QUrl&amp;)">
-            <inject-code class="signal" position="beginning">
-                try{
-                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );
-                }catch(const JavaException&amp; exn){
-                    qtjambi_push_blocked_exception(%env, exn);
-                }
-            </inject-code>
-        </modify-function>
         <modify-function signature="loadData(const QByteArray &amp;, const QUrl &amp;)" block-exceptions="yes">
         </modify-function>
     </object-type>
@@ -368,9 +359,9 @@
                 <conversion-rule class="native">
                     if(valueIsUndefined){
                         Java::QtQml::QQmlExpression$ValueIsUndefined::throwNew(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
-                        return nullptr;
-                    }
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    }else{
+						%out = qtjambi_cast&lt;jobject>(%env, %in);
+					}
                 </conversion-rule>
             </modify-argument>
         </modify-function>

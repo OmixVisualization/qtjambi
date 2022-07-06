@@ -209,7 +209,7 @@ typedef void(*Destructor)(void*);
 
 typedef const char* (*QMetaMethodRenamer)(int);
 
-typedef hash_type(*QHashFunctionPtr)(const void*);
+typedef hash_type(*QHashFunctionPtr)(const void*,hash_type);
 
 QTJAMBI_EXPORT int qtjambi_interface_offset(JNIEnv *env, jclass cls, const std::type_info& interfacetype);
 
@@ -226,7 +226,7 @@ namespace QtJambiPrivate {
 
 template<typename T, bool = QtJambiPrivate::supports_qHash<T>::value>
 struct RegistryHelper{
-    static void registerHashFunction(){ ::registerHashFunction(typeid(T), [](const void* ptr)->hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const T*>(ptr)); }); }
+    static void registerHashFunction(){ ::registerHashFunction(typeid(T), [](const void* ptr, hash_type seed)->hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const T*>(ptr), seed); }); }
 };
 
 template<typename T>
@@ -380,8 +380,8 @@ QTJAMBI_EXPORT int registerMetaType( const std::type_info& typeId,
                                      QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
 #endif
                                      uint size,
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                      ushort align,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                      int builtInTypeId,
 #endif
                                      QMetaType::TypeFlags flags,
@@ -407,8 +407,8 @@ QTJAMBI_EXPORT int registerMetaType( const std::type_info& typeId,
                                      QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
 #endif
                                      uint size,
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                      ushort align,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                      int builtInTypeId,
 #endif
                                      QMetaType::TypeFlags flags,
@@ -453,8 +453,8 @@ int registerMetaTypeNoMetaObject(const char *typeName,
                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               alignof(T),
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
@@ -580,8 +580,8 @@ int registerMetaType(const char *typeName,
                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               alignof(T),
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
@@ -719,8 +719,8 @@ int registerMetaType(const QByteArray& typeName,
                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
 #endif
                               sizeof(T),
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               alignof(T),
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),

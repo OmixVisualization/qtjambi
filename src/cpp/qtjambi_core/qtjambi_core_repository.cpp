@@ -2,10 +2,7 @@
 
 namespace Java{
 namespace QtCore{
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QException,
-                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,
-                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,)
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFile$TrashResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLjava/lang/String;)
@@ -244,6 +241,12 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;))
+
+namespace Private{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Long,
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(hashCode,(J)I))
+}
+
 }
 
 }

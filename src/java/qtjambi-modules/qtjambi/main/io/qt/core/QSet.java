@@ -31,9 +31,11 @@ package io.qt.core;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import io.qt.NativeAccess;
+import io.qt.QNoImplementationException;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
@@ -81,7 +83,7 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     
     public QSet(Collection<T> other) {
         super(null);
-		QMetaType metaType = QList.findElementMetaType(other);
+		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QSet.");
 		if(metaType.id()==QMetaType.Type.QVariant.value())
@@ -254,12 +256,29 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
 
     @Override
     @QtUninvokable
-    public int hashCode() {
-    	int hashCode = getClass().hashCode();
-        for (T e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    public int hashCode() { 
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
     @Override
     @QtUninvokable

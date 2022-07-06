@@ -9,7 +9,7 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-QT += core core-private qmltest
+QT += core core-private qmltest quick
 #CONFIG += qmltestcase
 
 SOURCES += \

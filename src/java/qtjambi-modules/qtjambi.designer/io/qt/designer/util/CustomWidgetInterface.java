@@ -29,9 +29,14 @@
 
 package io.qt.designer.util;
 
-import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 import io.qt.core.QMetaObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.designer.QDesignerCustomWidgetInterface;
 import io.qt.gui.QIcon;
 import io.qt.widgets.QWidget;
@@ -45,30 +50,80 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 		QtJambi_LibraryUtilities.initialize();
 	}
 	
-	private static native Class<?> lambdaReturnType(Serializable lambdaExpression);
-
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, QWidget> constructor) {
+	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor) {
 		super();
 		this.group = group;
 		this.constructor = constructor;
-		Class<?> resultType = lambdaReturnType(constructor);
-		if(resultType==null)
-			throw new IllegalArgumentException("constructor argument needs to be a method handle like Type::new.");
-		QMetaObject mo = QMetaObject.forType(resultType);
-		if(mo!=null)
-			name = mo.className();
+		Class<?> resultType = QtJambi_LibraryUtilities.internal.lambdaReturnType(QMetaObject.Method1.class, constructor);
+		QMetaObject metaObject = null;
+		if(resultType==null) {
+			Class<?> implClass = null;
+			for(Type iface : constructor.getClass().getGenericInterfaces()) {
+				if(iface instanceof ParameterizedType) {
+					ParameterizedType piface = (ParameterizedType)iface;
+					if(piface.getRawType()==QMetaObject.Method1.class) {
+						Type[] args = piface.getActualTypeArguments();
+						for (int i = 1; i < args.length; i++) {
+							if(args[i] instanceof Class) {
+								implClass = (Class<?>)args[i];
+							}else if(args[i] instanceof ParameterizedType) {
+								implClass = (Class<?>)((ParameterizedType)args[i]).getRawType();
+							} else if (args[i] instanceof GenericArrayType) {
+								GenericArrayType gtype = (GenericArrayType)args[i];
+								if (gtype.getGenericComponentType() instanceof Class) {
+									implClass = (Class<?>) gtype.getGenericComponentType();
+								} else if (gtype.getGenericComponentType() instanceof ParameterizedType) {
+									ParameterizedType ptype = (ParameterizedType) gtype.getGenericComponentType();
+									implClass = (Class<?>) ptype.getRawType();
+								} else if (gtype.getGenericComponentType() instanceof TypeVariable<?>) {
+									TypeVariable<?> tv = (TypeVariable<?>)gtype.getGenericComponentType();
+									Type[] bounds = tv.getBounds();
+									if(bounds==null || bounds.length==0)
+										implClass = Object.class;
+									else if(bounds[0] instanceof Class)
+										implClass = (Class<?>)bounds[0];
+									else if(bounds[0] instanceof ParameterizedType)
+										implClass = (Class<?>)((ParameterizedType)bounds[0]).getRawType();
+									implClass = Array.newInstance(implClass, 0).getClass();
+								}
+							}
+						}
+					}
+				}
+			}
+			if(implClass==null) {
+				if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+					try {
+						QWidget widget = constructor.invoke(null);
+						metaObject = widget.metaObject();
+						widget.dispose();
+					} catch (Throwable e) {
+					}
+				}else {
+					throw new RuntimeException("Constructor handle required as argument, e.g. QWidget::new");
+				}
+	    	}else {
+	    		metaObject = QMetaObject.forType(implClass);
+	    	}
+		}else {
+			metaObject = QMetaObject.forType(resultType);
+		}
+		if(metaObject!=null)
+			name = metaObject.className();
+		else if(resultType!=null)
+			name = resultType.getName().replace(".", "::");
 		else
-			name = resultType.getName();
+			name = QWidget.class.getName().replace(".", "::");
 	}
 
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, QWidget> constructor, String name) {
+	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor, String name) {
 		super();
 		this.group = group;
 		this.constructor = constructor;
 		this.name = name;
 	}
 
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, QWidget> constructor, String whatsThis,
+	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor, String whatsThis,
 			String name, String toolTip, boolean isContainer, String includeFile, QIcon icon) {
 		super();
 		this.group = group;
@@ -82,7 +137,7 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 	}
 
 	private final String group;
-	private final QMetaObject.Method1<QWidget,QWidget> constructor;
+	private final QMetaObject.Method1<QWidget,? extends QWidget> constructor;
 	private String whatsThis;
 	private final String name;
 	private String toolTip;

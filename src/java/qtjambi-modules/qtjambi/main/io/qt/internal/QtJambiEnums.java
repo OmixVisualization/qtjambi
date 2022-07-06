@@ -30,8 +30,6 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -40,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.qt.NativeAccess;
 import io.qt.QFlags;
@@ -53,15 +52,16 @@ import io.qt.QtShortFlagEnumerator;
 public final class QtJambiEnums {
 	private QtJambiEnums() {throw new RuntimeException();}
 	
-	private static final Map<Class<? extends QtAbstractFlagEnumerator>, MethodHandle> flagsConstructorsByEnumType;
+	private static final Map<Class<? extends QtAbstractFlagEnumerator>, Object> flagsConstructorsByEnumType;
 	private static final Map<Class<? extends QtAbstractFlagEnumerator>, QtAbstractFlagEnumerator[]> flagsConstants;
 	static {
 		flagsConstructorsByEnumType = Collections.synchronizedMap(new HashMap<>());
 		flagsConstants = Collections.synchronizedMap(new HashMap<>());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static QFlags<?> asFlags(QtAbstractFlagEnumerator flag, Function<Integer, QFlags<?>> constructor) {
-		MethodHandle flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(flag.getClass(), cls -> {
+		Object flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(QtJambiInternal.getClass(flag), cls -> {
 			Class<?> declClass = cls.getDeclaringClass();
 			if (declClass != null) {
 				for (Class<?> flagClass : declClass.getDeclaredClasses()) {
@@ -70,20 +70,25 @@ public final class QtJambiEnums {
 							ParameterizedType p = (ParameterizedType) flagClass.getGenericSuperclass();
 							Type[] args = p.getActualTypeArguments();
 							if (args.length == 1 && args[0] == cls) {
+								Constructor<?> constr = null;
 								try {
-									Constructor<?> constr = flagClass.getDeclaredConstructor(int.class);
-									return QtJambiInternal.privateLookup(flagClass).unreflectConstructor(constr);
+									constr = flagClass.getDeclaredConstructor(int.class);
 								} catch (Throwable e) {
 								}
-								try {
-									Constructor<?> constr = flagClass.getDeclaredConstructor();
-									return QtJambiInternal.privateLookup(flagClass).unreflectConstructor(constr);
+								if(constr==null) try {
+									constr = flagClass.getDeclaredConstructor();
 								} catch (Throwable e) {
 								}
-								try {
-									Constructor<?> constr = flagClass.getConstructor();
-									return QtJambiInternal.privateLookup(flagClass).unreflectConstructor(constr);
+								if(constr==null) try {
+									constr = flagClass.getConstructor();
 								} catch (Throwable e) {
+								}
+								if(constr!=null) {
+									if(constr.getParameterCount()==0) {
+										return QtJambiInternal.getFactory0(constr);
+									}else {
+										return QtJambiInternal.getFactory1(constr);
+									}
 								}
 							}
 						}
@@ -103,14 +108,14 @@ public final class QtJambiEnums {
 			value |= ((QtLongFlagEnumerator) flag).value();
 		}
 		if (flagsConstructor != null) {
-			if (flagsConstructor.type().parameterCount() == 1) {
+			if (flagsConstructor instanceof Function) {
 				try {
-					return (QFlags<?>) flagsConstructor.invoke(value);
+					return ((Function<Integer,QFlags<?>>)flagsConstructor).apply(value);
 				} catch (Throwable e) {
 				}
-			} else {
+			} else if (flagsConstructor instanceof Supplier) {
 				try {
-					QFlags<?> flags = (QFlags<?>) flagsConstructor.invoke();
+					QFlags<?> flags = ((Supplier<QFlags<?>>) flagsConstructor).get();
 					flags.setValue(flags.value() | value);
 					return flags;
 				} catch (Throwable e) {
@@ -119,15 +124,16 @@ public final class QtJambiEnums {
 		}
 		return constructor.apply(value);
 	}
-
+	
 	public static boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
 		try {
 			QtAbstractFlagEnumerator[] values;
-			if (enm.getClass().isAnnotationPresent(QtExtensibleEnum.class)) {
-				values = enm.getClass().getEnumConstants();
+			Class<? extends QtAbstractFlagEnumerator> cls = QtJambiInternal.getClass(enm);
+			if (cls.isAnnotationPresent(QtExtensibleEnum.class)) {
+				values = cls.getEnumConstants();
 			} else {
-				values = flagsConstants.computeIfAbsent(enm.getClass(), cls -> {
-					return cls.getEnumConstants();
+				values = flagsConstants.computeIfAbsent(cls, _cls -> {
+					return _cls.getEnumConstants();
 				});
 			}
 			return values != null && values.length <= 33;
@@ -161,13 +167,12 @@ public final class QtJambiEnums {
 	
 	@NativeAccess
 	private static <T extends Enum<T>> boolean extendEnum(Class<T> enumClass, T[] array, T enumEntry) {
-		java.lang.invoke.MethodHandles.Lookup pl = QtJambiInternal.privateLookup(Class.class);
 		try {
 			Field enumConstantsField = Class.class.getDeclaredField("enumConstants");
 			Field enumConstantDirectoryField = Class.class.getDeclaredField("enumConstantDirectory");
-			pl.unreflectSetter(enumConstantsField).invoke(enumClass, array);
-			Map<String, T> directory = (Map<String, T>) pl.unreflectGetter(enumConstantDirectoryField)
-					.invoke(enumClass);
+			QtJambiInternal.setField(enumClass, enumConstantsField, array);
+			@SuppressWarnings("unchecked")
+			Map<String, T> directory = (Map<String, T>)QtJambiInternal.fetchField(enumClass, enumConstantDirectoryField);
 			if (directory != null) {
 				directory.put(enumEntry.name(), enumEntry);
 			}
@@ -175,24 +180,26 @@ public final class QtJambiEnums {
 		} catch (Throwable e) {
 			try {
 				Field enumVarsField = Class.class.getDeclaredField("enumVars");
-				Object enumVars = pl.unreflectGetter(enumVarsField).invoke(enumClass);
-				java.lang.invoke.MethodHandles.Lookup pl2 = QtJambiInternal.privateLookup(enumVarsField.getType());
+				Object enumVars = QtJambiInternal.fetchField(enumClass, enumVarsField);
 				if (enumVars == null) {
-					enumVars = pl2.findConstructor(enumVarsField.getType(), MethodType.methodType(void.class)).invoke();
-					pl.unreflectSetter(enumVarsField).invoke(enumClass, enumVars);
+					Constructor<?> enumVarsConstr = enumVarsField.getType().getDeclaredConstructor();
+					enumVars = QtJambiInternal.invokeContructor(enumVarsConstr);
+					QtJambiInternal.setField(enumClass, enumVarsField, enumVars);
 				}
 				Field enumConstantsField = enumVarsField.getType().getDeclaredField("cachedEnumConstants");
-				Field enumConstantDirectoryField = enumVarsField.getType()
-						.getDeclaredField("cachedEnumConstantDirectory");
-				pl2.unreflectSetter(enumConstantsField).invoke(enumVars, array);
-				Map<String, T> directory = (Map<String, T>) pl2.unreflectGetter(enumConstantDirectoryField)
-						.invoke(enumVars);
+				Field enumConstantDirectoryField = enumVarsField.getType().getDeclaredField("cachedEnumConstantDirectory");
+				QtJambiInternal.setField(enumVars, enumConstantsField, array);
+				@SuppressWarnings("unchecked")
+				Map<String, T> directory = (Map<String, T>) QtJambiInternal.fetchField(enumVars, enumConstantDirectoryField);
 				if (directory != null) {
 					directory.put(enumEntry.name(), enumEntry);
 				}
 				return true;
 			} catch (Throwable e1) {
-				e1.printStackTrace();
+				if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.Android) {
+					e.addSuppressed(e1);
+					e.printStackTrace();
+				}
 			}
 		}
 		return false;

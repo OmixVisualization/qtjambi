@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.autotests.generated.General;
@@ -38,6 +39,7 @@ import io.qt.core.QEventLoop;
 import io.qt.core.QList;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRunnable;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
@@ -228,6 +230,7 @@ public class TestExceptions extends ApplicationInitializer {
     
     @Test
     public void testExceptionDuringEvent_send() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	SimpleExnEventObject o = new SimpleExnEventObject();
 		try{
 			QCoreApplication.sendEvent(o, new QEvent(QEvent.Type.WinEventAct));
@@ -239,6 +242,7 @@ public class TestExceptions extends ApplicationInitializer {
     
     @Test
     public void testExceptionDuringEvent_posted() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	SimpleExnEventObject o = new SimpleExnEventObject();
 		QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
 		try{

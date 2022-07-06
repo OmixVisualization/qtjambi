@@ -396,15 +396,15 @@ public class TestVirtualFunctions extends ApplicationInitializer {
     	FunctionalTest functionalTest = new FunctionalTest();
     	FunctionalTest.TestFunction1 ft1;
     	assertEquals(279*9, functionalTest.convert(ft1 = (i,b)->i*9));
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(9*4, functionalTest.last1().applyAsInt(4, true));
     	ft1.dispose();
     	FunctionalTest.TestFunction1 ft = (i,b)->b ? i*9 : -1;
     	assertEquals(4*9, functionalTest.convert(ft, 4, true));
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(-1, functionalTest.convert(ft, 4, false));
     	FunctionalTest.TestFunction1 last1 = functionalTest.last1();
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(4*9, last1.applyAsInt(4, true));
     	FunctionalTest.TestFunction1 anyTestFunction1 = functionalTest.anyTestFunction1();
     	assertEquals(10, anyTestFunction1.applyAsInt(5, true));

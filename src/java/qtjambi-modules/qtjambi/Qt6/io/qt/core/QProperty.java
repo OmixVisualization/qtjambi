@@ -33,6 +33,7 @@ import java.util.Objects;
 import io.qt.QNativePointer;
 import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
+import io.qt.internal.QtJambiInternal;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qproperty.html">QProperty</a></p>
@@ -131,7 +132,7 @@ public final class QProperty<T> extends QPropertyData<T> {
 		}else if(val instanceof QNativePointer) {
 			return new QMetaType(QMetaType.Type.VoidStar);
 		}else {
-			return QMetaType.fromType(val.getClass());
+			return QMetaType.fromType(QtJambiInternal.getClass(val));
 		}
 	}
 
@@ -158,7 +159,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @param instantiations optional instantiations for container classes like {@link QList} and {@link QMap}
      */
 	public QProperty(Class<T> type, QMetaType... instantiations) {
-		this(null, type, instantiations);
+		this((T)null, type, instantiations);
 	}
 	
     /**
@@ -209,6 +210,26 @@ public final class QProperty<T> extends QPropertyData<T> {
      */
 	public QProperty(QtUtilities.Supplier<T> functor) {
 		this(new QPropertyBinding<>(functor));
+	}
+
+	/**
+     * <p>Constructs a property bound to the provided <code>functor</code>.</p>
+     * <p>The property type corresponds to the return type of the <code>functor</code>'s {@link java.util.function.Supplier#get()}.</p>
+     * @param functor
+     * @param type class type
+     * @param instantiations optional instantiations for container classes like {@link QList} and {@link QMap}
+     */
+	public QProperty(QtUtilities.Supplier<T> functor, Class<T> type, QMetaType... instantiations) {
+		super(null);
+		QMetaType metaType = QMetaType.fromType(type, instantiations);
+		if(metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
+			d = new RCTypedPropertyBindingData(metaType, null);
+		}else {
+			d = new TypedPropertyBindingData(metaType);
+		}
+		initialize_native(this, metaType, null);
+		if(functor!=null)
+			setBinding(functor);
 	}
 	
 	/**
@@ -367,13 +388,23 @@ public final class QProperty<T> extends QPropertyData<T> {
 	@QtUninvokable
 	public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor)
     {
-        return setBinding(new QPropertyBinding<>(functor));
+		try {
+			QPropertyBinding.setPendingMetaType(this::valueMetaType);
+			return setBinding(new QPropertyBinding<>(functor));
+		}finally {
+			QPropertyBinding.setPendingMetaType(null);
+		}
     }
 	
 	@QtUninvokable
 	private QPropertyBinding<T> makeBinding()
     {
-        return new QPropertyBinding<>(this::value);
+		try {
+			QPropertyBinding.setPendingMetaType(this::valueMetaType);
+			return new QPropertyBinding<>(this::value);
+		}finally {
+			QPropertyBinding.setPendingMetaType(null);
+		}
     }
 	
 	/**

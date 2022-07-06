@@ -51,8 +51,10 @@ import static io.qt.core.QMap.findMapMetaType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.qt.NativeAccess;
+import io.qt.QNoImplementationException;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
@@ -107,7 +109,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     
     public QMultiHash(Map<K,List<V>> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(other);
+		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other));
 		if(metaTypes.first.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiHash.");
 		if(metaTypes.first.id()==QMetaType.Type.Void.value())
@@ -344,7 +346,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     public final java.util.Collection<java.util.List<V>> values()    {
     	long id = QtJambi_LibraryUtilities.internal.nativeId(this);
     	java.util.List<java.util.List<V>> result = new java.util.ArrayList<>();
-        for(Object key : __qt_QHash_keys(id)) {
+        for(Object key : __qt_QMultiHash_uniqueKeys(id)) {
             result.add(__qt_QMultiHash_valuesKey(id, key));
         }
         return result;
@@ -436,11 +438,28 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @Override
     @QtUninvokable
     public int hashCode() { 
-    	int hashCode = getClass().hashCode();
-        for (QPair<K,V> e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
     @QtUninvokable
     static native <K> boolean lessThan(K key1, K key2);

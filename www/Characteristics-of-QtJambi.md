@@ -1,4 +1,4 @@
-# Characteristics of QtJambi
+# Characteristics Of QtJambi
 
 ## Initializing Qt
 
@@ -341,7 +341,7 @@ arguments. If you want to specify a primitive type as signal argument
 use the boxed Java type (one of `Byte`, `Short`, `Integer`, `Long`,
 `Character`, `Float`, `Double` and `Boolean`) annotated with
 `@QtPrimitiveType`. `@QtPrimitiveType` denies emmitting the signal with
-`null` parameter.
+`null` parameter. On Android, type parameter annotations are ignored.
 
 ``` java
 // defining signals in Java
@@ -411,11 +411,41 @@ this.lengthChanged.connect(this::onLengthChanged);
       -   In rare cases, it might be necessary to define value type
         arguments as pointer or reference to make signal and slot
         signatures compatible. Therfore, use the annotations
-        `@QtPointerType` and `@QtReferenceType`.
+        `@QtPointerType` and `@QtReferenceType` (ignored on Android).
         Examples: Java method `void whatSize(@QtPointerType QSize size)`
         has the following C++ signature: `void whatSize(QSize* size)`.
 
 Disconnecting signals and slots works analogous with `disconnect()`.
+
+##### Special Characteristics in Android
+
+Android is not able to resolve the corresponding `QMetaMethod` from a method reference.
+I.e. by connecting to method reference a lambda object is created and invoked at signal emitting.
+Also, the same method reference at different positions will lead to unequal lambda objects.
+
+For example, the following code connects signal `statechanged` to a lambda object calling `this.onStatechanged()`.
+But the second line tries to disconect the signal from a second lambda object that has never been connected.
+
+``` java
+QObject.connect(this.statechanged, this::onStatechanged);
+QObject.disconnect(this.statechanged, this::onStatechanged); //->false in Android
+```
+
+A possible solution is to use a variable to store the lamnda object:
+
+``` java
+Slot0 slot = this::onStatechanged;
+QObject.connect(this.statechanged, slot);
+QObject.disconnect(this.statechanged, slot); //->true
+```
+
+In any case, textual signal slot connections are resolved to `QMetaMethod`s even in Android:
+
+``` java
+QObject.connect(this.statechanged, this, "onStatechanged()");
+QObject.disconnect(this.statechanged, this, "onStatechanged()"); //->true in Android
+```
+
 
 #### Emmitting
 
@@ -835,20 +865,14 @@ Alternatively, you can store your icons (and other resources) directly
 in a Java package and access it from classpath:
 
 ``` java
-QAction newFileAction = new QAction(new QIcon("classpath:com/myapplication/icons/newFile.png"), "New File");
-QFile cpResourceFile = new QFile("classpath:com/myapplication/icons/data.dat");
+QAction newFileAction = new QAction(new QIcon(":com/myapplication/icons/newFile.png"), "New File");
+QFile cpResourceFile = new QFile(":com/myapplication/icons/data.dat");
 ```
 
-If you want to specify an URL referring to classpath resource use `fromClassPath`
+If you want to specify an URL referring to classpath resource use `qrc:`:
 
 ``` java
-QUrl url = QUrl.fromClassPath("com/myapplication/icons/data.dat");
-```
-
-...or specify it as file URL:
-
-``` java
-QUrl url = new QUrl("file:///:classpath:/com/myapplication/icons/data.dat");
+QUrl url = new QUrl("qrc:/com/myapplication/icons/data.dat");
 ```
 
 If you want to use classpath resources in QML you always need to specify it this way.
@@ -862,7 +886,7 @@ by `tr(...)` as introduced
 [here](https://doc.qt.io/qt-6/i18n-source-translation.html).
 
 ``` java
-QAction newFileAction = new QAction(new QIcon("classpath:com/myapplication/icons/newFile.png"), tr("New File"));
+QAction newFileAction = new QAction(new QIcon(":com/myapplication/icons/newFile.png"), tr("New File"));
 ```
 
 Use Qt's `lupdate` tool to extract all UI text from source code.
@@ -895,7 +919,7 @@ qm file from classpath:
 
 ``` java
 QTranslator translator = new QTranslator();
-translator.load("classpath:com/myapplication/translations/app_de.qm");
+translator.load(":com/myapplication/translations/app_de.qm");
 QCoreApplication.installTranslator(translator);
 ```
 
@@ -910,7 +934,7 @@ There are two ways to use these designed UIs in your QtJambi java application.
 
 ``` java
 QUiLoader loader = new QUiLoader();
-QFile device = new QFile("classpath:com/myapplication/widgets/mainwindow.ui");
+QFile device = new QFile(":com/myapplication/widgets/mainwindow.ui");
 device.open(QIODevice.OpenModeFlag.ReadOnly);
 QWidget widget = loader.load(device);
 device.close();
@@ -923,7 +947,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.1.jar:qtjambi-uic-6.3.1.jar
+     -p qtjambi-6.3.2.jar:qtjambi-uic-6.3.2.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -931,7 +955,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.1.jar:qtjambi-uic-6.3.1.jar
+     -cp qtjambi-6.3.2.jar:qtjambi-uic-6.3.2.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1055,7 +1079,7 @@ You could also specify the package's version by annotating the
 **package-info.java** with `QmlImportMajorVersion`:
 
 ``` java
-@io.qt.qml.util.QmlImportMajorVersion(1)
+@io.qt.qml.util.QmlImport(majorVersion=1, classes={Message.class})
 package com.mycompany.messaging;
 ```
 
@@ -1175,7 +1199,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
+     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1187,7 +1211,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
+     -cp qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1214,7 +1238,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.1.jar:qtjambi-deployer-6.3.1.jar
+     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

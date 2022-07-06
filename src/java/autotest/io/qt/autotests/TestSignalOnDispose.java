@@ -152,7 +152,7 @@ public class TestSignalOnDispose extends ApplicationInitializer {
 		}
 		long t1 = System.currentTimeMillis();
 		while(disposed.get()==0) {
-			System.gc();
+			ApplicationInitializer.runGC();
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {

@@ -24,11 +24,11 @@
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
-                try{
+                QTJAMBI_TRY{
             </inject-code>
             <inject-code class="shell" position="end">
                 <argument-map index="3" meta-name="%3"/>
-                }catch(const JavaException&amp; exn){
+                }QTJAMBI_CATCH(const JavaException&amp; exn){
                     if(Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::isInstanceOf(%env, exn.object())){
                         if(%3){
                             jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.object());
@@ -37,7 +37,7 @@
                     }else{
                         exn.raise();
                     }
-                }
+                }QTJAMBI_TRY_END
             </inject-code>
         </modify-function>
         <inject-code>

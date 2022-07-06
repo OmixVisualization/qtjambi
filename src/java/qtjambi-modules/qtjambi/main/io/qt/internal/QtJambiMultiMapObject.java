@@ -293,10 +293,10 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 				k1.increment();
 			}
 			for(; !k1.equals(k2); k1.increment()) {
-				map.computeIfAbsent(k1.checkedKey(), k->new ArrayList<>()).add(k1.checkedValue());
+				map.computeIfAbsent(k1.checkedKey(), QtJambiInternal.getArrayListFactory()).add(k1.checkedValue());
 			}
 			if(toInclusive) {
-				map.computeIfAbsent(k2.checkedKey(), k->new ArrayList<>()).add(k2.checkedValue());
+				map.computeIfAbsent(k2.checkedKey(), QtJambiInternal.getArrayListFactory()).add(k2.checkedValue());
 			}
 		}
 		return map;
@@ -315,10 +315,10 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 		}
 		if(!k.equals(end())) {
 			for(QtJambiMapIteratorObject<K,V> iterator = begin(); !iterator.equals(k); iterator.increment()) {
-				map.computeIfAbsent(iterator.checkedKey(), _k->new ArrayList<>()).add(iterator.checkedValue());
+				map.computeIfAbsent(iterator.checkedKey(), QtJambiInternal.getArrayListFactory()).add(iterator.checkedValue());
 			}
 			if(inclusive) {
-				map.computeIfAbsent(k.checkedKey(), _k->new ArrayList<>()).add(k.checkedValue());
+				map.computeIfAbsent(k.checkedKey(), QtJambiInternal.getArrayListFactory()).add(k.checkedValue());
 			}
 		}
 		return map;
@@ -341,7 +341,7 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 				k.increment();
 			}
 			for(;!k.equals(end); k.increment()) {
-				map.computeIfAbsent(k.checkedKey(), _k->new ArrayList<>()).add(k.checkedValue());
+				map.computeIfAbsent(k.checkedKey(), QtJambiInternal.getArrayListFactory()).add(k.checkedValue());
 			}
 		}
 		return map;

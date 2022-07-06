@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -76,11 +75,11 @@ public final class QtArgument {
 		
 		private Stream(Class<?> type) {
 			arguments = new HashMap<>();
-			currentList = arguments.computeIfAbsent(type, t->new ArrayList<>());
+			currentList = arguments.computeIfAbsent(type, QtJambiInternal.getArrayListFactory());
 		}
 		
 		public Stream add(Object value) {
-			currentList.add(new Arg(value.getClass(), value, true));
+			currentList.add(new Arg(QtJambiInternal.getClass(value), value, true));
 			return this;
 		}
 		public Stream add(int value) {
@@ -122,7 +121,7 @@ public final class QtArgument {
 		public Stream begin(Class<?> type) {
 			if(arguments.containsKey(type))
 				throw new IllegalArgumentException("Type "+type+" has already been used.");
-			currentList = arguments.computeIfAbsent(type, t->new ArrayList<>());
+			currentList = arguments.computeIfAbsent(type, QtJambiInternal.getArrayListFactory());
 			return this;
 		}
 		Map<Class<?>, List<?>> arguments() {

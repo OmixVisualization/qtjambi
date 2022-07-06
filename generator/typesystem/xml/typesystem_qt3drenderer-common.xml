@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="Qt3DRender" description="Contains classes that enable 2D and 3D rendering">
+    <required-library name="QtConcurrent"/>
     <namespace-type name="Qt3DRender" generate="no" until="5.14">
     </namespace-type>
     <namespace-type name="Qt3DRender" since="5.15.0">

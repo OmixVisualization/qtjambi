@@ -15,7 +15,7 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
 
-QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows Linux and macOS. 
+QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
 
 ## Support
@@ -25,7 +25,7 @@ Please consider supporting this project by donation. Your support is highly appr
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=M5Z5VMA7FFCEE)
 
-## How to build
+## How To Build From Sources
 
 If you just want to use QtJambi for your application development you can skip these instructions 
 and simply use the provided binaries from the [list of modules](www/Modules.md).
@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.6`, `6.2.4` or by `6.3.1`).
+(exchange `$VERSION` either by `5.15.7`, `6.2.5` or by `6.3.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.1.jar Test.java
+javac -cp qtjambi-6.3.2.jar Test.java
 ```
 
 ### Execute Example
@@ -135,7 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.3.1.jar;. -Djava.library.path=C:\Qt\6.3.0\msvc2019_64\bin Test
+java -cp qtjambi-6.3.2.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)
@@ -178,6 +178,8 @@ Instead of starting your program with a java command as shown above you can depl
 * [QtJambi modules](www/Modules.md)
 * [What's new in QtJambi](www/Whats-New.md)
 * [How to develop with QtJambi](www/How-to-develop-Qt-in-Java.md)
+* [How to Create Android Apps](Android.md).
 * [Characteristics of QtJambi](www/Characteristics-of-QtJambi.md)
 * [How to deploy QtJambi applications](www/How-to-deploy-QtJambi-applications.md)
+* [How to bundle Qt](www/How-to-bundle-Qt-libraries.md)
 * [QtJambi API Reference Documentation](https://doc.qtjambi.io/latest)

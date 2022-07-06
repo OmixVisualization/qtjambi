@@ -34,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandle;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public final class QtJambiPlugins {
 
 	public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
 		if (metaData == null) {
-			metaData = loadMetaDataFromClass(instance.getClass());
+			metaData = loadMetaDataFromClass(QtJambiInternal.getClass(instance));
 		}
 		qRegisterStaticPluginFunctionInstance(QtJambiInternal.internalAccess.nativeId(instance), QtJambiInternal.internalAccess.nativeId(metaData));
 	}
@@ -157,36 +156,88 @@ public final class QtJambiPlugins {
 
 	@NativeAccess
 	private static QObject loadPluginInstance(String libPath, String className, String pluginName) throws Throwable {
-		QFileInfo libFile = new QFileInfo(QDir.fromNativeSeparators(libPath));
-		if (libFile.exists()) {
-			List<URL> urls = new ArrayList<URL>();
-			QDir dir = libFile.dir();
-			if (dir.exists(pluginName + ".jar")) {
-				QFileInfo jarFile = new QFileInfo(dir.filePath(pluginName + ".jar"));
-				if (jarFile.isFile()) {
-					urls.add(new File(QDir.toNativeSeparators(jarFile.absoluteFilePath())).toURI().toURL());
-				}
-			} else {
-				QDir subdir = new QDir(dir.filePath(pluginName));
-				if (subdir.exists()) {
-					for (String jar : subdir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
-						urls.add(new File(QDir.toNativeSeparators(subdir.absoluteFilePath(jar))).toURI().toURL());
+		Class<?> foundClass = null;
+		try {
+			foundClass = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+		}
+		if(foundClass==null) {
+			QFileInfo libFile = new QFileInfo(QDir.fromNativeSeparators(libPath));
+			if (libFile.exists()) {
+				List<URL> urls = new ArrayList<URL>();
+				if(NativeLibraryManager.operatingSystem==NativeLibraryManager.OperatingSystem.Android) {
+					String fileName = libFile.fileName();
+					String suffix;
+					switch (NativeLibraryManager.architecture) {
+					case arm:
+						suffix = pluginName+"_armeabi-v7a.so";
+						break;
+					case arm64:
+						suffix = pluginName+"_arm64-v8a.so";
+						break;
+					case x86:
+						suffix = pluginName+"_x86.so";
+						break;
+					default:
+						suffix = pluginName+"_x86_64.so";
+						break;
 					}
-					if (!urls.isEmpty()) {
-						System.setProperty("java.library.path", System.getProperty("java.library.path", "")
-								+ File.pathSeparatorChar + QDir.toNativeSeparators(subdir.absolutePath()));
+					if(fileName.startsWith("lib") && fileName.endsWith(suffix)) {
+						fileName = fileName.substring(3, fileName.length()-suffix.length());
+						fileName = fileName.replace('_', '/');
+						URL url = QtJambiPlugins.class.getClassLoader().getResource(fileName + pluginName + ".jar");
+						if(url!=null)
+							urls.add(url);
+						else {
+							QDir subdir = new QDir(":/" + fileName + pluginName);
+							if (subdir.exists()) {
+								for (String jar : subdir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
+									url = QtJambiPlugins.class.getClassLoader().getResource(fileName + pluginName + jar);
+									if(url!=null)
+										urls.add(url);
+								}
+							}
+						}
+					}
+				}else {
+					QDir dir = libFile.dir();
+					if (dir.exists(pluginName + ".jar")) {
+						QFileInfo jarFile = new QFileInfo(dir.filePath(pluginName + ".jar"));
+						if (jarFile.isFile()) {
+							urls.add(new File(QDir.toNativeSeparators(jarFile.absoluteFilePath())).toURI().toURL());
+						}
+					} else {
+						QDir subdir = new QDir(dir.filePath(pluginName));
+						if (subdir.exists()) {
+							for (String jar : subdir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
+								urls.add(new File(QDir.toNativeSeparators(subdir.absoluteFilePath(jar))).toURI().toURL());
+							}
+							if (!urls.isEmpty()) {
+								System.setProperty("java.library.path", System.getProperty("java.library.path", "")
+										+ File.pathSeparatorChar + QDir.toNativeSeparators(subdir.absolutePath()));
+							}
+						}
+					}
+				}
+				if (!urls.isEmpty()) {
+					pluginClassLoader.addURLs(urls);
+					try{
+						foundClass = pluginClassLoader.loadClass(className);
+					} catch (Throwable e) {
+						e.printStackTrace();
 					}
 				}
 			}
-			if (!urls.isEmpty()) {
-				pluginClassLoader.addURLs(urls);
-				Class<?> foundClass = pluginClassLoader.loadClass(className);
-				MethodHandle constructor = QtJambiInternal.privateLookup(foundClass)
-						.unreflectConstructor(foundClass.getDeclaredConstructor());
-				QObject result = (QObject) constructor.invoke();
+		}
+		if(foundClass!=null) {
+			try {
+				QObject result = (QObject)io.qt.internal.QtJambiInternal.invokeContructor(foundClass.getDeclaredConstructor());
 				QtJambiInternal.internalAccess.setCppOwnership(result);
 				return result;
-			}
+			} catch (Throwable e) {
+				e.printStackTrace();
+				throw e;
+			}			
 		}
 		return null;
 	}

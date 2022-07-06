@@ -528,17 +528,17 @@ public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     	assertEquals(w1, object.p.value());
     	object.p.setValue(new QGraphicsPathItem());
     	assertEquals(2, signalCounter.get());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.property("p") instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.property("p") instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.property("p") instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.p.value() instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.p.value() instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(object.p.value() instanceof QGraphicsPathItem);
     	@SuppressWarnings("unchecked")
 		QBindable<QGraphicsItem> pBindable = (QBindable<QGraphicsItem>)object.metaObject().property("p").bindable(object);

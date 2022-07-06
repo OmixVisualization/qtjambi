@@ -4,7 +4,7 @@
 #include <QtTextToSpeech/QtTextToSpeech>
 #include <qtjambi/qtjambi_global.h>
 
-#ifndef QT_JAMBI_RUN
+#if !defined(QT_JAMBI_RUN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline bool operator==(const QVoice& lhs, const QVoice& rhs)
 {
     return const_cast<QVoice&>(lhs) == rhs;

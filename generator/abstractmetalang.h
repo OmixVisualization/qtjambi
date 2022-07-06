@@ -339,6 +339,15 @@ class AbstractMetaType {
         // returns true for more complex types...
         bool isNativePointer() const { return m_pattern == NativePointerPattern; }
 
+        bool isString() const {
+            return m_pattern == StringPattern
+                    || m_pattern == Latin1StringPattern
+                    || m_pattern == StringViewPattern
+                    || m_pattern == AnyStringViewPattern
+                    || m_pattern == Utf8StringViewPattern
+                    || m_pattern == StringRefPattern;
+        }
+
         // returns true if the type was originally a QString or const QString &
         bool isTargetLangString() const { return m_pattern == StringPattern; }
 
@@ -589,6 +598,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_property_spec(nullptr),
                 m_constant(false),
                 m_variadics(false),
+                m_explicit(false),
                 m_invalid(false),
                 m_actualMinimumArgumentCount(-1),
                 m_accessedField(nullptr),
@@ -773,6 +783,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
 
         bool isVariadics() const { return m_variadics; }
         void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
+        bool isExplicit() const { return m_explicit; }
+        void setExplicit(bool isExplicit) { m_explicit = isExplicit; }
 
         AbstractMetaType::ReferenceType functionReferenceType() const{
             return m_functionReferenceType;
@@ -802,6 +814,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         AbstractMetaTemplateParameterList m_templateParameters;
         uint m_constant          : 1;
         uint m_variadics         : 1;
+        uint m_explicit          : 1;
         uint m_invalid           : 1;
         mutable int m_actualMinimumArgumentCount;
         const AbstractMetaField *m_accessedField;
@@ -989,6 +1002,10 @@ class AbstractMetaClass : public AbstractMetaAttributes {
                 m_has_virtual_slots(false),
                 m_has_justprivateconstructors(false),
                 m_has_standardconstructor(0),
+                m_has_publicstandardconstructor(0),
+                m_has_explicitstandardconstructor(0),
+                m_has_publiccopyconstructor(0),
+                m_has_explicitcopyconstructor(0),
                 m_has_unimplmentablePureVirtualFunctions(false),
                 m_unimplmentablePureVirtualFunctions(),
                 m_functions_fixed(false),
@@ -1048,6 +1065,9 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         bool hasJustPrivateConstructors() const { return m_has_justprivateconstructors; }
         void setHasJustPrivateConstructors(bool on) { m_has_justprivateconstructors = on; }
         bool hasPublicStandardConstructor() const;
+        bool hasExplicitStandardConstructor() const;
+        bool hasPublicCopyConstructor() const;
+        bool hasExplicitCopyConstructor() const;
         bool hasStandardConstructor() const;
         bool hasUnimplmentablePureVirtualFunction() const {return m_has_unimplmentablePureVirtualFunctions;}
         const QSet<QString>& unimplmentablePureVirtualFunctions() const {return m_unimplmentablePureVirtualFunctions;}
@@ -1287,6 +1307,9 @@ private:
     uint m_has_justprivateconstructors : 1;
     mutable int m_has_standardconstructor : 2;
     mutable int m_has_publicstandardconstructor : 2;
+    mutable int m_has_explicitstandardconstructor : 2;
+    mutable int m_has_publiccopyconstructor : 2;
+    mutable int m_has_explicitcopyconstructor : 2;
     uint m_has_unimplmentablePureVirtualFunctions : 1;
     QSet<QString> m_unimplmentablePureVirtualFunctions;
     uint m_functions_fixed : 1;

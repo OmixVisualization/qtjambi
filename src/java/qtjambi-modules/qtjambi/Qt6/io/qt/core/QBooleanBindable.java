@@ -62,7 +62,8 @@ public final class QBooleanBindable extends QUntypedBindable {
 		QBindableInterface iface = iface();
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
-			if(!QBooleanProperty.checkType(metaType)) {
+			if(!QBooleanProperty.checkType(metaType)
+					&& metaType.id()!=QMetaType.Type.QVariant.value()) {
 				setIface(null);
 				setData(null);
 			}

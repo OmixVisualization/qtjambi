@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assume;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QBindable;
 import io.qt.core.QBooleanBindable;
 import io.qt.core.QBooleanProperty;
@@ -62,6 +63,7 @@ import io.qt.core.QLibraryInfo;
 import io.qt.core.QLongBindable;
 import io.qt.core.QLongProperty;
 import io.qt.core.QLongPropertyAlias;
+import io.qt.core.QMetaType;
 import io.qt.core.QProperty;
 import io.qt.core.QPropertyAlias;
 import io.qt.core.QPropertyChangeHandler;
@@ -87,7 +89,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value());
     	p1.setValue((byte)2);
     	assertEquals(1, changeCounter.intValue());
@@ -96,7 +98,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value());
     	boundProperty.setValue((byte)100);
@@ -154,7 +156,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value());
     	p1.setValue(2);
     	assertEquals(1, changeCounter.intValue());
@@ -163,7 +165,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value());
     	boundProperty.setValue(1000);
@@ -221,7 +223,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value());
     	p1.setValue((short)2);
     	assertEquals(1, changeCounter.intValue());
@@ -230,7 +232,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value());
     	boundProperty.setValue((short)1000);
@@ -288,7 +290,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value());
     	p1.setValue(2);
     	assertEquals(1, changeCounter.intValue());
@@ -297,7 +299,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value());
     	boundProperty.setValue(1000);
@@ -355,7 +357,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value());
     	p1.setValue((char)2);
     	assertEquals(1, changeCounter.intValue());
@@ -364,7 +366,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value());
     	boundProperty.setValue((char)1000);
@@ -423,7 +425,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value(), 0.001);
     	p1.setValue(2);
     	assertEquals(1, changeCounter.intValue());
@@ -432,7 +434,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value(), 0.001);
     	boundProperty.setValue(1000);
@@ -490,7 +492,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value(), 0.001);
     	p1.setValue(2);
     	assertEquals(1, changeCounter.intValue());
@@ -499,7 +501,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value(), 0.001);
     	boundProperty.setValue(1000);
@@ -557,7 +559,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(boundProperty.value());
     	p1.setValue(true);
     	assertEquals(0, changeCounter.intValue());
@@ -568,7 +570,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertFalse(boundProperty.value());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	
     	QBooleanBindable b1 = new QBooleanBindable(p1);
@@ -617,7 +619,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, (byte)boundProperty.value());
     	p1.setValue((byte)2);
     	assertEquals(1, changeCounter.intValue());
@@ -626,7 +628,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, (byte)boundProperty.value());
     	boundProperty.setValue((byte)100);
@@ -677,6 +679,39 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     }
     
     @Test
+	@SuppressWarnings({ "rawtypes", "serial", "unchecked" })
+    public void testQProperty_QVariant() {
+    	QProperty<Integer> p1 = new QProperty<Integer>(5);
+    	QProperty<Integer> p2 = new QProperty<Integer>(5);    	
+		QProperty boundProperty = new QProperty(
+    			new QtUtilities.Supplier() {
+					@Override
+					public Object get() {
+						return p1.value()*p2.value();
+					}
+    			}
+			);
+    	assertFalse(boundProperty.binding().isNull());
+    	QBindable bindable = new QBindable(p1);
+    	assertEquals(QMetaType.fromType(int.class), bindable.metaType());
+    	assertTrue(bindable.binding().isNull());
+    	assertFalse(bindable.makeBinding().isNull());
+    	bindable = new QBindable(p2);
+    	assertEquals(QMetaType.fromType(int.class), bindable.metaType());
+    	assertTrue(bindable.binding().isNull());
+    	assertFalse(bindable.makeBinding().isNull());
+    	bindable = new QBindable(boundProperty);
+    	assertEquals(new QMetaType(QMetaType.Type.QVariant), bindable.metaType());
+    	assertFalse(bindable.binding().isNull());
+    	assertFalse(bindable.makeBinding().isNull());
+    	QIntBindable ibindable = new QIntBindable(boundProperty);
+    	assertEquals(new QMetaType(QMetaType.Type.QVariant), ibindable.metaType());
+    	assertFalse(ibindable.binding().isNull());
+    	assertFalse(ibindable.makeBinding().isNull());
+    	assertEquals(25, ibindable.value());
+    }
+    
+    @Test
     public void testQProperty_Int() {
     	QProperty<Integer> p1 = new QProperty<Integer>(5);
     	QProperty<Integer> p2 = new QProperty<Integer>(5);
@@ -684,7 +719,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, (int)boundProperty.value());
     	p1.setValue(2);
     	assertEquals(1, changeCounter.intValue());
@@ -695,7 +730,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2*3, (int)boundProperty.value());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	boundProperty.setValue(1000);
     	assertEquals(2, changeCounter.intValue());
     	assertTrue(boundProperty.binding().isNull());
@@ -751,7 +786,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, (short)boundProperty.value());
     	p1.setValue((short)2);
     	assertEquals(1, changeCounter.intValue());
@@ -760,7 +795,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, (short)boundProperty.value());
     	boundProperty.setValue((short)1000);
@@ -818,7 +853,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, (long)boundProperty.value());
     	p1.setValue(2l);
     	assertEquals(1, changeCounter.intValue());
@@ -827,7 +862,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, (long)boundProperty.value());
     	boundProperty.setValue(1000l);
@@ -885,7 +920,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, (char)boundProperty.value());
     	p1.setValue((char)2);
     	assertEquals(1, changeCounter.intValue());
@@ -894,7 +929,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, (char)boundProperty.value());
     	boundProperty.setValue((char)1000);
@@ -953,7 +988,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value(), 0.001);
     	p1.setValue(2f);
     	assertEquals(1, changeCounter.intValue());
@@ -962,7 +997,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value(), 0.001);
     	boundProperty.setValue(1000f);
@@ -1020,7 +1055,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertEquals(5*5, boundProperty.value(), 0.001);
     	p1.setValue(2.);
     	assertEquals(1, changeCounter.intValue());
@@ -1029,7 +1064,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(2, changeCounter.intValue());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	assertEquals(2*3, boundProperty.value(), 0.001);
     	boundProperty.setValue(1000.);
@@ -1087,7 +1122,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	AtomicInteger changeCounter = new AtomicInteger();
     	@SuppressWarnings("unused")
 		QPropertyChangeHandler handler = boundProperty.onValueChanged(()->changeCounter.incrementAndGet());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(boundProperty.value());
     	p1.setValue(true);
     	assertEquals(0, changeCounter.intValue());
@@ -1098,7 +1133,7 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertFalse(boundProperty.value());
     	handler.dispose();
     	handler = null;
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertFalse(boundProperty.binding().isNull());
     	
     	QBindable<Boolean> b1 = new QBindable<>(p1);
@@ -1152,15 +1187,16 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	assertEquals(w1, p.value());
     	p.setValue(new QGraphicsPathItem());
     	assertEquals(2, signalCounter.get());
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(p.value() instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(p.value() instanceof QGraphicsPathItem);
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	assertTrue(p.value() instanceof QGraphicsPathItem);
 		QBindable<QGraphicsItem> pBindable = new QBindable<>(p);
     	QProperty<QGraphicsItem> freeProperty = new QProperty<>(new QGraphicsProxyWidget(), QGraphicsItem.class);
-    	assertTrue(freeProperty.value() instanceof QGraphicsProxyWidget);
+    	assertEquals("QGraphicsItem*", new QBindable<>(freeProperty).metaType().name());
+    	assertTrue("freeProperty value is " + (freeProperty.value()==null ? "null" : freeProperty.value().getClass().getTypeName()), freeProperty.value() instanceof QGraphicsProxyWidget);
     	QBooleanProperty decider = new QBooleanProperty(false);
     	pBindable.setBinding(()->{
     		return decider.value() ? freeProperty.value() : null;

@@ -69,8 +69,8 @@ struct MetaTypeRegistrationHelper<T,false>{
             flags |= QMetaType::WasDeclaredAsMetaType;
 
         id = QMetaType::registerNormalizedType(normalizedTypeName,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, supports_StandardConstructor<T>::value && supports_CopyConstructor<T>::value>::Destruct,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, supports_Destructor<T>::value>::Construct,
+                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || supports_Destructor<T>::value>::Destruct,
+                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || (supports_StandardConstructor<T>::value && supports_CopyConstructor<T>::value)>::Construct,
                                        int(sizeof(T)),
                                        flags,
                                        QtPrivate::MetaObjectForType<T>::value());
@@ -200,7 +200,6 @@ public:
     virtual void deleteContainer(void* container) = 0;
     virtual int registerContainer(const QByteArray& containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
-    virtual PtrDeleterFunction containerDeleter() = 0;
     Q_DISABLE_COPY_MOVE(AbstractContainerAccess)
 protected:
     AbstractContainerAccess();
@@ -209,8 +208,8 @@ protected:
 
 class QTJAMBI_EXPORT AbstractIteratorAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractIteratorAccess() override = default;
-    AbstractIteratorAccess() = default;
+    ~AbstractIteratorAccess() override;
+    AbstractIteratorAccess();
 public:
     AbstractIteratorAccess* clone() override = 0;
     virtual jobject value(JNIEnv * env, void* iterator) = 0;
@@ -220,31 +219,27 @@ public:
     virtual bool canLess() = 0;
     virtual jboolean equals(JNIEnv * env, void* iterator, void* other) = 0;
 private:
-    void* createContainer() override {return nullptr;}
-    void* copyContainer(const void*) override {return nullptr;}
-    void assign(void*, const void*) override {}
-    void deleteContainer(void*) override {}
-    int registerContainer(const QByteArray&) override {return QMetaType::UnknownType;}
-    PtrDeleterFunction containerDeleter() override {return nullptr;}
+    void* createContainer() override;
+    void* copyContainer(const void*) override;
+    void assign(void*, const void*) override;
+    void deleteContainer(void*) override;
+    int registerContainer(const QByteArray&) override;
     Q_DISABLE_COPY_MOVE(AbstractIteratorAccess)
 };
 
 class QTJAMBI_EXPORT AbstractBiIteratorAccess : public AbstractIteratorAccess{
 protected:
-    ~AbstractBiIteratorAccess() override = default;
-    AbstractBiIteratorAccess() = default;
+    ~AbstractBiIteratorAccess() override;
+    AbstractBiIteratorAccess();
 public:
     AbstractBiIteratorAccess* clone() override = 0;
     virtual jobject key(JNIEnv * env, void* iterator) = 0;
 private:
-    void* createContainer() override {return nullptr;}
-    void* copyContainer(const void*) override {return nullptr;}
-    void assign(void*, const void*) override {}
-    void deleteContainer(void*) override {}
-    int registerContainer(const QByteArray&) override {
-        return QMetaType::UnknownType;
-    }
-    PtrDeleterFunction containerDeleter() override {return nullptr;}
+    void* createContainer() override;
+    void* copyContainer(const void*) override;
+    void assign(void*, const void*) override;
+    void deleteContainer(void*) override;
+    int registerContainer(const QByteArray&) override;
     Q_DISABLE_COPY_MOVE(AbstractBiIteratorAccess)
 };
 
@@ -253,8 +248,8 @@ typedef bool (*EntryAnalyzer)(const void* key, const void* value, void* data);
 
 class QTJAMBI_EXPORT AbstractListAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractListAccess() override = default;
-    AbstractListAccess() = default;
+    ~AbstractListAccess() override;
+    AbstractListAccess();
 public:
     AbstractListAccess* clone() override = 0;
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
@@ -268,7 +263,6 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     virtual jobject toSet(JNIEnv * env,const void* container) = 0;
 #endif
-    virtual jobject takeAt(JNIEnv * env, void* container, jint index) = 0;
     virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint size(JNIEnv * env, const void* container) = 0;
@@ -304,8 +298,8 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 class QTJAMBI_EXPORT AbstractVectorAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractVectorAccess() override = default;
-    AbstractVectorAccess() = default;
+    ~AbstractVectorAccess() override;
+    AbstractVectorAccess();
 public:
     AbstractVectorAccess* clone() override = 0;
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
@@ -317,7 +311,6 @@ public:
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
     virtual jobject toSet(JNIEnv * env,const void* container) = 0;
-    virtual jobject takeAt(JNIEnv * env, void* container, jint index) = 0;
     virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint size(JNIEnv * env, const void* container) = 0;
@@ -350,8 +343,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractLinkedListAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractLinkedListAccess() override = default;
-    AbstractLinkedListAccess() = default;
+    ~AbstractLinkedListAccess() override;
+    AbstractLinkedListAccess();
 public:
     AbstractLinkedListAccess* clone() override = 0;
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
@@ -383,8 +376,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractSetAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractSetAccess() override = default;
-    AbstractSetAccess() = default;
+    ~AbstractSetAccess() override;
+    AbstractSetAccess();
 public:
     AbstractSetAccess* clone() override = 0;
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
@@ -410,8 +403,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractMapAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractMapAccess() override = default;
-    AbstractMapAccess() = default;
+    ~AbstractMapAccess() override;
+    AbstractMapAccess();
 public:
     AbstractMapAccess* clone() override = 0;
     virtual void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) = 0;
@@ -445,8 +438,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractMultiMapAccess : public AbstractMapAccess{
 protected:
-    ~AbstractMultiMapAccess() override = default;
-    AbstractMultiMapAccess() = default;
+    ~AbstractMultiMapAccess() override;;
+    AbstractMultiMapAccess();;
 public:
     AbstractMultiMapAccess* clone() override = 0;
     bool isConstant() override = 0;
@@ -467,8 +460,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractHashAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractHashAccess() override = default;
-    AbstractHashAccess() = default;
+    ~AbstractHashAccess() override;;
+    AbstractHashAccess();;
 public:
     AbstractHashAccess* clone() override = 0;
     virtual void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) = 0;
@@ -497,8 +490,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractMultiHashAccess : public AbstractHashAccess{
 protected:
-    ~AbstractMultiHashAccess() override = default;
-    AbstractMultiHashAccess() = default;
+    ~AbstractMultiHashAccess() override;;
+    AbstractMultiHashAccess();;
 public:
     AbstractMultiHashAccess* clone() override = 0;
     bool isConstant() override = 0;
@@ -519,8 +512,8 @@ public:
 
 class QTJAMBI_EXPORT AbstractPairAccess : public AbstractContainerAccess{
 protected:
-    ~AbstractPairAccess() override = default;
-    AbstractPairAccess() = default;
+    ~AbstractPairAccess() override;;
+    AbstractPairAccess();;
 public:
     AbstractPairAccess* clone() override = 0;
     virtual bool isConstant() = 0;

@@ -1,8 +1,13 @@
 #ifndef QTJAMBI_CONTAINERACCESS_P_H
 #define QTJAMBI_CONTAINERACCESS_P_H
 
+#include <QtCore/QtGlobal>
+
+QT_WARNING_DISABLE_DEPRECATED
+
 #include "qtjambi_containeraccess.h"
 #include "qtjambi_jobjectwrapper.h"
+#include <QtCore/QThreadStorage>
 
 void qtjambi_register_container_converter(ContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& elementMetaType);
 void qtjambi_register_container_converter(MapType mapType, const QMetaType& containerMetaType, const QMetaType& keyMetaType, const QMetaType& valueMetaType);
@@ -19,6 +24,32 @@ AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* contain
 AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess);
 AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess);
 void containerDisposer(AbstractContainerAccess* _access);
+
+int registerMetaType(const QByteArray& typeName,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                     QMetaType::Destructor destructor,
+                     QMetaType::Constructor constructor,
+#else
+                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                     QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                     QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                     QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                     QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                     QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
+                     QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
+#endif
+                     uint size,
+                     ushort align,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                     int builtInTypeId,
+#endif
+                     QMetaType::TypeFlags flags,
+                     const QMetaObject *metaObject,
+                     AfterRegistrationFunction afterRegistrationFunction);
+void insertHashFunctionByMetaType(int type, const QHashFunction& fct);
 
 class WrapperListAccess : public AbstractListAccess{
 public:
@@ -60,10 +91,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -97,10 +124,6 @@ public:
         return m_containerAccess->toSet(env, container);
     }
 #endif
-
-    inline jobject takeAt(JNIEnv * env, void* container, jint index) override{
-        return m_containerAccess->takeAt(env, container, index);
-    }
 
     inline void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override{
         m_containerAccess->swapItemsAt(env, container, index1, index2);
@@ -253,10 +276,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -287,10 +306,6 @@ public:
 
     inline jobject toSet(JNIEnv * env,const void* container) override{
         return m_containerAccess->toSet(env, container);
-    }
-
-    inline jobject takeAt(JNIEnv * env, void* container, jint index) override{
-        return m_containerAccess->takeAt(env, container, index);
     }
 
     inline void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override{
@@ -446,10 +461,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -580,10 +591,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -695,10 +702,6 @@ public:
 
     inline int registerContainer(const QByteArray& containerTypeName) override{
         return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
     }
 
     inline bool isConstant() override{
@@ -848,10 +851,6 @@ public:
 
     inline int registerContainer(const QByteArray& containerTypeName) override{
         return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
     }
 
     inline bool isConstant() override{
@@ -1035,10 +1034,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -1168,10 +1163,6 @@ public:
         return m_containerAccess->registerContainer(containerTypeName);
     }
 
-    inline PtrDeleterFunction containerDeleter() override{
-        return m_containerAccess->containerDeleter();
-    }
-
     inline bool isConstant() override{
         return m_containerAccess->isConstant();
     }
@@ -1298,8 +1289,8 @@ private:
 
 class RCSet{
 public:
-    RCSet() = default;
-    virtual ~RCSet() = default;
+    RCSet();
+    virtual ~RCSet();
 protected:
     RCSet(const RCSet&);
     void assignRC(JNIEnv * env, const RCSet& other);
@@ -1314,8 +1305,8 @@ private:
 
 class RCMap{
 public:
-    RCMap() = default;
-    virtual ~RCMap() = default;
+    RCMap();
+    virtual ~RCMap();
 protected:
     RCMap(JNIEnv * env, jobject otherRCMap);
     void assignRC(JNIEnv * env, const RCMap& other);
@@ -1330,8 +1321,8 @@ private:
 
 class RCMultiMap{
 public:
-    RCMultiMap() = default;
-    virtual ~RCMultiMap() = default;
+    RCMultiMap();
+    virtual ~RCMultiMap();
 protected:
     RCMultiMap(JNIEnv * env, jobject otherRCMap);
     void assignRC(JNIEnv * env, const RCMultiMap& other);
@@ -1351,14 +1342,13 @@ class PointerRCListAccess : public WrapperListAccess, public RCSet{
 private:
     PointerRCListAccess(PointerRCListAccess& _this);
 public:
-    ~PointerRCListAccess() override = default;
+    ~PointerRCListAccess() override;
     PointerRCListAccess(AbstractListAccess* containerAccess);
     PointerRCListAccess* clone() override;
     void assign(void* container, const void* other) override;
     void* copyContainer(const void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void appendList(JNIEnv * env, void* container, jobject list) override;
-    jobject takeAt(JNIEnv * env, void* container, jint index) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
     jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
     void removeAt(JNIEnv * env, void* container, jint index) override;
@@ -1378,7 +1368,7 @@ class PointerRCSetAccess : public WrapperSetAccess, public RCSet{
 private:
     PointerRCSetAccess(PointerRCSetAccess& _this);
 public:
-    ~PointerRCSetAccess() override = default;
+    ~PointerRCSetAccess() override;
     PointerRCSetAccess(AbstractSetAccess* containerAccess);
     PointerRCSetAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1396,7 +1386,7 @@ class PointerRCLinkedListAccess : public WrapperLinkedListAccess, public RCSet{
 private:
     PointerRCLinkedListAccess(PointerRCLinkedListAccess& _this);
 public:
-    ~PointerRCLinkedListAccess() override = default;
+    ~PointerRCLinkedListAccess() override;
     PointerRCLinkedListAccess(AbstractLinkedListAccess* containerAccess);
     PointerRCLinkedListAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1416,14 +1406,13 @@ class PointerRCVectorAccess : public WrapperVectorAccess, public RCSet{
 private:
     PointerRCVectorAccess(PointerRCVectorAccess& _this);
 public:
-    ~PointerRCVectorAccess() override = default;
+    ~PointerRCVectorAccess() override;
     PointerRCVectorAccess(AbstractVectorAccess* containerAccess);
     PointerRCVectorAccess* clone() override;
     void assign(void* container, const void* other) override;
     void* copyContainer(const void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void appendVector(JNIEnv * env, void* container, jobject list) override;
-    jobject takeAt(JNIEnv * env, void* container, jint index) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
     jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
     void removeAt(JNIEnv * env, void* container, jint index) override;
@@ -1442,7 +1431,7 @@ class KeyPointerRCMapAccess : public WrapperMapAccess, public RCSet{
 private:
     KeyPointerRCMapAccess(KeyPointerRCMapAccess& _this);
 public:
-    ~KeyPointerRCMapAccess() override = default;
+    ~KeyPointerRCMapAccess() override;
     KeyPointerRCMapAccess(AbstractMapAccess* containerAccess);
     KeyPointerRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1457,7 +1446,7 @@ class KeyPointerRCMultiMapAccess : public WrapperMultiMapAccess, public RCSet{
 private:
     KeyPointerRCMultiMapAccess(KeyPointerRCMultiMapAccess& _this);
 public:
-    ~KeyPointerRCMultiMapAccess() override = default;
+    ~KeyPointerRCMultiMapAccess() override;
     KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
     KeyPointerRCMultiMapAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1475,7 +1464,7 @@ class KeyPointerRCHashAccess : public WrapperHashAccess, public RCSet{
 private:
     KeyPointerRCHashAccess(KeyPointerRCHashAccess& _this);
 public:
-    ~KeyPointerRCHashAccess() override = default;
+    ~KeyPointerRCHashAccess() override;
     KeyPointerRCHashAccess(AbstractHashAccess* containerAccess);
     KeyPointerRCHashAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1490,7 +1479,7 @@ class KeyPointerRCMultiHashAccess : public WrapperMultiHashAccess, public RCSet{
 private:
     KeyPointerRCMultiHashAccess(KeyPointerRCMultiHashAccess& _this);
 public:
-    ~KeyPointerRCMultiHashAccess() override = default;
+    ~KeyPointerRCMultiHashAccess() override;
     KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
     KeyPointerRCMultiHashAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1508,7 +1497,7 @@ class ValuePointerRCMapAccess : public WrapperMapAccess, public RCSet{
 private:
     ValuePointerRCMapAccess(ValuePointerRCMapAccess& _this);
 public:
-    ~ValuePointerRCMapAccess() override = default;
+    ~ValuePointerRCMapAccess() override;
     ValuePointerRCMapAccess(AbstractMapAccess* containerAccess);
     ValuePointerRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
@@ -1648,7 +1637,6 @@ public:
     void* copyContainer(const void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void appendList(JNIEnv * env, void* container, jobject list) override;
-    jobject takeAt(JNIEnv * env, void* container, jint index) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
     jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
     void removeAt(JNIEnv * env, void* container, jint index) override;
@@ -1716,7 +1704,6 @@ public:
     void* copyContainer(const void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void appendVector(JNIEnv * env, void* container, jobject list) override;
-    jobject takeAt(JNIEnv * env, void* container, jint index) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
     jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
     void removeAt(JNIEnv * env, void* container, jint index) override;
@@ -1800,5 +1787,1037 @@ public:
     void unite(JNIEnv * env, void* container, jobject other) override;
     void replace(JNIEnv * env, void* container,jobject key, jobject value) override;
 };
+
+class AutoPairAccess : public AbstractPairAccess{
+    QMetaType m_keyMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_keyAlign;
+#endif
+    QHashFunction m_keyHashFunction;
+    InternalToExternalConverter m_keyInternalToExternalConverter;
+    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QMetaType m_valueMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_valueAlign;
+#endif
+    QHashFunction m_valueHashFunction;
+    InternalToExternalConverter m_valueInternalToExternalConverter;
+    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    size_t m_align;
+    size_t m_offset;
+    size_t m_size;
+
+    AutoPairAccess(const AutoPairAccess& other);
+
+public:
+    AutoPairAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            int keyMetaType,
+            size_t keyAlign,
+#else
+            const QMetaType& keyMetaType,
+#endif
+            const QHashFunction& keyHashFunction,
+            const InternalToExternalConverter& keyInternalToExternalConverter,
+            const ExternalToInternalConverter& keyExternalToInternalConverter,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            int valueMetaType,
+            size_t valueAlign,
+#else
+            const QMetaType& valueMetaType,
+#endif
+            const QHashFunction& valueHashFunction,
+            const InternalToExternalConverter& valueInternalToExternalConverter,
+            const ExternalToInternalConverter& valueExternalToInternalConverter
+            );
+
+    void dispose() override;
+    AutoPairAccess* clone() override;
+private:
+    void* constructContainer(void* result, const void* container = nullptr);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container);
+    bool equals(const void* p1, const void* p2);
+    void debugStream(QDebug &s, const void *ptr);
+    void dataStreamOut(QDataStream &s, const void *ptr);
+    void dataStreamIn(QDataStream &s, void *ptr);
+    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static void copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other);
+    static void moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other);
+    static void dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
+    static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
+    static void dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
+    static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
+#endif
+public:
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void destructContainer(void* container);
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& typeName) override;
+    bool isConstant() override {return false;}
+    jobject first(JNIEnv * env, const void* container) override;
+    void setFirst(JNIEnv *env, void* container, jobject first) override;
+    jobject second(JNIEnv * env, const void* container) override;
+    void setSecond(JNIEnv *env, void* container, jobject second) override;
+};
+
+class AutoIteratorAccess : public AbstractIteratorAccess{
+    InternalToExternalConverter m_internalToExternalConverter;
+    std::function<void(void*)> m_increment;
+    std::function<void(void*)> m_decrement;
+    std::function<const void*(void*)> m_value;
+    std::function<bool(void*,void*)> m_lessThan;
+    std::function<bool(void*,void*)> m_equals;
+public:
+    ~AutoIteratorAccess() override;
+    AutoIteratorAccess(
+            const InternalToExternalConverter& internalToExternalConverter,
+            std::function<void(void*)>&& increment,
+            std::function<void(void*)>&& decrement,
+            std::function<const void*(void*)>&& value,
+            std::function<bool(void*,void*)>&& lessThan,
+            std::function<bool(void*,void*)>&& equals
+        );
+    void dispose() override;
+    AbstractIteratorAccess* clone() override;
+    jobject value(JNIEnv * env, void* iterator) override;
+    void increment(JNIEnv * env, void* iterator) override;
+    void decrement(JNIEnv * env, void* iterator) override;
+    jboolean lessThan(JNIEnv * env, void* iterator, void* other) override;
+    bool canLess() override;
+    jboolean equals(JNIEnv * env, void* iterator, void* other) override;
+private:
+    Q_DISABLE_COPY_MOVE(AutoIteratorAccess)
+    friend class AutoBiIteratorAccess;
+};
+
+class AutoBiIteratorAccess : public virtual AbstractBiIteratorAccess, public virtual AutoIteratorAccess{
+    InternalToExternalConverter m_keyInternalToExternalConverter;
+    std::function<const void*(void*)> m_key;
+public:
+    ~AutoBiIteratorAccess() override;
+    AutoBiIteratorAccess(
+            const InternalToExternalConverter& internalToExternalConverter,
+            std::function<void(void*)>&& increment,
+            std::function<void(void*)>&& decrement,
+            std::function<const void*(void*)>&& value,
+            std::function<bool(void*,void*)>&& lessThan,
+            std::function<bool(void*,void*)>&& equals,
+            const InternalToExternalConverter& keyInternalToExternalConverter,
+            std::function<const void*(void*)>&& key
+            );
+    jobject value(JNIEnv * env, void* iterator) override;
+    void increment(JNIEnv * env, void* iterator) override;
+    void decrement(JNIEnv * env, void* iterator) override;
+    jboolean lessThan(JNIEnv * env, void* iterator, void* other) override;
+    bool canLess() override;
+    jboolean equals(JNIEnv * env, void* iterator, void* other) override;
+    AbstractBiIteratorAccess* clone() override;
+    jobject key(JNIEnv * env, void* iterator) override;
+private:
+    Q_DISABLE_COPY_MOVE(AutoBiIteratorAccess)
+};
+
+class AutoListAccess : public AbstractListAccess{
+    QMetaType m_elementMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    bool m_isLargeOrStaticType;
+#endif
+    QHashFunction m_hashFunction;
+    InternalToExternalConverter m_internalToExternalConverter;
+    ExternalToInternalConverter m_externalToInternalConverter;
+    size_t m_offset;
+
+    AutoListAccess(const AutoListAccess& other);
+public:
+    AutoListAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            int elementMetaType,
+            size_t elementAlign,
+            bool isStaticType,
+#else
+            const QMetaType& elementMetaType,
+#endif
+            const QHashFunction& hashFunction,
+            const InternalToExternalConverter& internalToExternalConverter,
+            const ExternalToInternalConverter& externalToInternalConverter
+            );
+
+    void dispose() override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
+    AutoListAccess* clone() override;
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+private:
+    void* constructContainer(void* result, const void* container = nullptr);
+    void destructContainer(void* container);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container);
+    bool equals(const void* p1, const void* p2);
+    void debugStream(QDebug &s, const void *ptr);
+    void dataStreamOut(QDataStream &s, const void *ptr);
+    void dataStreamIn(QDataStream &s, void *ptr);
+    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static void copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other);
+    static void moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other);
+    static void dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
+    static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
+    static void dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
+    static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
+#endif
+public:
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override {return false;}
+    const QMetaType& elementMetaType() override {return m_elementMetaType;}
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void append(JNIEnv * env, void* container, jobject value) override;
+    void appendList(JNIEnv * env, void* container, jobject list) override;
+    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    jobject toSet(JNIEnv *,const void*) override {return nullptr;}
+#endif
+    void swapItemsAt(JNIEnv *, void* container, jint index1, jint index2) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jint size(JNIEnv *, const void* container) override;
+    void reserve(JNIEnv *, void* container, jint size) override;
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override;
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
+    void removeAt(JNIEnv *, void* container, jint index) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    void prepend(JNIEnv * env, void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void move(JNIEnv *, void* container, jint index1, jint index2) override;
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    void clear(JNIEnv *, void* container) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    jint capacity(JNIEnv *, const void* container) override;
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override;
+    void remove(JNIEnv *, void* container, jint index, jint n) override;
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
+    void resize(JNIEnv *, void* container, jint newSize) override;
+    void squeeze(JNIEnv *, void* container) override;
+#endif
+private:
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
+    void emplace(QArrayDataPointer<char>* p, JNIEnv * env, jint index, jobject value, jint n);
+    void emplace(QArrayDataPointer<char>* p, qsizetype index, const void* value, qsizetype n);
+    void *createHole(QArrayDataPointer<char> *p, QArrayData::GrowthPosition pos, qsizetype where, qsizetype n);
+    qsizetype freeSpaceAtBegin(const QArrayDataPointer<char>* p);
+    qsizetype freeSpaceAtEnd(const QArrayDataPointer<char>* p);
+    void detach(QArrayDataPointer<char>* p, QArrayDataPointer<char> *old = nullptr);
+    void detachAndGrow(QArrayDataPointer<char>* p, QArrayData::GrowthPosition where, qsizetype n, const void **data,
+                       QArrayDataPointer<char> *old);
+    void reallocate(QArrayDataPointer<char>* p, qsizetype alloc, QArrayData::AllocationOption option);
+    void reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::GrowthPosition, qsizetype n,
+                           QArrayDataPointer<char> *old = nullptr);
+    QArrayDataPointer<char> allocateGrow(const QArrayDataPointer<char> &from, qsizetype n, QArrayData::GrowthPosition position);
+    QArrayDataPointer<char> allocate(qsizetype capacity, QArrayData::AllocationOption option = QArrayData::KeepSize);
+    void swapAndDestroy(QArrayDataPointer<char>* p, QArrayDataPointer<char>&& other);
+#else
+    typedef struct{void* v;} Node;
+    void dealloc(QListData* p);
+    Node* detach_helper_grow(QListData* p, int i, int c);
+    void detach(QListData* p);
+    void detach_helper(QListData* p);
+    void detach_helper(QListData* p, int alloc);
+    void node_construct(Node *n, JNIEnv * env, jobject value);
+    void node_copy(Node *from, Node *to, Node *src);
+    void node_destruct(Node *node);
+    void node_destruct(Node *from, Node *to);
+#endif
+};
+
+typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&);
+
+class AutoMapAccess : public AbstractMapAccess{
+    QMetaType m_keyMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_keyAlign;
+#endif
+    QHashFunction m_keyHashFunction;
+    InternalToExternalConverter m_keyInternalToExternalConverter;
+    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QMetaType m_valueMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_valueAlign;
+#endif
+    QHashFunction m_valueHashFunction;
+    InternalToExternalConverter m_valueInternalToExternalConverter;
+    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    size_t m_align;
+    size_t m_offset1;
+    size_t m_offset2;
+    size_t m_size;
+
+    AutoMapAccess(const AutoMapAccess &);
+public:
+    ~AutoMapAccess() override;
+    AutoMapAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int keyMetaType,
+                    size_t keyAlign,
+#else
+                    const QMetaType& keyMetaType,
+#endif
+                    const QHashFunction& keyHashFunction,
+                    const InternalToExternalConverter& keyInternalToExternalConverter,
+                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int valueMetaType,
+                    size_t valueAlign,
+#else
+                    const QMetaType& valueMetaType,
+#endif
+                    const QHashFunction& valueHashFunction,
+                    const InternalToExternalConverter& valueInternalToExternalConverter,
+                    const ExternalToInternalConverter& valueExternalToInternalConverter
+            );
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    AbstractMapAccess* clone() override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
+    bool isConstant() override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv *,QtJambiNativeID,const void*) override;
+    void clear(JNIEnv *,void*) override;
+    jboolean contains(JNIEnv *,const void*,jobject) override;
+    jint count(JNIEnv *,const void*,jobject) override;
+    jobject end(JNIEnv *,QtJambiNativeID,const void*) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jobject first(JNIEnv *,const void*) override;
+    jobject firstKey(JNIEnv *,const void*) override;
+    void insert(JNIEnv *,void*,jobject,jobject) override;
+    jobject key(JNIEnv *,const void*,jobject,jobject) override;
+    jobject keys(JNIEnv *,const void*) override;
+    jobject keys(JNIEnv *,const void*,jobject) override;
+    jobject last(JNIEnv *,const void*) override;
+    jobject lastKey(JNIEnv *,const void*) override;
+    jobject lowerBound(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jboolean equal(JNIEnv *,const void*,jobject) override;
+    jint remove(JNIEnv *,void*,jobject) override;
+    jint size(JNIEnv *,const void*) override;
+    jobject take(JNIEnv *,void*,jobject) override;
+    jobject upperBound(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jobject value(JNIEnv *,const void*,jobject,jobject) override;
+    jobject values(JNIEnv *,const void*) override;
+    bool keyLessThan(JNIEnv *,jobject,jobject) override;
+private:
+    virtual IsBiContainerFunction getIsBiContainerFunction();
+    virtual uint sizeOf() const;
+    virtual ushort alignOf() const;
+    bool equal(const void* containerA, const void* containerB);
+    void destructContainer(void* container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    void detach(QMapDataBase ** map);
+    void detach_helper(QMapDataBase ** map);
+    typedef QMapNodeBase Node;
+    static Node* rootNode(QMapDataBase *const* map);
+    static Node* beginNode(QMapDataBase *const* map);
+    static Node* endNode(QMapDataBase *const* map);
+    void deleteNode(QMapDataBase * d, Node* node);
+    Node* copyNode(Node* node, QMapDataBase* base);
+    void destroy(QMapDataBase* data);
+    void destroySubTree(Node* node);
+    bool qMapLessThanKey(const void* left, const Node& right);
+    bool qMapLessThanKey(const Node& left, const void* rignt);
+    void assignValue(JNIEnv *,jobject, Node*);
+    Node* findNode(QMapDataBase * d, const void* akey);
+    Node* lowerBound(Node* node, const void* akey);
+    Node* upperBound(Node* node, const void* akey);
+    void nodeRange(QMapDataBase* base, const void* akey, Node **firstNode, Node **lastNode);
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    jobject nodeKey(JNIEnv * env, Node* node);
+    jobject nodeValue(JNIEnv * env, Node* node);
+#endif
+    friend class AutoMultiMapAccess;
+};
+
+class AutoMultiMapAccess : public virtual AbstractMultiMapAccess, public AutoMapAccess{
+    AutoMultiMapAccess(const AutoMultiMapAccess&);
+public:
+    ~AutoMultiMapAccess() override;
+    AutoMultiMapAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int keyMetaType,
+                    size_t keyAlign,
+#else
+                    const QMetaType& keyMetaType,
+#endif
+                    const QHashFunction& keyHashFunction,
+                    const InternalToExternalConverter& keyInternalToExternalConverter,
+                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int valueMetaType,
+                    size_t valueAlign,
+#else
+                    const QMetaType& valueMetaType,
+#endif
+                    const QHashFunction& valueHashFunction,
+                    const InternalToExternalConverter& valueInternalToExternalConverter,
+                    const ExternalToInternalConverter& valueExternalToInternalConverter
+            );
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    bool isConstant() override {return false;}
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv *,QtJambiNativeID,const void*) override;
+    void clear(JNIEnv *,void*) override;
+    jboolean contains(JNIEnv *,const void*,jobject) override;
+    jint count(JNIEnv *,const void*,jobject) override;
+    jobject end(JNIEnv *,QtJambiNativeID,const void*) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jobject first(JNIEnv *,const void*) override;
+    jobject firstKey(JNIEnv *,const void*) override;
+    void insert(JNIEnv *,void*,jobject,jobject) override;
+    jobject key(JNIEnv *,const void*,jobject,jobject) override;
+    jobject keys(JNIEnv *,const void*) override;
+    jobject keys(JNIEnv *,const void*,jobject) override;
+    jobject last(JNIEnv *,const void*) override;
+    jobject lastKey(JNIEnv *,const void*) override;
+    jobject lowerBound(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jboolean equal(JNIEnv *,const void*,jobject) override;
+    jint remove(JNIEnv *,void*,jobject) override;
+    jint size(JNIEnv *,const void*) override;
+    jobject take(JNIEnv *,void*,jobject) override;
+    jobject upperBound(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    jobject value(JNIEnv *,const void*,jobject,jobject) override;
+    jobject values(JNIEnv *,const void*) override;
+    bool keyLessThan(JNIEnv *,jobject,jobject) override;
+    AbstractMultiMapAccess* clone() override;
+    jobject uniqueKeys(JNIEnv *,const void*) override;
+    void unite(JNIEnv *,void*,jobject) override;
+    jobject values(JNIEnv *,const void*,jobject) override;
+    jboolean contains(JNIEnv *,const void*,jobject,jobject) override;
+    jint count(JNIEnv *,const void*,jobject,jobject) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) override;
+    jint remove(JNIEnv *,void*,jobject,jobject) override;
+    void replace(JNIEnv *,void*,jobject,jobject) override;
+private:
+    uint sizeOf() const override;
+    ushort alignOf() const override;
+    IsBiContainerFunction getIsBiContainerFunction() override;
+};
+
+class AutoHashAccess : public AbstractHashAccess{
+    QMetaType m_keyMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_keyAlign;
+#endif
+    QHashFunction m_keyHashFunction;
+    InternalToExternalConverter m_keyInternalToExternalConverter;
+    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QMetaType m_valueMetaType;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_valueAlign;
+#endif
+    QHashFunction m_valueHashFunction;
+    InternalToExternalConverter m_valueInternalToExternalConverter;
+    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    size_t m_align;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    size_t m_offset1;
+#endif
+    size_t m_offset2;
+    size_t m_size;
+
+    AutoHashAccess(const AutoHashAccess&);
+public:
+    ~AutoHashAccess() override;
+    AutoHashAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int keyMetaType,
+                    size_t keyAlign,
+#else
+                    const QMetaType& keyMetaType,
+#endif
+                    const QHashFunction& keyHashFunction,
+                    const InternalToExternalConverter& keyInternalToExternalConverter,
+                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int valueMetaType,
+                    size_t valueAlign,
+#else
+                    const QMetaType& valueMetaType,
+#endif
+                    const QHashFunction& valueHashFunction,
+                    const InternalToExternalConverter& valueInternalToExternalConverter,
+                    const ExternalToInternalConverter& valueExternalToInternalConverter
+            );
+    bool isConstant() override;
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    AbstractHashAccess* clone() override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv *,QtJambiNativeID,const void*) override;
+    jint capacity(JNIEnv *,const void*) override;
+    void clear(JNIEnv *,void*) override;
+    jboolean contains(JNIEnv *,const void*,jobject) override;
+    jint count(JNIEnv *,const void*,jobject) override;
+    jobject end(JNIEnv *,QtJambiNativeID,const void*) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    void insert(JNIEnv *,void*,jobject,jobject) override;
+    jobject key(JNIEnv *,const void*,jobject,jobject) override;
+    jobject keys(JNIEnv *,const void*) override;
+    jobject keys(JNIEnv *,const void*,jobject) override;
+    jboolean equal(JNIEnv *,const void*,jobject) override;
+    jint remove(JNIEnv *,void*,jobject) override;
+    void reserve(JNIEnv *,void*,jint) override;
+    jint size(JNIEnv *,const void*) override;
+    jobject take(JNIEnv *,void*,jobject) override;
+    jobject value(JNIEnv *,const void*,jobject,jobject) override;
+    jobject values(JNIEnv *,const void*) override;
+private:
+    virtual uint sizeOf() const;
+    virtual ushort alignOf() const;
+    virtual IsBiContainerFunction getIsBiContainerFunction();
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    void destructContainer(void* container);
+    virtual void* constructContainer(void* result, const void* container = nullptr);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    typedef QHashData::Node Node;
+    static inline Node *concrete(QHashData::Node *node) {
+        return reinterpret_cast<Node *>(node);
+    }
+    static void deleteNode2(QHashData::Node *node);
+    static void duplicateNode(QHashData::Node *originalNode, void *newNode);
+
+    struct Iterator{
+        struct Value{
+            AutoHashAccess* access;
+            Node* i;
+            Value(AutoHashAccess* _access, Node* _i);
+            bool operator==(const Value &o) const;
+            bool operator!=(const Value &o) const;
+        };
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef Value value_type;
+        typedef const Value *pointer;
+        typedef const Value &reference;
+
+        AutoHashAccess* access;
+        Node* i;
+        Iterator(const Iterator& it);
+        Iterator(AutoHashAccess* _access, Node* _i);
+        Iterator &operator++();
+        Iterator operator++(int);
+        Iterator &operator--();
+        Iterator operator--(int);
+        bool operator==(const Iterator &o) const;
+        bool operator!=(const Iterator &o) const;
+        const Value &operator*() const;
+    };
+
+    Iterator const_iterator(Node * node);
+
+    int alignOfNode();
+    void freeData(QHashData *d);
+    void detach_helper(QHashData ** map);
+    Node **findNode(QHashData *const* map, const void* akey, uint *ahp = nullptr);
+    Node **findNode(QHashData *const* map, const void* akey, uint h);
+    bool same_key(Node * node, const void* key0);
+    bool same_key(Node * node, uint h0, const void* key0);
+    Node *createNode(QHashData* d, uint ah, const void* akey, JNIEnv* env, jobject value, Node **anextNode);
+    Node *createNode(QHashData* d, uint ah, const void* akey, QDataStream &s, Node **anextNode);
+    Node *createNode(QHashData* d, uint ah, const void* akey, const void* avalue, Node **anextNode);
+    void deleteNode(QHashData* d, Node *node);
+    jobject nodeKey(JNIEnv * env, Node* node);
+    jobject nodeValue(JNIEnv * env, Node* node);
+    QPair<Iterator,Iterator> equal_range(QHashData *const* map, const void* akey);
+    static QThreadStorage<quintptr> currentAccess;
+#else
+    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
+    void* constructContainer(void* result, void* container);
+    void debugStream(QDebug &s, const void *ptr);
+    virtual void dataStreamOut(QDataStream &s, const void *ptr);
+    void dataStreamIn(QDataStream &s, void *ptr);
+    struct Span {
+        enum {
+            NEntries = 128,
+            LocalBucketMask = (NEntries - 1),
+            UnusedEntry = 0xff
+        };
+        unsigned char offsets[NEntries];
+        char *entries = nullptr;
+        unsigned char allocated = 0;
+        unsigned char nextFree = 0;
+
+        Span() noexcept
+        {
+            memset(offsets, UnusedEntry, sizeof(offsets));
+        }
+        ~Span()
+        {
+        }
+
+        void freeData(const AutoHashAccess& access);
+        char* insert(const AutoHashAccess& access, size_t i);
+        void addStorage(const AutoHashAccess& access);
+        size_t offset(size_t i) const noexcept;
+        bool hasNode(size_t i) const noexcept;
+
+        char* at(const AutoHashAccess& access, size_t i) noexcept;
+        char* at(const AutoHashAccess& access, size_t i) const noexcept;
+        char* atOffset(const AutoHashAccess& access, size_t o) noexcept;
+        char* atOffset(const AutoHashAccess& access, size_t o) const noexcept;
+        void erase(const AutoHashAccess& access, size_t bucket);
+
+        void moveLocal(size_t from, size_t to) noexcept;
+        void moveFromSpan(const AutoHashAccess& access, Span &fromSpan, size_t fromIndex, size_t to);
+    };
+
+    struct QHashData{
+        struct iterator{
+            const AutoHashAccess* access;
+            struct QHashData const* d = nullptr;
+            size_t bucket = 0;
+
+            iterator(const AutoHashAccess& _access, struct QHashData const* _d = nullptr, size_t _bucket = 0)
+                : access(&_access), d(_d), bucket(_bucket) {}
+
+            iterator(const iterator& iter) : access(iter.access), d(iter.d), bucket(iter.bucket) {}
+
+            iterator& operator=(const iterator& iter) {
+                access = iter.access;
+                d = iter.d;
+                bucket = iter.bucket;
+                return *this;
+            }
+
+            size_t span() const noexcept;
+            size_t index() const noexcept;
+            bool isUnused() const noexcept;
+            char* node() const noexcept;
+            char* key() const noexcept { return node(); };
+            char* value() const noexcept { return node() + access->m_offset2; };
+            bool atEnd() const noexcept;
+
+            iterator operator++() noexcept;
+            bool operator==(iterator other) const noexcept;
+            inline bool operator!=(iterator other) const noexcept { return !(*this == other); }
+        };
+
+        QtPrivate::RefCount ref = {{1}};
+        size_t size = 0;
+        size_t numBuckets = 0;
+        size_t seed = 0;
+        Span *spans = nullptr;
+        QHashData(const AutoHashAccess& access, size_t reserve = 0);
+        QHashData(const AutoHashAccess& access, const QHashData &other, size_t reserved = 0);
+        void destroy(const AutoHashAccess& access);
+        static QHashData* detached(const AutoHashAccess& access, QHashData* data, size_t size = 0);
+
+        iterator find(const AutoHashAccess& access, const void *key) const noexcept;
+
+        size_t nextBucket(size_t bucket) const noexcept
+        {
+            ++bucket;
+            if (bucket == numBuckets)
+                bucket = 0;
+            return bucket;
+        }
+
+        bool shouldGrow() const noexcept
+        {
+            return size >= (numBuckets >> 1);
+        }
+
+        void rehash(const AutoHashAccess& access, size_t sizeHint = 0);
+
+        struct InsertionResult
+        {
+            iterator it;
+            bool initialized;
+        };
+
+        InsertionResult findOrInsert(const AutoHashAccess& access, const void*key) noexcept;
+
+        char* findNode(const AutoHashAccess& access, const void *key) const noexcept;
+
+        iterator detachedIterator(const AutoHashAccess& access, iterator other) const noexcept;
+
+        iterator begin(const AutoHashAccess& access) const noexcept;
+
+        iterator end(const AutoHashAccess& access) const noexcept;
+
+        iterator erase(const AutoHashAccess& access, iterator it);
+    };
+
+    class iterator{
+        QHashData::iterator i;
+        void* e = nullptr;
+    public:
+        iterator(const QHashData::iterator& _i);
+
+        iterator(const iterator& iter) : i(iter.i), e(iter.e) {}
+
+        iterator& operator=(const iterator& iter) {
+            i = iter.i;
+            e = iter.e;
+            return *this;
+        }
+        iterator& operator++() noexcept;
+        bool operator==(iterator other) const noexcept;
+        inline bool operator!=(iterator other) const noexcept { return !(*this == other); }
+        inline char* key() const noexcept {return i.key();}
+        char* value() const noexcept;
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+        friend class AutoSetAccess;
+    };
+
+    virtual bool equalSpanEntries(const char* value1, const char* value2) const;
+    virtual void copySpanEntry(char* value1, const char* value2) const;
+    virtual void eraseSpanEntry(char* value) const;
+    virtual void emplace(void* container, const void* akey, JNIEnv *env, jobject value);
+    virtual void emplace(void* container, const void* akey, const void* value);
+    virtual char* iteratorValue(const iterator& it) const;
+    virtual iterator& incrementIterator(iterator& it) const;
+    virtual void initializeIterator(iterator& it) const;
+    virtual bool iteratorEquals(const iterator& it1, const iterator& it2) const;
+    bool isDetached(QHashData *const* map) const noexcept;
+    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static void copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other);
+    static void moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other);
+    static void dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
+    static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
+    static void dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
+    static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
+    friend iterator;
+#endif
+    bool equal(const void* a, const void* b);
+    void detach(QHashData ** map);
+
+    friend class AutoMultiHashAccess;
+    friend class AutoSetAccess;
+};
+
+class AutoMultiHashAccess : public virtual AbstractMultiHashAccess, public AutoHashAccess{
+    AutoMultiHashAccess(const AutoMultiHashAccess&);
+public:
+    ~AutoMultiHashAccess() override;
+    AutoMultiHashAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int keyMetaType,
+                    size_t keyAlign,
+#else
+                    const QMetaType& keyMetaType,
+#endif
+                    const QHashFunction& keyHashFunction,
+                    const InternalToExternalConverter& keyInternalToExternalConverter,
+                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int valueMetaType,
+                    size_t valueAlign,
+#else
+                    const QMetaType& valueMetaType,
+#endif
+                    const QHashFunction& valueHashFunction,
+                    const InternalToExternalConverter& valueInternalToExternalConverter,
+                    const ExternalToInternalConverter& valueExternalToInternalConverter
+            );
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    AbstractMultiHashAccess* clone() override;
+    jobject uniqueKeys(JNIEnv *,const void*) override;
+    void unite(JNIEnv *,void*,jobject) override;
+    bool isConstant() override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv *,QtJambiNativeID,const void*) override;
+    jint capacity(JNIEnv *,const void*) override;
+    void clear(JNIEnv *,void*) override;
+    jboolean contains(JNIEnv *,const void*,jobject) override;
+    jint count(JNIEnv *,const void*,jobject) override;
+    jobject end(JNIEnv *,QtJambiNativeID,const void*) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject) override;
+    void insert(JNIEnv *,void*,jobject,jobject) override;
+    jobject key(JNIEnv *,const void*,jobject,jobject) override;
+    jobject keys(JNIEnv *,const void*) override;
+    jobject keys(JNIEnv *,const void*,jobject) override;
+    jboolean equal(JNIEnv *,const void*,jobject) override;
+    jint remove(JNIEnv *,void*,jobject) override;
+    void reserve(JNIEnv *,void*,jint) override;
+    jint size(JNIEnv *,const void*) override;
+    jobject take(JNIEnv *,void*,jobject) override;
+    jobject value(JNIEnv *,const void*,jobject,jobject) override;
+    jobject values(JNIEnv *,const void*) override;
+    jobject values(JNIEnv *,const void*,jobject) override;
+    jboolean contains(JNIEnv *,const void*,jobject,jobject) override;
+    jint count(JNIEnv *,const void*,jobject,jobject) override;
+    jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) override;
+    jint remove(JNIEnv *,void*,jobject,jobject) override;
+    void replace(JNIEnv *,void*,jobject,jobject) override;
+private:
+    friend class AutoHashAccess;
+    uint sizeOf() const override;
+    ushort alignOf() const override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    typedef AutoHashAccess::QHashData QHashData;
+    struct MultiHashData{
+        QHashData* d = nullptr;
+        qsizetype m_size = 0;
+    };
+    size_t m_chainOffset;
+    size_t m_chainAlign;
+    size_t m_chainSize;
+    struct Chain{
+        char* value();
+        const char* value() const;
+        Chain*& next(const AutoMultiHashAccess& access);
+        const Chain* next(const AutoMultiHashAccess& access) const;
+        qsizetype free(const AutoMultiHashAccess& access);
+        void destroy(const AutoMultiHashAccess& access);
+    };
+    struct multi_iterator{
+        QHashData::iterator i;
+        Chain** e;
+    };
+    void dataStreamOut(QDataStream &s, const void *ptr) override;
+    bool equalSpanEntries(const char* value1, const char* value2) const override;
+    void copySpanEntry(char* value1, const char* value2) const override;
+    void eraseSpanEntry(char* value) const override;
+    void emplace(void* container, const void* akey, JNIEnv *env, jobject value) override;
+    void emplace(void* container, const void* akey, const void* value) override;
+    void initializeIterator(iterator& it) const override;
+    char* iteratorValue(const iterator& it) const override;
+    iterator& incrementIterator(iterator& it) const override;
+    bool iteratorEquals(const iterator& it1, const iterator& it2) const override;
+#endif
+    IsBiContainerFunction getIsBiContainerFunction() override;
+};
+
+class AutoSetAccess : public AbstractSetAccess{
+    AutoHashAccess m_hashAccess;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    QSharedPointer<QtMetaContainerPrivate::QMetaSequenceInterface> m_metaSequenceInterface;
+#endif
+    AutoSetAccess(const AutoSetAccess&);
+public:
+    ~AutoSetAccess() override;
+    AutoSetAccess(
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                    int elementMetaType,
+                    size_t elementAlign,
+#else
+                    const QMetaType& elementMetaType,
+#endif
+                    const QHashFunction& hashFunction,
+                    const InternalToExternalConverter& internalToExternalConverter,
+                    const ExternalToInternalConverter& externalToInternalConverter
+            );
+    void* createContainer() override;
+    void* constructContainer(void* result, const void* container = nullptr);
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    AutoSetAccess* clone() override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
+    bool isConstant() override {return false;}
+    const QMetaType& elementMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void insert(JNIEnv * env, void* container, jobject value) override;
+    void intersect(JNIEnv * env, void* container, jobject other) override;
+    jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jboolean remove(JNIEnv * env, void* container, jobject value) override;
+    void reserve(JNIEnv * env, void* container, jint newSize) override;
+    jint size(JNIEnv * env, const void* container) override;
+    void subtract(JNIEnv * env, void* container, jobject other) override;
+    void unite(JNIEnv * env, void* container, jobject other) override;
+    jobject values(JNIEnv * env, const void* container) override;
+private:
+    void destructContainer(void* container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    typedef QHashData::Node Node;
+#else
+    void* constructContainer(void* result, void* container);
+    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
+    typedef AutoHashAccess::QHashData QHashData;
+    typedef AutoHashAccess::iterator iterator;
+#endif
+};
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+
+#include <QtCore/QVector>
+
+class AutoVectorAccess : public AbstractVectorAccess{
+    QMetaType m_elementMetaType;
+    size_t m_elementAlign;
+    QHashFunction m_hashFunction;
+    InternalToExternalConverter m_internalToExternalConverter;
+    ExternalToInternalConverter m_externalToInternalConverter;
+    size_t m_offset;
+    bool m_isComplex;
+
+    AutoVectorAccess(const AutoVectorAccess&);
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    void destructContainer(void* container);
+    void detach(QTypedArrayData<char> ** vector);
+    bool isDetached(QTypedArrayData<char> *const* vector);
+    void realloc(QTypedArrayData<char> ** vector, int aalloc, QArrayData::AllocationOptions options = QArrayData::Default);
+    QTypedArrayData<char>* unsharableEmpty();
+    void erase(QTypedArrayData<char> ** vector, char* begin, char* end);
+public:
+    ~AutoVectorAccess() override;
+    AutoVectorAccess(
+                    int elementMetaType,
+                    size_t elementAlign,
+                    const QHashFunction& hashFunction,
+                    const InternalToExternalConverter& internalToExternalConverter,
+                    const ExternalToInternalConverter& externalToInternalConverter
+            );
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    void dispose() override;
+    AutoVectorAccess* clone() override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
+    bool isConstant() override {return false;}
+    const QMetaType& elementMetaType() override;
+    void append(JNIEnv * env, void* container, jobject value) override;
+    void appendVector(JNIEnv * env, void* container, jobject list) override;
+    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
+    jobject toSet(JNIEnv *,const void*) override{return nullptr;}
+    void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    void reserve(JNIEnv * env, void* container, jint size) override;
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override;
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
+    void removeAt(JNIEnv * env, void* container, jint index) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    void prepend(JNIEnv * env, void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void move(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    void clear(JNIEnv * env, void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env, const void* container) override;
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override;
+    void remove(JNIEnv * env, void* container, jint index, jint n) override;
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
+    void resize(JNIEnv * env, void* container, jint newSize) override;
+    void squeeze(JNIEnv * env, void* container) override;
+};
+
+#include <QtCore/QLinkedList>
+
+class AutoLinkedListAccess : public AbstractLinkedListAccess{
+    QMetaType m_elementMetaType;
+    QHashFunction m_hashFunction;
+    InternalToExternalConverter m_internalToExternalConverter;
+    ExternalToInternalConverter m_externalToInternalConverter;
+    size_t m_offset;
+
+    AutoLinkedListAccess(const AutoLinkedListAccess& other);
+public:
+    AutoLinkedListAccess(
+            int elementMetaType,
+            size_t elementAlign,
+            const QHashFunction& hashFunction,
+            const InternalToExternalConverter& internalToExternalConverter,
+            const ExternalToInternalConverter& externalToInternalConverter
+            );
+    AutoLinkedListAccess* clone() override;
+    void* createContainer() override;
+    void* copyContainer(const void* container) override;
+    void assign(void* container, const void* other) override;
+    void deleteContainer(void* container) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override {return false;}
+    void dispose() override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
+    const QMetaType& elementMetaType() override;
+    void append(JNIEnv * env, void* container, jobject value) override;
+    jobject first(JNIEnv * env, const void* container) override;
+    jobject last(JNIEnv * env, const void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void prepend(JNIEnv * env, void* container, jobject value) override;
+    void removeFirst(JNIEnv * env, void* container) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    void removeLast(JNIEnv * env, void* container) override;
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jobject takeFirst(JNIEnv * env, void* container) override;
+    jobject takeLast(JNIEnv * env, void* container) override;
+private:
+    typedef QLinkedListNode<char> Node;
+    void destructContainer(void* container);
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    void detach(QLinkedListData*& d);
+    void detach_helper(QLinkedListData*& d);
+    QLinkedList<char>::iterator detach_helper2(QLinkedListData*& d, QLinkedList<char>::iterator iter);
+    void freeData(QLinkedListData*& v);
+    void erase(QLinkedListData*& d, Node *i);
+};
+
+#endif
 
 #endif // QTJAMBI_CONTAINERACCESS_P_H

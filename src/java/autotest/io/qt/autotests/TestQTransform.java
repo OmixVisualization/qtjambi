@@ -260,7 +260,7 @@ public class TestQTransform extends ApplicationInitializer {
     public void squareToQuad() {
         QPolygonF pol = new QPolygonF();
 
-        System.gc();
+        ApplicationInitializer.runGC();
         QPointF p1 = new QPointF(0,0);
         pol.add(p1);
         QPointF p2 = new QPointF(5,0);

@@ -147,7 +147,7 @@
         <modify-argument index="0">
             <replace-type modified-type="java.lang.Integer"/>
             <conversion-rule class="native">
-                jobject %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
+                %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
             </conversion-rule>
         </modify-argument>
         <modify-argument index="1">

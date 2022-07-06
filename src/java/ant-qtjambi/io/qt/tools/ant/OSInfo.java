@@ -76,13 +76,18 @@ public class OSInfo
 
     public static final String K_WIN_X86 = "windows-x86";
     public static final String K_WIN_X64 = "windows-x64";
-    public static final String K_WIN_ARM32 = "windows-arm32";
+    public static final String K_WIN_ARM32 = "windows-arm";
     public static final String K_WIN_ARM64 = "windows-arm64";
 
     public static final String K_LINUX_X86 = "linux-x86";
     public static final String K_LINUX_X64 = "linux-x64";
-    public static final String K_LINUX_ARM32 = "linux-arm32";
+    public static final String K_LINUX_ARM32 = "linux-arm";
     public static final String K_LINUX_ARM64 = "linux-arm64";
+    
+    public static final String K_ANDROID_X86 = "android-x86";
+    public static final String K_ANDROID_X64 = "android-x64";
+    public static final String K_ANDROID_ARM32 = "android-arm";
+    public static final String K_ANDROID_ARM64 = "android-arm64";
 
     public static final String K_WINDOWS = "windows";
     public static final String K_ANDROID = "android";
@@ -99,7 +104,7 @@ public class OSInfo
                 os = OS.Linux;
             else if (osname.contains("windows"))
                 os = OS.Windows;
-            else if (osname.contains("mac os"))
+            else if (osname.contains("mac os") || osname.contains("macos"))
                 os = OS.MacOS;
             else if (osname.contains("android"))
                 os = OS.Android;
@@ -187,18 +192,30 @@ public class OSInfo
     }
 
     static void setQMakeXSpec(String qmakeXSpec) {
-    	switch(qmakeXSpec) {
-    	case "android-clang":
-    		crossOS = OS.Android;
-    		crossOSArchName = "android";
-    		break;
-    	case "macx-ios-clang":
-    		crossOS = OS.IOS;
-    		crossOSArchName = "ios";
-    		break;
-    		default:break;
+    	if(qmakeXSpec==null) {
+    		crossOS = null;
+    		crossOSArchName = null;    		
+    	}else {
+	    	switch(qmakeXSpec) {
+	    	case "android-clang":
+	    		crossOS = OS.Android;
+	    		crossOSArchName = "android";
+	    		break;
+	    	case "macx-ios-clang":
+	    		crossOS = OS.IOS;
+	    		crossOSArchName = "ios";
+	    		break;
+			default:
+	    		crossOS = null;
+	    		crossOSArchName = null;
+				break;
+	    	}
     	}
     }
+    
+    static void setCrossOSArchName(String crossOSArchName) {
+		OSInfo.crossOSArchName = crossOSArchName;
+	}
 
     private static OS crossOS;
     private static String crossOSArchName;

@@ -1,5 +1,5 @@
-#ifndef QTJAMBI_CONTAINERACCESS_VECTOR_P_H
-#define QTJAMBI_CONTAINERACCESS_VECTOR_P_H
+#ifndef QTJAMBI_CONTAINERACCESS_VECTOR_H
+#define QTJAMBI_CONTAINERACCESS_VECTOR_H
 
 #include <QtCore/QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -95,9 +95,6 @@ public:
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_container_type<QVector<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());
-    }
-    PtrDeleterFunction containerDeleter() override {
-        return nullptr;
     }
     bool isConstant() override {return false;}
     const QMetaType& elementMetaType() override {return m_elementMetaTypeInfo.metaType();}
@@ -208,38 +205,23 @@ public:
 
         QTJAMBI_ELEMENT_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QSet, _align, _size,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_elementMetaTypeInfo.metaType())
-#endif
-                                                                                    )){
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QSet, m_elementMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QSet,
+                                                      m_elementMetaTypeInfo.metaType(),
+                                                      _align, _size,
+                                                      qtjambi_is_static_type(m_elementMetaTypeInfo.metaType()),
+                                                      qtjambi_is_pointer_type(m_elementMetaTypeInfo.metaType()),
+                                                      m_elementMetaTypeInfo.hashFunction(),
+                                                      m_internalToExternalConverter,
+                                                      m_externalToInternalConverter
+                                                    );
+        if(access){
             const void* set = new QSet<T>(reinterpret_cast<const QVector<T> *>(container)->begin(), reinterpret_cast<const QVector<T> *>(container)->end());
-            result = qtjambi_from_QSet(env, set, factory(m_elementMetaTypeInfo.metaType(),
-                                                         m_elementMetaTypeInfo.hashFunction(),
-                                                         m_internalToExternalConverter,
-                                                         m_externalToInternalConverter));
+            result = qtjambi_from_QSet(env, set, access);
         }
 
         return result;
-    }
-
-    jobject takeAt(JNIEnv * env, void* container, jint index) override {
-        jvalue _value;
-        _value.l = nullptr;
-        bool success = false;
-
-        QTJAMBI_ELEMENT_LOCKER
-        {
-            T result = reinterpret_cast<QVector<T> *>(container)->takeAt(index);
-            success = m_internalToExternalConverter(env, nullptr, &result, &_value, true);
-        }
-
-        if(success){
-            return _value.l;
-        }
-        return nullptr;
     }
 
     void swapItemsAt(JNIEnv *, void* container, jint index1, jint index2) override {
@@ -561,8 +543,4 @@ struct ContainerAccessFac<QStack,align,size,isStatic> : ContainerAccessFac<QVect
 }
 
 #endif
-
-#define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\
-    ContainerAccessFactoryHelper<QVector,AL,SZ,false>::registerContainerAccessFactory();
-
-#endif // QTJAMBI_CONTAINERACCESS_VECTOR_P_H
+#endif // QTJAMBI_CONTAINERACCESS_VECTOR_H

@@ -43,7 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.pdf" module="qtjambi.pdf" default-superclass="io.qt.QtObject">
-    <required-library name="QtNetwork"/>
     <object-type name="QPdfPageRenderer">
         <modify-function signature="setDocument(QPdfDocument *)">
             <modify-argument index="1">

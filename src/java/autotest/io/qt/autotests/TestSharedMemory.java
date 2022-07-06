@@ -50,10 +50,11 @@ import io.qt.core.QThread;
 public class TestSharedMemory extends ApplicationInitializer {
     @Before
     public void setUp() {
-    	Assume.assumeTrue("Cannot run on macOS.", 
+    	Assume.assumeTrue("Cannot run on macOS or on Android.", 
 				!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, 
 																QOperatingSystemVersion.OSType.IOS, 
-																QOperatingSystemVersion.OSType.WatchOS));
+																QOperatingSystemVersion.OSType.WatchOS, 
+																QOperatingSystemVersion.OSType.Android));
     }
 
     @Test(expected=IllegalStateException.class)

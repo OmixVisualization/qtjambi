@@ -113,7 +113,6 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.remoteobjects.ServerIoDevice$ReadResult"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(%in){
                         jclass cls = resolveClass(%env, "io/qt/remoteobjects/ServerIoDevice$ReadResult");
                         JavaException::check(%env QTJAMBI_STACKTRACEINFO );
@@ -149,7 +148,6 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.remoteobjects.ClientIoDevice$ReadResult"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(%in){
                         jclass cls = resolveClass(%env, "io/qt/remoteobjects/ClientIoDevice$ReadResult");
                         JavaException::check(%env QTJAMBI_STACKTRACEINFO );
@@ -185,7 +183,6 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.remoteobjects.IoDeviceBase$ReadResult"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(%in){
                         %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
                     }
@@ -216,7 +213,6 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.remoteobjects.QtROIoDeviceBase$ReadResult"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(%in){
                         %out = Java::QtRemoteObjects::QtROIoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
                     }

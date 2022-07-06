@@ -39,10 +39,10 @@ public final class QByteProperty extends QBytePropertyData {
 	
 	static boolean checkType(QMetaType metaType){
 		return metaType!=null 
-				&& metaType.sizeOf()==1
 				&& (metaType.id()==QMetaType.Type.SChar.value()
 					|| metaType.id()==QMetaType.Type.Char.value()
-					|| metaType.id()==QMetaType.Type.UChar.value());
+					|| metaType.id()==QMetaType.Type.UChar.value()
+							|| metaType.id()==QMetaType.Type.QVariant.value());
 	}
 
     /**

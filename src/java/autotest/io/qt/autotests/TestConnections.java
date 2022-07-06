@@ -97,9 +97,12 @@ import io.qt.widgets.QWidget;
 
 public class TestConnections extends ApplicationInitializer
 {
+	private static boolean hasSerializableLambdas;
+	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	hasSerializableLambdas = QtJambiInternal.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
     public TestConnections()
@@ -888,7 +891,7 @@ public class TestConnections extends ApplicationInitializer
         MyQObject.finalizedCount = 0;
 
         parent.dispose();
-        System.gc();
+        ApplicationInitializer.runGC();
         try {
             Thread.sleep(600);
         } catch (Exception e) {
@@ -1637,9 +1640,10 @@ public class TestConnections extends ApplicationInitializer
         t.start();
 
         try {
+        	QMetaObject.Slot0 slot = e::slot2;
             for (int i=0; i<50000; ++i) {
-                e.signal.connect(e::slot2);
-                e.signal.disconnect(e::slot2);
+                e.signal.connect(slot);
+                e.signal.disconnect(slot);
             }
             t.join();
         } catch(Exception ex) {
@@ -1894,7 +1898,7 @@ public class TestConnections extends ApplicationInitializer
     }
 
     static class RecursiveSignalEmission extends QPushButton {
-        public static final int COUNT = 100;
+        public static final int COUNT = 10;
 
         public int emitted = 0;
         public void slot() {
@@ -1989,20 +1993,16 @@ public class TestConnections extends ApplicationInitializer
 			});
 			dialog = null;
 		}
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		assertTrue(dialogDestroyedAsNull[0]);
@@ -2024,8 +2024,7 @@ public class TestConnections extends ApplicationInitializer
 			DestroyResponseObject d = new DestroyResponseObject();
 			d.destroyed.connect(o->d.onDestroyed(o));
 		}
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	}
@@ -2036,8 +2035,7 @@ public class TestConnections extends ApplicationInitializer
 		object.destroyed.connect(o -> {
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "destroyed: "+System.identityHashCode(o));
 		}, Qt.ConnectionType.QueuedConnection);
-		System.gc();
-        System.runFinalization();
+		ApplicationInitializer.runGC();
         Thread.sleep(50);
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         QCoreApplication.processEvents();

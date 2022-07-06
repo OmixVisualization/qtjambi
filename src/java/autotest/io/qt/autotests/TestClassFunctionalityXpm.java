@@ -58,8 +58,7 @@ public class TestClassFunctionalityXpm extends ApplicationInitializer {
         QApplication.processEvents();
         QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
     }
 
     // Check that const char *[] is handled properly by the generated code

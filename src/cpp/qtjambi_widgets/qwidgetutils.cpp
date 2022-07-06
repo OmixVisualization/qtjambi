@@ -41,17 +41,18 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_wid
  jobject,
  jobject wdg)
 {
-    try{
+    jboolean result = false;
+    QTJAMBI_TRY{
         const QWidget *widget = qtjambi_cast<const QWidget*>(__jni_env, wdg);
         if(widget){
             const QWidgetPrivate *wd = static_cast<const QWidgetPrivate *>(QObjectPrivate::get(widget));
             Q_ASSERT(wd);
-            return wd->widgetItem!=nullptr;
+            result = wd->widgetItem!=nullptr;
         }
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // QInputDialog::open(QObject * receiver, const char * member)
@@ -61,7 +62,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QInputDialog::open(QObject * receiver, const char * member)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QInputDialog *__qt_this = qtjambi_to_object<QInputDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -81,9 +82,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 
@@ -94,7 +95,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFileDialog::open(QObject * receiver, const char * member)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QFileDialog *__qt_this = qtjambi_to_object<QFileDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -114,9 +115,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QFontDialog::open(QObject * receiver, const char * member)
@@ -126,7 +127,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFontDialog::open(QObject * receiver, const char * member)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(fontdialog)
         QFontDialog *__qt_this = qtjambi_to_object<QFontDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -146,9 +147,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 
@@ -159,7 +160,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QColorDialog::open(QObject * receiver, const char * member)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(colordialog)
         QColorDialog *__qt_this = qtjambi_to_object<QColorDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -179,9 +180,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 const QObject* qtjambi_get_owner(const QGraphicsLayoutItem* __qt_this){
@@ -189,9 +190,11 @@ const QObject* qtjambi_get_owner(const QGraphicsLayoutItem* __qt_this){
         return qtjambi_get_owner(__qt_this->graphicsItem());
     }else if(__qt_this->parentLayoutItem()){
         return qtjambi_get_owner(__qt_this->parentLayoutItem());
-    }else{
-        return dynamic_cast<const QObject*>(__qt_this);
     }
+    try{
+        return dynamic_cast<const QObject*>(__qt_this);
+    }catch(...){}
+    return nullptr;
 }
 
 const QObject* qtjambi_get_owner(const QGraphicsItem* __qt_this)
@@ -204,7 +207,11 @@ const QObject* qtjambi_get_owner(const QGraphicsItem* __qt_this)
         return __qt_this->parentObject();
     }else if(__qt_this->parentItem()){
         return qtjambi_get_owner(__qt_this->parentItem());
-    }else return dynamic_cast<const QObject*>(__qt_this);
+    }
+    try{
+        return dynamic_cast<const QObject*>(__qt_this);
+    }catch(...){}
+    return nullptr;
 }
 
 const QObject* qtjambi_get_owner(const QTreeWidgetItemIterator* iter)

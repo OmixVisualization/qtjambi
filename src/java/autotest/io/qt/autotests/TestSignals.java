@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,14 +55,18 @@ import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.Qt;
 import io.qt.gui.*;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.*;
 
 @SuppressWarnings("unused")
 public class TestSignals extends ApplicationInitializer{
 	
+	private static boolean hasSerializableLambdas;
+	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	hasSerializableLambdas = QtJambiInternal.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
 	public static class QObjectSignalOwner extends QObject{
@@ -77,23 +82,23 @@ public class TestSignals extends ApplicationInitializer{
 	}
 	
 	public static class StaticMemberSignalOwner{
-		public final static QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
+		public final static QStaticMemberSignals.Signal2<Integer, String> testSignal = new QStaticMemberSignals.Signal2<>();
 	}
 	
 	public static class NonStaticMemberSignalOwner{
-		public final QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
+		public final QStaticMemberSignals.Signal2<Integer, String> testSignal = new QStaticMemberSignals.Signal2<>();
 	}
 	
 	public static class MemberSignalOwner extends QObject{
-		public final Signal2<@QtPrimitiveType Integer, String> testSinal = new Signal2<>();
+		public final Signal2<@QtPrimitiveType Integer, String> testSignal = new Signal2<>();
 	}
 	
 	public static class InstanceMemberSignalOwnerQObject extends QObject implements QInstanceMemberSignals{
-		public final QInstanceMemberSignals.Signal1<String> testSinal = new QInstanceMemberSignals.Signal1<>(this);
+		public final QInstanceMemberSignals.Signal1<String> testSignal = new QInstanceMemberSignals.Signal1<>(this);
 	}
 	
 	public static class DeclarableSignalOwnerQObject extends QObject{
-		public final QDeclarableSignals.Signal1<String> testSinal = new QDeclarableSignals.Signal1<>(String.class);
+		public final QDeclarableSignals.Signal1<String> testSignal = new QDeclarableSignals.Signal1<>(String.class);
 	}
 	
 	@Test
@@ -118,11 +123,11 @@ public class TestSignals extends ApplicationInitializer{
     public void testInstanceMemberSignalInQObject() {
 		InstanceMemberSignalOwnerQObject o = new InstanceMemberSignalOwnerQObject();
 		QCompleter receiver = new QCompleter();
-		o.testSinal.connect(receiver::setCompletionPrefix);
+		o.testSignal.connect(receiver::setCompletionPrefix);
 		assertEquals("", receiver.completionPrefix());
-		o.testSinal.emit("test1");
+		o.testSignal.emit("test1");
 		assertEquals("test1", receiver.completionPrefix());
-		QMetaMethod m = QMetaMethod.fromSignal(o.testSinal);
+		QMetaMethod m = QMetaMethod.fromSignal(o.testSignal);
 		assertTrue(m!=null);
 		m.invoke(o, "test2");
 		assertEquals("test2", receiver.completionPrefix());
@@ -132,28 +137,29 @@ public class TestSignals extends ApplicationInitializer{
     public void testDeclarableMemberSignalInQObject() {
 		DeclarableSignalOwnerQObject o = new DeclarableSignalOwnerQObject();
 		QCompleter receiver = new QCompleter();
-		o.testSinal.connect(receiver::setCompletionPrefix);
+		o.testSignal.connect(receiver::setCompletionPrefix);
 		assertEquals("", receiver.completionPrefix());
-		o.testSinal.emit("test1");
+		o.testSignal.emit("test1");
 		assertEquals("test1", receiver.completionPrefix());
-		QMetaMethod m = QMetaMethod.fromSignal(o.testSinal);
+		QMetaMethod m = QMetaMethod.fromSignal(o.testSignal);
 		assertTrue(m==null);
 	}
 	
     @Test
     public void testStaticMemberSignal() {
-		assertEquals(Arrays.asList(Integer.class, String.class), StaticMemberSignalOwner.testSinal.argumentTypes());
+		assertEquals(Arrays.asList(Integer.class, String.class), StaticMemberSignalOwner.testSignal.argumentTypes());
     }
     
     @Test
     public void testMemberSignal() {
-		assertEquals(Arrays.asList(int.class, String.class), new MemberSignalOwner().testSinal.argumentTypes());
+    	Assume.assumeTrue(QtJambiInternal.useAnnotatedType);
+		assertEquals(Arrays.asList(int.class, String.class), new MemberSignalOwner().testSignal.argumentTypes());
     }
     
     @Test
     public void testNonStaticMemberSignal() {
     	try {
-			assertEquals(Arrays.asList(Integer.class, String.class), new NonStaticMemberSignalOwner().testSinal.argumentTypes());
+			assertEquals(Arrays.asList(Integer.class, String.class), new NonStaticMemberSignalOwner().testSignal.argumentTypes());
 			Assert.assertTrue(false);
 		} catch (RuntimeException e) {
 			assertEquals(QSignalInitializationException.class, e.getClass());
@@ -164,8 +170,8 @@ public class TestSignals extends ApplicationInitializer{
     @Test
     public void testNonStaticLocalSignal() {
     	try {
-	    	QStaticMemberSignals.Signal2<@QtPrimitiveType Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
-	    	assertEquals(Arrays.asList(int.class, String.class), testSinal.argumentTypes());
+	    	QStaticMemberSignals.Signal2<@QtPrimitiveType Integer, String> testSignal = new QStaticMemberSignals.Signal2<>();
+	    	assertEquals(Arrays.asList(int.class, String.class), testSignal.argumentTypes());
 			Assert.assertTrue(false);
 		} catch (RuntimeException e) {
 			assertEquals(QSignalInitializationException.class, e.getClass());
@@ -175,7 +181,7 @@ public class TestSignals extends ApplicationInitializer{
     
     @Test
     public void testLocalSignal() {
-		assertEquals(Arrays.asList(int.class, String.class), new QDeclarableSignals.Signal2<>("testSinal", int.class, String.class).argumentTypes());
+		assertEquals(Arrays.asList(int.class, String.class), new QDeclarableSignals.Signal2<>("testSignal", int.class, String.class).argumentTypes());
     }
     
     @Test
@@ -188,10 +194,13 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.objectNameChanged.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receiveName);
     	sender.setObjectName("TEST");
     	assertEquals("TEST", receiver.name);
-    	sender.objectNameChanged.disconnect(receiver::receiveName);
+    	if(hasSerializableLambdas)
+    		sender.objectNameChanged.disconnect(receiver::receiveName);
+    	else
+    		sender.objectNameChanged.disconnect(connection);
     	sender.setObjectName("TEST2");
     	assertEquals("TEST", receiver.name);
     }
@@ -206,10 +215,13 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.objectNameChanged.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receiveName);
     	sender.setObjectName("TEST");
     	assertEquals("TEST", receiver.name);
-    	sender.objectNameChanged.disconnect(receiver::receiveName);
+    	if(hasSerializableLambdas)
+    		sender.objectNameChanged.disconnect(receiver::receiveName);
+    	else
+    		sender.objectNameChanged.disconnect(connection);
     	sender.setObjectName("TEST2");
     	assertEquals("TEST", receiver.name);
     }
@@ -246,10 +258,13 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.testSignal.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveName);
     	sender.testSignal.emit("TEST");
     	assertEquals("TEST", receiver.name);
-    	sender.testSignal.disconnect(receiver::receiveName);
+    	if(hasSerializableLambdas)
+    		sender.testSignal.disconnect(receiver::receiveName);
+    	else
+    		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit("TEST2");
     	assertEquals("TEST", receiver.name);
     }
@@ -267,10 +282,13 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.testSignal.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveName);
     	sender.testSignal.emit("TEST");
     	assertEquals("TEST", receiver.name);
-    	sender.testSignal.disconnect(receiver::receiveName);
+    	if(hasSerializableLambdas)
+    		sender.testSignal.disconnect(receiver::receiveName);
+    	else
+    		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit("TEST2");
     	assertEquals("TEST", receiver.name);
     }
@@ -290,10 +308,13 @@ public class TestSignals extends ApplicationInitializer{
     	}
     	Data data = new Data();
     	Receiver receiver = new Receiver();
-    	sender.testSignal.connect(receiver::receiveData);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveData);
     	sender.testSignal.emit(data);
     	assertEquals(data, receiver.data);
-    	sender.testSignal.disconnect(receiver::receiveData);
+    	if(hasSerializableLambdas)
+    		sender.testSignal.disconnect(receiver::receiveData);
+    	else
+    		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit(new Data());
     	assertEquals(data, receiver.data);
     }
@@ -313,10 +334,13 @@ public class TestSignals extends ApplicationInitializer{
     	}
     	Data data = new Data();
     	Receiver receiver = new Receiver();
-    	sender.testSignal.connect(receiver::receiveData);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveData);
     	sender.testSignal.emit(data);
     	assertEquals(data, receiver.data);
-    	sender.testSignal.disconnect(receiver::receiveData);
+    	if(hasSerializableLambdas)
+    		sender.testSignal.disconnect(receiver::receiveData);
+    	else
+    		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit(new Data());
     	assertEquals(data, receiver.data);
     }
@@ -331,10 +355,13 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.toggled.connect(receiver::toggled);
+    	QMetaObject.Connection connection = sender.toggled.connect(receiver::toggled);
     	sender.toggled.emit(true);
     	assertEquals(true, receiver.toggled);
-    	sender.toggled.disconnect(receiver::toggled);
+    	if(hasSerializableLambdas)
+    		sender.toggled.disconnect(receiver::toggled);
+    	else
+    		sender.toggled.disconnect(connection);
     	sender.toggled.emit(false);
     	assertEquals(true, receiver.toggled);
     }
@@ -349,18 +376,23 @@ public class TestSignals extends ApplicationInitializer{
     		}
     	}
     	Receiver receiver = new Receiver();
-    	sender.toggled.connect(receiver::toggled);
+    	QMetaObject.Connection connection = sender.toggled.connect(receiver::toggled);
     	sender.toggled.emit(true);
     	assertEquals(true, receiver.toggled);
-    	sender.toggled.disconnect(receiver::toggled);
+    	if(hasSerializableLambdas)
+    		sender.toggled.disconnect(receiver::toggled);
+    	else
+    		sender.toggled.disconnect(connection);
     	sender.toggled.emit(false);
     	assertEquals(true, receiver.toggled);
     }
     
     @Test
     public void testVirtualSlotOverrideByNonSlot() {
-    	QMetaMethod method = QMetaMethod.fromMethod(QWizard::setVisible);
-    	Assert.assertTrue(method.isValid());
+    	if(hasSerializableLambdas) {
+	    	QMetaMethod method = QMetaMethod.fromMethod(QWizard::setVisible);
+	    	Assert.assertTrue(method.isValid());
+    	}
     	class Object extends QObject{
     		public final Signal1<Boolean> visibility = new Signal1<>();
     	}

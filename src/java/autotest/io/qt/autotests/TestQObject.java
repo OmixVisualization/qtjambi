@@ -199,7 +199,6 @@ public class TestQObject extends ApplicationInitializer {
             while(true) {
 //                Utils.releaseNativeResources();
                 Utils.gc(gcMode, 3);
-//                System.runFinalization();
 
                 Reference<? extends DyingObject> thisWr;
                 while((thisWr = weakReferenceQueue.poll()) != null) {

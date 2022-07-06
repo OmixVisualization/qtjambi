@@ -155,9 +155,16 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <widget class="QTreeView" name="treeView"/>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEdit"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -168,7 +175,7 @@
      <x>0</x>
      <y>0</y>
      <width>790</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -264,9 +271,9 @@
  </connections>
  <slots>
   <signal>customSignal1(QRectF)</signal>
-  <signal>customSignal2(QMap&lt;QString,QList&lt;QVariant>>)</signal>
+  <signal>customSignal2(QMap&lt;QString,QList&lt;QVariant&gt;&gt;)</signal>
   <slot>customSlot1()</slot>
   <slot>customSlot2(QString)</slot>
-  <slot>customSlot3(int,QList&lt;QWidget*>,QColor)</slot>
+  <slot>customSlot3(int,QList&lt;QWidget*&gt;,QColor)</slot>
  </slots>
 </ui>

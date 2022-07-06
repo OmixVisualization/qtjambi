@@ -63,11 +63,11 @@ public final class QCharBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| metaType.sizeOf()!=2
 					|| (metaType.id()!=QMetaType.Type.QChar.value()
 						&& metaType.id()!=QMetaType.Type.Char16.value()
 						&& metaType.id()!=QMetaType.Type.Short.value()
-						&& metaType.id()!=QMetaType.Type.UShort.value())) {
+						&& metaType.id()!=QMetaType.Type.UShort.value()
+						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}

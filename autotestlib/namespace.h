@@ -101,6 +101,15 @@ namespace NameSpace
         int x;
     };
 
+#ifndef QT_JAMBI_RUN
+    inline hash_type qHash(const ValueA & v, hash_type seed = 0)
+    {
+        hash_type hashCode = seed;
+        hashCode = hashCode * 31 + ::qHash(v.getX());
+        return hashCode;
+    }
+#endif
+
     namespace NameSpace2
     {
 
@@ -183,10 +192,9 @@ namespace NameSpace
 
 };
 
-inline uint qHash(const NameSpace::ValueA & v)
-{
-    return uint(v.getX());
-}
+#ifdef QT_JAMBI_RUN
+hash_type qHash(const NameSpace::ValueA & v);
+#endif
 
 
 inline NameSpace::NameSpace2::NameSpace3::ObjectC *NameSpace::NameSpace2::NameSpace3::ObjectC::fooBar(NameSpace::NameSpace2::NameSpace3::ObjectD *obj)

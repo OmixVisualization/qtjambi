@@ -33,49 +33,64 @@
 #include <Qt3DRender/Qt3DRender>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 
+#ifdef QT_JAMBI_RUN
 namespace Qt3DRender{
-	typedef Qt3DCore::QNode QNode;
-};
-
-inline hash_type qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p){
-    hash_type hashCode = qHash(p.center());
-    hashCode = hashCode * 31 + qHash(p.radius());
-    return hashCode;
+    typedef Qt3DCore::QNode QNode;
 }
+hash_type qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p, hash_type seed = 0);
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-inline hash_type qHash(const Qt3DRender::QTextureImageData& p){
-    hash_type hashCode = qHash(p.width());
-    hashCode = hashCode * 31 + qHash(p.height());
-    hashCode = hashCode * 31 + qHash(p.depth());
-    hashCode = hashCode * 31 + qHash(p.layers());
-    hashCode = hashCode * 31 + qHash(p.mipLevels());
-    hashCode = hashCode * 31 + qHash(p.faces());
-    hashCode = hashCode * 31 + qHash(p.target());
-    hashCode = hashCode * 31 + qHash(p.format());
-    hashCode = hashCode * 31 + qHash(p.pixelType());
-    hashCode = hashCode * 31 + qHash(p.pixelFormat());
-    for(int i=0; i<p.layers(); ++i){
-        for(int j=0; j<p.faces(); ++j){
-            for(int k=0; k<p.mipLevels(); ++k){
-                hashCode = hashCode * 31 + qHash(p.data(i,j,k));
+hash_type qHash(const Qt3DRender::QTextureImageData& p, hash_type seed = 0);
+
+hash_type qHash(const Qt3DRender::QTextureDataUpdate& p, hash_type seed = 0);
+#endif
+
+#else
+namespace Qt3DRender{
+	typedef Qt3DCore::QNode QNode;
+    inline hash_type qHash(const QLevelOfDetailBoundingSphere& p, hash_type seed = 0){
+        hash_type hashCode = seed;
+        hashCode = hashCode * 31 + qHash(p.center());
+        hashCode = hashCode * 31 + ::qHash(p.radius());
+        return hashCode;
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+    inline hash_type qHash(const QTextureImageData& p, hash_type seed = 0){
+        hash_type hashCode = seed;
+        hashCode = hashCode * 31 + ::qHash(p.width());
+        hashCode = hashCode * 31 + ::qHash(p.height());
+        hashCode = hashCode * 31 + ::qHash(p.depth());
+        hashCode = hashCode * 31 + ::qHash(p.layers());
+        hashCode = hashCode * 31 + ::qHash(p.mipLevels());
+        hashCode = hashCode * 31 + ::qHash(p.faces());
+        hashCode = hashCode * 31 + ::qHash(p.target());
+        hashCode = hashCode * 31 + ::qHash(p.format());
+        hashCode = hashCode * 31 + ::qHash(p.pixelType());
+        hashCode = hashCode * 31 + ::qHash(p.pixelFormat());
+        for(int i=0; i<p.layers(); ++i){
+            for(int j=0; j<p.faces(); ++j){
+                for(int k=0; k<p.mipLevels(); ++k){
+                    hashCode = hashCode * 31 + qHash(p.data(i,j,k));
+                }
             }
         }
+        return hashCode;
     }
-    return hashCode;
-}
 
-inline hash_type qHash(const Qt3DRender::QTextureDataUpdate& p){
-    hash_type hashCode = qHash(p.x());
-    hashCode = hashCode * 31 + qHash(p.y());
-    hashCode = hashCode * 31 + qHash(p.z());
-    hashCode = hashCode * 31 + qHash(p.layer());
-    hashCode = hashCode * 31 + qHash(p.mipLevel());
-    hashCode = hashCode * 31 + qHash(p.face());
-    if(p.data())
-        hashCode = hashCode * 31 + qHash(*p.data().get());
-    return hashCode;
-}
+    inline hash_type qHash(const QTextureDataUpdate& p, hash_type seed = 0){
+        hash_type hashCode = seed;
+        hashCode = hashCode * 31 + ::qHash(p.x());
+        hashCode = hashCode * 31 + ::qHash(p.y());
+        hashCode = hashCode * 31 + ::qHash(p.z());
+        hashCode = hashCode * 31 + ::qHash(p.layer());
+        hashCode = hashCode * 31 + ::qHash(p.mipLevel());
+        hashCode = hashCode * 31 + ::qHash(p.face());
+        if(p.data())
+            hashCode = hashCode * 31 + qHash(*p.data().get());
+        return hashCode;
+    }
+#endif
+};
 #endif
 
 #endif // QT3DRENDER_H

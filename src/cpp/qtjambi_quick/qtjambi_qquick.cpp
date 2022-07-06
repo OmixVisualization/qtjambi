@@ -98,8 +98,9 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
 (JNIEnv *__jni_env,
  jobject _this)
 {
+    jobject _result{nullptr};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSGGeometry::vertexData() const")
-    try{
+    QTJAMBI_TRY{
         QSGGeometry *__qt_this = qtjambi_to_object<QSGGeometry>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         if(__qt_this->attributeCount() == 1
@@ -108,7 +109,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
                 && __qt_this->attributes()[0].type == QSGGeometry::FloatType
                 && __qt_this->attributes()[0].attributeType == QSGGeometry::PositionAttribute
                 && __qt_this->attributes()[0].position == 0)
-            return Java::QtQuick::QSGGeometry$Point2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
+            _result = Java::QtQuick::QSGGeometry$Point2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
         else if(__qt_this->attributeCount() == 2
                 && __qt_this->sizeOfVertex() == 4 * sizeof(float)
                 && __qt_this->attributes()[0].tupleSize == 2
@@ -119,7 +120,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
                 && __qt_this->attributes()[1].type == QSGGeometry::FloatType
                 && __qt_this->attributes()[1].attributeType == QSGGeometry::TexCoordAttribute
                 && __qt_this->attributes()[1].position == 1)
-            return Java::QtQuick::QSGGeometry$TexturedPoint2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
+            _result = Java::QtQuick::QSGGeometry$TexturedPoint2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
         else if(__qt_this->attributeCount() == 2
                 && __qt_this->sizeOfVertex() == 2 * sizeof(float) + 4 * sizeof(char)
                 && __qt_this->attributes()[0].tupleSize == 2
@@ -130,13 +131,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
                 && __qt_this->attributes()[1].type == QSGGeometry::UnsignedByteType
                 && __qt_this->attributes()[1].attributeType == QSGGeometry::ColorAttribute
                 && __qt_this->attributes()[1].position == 1)
-            return Java::QtQuick::QSGGeometry$ColoredPoint2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
+            _result = Java::QtQuick::QSGGeometry$ColoredPoint2DVertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
         else
-            return Java::QtQuick::QSGGeometry$VertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
-    }catch(const JavaException& exn){
+            _result = Java::QtQuick::QSGGeometry$VertexData::newInstance(__jni_env, jlong(__qt_this->vertexData()), jint(__qt_this->vertexCount()));
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getColoredPoint2D)
@@ -146,13 +147,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
  jint index
  )
 {
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QSGGeometry::ColoredPoint2D* vertexData = reinterpret_cast<QSGGeometry::ColoredPoint2D*>(pointer);
-        return qtjambi_cast<jobject>(__jni_env, vertexData[index]);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getTexturedPoint2D)
@@ -162,13 +164,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
  jint index
  )
 {
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QSGGeometry::TexturedPoint2D* vertexData = reinterpret_cast<QSGGeometry::TexturedPoint2D*>(pointer);
-        return qtjambi_cast<jobject>(__jni_env, vertexData[index]);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getPoint2D)
@@ -178,13 +181,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
  jint index
  )
 {
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QSGGeometry::Point2D* vertexData = reinterpret_cast<QSGGeometry::Point2D*>(pointer);
-        return qtjambi_cast<jobject>(__jni_env, vertexData[index]);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setColoredPoint2D)
@@ -195,12 +199,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
  jobject value
  )
 {
-    try{
+    QTJAMBI_TRY{
         QSGGeometry::ColoredPoint2D* vertexData = reinterpret_cast<QSGGeometry::ColoredPoint2D*>(pointer);
         vertexData[index] = qtjambi_cast<QSGGeometry::ColoredPoint2D>(__jni_env, value);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setTexturedPoint2D)
@@ -211,12 +215,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
  jobject value
  )
 {
-    try{
+    QTJAMBI_TRY{
         QSGGeometry::TexturedPoint2D* vertexData = reinterpret_cast<QSGGeometry::TexturedPoint2D*>(pointer);
         vertexData[index] = qtjambi_cast<QSGGeometry::TexturedPoint2D>(__jni_env, value);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setPoint2D)
@@ -227,11 +231,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
  jobject value
  )
 {
-    try{
+    QTJAMBI_TRY{
         QSGGeometry::Point2D* vertexData = reinterpret_cast<QSGGeometry::Point2D*>(pointer);
         vertexData[index] = qtjambi_cast<QSGGeometry::Point2D>(__jni_env, value);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 

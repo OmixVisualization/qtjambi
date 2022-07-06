@@ -523,8 +523,8 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("Ai have plain text", textDocument.toPlainText());
         assertFalse(cursor.atStart());
         cursor = null;
-        System.gc();
-        System.gc();
+        ApplicationInitializer.runGC();
+        ApplicationInitializer.runGC();
     }
     
     @Test
@@ -658,12 +658,14 @@ public class TestInjectedCode extends ApplicationInitializer {
     	lockFile.unlock();
     	lockFile.removeStaleLockFile();
     	assertEquals(QCoreApplication.applicationPid(), info.pid);
-    	QFileInfo applicationFilePath = new QFileInfo(QCoreApplication.applicationFilePath());
-    	String fileName = applicationFilePath.fileName();
-    	if(fileName.endsWith(".exe")) {
-    		fileName = fileName.substring(0, fileName.length()-4);
+    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+	    	QFileInfo applicationFilePath = new QFileInfo(QCoreApplication.applicationFilePath());
+	    	String fileName = applicationFilePath.fileName();
+	    	if(fileName.endsWith(".exe")) {
+	    		fileName = fileName.substring(0, fileName.length()-4);
+	    	}
+	    	assertEquals(info.appname, fileName);
     	}
-    	assertEquals(info.appname, fileName);
     }
     
     @Test
@@ -787,9 +789,11 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("plain", text.subtype);
     	assertTrue(text.text!=null);
 
-    	text = clipboard.text((String)null);
-        assertEquals("", text.subtype);
-    	assertTrue(text.text!=null);
+    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+	    	text = clipboard.text((String)null);
+	        assertEquals("", text.subtype);
+	    	assertTrue(text.text!=null);
+    	}
     }
 
     @Test
@@ -1338,7 +1342,7 @@ public class TestInjectedCode extends ApplicationInitializer {
 
         for (int i=0; i<100; ++i) {
             QDataStream stream = new QDataStream(new QByteArray(), QIODevice.OpenModeFlag.WriteOnly);
-            System.gc();
+            ApplicationInitializer.runGC();
 
             stream.writeDouble(1.2);
             stream.writeDouble(3.2);
@@ -1391,9 +1395,9 @@ public class TestInjectedCode extends ApplicationInitializer {
             QByteArray ba = new QByteArray("ABC");
             buffer = new QBuffer(ba, null);
         }
-        System.gc();
+        ApplicationInitializer.runGC();
         assertEquals("ABC", buffer.buffer().toString());
-        System.gc();
+        ApplicationInitializer.runGC();
         buffer.setData( new byte[] {(byte) 'a', (byte) 'b', (byte) 'c'} );
         assertEquals("abc", buffer.buffer().toString());
 
@@ -1401,7 +1405,7 @@ public class TestInjectedCode extends ApplicationInitializer {
             QByteArray ba2 = new QByteArray("HIJ");
             buffer.setBuffer(ba2);
         }
-        System.gc();
+        ApplicationInitializer.runGC();
         assertEquals("HIJ", buffer.buffer().toString());
 
         buffer.setData(new QByteArray("KLM"));

@@ -980,8 +980,8 @@ public class WriteInitialization extends TreeWalker {
 	private static String formLayoutRole(int column, int colspan)
 	{
 	    if (colspan > 1)
-	        return "QFormLayout::SpanningRole";
-	    return column == 0 ? "QFormLayout::LabelRole" : "QFormLayout::FieldRole";
+	        return "QFormLayout.ItemRole.SpanningRole";
+	    return column == 0 ? "QFormLayout.ItemRole.LabelRole" : "QFormLayout.ItemRole.FieldRole";
 	}
 
 	private static String layoutAddMethod(DomLayoutItem.Kind kind, String layoutClass)

@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtNetwork" description="Classes to make network programming easier and more portable.">
+    <required-library name="QtDBus" mode="provide-only" platforms="macos,linux"/>
     <rejection class="QSslKey" function-name="backendImplementation"/>
     <rejection class="QSslCertificate" function-name="backendImplementation"/>
     <namespace-type name="QSsl">

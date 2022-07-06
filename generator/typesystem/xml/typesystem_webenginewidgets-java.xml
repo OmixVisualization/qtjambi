@@ -43,8 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.webengine.widgets" module="qtjambi.webenginewidgets" default-superclass="io.qt.QtObject">
-    <required-library name="QtQuickWidgets" optional="yes"/>
-    <required-library name="QtPrintSupport"/>
 ´    <template name="web.comsumer.function">
         std::function&lt;void(%TYPE)> %out;
         if(%in){
@@ -148,7 +146,7 @@
                 <replace-type modified-type="QWebEngineFullScreenRequest" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QWebEngineFullScreenRequest&amp; %out  = *qtjambi_cast&lt;QWebEngineFullScreenRequest*>(%env, %in);
@@ -160,7 +158,7 @@
                 <replace-type modified-type="io.qt.network.QAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -172,7 +170,7 @@
                 <replace-type modified-type="io.qt.network.QAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -183,7 +181,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    jstring %out = nullptr;
+					jstring %out = nullptr;
                     if(%in){
                         %out = qtjambi_cast&lt;jstring>(%env, %4);
                     }

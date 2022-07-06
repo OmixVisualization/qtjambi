@@ -59,17 +59,17 @@ import org.w3c.dom.Node;
 import io.qt.core.QCommandLineOption;
 import io.qt.core.QCommandLineParser;
 import io.qt.core.QDir;
-import io.qt.core.QList;
 import io.qt.core.QStringList;
 
 class QMLGenerator {
-	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
-	    QCommandLineOption qmlTargetOption = new QCommandLineOption(QList.of("library"), "Java library for qml.", "jar");
-	    QCommandLineOption qmlLibraryOption = new QCommandLineOption(QList.of("jarimport"), "Path to jarimport library.\nExamples:\n--jarimport=path"+File.separator+"jarimport.dll\n--jarimport=macos"+File.pathSeparator+"path"+File.separator+"jarimport.dylib", "file");
-	    QCommandLineOption qmlLibraryLocationOption = new QCommandLineOption(QList.of("jarimport-location"), "Directory containing jarimport library", "path");
-	    QCommandLineOption qmlNativeLibraryPathOption = new QCommandLineOption(QList.of("native-library-path"), "Native library path", "path");
+	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
+	    QCommandLineOption qmlTargetOption = new QCommandLineOption(QStringList.of("library"), "Java library for qml.", "jar");
+	    QCommandLineOption qmlLibraryOption = new QCommandLineOption(QStringList.of("jarimport"), "Path to jarimport library.\nExamples:\n--jarimport=path"+File.separator+"jarimport.dll\n--jarimport=macos"+File.pathSeparator+"path"+File.separator+"jarimport.dylib", "file");
+	    QCommandLineOption qmlLibraryLocationOption = new QCommandLineOption(QStringList.of("jarimport-location"), "Directory containing jarimport library", "path");
+	    QCommandLineOption qmlNativeLibraryPathOption = new QCommandLineOption(QStringList.of("native-library-path"), "Native library path", "path");
 	    
-	    parser.addOptions(QList.of(
+	    parser.addOptions(Arrays.asList(
+	    		platformOption,
 	    		configurationOption,
 	    		qmlTargetOption,
 	    		qmlLibraryOption,
@@ -92,6 +92,10 @@ class QMLGenerator {
 		if(parser.isSet(qmlTargetOption))
 			library = new File(parser.value(qmlTargetOption));
 		
+		String platform = null;
+		if(parser.isSet(platformOption))
+			platform = parser.value(platformOption);
+
 		List<String> classPaths = new ArrayList<>();
 		if(parser.isSet(classPathOption))
 			classPaths.addAll(Arrays.asList(parser.value(classPathOption).split(File.pathSeparator)));
@@ -123,6 +127,14 @@ class QMLGenerator {
 					os = "windows";
 				}else if(libinfo[0].endsWith(".dylib")) {
 					os = "macos";
+                }else if(libinfo[0].endsWith("_x86_64.so")) {
+                    os = "android-x64";
+                }else if(libinfo[0].endsWith("_x86.so")) {
+                    os = "android-x86";
+                }else if(libinfo[0].endsWith("_arm64-v8a.so")) {
+                    os = "android-arm64";
+                }else if(libinfo[0].endsWith("_armeabi-v7a.so")) {
+                    os = "android-arm";
 				}else if(libinfo[0].endsWith(".so")) {
 					os = "linux";
 				}
@@ -148,6 +160,14 @@ class QMLGenerator {
                         os = "windows";
                     }else if(entry.equals("libjarimport_debug.dylib") || entry.equals("libjarimport.dylib")) {
                         os = "macos";
+                    }else if(entry.equals("libjarimport_debug_x86_64.so") || entry.equals("libjarimport_x86_64.so")) {
+                        os = "android-x64";
+                    }else if(entry.equals("libjarimport_debug_x86.so") || entry.equals("libjarimport_x86.so")) {
+                        os = "android-x86";
+                    }else if(entry.equals("libjarimport_debug_arm64-v8a.so") || entry.equals("libjarimport_arm64-v8a.so")) {
+                        os = "android-arm64";
+                    }else if(entry.equals("libjarimport_debug_armeabi-v7a.so") || entry.equals("libjarimport_armeabi-v7a.so")) {
+                        os = "android-arm";
                     }else if(entry.equals("libjarimport_debug.so") || entry.equals("libjarimport.so")) {
                         os = "linux";
                     }
@@ -156,6 +176,14 @@ class QMLGenerator {
                         os = "windows";
                     }else if(entry.equals("libjarimport.dylib")) {
                         os = "macos";
+                    }else if(entry.equals("libjarimport_x86_64.so")) {
+                        os = "android-x64";
+                    }else if(entry.equals("libjarimport_x86.so")) {
+                        os = "android-x86";
+                    }else if(entry.equals("libjarimport_arm64-v8a.so")) {
+                        os = "android-arm64";
+                    }else if(entry.equals("libjarimport_armeabi-v7a.so")) {
+                        os = "android-arm";
                     }else if(entry.equals("libjarimport.so")) {
                         os = "linux";
                     }
@@ -246,13 +274,15 @@ class QMLGenerator {
 		if(packageName==null) {
 			throw new Error(String.format("Unable to detect package in jar file %1$s.", library.getName()));
 		}
-		dir = new File(dir, packageName.replace('/', File.separatorChar));
+		File parentDir = dir;
+		dir = new File(dir, "qml"+File.separatorChar+packageName.replace('/', File.separatorChar));
 		dir.mkdirs();
 		if(dir.isDirectory()) {
 			boolean found = false;
 			for(Map.Entry<String,URL> entry : libraries) {
 				String os = entry.getKey();
-				if(os!=null) {
+				boolean isAndroid = false;
+				if(os!=null && (platform==null || platform.startsWith(os))) {
 					File newFile;
                     switch(os.toLowerCase()) {
 					case "win32":
@@ -268,6 +298,30 @@ class QMLGenerator {
 							newFile = new File(dir, "jarimport" + (isDebug ? "d.dll" : ".dll"));
                         }
 						System.gc();
+						break;
+					case "android-x64":
+						File _dir = new File(parentDir, "lib/x86_64");
+						_dir.mkdirs();
+						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86_64.so");
+						isAndroid = true;
+						break;
+					case "android-x86":
+						_dir = new File(parentDir, "lib/x86");
+						_dir.mkdirs();
+						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86.so");
+						isAndroid = true;
+						break;
+					case "android-arm64":
+						_dir = new File(parentDir, "lib/arm64-v8a");
+						_dir.mkdirs();
+						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_arm64-v8a.so");
+						isAndroid = true;
+						break;
+					case "android-arm":
+						_dir = new File(parentDir, "lib/armeabi-v7a");
+						_dir.mkdirs();
+						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_armeabi-v7a.so");
+						isAndroid = true;
 						break;
 					case "macos":
 					case "osx":
@@ -314,7 +368,11 @@ class QMLGenerator {
                     try(PrintWriter writer = new PrintWriter(new File(dir, "qmldir"))){
                     	writer.print("module ");
                     	writer.println(packageName.replace('/', '.'));
-                    	writer.println("plugin jarimport");
+                    	if(isAndroid) {
+                    		writer.println("plugin qml_"+packageName.replace('/', '_')+"_jarimport");
+                    	}else {
+                    		writer.println("plugin jarimport");
+                    	}
                     	if(!natives.isEmpty()) {
                     		writer.print("librarypath ");
                         	writer.println(new QStringList(natives).join(","));

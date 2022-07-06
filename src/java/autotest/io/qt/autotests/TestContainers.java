@@ -54,6 +54,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
+import io.qt.autotests.generated.ContainerTest;
 import io.qt.autotests.generated.QHash_int;
 import io.qt.autotests.generated.QList_int;
 import io.qt.autotests.generated.QMap_int;
@@ -164,19 +165,24 @@ public class TestContainers extends ApplicationInitializer {
 
     @Test
     public void run_QStringList() {
-        List<String> items = new ArrayList<String>();
-        for (int i = 0; i < 10; ++i)
-            items.add("" + i);
-
-        // Set the paths.
-        QCoreApplication.setLibraryPaths(items);
-
-        // Get the paths back..
-        List<String> read_items = QCoreApplication.libraryPaths();
-        assertEquals(items.size(), read_items.size());
-        for (int i = 0; i < 10; ++i) {
-            assertEquals(items.get(i), read_items.get(i));
-        }
+    	List<String> libraryPaths = QCoreApplication.libraryPaths();
+    	try {
+	    	List<String> items = new ArrayList<String>();
+	        for (int i = 0; i < 10; ++i)
+	            items.add("" + i);
+	
+	        // Set the paths.
+	        QCoreApplication.setLibraryPaths(items);
+	
+	        // Get the paths back..
+	        List<String> read_items = QCoreApplication.libraryPaths();
+	        assertEquals(items.size(), read_items.size());
+	        for (int i = 0; i < 10; ++i) {
+	            assertEquals(items.get(i), read_items.get(i));
+	        }
+    	}finally {
+    		QCoreApplication.setLibraryPaths(libraryPaths);
+    	}
     }
 
     @Test
@@ -600,52 +606,59 @@ public class TestContainers extends ApplicationInitializer {
     	@SuppressWarnings("deprecation")
     	int typePrev = QMetaType.type("QSet<QPointF>");
     	assertEquals(0, typePrev);
-    	QSet<QPointF> pointList = new QSet<>(QPointF.class);
-    	assertEquals(0, pointList.capacity());
-    	pointList.reserve(20);
+    	QSet<QPointF> pointSet = new QSet<>(QPointF.class);
+    	assertEquals(0, pointSet.capacity());
+    	pointSet.reserve(20);
     	@SuppressWarnings("deprecation")
     	int typeAfter = QMetaType.type("QSet<QPointF>");
     	assertTrue(0!=typeAfter);
-    	pointList.insert(new QPointF(1,2));
-    	pointList.insert(new QPointF(1,2));
-    	pointList.insert(new QPointF(3,4));
-    	assertEquals(2, pointList.size());
-    	assertFalse(pointList.equals(new QSet<>(QPointF.class)));
-    	assertEquals(pointList, Arrays.asList(new QPointF(1,2), new QPointF(3,4)));
-    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(1,2)));
-    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(1,2), new QPointF(1,2)));
-    	pointList.remove(new QPointF(3,4));
-    	assertEquals(1, pointList.size());
-    	pointList.insert(new QPointF(5,6));
-    	assertTrue(pointList.intersects(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4))));
-    	pointList.intersect(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
-    	assertEquals(1, pointList.size());
-    	pointList.unite(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
-    	assertEquals(3, pointList.size());
+    	pointSet.insert(new QPointF(1,2));
+    	pointSet.insert(new QPointF(1,2));
+    	pointSet.insert(new QPointF(3,4));
+    	assertEquals(2, pointSet.size());
+    	assertFalse(pointSet.equals(new QSet<>(QPointF.class)));
+    	assertEquals(pointSet, Arrays.asList(new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(pointSet, Arrays.asList(new QPointF(3,4), new QPointF(1,2)));
+    	assertEquals(pointSet, Arrays.asList(new QPointF(3,4), new QPointF(1,2), new QPointF(1,2)));
+    	pointSet.remove(new QPointF(3,4));
+    	assertEquals(1, pointSet.size());
+    	pointSet.insert(new QPointF(5,6));
+    	assertTrue(pointSet.intersects(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4))));
+    	pointSet.intersect(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(1, pointSet.size());
+    	pointSet.unite(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(3, pointSet.size());
     	int counter = 0;
-    	for(@SuppressWarnings("unused") QPointF p : pointList) {
+    	for(@SuppressWarnings("unused") QPointF p : pointSet) {
     		++counter;
     	}
     	assertEquals(3, counter);
-    	pointList.subtract(Arrays.asList(new QPointF(1,2), new QPointF(7,8), new QPointF(9,0)));
-    	assertEquals(2, pointList.size());
-    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(0,0)));
-    	pointList.remove(new QPointF(0,0));
-    	QList<QPointF> values = pointList.values();
+    	pointSet.subtract(Arrays.asList(new QPointF(1,2), new QPointF(7,8), new QPointF(9,0)));
+    	assertEquals(2, pointSet.size());
+    	assertEquals(pointSet, Arrays.asList(new QPointF(3,4), new QPointF(0,0)));
+    	pointSet.remove(new QPointF(0,0));
+    	QList<QPointF> values = pointSet.values();
     	assertEquals(values, Arrays.asList(new QPointF(3,4)));
-    	pointList.clear();
-    	assertEquals(0, pointList.size());
+    	pointSet.clear();
+    	assertEquals(0, pointSet.size());
     }
     
     @Test
     public void test_create_SetList() {
     	int setId = QMetaType.registerMetaType(QSet.class, QMetaType.fromType(String.class));
     	QList<QSet<String>> setList = new QList<>(new QMetaType(setId));
-    	QSet<String> set = new QSet<>(String.class);
-    	set.insert("A");
-    	set.insert("B");
-    	set.insert("C");
-    	setList.append(set);
+    	QSet<String> set0 = new QSet<>(String.class);
+    	set0.insert("A");
+    	set0.insert("B");
+    	set0.insert("C");
+    	setList.append(set0);
+    	QSet<String> set1 = new QSet<>(String.class);
+    	set1.insert("D");
+    	set1.insert("E");
+    	set1.insert("F");
+    	setList.append(set1);
+    	assertEquals(set0, ContainerTest.valueAt(setList, 0));
+    	assertEquals(set1, ContainerTest.valueAt(setList, 1));
     }
     
     @Test

@@ -65,8 +65,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -81,8 +80,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
         }
         widgets = null;
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -103,8 +101,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -126,8 +123,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -149,8 +145,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -172,8 +167,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -195,8 +189,7 @@ public class TestReferenceCountingQLayout extends ApplicationInitializer{
             w = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }

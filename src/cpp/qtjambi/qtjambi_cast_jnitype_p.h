@@ -421,7 +421,7 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
-        return qtjambi_deref_value<NativeType, supports_StandardConstructor<NativeType>::value, is_const, is_reference>::deref(env, result);
+        return qtjambi_deref_value<NativeType, supports_StandardConstructor<NativeType>::value, supports_CopyConstructor<NativeType>::value, is_const, is_reference>::deref(env, result);
     }
 };
 
