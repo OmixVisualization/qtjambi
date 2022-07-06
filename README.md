@@ -178,7 +178,7 @@ Instead of starting your program with a java command as shown above you can depl
 * [QtJambi modules](www/Modules.md)
 * [What's new in QtJambi](www/Whats-New.md)
 * [How to develop with QtJambi](www/How-to-develop-Qt-in-Java.md)
-* [How to Create Android Apps](Android.md).
+* [How to Create Android Apps](www/Android.md)
 * [Characteristics of QtJambi](www/Characteristics-of-QtJambi.md)
 * [How to deploy QtJambi applications](www/How-to-deploy-QtJambi-applications.md)
 * [How to bundle Qt](www/How-to-bundle-Qt-libraries.md)
