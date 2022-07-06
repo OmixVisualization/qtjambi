@@ -1347,7 +1347,6 @@ FunctionModificationList AbstractMetaFunction::modifications(const AbstractMetaC
                 ArgumentModification mod(i+1);
                 mod.useAsArrayType |= AsArrayType::Yes;
                 mod.useAsArrayType |= AsArrayType::Buffer;
-                mod.no_null_pointers = true;
                 argumentMods << mod;
             }
         }
@@ -2405,12 +2404,76 @@ bool AbstractMetaClass::hasPublicStandardConstructor() const {
         AbstractMetaFunctionList functions = queryFunctions(Constructors);
         m_has_publicstandardconstructor = -1;
         for(AbstractMetaFunction *f : functions) {
-            if ((f->wasPublic() || f->isPublic()) && !f->isInvalid() && !f->isEmptyFunction() && !f->isFake() && f->implementingClass()==this && f->actualMinimumArgumentCount()==0 && !f->isRemovedFromAllLanguages(this)) {
+            if ((f->wasPublic() || f->isPublic())
+                    && !f->isInvalid()
+                    && !f->isEmptyFunction()
+                    && !f->isFake()
+                    && f->implementingClass()==this
+                    && f->actualMinimumArgumentCount()==0
+                    && !f->isRemovedFromAllLanguages(this)) {
                 m_has_publicstandardconstructor = 1;
             }
         }
     }
     return m_has_publicstandardconstructor>0;
+}
+
+bool AbstractMetaClass::hasExplicitStandardConstructor() const {
+    if(m_has_explicitstandardconstructor==0){
+        AbstractMetaFunctionList functions = queryFunctions(Constructors);
+        m_has_explicitstandardconstructor = -1;
+        for(AbstractMetaFunction *f : functions) {
+            if (f->isExplicit()
+                    && !f->isInvalid()
+                    && !f->isEmptyFunction()
+                    && !f->isFake()
+                    && f->implementingClass()==this
+                    && f->actualMinimumArgumentCount()==0) {
+                m_has_explicitstandardconstructor = 1;
+            }
+        }
+    }
+    return m_has_explicitstandardconstructor>0;
+}
+
+bool AbstractMetaClass::hasPublicCopyConstructor() const {
+    if(m_has_publiccopyconstructor==0){
+        AbstractMetaFunctionList functions = queryFunctions(Constructors);
+        m_has_publiccopyconstructor = -1;
+        for(AbstractMetaFunction *f : functions) {
+            if ((f->wasPublic() || f->isPublic())
+                    && !f->isInvalid()
+                    && !f->isEmptyFunction() && !f->isFake()
+                    && f->implementingClass()==this
+                    && f->actualMinimumArgumentCount()==1
+                    && f->arguments()[0]->type()->isConstant()
+                    && f->arguments()[0]->type()->getReferenceType()==AbstractMetaType::Reference
+                    && f->arguments()[0]->type()->typeEntry()==typeEntry()) {
+                m_has_publiccopyconstructor = 1;
+            }
+        }
+    }
+    return m_has_publiccopyconstructor>0;
+}
+
+bool AbstractMetaClass::hasExplicitCopyConstructor() const {
+    if(m_has_explicitcopyconstructor==0){
+        AbstractMetaFunctionList functions = queryFunctions(Constructors);
+        m_has_explicitcopyconstructor = -1;
+        for(AbstractMetaFunction *f : functions) {
+            if (f->isExplicit()
+                    && !f->isInvalid()
+                    && !f->isEmptyFunction() && !f->isFake()
+                    && f->implementingClass()==this
+                    && f->actualMinimumArgumentCount()==1
+                    && f->arguments()[0]->type()->isConstant()
+                    && f->arguments()[0]->type()->getReferenceType()==AbstractMetaType::Reference
+                    && f->arguments()[0]->type()->typeEntry()==typeEntry()) {
+                m_has_explicitcopyconstructor = 1;
+            }
+        }
+    }
+    return m_has_explicitcopyconstructor>0;
 }
 
 void AbstractMetaClass::addDefaultConstructor() {

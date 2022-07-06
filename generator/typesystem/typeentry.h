@@ -405,6 +405,51 @@ class TypeEntry {
 typedef QHash<QString, QList<TypeEntry *> > TypeEntryHash;
 typedef QHash<QString, TypeEntry *> SingleTypeEntryHash;
 
+struct Dependency{
+    enum Mode{
+        Mandatory,
+        Optional,
+        ProvideOnly
+    };
+
+    QString entry;
+    Mode mode;
+    QStringList platforms;
+    Dependency(QString&& _entry, Mode _mode = Mandatory, QStringList&& _platforms = {})
+        : entry(std::move(_entry)),
+          mode(_mode),
+          platforms(std::move(_platforms))
+    {}
+    Dependency(const Dependency& d)
+        : entry(d.entry),
+          mode(d.mode),
+          platforms(d.platforms)
+    {}
+    Dependency(Dependency&& d)
+        : entry(std::move(d.entry)),
+          mode(std::move(d.mode)),
+          platforms(std::move(d.platforms))
+    {}
+    Dependency()
+        : entry(),
+          mode(Mandatory),
+          platforms()
+    {}
+
+    Dependency& operator=(const Dependency& d){
+        entry=d.entry;
+        mode=d.mode;
+        platforms=d.platforms;
+        return *this;
+    }
+
+    Dependency& operator=(Dependency&& d){
+        entry=std::move(d.entry);
+        mode=std::move(d.mode);
+        platforms=std::move(d.platforms);
+        return *this;
+    }
+};
 
 class TypeSystemTypeEntry : public TypeEntry {
     public:
@@ -477,12 +522,12 @@ class TypeSystemTypeEntry : public TypeEntry {
                 m_requiredTypeSystems.append(entry);
         }
 
-        const QList<QPair<QString,bool>>& requiredQtLibraries() const{
+        const QList<Dependency>& requiredQtLibraries() const{
             return m_requiredQtLibraries;
         }
 
-        void addRequiredQtLibrary(const QString& entry, bool optional = false){
-            m_requiredQtLibraries.append({entry,optional});
+        void addRequiredQtLibrary(QString&& entry, Dependency::Mode mode = Dependency::Mandatory, QStringList&& platforms = {}){
+            m_requiredQtLibraries.append(Dependency(std::move(entry), mode, std::move(platforms)));
         }
 
         void addCodeSnip(const QString& package, const CodeSnip &snip) {
@@ -512,7 +557,7 @@ class TypeSystemTypeEntry : public TypeEntry {
         QString m_qtLibrary;
         QString m_module;
         QList<const TypeSystemTypeEntry*> m_requiredTypeSystems;
-        QList<QPair<QString,bool>> m_requiredQtLibraries;
+        QList<Dependency> m_requiredQtLibraries;
         QString m_description;
         QList<QString> m_forwardDeclarations;
         bool m_noExports;

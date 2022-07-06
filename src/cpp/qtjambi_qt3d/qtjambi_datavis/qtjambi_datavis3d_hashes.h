@@ -72,20 +72,20 @@ inline bool operator==(const QSurfaceDataItem& a, const QSurfaceDataItem& b){
 }
 #endif
 
-inline hash_type qHash(const QtDataVisualization::QBarDataItem &value){
-    hash_type hashCode = qHash(value.value());
-    hashCode = hashCode * 31 + qHash(value.rotation());
+inline hash_type qHash(const QtDataVisualization::QBarDataItem &value, hash_type seed = 0){
+    hash_type hashCode = qHash(value.value(), seed);
+    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
     return hashCode;
 }
 
-inline hash_type qHash(const QtDataVisualization::QScatterDataItem &value){
-    hash_type hashCode = qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.rotation());
+inline hash_type qHash(const QtDataVisualization::QScatterDataItem &value, hash_type seed = 0){
+    hash_type hashCode = qHash(value.position(), seed);
+    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
     return hashCode;
 }
 
-inline hash_type qHash(const QtDataVisualization::QSurfaceDataItem &value){
-    return qHash(value.position());
+inline hash_type qHash(const QtDataVisualization::QSurfaceDataItem &value, hash_type seed = 0){
+    return qHash(value.position(), seed);
 }
 
 namespace QtJambiPrivate {
@@ -98,16 +98,16 @@ struct QHashCombine {
 };
 }
 
-inline hash_type qHash(const QtDataVisualization::QBarDataRow &value){
-    return std::accumulate(value.begin(), value.end(), 0, QtJambiPrivate::QHashCombine());
+inline hash_type qHash(const QtDataVisualization::QBarDataRow &value, hash_type seed = 0){
+    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
 }
 
-inline hash_type qHash(const QtDataVisualization::QSurfaceDataRow &value){
-    return std::accumulate(value.begin(), value.end(), 0, QtJambiPrivate::QHashCombine());
+inline hash_type qHash(const QtDataVisualization::QSurfaceDataRow &value, hash_type seed = 0){
+    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
 }
 
-inline hash_type qHash(const QtDataVisualization::QScatterDataArray &value){
-    return std::accumulate(value.begin(), value.end(), 0, QtJambiPrivate::QHashCombine());
+inline hash_type qHash(const QtDataVisualization::QScatterDataArray &value, hash_type seed = 0){
+    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
 }
 #else
 inline bool operator==(const QBarDataItem& a, const QBarDataItem& b){
@@ -122,20 +122,20 @@ inline bool operator==(const QSurfaceDataItem& a, const QSurfaceDataItem& b){
     return a.position()==b.position();
 }
 
-inline hash_type qHash(const QBarDataItem &value){
-    hash_type hashCode = qHash(value.value());
-    hashCode = hashCode * 31 + qHash(value.rotation());
+inline hash_type qHash(const QBarDataItem &value, hash_type seed = 0){
+    hash_type hashCode = qHash(value.value(), seed);
+    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
     return hashCode;
 }
 
-inline hash_type qHash(const QScatterDataItem &value){
-    hash_type hashCode = qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.rotation());
+inline hash_type qHash(const QScatterDataItem &value, hash_type seed = 0){
+    hash_type hashCode = qHash(value.position(), seed);
+    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
     return hashCode;
 }
 
-inline hash_type qHash(const QSurfaceDataItem &value){
-    return qHash(value.position());
+inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){
+    return qHash(value.position(), seed);
 }
 #endif
 

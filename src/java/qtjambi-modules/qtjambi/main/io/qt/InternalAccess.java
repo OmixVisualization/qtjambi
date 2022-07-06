@@ -122,13 +122,13 @@ public interface InternalAccess {
     
     Cleanable registerCleaner(Object object, Runnable action);
     
-    io.qt.core.QObject lambdaContext(java.io.Serializable lambdaExpression);
+    <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(Class<S> type, S lambdaExpression);
     
-    Class<?> lambdaReturnType(java.io.Serializable lambdaExpression);
+    <S extends java.io.Serializable> Class<?> lambdaReturnType(Class<S> type, S lambdaExpression);
     
-    int[] lambdaMetaTypes(java.io.Serializable lambdaExpression);
+    <S extends java.io.Serializable> int[] lambdaMetaTypes(Class<S> type, S lambdaExpression);
     
-    Class<?>[] lambdaClassTypes(java.io.Serializable lambdaExpression);
+    <S extends java.io.Serializable> Class<?>[] lambdaClassTypes(Class<S> type, S lambdaExpression);
     
     Class<?> findGeneratedSuperclass(Class<?> clazz);
     

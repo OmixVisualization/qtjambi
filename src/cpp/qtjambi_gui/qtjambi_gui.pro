@@ -19,13 +19,13 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 
 # because QActionEvent refers to qaction.h
 macx:{
-    INCLUDEPATH += $$(QTDIR)/lib/QtGui.framework/Headers/qpa
-    INCLUDEPATH += $$(QTDIR)/lib/QtWidgets.framework/Headers
-    INCLUDEPATH += $$(QTDIR)/include
+    INCLUDEPATH += $$[QT_INSTALL_LIBS]/QtGui.framework/Headers/qpa
+    INCLUDEPATH += $$[QT_INSTALL_LIBS]/QtWidgets.framework/Headers
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 }
-INCLUDEPATH += $$(QTDIR)/include/QtGui/qpa
-INCLUDEPATH += $$(QTDIR)/include/QtWidgets
-INCLUDEPATH += $$(QTDIR)/include/QtPlatformHeaders
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtGui/qpa
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtWidgets
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtPlatformHeaders
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 

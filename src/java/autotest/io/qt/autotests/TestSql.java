@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QFileInfo;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QStandardPaths;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.internal.QtJambiInternal;
@@ -55,8 +56,9 @@ public class TestSql extends ApplicationInitializer {
     @Test
     public void testSqlDriverPlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
+		System.out.println(loader.keyMap());
 		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QSQLITE");
-		Assert.assertTrue(plugin!=null);
+		Assert.assertTrue("unable to load plugin QSQLITE.", plugin!=null);
 		Assert.assertEquals("QSQLiteDriver", plugin.metaObject().className());
 		Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(plugin));
 		plugin.dispose();
@@ -65,8 +67,9 @@ public class TestSql extends ApplicationInitializer {
     @Test
     public void testSqlDriverPlugin_Jdbc() {
 		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
+		System.out.println(loader.keyMap());
 		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QJDBC");
-		Assert.assertTrue(plugin!=null);
+		Assert.assertTrue("unable to load plugin QJDBC.", plugin!=null);
 		Assert.assertEquals("io::qt::sql::jdbc::QJdbcSqlDriver", plugin.metaObject().className());
 		Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(plugin));
 		plugin.dispose();
@@ -96,6 +99,10 @@ public class TestSql extends ApplicationInitializer {
 	    	}finally {
 	    		db.close();
 	    	}
+    	}catch(UnsatisfiedLinkError e) {
+    		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    			throw e;
+    		}
     	}finally {
 //    		System.out.println(QDir.toNativeSeparators(file.absoluteFilePath()));
     		new File(file.absoluteFilePath()).delete();

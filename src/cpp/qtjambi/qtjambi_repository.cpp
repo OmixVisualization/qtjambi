@@ -94,6 +94,11 @@ namespace Internal{
                                  QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(execPostRoutines,()V))
 }
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QException,
+                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,
+                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(javaThread,Ljava/lang/Thread;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(interruptible,Ljava/lang/Object;)
@@ -926,6 +931,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getTypeParameters,()[Ljava/lang/reflect/TypeVariable;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isArray,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isPrimitive,()Z)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(isSynthetic,()Z)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Optional,
@@ -959,10 +965,12 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,OptionalDouble,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,System,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(gc,()V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getProperty,(Ljava/lang/String;)Ljava/lang/String;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setProperty,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(identityHashCode,(Ljava/lang/Object;)I)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URL,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(openConnection,()Ljava/net/URLConnection;)
 )
 
@@ -1028,6 +1036,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ThreadGroup,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Throwable,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(addSuppressed,(Ljava/lang/Throwable;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(printStackTrace,()V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getMessage,()Ljava/lang/String;)
 )
 
@@ -1043,6 +1052,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/reflect,AccessibleObject,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,IllegalAccessException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,MissingResourceException,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)
 )
 
 }
@@ -1086,13 +1099,13 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(objectToString,(Ljava/lang/Object;)Ljava/lang/String;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(lambdaReturnType,(Ljava/io/Serializable;)Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(internalAccess,Lio/qt/InternalAccess;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeLibraryManager,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resetDeploymentSpecs,()V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deployContainerAccess,(Ljava/lang/String;)V)
 )
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiEnums,
@@ -1244,6 +1257,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiResources,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(pathToJarFiles,(Ljava/lang/String;)Ljava/util/Collection;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(classPathDirs,()Ljava/util/Collection;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(makeUrl,(Ljava/lang/String;)Ljava/net/URL;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(addSearchPath,(Ljava/net/URL;)V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveUrlToMyJarFile,(Ljava/net/URL;)Lio/qt/internal/QtJambiResources$MyJarFile;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isDirectory,(Lio/qt/internal/QtJambiResources$MyJarFile;Ljava/lang/String;)Z)
 )
@@ -1369,5 +1383,51 @@ QTJAMBI_REPOSITORY_DEFINE_METHOD(getReturnType,()Ljava/lang/Class;)
 )
 }
 
+#ifdef Q_OS_ANDROID
+namespace Android{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt5/android,QtNative,
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activityDelegate, ()Lorg/qtproject/qt5/android/QtActivityDelegate;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
+#else
+QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt/android,QtNative,
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activityDelegate, ()Lorg/qtproject/qt/android/QtActivityDelegate;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
+#endif
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content,Context,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getApplicationInfo, ()Landroid/content/pm/ApplicationInfo;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content/pm,ApplicationInfo,
+              QTJAMBI_REPOSITORY_DEFINE_FIELD(sourceDir, Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content,ContextWrapper,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getPackageName, ()Ljava/lang/String;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getPackageManager, ()Landroid/content/pm/PackageManager;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getAssets, ()Landroid/content/res/AssetManager;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getResources, ()Landroid/content/res/Resources;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content/res,AssetManager,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(open, (Ljava/lang/String;)Ljava/io/InputStream;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(list, (Ljava/lang/String;)[Ljava/lang/String;)
+            )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content/pm,PackageManager,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getApplicationInfo, (Ljava/lang/String;I)Landroid/content/pm/ApplicationInfo;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getActivityInfo, (Landroid/content/ComponentName;I)Landroid/content/pm/ActivityInfo;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getServiceInfo, (Landroid/content/ComponentName;I)Landroid/content/pm/ServiceInfo;)
+              QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(GET_META_DATA, I))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/app,Activity,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getApplication, ()Landroid/app/Application;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getComponentName, ()Landroid/content/ComponentName;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/app,Service,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getApplication, ()Landroid/app/Application;)
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getComponentName, ()Landroid/content/ComponentName;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content/pm,PackageItemInfo,
+              QTJAMBI_REPOSITORY_DEFINE_FIELD(metaData, Landroid/os/Bundle;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(android/os,BaseBundle,
+              QTJAMBI_REPOSITORY_DEFINE_METHOD(getString, (Ljava/lang/String;)Ljava/lang/String;))
+}
+#endif //def Q_OS_ANDROID
 }
 

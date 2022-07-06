@@ -148,7 +148,7 @@
             </modify-argument>
             <modify-argument index="0">
                 <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code position="beginning">

@@ -31,7 +31,7 @@
 package io.qt.qml.util;
 
 /**
- * Is thrown when {@link QmlImportMajorVersion} annotation is missed in a package.
+ * Is thrown when {@link QmlImport} annotation is missed in a package.
  */
 public class QmlNoMajorVersionException extends QmlTypeRegistrationException{
 	static {

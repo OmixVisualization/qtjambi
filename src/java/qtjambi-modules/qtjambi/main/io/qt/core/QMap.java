@@ -31,15 +31,18 @@ package io.qt.core;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 import io.qt.NativeAccess;
 import io.qt.QFlags;
+import io.qt.QNoImplementationException;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtByteEnumerator;
 import io.qt.QtEnumerator;
 import io.qt.QtLongEnumerator;
 import io.qt.QtShortEnumerator;
 import io.qt.QtUninvokable;
+import io.qt.internal.QtJambiInternal;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qmap.html">QMap</a></p>
@@ -92,7 +95,7 @@ public class QMap<K,V> extends io.qt.internal.QtJambiMapObject<K,V> implements C
     
     public QMap(Map<K,V> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(other);
+		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other));
 		if(metaTypes.first.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
 		if(metaTypes.first.id()==QMetaType.Type.Void.value())
@@ -480,11 +483,29 @@ public class QMap<K,V> extends io.qt.internal.QtJambiMapObject<K,V> implements C
     @Override
     @QtUninvokable
     public int hashCode() { 
-    	int hashCode = getClass().hashCode();
-        for (QPair<K,V> e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
 	@Override
     @QtUninvokable
@@ -1098,13 +1119,14 @@ public class QMap<K,V> extends io.qt.internal.QtJambiMapObject<K,V> implements C
     }
     
     static QPair<QMetaType,QMetaType> findMapMetaType(Map<?,?> elements){
-        if(elements.getClass()==QMap.class) {
+    	Class<?> cls = QtJambiInternal.getClass(elements);
+        if(cls==QMap.class) {
             return new QPair<>(((QMap<?,?>)elements).keyMetaType(), ((QMap<?,?>)elements).valueMetaType());
-        }else if(elements.getClass()==QHash.class) {
+        }else if(cls==QHash.class) {
             return new QPair<>(((QHash<?,?>)elements).keyMetaType(), ((QHash<?,?>)elements).valueMetaType());
-        }else if(elements.getClass()==QMultiMap.class) {
+        }else if(cls==QMultiMap.class) {
             return new QPair<>(((QMultiMap<?,?>)elements).keyMetaType(), ((QMultiMap<?,?>)elements).valueMetaType());
-        }else if(elements.getClass()==QMultiHash.class) {
+        }else if(cls==QMultiHash.class) {
             return new QPair<>(((QMultiHash<?,?>)elements).keyMetaType(), ((QMultiHash<?,?>)elements).valueMetaType());
         }else {
         	QMetaType keyMetaType = new QMetaType();

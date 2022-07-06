@@ -18,6 +18,10 @@
 //#include <libloaderapi.h>
 #endif
 
+#ifndef JNI_VERSION_1_8
+#define JNI_VERSION_1_8 JNI_VERSION_1_6
+#endif
+
 static JavaVM* javaVM = nullptr;
 static QLibrary* jvmLibrary = nullptr;
 
@@ -894,7 +898,7 @@ int main(int argc, char *argv[])
                     options << QByteArray("-Djava.class.path=") + classPath.join(sep).toUtf8();
                 }
                 if(!modulePath.isEmpty()){
-                    minimumJNIVersion = JNI_VERSION_9;
+                    minimumJNIVersion = JNI_VERSION_1_8;
                     options << QByteArray("--module-path=") + modulePath.join(sep).toUtf8();
                 }
                 if(!libraryPath.isEmpty()){

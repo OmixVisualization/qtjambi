@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtUIC" description="QtJambi User Interface Compiler">
+    <required-library name="QtDesigner"/>
     <object-type name="DomUI">
         <modify-function signature="takeElementButtonGroups()">
             <modify-argument index="0">

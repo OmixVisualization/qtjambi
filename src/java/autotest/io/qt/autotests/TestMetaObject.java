@@ -46,6 +46,7 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.gui.QStandardItem;
 
 /**
@@ -172,9 +173,14 @@ public class TestMetaObject extends ApplicationInitializer {
     }
     
     @Test 
-    public void testDisposeLater() {
-    	QMetaMethod method = QMetaMethod.fromMethod(QObject::disposeLater);
-    	assertTrue(method!=null);
+    public void testDisposeLater() throws NoSuchMethodException, SecurityException {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+	    	QMetaMethod method = QMetaMethod.fromReflectedMethod(QObject.class.getMethod("disposeLater"));
+	    	assertTrue(method!=null);    		
+    	}else {
+	    	QMetaMethod method = QMetaMethod.fromMethod(QObject::disposeLater);
+	    	assertTrue(method!=null);
+    	}
     	class _QObject extends QObject{
     		int _receivers(io.qt.core.QMetaObject.AbstractSignal signalObject){
     			return receivers(signalObject);

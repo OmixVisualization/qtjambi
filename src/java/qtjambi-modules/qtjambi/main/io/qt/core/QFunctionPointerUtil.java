@@ -30,7 +30,7 @@
 package io.qt.core;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -52,7 +52,6 @@ import io.qt.QtObjectInterface;
 import io.qt.QtPointerType;
 import io.qt.QtReferenceType;
 import io.qt.QtUtilities;
-import io.qt.core.QMetaType;
 import io.qt.internal.QtJambiInternal;
 
 final class QFunctionPointerUtil {
@@ -89,11 +88,18 @@ final class QFunctionPointerUtil {
 		
 		AbstractInvocationHandler(Method functionMethod) {
 			super();
-			QtMetaType metaTypeDecl = functionMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+			QtMetaType metaTypeDecl = null;
+			QtPointerType pointerType = null;
+			QtReferenceType referenceType = null;
+			if(QtJambiInternal.useAnnotatedType) {
+				if(functionMethod.getAnnotatedReturnType()!=null) {
+					metaTypeDecl = functionMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
+					pointerType = functionMethod.getAnnotatedReturnType().getAnnotation(QtPointerType.class);
+					referenceType = functionMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
+				}
+			}
 			if(metaTypeDecl==null)
 				metaTypeDecl = functionMethod.getAnnotation(QtMetaType.class);
-			QtPointerType pointerType = functionMethod.getAnnotatedReturnType().getAnnotation(QtPointerType.class);
-			QtReferenceType referenceType = functionMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
 			QGenericReturnType<?> returnType;
 			if(metaTypeDecl!=null) {
 				QMetaType metaType;
@@ -132,7 +138,10 @@ final class QFunctionPointerUtil {
 						&& QtJambiInternal.findGeneratedSuperclass(functionMethod.getReturnType())==null) {
 					returnType = new QGenericReturnType<>(functionMethod.getReturnType(), null, 2);
 				}else {
-					int metaType = QtJambiInternal.registerMetaType(functionMethod.getReturnType(), functionMethod.getGenericReturnType(), functionMethod.getAnnotatedReturnType(), false, false);
+					AnnotatedElement annotatedReturnType = null;
+					if(QtJambiInternal.useAnnotatedType)
+						annotatedReturnType = functionMethod.getAnnotatedReturnType();
+					int metaType = QtJambiInternal.registerMetaType(functionMethod.getReturnType(), functionMethod.getGenericReturnType(), annotatedReturnType, false, false);
 					if(metaType!=0) {
 						returnType = new QGenericReturnType<>(functionMethod.getReturnType(), new QMetaType(metaType), 0);
 						if(referenceType!=null && referenceType.isConst()) {
@@ -154,11 +163,15 @@ final class QFunctionPointerUtil {
 			QGenericArgumentType<?>[] argumentTypes = new QGenericArgumentType[functionMethod.getParameterCount()];
             Class<?>[] parameterTypes = functionMethod.getParameterTypes();
             Type[] genericParameterTypes = functionMethod.getGenericParameterTypes();
-            AnnotatedType[] annotatedParameterTypes = functionMethod.getAnnotatedParameterTypes();
+            AnnotatedElement[] annotatedParameterTypes = null;
+            if(QtJambiInternal.useAnnotatedType)
+            	annotatedParameterTypes = functionMethod.getAnnotatedParameterTypes();
 			for (int i = 0; i < argumentTypes.length; i++) {
-				pointerType = annotatedParameterTypes[i].getAnnotation(QtPointerType.class);
-				referenceType = annotatedParameterTypes[i].getAnnotation(QtReferenceType.class);
-				metaTypeDecl = annotatedParameterTypes[i].getAnnotation(QtMetaType.class);
+				if(annotatedParameterTypes!=null && annotatedParameterTypes[i]!=null) {
+					pointerType = annotatedParameterTypes[i].getAnnotation(QtPointerType.class);
+					referenceType = annotatedParameterTypes[i].getAnnotation(QtReferenceType.class);
+					metaTypeDecl = annotatedParameterTypes[i].getAnnotation(QtMetaType.class);
+				}
 				QGenericArgumentType<?> argumentType;
 				Class<?> parameterType = parameterTypes[i];
 				Type genericParameterType = genericParameterTypes[i];
@@ -207,7 +220,7 @@ final class QFunctionPointerUtil {
 							&& QtJambiInternal.findGeneratedSuperclass(parameterType)==null) {
 						argumentType = new QGenericReturnType<>(parameterType, null, 2);
 					}else {
-						int metaType = QtJambiInternal.registerMetaType(parameterType, genericParameterType, annotatedParameterTypes[i], false, false);
+						int metaType = QtJambiInternal.registerMetaType(parameterType, genericParameterType, annotatedParameterTypes==null ? null : annotatedParameterTypes[i], false, false);
 						if(metaType!=0) {
 							argumentType = new QGenericReturnType<>(parameterType, new QMetaType(metaType), 0);
 							if(referenceType!=null && referenceType.isConst()) {

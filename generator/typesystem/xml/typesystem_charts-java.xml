@@ -63,7 +63,7 @@
             </modify-argument>
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = __qt_%1 ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                    %out = __qt_%1 ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>

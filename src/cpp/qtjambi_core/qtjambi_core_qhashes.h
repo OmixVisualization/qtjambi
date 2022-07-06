@@ -63,10 +63,12 @@ inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbs
             && v1.timerType==v2.timerType;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 inline hash_type qHash(const QMetaType &value)
 {
     return qHash(value.id());
 }
+#endif
 
 inline hash_type qHash(const QSizeF &size)
 {
@@ -221,16 +223,14 @@ bool operator==(const QFuture<T> &f1, const QFuture<T> &f2) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 inline hash_type qHash(const QPointF &point)
 {
-    hash_type hashCode = qHash(qint64(point.x()));
-    hashCode = hashCode * 31 + qHash(qint64(point.y()));
+    hash_type hashCode = qHash(point.x());
+    hashCode = hashCode * 31 + qHash(point.y());
     return hashCode;
 }
 #else
-inline hash_type qHash(const QPointF &point, QHashDummyValue)
+inline hash_type qHash(const QPointF &point, QHashDummyValue, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(qint64(point.x()));
-    hashCode = hashCode * 31 + qHash(qint64(point.y()));
-    return hashCode;
+    return qHashMulti(seed, point.x(), point.y());
 }
 #endif
 
@@ -541,7 +541,7 @@ inline hash_type qHash(const QElapsedTimer &value)
 
 inline hash_type qHash(const QMetaObject &value)
 {
-    return hash_type(31 * 1 + (qintptr(&value) ^ (qintptr(&value) >> 32)));
+    return qHash(qintptr(&value));
 }
 
 inline hash_type qHash(const QMetaEnum &value)

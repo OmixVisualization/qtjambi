@@ -36,7 +36,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -44,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -67,10 +68,9 @@ import io.qt.core.QFile;
 import io.qt.core.QIODevice;
 import io.qt.core.QJsonDocument;
 import io.qt.core.QJsonObject;
-import io.qt.core.QList;
+import io.qt.core.QJsonParseError.ParseError;
 import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
-import io.qt.core.QJsonParseError.ParseError;
 import io.qt.internal.QtJambiPlugins;
 
 class PluginGenerator {
@@ -86,15 +86,17 @@ class PluginGenerator {
 		}
 	}
 	
-	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
-	    QCommandLineOption pluginIIDOption = new QCommandLineOption(QList.of("iid"), "Plugin IID", "iid");
-	    QCommandLineOption pluginClassNameOption = new QCommandLineOption(QList.of("class-name"), "Class name", "name");
-	    QCommandLineOption pluginNameOption = new QCommandLineOption(QList.of("plugin-name"), "Plugin name", "name");
-	    QCommandLineOption pluginLibraryOption = new QCommandLineOption(QList.of("plugin-library"), "Path to qtjambiplugin library.\nExamples:\n--plugin-library=path"+File.separator+"qtjambiplugin.dll\n--plugin-library=macos"+File.pathSeparator+"path"+File.separator+"qtjambiplugin.dylib", "file");
-	    QCommandLineOption pluginLibraryLocationOption = new QCommandLineOption(QList.of("plugin-library-location"), "Directory containing qtjambiplugin library", "path");
-	    QCommandLineOption pluginMetaDataOption = new QCommandLineOption(QList.of("meta-data"), "Plugin meta data as json code or path to existing json file.", "json|file");
-	    QCommandLineOption pluginSourceOption = new QCommandLineOption(QList.of("source"), "Generate C++ source project");
-		parser.addOptions(QList.of(
+	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
+	    QCommandLineOption subdirOption = new QCommandLineOption(QStringList.of("subdir"), "Plugin sub-directory", "subdir");
+	    QCommandLineOption pluginIIDOption = new QCommandLineOption(QStringList.of("iid"), "Plugin IID", "iid");
+	    QCommandLineOption pluginClassNameOption = new QCommandLineOption(QStringList.of("class-name"), "Class name", "name");
+	    QCommandLineOption pluginNameOption = new QCommandLineOption(QStringList.of("plugin-name"), "Plugin name", "name");
+	    QCommandLineOption pluginLibraryOption = new QCommandLineOption(QStringList.of("plugin-library"), "Path to qtjambiplugin library.\nExamples:\n--plugin-library=path"+File.separator+"qtjambiplugin.dll\n--plugin-library=macos"+File.pathSeparator+"path"+File.separator+"qtjambiplugin.dylib", "file");
+	    QCommandLineOption pluginLibraryLocationOption = new QCommandLineOption(QStringList.of("plugin-library-location"), "Directory containing qtjambiplugin library", "path");
+	    QCommandLineOption pluginMetaDataOption = new QCommandLineOption(QStringList.of("meta-data"), "Plugin meta data as json code or path to existing json file.", "json|file");
+	    QCommandLineOption pluginSourceOption = new QCommandLineOption(QStringList.of("source"), "Generate C++ source project");
+		parser.addOptions(Arrays.asList(
+				platformOption,
 	    		pluginIIDOption,
 	    		configurationOption,
 	    		pluginClassNameOption,
@@ -104,6 +106,7 @@ class PluginGenerator {
 	    		pluginMetaDataOption,
 	    		pluginSourceOption,
 	    		dirOption,
+	    		subdirOption,
 	    		classPathOption
 			));
 		
@@ -134,6 +137,10 @@ class PluginGenerator {
 			dir = new File(parser.value(dirOption));
 		else
 			throw new Error("Missing target directory. Please use --dir=...");
+		
+		String subdir = null;
+		if(parser.isSet(subdirOption))
+			subdir = parser.value(subdirOption);
 		
 		QJsonObject metaData = null;
 		if(parser.isSet(pluginMetaDataOption)) {
@@ -170,6 +177,10 @@ class PluginGenerator {
 		if(classPath.isEmpty())
 			throw new Error("Missing classpath. Please use --class-path=...");
 		
+		String platform = null;
+		if(parser.isSet(platformOption))
+			platform = parser.value(platformOption);
+		
 		List<Map.Entry<String,URL>> libraries = new ArrayList<>();
 		boolean generateSource = parser.isSet(pluginSourceOption);
 		if(parser.isSet(pluginLibraryOption)) {
@@ -186,6 +197,14 @@ class PluginGenerator {
 					os = "windows";
 				}else if(libinfo[0].endsWith(".dylib")) {
 					os = "macos";
+                }else if(libinfo[0].endsWith("_x86_64.so")) {
+                    os = "android-x64";
+                }else if(libinfo[0].endsWith("_x86.so")) {
+                    os = "android-x86";
+                }else if(libinfo[0].endsWith("_arm64-v8a.so")) {
+                    os = "android-arm64";
+                }else if(libinfo[0].endsWith("_armeabi-v7a.so")) {
+                    os = "android-arm";
 				}else if(libinfo[0].endsWith(".so")) {
 					os = "linux";
 				}
@@ -214,6 +233,14 @@ class PluginGenerator {
                         os = "windows";
                     }else if(entry.getName().equals("libqtjambiplugin_debug.dylib")) {
                         os = "macos";
+                    }else if(entry.getName().equals("libjarimport_debug_x86_64.so") || entry.getName().equals("libjarimport_x86_64.so")) {
+                        os = "android-x64";
+                    }else if(entry.getName().equals("libjarimport_debug_x86.so") || entry.getName().equals("libjarimport_x86.so")) {
+                        os = "android-x86";
+                    }else if(entry.getName().equals("libjarimport_debug_arm64-v8a.so") || entry.getName().equals("libjarimport_arm64-v8a.so")) {
+                        os = "android-arm64";
+                    }else if(entry.getName().equals("libjarimport_debug_armeabi-v7a.so") || entry.getName().equals("libjarimport_armeabi-v7a.so")) {
+                        os = "android-arm";
                     }else if(entry.getName().equals("libqtjambiplugin_debug.so")) {
                         os = "linux";
                     }
@@ -222,6 +249,14 @@ class PluginGenerator {
                         os = "windows";
                     }else if(entry.getName().equals("libqtjambiplugin.dylib")) {
                         os = "macos";
+                    }else if(entry.getName().equals("libjarimport_x86_64.so")) {
+                        os = "android-x64";
+                    }else if(entry.getName().equals("libjarimport_x86.so")) {
+                        os = "android-x86";
+                    }else if(entry.getName().equals("libjarimport_arm64-v8a.so")) {
+                        os = "android-arm64";
+                    }else if(entry.getName().equals("libjarimport_armeabi-v7a.so")) {
+                        os = "android-arm";
                     }else if(entry.getName().equals("libqtjambiplugin.so")) {
                         os = "linux";
                     }
@@ -403,31 +438,36 @@ class PluginGenerator {
 			QByteArray cborData = cborValue.toCborValue().toCbor();
 			System.gc();
 			if(generateSource) {
-				File subdir = new File(dir, pluginName);
-				subdir.mkdirs();
+				File subdirectory = new File(dir, pluginName);
+				subdirectory.mkdirs();
 				if(classPath.size()==1) {
 					File file = new File(classPath.get(0));
-					Files.copy(file.toPath(), new File(subdir, pluginName+".jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(file.toPath(), new File(subdirectory, pluginName+".jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
 				}else {
-					subdir = new File(subdir, pluginName);
-					subdir.mkdirs();
+					subdirectory = new File(subdirectory, pluginName);
+					subdirectory.mkdirs();
 					for (String path : classPath) {
-						File target = new File(subdir, path);
+						File target = new File(subdirectory, path);
 						target.getParentFile().mkdirs();
 						Files.copy(new File(path).toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
 				}
-				generateSource(dir, pluginName, cborData);
+				generateSource(dir, subdir, pluginName, cborData);
 			}else {
-			
+				File subdirectory;
+				if(subdir!=null) {
+					subdirectory = new File(new File(dir, "plugins"), subdir);
+					subdirectory.mkdirs();
+				} else
+					subdirectory = dir;
 				if(classPath.size()==1) {
 					File file = new File(classPath.get(0));
-					Files.copy(file.toPath(), new File(dir, pluginName+".jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(file.toPath(), new File(subdirectory, pluginName+".jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
 				}else {
-					File subdir = new File(dir, pluginName);
-					subdir.mkdirs();
+					subdirectory = new File(subdirectory, pluginName);
+					subdirectory.mkdirs();
 					for (String path : classPath) {
-						File target = new File(subdir, path);
+						File target = new File(subdirectory, path);
 						target.getParentFile().mkdirs();
 						Files.copy(new File(path).toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
@@ -448,20 +488,31 @@ class PluginGenerator {
 				
 				for(Map.Entry<String,URL> entry : libraries) {
 					String os = entry.getKey();
-					if(os!=null) {
+					if(os!=null && (platform==null || platform.startsWith(os))) {
 						File newFile;
+						if(os.toLowerCase().startsWith("android-")) {
+							subdirectory = dir;
+						}else {
+							if(subdir!=null) {
+								subdirectory = new File(new File(dir, "plugins"), subdir);
+								subdirectory.mkdirs();
+							} else
+								subdirectory = dir;
+						}
 	                    switch(os.toLowerCase()) {
 						case "win32":
 						case "win64":
 						case "windows":
+						case "windows-arm":
+						case "windows-arm32":
 						case "windows-aarch64":
 						case "windows-arm64":
 						case "windows-x86":
 						case "windows-x64":
 	                        if(isDebug==null){
-								newFile = new File(dir, pluginName + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
+								newFile = new File(subdirectory, pluginName + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
 							}else{
-								newFile = new File(dir, pluginName + (isDebug ? "d.dll" : ".dll"));
+								newFile = new File(subdirectory, pluginName + (isDebug ? "d.dll" : ".dll"));
 	                        }
 							System.gc();
 							break;
@@ -472,7 +523,7 @@ class PluginGenerator {
 //							}else{
 //								newFile = new File(dir, "lib" + pluginName + (isDebug ? "_debug.dylib" : ".dylib"));
 //	                        }
-							newFile = new File(dir, "lib" + pluginName + ".dylib");
+							newFile = new File(subdirectory, "lib" + pluginName + ".dylib");
 	                        break;
 						case "linux":
 						case "linux32":
@@ -486,7 +537,43 @@ class PluginGenerator {
 //							}else{
 //								newFile = new File(dir, "lib" + pluginName + (isDebug ? "_debug.so" : ".so"));
 //	                        }
-							newFile = new File(dir, "lib" + pluginName + ".so");
+							newFile = new File(subdirectory, "lib" + pluginName + ".so");
+							break;
+						case "android-x64":
+							if(subdir!=null) {
+								subdirectory = new File(new File(dir, "lib"), "x86_64");
+								subdirectory.mkdirs();
+								newFile = new File(subdirectory, "libplugins_" + subdir + "_" + pluginName + "_x86_64.so");
+							}else {
+								newFile = new File(subdirectory, "libplugins_" + dir.getName() + "_" + pluginName + "_x86_64.so");
+							}
+							break;
+						case "android-x86":
+							if(subdir!=null) {
+								subdirectory = new File(new File(dir, "lib"), "x86");
+								subdirectory.mkdirs();
+								newFile = new File(subdirectory, "libplugins_" + subdir + "_" + pluginName + "_x86.so");
+							}else {
+								newFile = new File(subdirectory, "libplugins_" + dir.getName() + "_" + pluginName + "_x86.so");
+							}
+							break;
+						case "android-arm64":
+							if(subdir!=null) {
+								subdirectory = new File(new File(dir, "lib"), "arm64-v8a");
+								subdirectory.mkdirs();
+								newFile = new File(subdirectory, "libplugins_" + subdir + "_" + pluginName + "_arm64-v8a.so");
+							}else {
+								newFile = new File(subdirectory, "libplugins_" + dir.getName() + "_" + pluginName + "_arm64-v8a.so");
+							}
+							break;
+						case "android-arm":
+							if(subdir!=null) {
+								subdirectory = new File(new File(dir, "lib"), "armeabi-v7a");
+								subdirectory.mkdirs();
+								newFile = new File(subdirectory, "libplugins_" + subdir + "_" + pluginName + "_armeabi-v7a.so");
+							}else {
+								newFile = new File(subdirectory, "libplugins_" + dir.getName() + "_" + pluginName + "_armeabi-v7a.so");
+							}
 							break;
 							default: continue;
 						}
@@ -523,11 +610,11 @@ class PluginGenerator {
 		}
 	}
 	
-	private static void generateSource(File dir, String pluginName, QByteArray cborData) {
-		QDir subdir = new QDir(dir.getAbsolutePath());
-		subdir.mkpath(pluginName);
-		subdir.cd(pluginName);
-		String fileName = subdir.absoluteFilePath("plugin.cpp");
+	private static void generateSource(File dir, String subdir, String pluginName, QByteArray cborData) {
+		QDir subdirectory = new QDir(dir.getAbsolutePath());
+		subdirectory.mkpath(pluginName);
+		subdirectory.cd(pluginName);
+		String fileName = subdirectory.absoluteFilePath("plugin.cpp");
 		QFile filein = new QFile(":io/qt/qtjambi/deployer/plugin.cpp");
 		QFile fileout = new QFile(fileName);
 		if(filein.open(QIODevice.OpenModeFlag.ReadOnly)) {
@@ -578,7 +665,7 @@ class PluginGenerator {
 		}
 		
 		
-		fileName = subdir.absoluteFilePath("plugin.pro");
+		fileName = subdirectory.absoluteFilePath("plugin.pro");
 		fileout = new QFile(fileName);
 		filein = new QFile(":io/qt/qtjambi/deployer/plugin.pro");
 		if(filein.open(QIODevice.OpenModeFlag.ReadOnly)) {
@@ -586,7 +673,12 @@ class PluginGenerator {
 				if(fileout.open(QIODevice.OpenModeFlag.WriteOnly, QIODevice.OpenModeFlag.Text)) {
 					QTextStream s = new QTextStream(fileout);
 					try {
-						s.append("TARGET = ").append(pluginName).endl();
+						if(subdir!=null) {
+							s.append("android:TARGET = plugins_").append(subdir).append('_').append(pluginName).endl()
+							 .append("else:TARGET = ").append(pluginName).endl();
+						}else {
+							s.append("TARGET = ").append(pluginName).endl();
+						}
 						QTextStream in = new QTextStream(filein);
 						while(!in.atEnd()) {
 							s.append(in.readLine()).endl();

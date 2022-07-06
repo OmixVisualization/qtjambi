@@ -132,14 +132,6 @@ class Exec {
         return v;
     }
 
-    private static String whichLDEnvironmentVariable() {
-        if(OSInfo.os()==OSInfo.OS.Linux)
-            return K_LD_LIBRARY_PATH;
-        else if(OSInfo.os()==OSInfo.OS.MacOS)
-            return K_DYLD_LIBRARY_PATH;
-        return null;
-    }
-
     private static void setupEnvironment(Map<String, String> env, PropertyHelper props, String path, String ldpath) {
         String s;
 

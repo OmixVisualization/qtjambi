@@ -85,14 +85,14 @@ public abstract class Utils {
     public static void gc(final GC_MODE mode) {
         if(mode != GC_MODE.SIMPLE) {
             flipUseMemory();
-            System.gc();
+            ApplicationInitializer.runGC();
             try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
             flipUseMemory();
-            System.gc();
+            ApplicationInitializer.runGC();
             try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
@@ -100,7 +100,7 @@ public abstract class Utils {
 			}
             flipUseMemory();
         }
-        System.gc();
+        ApplicationInitializer.runGC();
         try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {

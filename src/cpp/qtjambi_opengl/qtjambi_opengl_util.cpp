@@ -12,7 +12,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_open
  jclass type,
  jobject _context)
 {
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         QOpenGLContext *context = qtjambi_to_object<QOpenGLContext>(__jni_env, _context);
         //QAbstractOpenGLFunctions* __qt_return_value = nullptr;
         QString className = qtjambi_class_name(__jni_env, type);
@@ -42,7 +43,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_open
                         QOpenGLVersionProfile version;
                         version.setProfile(profile);
                         version.setVersion(majorVersion, minorVersion);
-                        return qtjambi_cast<jobject>(__jni_env, QOpenGLVersionFunctionsFactory::get(version, context));
+                        _result = qtjambi_cast<jobject>(__jni_env, QOpenGLVersionFunctionsFactory::get(version, context));
                     }
                 }
             }
@@ -50,9 +51,9 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_open
         }
         //if(!__jni_env->IsInstanceOf(__java_return_value, type))
         //    __java_return_value = nullptr;
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 

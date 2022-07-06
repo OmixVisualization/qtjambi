@@ -70,7 +70,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    jstring %out = %in ? qtjambi_cast&lt;jstring>(%env, target) : nullptr;
+                    %out = %in ? qtjambi_cast&lt;jstring>(%env, target) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -108,7 +108,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xmlpatterns.QXmlNamePool"/>
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_object(%env, &amp;%in, "io/qt/xmlpatterns/QXmlNamePool", false);
+                    %out = qtjambi_from_object(%env, &amp;%in, "io/qt/xmlpatterns/QXmlNamePool", false);
                 </conversion-rule>
             </modify-argument>
       </modify-function>

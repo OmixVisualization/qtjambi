@@ -496,7 +496,12 @@ public final class QBindable<T> extends QUntypedBindable {
 	@QtUninvokable
 	public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor)
     {
-		return setBinding(new QPropertyBinding<>(functor));
+		try {
+			QPropertyBinding.setPendingMetaType(this::metaType);
+			return setBinding(new QPropertyBinding<>(functor));
+		}finally {
+			QPropertyBinding.setPendingMetaType(null);
+		}
     }
 	
 	/**

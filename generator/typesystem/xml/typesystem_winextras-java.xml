@@ -43,7 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.winextras" module="qtjambi.winextras" default-superclass="io.qt.QtObject">
-    <required-library name="QtWidgets"/>
     <namespace-type name="QtWin">
         <extra-includes>
             <include file-name="qtjambi_winextras_repository.h" location="local"/>
@@ -59,7 +58,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.winextras.QtWin$ColorizationColorInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWinExtras::QtWin$ColorizationColorInfo::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(ok));
+                    %out = Java::QtWinExtras::QtWin$ColorizationColorInfo::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(ok));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

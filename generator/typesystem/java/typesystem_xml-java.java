@@ -106,7 +106,7 @@ class QXmlReader_parse___{
             jobject __java_input0 = qtjambi_cast<jobject>(__jni_env, &input0);
             QTJAMBI_INVALIDATE_AFTER_USE(__jni_env, __java_input0)
             jboolean __java_return_value = __jni_env->CallBooleanMethod(__java_this, method_id, __java_input0);
-            qtjambi_throw_java_exception(__jni_env)
+            JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
             __qt_return_value = bool(__java_return_value);
         } else {
             __shell()->warnForMethod("QXmlReader::parse(const QXmlInputSource& input)");

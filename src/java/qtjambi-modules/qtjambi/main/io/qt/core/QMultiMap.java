@@ -55,8 +55,10 @@ import static io.qt.core.QMap.createComparator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.qt.NativeAccess;
+import io.qt.QNoImplementationException;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
@@ -111,7 +113,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     
     public QMultiMap(Map<K,List<V>> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(other);
+		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other));
 		if(metaTypes.first.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
 		if(metaTypes.first.id()==QMetaType.Type.Void.value())
@@ -381,7 +383,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     public final java.util.Collection<java.util.List<V>> values() {
     	long id = QtJambi_LibraryUtilities.internal.nativeId(this);
         java.util.List<java.util.List<V>> result = new java.util.ArrayList<>();
-        for(Object key : __qt_QMap_keys(id)) {
+        for(Object key : __qt_QMultiMap_uniqueKeys(id)) {
             result.add(__qt_QMultiMap_valuesKey(id, key));
         }
         return result;
@@ -564,11 +566,28 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @Override
     @QtUninvokable
     public int hashCode() { 
-    	int hashCode = getClass().hashCode();
-        for (QPair<K,V> e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){

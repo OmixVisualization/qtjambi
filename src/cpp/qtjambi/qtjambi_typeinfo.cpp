@@ -68,8 +68,8 @@ void clear_type_entry(const std::type_info& typeId)
 {
     QWriteLocker locker(gTypeEntryLock());
     Q_UNUSED(locker)
-    if(gTypeEntryHash()->contains(typeId.hash_code())){
-        for(const QtJambiTypeEntry* entry : gTypeEntryHash()->take(typeId.hash_code()).values()){
+    if(gTypeEntryHash()->contains(unique_id(typeId))){
+        for(const QtJambiTypeEntry* entry : gTypeEntryHash()->take(unique_id(typeId)).values()){
             delete entry;
         }
     }
@@ -80,8 +80,8 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
     {
         QReadLocker locker(gTypeEntryLock());
         Q_UNUSED(locker)
-        if(gTypeEntryHash()->contains(typeId.hash_code())){
-            const QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[typeId.hash_code()];
+        if(gTypeEntryHash()->contains(unique_id(typeId))){
+            const QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[unique_id(typeId)];
             if(qtName){
                 if(const QtJambiTypeEntry* result = entries.value(qtName)){
                     return result;
@@ -493,7 +493,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::StringTypeInfo:
         {
             size_t value_size = getValueSize(typeId);
-            if(typeId==typeid(QString)){
+            if(unique_id(typeId)==unique_id(typeid(QString))){
                 result = new StringTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
             }else{
                 result = new StringUtilTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
@@ -503,21 +503,21 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::PrimitiveTypeInfo:
         {
             size_t value_size = getValueSize(typeId);
-            if(typeId==typeid(double) || typeId==typeid(jdouble)){
+            if(unique_id(typeId)==unique_id(typeid(double)) || unique_id(typeId)==unique_id(typeid(jdouble))){
                 result = new JDoubleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(float) || typeId==typeid(jfloat)){
+            }else if(unique_id(typeId)==unique_id(typeid(float)) || unique_id(typeId)==unique_id(typeid(jfloat))){
                 result = new JFloatTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(bool) || typeId==typeid(jboolean)){
+            }else if(unique_id(typeId)==unique_id(typeid(bool)) || unique_id(typeId)==unique_id(typeid(jboolean))){
                 result = new JBooleanTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(wchar_t) || typeId==typeid(QChar) || typeId==typeid(QLatin1Char) || typeId==typeid(jchar)){
+            }else if(unique_id(typeId)==unique_id(typeid(wchar_t)) || unique_id(typeId)==unique_id(typeid(QChar)) || unique_id(typeId)==unique_id(typeid(QLatin1Char)) || unique_id(typeId)==unique_id(typeid(jchar))){
                 result = new JCharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(qint32) || typeId==typeid(quint32) || typeId==typeid(jint)){
+            }else if(unique_id(typeId)==unique_id(typeid(qint32)) || unique_id(typeId)==unique_id(typeid(quint32)) || unique_id(typeId)==unique_id(typeid(jint))){
                 result = new JIntTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(qint16) || typeId==typeid(quint16) || typeId==typeid(jshort)){
+            }else if(unique_id(typeId)==unique_id(typeid(qint16)) || unique_id(typeId)==unique_id(typeid(quint16)) || unique_id(typeId)==unique_id(typeid(jshort))){
                 result = new JShortTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(qint64) || typeId==typeid(quint64) || typeId==typeid(jlong)){
+            }else if(unique_id(typeId)==unique_id(typeid(qint64)) || unique_id(typeId)==unique_id(typeid(quint64)) || unique_id(typeId)==unique_id(typeid(jlong))){
                 result = new JLongTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(qint8) || typeId==typeid(quint8) || typeId==typeid(jbyte)){
+            }else if(unique_id(typeId)==unique_id(typeid(qint8)) || unique_id(typeId)==unique_id(typeid(quint8)) || unique_id(typeId)==unique_id(typeid(jbyte))){
                 result = new JByteTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
             }
             break;
@@ -525,26 +525,26 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::SpecialTypeInfo:
         {
             size_t value_size = getValueSize(typeId);
-            if(typeId==typeid(std::nullptr_t)){
+            if(unique_id(typeId)==unique_id(typeid(std::nullptr_t))){
                 result = new NullptrTypeEntry(env, typeId, qt_name, nullptr, nullptr, value_size);
-            }else if(typeId==typeid(QUrl::FormattingOptions)){
+            }else if(unique_id(typeId)==unique_id(typeid(QUrl::FormattingOptions))){
                 jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false);
                 Q_ASSERT(creator_method);
                 result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, nullptr);
-            }else if(typeId==typeid(QMetaObject::Connection)
-                     || typeId==typeid(QMetaObject)
-                     || typeId==typeid(JIteratorWrapper)
-                     || typeId==typeid(JCollectionWrapper)
-                     || typeId==typeid(JMapWrapper)
-                     || typeId==typeid(JObjectWrapper)
-                     || typeId==typeid(JEnumWrapper)){
+            }else if(unique_id(typeId)==unique_id(typeid(QMetaObject::Connection))
+                     || unique_id(typeId)==unique_id(typeid(QMetaObject))
+                     || unique_id(typeId)==unique_id(typeid(JIteratorWrapper))
+                     || unique_id(typeId)==unique_id(typeid(JCollectionWrapper))
+                     || unique_id(typeId)==unique_id(typeid(JMapWrapper))
+                     || unique_id(typeId)==unique_id(typeid(JObjectWrapper))
+                     || unique_id(typeId)==unique_id(typeid(JEnumWrapper))){
                 result = new MetaUtilTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(QModelIndex)){
+            }else if(unique_id(typeId)==unique_id(typeid(QModelIndex))){
                 result = new QModelIndexTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeId==typeid(QVariant)){
+            }else if(unique_id(typeId)==unique_id(typeid(QVariant))){
                 result = new QVariantTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
 #if QT_VERSION >= 0x050C00
-            }else if(typeId==typeid(QCborValueRef)){
+            }else if(unique_id(typeId)==unique_id(typeid(QCborValueRef))){
                 result = new QCborValueRefTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
 #endif
             }
@@ -559,8 +559,8 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         QWriteLocker locker(gTypeEntryLock());
         Q_UNUSED(locker)
 
-        if(gTypeEntryHash()->contains(typeId.hash_code())){
-            QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[typeId.hash_code()];
+        if(gTypeEntryHash()->contains(unique_id(typeId))){
+            QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[unique_id(typeId)];
             if(qtName){
                 if(const QtJambiTypeEntry* altresult = entries.value(qtName, nullptr)){
                     return altresult;
@@ -569,7 +569,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                 return entries.first();
             }
         }
-        (*gTypeEntryHash())[typeId.hash_code()][qt_name] = result;
+        (*gTypeEntryHash())[unique_id(typeId)][qt_name] = result;
     }
     return result;
 }
@@ -823,15 +823,15 @@ const QMetaObject* QObjectTypeEntry::originalMetaObject() const
 }
 
 uint InterfaceTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(toType.hash_code(), 0);
+    return m_interface_offsets.value(unique_id(toType), 0);
 }
 
 uint ObjectTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(toType.hash_code(), 0);
+    return m_interface_offsets.value(unique_id(toType), 0);
 }
 
 uint QObjectTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(toType.hash_code(), 0);
+    return m_interface_offsets.value(unique_id(toType), 0);
 }
 
 FunctionalResolver FunctionalTypeEntry::registeredFunctionalResolver() const
@@ -1583,7 +1583,7 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
     if(_typeId && *_typeId!=type()){
         if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             PointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(type().hash_code(), 0);
+            uint offset = m_interface_offsets.value(unique_id(type()), 0);
             if(offset>0){
                 _sharedPointerGetter = [sharedPointerGetter,offset](void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
@@ -1716,7 +1716,7 @@ bool ObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_p
     if(_typeId && *_typeId!=type()){
         if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             PointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(_typeId->hash_code(), 0);
+            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
             if(offset>0){
                 _sharedPointerGetter = [sharedPointerGetter,offset](void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
@@ -1880,7 +1880,7 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
     if(_typeId && *_typeId!=type()){
         if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             PointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(_typeId->hash_code(), 0);
+            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
             if(offset>0){
                 _sharedPointerGetter = [sharedPointerGetter,offset](void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
@@ -2087,7 +2087,7 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
     if(_typeId && *_typeId!=type()){
         if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             PointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(_typeId->hash_code(), 0);
+            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
             if(offset>0){
                 _sharedPointerGetter = [sharedPointerGetter,offset](void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
@@ -2218,7 +2218,7 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
     if(_typeId && *_typeId!=type()){
         if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             PointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(_typeId->hash_code(), 0);
+            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
             if(offset>0){
                 _sharedPointerGetter = [sharedPointerGetter,offset](void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
@@ -3102,7 +3102,7 @@ StringUtilTypeEntry::StringUtilTypeEntry(JNIEnv* env, const std::type_info& type
 }
 
 bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
-    if(type()==typeid(QStringView)){
+    if(unique_id(type())==unique_id(typeid(QStringView))){
         const QStringView* sref = reinterpret_cast<const QStringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -3121,7 +3121,7 @@ bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
             }
         }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else if(type()==typeid(QStringRef)){
+    }else if(unique_id(type())==unique_id(typeid(QStringRef))){
         const QStringRef* sref = reinterpret_cast<const QStringRef*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -3139,7 +3139,7 @@ bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
                 break;
             }
         }
-    }else if(type()==typeid(QXmlStreamStringRef)){
+    }else if(unique_id(type())==unique_id(typeid(QXmlStreamStringRef))){
         const QXmlStreamStringRef* sref = reinterpret_cast<const QXmlStreamStringRef*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -3158,7 +3158,7 @@ bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
             }
         }
 #else
-    }else if(type()==typeid(QAnyStringView)){
+    }else if(unique_id(type())==unique_id(typeid(QAnyStringView))){
         const QAnyStringView* sref = reinterpret_cast<const QAnyStringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -3176,7 +3176,7 @@ bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
                 break;
             }
         }
-    }else if(type()==typeid(QUtf8StringView)){
+    }else if(unique_id(type())==unique_id(typeid(QUtf8StringView))){
         const QUtf8StringView* sref = reinterpret_cast<const QUtf8StringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -3218,17 +3218,17 @@ bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
 }
 
 bool StringUtilTypeEntry::convertToNative(JNIEnv *env, const jvalue&, jValueType, void *) const{
-    if(type()==typeid(QStringView)){
+    if(unique_id(type())==unique_id(typeid(QStringView))){
         JavaException::raiseError(env, "Cannot convert to QStringView" QTJAMBI_STACKTRACEINFO );
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else if(type()==typeid(QStringRef)){
+    }else if(unique_id(type())==unique_id(typeid(QStringRef))){
         JavaException::raiseError(env, "Cannot convert to QStringRef" QTJAMBI_STACKTRACEINFO );
-    }else if(type()==typeid(QXmlStreamStringRef)){
+    }else if(unique_id(type())==unique_id(typeid(QXmlStreamStringRef))){
         JavaException::raiseError(env, "Cannot convert to QXmlStreamStringRef" QTJAMBI_STACKTRACEINFO );
 #else
-    }else if(type()==typeid(QAnyStringView)){
+    }else if(unique_id(type())==unique_id(typeid(QAnyStringView))){
         JavaException::raiseError(env, "Cannot convert to QAnyStringView" QTJAMBI_STACKTRACEINFO );
-    }else if(type()==typeid(QUtf8StringView)){
+    }else if(unique_id(type())==unique_id(typeid(QUtf8StringView))){
         JavaException::raiseError(env, "Cannot convert to QUtf8StringView" QTJAMBI_STACKTRACEINFO );
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     }else {
@@ -3280,15 +3280,15 @@ bool MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, 
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
     if(qt_object){
-        if(type()==typeid(QMetaObject::Connection)){
+        if(unique_id(type())==unique_id(typeid(QMetaObject::Connection))){
             output->l = qtjambi_from_QMetaObject$Connection(env, *reinterpret_cast<const QMetaObject::Connection*>(qt_object));
-        }else if(type()==typeid(QMetaObject)){
+        }else if(unique_id(type())==unique_id(typeid(QMetaObject))){
             output->l = qtjambi_from_QMetaObject(env, reinterpret_cast<const QMetaObject*>(qt_object));
-        }else if(type()==typeid(JIteratorWrapper)
-                 || type()==typeid(JCollectionWrapper)
-                 || type()==typeid(JMapWrapper)
-                 || type()==typeid(JObjectWrapper)
-                 || type()==typeid(JEnumWrapper)){
+        }else if(unique_id(type())==unique_id(typeid(JIteratorWrapper))
+                 || unique_id(type())==unique_id(typeid(JCollectionWrapper))
+                 || unique_id(type())==unique_id(typeid(JMapWrapper))
+                 || unique_id(type())==unique_id(typeid(JObjectWrapper))
+                 || unique_id(type())==unique_id(typeid(JEnumWrapper))){
             output->l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper*>(qt_object)->object());
         }
     }
@@ -3298,19 +3298,19 @@ bool MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, 
 bool MetaUtilTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void *output) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
-    if(type()==typeid(QMetaObject::Connection)){
+    if(unique_id(type())==unique_id(typeid(QMetaObject::Connection))){
         if(java_value.l && !Java::QtCore::QMetaObject$Connection::isInstanceOf(env, java_value.l))
             return false;
         *reinterpret_cast<QMetaObject::Connection*>(output) = qtjambi_to_QMetaObject$Connection(env, java_value.l);
-    }else if(type()==typeid(QMetaObject)){
+    }else if(unique_id(type())==unique_id(typeid(QMetaObject))){
         if(java_value.l && !Java::QtCore::QMetaObject::isInstanceOf(env, java_value.l))
             return false;
         *reinterpret_cast<const QMetaObject**>(output) = qtjambi_to_QMetaObject(env, java_value.l);
-    }else if(type()==typeid(JIteratorWrapper)
-             || type()==typeid(JCollectionWrapper)
-             || type()==typeid(JMapWrapper)
-             || type()==typeid(JObjectWrapper)
-             || type()==typeid(JEnumWrapper)){
+    }else if(unique_id(type())==unique_id(typeid(JIteratorWrapper))
+             || unique_id(type())==unique_id(typeid(JCollectionWrapper))
+             || unique_id(type())==unique_id(typeid(JMapWrapper))
+             || unique_id(type())==unique_id(typeid(JObjectWrapper))
+             || unique_id(type())==unique_id(typeid(JEnumWrapper))){
         *reinterpret_cast<JObjectWrapper*>(output) = JObjectWrapper(env, java_value.l);
     }
     return true;
@@ -3682,7 +3682,7 @@ JCharTypeEntry::JCharTypeEntry(JNIEnv* env, const std::type_info& typeId, const 
 }
 
 bool JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
-    if(type()==typeid(wchar_t) || type()==typeid(jchar)){
+    if(unique_id(type())==unique_id(typeid(wchar_t)) || unique_id(type())==unique_id(typeid(jchar))){
         const jchar* value = reinterpret_cast<const jchar*>(qt_object);
         if(value){
             switch (javaType) {
@@ -3715,7 +3715,7 @@ bool JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, boo
                 break;
             }
         }
-    }else if(type()==typeid(QChar)){
+    }else if(unique_id(type())==unique_id(typeid(QChar))){
         const QChar* value = reinterpret_cast<const QChar*>(qt_object);
         if(value){
             switch (javaType) {
@@ -3748,7 +3748,7 @@ bool JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, boo
                 break;
             }
         }
-    }else if(type()==typeid(QLatin1Char)){
+    }else if(unique_id(type())==unique_id(typeid(QLatin1Char))){
         const QLatin1Char* value = reinterpret_cast<const QLatin1Char*>(qt_object);
         if(value){
             switch (javaType) {
@@ -3786,7 +3786,7 @@ bool JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, boo
 }
 
 bool JCharTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output) const{
-    if(type()==typeid(wchar_t) || type()==typeid(jchar)){
+    if(unique_id(type())==unique_id(typeid(wchar_t)) || unique_id(type())==unique_id(typeid(jchar))){
         jchar* value = reinterpret_cast<jchar*>(output);
         if(value){
             switch (javaType) {
@@ -3821,7 +3821,7 @@ bool JCharTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jVal
                 break;
             }
         }
-    }else if(type()==typeid(QChar)){
+    }else if(unique_id(type())==unique_id(typeid(QChar))){
         QChar* value = reinterpret_cast<QChar*>(output);
         if(value){
             switch (javaType) {
@@ -3856,7 +3856,7 @@ bool JCharTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jVal
                 break;
             }
         }
-    }else if(type()==typeid(QLatin1Char)){
+    }else if(unique_id(type())==unique_id(typeid(QLatin1Char))){
         QLatin1Char* value = reinterpret_cast<QLatin1Char*>(output);
         if(value){
             switch (javaType) {

@@ -39,7 +39,9 @@
 #include <qtjambi/qtjambi_global.h>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 #include <QtPdf/QPdfDocumentRenderOptions>
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 #include <QtPdf/QPdfSearchResult>
+#endif
 #include <QtPdf/QPdfSelection>
 
 inline hash_type qHash(const QPdfDocumentRenderOptions& value)
@@ -47,7 +49,7 @@ inline hash_type qHash(const QPdfDocumentRenderOptions& value)
     hash_type hashCode = qHash(value.scaledClipRect());
     hashCode = hashCode * 31 + qHash(value.scaledSize());
     hashCode = hashCode * 31 + qHash(value.renderFlags());
-    hashCode = hashCode * 31 + qHash(value.rotation());
+    hashCode = hashCode * 31 + qHash(qint32(value.rotation()));
     return hashCode;
 }
 
@@ -62,6 +64,7 @@ inline hash_type qHash(const QPdfSelection &value)
     return hashCode;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 inline hash_type qHash(const QPdfDestination &value)
 {
     hash_type hashCode = qHash(value.isValid());
@@ -80,6 +83,7 @@ inline hash_type qHash(const QPdfSearchResult &value)
     hashCode = hashCode * 31 + qHash(static_cast<const QPdfDestination &>(value));
     return hashCode;
 }
+#endif
 
 inline bool operator==(const QPdfSelection &value1, const QPdfSelection &value2)
 {
@@ -91,6 +95,7 @@ inline bool operator==(const QPdfSelection &value1, const QPdfSelection &value2)
             && value1.endIndex()==value2.endIndex();
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 inline bool operator==(const QPdfDestination &value1, const QPdfDestination &value2)
 {
     return value1.isValid()==value2.isValid()
@@ -106,5 +111,6 @@ inline bool operator==(const QPdfSearchResult &value1, const QPdfSearchResult &v
             && value1.rectangles()==value2.rectangles()
             && static_cast<const QPdfDestination &>(value1)==static_cast<const QPdfDestination &>(value2);
 }
+#endif
 
 #endif // QTJAMBI_PDF_QHASHES_H

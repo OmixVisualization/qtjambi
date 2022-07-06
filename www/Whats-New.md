@@ -1,23 +1,17 @@
-# What's new in QtJambi 6.3.1 / 6.2.4 / 5.15.6
+# What's new in QtJambi 6.3.2 / 6.2.5 / 5.15.7
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 51](../../../issues/51): UIC: tabwidget conversion problem
-* [Issue 48](../../../issues/48): iconfont does not work as expected
-* [Issue 27](../../../issues/27): Building QtJambi on windows using mingw
-* [Issue 52](../../../issues/52): The qtjambi-deployer module does not work with jre8
-* [Issue 53](../../../issues/53): Child thread executes custom signal and crashes when updating interface content
+* [Issue 56](../../../issues/56): QtJambi UIC produces wrong code for Form Layout
+* [Issue 55](../../../issues/55): Some methods of the QOpenGLFunctions_3_2_Core class do not work as expected
 
 ## New Features
 
-* Comining qtjambi* and qtjambi*-jre8 modules.
-* Subsuming classpath resources under Qt resources identified with colon path `":path/to/resource"`. You can continue to use `"classpath:path/to/resource"` but it is subject to be removed in the future. Classpath resources as `QUrl` is specified by `qrc` scheme: `new QUrl("qrc:path/to/resource")`.
-* Allowing to combine QtJambi 6.3.1 with QtJambi modules of different version 6.3.x
-* Adding operator functions for QPoint, QSize, QCborArray, QJsonArray, QDeadlineTimer, QPainterPath and QJSPrimitiveValue to be used in Kotlin.
-* Removing outdated source code of examples and utilities
-* Improved exception handling in QThreads
+* Android support!!! [See here how to create Android apps with QtJambi.](Android.md)
+* Massive size reduction of `QtJambi` and `QtJambiCore` library
+* QtJambi Deployer is now able to create self-extracting [Qt library bundles](How-to-bundle-Qt-libraries.md).
 
 ## Compatibility
 
-QtJambi 6.3.1, 6.2.4 and 5.15.6 are source- and binary-compatible to its predecessor releases. 
+QtJambi 6.3.2, 6.2.5 and 5.15.7 are source- and binary-compatible to its predecessor releases. 

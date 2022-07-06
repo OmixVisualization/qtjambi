@@ -24,48 +24,11 @@
 #include <qtjambi/qtjambi_repository.h>
 #include <qtjambi/qtjambi_cast.h>
 
-void qtjambi_exception_handler(JNIEnv *__jni_env, void* ptr, void(*expression)(void*)){
-    Q_ASSERT(expression);
-    try{
-        expression(ptr);
-    }catch(const JavaException&){
-        throw;
-    }catch(const QUnhandledException& exn){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-        if(exn.exception()){
-            qtjambi_exception_handler(__jni_env, const_cast<QUnhandledException*>(&exn), [](void* ptr){
-                QUnhandledException* exn = reinterpret_cast<QUnhandledException*>(ptr);
-                std::rethrow_exception(exn->exception());
-            });
-        }
+#ifdef Q_OS_ANDROID
+#define unique_id(id) qHash(QLatin1String((id).name()))
 #else
-        Q_UNUSED(exn)
+#define unique_id(id) (id).hash_code()
 #endif
-        Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
-    }catch(const QException& exn){
-        if(typeid(exn)==typeid(QException)){
-            Java::QtCore::QException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
-        }else{
-            QString exceptionName(QLatin1String(qtjambi_type_name(typeid(exn))));
-            const char* what = exn.what();
-            const char* original_what = exn.std::exception::what();
-            if(what && QLatin1String(what)!=QLatin1String(original_what) && exceptionName!=QLatin1String(what)){
-                Java::QtCore::QException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code: %2").arg(exceptionName).arg(QLatin1String(what)) QTJAMBI_STACKTRACEINFO );
-            }else{
-                Java::QtCore::QException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code.").arg(exceptionName) QTJAMBI_STACKTRACEINFO );
-            }
-        }
-    }catch(const std::exception& exn){
-        QString exceptionName(QLatin1String(qtjambi_type_name(typeid(exn))));
-        if(exn.what() && exceptionName!=QLatin1String(exn.what())){
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code: %2").arg(exceptionName).arg(QLatin1String(exn.what())) QTJAMBI_STACKTRACEINFO );
-        }else{
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code.").arg(exceptionName) QTJAMBI_STACKTRACEINFO );
-        }
-    }catch(...){
-        Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
-    }
-}
 
 #if QT_CONFIG(future)
 
@@ -135,29 +98,25 @@ void QFutureInterface_shell<T>::operator delete(void * ptr) noexcept {
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_clone)
 (JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
 {
-    try{
-
+    jobject result = nullptr;
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
-
         const QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         if(const QFutureInterface<QVariant>* _this = dynamic_cast<const QFutureInterface<QVariant>*>(__qt_this)){
-            return qtjambi_cast<jobject>(__jni_env, *_this);
+            result = qtjambi_cast<jobject>(__jni_env, *_this);
         }else if(const QFutureInterface<void>* _this = dynamic_cast<const QFutureInterface<void>*>(__qt_this)){
-            return qtjambi_cast<jobject>(__jni_env, *_this);
+            result = qtjambi_cast<jobject>(__jni_env, *_this);
         }else{
-            return qtjambi_cast<jobject>(__jni_env, *__qt_this);
+            result = qtjambi_cast<jobject>(__jni_env, *__qt_this);
         }
-
 #else
         Q_UNUSED(__this_nativeId)
-        return nullptr;
 #endif // QT_CONFIG(future)
-
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 // emitting (writeSignalFunction)
@@ -318,7 +277,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jboolean isVoid)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::QFutureInterface(QFutureInterfaceBase::State initialState)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         jvalue arguments;
         arguments.l = initialState0;
@@ -335,10 +294,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(initialState0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 // QFutureInterface<T>::QFutureInterface(const QFutureInterface<T> & other)
@@ -349,7 +307,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject other0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<T>::QFutureInterface(const QFutureInterface<T> & other)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase* __qt_other0 = qtjambi_cast<QFutureInterfaceBase*>(__jni_env, other0);
         qtjambi_check_resource(__jni_env, __qt_other0);
@@ -370,10 +328,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(other0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 // QFutureInterface<QVariant>::reportFinished(const T * result)
@@ -384,7 +341,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject result0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportFinished(const T * result)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -402,10 +359,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(result0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 // QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)
@@ -417,7 +373,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jint index1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -435,10 +391,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(index1)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 // QFutureInterface<QVariant>::reportResults(const QVector<QVariant> & results, int beginIndex, int count)
@@ -453,7 +408,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportResults(const QVector<QVariant> & results, int beginIndex, int count)")
     QtJambiScope __qtjambi_scope(__this_nativeId);
     Q_UNUSED(__qtjambi_scope)
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -472,10 +427,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(count2)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 // QFutureInterface<QVariant>::resultReference(int index) const
@@ -486,7 +440,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  jint index0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::resultReference(int index) const")
-    try{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         const QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
@@ -494,7 +449,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
             if(index0<0 || index0>=_this->resultCount())
                 JavaException::raiseIndexOutOfBoundsException(__jni_env, qPrintable(QString::number(index0)) QTJAMBI_STACKTRACEINFO );
             const QVariant& __qt_return_value = _this->resultReference(static_cast<int>(index0));
-            return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+            result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
         }else if(dynamic_cast<const QFutureInterface<void>*>(__qt_this)){
             JavaException::raiseQNoImplementationException(__jni_env, "result(int) not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
         }else{
@@ -505,10 +460,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         Q_UNUSED(index0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return result;
 
 }
 
@@ -519,13 +474,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::results()")
-    try{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = qtjambi_object_from_nativeId<QFutureInterfaceBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
             QList<QVariant> __qt_return_value = _this->results();
-            return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+            result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
         }else if(dynamic_cast<const QFutureInterface<void>*>(__qt_this)){
             JavaException::raiseQNoImplementationException(__jni_env, "results() not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
         }else{
@@ -535,10 +491,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         Q_UNUSED(__this_nativeId)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return result;
 
 }
 
@@ -605,8 +561,8 @@ void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, job
                  QFutureInterfaceBase* fibase = qtjambi_cast<QFutureInterfaceBase*>(env, jfi);
                  const std::type_info& fibaseType = typeid(*fibase);
                  if(dynamic_cast<QFutureInterface<void>*>(fibase)
-                         || fibaseType==typeid(QFutureInterfaceBase)
-                         || fibaseType==typeid_QFutureInterfaceBase_shell()){
+                         || unique_id(fibaseType)==unique_id(typeid(QFutureInterfaceBase))
+                         || unique_id(fibaseType)==unique_id(typeid_QFutureInterfaceBase_shell())){
                      watcher->m_isVoid = true;
                      reinterpret_cast<QFutureWatcher<void>*>(base)->setFuture(QFuture<void>(fibase));
                  }else{
@@ -664,7 +620,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jlongArray functions)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureWatcher::QFutureWatcher(QObject * parent)")
-    try{
+    QTJAMBI_TRY{
 #if QT_CONFIG(future)
         jvalue arguments[2];
         arguments[0].l = parent0;
@@ -676,51 +632,52 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         Q_UNUSED(parent0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(future)
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-
+    }QTJAMBI_TRY_END
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_future)
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureGetter)
 {
-    try{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = qtjambi_object_from_nativeId<QFutureWatcherBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         FutureGetter futureGetter = FutureGetter(_futureGetter);
-        return futureGetter(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
+        result = futureGetter(__jni_env, __qt_this);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_resultAt)
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureResult, jint index)
 {
-    try{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = qtjambi_object_from_nativeId<QFutureWatcherBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         FutureResult futureResult = FutureResult(_futureResult);
-        return futureResult(__jni_env, __qt_this, index);
-    }catch(const JavaException& exn){
+        result = futureResult(__jni_env, __qt_this, index);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return result;
 }
 
 extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_setFuture)
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureSetter, jobject future)
 {
-    try{
+    QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = qtjambi_object_from_nativeId<QFutureWatcherBase>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         FutureSetter futureSetter = FutureSetter(_futureSetter);
         futureSetter(__jni_env, __qt_this, future);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // emitting Field accessors (writeFieldAccessors)

@@ -245,7 +245,7 @@
         </if>
         <java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
             <jvmarg value="-Djava.library.path=${librarypath}"/>
-            <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
+            <!--jvmarg value="-Dio.qt.no-deployment-spec=true"/-->
             <!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->
             <jvmarg value="${XstartOnFirstThread}"/>
             <!--jvmarg value="-Xint"/>
@@ -254,8 +254,8 @@
             <arg value="qml" />
             <arg value="--library=${outputDir}/tests/${module}.jar" />
             <arg value="--configuration=${debug.conf}" />
-            <arg value="--dir=${destdir}/qml" />
-            <arg value="--jarimport-location=${deploymentdir}/native/${qtjambi.osname}/${debug.conf}/utilities/" />
+            <arg value="--dir=${destdir}" />
+            <arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
             <env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
             <classpath>
                 <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>

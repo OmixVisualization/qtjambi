@@ -34,6 +34,7 @@ HEADERS += \
     enums.h\
     abstractclass.h \
     destruction.h \
+    exceptiontest.h \
     global.h \
     injectedcode.h \
     interfaces.h \
@@ -58,7 +59,9 @@ HEADERS += \
 
 SOURCES += \
     bindableowner.cpp \
+    containers.cpp \
     destruction.cpp \
+    exceptiontest.cpp \
     global.cpp \
     injectedcode.cpp \
     interfaces.cpp \

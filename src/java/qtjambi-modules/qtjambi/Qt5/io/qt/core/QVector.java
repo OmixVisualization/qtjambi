@@ -31,6 +31,7 @@ package io.qt.core;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
@@ -76,7 +77,7 @@ public class QVector<T> extends io.qt.internal.QtJambiListObject<T> implements C
     
     public QVector(Collection<T> other) {
 		super(null);
-		QMetaType metaType = QList.findElementMetaType(other);
+		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
 		if(metaType.id()==QMetaType.Type.Void.value())
@@ -380,7 +381,7 @@ public class QVector<T> extends io.qt.internal.QtJambiListObject<T> implements C
 
     @QtUninvokable
     public final void remove(int i, int n)    {
-        if (i+n >= size() || i < 0) {
+        if (i+n > size() || i < 0) {
             throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i+n));
         }
         __qt_QVector_removeN(QtJambi_LibraryUtilities.internal.nativeId(this), i, n);
@@ -511,13 +512,10 @@ public class QVector<T> extends io.qt.internal.QtJambiListObject<T> implements C
 
     @QtUninvokable
     public final T takeAt(int i)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
-        return __qt_QVector_takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
+    	T result = at(i);
+    	removeAt(i);
+        return result;
     }
-    @QtUninvokable
-    private static native <T> T __qt_QVector_takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T takeFirst()    {
@@ -531,10 +529,10 @@ public class QVector<T> extends io.qt.internal.QtJambiListObject<T> implements C
 
     @QtUninvokable
     public final QSet<T> toSet()    {
-        return __qt_QVector_toSet(QtJambi_LibraryUtilities.internal.nativeId(this));
+		QSet<T> set = new QSet<>(elementMetaType());
+		set.unite(this);
+        return set;
     }
-    @QtUninvokable
-    private static native <T> QSet<T> __qt_QVector_toSet(long __this__nativeId);
 
     @QtUninvokable
     public final T value(int i)    {
@@ -569,12 +567,28 @@ public class QVector<T> extends io.qt.internal.QtJambiListObject<T> implements C
 
     @Override
     @QtUninvokable
-    public int hashCode() {
-        int hashCode = getClass().hashCode();
-        for (T e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    public int hashCode() { 
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
+    
     @Override
     @QtUninvokable
     public boolean add(T e){

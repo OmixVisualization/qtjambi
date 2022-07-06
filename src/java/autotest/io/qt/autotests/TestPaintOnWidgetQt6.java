@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QEventLoop;
+import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPainter;
 import io.qt.opengl.QOpenGLWindow;
@@ -66,6 +67,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);
@@ -89,6 +91,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);
@@ -113,6 +116,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);
@@ -136,6 +140,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
     	assertTrue(activePainter[0]!=null);

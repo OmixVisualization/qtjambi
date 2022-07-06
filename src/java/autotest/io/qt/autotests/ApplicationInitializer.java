@@ -33,11 +33,13 @@ package io.qt.autotests;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -53,6 +55,7 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QProcess;
 import io.qt.core.QProcessEnvironment;
 import io.qt.core.QResource;
@@ -122,8 +125,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     			}
     		}
 	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: BEGIN");
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	
 	        // We are attempting to reach a point here where memory should be reclaimed
 	        // except for anything linked to QApplication.
@@ -154,13 +156,11 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        if(app != null) {
 				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage PRE");
 		        for (int i = 0; i < 4; i++) {
-		        	System.gc();
-		            System.runFinalization();
+		        	runGC();
 		            Thread.sleep(50);
 		            QCoreApplication.processEvents();
 		            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		        	System.gc();
-		            System.runFinalization();
+		        	runGC();
 				}
 		        while(QtJambiDebugTools.hasDeleteLaterEvents()) {
 		            QCoreApplication.processEvents();
@@ -188,11 +188,9 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	            app = null;		// kill hard-reference
 	        }
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage PRE");
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	        Thread.sleep(50);
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage POST");
@@ -204,8 +202,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        QCoreApplication.shutdown();
 	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: shutdown POST");
 	        
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	        Thread.sleep(50);
 	        
@@ -218,12 +215,10 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        if(objectCount == 0)
 	            return;  // optimization due to class loading causing some references to be set
 	
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	        QCoreApplication.processEvents();
-	        System.gc();
-	        System.runFinalization();
+	        runGC();
 	        Thread.sleep(50);
 	
 	        QtJambiDebugTools.flushOut();  // fflush(stdout)
@@ -450,11 +445,11 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     		}
     		process.waitForFinished();
     		process.dispose();
-    		System.gc();
+    		runGC();
     		synchronized(ApplicationInitializer.class) {
     			Thread.sleep(1000);
     		}
-    		System.gc();
+    		runGC();
 			try {
 				String content = new String(Files.readAllBytes(new File(targetDir, applicationName+".out.log").toPath()));
 				if(!content.trim().isEmpty()) {
@@ -509,5 +504,29 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     		}
 	    	directory.delete();
     	}
+    }
+    
+    private static Consumer<Runtime> runFinalization;
+    static{
+    	Consumer<Runtime> _runFinalization = null;
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+	    	try{
+	    		Method runFinalization = Runtime.class.getMethod("runFinalization");
+	    		_runFinalization = runtime->{
+	    			runtime.gc();
+	    	    	try{
+	    	    		runFinalization.invoke(runtime);
+	    	    	}catch(Throwable t) {}
+	    		};
+	    	}catch(Throwable t) {}
+    	}
+    	if(_runFinalization==null)
+    		runFinalization = Runtime::gc;
+		else
+			runFinalization = _runFinalization;
+    }
+    
+    static void runGC() {
+    	runFinalization.accept(Runtime.getRuntime());
     }
 }

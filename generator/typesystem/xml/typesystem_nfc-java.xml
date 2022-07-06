@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <typesystem package="io.qt.nfc" module="qtjambi.nfc" default-superclass="io.qt.QtObject">
+    <inject-code class="metainfo" position="1">
+    void initialize_meta_info_QtNfc();
+    </inject-code>
+    <inject-code class="metainfo">
+    initialize_meta_info_QtNfc();
+    </inject-code>
     <value-type name="QNdefFilter">
         <inject-code>
         @io.qt.QtUninvokable
@@ -44,16 +50,16 @@
         </inject-code>
     </value-type>
     <object-type name="QNearFieldTarget">
-        <modify-function signature="writeNdefMessages(const QList&lt;QNdefMessage>&amp;)">
-            <modify-argument index="1">
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_to_ArrayList&lt;QList,QNdefMessage>(__jni_env, messages0,
-                                        [](JNIEnv * env,QNdefMessage const &amp; element)->jobject{
-                                            return qtjambi_cast&lt;jobject>(env, element);
-                                        });
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
+        <inject-code class="native" position="beginning">
+        namespace QtJambiPrivate{
+            template&lt;>
+            struct supports_less_than&lt;QNdefMessage> : std::false_type{};
+            template&lt;>
+            struct supports_stream_operators&lt;QNdefMessage> : std::false_type{};
+            template&lt;>
+            struct supports_debugstream&lt;QNdefMessage> : std::false_type{};
+        }
+        </inject-code>
     </object-type>
     <value-type name="QNdefMessage">
         <inject-code class="native" position="beginning">

@@ -26,19 +26,22 @@ public class TestDesignerMultimedia extends ApplicationInitializer {
 	
     @Test
     public void testMultimediaWidget() {
+    	String errorString = null;
     	QWidget widget;
     	{
 			QFormBuilder loader = new QFormBuilder();
 			for(String path : QCoreApplication.libraryPaths()) {
+				loader.addPluginPath(path);
 				loader.addPluginPath(path+"/designer");
 			}
 	    	QIODevice device = new QFile(":io/qt/autotests/ui/multimediatest.ui");
 	    	device.open(QIODevice.OpenModeFlag.ReadOnly);
 	    	widget = loader.load(device);
+	    	errorString = loader.errorString();
 	    	device.close();
     	}
-    	System.gc();
-    	Assert.assertTrue(widget instanceof QVideoWidget);
+    	ApplicationInitializer.runGC();
+    	Assert.assertTrue(errorString, widget instanceof QVideoWidget);
     	Assert.assertEquals(QVideoWidget.staticMetaObject, widget.metaObject());
     }
     
@@ -50,6 +53,8 @@ public class TestDesignerMultimedia extends ApplicationInitializer {
     			lib += "d";
     		}
     	}
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    		lib = "plugins/"+lib;
     	QPluginLoader pluginLoader = new QPluginLoader(lib);
     	if(!pluginLoader.load())
     		Assert.assertTrue(pluginLoader.errorString()+" "+lib, false);

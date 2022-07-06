@@ -28,4 +28,64 @@
 ****************************************************************************/
 
 #include "qtjambi_multimedia.h"
+#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_repository.h>
 
+void initialize_meta_info_QtMultimedia(){
+#if defined(Q_OS_ANDROID)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#define ORG_QTPROJECT_QT "org/qtproject/qt/"
+#else
+#define ORG_QTPROJECT_QT "org/qtproject/qt5/"
+#endif
+    if(JNIEnv* env = qtjambi_current_environment()){
+        jobject activity = nullptr;
+        try{
+            activity = Java::Android::QtNative::activity(env);
+        }catch(...){}
+        jclass cls = nullptr;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        cls = env->FindClass(ORG_QTPROJECT_QT "android/multimedia/QtAudioDeviceManager");
+        if(env->ExceptionCheck())
+            env->ExceptionClear();
+        if(cls){
+            jmethodID method = env->GetStaticMethodID(cls, "setContext", "(Landroid/content/Context;)V");
+            if(env->ExceptionCheck())
+                env->ExceptionClear();
+            if(method){
+                env->CallStaticVoidMethod(cls, method, activity);
+                if(env->ExceptionCheck())
+                    env->ExceptionClear();
+            }
+        }
+#endif
+
+        cls = env->FindClass(ORG_QTPROJECT_QT "android/multimedia/QtMultimediaUtils");
+        if(env->ExceptionCheck())
+            env->ExceptionClear();
+        if(cls){
+            jmethodID method = env->GetStaticMethodID(cls, "setContext", "(Landroid/content/Context;)V");
+            if(env->ExceptionCheck())
+                env->ExceptionClear();
+            if(method){
+                env->CallStaticVoidMethod(cls, method, activity);
+                if(env->ExceptionCheck())
+                    env->ExceptionClear();
+            }
+
+            method = env->GetStaticMethodID(cls, "setActivity", "(Landroid/app/Activity;Ljava/lang/Object;)V");
+            if(env->ExceptionCheck())
+                env->ExceptionClear();
+            if(method){
+                jobject activityDelegate = nullptr;
+                try{
+                    activityDelegate = Java::Android::QtNative::activity(env);
+                }catch(...){}
+                env->CallStaticVoidMethod(cls, method, activity, activityDelegate);
+                if(env->ExceptionCheck())
+                    env->ExceptionClear();
+            }
+        }
+    }
+#endif
+}

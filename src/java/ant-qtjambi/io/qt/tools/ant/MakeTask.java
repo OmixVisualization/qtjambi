@@ -39,6 +39,8 @@ package io.qt.tools.ant;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -57,10 +59,13 @@ public class MakeTask extends Task {
     private boolean isTools;
 
     private String compilerName() {
-        String make = System.getenv("MAKE");
-        if(make !=  null)
-            return make;
+    	String compilerError = (String)PropertyHelper.getProperty(getProject(), "qtjambi.compiler.error");
+    	if(compilerError!=null && !compilerError.isEmpty())
+    		throw new BuildException(compilerError);
         if(isTools) {
+            String make = System.getenv("MAKE");
+            if(make !=  null)
+                return make;
         	String compilerPathValue = (String)PropertyHelper.getProperty(getProject(), "tools.compiler.path");
         	if(compilerPathValue!=null && !compilerPathValue.isEmpty()) {
 	        	switch(OSInfo.os()) {
@@ -82,6 +87,13 @@ public class MakeTask extends Task {
     	
     	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
     	                return "mingw32-make";
+    	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
+    	            if(qtdir!=null) {
+    	            	File jom = new File(qtdir);
+    	            	jom = new File(jom.getParentFile().getParentFile(), "Tools\\QtCreator\\bin\\jom\\jom.exe");
+    	            	if(jom.exists())
+    	            		return jom.getAbsolutePath();
+    	            }
     	            return "nmake";
     			default:
     				break;
@@ -96,22 +108,34 @@ public class MakeTask extends Task {
 	
 	        if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
 	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
-	        	if(ndkRoot!=null) {
+	        	if(ndkRoot!=null && !ndkRoot.isEmpty()) {
 	        		File nrkRootFile = new File(ndkRoot);
-	    	        switch(OSInfo.os()) {
-	    	        case Windows:
-	    	        	return nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin\\make.exe";
-	    			default:
-	    				break;
-	    	        }
+	        		if(nrkRootFile.isDirectory()) {
+		    	        switch(OSInfo.os()) {
+		    	        case Windows:
+		    	        	return nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin\\make.exe";
+		    			default:
+		    				break;
+		    	        }
+	        		}
 	        	}
 	        }
+	        String make = System.getenv("MAKE");
+	        if(make !=  null)
+	            return make;
 	        switch(OSInfo.os()) {
 	        case Windows:
 	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
 	
 	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
 	                return "mingw32-make";
+	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
+	            if(qtdir!=null) {
+	            	File jom = new File(qtdir);
+	            	jom = new File(jom.getParentFile().getParentFile(), "Tools\\QtCreator\\bin\\jom\\jom.exe");
+	            	if(jom.exists())
+	            		return jom.getAbsolutePath();
+	            }
 	            return "nmake";
 			default:
 				break;
@@ -154,9 +178,12 @@ public class MakeTask extends Task {
             			compilerPathValue!=null && !compilerPathValue.isEmpty() ? new File(compilerPathValue).getAbsolutePath() : null, ldpath);
             }else {
             	String path = null;
+            	Map<String, String> newEnv = null;
             	if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
     	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
     	        	if(ndkRoot!=null) {
+    	        		newEnv = new TreeMap<>();
+    	        		newEnv.put("ANDROID_NDK_ROOT", ndkRoot);
     	        		File nrkRootFile = new File(ndkRoot);
     	    	        switch(OSInfo.os()) {
     	    	        case Windows:
@@ -167,7 +194,7 @@ public class MakeTask extends Task {
     	    	        }
     	        	}
     	        }
-            	Exec.execute(this, commandArray, dirExecute, getProject(), path, ldpath);
+            	Exec.execute(this, commandArray, dirExecute, getProject(), path, ldpath, newEnv);
             }
         } catch(BuildException e) {
             if(failOnError)

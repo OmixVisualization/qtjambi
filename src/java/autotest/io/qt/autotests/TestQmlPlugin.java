@@ -34,6 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QByteArray;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QDir;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
@@ -59,6 +60,9 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
 		}else {
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
+		}
+		for(String path : QCoreApplication.libraryPaths()) {
+			qmlengine.addImportPath(path);
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);
@@ -99,6 +103,9 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
 		}else {
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
+		}
+		for(String path : QCoreApplication.libraryPaths()) {
+			qmlengine.addImportPath(path);
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);

@@ -142,7 +142,7 @@ public class TestThreads extends ApplicationInitializer {
 	    	thread = null;
     	}
 		Thread.yield();
-		System.gc();
+		ApplicationInitializer.runGC();
 		Thread.sleep(100);
 		for (int i = 0; i < 500; i++) {
 			if(qthreadFinished.get())
@@ -156,19 +156,16 @@ public class TestThreads extends ApplicationInitializer {
         		Thread.sleep(100);
     			break;
     		}
-    		System.gc();
-			System.runFinalization();
+    		ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
     		Thread.yield();
     		Thread.sleep(100);
 		}
 		Thread.yield();
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Thread.yield();
 		Thread.sleep(100);
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Thread.yield();
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
@@ -204,18 +201,18 @@ public class TestThreads extends ApplicationInitializer {
 	    	thread.start();
     	}
 		Thread.yield();
-		System.gc();
+		ApplicationInitializer.runGC();
 		Thread.sleep(100);
     	for (int i = 0; i < 200; i++) {
     		if(threadDestroyed.get() || threadDisposed.get())
     			i = 200;
     		Thread.yield();
-    		System.gc();
+    		ApplicationInitializer.runGC();
     		Thread.sleep(10);
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
     	Thread.sleep(100);
-		System.gc();
+		ApplicationInitializer.runGC();
 		Thread.yield();
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
@@ -248,18 +245,18 @@ public class TestThreads extends ApplicationInitializer {
     	}
 		Thread.yield();
 		Thread.sleep(100);
-		System.gc();
+		ApplicationInitializer.runGC();
     	for (int i = 0; i < 200; i++) {
     		if(threadFinished.get())
     			i = 200;
     		Thread.yield();
-    		System.gc();
+    		ApplicationInitializer.runGC();
     		Thread.sleep(10);
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
 		Thread.yield();
     	Thread.sleep(100);
-		System.gc();
+		ApplicationInitializer.runGC();
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
@@ -285,7 +282,7 @@ public class TestThreads extends ApplicationInitializer {
                     thisNumPings = numPings;
                 }
                 QCoreApplication.postEvent(other, new QEvent(ID_PING));
-                if (thisNumPings == 100) {
+                if (thisNumPings == 10) {
                     done.emit();
                 }
             }
@@ -322,7 +319,7 @@ public class TestThreads extends ApplicationInitializer {
                 QCoreApplication.postEvent(object.other, new QEvent(PingPong.ID_PING));
             }
             QEventLoop loop = new QEventLoop();
-            object.done.connect(loop::quit);
+            object.done.connect(loop, "quit()");
             loop.exec();
         }
 
@@ -387,8 +384,8 @@ public class TestThreads extends ApplicationInitializer {
             assertFalse("ping.isAlive()", pingThread.isAlive());
             assertFalse("pong.isAlive()", pongThread.isAlive());
 
-            assertEquals("ping.object.numPings", 100, ping.object.numPings);
-            assertEquals("pong.object.numPings", 100, pong.object.numPings);
+            assertEquals("ping.object.numPings", 10, ping.object.numPings);
+            assertEquals("pong.object.numPings", 10, pong.object.numPings);
 
             assertTrue("ping.object.affinityOk", ping.object.affinityOk);
             assertTrue("ping.object.affinityOk", ping.object.affinityOk);
@@ -406,14 +403,15 @@ public class TestThreads extends ApplicationInitializer {
         final Signal0 done = new Signal0();
         final Signal0 ping = new Signal0();
 
-        public void pong() {
+        @SuppressWarnings("unused")
+		public void pong() {
             int thisNumPings;
             synchronized (this) {
                 numPings++;
                 thisNumPings = numPings;
             }
             ping.emit();
-            if (thisNumPings == 100)
+            if (thisNumPings == 10)
                 done.emit();
             affinityOk &= thread() == QThread.currentThread();
         }
@@ -443,7 +441,7 @@ public class TestThreads extends ApplicationInitializer {
 
             QEventLoop loop = new QEventLoop();
             System.err.println(threadName+" REACH 3");
-            object.done.connect(loop::quit);
+            object.done.connect(loop, "quit()");
             System.err.println(threadName+" REACH 4");
 
             // Wait for startup sync
@@ -504,8 +502,8 @@ public class TestThreads extends ApplicationInitializer {
         ping.object.other = pong.object;
         pong.object.other = ping.object;
 
-        ping.object.ping.connect(pong.object::pong);
-        pong.object.ping.connect(ping.object::pong);
+        ping.object.ping.connect(pong.object, "pong()");
+        pong.object.ping.connect(ping.object, "pong()");
 
         synchronized(ping) {
             synchronized(pong) {
@@ -537,8 +535,8 @@ public class TestThreads extends ApplicationInitializer {
         assertFalse("pingThread.isAlive()", pingThread.isAlive());
         assertFalse("pongThread.isAlive()", pongThread.isAlive());
 
-        assertEquals("ping.object.numPings", 100, ping.object.numPings);
-        assertEquals("pong.object.numPings", 100, pong.object.numPings);
+        assertEquals("ping.object.numPings", 10, ping.object.numPings);
+        assertEquals("pong.object.numPings", 10, pong.object.numPings);
 
         assertTrue("ping.object.affinityOk", ping.object.affinityOk);
         assertTrue("ping.object.affinityOk", ping.object.affinityOk);
@@ -587,8 +585,7 @@ public class TestThreads extends ApplicationInitializer {
     	thread.start();
     	thread = null;
     	movedObject = null;
-    	System.gc();
-    	System.runFinalization();
+    	ApplicationInitializer.runGC();
     	QCoreApplication.processEvents();
     }
     
@@ -666,7 +663,8 @@ public class TestThreads extends ApplicationInitializer {
     	thread.join();
     	assertEquals(jthread[0], jthread[1]);
     	assertFalse(thread.isRunning());
-    	assertEquals(jthread[1].getState(), Thread.State.TERMINATED);
+    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    		assertEquals(Thread.State.TERMINATED, jthread[1].getState());
     }
     
     @Test

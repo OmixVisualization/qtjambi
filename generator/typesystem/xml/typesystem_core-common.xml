@@ -1511,7 +1511,6 @@
     <value-type name="QJsonObject">
         <modify-function signature="operator=(const QJsonObject&amp;)" remove="all"/>
         <modify-function signature="operator[](const QString &amp;) const" remove="all"/>
-        <modify-function signature="operator[](const QString &amp;)" remove="all" since="5.7.0"/>
         <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.7.0"/>
         <modify-function signature="operator[](QLatin1String)" remove="all" since="5.7.0"/>
         <modify-function signature="operator[](QStringView) const" remove="all" since="5.14.0"/>
@@ -2196,6 +2195,7 @@
     <object-type name="QStringConverterBase::State" since="6.0.0">
     </object-type>
     <object-type name="QStringConverterBase" since="6.0.0">
+        <modify-function signature="QStringConverterBase()" remove="all" since="6.4.0"/>
     </object-type>
     <object-type name="QStringConverter" since="6.0.0">
         <modify-field name="state" read="true" write="false"/>
@@ -2363,10 +2363,11 @@
         <modify-function signature="destroyed(QObject *)">
             <modify-argument index="1">
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_from_destroyed_qobject(%env, %in);
+                    %out = qtjambi_from_destroyed_qobject(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
+        <modify-function signature="setObjectName(QAnyStringView)" remove="all" since="6.4.0"/>
         <modify-function signature="bindingStorage() const" remove="all" since="6.0.0"/>
         <modify-function signature="dumpObjectTree()" remove="all" since="5.9.0" until="5.*"/>
         <modify-function signature="dumpObjectInfo()" remove="all" since="5.9.0" until="5.*"/>
@@ -2695,7 +2696,7 @@
     <value-type name="QFutureInterfaceBase">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="local"/>
-            <include file-name="qtjambi_core_future.h" location="local"/>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>
         <modify-function signature="operator=(const QFutureInterfaceBase&amp;)" remove="all" />
@@ -2703,7 +2704,7 @@
 
     <object-type name="QFutureWatcherBase">
         <extra-includes>
-            <include file-name="qtjambi_core_future.h" location="local"/>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
         </extra-includes>
     </object-type>
     <object-type name="QFutureWatcher" template="yes" disable-native-id-usage="yes">
@@ -2873,11 +2874,6 @@
         <modify-function signature="compare(const QString &amp;, const QString &amp;) const" remove="all" since="5.14.0"/>
         <modify-function signature="compare(const QChar *, int, const QChar *, int) const" remove="all" />
         <modify-function signature="sortKey(const QString &amp;) const">
-            <!--modify-argument index="return">
-                <conversion-rule class="native">
-                    jobject %out = qtjambi_cast&lt;jobject>(__jni_env, %in);
-                </conversion-rule>
-            </modify-argument-->
         </modify-function>
     </value-type>
     <value-type name="QCollatorSortKey">
@@ -3192,7 +3188,7 @@
         <modify-function signature="QRandomGenerator(const unsigned int *, qsizetype)" remove="all"/>
         <modify-function signature="operator=(QRandomGenerator)" remove="all"/>
     </object-type>
-    <functional-type name="QtMessageHandler" count="4"/>
+    <functional-type name="QtMessageHandler"/>
     <rejection class="QUntypedPropertyData::InheritsQUntypedPropertyData"/>
     <rejection class="QPropertyData::DisableRValueRefs"/>
     <rejection class="QtPrivate::BindingFunctionVTable"/>

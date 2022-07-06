@@ -52,7 +52,7 @@ class LibraryEntry {
     private String name;
     private DeploymentSpec deploymentSpec;
     private boolean loaded;
-
+    
     public String getName() {
         return name;
     }
@@ -68,7 +68,15 @@ class LibraryEntry {
     }
 
     public boolean isExtracting() {
-        return !extractionFunctions.isEmpty();
+    	synchronized(this.extractionFunctions) {
+    		return !extractionFunctions.isEmpty();
+    	}
+    }
+    
+    public boolean isQmlExtracting() {
+    	synchronized(this.qmlExtractionFunctions) {
+    		return !qmlExtractionFunctions.isEmpty();
+    	}
     }
     
     public boolean isLoaded() {
@@ -76,26 +84,59 @@ class LibraryEntry {
     }
     void setLoaded(boolean loaded) {
         this.loaded = loaded;
-        if(loaded)
-        	extractionFunctions.clear();
+        if(loaded) {
+        	synchronized(this.extractionFunctions) {
+        		extractionFunctions.clear();
+        	}
+        	synchronized(this.qmlExtractionFunctions) {
+        		qmlExtractionFunctions.clear();
+        	}
+        }
     }
     
     interface ExtractionFunction{
-    	void extract() throws Exception;
+    	void extract() throws Throwable;
     }
 
     private final List<ExtractionFunction> extractionFunctions = new ArrayList<>();
+    private final List<ExtractionFunction> qmlExtractionFunctions = new ArrayList<>();
 
 	public void addExtractionFunction(ExtractionFunction loadFunction) {
-		this.extractionFunctions.add(loadFunction);
+		synchronized(this.extractionFunctions) {
+			this.extractionFunctions.add(loadFunction);
+		}
 	}
 	
-	public void extract() throws Exception {
+	public void addQmlExtractionFunction(ExtractionFunction loadFunction) {
+		synchronized(this.qmlExtractionFunctions) {
+			this.qmlExtractionFunctions.add(loadFunction);
+		}
+	}
+	
+	public void extract() throws Throwable {
+		NativeLibraryManager.reporter.report("extracting ", name);
+		List<ExtractionFunction> extractionFunctions;
+		synchronized(this.extractionFunctions) {
+			extractionFunctions = new ArrayList<>(this.extractionFunctions);
+			this.extractionFunctions.clear();
+		}
 		if(!extractionFunctions.isEmpty()) {
 			for(ExtractionFunction f : extractionFunctions) {
 				f.extract();
 			}
-			extractionFunctions.clear();
+		}
+	}
+	
+	public void extractQml() throws Throwable {
+		List<ExtractionFunction> extractionFunctions;
+		synchronized(this.qmlExtractionFunctions) {
+			extractionFunctions = new ArrayList<>(this.qmlExtractionFunctions);
+			this.qmlExtractionFunctions.clear();
+		}
+		if(!extractionFunctions.isEmpty()) {
+			for(ExtractionFunction f : extractionFunctions) {
+				f.extract();
+			}
 		}
 	}
 }

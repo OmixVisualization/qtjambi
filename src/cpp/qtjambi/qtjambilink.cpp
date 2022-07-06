@@ -3674,29 +3674,29 @@ void LINKTYPE::unregisterOffsets() {\
     }\
 }\
 void LINKTYPE::addInterface(const std::type_info& qtInterfaceType){\
-    m_availableInterfaces << qtInterfaceType.hash_code();\
-    size_t offset = m_interfaceOffsets.value(qtInterfaceType.hash_code());\
+    m_availableInterfaces << unique_id(qtInterfaceType);\
+    size_t offset = m_interfaceOffsets.value(unique_id(qtInterfaceType));\
     if(offset>0){\
         registerPointer(reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset ));\
     }else{\
-        for(const std::type_info* ifaces : m_inheritedInterfaces[qtInterfaceType.hash_code()]){\
+        for(const std::type_info* ifaces : m_inheritedInterfaces[unique_id(qtInterfaceType)]){\
             Q_ASSERT(ifaces);\
             addInterface(*ifaces);\
         }\
     }\
 }\
 void LINKTYPE::removeInterface(const std::type_info& qtInterfaceType){\
-    if(m_availableInterfaces.contains(qtInterfaceType.hash_code())){\
-        m_availableInterfaces.remove(qtInterfaceType.hash_code());\
-        if(m_interfaceOffsets.contains(qtInterfaceType.hash_code())){\
-            size_t offset = m_interfaceOffsets.value(qtInterfaceType.hash_code());\
+    if(m_availableInterfaces.contains(unique_id(qtInterfaceType))){\
+        m_availableInterfaces.remove(unique_id(qtInterfaceType));\
+        if(m_interfaceOffsets.contains(unique_id(qtInterfaceType))){\
+            size_t offset = m_interfaceOffsets.value(unique_id(qtInterfaceType));\
             if(offset>0){\
                 unregisterPointer(reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset ));\
             }else{\
                 setInDestructor();\
             }\
         }else{\
-            for(const std::type_info* ifaces : m_inheritedInterfaces[qtInterfaceType.hash_code()]){\
+            for(const std::type_info* ifaces : m_inheritedInterfaces[unique_id(qtInterfaceType)]){\
                 Q_ASSERT(ifaces);\
                 removeInterface(*ifaces);\
             }\
@@ -3705,10 +3705,10 @@ void LINKTYPE::removeInterface(const std::type_info& qtInterfaceType){\
     }\
 }\
 void* LINKTYPE::typedPointer(const std::type_info& qtInterfaceType) const{\
-    if(m_interfaceOffsets.contains(qtInterfaceType.hash_code())){\
-        if(!m_availableInterfaces.contains(qtInterfaceType.hash_code()))\
+    if(m_interfaceOffsets.contains(unique_id(qtInterfaceType))){\
+        if(!m_availableInterfaces.contains(unique_id(qtInterfaceType)))\
             return nullptr;\
-        size_t offset = m_interfaceOffsets.value(qtInterfaceType.hash_code());\
+        size_t offset = m_interfaceOffsets.value(unique_id(qtInterfaceType));\
         if(offset>0){\
             return reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset );\
         }\
@@ -3719,7 +3719,7 @@ bool LINKTYPE::isMultiInheritanceType() const{\
     return true;\
 }\
 bool LINKTYPE::isInterfaceAvailable(const std::type_info& qtInterfaceType) const{\
-    return m_availableInterfaces.contains(qtInterfaceType.hash_code());\
+    return m_availableInterfaces.contains(unique_id(qtInterfaceType));\
 }
 
 INTERFACE_METHODS(DeletableOwnedPointerToObjectInterfaceLink, PointerToObjectLink)

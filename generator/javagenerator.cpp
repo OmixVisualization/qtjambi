@@ -532,6 +532,11 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
                     for (int i=0; i<args.size(); ++i) {
                         if (i != 0)
                             s += ", ";
+                        if((option & CollectionAsCollection) == CollectionAsCollection
+                                && !args.at(i)->isPrimitive()
+                                && !args.at(i)->isString()
+                                && !args.at(i)->isTargetLangChar())
+                            s += "? extends ";
                         s += translateType(args.at(i), context, Option(BoxedPrimitive | NoQCollectionContainers | InitializerListAsArray));
                     }
                     s += '>';
@@ -598,10 +603,16 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
                             s += ", ";
                         bool isMultiMap = (container->type() == ContainerTypeEntry::MultiMapContainer
                                            || container->type() == ContainerTypeEntry::MultiHashContainer)
-                                          && ((option & NoQCollectionContainers) == NoQCollectionContainers)
+                                          && ((option & NoQCollectionContainers) == NoQCollectionContainers
+                                              || (option & CollectionAsCollection) == CollectionAsCollection)
                                           && i == 1;
                         if (isMultiMap)
-                            s += "java.util.List<";
+                            s += "? extends java.util.List<";
+                        if((option & CollectionAsCollection) == CollectionAsCollection
+                                && !args.at(i)->isPrimitive()
+                                && !args.at(i)->isString()
+                                && !args.at(i)->isTargetLangChar())
+                            s += "? extends ";
                         s += translateType(args.at(i), context, Option(BoxedPrimitive | NoQCollectionContainers | InitializerListAsArray));
                         if (isMultiMap)
                             s += ">";
@@ -664,6 +675,11 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
                 for (int i=0; i<args.size(); ++i) {
                     if (i != 0)
                         s += ", ";
+                    if((option & CollectionAsCollection) == CollectionAsCollection
+                            && !args.at(i)->isPrimitive()
+                            && !args.at(i)->isString()
+                            && !args.at(i)->isTargetLangChar())
+                        s += "? extends ";
                     s += translateType(args.at(i), context, Option(BoxedPrimitive | NoQCollectionContainers | InitializerListAsArray));
                 }
                 s += '>';

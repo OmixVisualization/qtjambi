@@ -57,16 +57,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     jmethodID constructor = __jni_env->FromReflectedMethod(constructor2);
     type1 = jclass(__jni_env->NewGlobalRef(jobject(type1)));
     uint hash = uint(qtjambi_java_object_hashcode(__jni_env,type1));
-    serverFactory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16,QConnectionAbstractServer*(QObject *)>(
+    serverFactory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<4,QConnectionAbstractServer*(QObject *)>(
         [type1,constructor](QObject * o) -> QConnectionAbstractServer*{
             if(JNIEnv* env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 jobject parent = qtjambi_from_QObject(env, o);
                 jobject newObject = env->NewObject(type1, constructor, parent);
                 qtjambi_throw_java_exception(env);
-                qtjambi_rethrowing(env,
-                    return reinterpret_cast<QConnectionAbstractServer*>(qtjambi_to_qobject(env, newObject));
-                )
+                return reinterpret_cast<QConnectionAbstractServer*>(qtjambi_to_qobject(env, newObject));
             }
             return nullptr;
         },
@@ -92,16 +90,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     jmethodID constructor = __jni_env->FromReflectedMethod(constructor2);
     type1 = jclass(__jni_env->NewGlobalRef(jobject(type1)));
     uint hash = uint(qtjambi_java_object_hashcode(__jni_env, type1));
-    factory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16,ClientIoDevice*(QObject *)>(
+    factory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<4,ClientIoDevice*(QObject *)>(
         [type1,constructor](QObject * o) -> ClientIoDevice*{
             if(JNIEnv* env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 jobject parent = qtjambi_from_QObject(env, o);
                 jobject newObject = env->NewObject(type1, constructor, parent);
                 qtjambi_throw_java_exception(env);
-                qtjambi_rethrowing(env,
-                    return reinterpret_cast<ClientIoDevice*>(qtjambi_to_qobject(env, newObject));
-                )
+                return reinterpret_cast<ClientIoDevice*>(qtjambi_to_qobject(env, newObject));
             }
             return nullptr;
         },
@@ -126,11 +122,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
  jobject __jni_object)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
-    try{
+    QTJAMBI_TRY{
         qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_0, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, nullptr);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 
 }
 
@@ -141,13 +137,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
  jobject other0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>(const QRemoteObjectPendingCall & other)")
-    try{
+    QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = other0;
         qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_1, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, &arguments);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_copyStoredProperties__Lio_qt_core_QMetaObject_2Ljava_lang_Object_2Ljava_lang_Object_2)
@@ -236,3 +232,9 @@ void initialize_meta_info_RemoteObject(){
     registerConstructorInfos(typeId, &__qt_destruct_QRemoteObjectPendingCall, {
     });
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+int qRegisterNormalizedMetaType_QIntHash(class QByteArray const &name){
+    return qRegisterNormalizedMetaTypeImplementation<QHash<int, QByteArray>>(name);
+}
+#endif

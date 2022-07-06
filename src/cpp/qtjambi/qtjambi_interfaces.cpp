@@ -42,8 +42,8 @@ const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz);
 int qtjambi_interface_offset(JNIEnv *env, jclass cls, const std::type_info& interfacetype)
 {
     if(const InterfaceOffsetInfo* info = getInterfaceOffsets(env, cls)){
-        if(info->offsets.contains(interfacetype.hash_code()))
-            return int(info->offsets.value(interfacetype.hash_code(), 0));
+        if(info->offsets.contains(unique_id(interfacetype)))
+            return int(info->offsets.value(unique_id(interfacetype), 0));
     }
     return -1;
 }

@@ -177,13 +177,13 @@ protected:
     QHashFunctionPrivate() noexcept;
 public:
     virtual ~QHashFunctionPrivate();
-    virtual hash_type invoke(const void*) const = 0;
+    virtual hash_type invoke(const void*, hash_type) const = 0;
     friend class QHashFunction;
 };
 
 class QTJAMBI_EXPORT QHashFunction{
 public:
-    typedef hash_type(*FunctionPointer)(const void*);
+    typedef hash_type(*FunctionPointer)(const void*,hash_type);
 
 private:
     explicit QHashFunction(QHashFunctionPrivate* _d) noexcept;
@@ -191,8 +191,8 @@ private:
     class Data : public QHashFunctionPrivate{
     public:
         ~Data() noexcept {}
-        inline hash_type invoke(const void* ptr) const override {
-            return m_functor(ptr);
+        inline hash_type invoke(const void* ptr, hash_type seed) const override {
+            return m_functor(ptr, seed);
         }
         inline static QHashFunctionPrivate* from(Functor&& functor){
             return new Data(std::forward<Functor>(functor));
@@ -228,13 +228,13 @@ public:
 
     template<typename Functor
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                    , typename = std::enable_if_t<std::is_invocable_r_v<hash_type, Functor, const void*>>
+                    , typename = std::enable_if_t<std::is_invocable_r_v<hash_type, Functor, const void*, hash_type>>
 #endif
              >
     QHashFunction(Functor&& functor) noexcept
         : QHashFunction(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
     bool operator==(const QHashFunction& other) const noexcept;
-    hash_type operator()(const void*) const;
+    hash_type operator()(const void*, hash_type) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:

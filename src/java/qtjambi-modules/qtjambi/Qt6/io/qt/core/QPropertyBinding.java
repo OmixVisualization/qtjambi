@@ -31,7 +31,12 @@ package io.qt.core;
 import static io.qt.internal.QtJambiInternal.registerMetaType;
 
 import java.io.Serializable;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.function.Supplier;
 
 import io.qt.NativeAccess;
 import io.qt.QtPointerType;
@@ -127,12 +132,71 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 		return new QPropertyBinding<>(binding);
 	}
 	
+	private final static ThreadLocal<Supplier<QMetaType>> pendingMetaType = new ThreadLocal<>();
+	
+	static void setPendingMetaType(Supplier<QMetaType> metaTypeSupplier) {
+		pendingMetaType.set(metaTypeSupplier);
+	}
+	
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
 		QtJambiInternal.LambdaInfo lamdaInfo = QtJambiInternal.lamdaInfo(functor);
-		if(lamdaInfo==null || lamdaInfo.reflectiveMethod==null)
-			throw new IllegalArgumentException("Only lambda expressions allowed.");
-		if(lamdaInfo.owner instanceof QProperty) {
+		if(lamdaInfo==null || lamdaInfo.reflectiveMethod==null) {
+			if(functor instanceof QtUtilities.Supplier) {
+				Class<?> functorClass = QtJambiInternal.getClass(functor);
+				for(Type iface : functorClass.getGenericInterfaces()) {
+					if(iface instanceof ParameterizedType) {
+						ParameterizedType piface = (ParameterizedType)iface;
+						if(piface.getRawType()==QtUtilities.Supplier.class) {
+							Type[] args = piface.getActualTypeArguments();
+							for (int i = 0; i < args.length; i++) {
+								try {
+									Class<?> c1 = QtJambiInternal.toClass(args[i]);
+									return new QMetaType(registerMetaType(c1, args[i], null, false, false));
+								} catch (Exception e) {
+								}
+							}
+						}
+					}
+				}
+				if(functorClass.isSynthetic()) {
+					if(functorClass.getName().startsWith(QProperty.class.getName())
+						|| functorClass.getName().startsWith(QObject.QProperty.class.getName())) {
+						for(Field field : functorClass.getDeclaredFields()) {
+							if(field.getType()==QProperty.class) {
+								QProperty<?> property = (QProperty<?>)QtJambiInternal.fetchField(functor, field);
+								return property.valueMetaType();
+							}else if(field.getType()==QObject.QProperty.class) {
+								QObject.QProperty<?> property = (QObject.QProperty<?>) QtJambiInternal.fetchField(functor, field);
+								return property.valueMetaType();
+							}
+						}
+					}
+					Supplier<QMetaType> metaTypeSupplier = pendingMetaType.get();
+					if(metaTypeSupplier!=null) {
+						QMetaType metaType = metaTypeSupplier.get();
+						if(metaType!=null)
+							return metaType;
+					}
+					QtUtilities.Supplier<?> supplier = (QtUtilities.Supplier<?>)functor;
+					Object value = supplier.get();
+					if(value!=null && !QtJambiInternal.getClass(value).isArray()) {
+						int t = QVariant.type(value);
+						String typeName;
+						if(t!=QMetaType.Type.UnknownType.value()
+								&& t!=QMetaType.Type.Void.value()
+								&& !(typeName = new QMetaType(t).name()).equals("JObjectWrapper")
+								&& !typeName.equals("JEnumWrapper")
+								&& !typeName.equals("JMapWrapper")
+								&& !typeName.equals("JCollectionWrapper")) {
+							return new QMetaType(t);
+						}
+					}
+				}
+			}
+//			throw new IllegalArgumentException("Only lambda expressions allowed.");
+			return new QMetaType(QMetaType.Type.QVariant);
+		}else if(lamdaInfo.owner instanceof QProperty) {
 			QProperty<?> property = (QProperty<?>)lamdaInfo.owner;
 			return property.valueMetaType();
 		}else if(lamdaInfo.owner instanceof QObject.QProperty) {
@@ -150,10 +214,13 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 			return bindable.valueMetaType();
 		}
 		Method method = lamdaInfo.reflectiveMethod;
+		AnnotatedElement rt = null;
+		if(QtJambiInternal.useAnnotatedType)
+			rt = method.getAnnotatedReturnType();
 		int t = registerMetaType(
 				method.getReturnType(), 
 				method.getGenericReturnType(), 
-				method.getAnnotatedReturnType(),
+				rt,
 		        method.isAnnotationPresent(QtPointerType.class),
 		        false);
 		return new QMetaType(t);

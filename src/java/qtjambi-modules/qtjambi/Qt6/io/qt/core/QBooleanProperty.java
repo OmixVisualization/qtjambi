@@ -38,7 +38,8 @@ import io.qt.QtUninvokable;
 public final class QBooleanProperty extends QBooleanPropertyData {
 	
 	static boolean checkType(QMetaType metaType){
-		return metaType!=null && metaType.id()==QMetaType.Type.Bool.value();
+		return metaType!=null && (metaType.id()==QMetaType.Type.Bool.value()
+				|| metaType.id()==QMetaType.Type.QVariant.value());
 	}
 
     /**

@@ -279,7 +279,7 @@ public class TestQml extends ApplicationInitializer{
 	
 	@After
     public void tearDown() {
-		System.gc();
+		ApplicationInitializer.runGC();
 	}
 	
 	@Test
@@ -900,7 +900,7 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertEquals("TEST", root.property("receivedText"));
 		singleton = null;
 		for (int i = 0; i < 30; i++) {
-			System.gc();
+			ApplicationInitializer.runGC();
 			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			Assert.assertTrue(weakSingleton.get()!=null);
 		}

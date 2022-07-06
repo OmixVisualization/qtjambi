@@ -539,10 +539,7 @@ public class TestQThread extends ApplicationInitializer {
 			qtarray[0] = null;
 			thread = null;
 		}
-		System.gc();
-		System.runFinalization();
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Assert.assertTrue("reference is not null", null==reference.get());
 	}
 	
@@ -570,23 +567,16 @@ public class TestQThread extends ApplicationInitializer {
 			qtarray[0] = null;
 			thread = null;
 		}
-		System.gc();
-		System.runFinalization();
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Assert.assertTrue(reference.get()!=null);
 		Assert.assertEquals(parent, reference.get().parent());
 		parent = null;
 		for (int i = 0; i < 3; i++) {
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
 			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			QCoreApplication.processEvents();
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			if(reference.get()==null)
 				break;
 		}
@@ -626,10 +616,7 @@ public class TestQThread extends ApplicationInitializer {
 			qtarray[0] = null;
 			thread = null;
 		}
-		System.gc();
-		System.runFinalization();
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Assert.assertTrue("reference is not null", null==reference.get());
 	}
 	
@@ -667,23 +654,16 @@ public class TestQThread extends ApplicationInitializer {
 			qtarray[0] = null;
 			thread = null;
 		}
-		System.gc();
-		System.runFinalization();
-		System.gc();
-		System.runFinalization();
+		ApplicationInitializer.runGC();
 		Assert.assertTrue(reference.get()!=null);
 		Assert.assertEquals(parent, reference.get().parent());
 		parent = null;
 		for (int i = 0; i < 50; i++) {
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
 			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			QCoreApplication.processEvents();
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			try {
 				Thread.yield();
 				Thread.sleep(200);
@@ -726,8 +706,8 @@ public class TestQThread extends ApplicationInitializer {
 		for (int i = 0; i < 50; i++) {
 			if(qthreadCleaned.get())
 				break;
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			QCoreApplication.processEvents();
 			Thread.yield();
 			Thread.sleep(100);

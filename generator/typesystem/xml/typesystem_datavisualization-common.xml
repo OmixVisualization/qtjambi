@@ -369,7 +369,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QBarDataArray"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -377,7 +377,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QBarDataItem"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -385,7 +385,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QBarDataItem"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -455,7 +455,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QScatterDataArray"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -463,7 +463,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QScatterDataItem"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -504,7 +504,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QSurfaceDataArray"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -512,7 +512,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QSurfaceDataItem"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -520,7 +520,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QSurfaceDataItem"/>
                 <conversion-rule class="native">
-                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>

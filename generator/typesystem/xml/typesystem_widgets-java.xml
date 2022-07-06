@@ -179,7 +179,7 @@
                 <replace-type modified-type="io.qt.widgets.QTreeWidgetItem" />
                 <conversion-rule class="native">
                     Q_UNUSED(%in)
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, current);
+                    %out = qtjambi_cast&lt;jobject>(%env, current);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -187,7 +187,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="boolean" />
                 <conversion-rule class="native">
-                    jboolean %out = %in!=nullptr;
+                    %out = %in!=nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -243,7 +243,7 @@
                     if (%2 != 0) *%2 = %in != 0;
                 </conversion-rule>
                 <conversion-rule class="native">
-                    jobject %out = !okHolder ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                    %out = !okHolder ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -288,7 +288,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QGraphicsItem$BlockedByModalPanelInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QGraphicsItem$BlockedByModalPanelInfo::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jobject>(%env, modalPanel));
+                    %out = Java::QtWidgets::QGraphicsItem$BlockedByModalPanelInfo::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jobject>(%env, modalPanel));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1376,7 +1376,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1398,7 +1398,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1420,7 +1420,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1703,7 +1703,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QGridLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QGridLayout$ItemInfo::newInstance(%env, %2, %3, %4, %5);
+                    %out = Java::QtWidgets::QGridLayout$ItemInfo::newInstance(%env, %2, %3, %4, %5);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2033,7 +2033,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Integer"/>
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="2">
@@ -2062,7 +2062,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Integer"/>
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_from_int(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="8">
@@ -2079,7 +2079,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Double"/>
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="8">
@@ -2095,7 +2095,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Double"/>
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="8">
@@ -2111,7 +2111,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    jstring %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="7">
@@ -2127,7 +2127,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    jstring %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="6">
@@ -2143,7 +2143,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    jstring %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_cast&lt;jstring>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="5">
@@ -2174,14 +2174,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="getExistingDirectory(QWidget*,QString,QString,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jstring>(%env, %in);
+                    %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jstring>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="getExistingDirectoryUrl(QWidget*,QString,QUrl,QFlags&lt;QFileDialog::Option&gt;,QStringList)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2196,7 +2196,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;java.lang.String>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2214,7 +2213,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;java.util.List&lt;java.lang.String>>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2233,7 +2231,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;java.lang.String>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2252,7 +2249,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;io.qt.core.QUrl>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2270,7 +2266,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;java.util.List&lt;io.qt.core.QUrl>>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2288,7 +2283,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFileDialog$Result&lt;io.qt.core.QUrl>"/>
                 <conversion-rule class="native">
-                    jobject %out = nullptr;
                     if(!%in.isEmpty()){
                         %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
@@ -2346,7 +2340,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="1">
@@ -2360,7 +2354,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="getFont(bool*,QWidget*)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                    %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="1">
@@ -2457,7 +2451,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QSplitter$Range"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QSplitter$Range::newInstance(%env, %2, %3);
+                    %out = Java::QtWidgets::QSplitter$Range::newInstance(%env, %2, %3);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

@@ -10,6 +10,10 @@ final class QtJambi_LibraryUtilities {
             throw new ExceptionInInitializerError(t);
         }
     }
+    
+    static final io.qt.InternalAccess internal = internalAccess();
+
+    private static native io.qt.InternalAccess internalAccess();
 
     static void initialize() { };
 

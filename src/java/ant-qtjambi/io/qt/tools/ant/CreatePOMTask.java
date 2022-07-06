@@ -272,6 +272,7 @@ public class CreatePOMTask extends Task {
 					developers.appendChild(developer);
 					doc.getDocumentElement().appendChild(developers);
 					
+					/*
 					if(!libraries.isEmpty()){
 						Element profiles = doc.createElement("profiles");
 						if(!_moduleId.equals("qtjambi-x11extras")
@@ -279,7 +280,7 @@ public class CreatePOMTask extends Task {
 						{
 							Element profile = doc.createElement("profile");
 							Element pid = doc.createElement("id");
-							pid.setTextContent("windows");
+							pid.setTextContent("windows-x64");
 							profile.appendChild(pid);
 							Element activation = doc.createElement("activation");
 							Element os = doc.createElement("os");
@@ -315,7 +316,7 @@ public class CreatePOMTask extends Task {
 						{
 							Element profile = doc.createElement("profile");
 							Element pid = doc.createElement("id");
-							pid.setTextContent("linux64");
+							pid.setTextContent("linux-x64");
 							profile.appendChild(pid);
 							Element activation = doc.createElement("activation");
 							Element os = doc.createElement("os");
@@ -378,8 +379,149 @@ public class CreatePOMTask extends Task {
 							dependencies.appendChild(dependencyEl);
 							profiles.appendChild(profile);
 						}
+						if(!_moduleId.equals("qtjambi-winextras")
+								&& !_moduleId.equals("qtjambi-macextras")
+								&& !_moduleId.equals("qtjambi-x11extras")
+								&& !_moduleId.equals("qtjambi-activex"))
+						{
+							{
+								Element profile = doc.createElement("profile");
+								Element pid = doc.createElement("id");
+								pid.setTextContent("android-x86");
+								profile.appendChild(pid);
+								Element activation = doc.createElement("activation");
+								Element os = doc.createElement("os");
+								Element family = doc.createElement("name");
+								family.setTextContent("Android");
+								os.appendChild(family);
+								Element arch = doc.createElement("arch");
+								arch.setTextContent("x86");
+								os.appendChild(arch);
+								activation.appendChild(os);
+								profile.appendChild(activation);
+								Element dependencies = doc.createElement("dependencies");
+								profile.appendChild(dependencies);
+								Element dependencyEl = doc.createElement("dependency");
+								Element dgroupId = doc.createElement("groupId");
+								dgroupId.setTextContent("io.qtjambi");
+								dependencyEl.appendChild(dgroupId);
+								Element dartifactId = doc.createElement("artifactId");
+								dartifactId.setTextContent(_moduleId+"-native-android-x86");
+								dependencyEl.appendChild(dartifactId);
+								Element dversion = doc.createElement("version");
+								dversion.setTextContent(qtjambiVersion);
+								dependencyEl.appendChild(dversion);
+								Element opt = doc.createElement("optional");
+								opt.setTextContent("true");
+								dependencyEl.appendChild(opt);
+								dependencies.appendChild(dependencyEl);
+								profiles.appendChild(profile);
+							}
+							
+							{
+								Element profile = doc.createElement("profile");
+								Element pid = doc.createElement("id");
+								pid.setTextContent("android-x86");
+								profile.appendChild(pid);
+								Element activation = doc.createElement("activation");
+								Element os = doc.createElement("os");
+								Element family = doc.createElement("name");
+								family.setTextContent("Android");
+								os.appendChild(family);
+								Element arch = doc.createElement("arch");
+								arch.setTextContent("x86_64");
+								os.appendChild(arch);
+								activation.appendChild(os);
+								profile.appendChild(activation);
+								Element dependencies = doc.createElement("dependencies");
+								profile.appendChild(dependencies);
+								Element dependencyEl = doc.createElement("dependency");
+								Element dgroupId = doc.createElement("groupId");
+								dgroupId.setTextContent("io.qtjambi");
+								dependencyEl.appendChild(dgroupId);
+								Element dartifactId = doc.createElement("artifactId");
+								dartifactId.setTextContent(_moduleId+"-native-android-x64");
+								dependencyEl.appendChild(dartifactId);
+								Element dversion = doc.createElement("version");
+								dversion.setTextContent(qtjambiVersion);
+								dependencyEl.appendChild(dversion);
+								Element opt = doc.createElement("optional");
+								opt.setTextContent("true");
+								dependencyEl.appendChild(opt);
+								dependencies.appendChild(dependencyEl);
+								profiles.appendChild(profile);
+							}
+							{
+								Element profile = doc.createElement("profile");
+								Element pid = doc.createElement("id");
+								pid.setTextContent("android-arm");
+								profile.appendChild(pid);
+								Element activation = doc.createElement("activation");
+								Element os = doc.createElement("os");
+								Element family = doc.createElement("name");
+								family.setTextContent("Android");
+								os.appendChild(family);
+								Element arch = doc.createElement("arch");
+								arch.setTextContent("armeabi-v7a");
+								os.appendChild(arch);
+								activation.appendChild(os);
+								profile.appendChild(activation);
+								Element dependencies = doc.createElement("dependencies");
+								profile.appendChild(dependencies);
+								Element dependencyEl = doc.createElement("dependency");
+								Element dgroupId = doc.createElement("groupId");
+								dgroupId.setTextContent("io.qtjambi");
+								dependencyEl.appendChild(dgroupId);
+								Element dartifactId = doc.createElement("artifactId");
+								dartifactId.setTextContent(_moduleId+"-native-android-arm");
+								dependencyEl.appendChild(dartifactId);
+								Element dversion = doc.createElement("version");
+								dversion.setTextContent(qtjambiVersion);
+								dependencyEl.appendChild(dversion);
+								Element opt = doc.createElement("optional");
+								opt.setTextContent("true");
+								dependencyEl.appendChild(opt);
+								dependencies.appendChild(dependencyEl);
+								profiles.appendChild(profile);
+							}
+							
+							{
+								Element profile = doc.createElement("profile");
+								Element pid = doc.createElement("id");
+								pid.setTextContent("android-arm64");
+								profile.appendChild(pid);
+								Element activation = doc.createElement("activation");
+								Element os = doc.createElement("os");
+								Element family = doc.createElement("name");
+								family.setTextContent("Android");
+								os.appendChild(family);
+								Element arch = doc.createElement("arch");
+								arch.setTextContent("arm64-v8a");
+								os.appendChild(arch);
+								activation.appendChild(os);
+								profile.appendChild(activation);
+								Element dependencies = doc.createElement("dependencies");
+								profile.appendChild(dependencies);
+								Element dependencyEl = doc.createElement("dependency");
+								Element dgroupId = doc.createElement("groupId");
+								dgroupId.setTextContent("io.qtjambi");
+								dependencyEl.appendChild(dgroupId);
+								Element dartifactId = doc.createElement("artifactId");
+								dartifactId.setTextContent(_moduleId+"-native-android-arm64");
+								dependencyEl.appendChild(dartifactId);
+								Element dversion = doc.createElement("version");
+								dversion.setTextContent(qtjambiVersion);
+								dependencyEl.appendChild(dversion);
+								Element opt = doc.createElement("optional");
+								opt.setTextContent("true");
+								dependencyEl.appendChild(opt);
+								dependencies.appendChild(dependencyEl);
+								profiles.appendChild(profile);
+							}
+						}
 						doc.getDocumentElement().appendChild(profiles);
 					}
+					*/
 		
 					List<String> dependenciesList = new ArrayList<>();
 					List<Element> dependencyElements = new ArrayList<>();
@@ -525,21 +667,34 @@ public class CreatePOMTask extends Task {
 								if(platform.equals("macos")) {
 									name.setTextContent(_moduleName+" native components for macOS");
 									description.setTextContent("Native components for macOS");									
-								}else if(platform.equals("android")) {
+								}else if(platform.startsWith("android")) {
 									name.setTextContent(_moduleName+" native components for Android");
 									description.setTextContent("Native components for Android");									
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x86_64");
+										description.setTextContent(description.getTextContent()+" x86_64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64-v8a");
+										description.setTextContent(description.getTextContent()+" arm64-v8a");
+									}else if(platform.endsWith("-arm")) {
+										name.setTextContent(name.getTextContent()+" armeabi-v7a");
+										description.setTextContent(description.getTextContent()+" armeabi-v7a");
+									}
 								}else if(platform.startsWith("windows")) {
 									name.setTextContent(_moduleName+" native components for Windows");
 									description.setTextContent("Native components for Windows");
 									if(platform.endsWith("-x64")) {
 										name.setTextContent(name.getTextContent()+" x64");
 										description.setTextContent(description.getTextContent()+" x64");
-									}else if(platform.endsWith("-x32")) {
-										name.setTextContent(name.getTextContent()+" x32");
-										description.setTextContent(description.getTextContent()+" x32");
-									}else if(platform.endsWith("-amd64")) {
-										name.setTextContent(name.getTextContent()+" amd64");
-										description.setTextContent(description.getTextContent()+" amd64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64");
+										description.setTextContent(description.getTextContent()+" arm64");
 									}
 								}else if(platform.startsWith("linux")) {
 									name.setTextContent(_moduleName+" native components for Linux");
@@ -547,12 +702,12 @@ public class CreatePOMTask extends Task {
 									if(platform.endsWith("-x64")) {
 										name.setTextContent(name.getTextContent()+" x64");
 										description.setTextContent(description.getTextContent()+" x64");
-									}else if(platform.endsWith("-x32")) {
-										name.setTextContent(name.getTextContent()+" x32");
-										description.setTextContent(description.getTextContent()+" x32");
-									}else if(platform.endsWith("-amd64")) {
-										name.setTextContent(name.getTextContent()+" amd64");
-										description.setTextContent(description.getTextContent()+" amd64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64");
+										description.setTextContent(description.getTextContent()+" arm64");
 									}
 								}else {
 									name.setTextContent(_moduleName+" native components for "+platform);

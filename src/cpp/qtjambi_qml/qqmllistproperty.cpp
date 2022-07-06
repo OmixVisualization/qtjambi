@@ -55,15 +55,16 @@ void deleter_QQmlListProperty(void* ptr, bool){
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_clone_1native)
 (JNIEnv *__jni_env, jobject _this)
 {
+    jobject _result{nullptr};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clone(QQmlListProperty)")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return qtjambi_cast<jobject>(__jni_env, *__qt_this);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, *__qt_this);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // new QQmlListProperty()
@@ -95,12 +96,8 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
             if(!env->IsSameObject(javaList, nullptr)){
-                try{
-                    jobject java_object = qtjambi_from_QObject(env, object);
-                    qtjambi_collection_add(env, javaList, java_object);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                jobject java_object = qtjambi_from_QObject(env, object);
+                qtjambi_collection_add(env, javaList, java_object);
             }
         }
     };
@@ -109,11 +106,7 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
             if(!env->IsSameObject(javaList, nullptr)){
-                try{
-                    return qtjambi_collection_size(env, javaList);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                return qtjambi_collection_size(env, javaList);
             }
         }
         return 0;
@@ -129,11 +122,7 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
                     JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("Index %1 exceeds maximum index value.").arg(index)) QTJAMBI_STACKTRACEINFO );
                 }
 #endif
-                try {
-                    return qtjambi_to_qobject(env, result);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                return qtjambi_to_qobject(env, result);
             }
         }
         return nullptr;
@@ -143,11 +132,7 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
             if(!env->IsSameObject(javaList, nullptr)){
-                try {
-                    qtjambi_collection_clear(env, javaList);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                qtjambi_collection_clear(env, javaList);
             }
         }
     };
@@ -162,12 +147,8 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
                     JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("Index %1 exceeds maximum index value.").arg(idx)) QTJAMBI_STACKTRACEINFO );
                 }
 #endif
-                try{
-                    jobject java_object = qtjambi_from_QObject(env, v);
-                    qtjambi_collection_replace(env, javaList, jint(idx), java_object);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                jobject java_object = qtjambi_from_QObject(env, v);
+                qtjambi_collection_replace(env, javaList, jint(idx), java_object);
             }
         }
     };
@@ -177,11 +158,7 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
             if(!env->IsSameObject(javaList, nullptr)){
-                try{
-                    qtjambi_collection_remove_last(env, javaList);
-                } catch (const JavaException& exn) {
-                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                }
+                qtjambi_collection_remove_last(env, javaList);
             }
         }
     };
@@ -203,11 +180,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jclass __jni_class, jobject __jni_object)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty()")
-    try{
+    QTJAMBI_TRY{
         qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_0, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, &deleter_QQmlListProperty, nullptr);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)
@@ -219,14 +196,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject list1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)")
-    try{
+    QTJAMBI_TRY{
         jvalue arguments[2];
         arguments[0].l = o0;
         arguments[1].l = list1;
         qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_1, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, &deleter_QQmlListProperty, arguments);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QQmlListProperty::append(QObject object)
@@ -236,14 +213,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject object0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::append(QObject object)")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->append)
             __qt_this->append(__qt_this, qtjambi_cast<QObject*>(__jni_env, object0));
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QQmlListProperty::at(int index)
@@ -252,20 +229,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
  jobject _this,
  jlong index0)
 {
+    jobject _result{nullptr};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::at(int index)")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        jobject __qt_return_value = nullptr;
         if(__qt_this->at){
             QObject*  qt_return_value = __qt_this->at(__qt_this, index0);
-            __qt_return_value = qtjambi_cast<jobject>(__jni_env, qt_return_value);
+            _result = qtjambi_cast<jobject>(__jni_env, qt_return_value);
         }
-        return __qt_return_value;
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::canAppend()
@@ -273,15 +249,16 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 (JNIEnv * __jni_env,
  jobject _this)
 {
+    jboolean _result{false};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAppend()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return __qt_this->append!=nullptr;
-    }catch(const JavaException& exn){
+        _result = __qt_this->append!=nullptr;
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return false;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::canAt()
@@ -289,15 +266,16 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 (JNIEnv * __jni_env,
  jobject _this)
 {
+    jboolean _result{false};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAt()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return __qt_this->at!=nullptr;
-    }catch(const JavaException& exn){
+        _result = __qt_this->at!=nullptr;
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return false;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::canClear()
@@ -305,15 +283,16 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 (JNIEnv * __jni_env,
  jobject _this)
 {
+    jboolean _result{false};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canClear()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return __qt_this->clear!=nullptr;
-    }catch(const JavaException& exn){
+        _result = __qt_this->clear!=nullptr;
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return false;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::canCount()
@@ -321,15 +300,16 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 (JNIEnv * __jni_env,
  jobject _this)
 {
+    jboolean _result{false};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canCount()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return __qt_this->count!=nullptr;
-    }catch(const JavaException& exn){
+        _result = __qt_this->count!=nullptr;
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return false;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::clear()
@@ -338,14 +318,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clear()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->clear)
             __qt_this->clear(__qt_this);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QQmlListProperty::count()
@@ -353,16 +333,17 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQ
 (JNIEnv * __jni_env,
  jobject _this)
 {
+    jlong _result{0};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::count()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->count)
-            return __qt_this->count(__qt_this);
-    }catch(const JavaException& exn){
+            _result = __qt_this->count(__qt_this);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-    }
-    return 0;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // QQmlListProperty::object()
@@ -370,15 +351,16 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 (JNIEnv *__jni_env,
  jobject _this)
 {
+    jobject _result{nullptr};
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::object()")
-    try{
+    QTJAMBI_TRY{
         QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
-        return qtjambi_cast<jobject>(__jni_env, __qt_this->object);
-    }catch(const JavaException& exn){
+        _result = qtjambi_cast<jobject>(__jni_env, __qt_this->object);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 // emitting (AbstractMetaClass::NormalFunctions|AbstractMetaClass::AbstractFunctions writeFinalFunction)

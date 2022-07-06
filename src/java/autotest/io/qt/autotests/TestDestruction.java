@@ -59,8 +59,7 @@ public class TestDestruction extends ApplicationInitializer {
         QCoreApplication.processEvents();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
     }
 
     public static Integer getIdNext() {
@@ -150,8 +149,7 @@ public class TestDestruction extends ApplicationInitializer {
 ////                    QApplication.processEvents();
 //                }
 
-                System.gc();
-                System.runFinalization();
+                ApplicationInitializer.runGC();
 
                 Reference<? extends Object> thisWr;
                 while((thisWr = weakReferenceQueue.poll()) != null) {

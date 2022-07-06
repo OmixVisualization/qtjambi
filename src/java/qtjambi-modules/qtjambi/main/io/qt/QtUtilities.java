@@ -54,6 +54,12 @@ public final class QtUtilities {
 	
 	private QtUtilities() {}
 	
+	public enum LibraryRequirementMode{
+        Mandatory,
+        Optional,
+        ProvideOnly
+    };
+	
     public static boolean isAvailableQtLibrary(String library) {
         return QtJambiInternal.isAvailableQtLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
@@ -67,15 +73,27 @@ public final class QtUtilities {
     }
     
     public static void loadQtLibrary(String library) {
-    	QtJambiInternal.loadQtLibrary(QtJambiInternal.callerClassProvider().get(), library);
+    	QtJambiInternal.loadQtLibrary(QtJambiInternal.callerClassProvider().get(), library, LibraryRequirementMode.Mandatory);
+    }
+    
+    public static void loadQtLibrary(String library, LibraryRequirementMode mode, String...platforms) {
+    	QtJambiInternal.loadQtLibrary(QtJambiInternal.callerClassProvider().get(), library, mode, platforms);
     }
 
     public static void loadUtilityLibrary(String library) {
-        QtJambiInternal.loadUtilityLibrary(library, null);
+        QtJambiInternal.loadUtilityLibrary(library, null, LibraryRequirementMode.Mandatory);
+    }
+    
+    public static void loadUtilityLibrary(String library, LibraryRequirementMode mode, String...platforms) {
+        QtJambiInternal.loadUtilityLibrary(library, null, mode, platforms);
     }
     
     public static void loadUtilityLibrary(String library, String version) {
-        QtJambiInternal.loadUtilityLibrary(library, version);
+        QtJambiInternal.loadUtilityLibrary(library, version, LibraryRequirementMode.Mandatory);
+    }
+    
+    public static void loadUtilityLibrary(String library, String version, LibraryRequirementMode mode, String...platforms) {
+        QtJambiInternal.loadUtilityLibrary(library, version, mode);
     }
 
     public static void loadQtJambiLibrary(String library) {

@@ -74,6 +74,12 @@ uint qHash(const QMap<QString,int>&){return 0;}
 void test(JNIEnv *env){
     QtJambiScope scope;
     enum E{};
+
+    QTJAMBI_TRY{
+    }QTJAMBI_CATCH(const JavaException& exn){
+        Q_UNUSED(exn)
+    }QTJAMBI_TRY_END
+
     registerEnumTypeInfoNoMetaObject<E>("qt_name", "java_name");
     registerEnumTypeInfoNoMetaObject<E>("qt_name", "java_name", "flags_qt_name", "flags_qt_name_alias", "flags_java_name");
     {
@@ -133,11 +139,11 @@ void test(JNIEnv *env){
     }
     {
         QHashFunction hashFunction1;
-        QHashFunction hashFunction2 = [](const void*)->hash_type{ return 0; };
+        QHashFunction hashFunction2 = [](const void*, hash_type)->hash_type{ return 0; };
         QHashFunction hashFunction3 = hashFunction2;
-        hashFunction3 = [](const void*)->hash_type{ return 0; };
-        QHashFunction hashFunction4(QHashFunction([](const void*)->hash_type{ return 0; }));
-        hashFunction3(nullptr);
+        hashFunction3 = [](const void*, hash_type)->hash_type{ return 0; };
+        QHashFunction hashFunction4(QHashFunction([](const void*, hash_type)->hash_type{ return 0; }));
+        hashFunction3(nullptr,0);
     }
     {
         InternalToExternalConverter c1;
@@ -1648,9 +1654,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_toByteBuffer)
   (JNIEnv * env, jclass, jlong ptr, jlong capacity, jboolean readOnly)
 {
-    jobject buffer = env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr), capacity);
-    if(readOnly){
-        buffer = Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, buffer);
+	jobject buffer{nullptr};
+    try{
+        buffer = env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr), capacity);
+        if(readOnly){
+            buffer = Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, buffer);
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
     }
     return buffer;
 }
@@ -1659,7 +1670,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromBuffer)
   (JNIEnv * env, jclass, jobject buffer)
 {
-    return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(JBufferConstData(env, buffer, false).data()));
+    try{
+        return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(JBufferConstData(env, buffer, false).data()));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 extern "C" Q_DECL_EXPORT jstring JNICALL

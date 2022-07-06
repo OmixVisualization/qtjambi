@@ -712,7 +712,7 @@ public final class QMetaObject {
                 argTypes[i] = parameterTypes.get(i).getName();
             }else {
                 String className = args[i].getClass().getName();
-                if(className.contains("$Lambda$")) {
+                if(args[i].getClass().isSynthetic()) {
                     if(args[i].getClass().getInterfaces().length>1) {
                         className = args[i].getClass().getInterfaces()[0].getName();
                     }else {
@@ -870,8 +870,7 @@ public final class QMetaObject {
                 if(args[i]==null) {
                     parameterTypes[i] = Object.class;
                 }else {
-                    String className = args[i].getClass().getName();
-                    if(className.contains("$Lambda$")) {
+                    if(args[i].getClass().isSynthetic()) {
                         if(args[i].getClass().getInterfaces().length>1) {
                             parameterTypes[i] = args[i].getClass().getInterfaces()[0];
                         }else {

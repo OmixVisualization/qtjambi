@@ -19,6 +19,7 @@ import io.qt.concurrent.QtConcurrent.QTypedPromiseTaskBuilder1Arg1;
 import io.qt.concurrent.QtConcurrent.QTypedTaskBuilder1Arg1;
 import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPromise;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
@@ -173,6 +174,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
 	
 	@Test
     public void testNativePromiseToNativeCast() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		QFuture<String> future = QtConcurrent.run(pool, (QPromise<String> promise)->{
 			QThread.msleep(500);
 			promise.addResult("Z");
@@ -191,6 +193,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
 	
 	@Test
     public void testJavaPromiseToNativeCast() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		QPromise<String> promise = new QPromise<String>();
 		QFuture<String> future = promise.future();
 		promise.start();
@@ -217,6 +220,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
     public void testPromiseToNativeCast_mismatching_type() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		{
 			QPromise promise = QPromise.createVoidPromise();
 			QFuture future = promise.future();
@@ -355,6 +359,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
 	
 	@Test
     public void testJavaQFutureWithPromise() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	List<String> result = FutureHandler.returnInTheFuture(QtConcurrent.run((QPromise<String> promise)->{
     		QThread.msleep(200);
     		promise.addResult("testJavaQFuture1");
@@ -408,6 +413,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     
     @Test
     public void testExceptionJavaQFutureWithPromise() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	try {
 	    	FutureHandler.throwInTheFuture(QtConcurrent.run((QPromise<String> promise)->{
 	    		QThread.msleep(200);
@@ -420,6 +426,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     
     @Test
     public void testSuspendingJavaQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		boolean[] isSuspending = {false};
@@ -441,6 +448,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     
 	@Test
     public void testResumeJavaQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		promise.setSuspended(true);
@@ -463,6 +471,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     
 	@Test
     public void testSuspendingJavaQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		boolean[] isSuspending = {false};
@@ -484,6 +493,7 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     
 	@Test
     public void testResumeJavaQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		promise.setSuspended(true);

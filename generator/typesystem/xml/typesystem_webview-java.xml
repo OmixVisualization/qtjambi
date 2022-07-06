@@ -43,5 +43,4 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.webview" module="qtjambi.webview" default-superclass="io.qt.QtObject">
-    <required-library name="QtQuick"/>
 </typesystem>

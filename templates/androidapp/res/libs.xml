@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <array name="qt_libs">
+        <item>armeabi-v7a;c++_shared</item>
+        <item>arm64-v8a;c++_shared</item>
+        <item>x86_64;c++_shared</item>
+        <item>x86;c++_shared</item>
+    </array>
+    <array name="bundled_libs"></array>
+    <array name="load_local_libs"></array>
+    <string name="static_init_classes"></string>
+    <string name="use_local_qt_libs">1</string>
+    <string name="bundle_local_qt_libs">1</string>
+</resources>

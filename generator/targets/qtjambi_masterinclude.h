@@ -157,7 +157,6 @@
 #define DEPRECATED_HEADER_QtDesigner_customwidget_h
 #include <QtUiPlugin/QtUiPlugin>
 #include <QtDesigner/QtDesigner>
-#include <qtjambi_designer/designer.h>
 #include <QtDesigner/private/ui4_p.h>
 #endif
 

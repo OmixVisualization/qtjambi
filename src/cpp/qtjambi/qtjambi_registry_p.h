@@ -33,6 +33,7 @@
 
 #include <QtCore/QSet>
 #include <QtCore/QMap>
+#include "qtjambi_containeraccess.h"
 #include "qtjambi_registry.h"
 #include "qtjambi_typeinfo_p.h"
 #include <typeindex>
@@ -43,6 +44,12 @@
 #define QRecursiveMutexLocker QMutexLocker<QRecursiveMutex>
 #endif
 class SuperTypeInfos;
+
+#ifdef Q_OS_ANDROID
+#define unique_id(id) qHash(QLatin1String((id).name()))
+#else
+#define unique_id(id) (id).hash_code()
+#endif
 
 struct InterfaceOffsetInfo{
     QMap<size_t,uint> offsets;

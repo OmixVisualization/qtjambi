@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="...">
+    <application
+        android:name="org.qtproject.qt.android.bindings.QtApplication"
+        android:extractNativeLibs="true">
+        <activity
+            android:name="org.qtproject.qt.android.bindings.QtActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="QtJambi" />
+        </activity>
+    </application>
+</manifest>

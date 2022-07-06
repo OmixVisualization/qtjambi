@@ -180,6 +180,7 @@
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
                 qtbindirectory="${tools.qt.bindir}"
+				qtjambiVersion="${qtjambi.patchversion}"
                 includepaths="${basedir}/autotestlib${psep}${generator.includepaths}"
                 outputPreprocessFile="preprocessed_autotests.tmp"
             />
@@ -719,9 +720,8 @@
     </target>
     
     <target name="tests.report"
-            depends="init.build" description="Generates all test reports">
+            depends="log, setenv, init.taskdef" description="Generates all test reports">
         <antcall target="tests.report.impl"/>
-        <antcall target="finished"/>
     </target>
     
     <target name="tests.generate-impl"

@@ -102,7 +102,7 @@ class QShortcut__{
     }
     
     private static io.qt.core.QObject parent(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(java.util.Objects.requireNonNull(slot));
+        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, java.util.Objects.requireNonNull(slot));
         if(parent==null)
             throw new IllegalArgumentException("Slot needs to be member of a QObject instance.");
         return parent;
@@ -376,16 +376,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
-    try{
+    QTJAMBI_TRY{
         jvalue arguments[4];
         arguments[0].l = data;
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
         qtjambi_initialize_native_value(env, __jni_class, java_object, &__qt_create_new_QImage_7, sizeof(QImage_shell), typeid(QImage), true, arguments);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 // QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)
@@ -393,16 +393,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
-    try{
+    QTJAMBI_TRY{
         jvalue arguments[4];
         arguments[0].l = data;
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
         qtjambi_initialize_native_value(env, __jni_class, java_object, &__qt_create_new_QImage_8, sizeof(QImage_shell), typeid(QImage), true, arguments);
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 }// class

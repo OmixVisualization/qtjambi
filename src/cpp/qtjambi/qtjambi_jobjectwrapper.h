@@ -108,6 +108,7 @@ private:
     void assign(JNIEnv* env, const JObjectWrapper& wrapper, const std::type_info& typeId);
     void assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::type_info& typeId);
     jobject filterPrimitiveArray(JNIEnv *env, jobject object, const std::type_info& typeId);
+    static bool isEquals(const std::type_info& typeId1, const std::type_info& typeId2);
     const void* array() const;
     void* array();
     void commitArray();
@@ -411,57 +412,57 @@ struct JArray{
 template<>
 struct JArray<jint>{
     typedef jintArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetIntArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseIntArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetIntArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseIntArrayElements;
 };
 
 template<>
 struct JArray<jbyte>{
     typedef jbyteArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetByteArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseByteArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetByteArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseByteArrayElements;
 };
 
 template<>
 struct JArray<jlong>{
     typedef jlongArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetLongArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseLongArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetLongArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseLongArrayElements;
 };
 
 template<>
 struct JArray<jshort>{
     typedef jshortArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetShortArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseShortArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetShortArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseShortArrayElements;
 };
 
 template<>
 struct JArray<jchar>{
     typedef jcharArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetCharArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseCharArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetCharArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseCharArrayElements;
 };
 
 template<>
 struct JArray<jboolean>{
     typedef jbooleanArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetBooleanArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseBooleanArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetBooleanArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseBooleanArrayElements;
 };
 
 template<>
 struct JArray<jfloat>{
     typedef jfloatArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetFloatArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseFloatArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetFloatArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseFloatArrayElements;
 };
 
 template<>
 struct JArray<jdouble>{
     typedef jdoubleArray Type;
-    constexpr static auto GetArrayElements = &JNIEnv_::GetDoubleArrayElements;
-    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseDoubleArrayElements;
+    constexpr static auto GetArrayElements = &JNIEnv::GetDoubleArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseDoubleArrayElements;
 };
 
 template<typename JType> class JArrayWrapper;
@@ -634,9 +635,9 @@ JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(const JObjectWrapper &wrap
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         if(filterPrimitiveArray(env, wrapper.object(), typeid(JType))){
-            if(typeid(wrapper)==typeid(*this)){
+            if(JObjectWrapper::isEquals(typeid(wrapper), typeid(*this))){
                 m_data = wrapper.m_data;
-            }else if(typeid(wrapper)==typeid(JObjectWrapper)){
+            }else if(JObjectWrapper::isEquals(typeid(wrapper), typeid(JObjectWrapper))){
                 JObjectWrapper::assign(env, wrapper, typeid(JType));
             }else{
                 m_data.reset();
@@ -653,9 +654,9 @@ JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(JObjectWrapper &&wrapper){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         if(filterPrimitiveArray(env, wrapper.object(), typeid(JType))){
-            if(typeid(wrapper)==typeid(*this)){
+            if(JObjectWrapper::isEquals(typeid(wrapper), typeid(*this))){
                 m_data = std::move(wrapper.m_data);
-            }else if(typeid(wrapper)==typeid(JObjectWrapper)){
+            }else if(JObjectWrapper::isEquals(typeid(wrapper), typeid(JObjectWrapper))){
                 JObjectWrapper::assign(env, wrapper, typeid(JType));
             }else{
                 m_data.reset();

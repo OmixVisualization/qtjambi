@@ -42,17 +42,17 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -60,6 +60,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -74,7 +75,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -101,6 +104,7 @@ import io.qt.QtReferenceType;
 import io.qt.QtShortEnumerator;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
+import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
@@ -108,6 +112,9 @@ import io.qt.core.QHash;
 import io.qt.core.QList;
 import io.qt.core.QMap;
 import io.qt.core.QMetaObject;
+import io.qt.core.QMetaObject.Method3;
+import io.qt.core.QMetaObject.Method4;
+import io.qt.core.QMetaObject.Method5;
 import io.qt.core.QMetaType;
 import io.qt.core.QMultiHash;
 import io.qt.core.QMultiMap;
@@ -125,7 +132,7 @@ public final class QtJambiInternal {
 	private QtJambiInternal() {
 		throw new RuntimeException();
 	}
-
+	
     private static native boolean needsReferenceCounting(long object);
 
 	private static class RCList extends ArrayList<Object> {
@@ -135,8 +142,9 @@ public final class QtJambiInternal {
 		}
 
 		private static final long serialVersionUID = -4010060446825990721L;
+		private final QMetaObject.Slot0 checkSlot = this::check;
 
-		private void check() {
+		private synchronized void check() {
 			List<Object> disposedElements = null;
 			for (Object o : this) {
 				if (o instanceof QtObjectInterface && ((QtObjectInterface) o).isDisposed()) {
@@ -163,26 +171,34 @@ public final class QtJambiInternal {
 			if(e instanceof QtObjectInterface) {
 				if(!needsReferenceCounting(internalAccess.nativeId((QtObjectInterface)e)))
 					return false;
-				boolean result = super.add(e);
+				boolean result;
+				synchronized (this) {
+					result = super.add(e);
+				}
 				if (result) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) e, true);
 					if (disposed != null)
-						disposed.connect(this::check);
+						disposed.connect(checkSlot);
 				}
 				return result;
 			}else {
-				return super.add(e);
+				synchronized (this) {
+					return super.add(e);
+				}
 			}
 		}
 
 		@Override
 		@NativeAccess
 		public boolean remove(Object o) {
-			boolean result = super.remove(o);
+			boolean result;
+			synchronized (this) {
+				result = super.remove(o);
+			}
 			if (result && o instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) o, true);
 				if (disposed != null)
-					disposed.disconnect(this::check);
+					disposed.disconnect(checkSlot);
 			}
 			return result;
 		}
@@ -190,14 +206,18 @@ public final class QtJambiInternal {
 		@Override
 		@NativeAccess
 		public void clear() {
-			for (Object o : this) {
+			List<Object> disposedElements;
+			synchronized(this) {
+				disposedElements = new ArrayList<>(this);
+				super.clear();
+			}
+			for (Object o : disposedElements) {
 				if (o instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) o, true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 			}
-			super.clear();
 		}
 
 		@Override
@@ -219,8 +239,10 @@ public final class QtJambiInternal {
 		}
 
 		private static final long serialVersionUID = -4010060446825990721L;
+		private final QMetaObject.Slot0 checkSlot = this::check;
 
-		private void check() {
+		@SuppressWarnings("unused")
+		private synchronized void check() {
 			List<Object> disposedElements = null;
 			for (Object o : this) {
 				if (o instanceof QtObjectInterface && ((QtObjectInterface) o).isDisposed()) {
@@ -247,26 +269,34 @@ public final class QtJambiInternal {
 			if(e instanceof QtObjectInterface) {
 				if(!needsReferenceCounting(internalAccess.nativeId((QtObjectInterface)e)))
 					return false;
-				boolean result = super.add(e);
+				boolean result;
+				synchronized (this) {
+					result = super.add(e);
+				}
 				if (result) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) e, true);
 					if (disposed != null)
-						disposed.connect(this::check);
+						disposed.connect(checkSlot);
 				}
 				return result;
 			}else {
-				return super.add(e);
+				synchronized (this) {
+					return super.add(e);
+				}
 			}
 		}
 
 		@Override
 		@NativeAccess
 		public boolean remove(Object o) {
-			boolean result = super.remove(o);
+			boolean result;
+			synchronized (this) {
+				result = super.remove(o);
+			}
 			if (result && o instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) o, true);
 				if (disposed != null)
-					disposed.disconnect(this::check);
+					disposed.disconnect(checkSlot);
 			}
 			return result;
 		}
@@ -274,14 +304,18 @@ public final class QtJambiInternal {
 		@Override
 		@NativeAccess
 		public void clear() {
-			for (Object o : this) {
+			Set<Object> disposedElements;
+			synchronized(this) {
+				disposedElements = new HashSet<>(this);
+				super.clear();
+			}
+			for (Object o : disposedElements) {
 				if (o instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) o, true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 			}
-			super.clear();
 		}
 
 		@Override
@@ -297,13 +331,15 @@ public final class QtJambiInternal {
 	
 	private static class RCMap extends IdentityHashMap<Object, Object> {
 		private static final long serialVersionUID = 3076251074218500284L;
+		private final QMetaObject.Slot0 checkSlot = this::check;
 
 		@NativeAccess
 		public RCMap() {
 			super();
 		}
 		
-		private void check() {
+		@SuppressWarnings("unused")
+		private synchronized void check() {
 			List<Object> nulledKeys = null;
 			List<Object> disposedKeys = null;
 			for (Entry<Object, Object> entry : this.entrySet()) {
@@ -358,71 +394,84 @@ public final class QtJambiInternal {
 				}
 			}
 
-			Object result = super.put(key, value);
+			Object result;
+			synchronized (this) {
+				result = super.put(key, value);
+			}
 			if (key instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) key, true);
 				if (disposed != null)
-					disposed.connect(this::check);
+					disposed.connect(checkSlot);
 			}
 			if (value instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) value, true);
 				if (disposed != null)
-					disposed.connect(this::check);
+					disposed.connect(checkSlot);
 			}
 			if (result instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) result, true);
 				if (disposed != null)
-					disposed.disconnect(this::check);
+					disposed.disconnect(checkSlot);
 			}
 			return result;
 		}
 
 		@Override
 		public Object remove(Object key) {
-			Object result = super.remove(key);
+			Object result;
+			synchronized (this) {
+				result = super.remove(key);
+			}
 			if (key instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) key, true);
 				if (disposed != null)
-					disposed.disconnect(this::check);
+					disposed.disconnect(checkSlot);
 			}
 			if (result instanceof QtObjectInterface) {
 				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) result, true);
 				if (disposed != null)
-					disposed.disconnect(this::check);
+					disposed.disconnect(checkSlot);
 			}
 			return result;
 		}
 
 		@Override
 		public void clear() {
-			for (Entry<Object, Object> entry : this.entrySet()) {
+			IdentityHashMap<Object, Object> _this;
+			synchronized (this) {
+				_this = new IdentityHashMap<>(this);
+				super.clear();
+			}
+			for (Entry<Object, Object> entry : _this.entrySet()) {
 				if (entry.getKey() instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) entry.getKey(), true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 				if (entry.getValue() instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) entry.getValue(), true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 			}
-			super.clear();
 		}
 
 		@Override
 		public boolean remove(Object key, Object value) {
-			boolean result = super.remove(key, value);
+			boolean result;
+			synchronized (this) {
+				result = super.remove(key, value);
+			}
 			if (result) {
 				if (key instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) key, true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 				if (value instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface) value, true);
 					if (disposed != null)
-						disposed.disconnect(this::check);
+						disposed.disconnect(checkSlot);
 				}
 			}
 			return result;
@@ -435,18 +484,18 @@ public final class QtJambiInternal {
 //    private static final Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface, NativeLink>> nativeLinkSuppliers;
 	private static final Map<Class<?>, Boolean> isClassGenerated;
 	private static final Map<String, Boolean> initializedPackages;
-	private static final Map<Class<?>, MethodHandle> lambdaWriteReplaceHandles;
+	private static final Map<Class<?>, Function<Object,Object>> lambdaWriteReplaceHandles;
 	
 	private static final class ReadWriteHandles{
-		private ReadWriteHandles(MethodHandle writeTo, MethodHandle readFrom, MethodHandle constructor) {
+		private ReadWriteHandles(BiConsumer<Object,QDataStream> writeTo, BiConsumer<Object,QDataStream> readFrom, Supplier<?> constructor) {
 			super();
 			this.writeTo = writeTo;
 			this.readFrom = readFrom;
 			this.constructor = constructor;
 		}
-		final MethodHandle writeTo;
-		final MethodHandle readFrom;
-		final MethodHandle constructor;
+		final BiConsumer<Object,QDataStream> writeTo;
+		final BiConsumer<Object,QDataStream> readFrom;
+		final Supplier<?> constructor;
 	}
 	private static final Map<Class<?>, ReadWriteHandles> readWriteHandles;
 	
@@ -468,6 +517,29 @@ public final class QtJambiInternal {
 	private static final Map<Class<?>, MethodHandle> lambdaSlotHandles;
 	static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 	private static final Thread cleanupRegistrationThread;
+	
+	public static final boolean useAnnotatedType;
+	
+	static interface MethodInvocationHandler{
+		BiConsumer<Object,QDataStream> streamIO(Method method);
+		<A,B> Function<A,B> functionFromMethod(Method method);
+		<T> Supplier<T> getFactory0(Constructor<T> constructor);
+		<A,T> Function<A,T> getFactory1(Constructor<T> constructor);
+		<A,B,T> BiFunction<A,B,T> getFactory2(Constructor<T> constructor);
+		<A,B,C,T> QMetaObject.Method3<A,B,C,T> getFactory3(Constructor<T> constructor);
+		<A,B,C,D,T> QMetaObject.Method4<A,B,C,D,T> getFactory4(Constructor<T> constructor);
+		<A,B,C,D,E,T> QMetaObject.Method5<A,B,C,D,E,T> getFactory5(Constructor<T> constructor);
+		<T> Function<Object[],T> getFactory(Constructor<T> constructor);
+		<T> T invokeContructor(Constructor<T> constructor, Object... args) throws Throwable;
+		Object invokeMethod(Method method, Object object, Object... args) throws Throwable;
+		Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable;
+		void setField(Object owner, Field f, Object newValue)throws Throwable;
+		Object fetchField(Object owner, Field f)throws Throwable;
+		QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle);
+	}
+	
+	private static final MethodInvocationHandler methodInvocationHandler;
+
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
 		disposedSignals = Collections.synchronizedMap(new HashMap<>());
@@ -511,6 +583,295 @@ public final class QtJambiInternal {
 		cleanupRegistrationThread.setName("QtJambiCleanupThread");
 		cleanupRegistrationThread.setDaemon(true);
 		cleanupRegistrationThread.start();
+		
+		boolean _useAnnotatedType = false;
+		try {
+			java.lang.reflect.AnnotatedType.class.hashCode();
+			_useAnnotatedType = true;
+		}catch(Throwable t) {}
+		useAnnotatedType = _useAnnotatedType;
+		
+		MethodInvocationHandler _methodInvoker = null;
+		try {
+			_methodInvoker = new QtJambiMethodHandles();
+		} catch (Throwable e) {
+			_methodInvoker = new MethodInvocationHandler() {
+				@Override
+				public BiConsumer<Object, QDataStream> streamIO(Method method) {
+					method.setAccessible(true);
+					return (o,s)->{
+						try {
+							method.invoke(o,s);
+						} catch (IllegalAccessException | InvocationTargetException e) {
+							e.printStackTrace();
+						}
+					};
+				}
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public <A, B> Function<A, B> functionFromMethod(Method method) {
+					if(method==null)
+						return null;
+					method.setAccessible(true);
+					return a->{
+						try {
+							return (B)method.invoke(a);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <T> Supplier<T> getFactory0(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return ()->{
+						try {
+							return constructor.newInstance();
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <A, T> Function<A, T> getFactory1(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a)->{
+						try {
+							return constructor.newInstance(a);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <A, B, T> BiFunction<A, B, T> getFactory2(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a,b)->{
+						try {
+							return constructor.newInstance(a,b);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <A, B, C, T> Method3<A, B, C, T> getFactory3(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a,b,c)->{
+						try {
+							return constructor.newInstance(a,b,c);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <A, B, C, D, T> Method4<A, B, C, D, T> getFactory4(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a,b,c,d)->{
+						try {
+							return constructor.newInstance(a,b,c,d);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <A, B, C, D, E, T> Method5<A, B, C, D, E, T> getFactory5(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a,b,c,d,e)->{
+						try {
+							return constructor.newInstance(a,b,c,d,e);
+						} catch (RuntimeException | Error e1) {
+							throw e1;
+						} catch (InvocationTargetException e1) {
+							try {
+								throw e1.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <T> Function<Object[], T> getFactory(Constructor<T> constructor) {
+					constructor.setAccessible(true);
+					return (a)->{
+						try {
+							return constructor.newInstance(a);
+						} catch (RuntimeException | Error e) {
+							throw e;
+						} catch (InvocationTargetException e) {
+							try {
+								throw e.getTargetException();
+							} catch (RuntimeException | Error e2) {
+								throw e2;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					};
+				}
+
+				@Override
+				public <T> T invokeContructor(Constructor<T> constructor, Object... args) throws Throwable {
+					try {
+						constructor.setAccessible(true);
+						return constructor.newInstance(args);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (InvocationTargetException e) {
+						try {
+							throw e.getTargetException();
+						} catch (RuntimeException | Error e2) {
+							throw e2;
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				}
+
+				@Override
+				public Object invokeMethod(Method method, Object object, Object... args) throws Throwable {
+					try {
+						method.setAccessible(true);
+						if(Modifier.isStatic(method.getModifiers()))
+							return method.invoke(null, args);
+						else
+							return method.invoke(object, args);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (InvocationTargetException e) {
+						try {
+							throw e.getTargetException();
+						} catch (RuntimeException | Error e2) {
+							throw e2;
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				}
+
+				@Override
+				public Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable {
+					return invokeMethod(method, object, args);
+				}
+
+				@Override
+				public void setField(Object owner, Field f, Object newValue) throws Throwable {
+					try {
+						f.setAccessible(true);
+						if(Modifier.isStatic(f.getModifiers()))
+							f.set(null, newValue);
+						else
+							f.set(owner, newValue);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				}
+
+				@Override
+				public Object fetchField(Object owner, Field f) throws Throwable {
+					try {
+						f.setAccessible(true);
+						if(Modifier.isStatic(f.getModifiers()))
+							return f.get(null);
+						else
+							return f.get(owner);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				}
+				
+				@Override
+				public QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
+					return null;
+				}
+			};
+		}
+		methodInvocationHandler = _methodInvoker;
 	}
 
 	@NativeAccess
@@ -572,7 +933,15 @@ public final class QtJambiInternal {
 		else
 			return primitiveType;
 	}
-
+	
+	static QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
+		return methodInvocationHandler.getSlotInvoker(slot, slotHandle);
+	}
+	
+	static <A,B> Function<A,B> functionFromMethod(Method method){
+		return methodInvocationHandler.functionFromMethod(method);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@NativeAccess
 	private static List<Class<? extends QtObjectInterface>> getImplementedInterfaces(Class<?> cls) {
@@ -669,23 +1038,27 @@ public final class QtJambiInternal {
 		}
 		return null;
 	}
+	
+	public static native long objectHash(Object object);
 
 	static native java.lang.invoke.MethodHandles.Lookup privateLookup(Class<?> targetClass);
 
 	public static SerializedLambda serializeLambdaExpression(Serializable slotObject) {
-		String className = slotObject.getClass().getName();
-		if (slotObject.getClass().isSynthetic() && className.contains("Lambda$") && className.contains("/")) {
-			MethodHandle writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotObject.getClass(), cls -> {
+		Class<?> slotClass = QtJambiInternal.getClass(slotObject);
+		if (slotClass.isSynthetic()) {
+			Function<Object,Object> writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotClass, cls -> {
+				Method writeReplace = null;
 				try {
-					return QtJambiInternal.privateLookup(cls).findVirtual(cls, "writeReplace",
-							MethodType.methodType(Object.class));
-				} catch (Throwable e) {
-					return null;
-				}
+					writeReplace = cls.getMethod("writeReplace");
+				} catch (Throwable e) {}
+				if(writeReplace == null) try {
+					writeReplace = cls.getDeclaredMethod("writeReplace");
+				} catch (Throwable e) {}
+				return writeReplace==null ? null : QtJambiInternal.functionFromMethod(writeReplace);
 			});
 			if (writeReplaceHandle != null) {
 				try {
-					Object serializedResult = writeReplaceHandle.invoke(slotObject);
+					Object serializedResult = writeReplaceHandle.apply(slotObject);
 					if (serializedResult instanceof SerializedLambda) {
 						return (SerializedLambda) serializedResult;
 					}
@@ -712,31 +1085,45 @@ public final class QtJambiInternal {
 		java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(field.getDeclaringClass());
 		return lookup.unreflectGetter(field);
 	}
+	
+	public static <T> Function<Object[],T> getFactory(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory(constructor);
+	}
+	
+	public static <T> Supplier<T> getFactory0(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory0(constructor);
+	}
+	
+	public static <A,T> Function<A,T> getFactory1(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory1(constructor);
+	}
+	
+	public static <A,B,T> BiFunction<A,B,T> getFactory2(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory2(constructor);
+	}
+	
+	public static <A,B,C,T> QMetaObject.Method3<A,B,C,T> getFactory3(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory3(constructor);
+	}
+	
+	public static <A,B,C,D,T> QMetaObject.Method4<A,B,C,D,T> getFactory4(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory4(constructor);
+	}
+	
+	public static <A,B,C,D,E,T> QMetaObject.Method5<A,B,C,D,E,T> getFactory5(Constructor<T> constructor) {
+		return methodInvocationHandler.getFactory5(constructor);
+	}
+
+	public static <T> T invokeContructor(Constructor<T> constructor, Object... args) throws Throwable {
+		return methodInvocationHandler.invokeContructor(constructor, args);
+	}
 
 	public static Object invokeMethod(Method method, Object object, Object... args) throws Throwable {
-		java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(method.getDeclaringClass());
-		MethodHandle handle = lookup.unreflect(method);
-		if(args!=null) {
-			Object[] _arguments = new Object[args.length + 1];
-			_arguments[0] = object;
-			System.arraycopy(args, 0, _arguments, 1, args.length);
-			return handle.invokeWithArguments(_arguments);
-		}else {
-			return handle.invokeWithArguments(new Object[] {object});
-		}
+		return methodInvocationHandler.invokeMethod(method, object, args);
 	}
 	
 	public static Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable {
-		java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(method.getDeclaringClass());
-		MethodHandle handle = lookup.unreflectSpecial(method, method.getDeclaringClass());
-		if(args!=null) {
-			Object[] _arguments = new Object[args.length + 1];
-			_arguments[0] = object;
-			System.arraycopy(args, 0, _arguments, 1, args.length);
-			return handle.invokeWithArguments(_arguments);
-		}else {
-			return handle.invokeWithArguments(new Object[] {object});
-		}
+		return methodInvocationHandler.invokeInterfaceDefaultMethod(method, object, args);
 	}
 
 	static native Object invokeMethod(Object receiver, Method method, boolean isStatic, byte returnType, Object args[], byte slotTypes[]);
@@ -750,7 +1137,7 @@ public final class QtJambiInternal {
 	static String findSignalMethodSignature(QtSignalEmitterInterface signalEmitter, String name)
 			throws NoSuchFieldException, IllegalAccessException {
 
-		Class<?> cls = signalEmitter.getClass();
+		Class<?> cls = QtJambiInternal.getClass(signalEmitter);
 		String fullName = cls + "." + name;
 		String found = signalMethodSignatureCash.get(fullName);
 
@@ -805,36 +1192,38 @@ public final class QtJambiInternal {
 		}
 	}
 
-	private static void setField(Object owner, Field f, Object newValue) {
-		setField(QtJambiInternal.privateLookup(f.getDeclaringClass()), owner, f, newValue);
-	}
-
-	private static void setField(MethodHandles.Lookup lookup, Object owner, Field f, Object newValue) {
+	static void setField(Object owner, Field f, Object newValue) {
 		try {
-			MethodHandle setter = lookup.unreflectSetter(f);
-			if (Modifier.isStatic(f.getModifiers()))
-				setter.invoke(newValue);
-			else
-				setter.invoke(owner, newValue);
+			methodInvocationHandler.setField(owner, f, newValue);
 		} catch (Throwable e) {
 			if (Modifier.isStatic(f.getModifiers())) {
 				if (!setFieldNative(f.getDeclaringClass(), f, true, newValue)) {
 					throw new RuntimeException("Cannot set field '" + f.getName() + "'", e);
 				}
-			} else {
+			}else if(owner!=null){
 				if (!setFieldNative(owner, f, false, newValue)) {
 					throw new RuntimeException("Cannot set field '" + f.getName() + "'", e);
+				}
+			}else {
+				try {
+					throw e;
+				} catch (RuntimeException e1) {
+					throw e1;
+				} catch (Throwable e1) {
+					throw new RuntimeException("Cannot set field '" + f.getName() + "'", e1);
 				}
 			}
 		}
 	}
 
 	private static native boolean setFieldNative(Object owner, Field field, boolean isStatic, Object newValue);
+	
+	private static native boolean setFieldByName(Object owner, String field, String signature, boolean isStatic, Object newValue);
 
 	@SuppressWarnings("unchecked")
 	public static <V> V fetchField(Object owner, Class<?> declaringClass, String fieldName, Class<V> fieldType) {
 		if(declaringClass==null)
-			declaringClass = owner.getClass();
+			declaringClass = QtJambiInternal.getClass(owner);
 		try {
 			Field field = null;
 			while(declaringClass!=null) {
@@ -854,27 +1243,20 @@ public final class QtJambiInternal {
 		throw new RuntimeException("Cannot fetch field '" + fieldName + "'");
 	}
 
-	static Object fetchField(Object owner, Field f) {
-		MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(f.getDeclaringClass());
-		return fetchField(lookup, owner, f);
-	}
-
-	static Object fetchField(MethodHandles.Lookup lookup, Object owner, Field f) {
+	public static Object fetchField(Object owner, Field f) {
 		try {
-			MethodHandle getter = lookup.unreflectGetter(f);
-			if (Modifier.isStatic(f.getModifiers()))
-				return getter.invoke();
-			else
-				return getter.invoke(owner);
+			return methodInvocationHandler.fetchField(owner, f);
 		} catch (Throwable e) {
 			if (Modifier.isStatic(f.getModifiers())) {
 				return fetchFieldNative(f.getDeclaringClass(), f, true);
-			} else {
+			}else {
 				return fetchFieldNative(owner, f, false);
 			}
 		}
 	}
-
+	
+	public static native Map<String,QPair<Long,Long>> getRegisteredTypeSizesAndAlignments();
+	
 	private static native Object fetchFieldNative(Object owner, Field field, boolean isStatic);
 
 	/**
@@ -941,8 +1323,7 @@ public final class QtJambiInternal {
 					readFrom = cls.getDeclaredMethod("readFrom", QDataStream.class);
 				}
 				if(!Modifier.isStatic(writeTo.getModifiers()) && !Modifier.isStatic(readFrom.getModifiers())) {
-					Lookup lookup = privateLookup(cls);
-					return new ReadWriteHandles(lookup.unreflect(writeTo), lookup.unreflect(readFrom), lookup.unreflectConstructor(constructor));
+					return new ReadWriteHandles(methodInvocationHandler.streamIO(writeTo), methodInvocationHandler.streamIO(readFrom), methodInvocationHandler.getFactory0(constructor));
 				}
 			} catch (Throwable e) {
 			}
@@ -1078,9 +1459,9 @@ public final class QtJambiInternal {
 				ReadWriteHandles readWriteHandles = getReadWriteHandles(cls);
 				if(readWriteHandles!=null) {
 					try {
-						res = readWriteHandles.constructor.invoke();
-						readWriteHandles.readFrom.invoke(res, s);
-					} catch (RuntimeException | Error | IOException e) {
+						res = readWriteHandles.constructor.get();
+						readWriteHandles.readFrom.accept(res, s);
+					} catch (Error | Exception e) {
 						throw e;
 					} catch (Throwable e) {
 						throw new IOException(e);
@@ -1115,7 +1496,7 @@ public final class QtJambiInternal {
 			s.writeInt(NULL_MAGIC);
 			return;
 		}
-		Class<?> objectClass = o.getClass();
+		Class<?> objectClass = QtJambiInternal.getClass(o);
 		if(objectClass.isArray()) {
 			if(objectClass==byte[].class) {
 				byte[] array = (byte[])o;
@@ -1200,8 +1581,8 @@ public final class QtJambiInternal {
 					try {
 						s.writeInt(RWH_MAGIC);
 						s.writeString(objectClass.getName());
-						readWriteHandles.writeTo.invoke(o, s);
-					} catch (RuntimeException | Error | IOException e) {
+						readWriteHandles.writeTo.accept(o, s);
+					} catch (Error | Exception e) {
 						throw e;
 					} catch (Throwable e) {
 						throw new IOException(e);
@@ -1222,7 +1603,7 @@ public final class QtJambiInternal {
 		if(o==null) {
 			s.append("null");
 		}else{
-			Class<?> objectClass = o.getClass();
+			Class<?> objectClass = QtJambiInternal.getClass(o);
 			if(objectClass.isArray()) {
 				if(objectClass==byte[].class) {
 					byte[] array = (byte[])o;
@@ -1268,6 +1649,8 @@ public final class QtJambiInternal {
 			}
 		}
 	}
+	
+	static native String libraryFilePath();
 	
 	public static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn) {
 		if(!isObjectWrapperType(metaType)) {
@@ -1456,7 +1839,7 @@ public final class QtJambiInternal {
 							QtObjectInterface object = lnk.get();
 							if(disposedSignalFactory==null)
 								disposedSignalFactory = QtJambiSignals.<QMetaObject.DisposedSignal>getSignalFactory(QMetaObject.DisposedSignal.class);
-							return disposedSignalFactory.apply(object.getClass());
+							return disposedSignalFactory.apply(QtJambiInternal.getClass(object));
 						});
 					} catch (NullPointerException e) {
 					}
@@ -1471,24 +1854,21 @@ public final class QtJambiInternal {
 		return disposedSignals.remove(nativeLink);
 	}
 
-	public static QMetaObject.AbstractSignal findSignal(QtSignalEmitterInterface sender, String name,
+	public static QMetaObject.AbstractSignal findSignal(Object sender, String name,
 			Class<?>... types) {
-		for (Class<?> cls = sender.getClass(); QtSignalEmitterInterface.class
-				.isAssignableFrom(cls); cls = cls.getSuperclass()) {
-			MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(cls);
+		for (Class<?> cls = QtJambiInternal.getClass(sender); cls!=null && cls!=Object.class; cls = cls.getSuperclass()) {
 			try {
 				Field f = cls.getDeclaredField(name);
 				if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
 					if (QMetaObject.AbstractSignal.class.isAssignableFrom(f.getType())) {
-						AbstractSignal signal = (AbstractSignal) fetchField(lookup, sender, f);
+						AbstractSignal signal = (AbstractSignal) fetchField(sender, f);
 						if (signal != null) {
 							if (signal.matchTypes(types)) {
 								return (QMetaObject.AbstractSignal) signal;
 							}
 						}
 					} else if (QtJambiSignals.AbstractMultiSignal.class.isAssignableFrom(f.getType())) {
-						QtJambiSignals.AbstractMultiSignal<?> multiSignal = (QtJambiSignals.AbstractMultiSignal<?>) fetchField(lookup, sender,
-								f);
+						QtJambiSignals.AbstractMultiSignal<?> multiSignal = (QtJambiSignals.AbstractMultiSignal<?>) fetchField(sender, f);
 						for (AbstractSignal signal : multiSignal.signals()) {
 							if (signal.matchTypes(types)) {
 								return (QMetaObject.AbstractSignal) signal;
@@ -1852,8 +2232,8 @@ public final class QtJambiInternal {
 				return false;
 			}
 			try {
-				privateLookup(cls)
-						.findStatic(cls, "initialize", MethodType.methodType(void.class)).invoke();
+				Method initialize = cls.getDeclaredMethod("initialize");
+				methodInvocationHandler.invokeMethod(initialize, null);
 				initializedPackages.put(packagePath, Boolean.TRUE);
 				return true;
 			} catch (NoClassDefFoundError t) {
@@ -1931,12 +2311,15 @@ public final class QtJambiInternal {
 	}
 
 	public static LambdaInfo lamdaInfo(Serializable slotObject) {
-		String className = slotObject.getClass().getName();
-		if (slotObject.getClass().isSynthetic() && className.contains("Lambda$") && className.contains("/")) {
+		//String className = slotObject.getClass().getName();
+		Class<?> slotClass = QtJambiInternal.getClass(slotObject);
+		if (slotClass.isSynthetic()
+				//&& className.contains("Lambda$") && className.contains("/")
+				) {
 			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
 			if(serializedLambda == null)
 				return null;
-			MethodHandle methodHandle = lambdaSlotHandles(slotObject.getClass(), serializedLambda);
+			MethodHandle methodHandle = lambdaSlotHandles(slotClass, serializedLambda);
 			Method reflectiveMethod = null;
 			Constructor<?> reflectiveConstructor = null;
 			Class<?> ownerClass = null;
@@ -2197,7 +2580,7 @@ public final class QtJambiInternal {
 	
 	public static native int findMetaType(String name);
 
-	public static int registerMetaType(Class<?> clazz, Type genericType, AnnotatedType annotatedType, boolean isPointer, boolean isReference) {
+	public static int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference) {
 		initializePackage(clazz);
 		QtReferenceType referenceType = null;
 		QtPointerType pointerType = null;
@@ -2235,9 +2618,11 @@ public final class QtJambiInternal {
 		if (genericType instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) genericType;
 			Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-			AnnotatedType[] actualAnnotatedTypeArguments = null;
-			if(annotatedType instanceof AnnotatedParameterizedType) {
-				actualAnnotatedTypeArguments = ((AnnotatedParameterizedType)annotatedType).getAnnotatedActualTypeArguments();
+			AnnotatedElement[] actualAnnotatedTypeArguments = null;
+			if(QtJambiInternal.useAnnotatedType) {
+				if(annotatedType instanceof java.lang.reflect.AnnotatedParameterizedType) {
+					actualAnnotatedTypeArguments = ((java.lang.reflect.AnnotatedParameterizedType)annotatedType).getAnnotatedActualTypeArguments();
+				}
 			}
 			if (parameterizedType.getRawType() instanceof Class<?>) {
 				if (isQQmlListProperty((Class<?>) parameterizedType.getRawType())) {
@@ -2376,7 +2761,7 @@ public final class QtJambiInternal {
 		if (o == null) {
 			return QMetaType.Type.Nullptr.value();
 		} else {
-			return metaTypeId(o.getClass());
+			return metaTypeId(QtJambiInternal.getClass(o));
 		}
 	}
 
@@ -2472,7 +2857,7 @@ public final class QtJambiInternal {
 	private static void reportException(String methodName, Throwable e) {
 		if(!(e instanceof ThreadDeath)) try {
 			UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
-			while(handler != null && handler.getClass()==ThreadGroup.class) {
+			while(handler != null && (Object)QtJambiInternal.getClass(handler)==ThreadGroup.class) {
 				try {
 					ThreadGroup tg = (ThreadGroup)handler;
 					handler = tg.getParent();
@@ -2480,10 +2865,12 @@ public final class QtJambiInternal {
 			}
 			if(handler==null)
                 handler = Thread.getDefaultUncaughtExceptionHandler();
-			if (handler != null && handler.getClass()!=ThreadGroup.class) {
+			if (handler != null 
+					&& (Object)QtJambiInternal.getClass(handler)!=ThreadGroup.class
+					&& !QtJambiInternal.getClass(handler).getName().startsWith("com.android")) {
 				handler.uncaughtException(Thread.currentThread(), e);
 			} else{
-				LogRecord logRecord = new LogRecord(java.util.logging.Level.SEVERE, e.getClass().getTypeName()+(methodName==null ? " has been thrown" : " has been thrown in "+methodName));
+				LogRecord logRecord = new LogRecord(java.util.logging.Level.SEVERE, QtJambiInternal.getClass(e).getTypeName()+(methodName==null ? " has been thrown" : " has been thrown in "+methodName));
 				logRecord.setThrown(e);
 				if(methodName!=null) {
 					logRecord.setSourceClassName(methodName);
@@ -2499,12 +2886,13 @@ public final class QtJambiInternal {
 
 	public static void initializeNativeObject(QtObjectInterface object, Map<Class<?>, List<?>> arguments)
 			throws IllegalArgumentException {
-		io.qt.InternalAccess.CallerContext callerInfo = RetroHelper.classAccessChecker().apply(4);
-		if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(object.getClass())
+		Class<?> cls = getClass(object);
+		io.qt.InternalAccess.CallerContext callerInfo = RetroHelper.classAccessChecker().apply(2);
+		if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
 				|| !"<init>".equals(callerInfo.methodName)) {
 			throw new RuntimeException(new IllegalAccessException(
 					"QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor. Expected: "
-							+ object.getClass().getName() + ".<init>, found: "
+							+ cls.getName() + ".<init>, found: "
 							+ (callerInfo.declaringClass == null ? "null" : callerInfo.declaringClass.getName()) + "."
 							+ callerInfo.methodName));
 		}
@@ -2512,8 +2900,9 @@ public final class QtJambiInternal {
 	}
 
 	static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
-		initializePackage(object.getClass());
-		__qt_initializeNativeObject(object.getClass(), object, link, Collections.emptyMap());
+		Class<?> cls = getClass(object);
+		initializePackage(cls);
+		__qt_initializeNativeObject(cls, object, link, Collections.emptyMap());
 	}
 
 	private native static void __qt_initializeNativeObject(Class<?> callingClass, QtObjectInterface object,
@@ -2602,7 +2991,7 @@ public final class QtJambiInternal {
 		public final String toString() {
 			QtObjectInterface o = get();
 			if (o != null) {
-				return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+				return QtJambiInternal.getClass(o).getName() + "@" + Integer.toHexString(System.identityHashCode(o));
 			} else {
 				String qtTypeName = null;
 				synchronized (this) {
@@ -2619,7 +3008,7 @@ public final class QtJambiInternal {
 
 	private static class InterfaceNativeLink extends NativeLink {
 
-		private static final Map<Class<?>, MethodHandle> memberAccessConstructorHandles = new HashMap<>();
+		private static final Map<Class<?>, Function<Object,Object>> memberAccessConstructorHandles = new HashMap<>();
 
 		private final Map<Class<?>, Object> memberAccesses;
 
@@ -2628,13 +3017,13 @@ public final class QtJambiInternal {
 			Map<Class<?>, Object> memberAccesses = new HashMap<>();
 			synchronized (memberAccessConstructorHandles) {
 				for (Class<? extends QtObjectInterface> _iface : interfaces) {
-					MethodHandle constructorHandle = memberAccessConstructorHandles.computeIfAbsent(_iface, iface -> {
+					@SuppressWarnings("unchecked")
+					Function<Object,Object> constructorHandle = memberAccessConstructorHandles.computeIfAbsent(_iface, iface -> {
 						for (Class<?> innerClass : iface.getClasses()) {
 							if (io.qt.MemberAccess.class.isAssignableFrom(innerClass)) {
-								java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(innerClass);
 								try {
-									return lookup.findConstructor(innerClass, MethodType.methodType(void.class, iface));
-								} catch (NoSuchMethodException | IllegalAccessException e) {
+									return (Function<Object,Object>)methodInvocationHandler.getFactory1(innerClass.getDeclaredConstructor(iface));
+								} catch (Exception e) {
 									e.printStackTrace();
 								}
 							}
@@ -2643,7 +3032,7 @@ public final class QtJambiInternal {
 					});
 					if (constructorHandle != null) {
 						try {
-							Object memberAccess = constructorHandle.invoke(object);
+							Object memberAccess = constructorHandle.apply(object);
 							memberAccesses.put(_iface, memberAccess);
 						} catch (Throwable e) {
 							e.printStackTrace();
@@ -2750,17 +3139,19 @@ public final class QtJambiInternal {
 
 	@NativeAccess
 	static NativeLink createNativeLink(QtJambiObject object) {
-		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(object.getClass());
+		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(getClass(object));
 		if (interfaces != null) {
 			return new InterfaceNativeLink(object, interfaces);
 		} else {
 			return new NativeLink(object);
 		}
 	}
+	
+	public native static <T> Class<T> getClass(T object);//Class.getClass() lead to recursive calls on android when using inside of interface default methods.
 
 	@NativeAccess
 	private static NativeLink createNativeLink(QtObjectInterface iface) {
-		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(iface.getClass());
+		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(getClass(iface));
 		if (interfaces != null) {
 			return new InterfaceBaseNativeLink(iface, interfaces);
 		} else {
@@ -2857,21 +3248,61 @@ public final class QtJambiInternal {
 			return null;
 		}
 	}
+	
+	public static Class<?> toClass(Type type){
+		if (type instanceof Class) {
+			return (Class<?>) type;
+		} else if (type instanceof GenericArrayType) {
+			GenericArrayType gtype = (GenericArrayType) type;
+			Class<?> classType = toClass(gtype.getGenericComponentType());
+			return Array.newInstance(classType, 0).getClass();
+		} else if (type instanceof WildcardType) {
+			WildcardType wt = (WildcardType) type;
+			Type[] lbounds = wt.getLowerBounds();
+			Type[] ubounds = wt.getUpperBounds();
+			if(lbounds==null || lbounds.length==0)
+				if(ubounds==null || ubounds.length==0)
+					return Object.class;
+				else
+					return toClass(ubounds[0]);
+			else
+				return toClass(lbounds[0]);
+		} else if (type instanceof ParameterizedType) {
+			ParameterizedType ptype = (ParameterizedType) type;
+			return toClass(ptype.getRawType());
+		} else if (type instanceof TypeVariable<?>) {
+			TypeVariable<?> tv = (TypeVariable<?>)type;
+			Type[] bounds = tv.getBounds();
+			if(bounds==null || bounds.length==0)
+				return Object.class;
+			else
+				return toClass(bounds[0]);
+		} else {
+			throw new RuntimeException("Unable to find raw type for " + type.getTypeName()+"; type: "+getClass(type));
+		}
+	}
+	
+	private static final AtomicBoolean canSetThreadInterruptible = new AtomicBoolean(true);
 
 	@NativeAccess
 	private static boolean setThreadInterruptible(Thread thread, Object interruptible) {
-		java.lang.invoke.MethodHandles.Lookup pl = privateLookup(Thread.class);
-		try {
-			Field blockerField = Thread.class.getDeclaredField("blocker");
-			pl.unreflectSetter(blockerField).invoke(thread, interruptible);
-			return true;
-		} catch (Throwable e) {
+		if(canSetThreadInterruptible.get()) {
 			try {
-				Field blockOnField = Thread.class.getDeclaredField("blockOn");
-				pl.unreflectSetter(blockOnField).invoke(thread, interruptible);
+				Field blockerField = Thread.class.getDeclaredField("blocker");
+				setField(thread, blockerField, interruptible);
 				return true;
-			} catch (Throwable e1) {
-				e1.printStackTrace();
+			} catch (Throwable e) {
+				if(setFieldByName(thread, "blocker", "Lsun/nio/ch/Interruptible;", false, interruptible))
+					return true;
+				try {
+					Field blockOnField = Thread.class.getDeclaredField("blockOn");
+					setField(thread, blockOnField, interruptible);
+					return true;
+				} catch (Throwable e1) {
+					if(setFieldByName(thread, "blockOn", "Lsun/nio/ch/Interruptible;", false, interruptible))
+						return true;
+					canSetThreadInterruptible.set(false);
+				}
 			}
 		}
 		return false;
@@ -2972,30 +3403,106 @@ public final class QtJambiInternal {
                         }
                         Class<?> paramType = null;
                         Type genericParamType = null;
+                        int arrayDimension = 0;
+                        argumentTypes[i] = argumentTypes[i].replace(" ", "");
+                        while(argumentTypes[i].endsWith("[]")) {
+                        	++arrayDimension;
+                        	argumentTypes[i] = argumentTypes[i].substring(0, argumentTypes[i].length()-2);
+                        }
                         try {
-							paramType = Class.forName(argumentTypes[i].replace(" ", ""));
+                        	if(arrayDimension==0)
+                        		paramType = Class.forName(argumentTypes[i].replace(" ", ""));
+                        	else {
+                        		String predix = "";
+                        		for (int j = 0; j < arrayDimension; j++) {
+                        			predix += '[';
+								}
+                        		switch(argumentTypes[i]) {
+                        		case "int":
+                            		paramType = Class.forName(predix + "I");
+                        			break;
+                        		case "long":
+                            		paramType = Class.forName(predix + "J");
+                        			break;
+                        		case "short":
+                            		paramType = Class.forName(predix + "S");
+                        			break;
+                        		case "byte":
+                            		paramType = Class.forName(predix + "B");
+                        			break;
+                        		case "char":
+                            		paramType = Class.forName(predix + "C");
+                        			break;
+                        		case "float":
+                            		paramType = Class.forName(predix + "F");
+                        			break;
+                        		case "double":
+                            		paramType = Class.forName(predix + "D");
+                        			break;
+                        		case "boolean":
+                            		paramType = Class.forName(predix + "Z");
+                        			break;
+                    			default:
+                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
+                    				break;
+                        		}
+                        	}
 						} catch (Throwable e) {
 						}
                         if(paramType==null && classType!=null) {
                         	try {
-    							paramType = classType.getClassLoader().loadClass(argumentTypes[i].replace(" ", ""));
+                        		if(arrayDimension==0)
+                        			paramType = classType.getClassLoader().loadClass(argumentTypes[i].replace(" ", ""));
+                        		else {
+                        			String predix = "";
+                            		for (int j = 0; j < arrayDimension; j++) {
+                            			predix += '[';
+    								}
+                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
+                        		}
     						} catch (Throwable e) {
     						}
                         }
                         if(paramType==null) {
-                        	for(Parameter[] method : possibleMethods) {
-                        		if(method[i].getType().getName().equals(argumentTypes[i])
-                        				|| method[i].getType().getSimpleName().equals(argumentTypes[i])
-                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
-                        			paramType = method[i].getType();
-                        			genericParamType = method[i].getParameterizedType();
-                        			break;
+                        	if(arrayDimension==0) {
+	                        	for(Parameter[] method : possibleMethods) {
+	                        		if(method[i].getType().getName().equals(argumentTypes[i])
+	                        				|| method[i].getType().getSimpleName().equals(argumentTypes[i])
+	                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
+	                        			paramType = method[i].getType();
+	                        			genericParamType = method[i].getParameterizedType();
+	                        			break;
+	                        		}
+	                        	}
+                        	}else {
+                        		for(Parameter[] method : possibleMethods) {
+                        			Class<?> type = method[i].getType();
+                        			int _arrayDimension = 0;
+                        			while(type.isArray()) {
+                        				type = type.getComponentType();
+                        				++_arrayDimension;
+                        			}
+                        			
+                        			if(arrayDimension==_arrayDimension 
+                        					&& (type.getName().equals(argumentTypes[i])
+	                        				 || type.getSimpleName().equals(argumentTypes[i]))) {
+	                        			paramType = method[i].getType();
+	                        			genericParamType = method[i].getParameterizedType();
+	                        			break;
+	                        		}
                         		}
                         	}
                         }
+                        if(arrayDimension>0) {
+                        	String predix = "";
+                    		for (int j = 0; j < arrayDimension; j++) {
+                    			predix += '[';
+							}
+                    		argumentTypes[i] = predix + "L" + argumentTypes[i] + ";";
+                        }
                         String cpptype = 
                         		paramType==null
-                        		? internalTypeName(argumentTypes[i].replace(" ", ""), MetaObjectTools.class.getClassLoader())
+                        		? internalTypeName(argumentTypes[i], MetaObjectTools.class.getClassLoader())
                         				: internalTypeNameOfClass(paramType, genericParamType==null ? paramType : genericParamType);
                         if(cpptype.isEmpty())
                         	cpptype = argumentTypes[i];
@@ -3019,12 +3526,12 @@ public final class QtJambiInternal {
 		return NativeLibraryManager.isAvailableLibrary(library, version);
 	}
 
-	public static void loadQtLibrary(Class<?> callerClass, String library) {
-		NativeLibraryManager.loadQtLibrary(callerClass, library);
+	public static void loadQtLibrary(Class<?> callerClass, String library, LibraryRequirementMode libraryRequirementMode, String...platforms) {
+		NativeLibraryManager.loadQtLibrary(callerClass, library, libraryRequirementMode, platforms);
 	}
 
-	public static void loadUtilityLibrary(String library, String version) {
-		NativeLibraryManager.loadUtilityLibrary(library, version);
+	public static void loadUtilityLibrary(String library, String version, LibraryRequirementMode libraryRequirementMode, String...platforms) {
+		NativeLibraryManager.loadUtilityLibrary(library, version, libraryRequirementMode, platforms);
 	}
 
 	public static void loadLibrary(String lib) {
@@ -3062,6 +3569,14 @@ public final class QtJambiInternal {
 	public static String qtLibraryPath() {
 		return NativeLibraryManager.qtLibraryPath();
 	}
+	
+	public static boolean isMinGWBuilt() {
+		return NativeLibraryManager.isMinGWBuilt();
+	}
+	
+	public static String osArchName() {
+		return NativeLibraryManager.osArchName();
+	}
 
 	public static Object createMetaType(int id, Class<?> javaType, Object copy) {
 		if (copy != null && javaType != null) {
@@ -3083,20 +3598,19 @@ public final class QtJambiInternal {
 	private native static Object __qt_createMetaType(int id, Object copy);
 	
 	@NativeAccess
-	private static Class<?> lambdaReturnType(Serializable lambdaExpression) {
-		return internalAccess.lambdaReturnType(lambdaExpression);
-	}
-	
-	@NativeAccess
 	private static IntFunction<io.qt.InternalAccess.CallerContext> invocationInfoProvider(){
 		return RetroHelper.classAccessChecker();
+	}
+	
+	public static <K,V> Function<? super K, ArrayList<V>> getArrayListFactory(){
+		return key->new ArrayList<>();
 	}
 	
 	@NativeAccess
 	private static String objectToString(Object object) {
 		if (object != null) {
 			try {
-				Method toStringMethod = object.getClass().getMethod("toString");
+				Method toStringMethod = QtJambiInternal.getClass(object).getMethod("toString");
 				if (toStringMethod.getDeclaringClass() != Object.class) {
 					return object.toString();
 				}
@@ -3396,7 +3910,7 @@ public final class QtJambiInternal {
 				long nid = nativeId(object);
 				if (nid == 0) {
 					QNoNativeResourcesException e = new QNoNativeResourcesException(
-							"Function call on incomplete object of type: " + object.getClass().getName());
+							"Function call on incomplete object of type: " + QtJambiInternal.getClass(object).getName());
 					StackTraceElement[] st = e.getStackTrace();
 					st = Arrays.copyOfRange(st, 1, st.length);
 					e.setStackTrace(st);
@@ -3418,7 +3932,7 @@ public final class QtJambiInternal {
 			long nid = nativeId(object);
 			if (nid == 0) {
 				QNoNativeResourcesException e = new QNoNativeResourcesException(
-						"Function call on incomplete object of type: " + object.getClass().getName());
+						"Function call on incomplete object of type: " + QtJambiInternal.getClass(object).getName());
 				StackTraceElement[] st = e.getStackTrace();
 				st = Arrays.copyOfRange(st, 1, st.length);
 				e.setStackTrace(st);
@@ -3446,7 +3960,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3483,7 +3997,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3510,13 +4024,7 @@ public final class QtJambiInternal {
 			if (declaringClass.isInterface() && !isStatic) {
 				NativeLink link = findInterfaceLink(owner, false);
 				if (link instanceof InterfaceNativeLink) {
-					collection = ((InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
-						if (isThreadSafe) {
-							return java.util.Collections.synchronizedList(new RCList());
-						} else {
-							return new RCList();
-						}
-					});
+					collection = ((InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 					got = true;
 				}
 			}
@@ -3527,7 +4035,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3579,7 +4087,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3589,15 +4097,14 @@ public final class QtJambiInternal {
 					} while (objectClass != null && field == null);
 				}
 				if (field != null) {
-					MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(field.getDeclaringClass());
-					map = fetchField(lookup, owner, field);
+					map = fetchField(owner, field);
 					if (map == null) {
 						if (isThreadSafe) {
 							map = java.util.Collections.synchronizedMap(new java.util.HashMap<>());
 						} else {
 							map = new java.util.HashMap<>();
 						}
-						setField(lookup, owner, field, map);
+						setField(owner, field, map);
 					}
 				}
 			}
@@ -3625,7 +4132,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3654,13 +4161,7 @@ public final class QtJambiInternal {
 			if (declaringClass.isInterface() && !isStatic) {
 				NativeLink link = findInterfaceLink(owner, false);
 				if (link instanceof InterfaceNativeLink) {
-					collection = ((InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
-						if (isThreadSafe) {
-							return java.util.Collections.synchronizedList(new RCList());
-						} else {
-							return new RCList();
-						}
-					});
+					collection = ((InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 					got = true;
 				}
 			}
@@ -3671,7 +4172,7 @@ public final class QtJambiInternal {
 				} catch (NoSuchFieldException | SecurityException e2) {
 				}
 				if (field == null && owner != null) {
-					Class<?> objectClass = owner.getClass();
+					Class<?> objectClass = QtJambiInternal.getClass(owner);
 					do {
 						try {
 							field = objectClass.getDeclaredField(fieldName);
@@ -3724,7 +4225,7 @@ public final class QtJambiInternal {
 			} catch (NoSuchFieldException | SecurityException e2) {
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = owner.getClass();
+				Class<?> objectClass = QtJambiInternal.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -3802,7 +4303,7 @@ public final class QtJambiInternal {
 		}
 
 		@Override
-		public QObject lambdaContext(Serializable lambdaExpression) {
+		public <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(Class<S> type, S lambdaExpression) {
 			if(lambdaExpression instanceof AbstractSignal) {
 				QtSignalEmitterInterface containingObject = ((AbstractSignal) lambdaExpression).containingObject();
 				if(containingObject instanceof QObject)
@@ -3822,33 +4323,113 @@ public final class QtJambiInternal {
 		}
 
 		@Override
-		public Class<?> lambdaReturnType(Serializable lambdaExpression) {
+		public <S extends java.io.Serializable> Class<?> lambdaReturnType(Class<S> type, S lambdaExpression) {
 			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
 				return lamdaInfo.methodHandle.type().returnType();
 			} else {
+				Class<?> objectType = QtJambiInternal.getClass(lambdaExpression);
+				if(type.isInterface() && !objectType.isSynthetic()) {
+					Method functionalMethod = null;
+					for(Method method : type.getMethods()) {
+						if(!method.isDefault() && method.getDeclaringClass()!=Object.class) {
+							functionalMethod = method;
+							break;
+						}
+					}
+					if(functionalMethod!=null) {
+						try {
+							Method mtd = objectType.getMethod(functionalMethod.getName(), functionalMethod.getParameterTypes());
+							if(mtd==null || mtd.isBridge() || mtd.isDefault() || Modifier.isAbstract(mtd.getModifiers())) {
+								for(Method _mtd : objectType.getMethods()) {
+									if(!_mtd.isBridge()
+											&& !_mtd.isDefault()
+											&& _mtd.getName().equals(functionalMethod.getName())
+											&& _mtd.getParameterCount()==functionalMethod.getParameterCount()) {
+										mtd = _mtd;
+										break;
+									}
+								}
+							}
+							if(mtd!=null && !mtd.isBridge() && !mtd.isDefault() && !Modifier.isAbstract(mtd.getModifiers()))
+								return mtd.getReturnType();
+						} catch (Exception e) {
+						}
+					}
+				}
 				return null;
 			}
 		}
 		
 		@Override
-		public int[] lambdaMetaTypes(java.io.Serializable lambdaExpression) {
+		public <S extends java.io.Serializable> int[] lambdaMetaTypes(Class<S> type, S lambdaExpression) {
 			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
 				int[] metaTypes = new int[1+lamdaInfo.reflectiveMethod.getParameterCount()];
-				metaTypes[0] = registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), lamdaInfo.reflectiveMethod.getAnnotatedReturnType(), false, false);
+				AnnotatedElement rt = null;
+				if(useAnnotatedType)
+					rt = lamdaInfo.reflectiveMethod.getAnnotatedReturnType();
+				metaTypes[0] = registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), rt, false, false);
 				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
 				for (int i = 0; i < parameters.length; i++) {
 					metaTypes[i+1] = registerMetaType(parameters[i].getType(), parameters[i].getParameterizedType(), parameters[i].getAnnotatedType(), false, false);
 				}
 				return metaTypes;
 			}else {
+				Class<?> objectType = QtJambiInternal.getClass(lambdaExpression);
+				if(type.isInterface() && !objectType.isSynthetic()) {
+					Method functionalMethod = null;
+					for(Method method : type.getMethods()) {
+						if(!method.isDefault() && method.getDeclaringClass()!=Object.class) {
+							functionalMethod = method;
+							break;
+						}
+					}
+					if(functionalMethod!=null) {
+						try {
+							Method mtd = objectType.getMethod(functionalMethod.getName(), functionalMethod.getParameterTypes());
+							if(mtd==null || mtd.isBridge() || mtd.isDefault() || Modifier.isAbstract(mtd.getModifiers())) {
+								for(Method _mtd : objectType.getMethods()) {
+									if(!_mtd.isBridge()
+											&& !_mtd.isDefault()
+											&& _mtd.getName().equals(functionalMethod.getName())
+											&& _mtd.getParameterCount()==functionalMethod.getParameterCount()) {
+										mtd = _mtd;
+										break;
+									}
+								}
+							}
+							if(mtd!=null && !mtd.isBridge() && !mtd.isDefault() && !Modifier.isAbstract(mtd.getModifiers())) {
+								int[] metaTypes = new int[mtd.getParameterCount()+1];
+								if(mtd.getReturnType()==void.class) {
+									metaTypes[0] = QMetaType.Type.Void.value();
+								}else {
+									AnnotatedElement ae = null;
+									if(useAnnotatedType) {
+										ae = mtd.getAnnotatedReturnType();
+									}
+									metaTypes[0] = registerMetaType(mtd.getReturnType(), mtd.getGenericReturnType(), ae, false, false);
+								}
+								Parameter[] params = mtd.getParameters();
+								for (int i = 0; i < params.length; i++) {
+									AnnotatedElement ae = null;
+									if(useAnnotatedType) {
+										ae = params[i].getAnnotatedType();
+									}
+									metaTypes[i+1] = registerMetaType(params[i].getType(), params[i].getParameterizedType(), ae, false, false);
+								}
+								return metaTypes;
+							}
+						} catch (Exception e) {
+						}
+					}
+				}
 				return null;
 			}
 		}
 		
 		@Override
-		public Class<?>[] lambdaClassTypes(java.io.Serializable lambdaExpression) {
+		public <S extends java.io.Serializable> Class<?>[] lambdaClassTypes(Class<S> type, S lambdaExpression) {
 			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
 				Class<?>[] classTypes = new Class[1+lamdaInfo.reflectiveMethod.getParameterCount()];
@@ -3859,6 +4440,46 @@ public final class QtJambiInternal {
 				}
 				return classTypes;
 			}else {
+				Class<?> objectType = QtJambiInternal.getClass(lambdaExpression);
+				if(type.isInterface() && !objectType.isSynthetic()) {
+					Method functionalMethod = null;
+					for(Method method : type.getMethods()) {
+						if(!method.isDefault() && method.getDeclaringClass()!=Object.class) {
+							functionalMethod = method;
+							break;
+						}
+					}
+					if(functionalMethod!=null) {
+						try {
+							Method mtd = objectType.getMethod(functionalMethod.getName(), functionalMethod.getParameterTypes());
+							if(mtd==null || mtd.isBridge() || mtd.isDefault() || Modifier.isAbstract(mtd.getModifiers())) {
+								for(Method _mtd : objectType.getMethods()) {
+									if(!_mtd.isBridge()
+											&& !_mtd.isDefault()
+											&& _mtd.getName().equals(functionalMethod.getName())
+											&& _mtd.getParameterCount()==functionalMethod.getParameterCount()) {
+										mtd = _mtd;
+										break;
+									}
+								}
+							}
+							if(mtd!=null && !mtd.isBridge() && !mtd.isDefault() && !Modifier.isAbstract(mtd.getModifiers())) {
+								Class<?>[] metaTypes = new Class[mtd.getParameterCount()+1];
+								if(mtd.getReturnType()==void.class) {
+									metaTypes[0] = void.class;
+								}else {
+									metaTypes[0] = mtd.getReturnType();
+								}
+								Parameter[] params = mtd.getParameters();
+								for (int i = 0; i < params.length; i++) {
+									metaTypes[i+1] = params[i].getType();
+								}
+								return metaTypes;
+							}
+						} catch (Exception e) {
+						}
+					}
+				}
 				return null;
 			}
 		}
@@ -3870,7 +4491,7 @@ public final class QtJambiInternal {
 
 		@Override
 		public Supplier<CallerContext> callerContextProvider() {
-			return ()->RetroHelper.classAccessChecker().apply(3);
+			return RetroHelper.callerContextProvider();
 		}
 		
 		@Override

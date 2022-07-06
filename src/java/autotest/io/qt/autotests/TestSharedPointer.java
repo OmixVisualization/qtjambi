@@ -94,23 +94,18 @@ public class TestSharedPointer extends ApplicationInitializer {
 		WeakReference<QObject> weak = new WeakReference<QObject>(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(weak.get()!=null){
-			System.gc();
+		while(weak.get()!=null && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
-		while(object.deletedSharedObjectName().isEmpty()){
+		while(object.deletedSharedObjectName().isEmpty() && count++<100){
 			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			count++;
-			if(count>15)
-				break;
 		}
 		assertEquals(null, weak.get());
 		QApplication.processEvents();
@@ -140,23 +135,18 @@ public class TestSharedPointer extends ApplicationInitializer {
 		WeakReference<QGraphicsItem> weak = new WeakReference<QGraphicsItem>(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(weak.get()!=null){
-			System.gc();
+		while(weak.get()!=null && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
-		while(object.deletedSharedObjectName().isEmpty()){
+		while(object.deletedSharedObjectName().isEmpty() && count++<100){
 			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			count++;
-			if(count>15)
-				break;
 		}
 		assertEquals("SharedObject2", object.deletedSharedObjectName());
 	}
@@ -181,17 +171,15 @@ public class TestSharedPointer extends ApplicationInitializer {
 		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(object.deletedSharedObjectName().isEmpty()){
-			System.gc();
+		while(object.deletedSharedObjectName().isEmpty() && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
 		assertEquals("SharedEvent", object.deletedSharedObjectName());
 	}
@@ -218,23 +206,18 @@ public class TestSharedPointer extends ApplicationInitializer {
 		WeakReference<QLayoutItem> weak = new WeakReference<QLayoutItem>(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(weak.get()!=null){
-			System.gc();
+		while(weak.get()!=null && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
-		while(object.deletedSharedObjectName().isEmpty()){
+		while(object.deletedSharedObjectName().isEmpty() && count++<100){
 			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			count++;
-			if(count>15)
-				break;
 		}
 		assertEquals("SharedObject4", object.deletedSharedObjectName());
 	}
@@ -260,17 +243,15 @@ public class TestSharedPointer extends ApplicationInitializer {
 		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(object.deletedSharedObjectName().isEmpty()){
-			System.gc();
+		while(object.deletedSharedObjectName().isEmpty() && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
 		assertEquals("SpacerItem", object.deletedSharedObjectName());
 	}
@@ -307,17 +288,15 @@ public class TestSharedPointer extends ApplicationInitializer {
 		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
-		while(object.deletedSharedObjectName().isEmpty()){
-			System.gc();
+		while(object.deletedSharedObjectName().isEmpty() && count++<50){
+			ApplicationInitializer.runGC();
+			Thread.yield();
 			synchronized(object){
 				try {
 					object.wait(50);
 				} catch (InterruptedException e) {
 				}
 			}
-			count++;
-			if(count>5)
-				break;
 		}
 		assertEquals("WidgetItem", object.deletedSharedObjectName());
 		object.resetSharedObjectName();
@@ -326,11 +305,11 @@ public class TestSharedPointer extends ApplicationInitializer {
 		widget.destroyed.connect(()->disposed.set(true));
 		widget = null;
 		for (int i = 0; i < 50 && !disposed.get(); ++i) {
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			QApplication.processEvents();
 			try {
+				Thread.yield();
 				Thread.sleep(5);
 			} catch (InterruptedException e) {}
 		}

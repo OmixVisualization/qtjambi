@@ -44,6 +44,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSerialBus" description="Provides access to serial industrial bus interface. Currently the module supports the CAN bus and Modbus protocols.">
+    <required-library name="QtNetwork"/>
+    <required-library name="QtSerialPort"/>
     <rejection class="QModbusPdu::IsType"/>
     <object-type name="QModbusClient">
     </object-type>

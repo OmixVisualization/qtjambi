@@ -43,8 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.quick" module="qtjambi.quick" default-superclass="io.qt.QtObject">
-    <required-library name="QtDBus" optional="yes" since="6.0.0"/>
-    <!--required-library name="QtQmlWorkerScript" optional="yes"/-->
+    <!--required-library name="QtQmlWorkerScript" mode="optional"/-->
     <inject-code position="position4">
             if(io.qt.QtUtilities.isAvailableQtLibrary("QmlWorkerScript"))
                 io.qt.QtUtilities.loadQtLibrary("QmlWorkerScript");
@@ -268,7 +267,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.nio.Buffer"/>
                 <conversion-rule class="native">
-                jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->sizeOfIndex()*__qt_this->indexCount());
+                %out = %env->NewDirectByteBuffer(%in, __qt_this->sizeOfIndex()*__qt_this->indexCount());
                 switch(__qt_this->sizeOfIndex()){
                 case 4:
                     %out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);
@@ -286,7 +285,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="long"/>
                 <conversion-rule class="native">
-                jlong %out = jlong(%in);
+                %out = jlong(%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -294,7 +293,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.quick.QSGGeometry$Attribute[]"/>
                 <conversion-rule class="native">
-                    jobjectArray %out = qtjambi_to_jobjectArray&lt;QSGGeometry::Attribute>(%env, %in, __qt_this->attributeCount(), 
+                    %out = qtjambi_to_jobjectArray&lt;QSGGeometry::Attribute>(%env, %in, __qt_this->attributeCount(), 
                                                                             [](JNIEnv * env, const QSGGeometry::Attribute&amp; item)->jobject{ 
                                                                                     return qtjambi_cast&lt;jobject>(env, item);
                                                                             });
@@ -304,21 +303,21 @@
         <modify-function signature="defaultAttributes_Point2D()">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                jobject %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
+                %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="defaultAttributes_ColoredPoint2D()">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                jobject %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
+                %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="defaultAttributes_TexturedPoint2D()">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                jobject %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
+                %out = qtjambi_from_object&lt;QSGGeometry::AttributeSet>(%env, &amp;%in, false);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -356,7 +355,7 @@
         <modify-field name="attributes" write="false">
             <replace-type modified-type="io.qt.quick.QSGGeometry$Attribute[]"/>
             <conversion-rule class="native">
-                jobjectArray %out = qtjambi_to_jobjectArray&lt;QSGGeometry::Attribute>(%env, %in, __qt_this->count, 
+                %out = qtjambi_to_jobjectArray&lt;QSGGeometry::Attribute>(%env, %in, __qt_this->count, 
                                                                         [](JNIEnv * env, const QSGGeometry::Attribute&amp; item)->jobject{ 
                                                                                 return qtjambi_cast&lt;jobject>(env, item);
                                                                         });
@@ -593,7 +592,7 @@
             </modify-argument>
             <modify-argument index="0">
                 <conversion-rule class="native">
-                jobject %out = b ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                %out = b ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -675,8 +674,6 @@
             mutable QByteArray __qt_attributeNameByteArrays;
             mutable QVector&lt;const char *> __qt_attributeNames;
         </inject-code>
-    </object-type>
-    <object-type name="QSGMaterialRhiShader">
         <modify-function signature="updateGraphicsPipelineState(QSGMaterialRhiShader::RenderState &amp;, QSGMaterialRhiShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)">
             <modify-argument index="1" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.quick.QSGMaterialRhiShader$RenderState"/>
@@ -741,9 +738,9 @@
     <interface-type name="QNativeInterface::QSGMetalTexture" java-name="QSGMetalTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
         <modify-function signature="nativeTexture() const">
             <modify-argument index="0">
-                <replace-type modified-type="io.qt.QNativePointer" />
+                <replace-type modified-type="long" />
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(quint64(%in)), QNativePointer::Type::Pointer, 1);
+                    %out = jlong(quint64(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -751,17 +748,17 @@
     <interface-type name="QNativeInterface::QSGVulkanTexture" java-name="QSGVulkanTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
         <modify-function signature="nativeImage() const">
             <modify-argument index="0">
-                <replace-type modified-type="io.qt.QNativePointer" />
+                <replace-type modified-type="long" />
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(%in), QNativePointer::Type::Pointer, 1);
+                    %out = jlong(%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="nativeImageLayout() const">
             <modify-argument index="0">
-                <replace-type modified-type="io.qt.QNativePointer" />
+                <replace-type modified-type="int" />
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_cpointer(%env, reinterpret_cast&lt;void*>(%in), QNativePointer::Type::Pointer, 1);
+                    %out = jint(%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

@@ -89,7 +89,7 @@
                 <no-null-pointer/>
                 <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);
@@ -102,7 +102,7 @@
                 <no-null-pointer/>
                 <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);
@@ -115,7 +115,7 @@
                 <no-null-pointer/>
                 <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);

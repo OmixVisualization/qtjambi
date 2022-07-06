@@ -13,9 +13,9 @@ DEPENDPATH += $$PWD
 
 lessThan(QT_MAJOR_VERSION, 6):{
     macx:{
-        INCLUDEPATH += $$(QTDIR)/lib/QtMultimediaWidgets.framework/Headers/
+        INCLUDEPATH += $$[QT_INSTALL_LIBS]/QtMultimediaWidgets.framework/Headers/
     }
-    INCLUDEPATH += $$(QTDIR)/include/QtMultimediaWidgets
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtMultimediaWidgets
 }else{
     QMAKE_LIBS_WMF = \
 

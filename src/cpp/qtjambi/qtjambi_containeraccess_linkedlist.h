@@ -1,5 +1,5 @@
-#ifndef QTJAMBI_CONTAINERACCESS_LINKEDLIST_P_H
-#define QTJAMBI_CONTAINERACCESS_LINKEDLIST_P_H
+#ifndef QTJAMBI_CONTAINERACCESS_LINKEDLIST_H
+#define QTJAMBI_CONTAINERACCESS_LINKEDLIST_H
 
 #include <QtCore/QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -88,9 +88,6 @@ public:
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_container_type<QLinkedList<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());
-    }
-    PtrDeleterFunction containerDeleter() override {
-        return nullptr;
     }
     bool isConstant() override {return false;}
     const QMetaType& elementMetaType() override {return m_elementMetaTypeInfo.metaType();}
@@ -335,9 +332,6 @@ struct ContainerAccessFac<QLinkedList,align,size,isStatic>{
 
 }
 
-#define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\
-    ContainerAccessFactoryHelper<QLinkedList,AL,SZ,false>::registerContainerAccessFactory();
-
 #endif
 
-#endif // QTJAMBI_CONTAINERACCESS_LINKEDLIST_P_H
+#endif // QTJAMBI_CONTAINERACCESS_LINKEDLIST_H

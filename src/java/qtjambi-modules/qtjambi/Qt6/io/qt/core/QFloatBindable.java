@@ -63,9 +63,9 @@ public final class QFloatBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| metaType.sizeOf()!=4
 					|| (metaType.id()!=QMetaType.Type.Float.value()
-						&& metaType.id()!=QMetaType.Type.Double.value())) {
+						&& metaType.id()!=QMetaType.Type.Double.value()
+						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}

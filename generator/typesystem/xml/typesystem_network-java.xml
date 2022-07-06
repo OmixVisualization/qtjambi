@@ -71,7 +71,7 @@
                 <no-null-pointer/>
                 <replace-type modified-type="io.qt.network.QAuthenticator" />
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -183,10 +183,8 @@
                 </conversion-rule>
             </modify-argument>
             <inject-code class="native" position="end">
-                if(!ok){
+                if(!ok)
                     Java::QtNetwork::QTimeoutException::throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
-                    return false;
-                }
             </inject-code>
         </modify-function>
         <inject-code>
@@ -204,7 +202,7 @@
         <modify-function signature="readDatagram(char*,long long,QHostAddress*,unsigned short*)">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jlong %out = jlong(%in);
+                    %out = jlong(%in);
                     if(%3){
                         Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %3, qtjambi_cast&lt;jobject>(%env, host));
                         Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %3, jshort(port));
@@ -278,7 +276,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);
@@ -292,7 +290,7 @@
                 <replace-type modified-type="io.qt.network.QAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -304,7 +302,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);
@@ -316,7 +314,7 @@
                 <replace-type modified-type="io.qt.network.QAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -341,10 +339,8 @@
                 </conversion-rule>
             </modify-argument>
             <inject-code class="native" position="end">
-                if(!ok){
+                if(!ok)
                     Java::QtNetwork::QTimeoutException::throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
-                    return false;
-                }
             </inject-code>
         </modify-function>
         <inject-code>
@@ -448,7 +444,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);
@@ -463,7 +459,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator" />
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);

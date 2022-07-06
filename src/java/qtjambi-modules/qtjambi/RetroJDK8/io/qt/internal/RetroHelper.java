@@ -172,6 +172,10 @@ final class RetroHelper {
     static Supplier<Class<?>> callerClassProvider(){
         return callerClassProvider;
     }
+	
+	static Supplier<CallerContext> callerContextProvider() {
+    	return ()->implementor.classAccessChecker().apply(1);
+    }
     
     static String processName() {
         String pid = ManagementFactory.getRuntimeMXBean().getName();

@@ -39,9 +39,9 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	
 	static boolean checkType(QMetaType metaType){
 		return metaType!=null 
-				&& metaType.sizeOf()==8
 				&& (metaType.id()==QMetaType.Type.Float.value()
-					|| metaType.id()==QMetaType.Type.Double.value());
+					|| metaType.id()==QMetaType.Type.Double.value()
+							|| metaType.id()==QMetaType.Type.QVariant.value());
 	}
 
     /**

@@ -48,6 +48,7 @@ using QtJambiObjectData = QObjectUserData;
     static uint _id = QObject::registerUserData();\
     return _id;\
 }
+QTJAMBI_EXPORT QDebug& debug_stream(QDebug& debug, uint typeId, const void* ptr);
 #else
 struct QTJAMBI_EXPORT QtJambiObjectData{
 protected:
@@ -166,5 +167,9 @@ QTJAMBI_EXPORT void qtjambi_unexit();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT const QtPrivate::AbstractDebugStreamFunction * qtjambi_registered_debugstream_operator(int typeId);
 #endif
+
+QTJAMBI_EXPORT hash_type qHash(const QMetaType& metaType, const void* ptr, bool* success = nullptr);
+
+QTJAMBI_EXPORT void qtjambi_exception_handler(JNIEnv *__jni_env, void* ptr, void(*expression)(void*));
 
 #endif // QTJAMBI_APPLICATION_H

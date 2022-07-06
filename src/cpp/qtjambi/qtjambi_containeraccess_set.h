@@ -1,5 +1,5 @@
-#ifndef QTJAMBI_CONTAINERACCESS_SET_P_H
-#define QTJAMBI_CONTAINERACCESS_SET_P_H
+#ifndef QTJAMBI_CONTAINERACCESS_SET_H
+#define QTJAMBI_CONTAINERACCESS_SET_H
 
 #include <QtCore/QSet>
 #include <qtjambi/qtjambi_containeraccess.h>
@@ -87,10 +87,6 @@ public:
 
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_container_type<QSet<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());
-    }
-
-    PtrDeleterFunction containerDeleter() override {
-        return nullptr;
     }
 
     bool isConstant() override {return false;}
@@ -222,18 +218,22 @@ public:
     jobject values(JNIEnv * env, const void* container) override {
         QTJAMBI_ELEMENT_LOCKER
         jobject result = nullptr;
-        if(ContainerAccessFactory factory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, _align, _size,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                                                                       false
-#else
-                                                                                       qtjambi_is_static_type(m_elementMetaTypeInfo.metaType())
+        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QList, m_elementMetaTypeInfo.metaType());
+        if(!access)
+            access = qtjambi_create_container_access(env, ContainerType::QList,
+                                                      m_elementMetaTypeInfo.metaType(),
+                                                      _align, _size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                      qtjambi_is_static_type(m_elementMetaTypeInfo.metaType()),
 #endif
-                                                                                )){
+                                                      qtjambi_is_pointer_type(m_elementMetaTypeInfo.metaType()),
+                                                      m_elementMetaTypeInfo.hashFunction(),
+                                                      m_internalToExternalConverter,
+                                                      m_externalToInternalConverter
+                                                    );
+        if(access){
             const void* qresult = new QList<T>(reinterpret_cast<const QSet<T> *>(container)->values());
-            result = qtjambi_from_QList(env, qresult, factory(m_elementMetaTypeInfo.metaType(),
-                                                              m_elementMetaTypeInfo.hashFunction(),
-                                                              m_internalToExternalConverter,
-                                                              m_externalToInternalConverter));
+            result = qtjambi_from_QList(env, qresult, access);
         }
         return result;
     }
@@ -320,8 +320,4 @@ struct ContainerAccessFac<QSet,align,size,isStatic>{
 };
 
 }
-
-#define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\
-    ContainerAccessFactoryHelper<QSet,AL,SZ,false>::registerContainerAccessFactory();
-
-#endif // QTJAMBI_CONTAINERACCESS_SET_P_H
+#endif // QTJAMBI_CONTAINERACCESS_SET_H

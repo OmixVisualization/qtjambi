@@ -162,22 +162,17 @@ public class TestItemEditorCreator extends ApplicationInitializer {
     }
     
     @Test
-    public void testStandardItemEditorCreator_with_disallowed_handle_NonLambda() {
-    	try {
-    		class Fun implements QStandardItemEditorCreator.ConstructorHandle<QPushButton>{
-				private static final long serialVersionUID = 5891633777036928275L;
+    public void testStandardItemEditorCreator_with_NonLambda_handle() {
+		class Fun implements QStandardItemEditorCreator.ConstructorHandle<QPushButton>{
+			private static final long serialVersionUID = 5891633777036928275L;
 
-				@Override
-				public QPushButton create(QWidget t) {
-					return new QPushButton(t);
-				}
-    			
-    		}
-    		new QStandardItemEditorCreator<>(new Fun());
-			assertTrue(false);
-		} catch (RuntimeException e) {
-	    	assertEquals("Constructor handle required as argument, e.g. QWidget::new", e.getMessage());
+			@Override
+			public QPushButton create(QWidget t) {
+				return new QPushButton(t);
+			}
+			
 		}
+		new QStandardItemEditorCreator<>(new Fun());
     }
     
     @Test
@@ -189,13 +184,8 @@ public class TestItemEditorCreator extends ApplicationInitializer {
     }
     
     @Test
-    public void testStandardItemEditorCreator_with_disallowed_handle_Lambda() {
-    	try {
-    		new QStandardItemEditorCreator<Editor>(parent->new Editor(parent));
-			assertTrue(false);
-		} catch (RuntimeException e) {
-	    	assertEquals("Constructor handle required as argument, e.g. QWidget::new", e.getMessage());
-		}
+    public void testStandardItemEditorCreator_with_LambdaFunction_handle() {
+		new QStandardItemEditorCreator<Editor>(parent->new Editor(parent));
     }
 
     public static void main(String args[]) {

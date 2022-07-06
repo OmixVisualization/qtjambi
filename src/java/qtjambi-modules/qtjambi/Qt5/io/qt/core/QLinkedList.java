@@ -32,6 +32,7 @@ package io.qt.core;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
@@ -77,7 +78,7 @@ public class QLinkedList<T> extends io.qt.internal.QtJambiCollectionObject<T> im
     
     public QLinkedList(Collection<T> other) {
 		super(null);
-		QMetaType metaType = QList.findElementMetaType(other);
+		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
 		if(metaType.id()==QMetaType.Type.Void.value())
@@ -325,11 +326,27 @@ public class QLinkedList<T> extends io.qt.internal.QtJambiCollectionObject<T> im
     @Override
     @QtUninvokable
     public int hashCode() { 
-    	int hashCode = getClass().hashCode();
-        for (T e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
+    
     @Override
     @QtUninvokable
     public final boolean add(T e){

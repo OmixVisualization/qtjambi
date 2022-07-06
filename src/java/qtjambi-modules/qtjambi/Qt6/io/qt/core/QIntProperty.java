@@ -39,11 +39,11 @@ public final class QIntProperty extends QIntPropertyData {
 	
 	static boolean checkType(QMetaType metaType){
 		return metaType!=null 
-				&& metaType.sizeOf()==4
 				&& (metaType.id()==QMetaType.Type.Int.value()
 					|| metaType.id()==QMetaType.Type.UInt.value()
 					|| metaType.id()==QMetaType.Type.Long.value()
-					|| metaType.id()==QMetaType.Type.ULong.value());
+					|| metaType.id()==QMetaType.Type.ULong.value()
+					|| metaType.id()==QMetaType.Type.QVariant.value());
 	}
 
     /**

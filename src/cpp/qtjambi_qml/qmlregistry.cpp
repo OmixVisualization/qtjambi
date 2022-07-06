@@ -199,15 +199,15 @@ int registerQmlMetaType(const QString& javaName, const QMetaObject *meta_object)
 
 jmethodID findConstructor(JNIEnv * env, jclass clazz, const QString& javaName){
     jmethodID constructor(nullptr);
-    try{
+    QTJAMBI_TRY_ANY{
         constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject$QDeclarativeConstructor;)V", clazz);
-    }catch(const JavaException&){}
+    }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
     jmethodID superClassConstructor = nullptr;
     jclass generatedSuperclass = qtjambi_find_generated_superclass(env, clazz);
     if(generatedSuperclass){
-        try{
+        QTJAMBI_TRY_ANY{
             superClassConstructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject$QDeclarativeConstructor;)V", clazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
     }else{
         JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class %1 cannot be registered as Qml type since it does not inherit a Qt class.").arg(QString(javaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
     }
@@ -235,7 +235,8 @@ jmethodID findConstructor(JNIEnv * env, jclass clazz, const QString& javaName){
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljava_lang_Class_2
   (JNIEnv * env, jclass, jclass clazz){
     env->EnsureLocalCapacity(300);
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         int objectSize = int(qtjambi_extended_size_for_class(env, clazz));
         QString javaName = qtjambi_class_name(env, clazz);
         const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
@@ -310,11 +311,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
         };
 
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -324,15 +325,16 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterTypeNotAvailable
   (JNIEnv * env, jclass, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring message){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
         QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
         QString _message = qtjambi_to_qstring(env, message);
-        return qmlRegisterTypeNotAvailable(_uri.constData(), int(versionMajor), int(versionMinor), _qmlName.constData(), _message);
-    }catch(const JavaException& exn){
+        _result = qmlRegisterTypeNotAvailable(_uri.constData(), int(versionMajor), int(versionMinor), _qmlName.constData(), _message);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -342,7 +344,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterTypeNotAva
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatableType__Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring reason){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
       QString javaName = qtjambi_class_name(env, clazz);
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
@@ -418,11 +421,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
           /*int revision*/ QTypeRevision::zero()
       };
 #endif
-      return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+      _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -432,7 +435,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatableType__Ljava_lang_Class_2ILjava_lang_String_2IILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jint metaObjectRevision, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring reason){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
       QString javaName = qtjambi_class_name(env, clazz);
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
@@ -508,11 +512,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
           /*int revision*/ QTypeRevision::fromMajorVersion(metaObjectRevision)
       };
 #endif
-      return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+      _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -523,7 +527,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
     env->EnsureLocalCapacity(300);
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
           size_t objectSize = qtjambi_extended_size_for_class(env, clazz);
           QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
           QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
@@ -605,11 +610,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
               /*int revision*/ QTypeRevision::zero()
           };
 #endif
-          return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+          _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -620,7 +625,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljava_lang_Class_2ILjava_lang_String_2IILjava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jint metaObjectRevision, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
     env->EnsureLocalCapacity(300);
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
           size_t objectSize = qtjambi_extended_size_for_class(env, clazz);
           QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
           QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
@@ -702,11 +708,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
               /*int revision*/ QTypeRevision::fromMajorVersion(metaObjectRevision)
           };
 #endif
-          return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+          _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -716,7 +722,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Ljav
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterRevision
   (JNIEnv * env, jclass, jclass clazz, jint metaObjectRevision, jstring uri, jint versionMajor, jint versionMinor){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         size_t objectSize = qtjambi_extended_size_for_class(env, clazz);
         QString javaName = qtjambi_class_name(env, clazz);
         jmethodID constructor = findConstructor(env, clazz, javaName);
@@ -796,11 +803,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterRevision
             /*int revision*/ QTypeRevision::fromMajorVersion(metaObjectRevision)
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -810,13 +817,14 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterRevision
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedType__Ljava_lang_Class_2Ljava_lang_Class_2
   (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString javaName = qtjambi_class_name(env, clazz);
         QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
         jmethodID constructor(nullptr);
-        try{
+        QTJAMBI_TRY_ANY{
             constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
         if(!constructor){
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
@@ -900,11 +908,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             /*int revision*/ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -914,14 +922,15 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedType__Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2I
   (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz, jstring uri, jint versionMajor){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString _uri = qtjambi_to_qstring(env, uri);
         QString javaName = qtjambi_class_name(env, clazz);
         QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
         jmethodID constructor(nullptr);
-        try{
+        QTJAMBI_TRY_ANY{
             constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
         if(!constructor){
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
@@ -1005,11 +1014,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             /*int revision*/ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1019,16 +1028,17 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedType__Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         size_t objectSize = qtjambi_extended_size_for_class(env, clazz);
 
         QString javaName = qtjambi_class_name(env, clazz);
         QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
         jmethodID constructor = findConstructor(env, clazz, javaName);
         jmethodID econstructor(nullptr);
-        try{
+        QTJAMBI_TRY_ANY{
             econstructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
         if(!econstructor){
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
@@ -1123,11 +1133,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             /*int revision*/ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1137,7 +1147,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface1
   (JNIEnv * env, jclass, jclass clazz, jstring name){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString typeName = qtjambi_to_qstring(env, name);
         const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
@@ -1177,11 +1188,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface1
             /* int versionMajor */ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1191,7 +1202,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface1
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString _uri = qtjambi_to_qstring(env, uri);
         const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
@@ -1236,11 +1248,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
             /* int versionMajor */ QTypeRevision::fromMajorVersion(versionMajor)
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1250,7 +1262,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
  */
 extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_qml_QtQml_qmlAttachedPropertiesObject
   (JNIEnv * env, jclass, jclass clazz, jobject object, jboolean create){
-    try{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
         const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz);
         if(!meta_object){
             jclass closestClass = resolveClosestQtSuperclass(env, clazz);
@@ -1267,11 +1280,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_qml_QtQml_qmlAttachedPropert
         static const auto func = qmlAttachedPropertiesFunction(nullptr, meta_object);
         QObject* result = qmlAttachedPropertiesObject(obj, func, create);
 #endif
-        return qtjambi_from_QObject(env, result);
-    }catch(const JavaException& exn){
+        _result = qtjambi_from_QObject(env, result);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return nullptr;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1281,7 +1294,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_qml_QtQml_qmlAttachedPropert
  */
 extern "C" Q_DECL_EXPORT void JNICALL Java_io_qt_qml_QtQml_qmlRegisterBaseTypes
   (JNIEnv * env, jclass, jstring uri, jint versionMajor, jint versionMinor){
-    try{
+    QTJAMBI_TRY{
 #if QT_VERSION < QT_VERSION_CHECK(5,14,0)
         qmlRegisterBaseTypes(qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor));
 #else
@@ -1290,9 +1303,9 @@ extern "C" Q_DECL_EXPORT void JNICALL Java_io_qt_qml_QtQml_qmlRegisterBaseTypes
         Q_UNUSED(versionMinor)
         JavaException::raiseQNoImplementationException(env, "qmlRegisterBaseTypes() is no longer available since Qt 5.14" QTJAMBI_STACKTRACEINFO);
 #endif
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 /*
@@ -1302,7 +1315,8 @@ extern "C" Q_DECL_EXPORT void JNICALL Java_io_qt_qml_QtQml_qmlRegisterBaseTypes
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterAnonymousType
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
 #if QT_VERSION < QT_VERSION_CHECK(5,14,0)
         Q_UNUSED(clazz)
         Q_UNUSED(uri)
@@ -1384,12 +1398,12 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterAnonymousT
             /*int revision*/ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
 #endif
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1400,14 +1414,15 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterAnonymousT
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Lio_qt_core_QUrl_2Ljava_lang_String_2IILjava_lang_String_2
   (JNIEnv * env, jclass, jobject url, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
     env->EnsureLocalCapacity(300);
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QUrl* _url = qtjambi_cast<QUrl*>(env, url);
         QString _qmlName = qtjambi_to_qstring(env, qmlName);
-        return qmlRegisterType(_url ? *_url : QUrl(), qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
-    }catch(const JavaException& exn){
+        _result = qmlRegisterType(_url ? *_url : QUrl(), qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1417,12 +1432,13 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Lio_
  */
 extern "C" Q_DECL_EXPORT jboolean JNICALL Java_io_qt_qml_QtQml_qmlProtectModule
   (JNIEnv * env, jclass, jstring uri, jint majVersion){
-    try{
-        return qmlProtectModule(qPrintable(qtjambi_to_qstring(env, uri)), int(majVersion));
-    }catch(const JavaException& exn){
+    jboolean _result{false};
+    QTJAMBI_TRY{
+        _result = qmlProtectModule(qPrintable(qtjambi_to_qstring(env, uri)), int(majVersion));
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return false;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1442,12 +1458,12 @@ extern "C" Q_DECL_EXPORT void JNICALL Java_io_qt_qml_QtQml_qmlClearTypeRegistrat
  */
 extern "C" Q_DECL_EXPORT void Java_io_qt_qml_QtQml_qmlRegisterModule__Ljava_lang_String_2II
   (JNIEnv * env, jclass, jstring uri, jint versionMajor, jint versionMinor){
-    try{
+    QTJAMBI_TRY{
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
         qmlRegisterModule(_uri.constData(), int(versionMajor), int(versionMinor));
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
+    }QTJAMBI_TRY_END
 }
 
 /*
@@ -1457,13 +1473,14 @@ extern "C" Q_DECL_EXPORT void Java_io_qt_qml_QtQml_qmlRegisterModule__Ljava_lang
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUncreatableType__Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring reason){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString javaName = qtjambi_class_name(env, clazz);
         QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
         jmethodID constructor(nullptr);
-        try{
+        QTJAMBI_TRY_ANY{
             constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
         if(!constructor){
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
@@ -1555,11 +1572,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             /*int revision*/ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1569,13 +1586,14 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUncreatableType__Ljava_lang_Class_2Ljava_lang_Class_2ILjava_lang_String_2IILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz, jint metaObjectRevision, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring reason){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString javaName = qtjambi_class_name(env, clazz);
         QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
         jmethodID constructor(nullptr);
-        try{
+        QTJAMBI_TRY_ANY{
             constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
-        }catch(const JavaException&){}
+        }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
         if(!constructor){
             JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
         }
@@ -1667,11 +1685,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             /*int revision*/ QTypeRevision::fromMajorVersion(metaObjectRevision)
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1681,14 +1699,15 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonType__Lio_qt_core_QUrl_2Ljava_lang_String_2IILjava_lang_String_2
   (JNIEnv * env, jclass, jobject url, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QUrl _url = qtjambi_cast<QUrl>(env, url);
         QString _qmlName = qtjambi_to_qstring(env, qmlName);
-        return qmlRegisterSingletonType(_url, qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
-    }catch(const JavaException& exn){
+        _result = qmlRegisterSingletonType(_url, qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1698,7 +1717,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonType__Ljava_lang_String_2IILjava_lang_String_2Lio_qt_qml_QtQml_00024ValueCallback_2
   (JNIEnv * env, jclass, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jobject callback){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
         QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -1732,11 +1752,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
             /* int revision */ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::SingletonRegistration, &api);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::SingletonRegistration, &api);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1746,7 +1766,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonType__Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2Lio_qt_qml_QtQml_00024ObjectCallback_2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jobject callback){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
         QString javaName = qtjambi_class_name(env, clazz);
 
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
@@ -1798,11 +1819,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
             /* int revision */ QTypeRevision::zero()
         };
 #endif
-        return QQmlPrivate::qmlregister(QQmlPrivate::SingletonRegistration, &api);
-    }catch(const JavaException& exn){
+        _result = QQmlPrivate::qmlregister(QQmlPrivate::SingletonRegistration, &api);
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 /*
@@ -1812,7 +1833,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatableClass__Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2Ljava_lang_String_2
   (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName, jstring reason){
-    try{
+    jint _result{-1};
+    QTJAMBI_TRY{
       QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
       QByteArray _qmlName = qtjambi_to_qstring(env, qmlName).toLocal8Bit();
 
@@ -1824,16 +1846,16 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
               meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
           }
       }
-      return !meta_object ? -1 : qmlRegisterUncreatableMetaObject(*meta_object,
+      _result = !meta_object ? -1 : qmlRegisterUncreatableMetaObject(*meta_object,
                                               /*const char *uri*/ _uri.constData(),
                                               /*int versionMajor*/ int(versionMajor),
                                               /*int versionMinor*/ int(versionMinor),
                                               /*const char *elementName*/ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
                                               /*QString noCreationReason*/ qtjambi_to_qstring(env, reason));
-    }catch(const JavaException& exn){
+    }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
-    }
-    return -1;
+    }QTJAMBI_TRY_END
+    return _result;
 }
 
 extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_create)

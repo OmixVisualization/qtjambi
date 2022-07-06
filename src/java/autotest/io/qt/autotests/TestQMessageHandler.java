@@ -81,6 +81,7 @@ public class TestQMessageHandler extends UnitTestInitializer {
     	};
         try {
         	QtMessageHandler oldHandler = qInstallMessageHandler(handler);
+        	assertTrue(oldHandler!=handler);
         	assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(oldHandler));
         	assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(handler));
         	oldHandler = qInstallMessageHandler(null);

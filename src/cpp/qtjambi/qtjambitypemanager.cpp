@@ -40,6 +40,7 @@ QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wignored-qualifiers")
 QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
 QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
+#include "qtjambi_functionpointer.h"
 #include <QtCore/QThread>
 #include <QtCore/QThreadStorage>
 #include <QtCore/QIODevice>
@@ -55,6 +56,7 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
+#include "qtjambi_application.h"
 #endif
 
 #include "qtjambi_core.h"
@@ -64,7 +66,6 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #include "qtjambilink_p.h"
 #include "qtjambi_registry_p.h"
 #include "qtjambi_interfaces_p.h"
-#include "qtjambi_functionpointer.h"
 #include "qtjambi_templates.h"
 #include "qtjambi_containeraccess_p.h"
 
@@ -130,6 +131,21 @@ typedef QMap<QByteArray, size_t> SizeByTypeHash;
 Q_GLOBAL_STATIC(SizeByTypeHash, gAlignmentByTypeHash)
 #endif
 
+bool qtjambi_is_pointer_type(const QString& typeName){
+    if(typeName.endsWith("*"))
+        return true;
+    else{
+        int idx = typeName.indexOf("(*)");
+        if(idx<0)
+            idx = typeName.indexOf("(__cdecl*)");
+        if(idx>0){
+            QString prefix = typeName.left(idx);
+            return prefix.count('<')==prefix.count('>');
+        }
+    }
+    return false;
+}
+
 void reduceMapInstantiations(QStringList& instantiations){
     if(instantiations.size()>2){
         QStringList parameterTypes;
@@ -169,7 +185,7 @@ void insertHashFunctionByMetaType(int type, const QHashFunction& fct){
     gHashFunctionByMetaTypeHash->insert(type, fct);
 }
 
-hash_type pointerHashFunction(const void* ptr){ return !ptr ? 0 : qHash(quintptr(*reinterpret_cast<void*const*>(ptr)));}
+hash_type pointerHashFunction(const void* ptr, hash_type seed){ return !ptr ? 0 : qHash(quintptr(*reinterpret_cast<void*const*>(ptr)), seed);}
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 bool pointerLessFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) < quintptr(*reinterpret_cast<void*const*>(ptr2));}
 bool pointerEqualFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) == quintptr(*reinterpret_cast<void*const*>(ptr2));}
@@ -251,8 +267,8 @@ class QHashFunctionPointerData : public QHashFunctionPrivate{
 public:
     inline QHashFunctionPointerData(QHashFunction::FunctionPointer functionPointer) noexcept
      : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline hash_type invoke(const void* ptr) const override
-     { return m_functionPointer(ptr); }
+    inline hash_type invoke(const void* ptr, hash_type seed) const override
+     { return m_functionPointer(ptr, seed); }
 private:
     QHashFunction::FunctionPointer m_functionPointer;
 };
@@ -278,9 +294,9 @@ bool QHashFunction::operator !() const noexcept{
     return !d;
 }
 
-hash_type QHashFunction::operator()(const void* ptr) const{
+hash_type QHashFunction::operator()(const void* ptr, hash_type seed) const{
     Q_ASSERT(d);
-    return d->invoke(ptr);
+    return d->invoke(ptr, seed);
 }
 
 bool QtJambiTypeManager::isQtSubClass(JNIEnv *env, const QString &className, jobject classLoader) {
@@ -641,12 +657,12 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv *env, const QString &inte
                 return QLatin1String("io/qt/core/QObject");
             }else if(metaType.flags() & QMetaType::PointerToGadget){
                 return QLatin1String("io/qt/core/QMetaType$GenericGadget");
-            }else if(internalTypeName.endsWith("*")){
+            }else if(qtjambi_is_pointer_type(internalTypeName)){
                 return QLatin1String("io/qt/core/QMetaType$GenericObject");
             }else{
                 return QLatin1String("io/qt/core/QMetaType$GenericValue");
             }
-        }else if(internalTypeName.endsWith("*")){
+        }else if(qtjambi_is_pointer_type(internalTypeName)){
             return QLatin1String("io/qt/QNativePointer");
         }
     }
@@ -745,11 +761,10 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
         internalTypeName.chop(1);
         internalTypeName = internalTypeName.trimmed();
     }
-    bool isPointer = false;
+    bool isPointer = qtjambi_is_pointer_type(internalTypeName);
     if(internalTypeName.endsWith("*")){
         internalTypeName.chop(1);
         internalTypeName = internalTypeName.trimmed();
-        isPointer = true;
     }
     QStringList instantiations;
     {
@@ -942,7 +957,7 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
                 return QLatin1String("io/qt/core/QObject");
             }else if(metaType.flags() & QMetaType::PointerToGadget){
                 return QLatin1String("io/qt/core/QMetaType$GenericGadget");
-            }else if(_internalTypeName.endsWith("*")){
+            }else if(qtjambi_is_pointer_type(_internalTypeName)){
                 return QLatin1String("io/qt/core/QMetaType$GenericObject");
             }else{
                 return QLatin1String("io/qt/core/QMetaType$GenericValue");
@@ -1687,11 +1702,11 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         QString instantiation = internalTypeName.mid(idx+1).chopped(1).trimmed();
         QByteArray clazz;
         QtJambiMetaType memberMetaType(QMetaType::UnknownType);
-        bool isPointer = instantiation.endsWith("*");
+        bool isPointer = qtjambi_is_pointer_type(instantiation);
         size_t size = 0;
         size_t align = 0;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        bool isStaticType = true;
+        bool isStaticType = false;
 #endif
         const std::type_info* t;
         if(isPointer){
@@ -1723,16 +1738,16 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 align = getValueAlignment(*t);
-                if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t)){
+                if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
                     isStaticType = typeInfo->isStatic;
-                }
                 if(isFunctional(*t)){
                     QString typeName = qtjambi_type_name(*t);
                     if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                         isPointer = true;
-                        size = 0;
                     }
                 }
+                if(align==0 && !isPointer)
+                    align = QtJambiTypeManager::getInternalAlignment(instantiation);
 #else
                 if(memberMetaType.isValid()){
                     auto al = memberMetaType.alignOf();
@@ -1770,236 +1785,29 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             }
         }
 
-        AbstractContainerAccess* containerAccess = nullptr;
-        switch(memberMetaType.id()){
-        case QMetaType::Bool:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<bool>::newInstance();
-                break;
-            case ContainerType::QStack:
+        if(!isPointer && !memberMetaType.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<bool>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<bool>::newInstance();
-                break;
+            memberMetaType = QMetaType::type(qPrintable(instantiation));
+            isStaticType = QtJambiTypeManager::isStaticType(instantiation);
+#else
+            memberMetaType = QMetaType::fromName(qPrintable(instantiation));
 #endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<bool>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::Char:
-        case QMetaType::SChar:
-        case QMetaType::UChar:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<qint8>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<qint8>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<qint8>::newInstance();
-                break;
+            if(memberMetaType.isValid()){
+                auto sz = memberMetaType.sizeOf();
+                size = sz<0 ? 0 : size_t(sz);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                if(memberMetaType.alignOf()!=0)
+                    align = size_t(memberMetaType.alignOf());
 #endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<qint8>::newInstance();
-                break;
             }
-            break;
-        case QMetaType::Short:
-        case QMetaType::UShort:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<qint16>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<qint16>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<qint16>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<qint16>::newInstance();
-                break;
+            if(size==0){
+                size = getInternalSize(instantiation);
             }
-            break;
-        case QMetaType::Int:
-        case QMetaType::UInt:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<qint32>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<qint32>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<qint32>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<qint32>::newInstance();
-                break;
+            if(align==0){
+                align = getInternalAlignment(instantiation);
             }
-            break;
-        case QMetaType::LongLong:
-        case QMetaType::ULongLong:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<qint64>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<qint64>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<qint64>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<qint64>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::Double:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<double>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<double>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<double>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<double>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::Float:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<float>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<float>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<float>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<float>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::QChar:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<QChar>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<QChar>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<QChar>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<QChar>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::QVariant:
-            switch(containerType){
-            case ContainerType::QSet:
-                // no qhash for qvariant
-                // containerAccess = QtJambiPrivate::QSetAccess<QVariant>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<QVariant>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<QVariant>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<QVariant>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::QString:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<QString>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<QString>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<QString>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
-                break;
-            }
-            break;
-        case QMetaType::QObjectStar:
-            switch(containerType){
-            case ContainerType::QSet:
-                containerAccess = QtJambiPrivate::QSetAccess<QObject*>::newInstance();
-                break;
-            case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            case ContainerType::QVector:
-                containerAccess = QtJambiPrivate::QVectorAccess<QObject*>::newInstance();
-                break;
-            case ContainerType::QLinkedList:
-                containerAccess = QtJambiPrivate::QLinkedListAccess<QObject*>::newInstance();
-                break;
-#endif
-            case ContainerType::QQueue:
-            case ContainerType::QList:
-                containerAccess = QtJambiPrivate::QListAccess<QObject*>::newInstance();
-                break;
-            }
-            break;
-        default: break;
         }
+        AbstractContainerAccess* containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType);
 
         if(!clazz.isEmpty()){
             jclass elementClass = resolveClass(_env, clazz);
@@ -2014,39 +1822,36 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                                                 elementClass,
                                                                 instantiation, memberMetaType);
                 if(!isPointer && !memberMetaType.isValid()){
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     memberMetaType = QMetaType::type(qPrintable(instantiation));
-                    isStaticType = QtJambiTypeManager::isStaticType(instantiation);
-    #else
+                    align = getInternalAlignment(instantiation);
+#else
                     memberMetaType = QMetaType::fromName(qPrintable(instantiation));
-    #endif
-                    if(memberMetaType.isValid()){
-                        auto sz = memberMetaType.sizeOf();
-                        size = sz<0 ? 0 : size_t(sz);
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                        if(memberMetaType.alignOf()!=0)
-                            align = size_t(memberMetaType.alignOf());
-    #endif
-                    }
-                    if(size==0){
-                        size = getInternalSize(instantiation);
-                    }
-                    if(align==0){
-                        align = getInternalAlignment(instantiation);
-                    }
+                    align = memberMetaType.alignOf();
+#endif
+                    size = memberMetaType.sizeOf();
+                    containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType);
                 }
-                QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
-                if(ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(containerType, align, size
-    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                                     , isStaticType
-    #else
-                                                                                                     , false
-    #endif
-                                                                                                     )){
-                    containerAccess = accessFactory(memberMetaType,
-                                                    hashFunction,
-                                                    memberConverter,
-                                                    memberReConverter);
+
+                if(!containerAccess && (size==0 || memberMetaType.isValid())){
+                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+                    if(containerType == ContainerType::QSet
+                            && !hashFunction){
+                        if(clazz.startsWith("io/qt/core/QMetaType$Generic")){
+                            hashFunction = [](const void*, hash_type seed) -> hash_type{ return seed; };
+                        }else{
+                            JavaException::raiseIllegalArgumentException(_env, qPrintable(QString("Unable to use %1 in QSet.").arg(QLatin1String(clazz.replace('/', '.').replace('$', '.')))) QTJAMBI_STACKTRACEINFO );
+                        }
+                    }
+                    containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType,
+                                                                      align, size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                      isStaticType,
+#endif
+                                                                      isPointer,
+                                                                      hashFunction,
+                                                                      memberConverter,
+                                                                      memberReConverter);
                 }
             }
             if(containerAccess){
@@ -2069,7 +1874,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     break;
                 }
                 QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
-                int containerMetaType = sharedAccess->registerContainer(internalTypeName.toLatin1());
+                int containerMetaType = containerAccess->registerContainer(internalTypeName.toLatin1());
                 return [containerMetaType, containerType, sharedAccess]
                         (JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                     if(in){
@@ -2215,7 +2020,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         reduceMapInstantiations(instantiations);
         if(instantiations.size()==2){
             const std::type_info* t1;
-            bool isPointer1 = instantiations[0].endsWith("*");
+            bool isPointer1 = qtjambi_is_pointer_type(instantiations[0]);
             if(isPointer1){
                 t1 = getTypeByQtName(instantiations[0].chopped(1));
             }else{
@@ -2252,9 +2057,10 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         QString typeName = qtjambi_type_name(*t1);
                         if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                             isPointer1 = true;
-                            size1 = 0;
                         }
                     }
+                    if(align1==0 && !isPointer1)
+                        align1 = QtJambiTypeManager::getInternalAlignment(instantiations[0]);
 #else
                     if(memberMetaType1.isValid()){
                         auto al = memberMetaType1.alignOf();
@@ -2292,7 +2098,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
             }
             const std::type_info* t2;
-            bool isPointer2 = instantiations[1].endsWith("*");
+            bool isPointer2 = qtjambi_is_pointer_type(instantiations[1]);
             if(isPointer2){
                 t2 = getTypeByQtName(instantiations[1].chopped(1));
             }else{
@@ -2328,9 +2134,10 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         QString typeName = qtjambi_type_name(*t2);
                         if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                             isPointer2 = true;
-                            size2 = 0;
                         }
                     }
+                    if(align2==0 && !isPointer2)
+                        align2 = QtJambiTypeManager::getInternalAlignment(instantiations[1]);
 #else
                     if(memberMetaType2.isValid()){
                         auto al = memberMetaType2.alignOf();
@@ -2365,11 +2172,6 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
 
             if(!clazz1.isEmpty() && !clazz2.isEmpty()){
                 jclass keyClass = resolveClass(_env, clazz1);
-                InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
-                                                                _env,
-                                                                instantiations[0],
-                                                                memberMetaType1,
-                                                                keyClass);
                 if(!isPointer1 && !memberMetaType1.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     memberMetaType1 = QMetaType::type(qPrintable(instantiations[0]));
@@ -2391,16 +2193,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         align1 = getInternalAlignment(instantiations[0]);
                     }
                 }
-                ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
-                                                                _env,
-                                                                keyClass,
-                                                                instantiations[0], memberMetaType1);
                 jclass valueClass = resolveClass(_env, clazz2);
-                InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
-                                                                _env,
-                                                                instantiations[1],
-                                                                memberMetaType2,
-                                                                valueClass);
                 if(!isPointer2 && !memberMetaType2.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     memberMetaType2 = QMetaType::type(qPrintable(instantiations[1]));
@@ -2422,21 +2215,77 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         align2 = getInternalAlignment(instantiations[1]);
                     }
                 }
-                ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
-                                                                _env,
-                                                                valueClass,
-                                                                instantiations[1], memberMetaType2);
-                if(BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(mapType, align1, size1, align2, size2)){
-                    QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
-                    QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
-                    AbstractContainerAccess* containerAccess = accessFactory(memberMetaType1,
-                                                                             hashFunction1,
-                                                                             memberConverter1,
-                                                                             memberReConverter1,
-                                                                             memberMetaType2,
-                                                                             hashFunction2,
-                                                                             memberConverter2,
-                                                                             memberReConverter2);
+                AbstractContainerAccess* containerAccess = qtjambi_create_container_access(_env, mapType, memberMetaType1, memberMetaType2);
+                if(!containerAccess){
+                    InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
+                                                                    _env,
+                                                                    instantiations[0],
+                                                                    memberMetaType1,
+                                                                    keyClass);
+                    ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
+                                                                    _env,
+                                                                    keyClass,
+                                                                    instantiations[0], memberMetaType1);
+                    InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
+                                                                    _env,
+                                                                    instantiations[1],
+                                                                    memberMetaType2,
+                                                                    valueClass);
+                    ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
+                                                                    _env,
+                                                                    valueClass,
+                                                                    instantiations[1], memberMetaType2);
+                    bool tryAgain = false;
+                    if(!isPointer1 && !memberMetaType1.isValid()){
+                        tryAgain = true;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        memberMetaType1 = QMetaType::type(qPrintable(instantiations[0]));
+                        align1 = getInternalAlignment(instantiations[1]);
+#else
+                        memberMetaType1 = QMetaType::fromName(qPrintable(instantiations[0]));
+                        align1 = memberMetaType1.alignOf();
+#endif
+                        size1 = memberMetaType1.sizeOf();
+                    }
+                    if(!isPointer2 && !memberMetaType2.isValid()){
+                        tryAgain = true;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        memberMetaType2 = QMetaType::type(qPrintable(instantiations[1]));
+                        align2 = getInternalAlignment(instantiations[1]);
+#else
+                        memberMetaType2 = QMetaType::fromName(qPrintable(instantiations[1]));
+                        align2 = memberMetaType2.alignOf();
+#endif
+                        size2 = memberMetaType2.sizeOf();
+                    }
+                    if(tryAgain)
+                        containerAccess = qtjambi_create_container_access(_env, mapType, memberMetaType1, memberMetaType2);
+                    if(!containerAccess && (size1==0 || memberMetaType1.isValid()) && (size2==0 || memberMetaType2.isValid())){
+                        QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
+                        QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
+                        if(mapType == MapType::QHash
+                                && !hashFunction1){
+                            if(clazz1.startsWith("io/qt/core/QMetaType$Generic"))
+                                hashFunction1 = [](const void*, hash_type seed) -> hash_type{ return seed; };
+                            else
+                                JavaException::raiseIllegalArgumentException(_env, qPrintable(QString("Unable to use %1 as hash key.").arg(QLatin1String(clazz1.replace('/', '.').replace('$', '.')))) QTJAMBI_STACKTRACEINFO );
+                        }
+                        containerAccess = qtjambi_create_container_access(_env, mapType,
+                                                                          memberMetaType1,
+                                                                          align1, size1,
+                                                                          isPointer1,
+                                                                          hashFunction1,
+                                                                          memberConverter1,
+                                                                          memberReConverter1,
+                                                                          memberMetaType2,
+                                                                          align2, size2,
+                                                                          isPointer2,
+                                                                          hashFunction2,
+                                                                          memberConverter2,
+                                                                          memberReConverter2);
+                    }
+                }
+                if(containerAccess){
                     switch(mapType){
                     case MapType::QHash:
                         containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractHashAccess*>(containerAccess));
@@ -4239,7 +4088,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
         }
     } else if (Java::QtCore::QMetaType$GenericObject::isSameClass(_env,externalClass)) {
         int _internalMetaType = internalMetaType.id();
-        if(internalTypeName.endsWith("*")){
+        if(qtjambi_is_pointer_type(internalTypeName)){
             return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
                 void* ptr = nullptr;
                 if(val.l){
@@ -5611,7 +5460,18 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(!env->IsInstanceOf(val.l, externalClass))
                             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                    if(!val.l){
+                        QObject* object = nullptr;
+                        if(scope && !out){
+                            QObject** optr;
+                            out = optr = new QObject*(object);
+                            scope->addFinalAction([optr](){
+                                delete optr;
+                            });
+                        }else if(out)
+                            *reinterpret_cast<QObject**>(out) = object;
+                        return true;
+                    }else if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         QObject* object;
                         if(link->isQObject()){
                             object = link->qobject();
@@ -5668,13 +5528,13 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             }
             QString container = internalTypeName.mid(0, idx);
             QString instantiation = internalTypeName.mid(idx+1).chopped(1).trimmed();
-            bool isPointer = instantiation.endsWith("*");
+            bool isPointer = qtjambi_is_pointer_type(instantiation);
             QByteArray clazz;
             size_t size = 0;
             size_t align = 0;
             QtJambiMetaType memberMetaType(QMetaType::UnknownType);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            bool isStaticType = true;
+            bool isStaticType = false;
 #endif
             const std::type_info* t;
             if(isPointer){
@@ -5706,16 +5566,16 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     align = getValueAlignment(*t);
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t)){
+                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
                         isStaticType = typeInfo->isStatic;
-                    }
                     if(isFunctional(*t)){
                         QString typeName = qtjambi_type_name(*t);
                         if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                             isPointer = true;
-                            size = 0;
                         }
                     }
+                    if(align==0 && !isPointer)
+                        align = QtJambiTypeManager::getInternalAlignment(instantiation);
 #else
                     if(memberMetaType.isValid()){
                         auto al = memberMetaType.alignOf();
@@ -5753,237 +5613,29 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 }
             }
 
-            AbstractContainerAccess* containerAccess = nullptr;
-            switch(memberMetaType.id()){
-            case QMetaType::Bool:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<bool>::newInstance();
-                    break;
-                case ContainerType::QStack:
+            if(!isPointer && !memberMetaType.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<bool>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<bool>::newInstance();
-                    break;
+                memberMetaType = QMetaType::type(qPrintable(instantiation));
+                isStaticType = QtJambiTypeManager::isStaticType(instantiation);
+#else
+                memberMetaType = QMetaType::fromName(qPrintable(instantiation));
 #endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<bool>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::Char:
-            case QMetaType::SChar:
-            case QMetaType::UChar:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<qint8>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<qint8>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<qint8>::newInstance();
-                    break;
+                if(memberMetaType.isValid()){
+                    auto sz = memberMetaType.sizeOf();
+                    size = sz<0 ? 0 : size_t(sz);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                    if(memberMetaType.alignOf()!=0)
+                        align = size_t(memberMetaType.alignOf());
 #endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<qint8>::newInstance();
-                    break;
                 }
-                break;
-            case QMetaType::Short:
-            case QMetaType::UShort:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<qint16>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<qint16>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<qint16>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<qint16>::newInstance();
-                    break;
+                if(size==0){
+                    size = getInternalSize(instantiation);
                 }
-                break;
-            case QMetaType::Int:
-            case QMetaType::UInt:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<qint32>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<qint32>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<qint32>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<qint32>::newInstance();
-                    break;
+                if(align==0){
+                    align = getInternalAlignment(instantiation);
                 }
-                break;
-            case QMetaType::LongLong:
-            case QMetaType::ULongLong:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<qint64>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<qint64>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<qint64>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<qint64>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::Double:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<double>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<double>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<double>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<double>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::Float:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<float>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<float>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<float>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<float>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::QChar:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<QChar>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<QChar>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<QChar>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<QChar>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::QVariant:
-                switch(containerType){
-                case ContainerType::QSet:
-                    // no qhash for qvariant
-                    // containerAccess = QtJambiPrivate::QSetAccess<QVariant>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<QVariant>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<QVariant>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<QVariant>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::QString:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<QString>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<QString>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<QString>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
-                    break;
-                }
-                break;
-            case QMetaType::QObjectStar:
-                switch(containerType){
-                case ContainerType::QSet:
-                    containerAccess = QtJambiPrivate::QSetAccess<QObject*>::newInstance();
-                    break;
-                case ContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                case ContainerType::QVector:
-                    containerAccess = QtJambiPrivate::QVectorAccess<QObject*>::newInstance();
-                    break;
-                case ContainerType::QLinkedList:
-                    containerAccess = QtJambiPrivate::QLinkedListAccess<QObject*>::newInstance();
-                    break;
-#endif
-                case ContainerType::QQueue:
-                case ContainerType::QList:
-                    containerAccess = QtJambiPrivate::QListAccess<QObject*>::newInstance();
-                    break;
-                }
-                break;
-            default:
-                break;
             }
+            AbstractContainerAccess* containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType);
 
             if(!clazz.isEmpty()){
                 jclass elementClass = resolveClass(_env, clazz);
@@ -6039,44 +5691,32 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                                                     elementClass,
                                                                     instantiation, memberMetaType);
                     if(!isPointer && !memberMetaType.isValid()){
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    memberMetaType = QMetaType::type(qPrintable(instantiation));
-                    isStaticType = QtJambiTypeManager::isStaticType(instantiation);
-    #else
-                    memberMetaType = QMetaType::fromName(qPrintable(instantiation));
-    #endif
-                    if(memberMetaType.isValid()){
-                        auto sz = memberMetaType.sizeOf();
-                        size = sz<0 ? 0 : size_t(sz);
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                        if(memberMetaType.alignOf()!=0)
-                            align = size_t(memberMetaType.alignOf());
-    #endif
-                    }
-                    if(size==0){
-                        size = getInternalSize(instantiation);
-                    }
-                    if(align==0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        memberMetaType = QMetaType::type(qPrintable(instantiation));
                         align = getInternalAlignment(instantiation);
+#else
+                        memberMetaType = QMetaType::fromName(qPrintable(instantiation));
+                        align = memberMetaType.alignOf();
+#endif
+                        size = memberMetaType.sizeOf();
+                        containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType);
                     }
-                    }
-                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
-                    if(ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(containerType, align, size
-    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                                         , isStaticType
-    #else
-                                                                                                         , false
-    #endif
-                                                                                                         )){
-                        containerAccess = accessFactory(memberMetaType,
-                                                        hashFunction,
-                                                        memberConverter,
-                                                        memberReConverter);
-                        if(containerAccess)
-                            containerAccess->registerContainer(internalTypeName.toLatin1());
+                    if(!containerAccess && (size==0 || memberMetaType.isValid())){
+                        QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+                        containerAccess = qtjambi_create_container_access(_env, containerType,
+                                                                          memberMetaType,
+                                                                          align, size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                          isStaticType,
+#endif
+                                                                          isPointer,
+                                                                          hashFunction,
+                                                                          memberConverter,
+                                                                          memberReConverter);
                     }
                 }
                 if(containerAccess){
+                    containerAccess->registerContainer(internalTypeName.toLatin1());
                     switch(containerType){
                     case ContainerType::QStack:
     #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -6234,7 +5874,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             QStringList instantiations = internalTypeName.mid(idx+1).chopped(1).trimmed().split(",");
             reduceMapInstantiations(instantiations);
             if(instantiations.size()==2){
-                bool isPointer1 = instantiations[0].endsWith("*");
+                bool isPointer1 = qtjambi_is_pointer_type(instantiations[0]);
                 QByteArray clazz1;
                 size_t size1 = 0;
                 size_t align1 = 0;
@@ -6273,9 +5913,10 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             QString typeName = qtjambi_type_name(*t1);
                             if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                                 isPointer1 = true;
-                                size1 = 0;
                             }
                         }
+                        if(align1==0 && !isPointer1)
+                            align1 = QtJambiTypeManager::getInternalAlignment(instantiations[0]);
 #else
                         if(memberMetaType1.isValid()){
                             auto al = memberMetaType1.alignOf();
@@ -6313,7 +5954,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     }
                 }
                 const std::type_info* t2;
-                bool isPointer2 = instantiations[1].endsWith("*");
+                bool isPointer2 = qtjambi_is_pointer_type(instantiations[1]);
                 if(isPointer2){
                     t2 = getTypeByQtName(instantiations[1].chopped(1));
                 }else{
@@ -6345,9 +5986,10 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             QString typeName = qtjambi_type_name(*t2);
                             if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
                                 isPointer2 = true;
-                                size2 = 0;
                             }
                         }
+                        if(align2==0 && !isPointer2)
+                            align2 = QtJambiTypeManager::getInternalAlignment(instantiations[1]);
 #else
                         if(memberMetaType2.isValid()){
                             auto al = memberMetaType2.alignOf();
@@ -6383,14 +6025,8 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }
-
                 if(!clazz1.isEmpty() && !clazz2.isEmpty()){
                     jclass keyClass = resolveClass(_env, clazz1);
-                    InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
-                                                                    _env,
-                                                                    instantiations[0],
-                                                                    memberMetaType1,
-                                                                    keyClass);
                     if(!isPointer1 && !memberMetaType1.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         memberMetaType1 = QMetaType::type(qPrintable(instantiations[0]));
@@ -6412,16 +6048,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             align1 = getInternalAlignment(instantiations[0]);
                         }
                     }
-                    ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
-                                                                    _env,
-                                                                    keyClass,
-                                                                    instantiations[0], memberMetaType1);
                     jclass valueClass = resolveClass(_env, clazz2);
-                    InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
-                                                                    _env,
-                                                                    instantiations[1],
-                                                                    memberMetaType2,
-                                                                    valueClass);
                     if(!isPointer2 && !memberMetaType2.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         memberMetaType2 = QMetaType::type(qPrintable(instantiations[1]));
@@ -6443,264 +6070,310 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             align2 = getInternalAlignment(instantiations[1]);
                         }
                     }
-                    ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
-                                                                    _env,
-                                                                    valueClass,
-                                                                    instantiations[1], memberMetaType2);
-                    if(BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(mapType, align1, size1, align2, size2)){
-                        QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
-                        QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
-                        AbstractContainerAccess* containerAccess = accessFactory(
-                                                                       memberMetaType1,
-                                                                       hashFunction1,
-                                                                       memberConverter1,
-                                                                       memberReConverter1,
-                                                                       memberMetaType2,
-                                                                       hashFunction2,
-                                                                       memberConverter2,
-                                                                       memberReConverter2);
-                        if(containerAccess){
-                            int containerMetaType = containerAccess->registerContainer(internalTypeName.toLatin1());
-                            Q_UNUSED(containerMetaType)
+                    AbstractContainerAccess* containerAccess = qtjambi_create_container_access(_env, mapType, memberMetaType1, memberMetaType2);
+                    if(!containerAccess){
+                        InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
+                                                                        _env,
+                                                                        instantiations[0],
+                                                                        memberMetaType1,
+                                                                        keyClass);
+                        ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
+                                                                        _env,
+                                                                        keyClass,
+                                                                        instantiations[0], memberMetaType1);
+                        InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
+                                                                        _env,
+                                                                        instantiations[1],
+                                                                        memberMetaType2,
+                                                                        valueClass);
+                        ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
+                                                                        _env,
+                                                                        valueClass,
+                                                                        instantiations[1], memberMetaType2);
+                        bool tryAgain = false;
+                        if(!isPointer1 && !memberMetaType1.isValid()){
+                            tryAgain = true;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            memberMetaType1 = QMetaType::type(qPrintable(instantiations[0]));
+                            align1 = getInternalAlignment(instantiations[1]);
+#else
+                            memberMetaType1 = QMetaType::fromName(qPrintable(instantiations[0]));
+                            align1 = memberMetaType1.alignOf();
+#endif
+                            size1 = memberMetaType1.sizeOf();
+                        }
+                        if(!isPointer2 && !memberMetaType2.isValid()){
+                            tryAgain = true;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            memberMetaType2 = QMetaType::type(qPrintable(instantiations[1]));
+                            align2 = getInternalAlignment(instantiations[1]);
+#else
+                            memberMetaType2 = QMetaType::fromName(qPrintable(instantiations[1]));
+                            align2 = memberMetaType2.alignOf();
+#endif
+                            size2 = memberMetaType2.sizeOf();
+                        }
+                        if(tryAgain)
+                            containerAccess = qtjambi_create_container_access(_env, mapType, memberMetaType1, memberMetaType2);
+                        if(!containerAccess && (size1==0 || memberMetaType1.isValid()) && (size2==0 || memberMetaType2.isValid())){
+                            QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
+                            QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
+                            containerAccess = qtjambi_create_container_access(_env, mapType,
+                                                                              memberMetaType1,
+                                                                              align1, size1,
+                                                                              isPointer1,
+                                                                              hashFunction1,
+                                                                              memberConverter1,
+                                                                              memberReConverter1,
+                                                                              memberMetaType2,
+                                                                              align2, size2,
+                                                                              isPointer2,
+                                                                              hashFunction2,
+                                                                              memberConverter2,
+                                                                              memberReConverter2);
+                        }
+                    }
+                    if(containerAccess){
+                        int containerMetaType = containerAccess->registerContainer(internalTypeName.toLatin1());
+                        Q_UNUSED(containerMetaType)
+                        switch(mapType){
+                        case MapType::QHash:
+                            containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractHashAccess*>(containerAccess));
+                            break;
+                        case MapType::QMap:
+                            containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMapAccess*>(containerAccess));
+                            break;
+                        case MapType::QMultiMap:
+                            containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMultiMapAccess*>(containerAccess));
+                            break;
+                        case MapType::QMultiHash:
+                            containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMultiHashAccess*>(containerAccess));
+                            break;
+                        default:
+                            break;
+                        }
+                        QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
+
+                        if(Java::Runtime::Map::isAssignableFrom(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
+                        }else if(Java::Runtime::Collection::isAssignableFrom(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
+                        }else if(Java::Runtime::Byte::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
+                        }else if(Java::Runtime::Short::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
+                        }else if(Java::Runtime::Integer::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
+                        }else if(Java::Runtime::Long::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
+                        }else if(Java::Runtime::Character::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
+                        }else if(Java::Runtime::Boolean::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
+                        }else if(Java::Runtime::Float::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
+                        }else if(Java::Runtime::Double::isPrimitiveType(_env, keyClass)){
+                            keyClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
+                        }
+                        if(Java::Runtime::Map::isAssignableFrom(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
+                        }else if(Java::Runtime::Collection::isAssignableFrom(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
+                        }else if(Java::Runtime::Byte::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
+                        }else if(Java::Runtime::Short::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
+                        }else if(Java::Runtime::Integer::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
+                        }else if(Java::Runtime::Long::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
+                        }else if(Java::Runtime::Character::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
+                        }else if(Java::Runtime::Boolean::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
+                        }else if(Java::Runtime::Float::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
+                        }else if(Java::Runtime::Double::isPrimitiveType(_env, valueClass)){
+                            valueClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
+                        }
+
+                        if(mapType==MapType::QPair){
+                            QSharedPointer<AbstractPairAccess> pairAccess(sharedAccess.dynamicCast<AbstractPairAccess>());
+                            return [pairAccess,keyClass,valueClass](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType valueType) -> bool{
+                                bool response = false;
+                                if(valueType==jValueType::l){
+                                    jobject first = nullptr;
+                                    jobject second = nullptr;
+                                    if(in.l){
+                                        if(!env->IsInstanceOf(in.l, Java::QtCore::QPair::getClass(env)))
+                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: QPair<%2,%3>").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        first = Java::QtCore::QPair::first(env, in.l);
+                                        second = Java::QtCore::QPair::second(env, in.l);
+                                        if(first && !env->IsInstanceOf(first, keyClass))
+                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.first given: %1, expected: %2").arg(qtjambi_object_class_name(env, first).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        if(second && !env->IsInstanceOf(second, valueClass))
+                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.second given: %1, expected: %2").arg(qtjambi_object_class_name(env, second).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    }
+                                    if(!out){
+                                        if(scope){
+                                            out = pairAccess->createContainer();
+                                        }
+                                    }
+                                    if(out){
+                                        response = true;
+                                        pairAccess->setFirst(env, out, first);
+                                        pairAccess->setSecond(env, out, second);
+                                    }
+                                }
+                                return response;
+                            };
+                        }else{
+                            typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&);
+                            typedef void (*ContainerInsertFunction)(AbstractContainerAccess*, JNIEnv *, void*, jobject, jobject);
+
+                            IsBiContainerFunction isContainerFunction = qtjambi_is_QMap;
+                            ContainerInsertFunction containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
+                                if(AbstractMapAccess* _access = dynamic_cast<AbstractMapAccess*>(access))
+                                    _access->insert(env, container, key, value);
+                            };
+
                             switch(mapType){
-                            case MapType::QHash:
-                                containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractHashAccess*>(containerAccess));
-                                break;
-                            case MapType::QMap:
-                                containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMapAccess*>(containerAccess));
-                                break;
                             case MapType::QMultiMap:
-                                containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMultiMapAccess*>(containerAccess));
+                                isContainerFunction = qtjambi_is_QMultiMap;
+                                containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
+                                    jobject iterator = qtjambi_collection_iterator(env, value);
+                                    QList<jobject> values;
+                                    while(qtjambi_iterator_has_next(env, iterator)) {
+                                        jobject val = qtjambi_iterator_next(env, iterator);
+                                        values.prepend(val);
+                                    }
+                                    if(AbstractMultiMapAccess* _access = dynamic_cast<AbstractMultiMapAccess*>(access))
+                                        for(jobject val : values)
+                                            _access->insert(env, container, key, val);
+                                };
                                 break;
                             case MapType::QMultiHash:
-                                containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractMultiHashAccess*>(containerAccess));
+                                isContainerFunction = qtjambi_is_QMultiHash;
+                                containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
+                                    jobject iterator = qtjambi_collection_iterator(env, value);
+                                    QList<jobject> values;
+                                    while(qtjambi_iterator_has_next(env, iterator)) {
+                                        jobject val = qtjambi_iterator_next(env, iterator);
+                                        values.prepend(val);
+                                    }
+                                    if(AbstractMultiHashAccess* _access = dynamic_cast<AbstractMultiHashAccess*>(access))
+                                        for(jobject val : values)
+                                            _access->insert(env, container, key, val);
+                                };
+                                break;
+                            case MapType::QHash:
+                                isContainerFunction = qtjambi_is_QHash;
+                                containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
+                                    if(AbstractHashAccess* _access = dynamic_cast<AbstractHashAccess*>(access))
+                                        _access->insert(env, container, key, value);
+                                };
                                 break;
                             default:
                                 break;
                             }
-                            QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
 
-                            if(Java::Runtime::Map::isAssignableFrom(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
-                            }else if(Java::Runtime::Collection::isAssignableFrom(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
-                            }else if(Java::Runtime::Byte::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
-                            }else if(Java::Runtime::Short::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
-                            }else if(Java::Runtime::Integer::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
-                            }else if(Java::Runtime::Long::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
-                            }else if(Java::Runtime::Character::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
-                            }else if(Java::Runtime::Boolean::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
-                            }else if(Java::Runtime::Float::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
-                            }else if(Java::Runtime::Double::isPrimitiveType(_env, keyClass)){
-                                keyClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
-                            }
-                            if(Java::Runtime::Map::isAssignableFrom(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
-                            }else if(Java::Runtime::Collection::isAssignableFrom(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
-                            }else if(Java::Runtime::Byte::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
-                            }else if(Java::Runtime::Short::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
-                            }else if(Java::Runtime::Integer::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
-                            }else if(Java::Runtime::Long::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
-                            }else if(Java::Runtime::Character::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
-                            }else if(Java::Runtime::Boolean::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
-                            }else if(Java::Runtime::Float::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
-                            }else if(Java::Runtime::Double::isPrimitiveType(_env, valueClass)){
-                                valueClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
-                            }
-
-                            if(mapType==MapType::QPair){
-                                QSharedPointer<AbstractPairAccess> pairAccess(sharedAccess.dynamicCast<AbstractPairAccess>());
-                                return [pairAccess,keyClass,valueClass](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType valueType) -> bool{
-                                    bool response = false;
-                                    if(valueType==jValueType::l){
-                                        jobject first = nullptr;
-                                        jobject second = nullptr;
-                                        if(in.l){
-                                            if(!env->IsInstanceOf(in.l, Java::QtCore::QPair::getClass(env)))
-                                                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: QPair<%2,%3>").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                            first = Java::QtCore::QPair::first(env, in.l);
-                                            second = Java::QtCore::QPair::second(env, in.l);
-                                            if(first && !env->IsInstanceOf(first, keyClass))
-                                                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.first given: %1, expected: %2").arg(qtjambi_object_class_name(env, first).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                            if(second && !env->IsInstanceOf(second, valueClass))
-                                                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.second given: %1, expected: %2").arg(qtjambi_object_class_name(env, second).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                        }
+                            return [sharedAccess,
+                                    containerInsertFunction,
+                                    keyClass,
+                                    memberMetaType1,
+                                    valueClass,
+                                    memberMetaType2,
+                                    isContainerFunction](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType valueType) -> bool{
+                                bool response = false;
+                                if(valueType==jValueType::l){
+                                    if(in.l && !env->IsInstanceOf(in.l, Java::Runtime::Map::getClass(env)))
+                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")).arg(qtjambi_class_name(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    bool deleteAccess = true;
+                                    Q_ASSERT(env->GetObjectRefType(keyClass)==JNIGlobalRefType);
+                                    Q_ASSERT(env->GetObjectRefType(valueClass)==JNIGlobalRefType);
+                                    AbstractContainerAccess* access = sharedAccess->clone();
+                                    if(!in.l){
                                         if(!out){
                                             if(scope){
-                                                out = pairAccess->createContainer();
+                                                out = access->createContainer();
+                                                scope->addFinalAction([access,out](){
+                                                    access->deleteContainer(out);
+                                                    access->dispose();
+                                                });
+                                                deleteAccess = false;
+                                            }
+                                        }
+                                        response = true;
+                                    }else if(isContainerFunction(env, in.l, memberMetaType1, memberMetaType2)){
+                                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, in.l)){
+                                            if(out){
+                                                access->assign(out, link->pointer());
+                                            }else if(scope){
+                                                out = access->copyContainer(link->pointer());
+                                                scope->addFinalAction([access,out](){
+                                                    access->deleteContainer(out);
+                                                    access->dispose();
+                                                });
+                                                deleteAccess = false;
+                                            }else{
+                                                out = link->pointer();
+                                            }
+                                            response = true;
+                                        }else{
+                                            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        }
+                                    }else{
+                                        if(!out){
+                                            if(scope){
+                                                out = access->createContainer();
+                                                scope->addFinalAction([access,out](){
+                                                    access->deleteContainer(out);
+                                                    access->dispose();
+                                                });
+                                                deleteAccess = false;
                                             }
                                         }
                                         if(out){
-                                            response = true;
-                                            pairAccess->setFirst(env, out, first);
-                                            pairAccess->setSecond(env, out, second);
-                                        }
-                                    }
-                                    return response;
-                                };
-                            }else{
-                                typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&);
-                                typedef void (*ContainerInsertFunction)(AbstractContainerAccess*, JNIEnv *, void*, jobject, jobject);
-
-                                IsBiContainerFunction isContainerFunction = qtjambi_is_QMap;
-                                ContainerInsertFunction containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
-                                    if(AbstractMapAccess* _access = dynamic_cast<AbstractMapAccess*>(access))
-                                        _access->insert(env, container, key, value);
-                                };
-
-                                switch(mapType){
-                                case MapType::QMultiMap:
-                                    isContainerFunction = qtjambi_is_QMultiMap;
-                                    containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
-                                        jobject iterator = qtjambi_collection_iterator(env, value);
-                                        QList<jobject> values;
-                                        while(qtjambi_iterator_has_next(env, iterator)) {
-                                            jobject val = qtjambi_iterator_next(env, iterator);
-                                            values.prepend(val);
-                                        }
-                                        if(AbstractMultiMapAccess* _access = dynamic_cast<AbstractMultiMapAccess*>(access))
-                                            for(jobject val : values)
-                                                _access->insert(env, container, key, val);
-                                    };
-                                    break;
-                                case MapType::QMultiHash:
-                                    isContainerFunction = qtjambi_is_QMultiHash;
-                                    containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
-                                        jobject iterator = qtjambi_collection_iterator(env, value);
-                                        QList<jobject> values;
-                                        while(qtjambi_iterator_has_next(env, iterator)) {
-                                            jobject val = qtjambi_iterator_next(env, iterator);
-                                            values.prepend(val);
-                                        }
-                                        if(AbstractMultiHashAccess* _access = dynamic_cast<AbstractMultiHashAccess*>(access))
-                                            for(jobject val : values)
-                                                _access->insert(env, container, key, val);
-                                    };
-                                    break;
-                                case MapType::QHash:
-                                    isContainerFunction = qtjambi_is_QHash;
-                                    containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
-                                        if(AbstractHashAccess* _access = dynamic_cast<AbstractHashAccess*>(access))
-                                            _access->insert(env, container, key, value);
-                                    };
-                                    break;
-                                default:
-                                    break;
-                                }
-
-                                return [sharedAccess,
-                                        containerInsertFunction,
-                                        keyClass,
-                                        memberMetaType1,
-                                        valueClass,
-                                        memberMetaType2,
-                                        isContainerFunction](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType valueType) -> bool{
-                                    bool response = false;
-                                    if(valueType==jValueType::l){
-                                        if(in.l && !env->IsInstanceOf(in.l, Java::Runtime::Map::getClass(env)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")).arg(qtjambi_class_name(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                        bool deleteAccess = true;
-                                        Q_ASSERT(env->GetObjectRefType(keyClass)==JNIGlobalRefType);
-                                        Q_ASSERT(env->GetObjectRefType(valueClass)==JNIGlobalRefType);
-                                        AbstractContainerAccess* access = sharedAccess->clone();
-                                        if(!in.l){
-                                            if(!out){
-                                                if(scope){
-                                                    out = access->createContainer();
-                                                    scope->addFinalAction([access,out](){
-                                                        access->deleteContainer(out);
-                                                        access->dispose();
-                                                    });
-                                                    deleteAccess = false;
+                                            QList<jobject> content;
+                                            if(in.l){
+                                                jobject iter = qtjambi_map_entryset_iterator(env, in.l);
+                                                while(qtjambi_iterator_has_next(env, iter)){
+                                                    jobject next = qtjambi_iterator_next(env, iter);
+                                                    jobject key = qtjambi_map$entry_key(env, next);
+                                                    jobject value = qtjambi_map$entry_value(env, next);
+                                                    if(key && !env->IsInstanceOf(key, keyClass))
+                                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(qtjambi_object_class_name(env, key).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                                    if(value && !env->IsInstanceOf(value, valueClass))
+                                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map value given: %1, expected: %2").arg(qtjambi_object_class_name(env, value).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                                    content << next;
                                                 }
                                             }
-                                            response = true;
-                                        }else if(isContainerFunction(env, in.l, memberMetaType1, memberMetaType2)){
-                                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, in.l)){
-                                                if(out){
-                                                    access->assign(out, link->pointer());
-                                                }else if(scope){
-                                                    out = access->copyContainer(link->pointer());
-                                                    scope->addFinalAction([access,out](){
-                                                        access->deleteContainer(out);
-                                                        access->dispose();
-                                                    });
-                                                    deleteAccess = false;
-                                                }else{
-                                                    out = link->pointer();
-                                                }
-                                                response = true;
-                                            }else{
-                                                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                            }
-                                        }else{
-                                            if(!out){
-                                                if(scope){
-                                                    out = access->createContainer();
-                                                    scope->addFinalAction([access,out](){
-                                                        access->deleteContainer(out);
-                                                        access->dispose();
-                                                    });
-                                                    deleteAccess = false;
-                                                }
-                                            }
-                                            if(out){
-                                                QList<jobject> content;
-                                                if(in.l){
-                                                    jobject iter = qtjambi_map_entryset_iterator(env, in.l);
-                                                    while(qtjambi_iterator_has_next(env, iter)){
-                                                        jobject next = qtjambi_iterator_next(env, iter);
-                                                        jobject key = qtjambi_map$entry_key(env, next);
-                                                        jobject value = qtjambi_map$entry_value(env, next);
-                                                        if(key && !env->IsInstanceOf(key, keyClass))
-                                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(qtjambi_object_class_name(env, key).replace("$", ".")).arg(qtjambi_class_name(env, keyClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                                        if(value && !env->IsInstanceOf(value, valueClass))
-                                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map value given: %1, expected: %2").arg(qtjambi_object_class_name(env, value).replace("$", ".")).arg(qtjambi_class_name(env, valueClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                                        content << next;
-                                                    }
-                                                }
-                                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(out)){
-                                                    if(auto _access = link->containerAccess()){
-                                                        response = true;
-                                                        for(jobject entry : content) {
-                                                            jobject key = qtjambi_map$entry_key(env, entry);
-                                                            jobject val = qtjambi_map$entry_value(env, entry);
-                                                            containerInsertFunction(_access, env, out, key, val);
-                                                        }
-                                                        break;
-                                                    }
-                                                }
-                                                if(!response){
+                                            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(out)){
+                                                if(auto _access = link->containerAccess()){
                                                     response = true;
                                                     for(jobject entry : content) {
                                                         jobject key = qtjambi_map$entry_key(env, entry);
                                                         jobject val = qtjambi_map$entry_value(env, entry);
-                                                        containerInsertFunction(access, env, out, key, val);
+                                                        containerInsertFunction(_access, env, out, key, val);
                                                     }
+                                                    break;
+                                                }
+                                            }
+                                            if(!response){
+                                                response = true;
+                                                for(jobject entry : content) {
+                                                    jobject key = qtjambi_map$entry_key(env, entry);
+                                                    jobject val = qtjambi_map$entry_value(env, entry);
+                                                    containerInsertFunction(access, env, out, key, val);
                                                 }
                                             }
                                         }
-                                        if(deleteAccess)
-                                            access->dispose();
                                     }
-                                    return response;
-                                };
-                            }
+                                    if(deleteAccess)
+                                        access->dispose();
+                                }
+                                return response;
+                            };
                         }
                     }
                 }
@@ -7008,7 +6681,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 bool QtJambiTypeManager::isStaticType(const QString &internalTypeName){
-    if(internalTypeName.endsWith("*")){
+    if(qtjambi_is_pointer_type(internalTypeName)){
         return false;
     }
     if(internalTypeName.startsWith("QVector<")
@@ -7029,7 +6702,7 @@ bool QtJambiTypeManager::isStaticType(const QString &internalTypeName){
         reduceMapInstantiations(instantiations);
         if(instantiations.size()==2){
             const std::type_info* t1;
-            bool isPointer1 = instantiations[0].endsWith("*");
+            bool isPointer1 = qtjambi_is_pointer_type(instantiations[0]);
             if(isPointer1){
                 t1 = getTypeByQtName(instantiations[0].chopped(1));
                 if(!t1)
@@ -7038,7 +6711,7 @@ bool QtJambiTypeManager::isStaticType(const QString &internalTypeName){
                 t1 = getTypeByQtName(instantiations[0]);
             }
             const std::type_info* t2;
-            bool isPointer2 = instantiations[1].endsWith("*");
+            bool isPointer2 = qtjambi_is_pointer_type(instantiations[1]);
             if(isPointer2){
                 t2 = getTypeByQtName(instantiations[1].chopped(1));
                 if(!t2)
@@ -7085,7 +6758,7 @@ void QtJambiTypeManager::registerInternalAlignment(const QByteArray &internalTyp
 
 size_t QtJambiTypeManager::getInternalAlignment(const QString &internalTypeName)
 {
-    if(internalTypeName.endsWith("*")){
+    if(qtjambi_is_pointer_type(internalTypeName)){
         return Q_ALIGNOF(void*);
     }
     size_t align;
@@ -7128,7 +6801,7 @@ size_t QtJambiTypeManager::getInternalAlignment(const QString &internalTypeName)
 }
 
 size_t QtJambiTypeManager::getInternalSize(const QString &internalTypeName){
-    if(internalTypeName.endsWith("*")){
+    if(qtjambi_is_pointer_type(internalTypeName)){
         return sizeof(void*);
     }
     int metaType = QMetaType::type(qPrintable(internalTypeName));
@@ -7150,13 +6823,13 @@ size_t QtJambiTypeManager::getInternalSize(const QString &internalTypeName){
             instantiations[0] = instantiations[0].trimmed();
             instantiations[1] = instantiations[0].trimmed();
             const std::type_info* t1;
-            if(instantiations[0].endsWith("*")){
+            if(qtjambi_is_pointer_type(instantiations[0])){
                 t1 = getTypeByQtName(instantiations[0].chopped(1));
             }else{
                 t1 = getTypeByQtName(instantiations[0]);
             }
             const std::type_info* t2;
-            if(instantiations[1].endsWith("*")){
+            if(qtjambi_is_pointer_type(instantiations[1])){
                 t2 = getTypeByQtName(instantiations[1].chopped(1));
             }else{
                 t2 = getTypeByQtName(instantiations[1]);
@@ -7164,7 +6837,7 @@ size_t QtJambiTypeManager::getInternalSize(const QString &internalTypeName){
             size_t size1 = 0;
             size_t size2 = 0;
             if(t1){
-                size1 = instantiations[0].endsWith("*") ? sizeof(void*) : getValueSize(*t1);
+                size1 = qtjambi_is_pointer_type(instantiations[0]) ? sizeof(void*) : getValueSize(*t1);
             }else{
                 int metaType1 = QMetaType::type(qPrintable(instantiations[0]));
                 if(metaType1 != QMetaType::UnknownType){
@@ -7176,7 +6849,7 @@ size_t QtJambiTypeManager::getInternalSize(const QString &internalTypeName){
                 }
             }
             if(t2){
-                size2 = instantiations[1].endsWith("*") ? sizeof(void*) : getValueSize(*t2);
+                size2 = qtjambi_is_pointer_type(instantiations[1]) ? sizeof(void*) : getValueSize(*t2);
             }else{
                 int metaType2 = QMetaType::type(qPrintable(instantiations[1]));
                 if(metaType2 != QMetaType::UnknownType){
@@ -7225,14 +6898,98 @@ void setCurrentMetaData(uint i, const MetaData& metaData)
     gCurrentMetaData->storage[i].setLocalData(metaData);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+bool is_less(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){
+    int r = 0;
+    if(QMetaType::compare(ptr, ptr2, keyMetaType.id(), &r))
+        return r<0;
+    const QtPrivate::AbstractComparatorFunction * comparator = qtjambi_registered_comparator(keyMetaType.id());
+    if(comparator && comparator->lessThan)
+        return comparator->lessThan(comparator, ptr, ptr2);
+    if(keyMetaType.id()<QMetaType::User)
+        return QVariant(keyMetaType.id(), ptr)<QVariant(keyMetaType.id(), ptr2);
+    if(keyMetaType.flags() & QMetaType::IsEnumeration){
+        switch(keyMetaType.sizeOf()){
+        case 1: return *reinterpret_cast<const qint8*>(ptr) < *reinterpret_cast<const qint8*>(ptr2);
+        case 2: return *reinterpret_cast<const qint16*>(ptr) < *reinterpret_cast<const qint16*>(ptr2);
+        case 4: return *reinterpret_cast<const qint32*>(ptr) < *reinterpret_cast<const qint32*>(ptr2);
+        case 8: return *reinterpret_cast<const qint64*>(ptr) < *reinterpret_cast<const qint64*>(ptr2);
+        default: break;
+        }
+    }else if(qtjambi_is_pointer_type(keyMetaType)){
+        return *reinterpret_cast<void*const*const>(ptr) < *reinterpret_cast<void*const*const>(ptr2);
+    }
+    return false;
+}
+
+bool is_equals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){
+    int r = 0;
+    if(QMetaType::equals(ptr, ptr2, keyMetaType.id(), &r))
+        return r==0;
+    const QtPrivate::AbstractComparatorFunction * comparator = qtjambi_registered_comparator(keyMetaType.id());
+    if(comparator && comparator->equals)
+        return comparator->equals(comparator, ptr, ptr2);
+    if(comparator && comparator->lessThan)
+        return comparator->lessThan(comparator, ptr, ptr2) && comparator->lessThan(comparator, ptr2, ptr);
+    if(keyMetaType.id()<QMetaType::User)
+        return QVariant(keyMetaType.id(), ptr)==QVariant(keyMetaType.id(), ptr2);
+    if(keyMetaType.flags() & QMetaType::IsEnumeration){
+        switch(keyMetaType.sizeOf()){
+        case 1: return *reinterpret_cast<const qint8*>(ptr) < *reinterpret_cast<const qint8*>(ptr2);
+        case 2: return *reinterpret_cast<const qint16*>(ptr) < *reinterpret_cast<const qint16*>(ptr2);
+        case 4: return *reinterpret_cast<const qint32*>(ptr) < *reinterpret_cast<const qint32*>(ptr2);
+        case 8: return *reinterpret_cast<const qint64*>(ptr) < *reinterpret_cast<const qint64*>(ptr2);
+        default: break;
+        }
+    }else if(qtjambi_is_pointer_type(keyMetaType)){
+        return *reinterpret_cast<void*const*const>(ptr) == *reinterpret_cast<void*const*const>(ptr2);
+    }
+    return false;
+}
+
+const QtPrivate::AbstractDebugStreamFunction * qtjambi_registered_debugstream_operator(int typeId);
+
+QDebug& debug_stream(QDebug& debug, uint typeId, const void* ptr)
+{
+    if(!QMetaType::debugStream(debug, ptr, typeId)){
+        if(const QtPrivate::AbstractDebugStreamFunction *function = qtjambi_registered_debugstream_operator(typeId)){
+            function->stream(function, debug, ptr);
+        }else if(typeId<QMetaType::User){
+            QString tmp;
+            {
+                QDebug(&tmp) << QVariant(typeId, ptr);
+            }
+            tmp = tmp.trimmed();
+            QString suffix = QLatin1String("QVariant(%1, ");
+            suffix = suffix.arg(QLatin1String(QMetaType::typeName(typeId)));
+            if(tmp.startsWith(suffix) && tmp.endsWith(")")){
+                tmp = tmp.mid(suffix.length()).chopped(1);
+            }
+            debug.noquote() << tmp;
+        }else if(qtjambi_is_pointer_type(QMetaType(typeId))){
+            debug << QMetaType::typeName(typeId) << "@" << QString::number(*reinterpret_cast<const quintptr*>(ptr), 16);
+        }else if(QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration){
+            switch(QMetaType::sizeOf(typeId)){
+            case 1: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint8*>(ptr) << ")";
+            case 2: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint16*>(ptr) << ")";
+            case 4: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint32*>(ptr) << ")";
+            case 8: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint64*>(ptr) << ")";
+            default: break;
+            }
+        }
+    }
+    return debug;
+}
+#endif
+
 void constructContainerElement(uint i, void* ptr, const void* copy)
 {
     const MetaData& metaData = currentMetaData(i);
     Q_ASSERT(metaData.metaType.isValid());
 //    if(copy)
-//        fprintf(stderr, "copy %s from %p at %p\n", QMetaType::typeName(metaData.metaType), copy, ptr);
+//        fprintf(stderr, "copy %s from %p at %p\n", metaData.metaType.name().data(), copy, ptr);
 //    else
-//        fprintf(stderr, "creating %s at %p\n", QMetaType::typeName(metaData.metaType), ptr);
+//        fprintf(stderr, "creating %s at %p\n", metaData.metaType.name().data(), ptr);
     metaData.metaType.construct(ptr, copy);
 }
 
@@ -7249,10 +7006,9 @@ QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr)
     const MetaData& metaData = currentMetaData(i);
     Q_ASSERT(metaData.metaType.isValid());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if(!QMetaType::debugStream(debug, ptr, metaData.metaType.id())){
+    debug_stream(debug, metaData.metaType.id(), ptr);
 #else
     if(!QMetaType(metaData.metaType).debugStream(debug, ptr)){
-#endif
         if(metaData.metaType.flags() & QMetaType::IsEnumeration){
             switch(metaData.metaType.sizeOf()){
             case 1: return debug << metaData.metaType.name() << "(" << *reinterpret_cast<const qint8*>(ptr) << ")";
@@ -7263,6 +7019,7 @@ QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr)
             }
         }
     }
+#endif
     return debug;
 }
 
@@ -7310,11 +7067,11 @@ QDataStream & containerElementDataStreamIn(QDataStream & stream, uint i, void* p
     return stream;
 }
 
-hash_type containerElementHash(uint i, const void* ptr)
+hash_type containerElementHash(uint i, const void* ptr, hash_type seed)
 {
     const MetaData& metaData = currentMetaData(i);
     if(metaData.hashFunction){
-        return metaData.hashFunction(ptr);
+        return metaData.hashFunction(ptr, seed);
     }else{
         if(metaData.metaType.flags() & QMetaType::IsEnumeration){
             switch(metaData.metaType.sizeOf()){
@@ -7336,30 +7093,7 @@ bool containerElementEqual(uint i, const void* ptr, const void* ptr2)
     const MetaData& metaData = currentMetaData(i);
     Q_ASSERT(metaData.metaType.isValid());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int result = -1;
-    if(QMetaType::equals(ptr, ptr2, metaData.metaType.id(), &result))
-        return result==0;
-    const QtPrivate::AbstractComparatorFunction * comparator = qtjambi_registered_comparator(metaData.metaType.id());
-    if(comparator){
-        if(comparator->equals)
-            return comparator->equals(comparator, ptr, ptr2);
-        else if(comparator->lessThan)
-            return !comparator->lessThan(comparator, ptr, ptr2) && !comparator->lessThan(comparator, ptr2, ptr);
-    }
-    if(metaData.metaType.id()<QMetaType::User)
-        return QVariant(metaData.metaType.id(), ptr)==QVariant(metaData.metaType.id(), ptr2);
-    if(metaData.metaType.flags() & QMetaType::IsEnumeration){
-        switch(metaData.metaType.sizeOf()){
-        case 1: return *reinterpret_cast<const qint8*>(ptr) == *reinterpret_cast<const qint8*>(ptr2);
-        case 2: return *reinterpret_cast<const qint16*>(ptr) == *reinterpret_cast<const qint16*>(ptr2);
-        case 4: return *reinterpret_cast<const qint32*>(ptr) == *reinterpret_cast<const qint32*>(ptr2);
-        case 8: return *reinterpret_cast<const qint64*>(ptr) == *reinterpret_cast<const qint64*>(ptr2);
-        default: break;
-        }
-    }else if((metaData.metaType.flags() & QMetaType::PointerToGadget) || metaData.metaType.flags() & QMetaType::PointerToQObject){
-        return *reinterpret_cast<void*const*const>(ptr) == *reinterpret_cast<void*const*const>(ptr2);
-    }
-    return false;
+    return is_equals(metaData.metaType, ptr, ptr2);
 #else
     return metaData.metaType.equals(ptr, ptr2);
 #endif
@@ -7370,27 +7104,7 @@ bool containerElementLess(uint i, const void* ptr, const void* ptr2)
     const MetaData& metaData = currentMetaData(i);
     Q_ASSERT(metaData.metaType.isValid());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int result = -1;
-    if(QMetaType::compare(ptr, ptr2, metaData.metaType.id(), &result))
-        return result<0;
-    const QtPrivate::AbstractComparatorFunction * comparator = qtjambi_registered_comparator(metaData.metaType.id());
-    if(comparator && comparator->lessThan){
-        return comparator->lessThan(comparator, ptr, ptr2);
-    }
-    if(metaData.metaType.id()<QMetaType::User)
-        return QVariant(metaData.metaType.id(), ptr)<QVariant(metaData.metaType.id(), ptr2);
-    if(metaData.metaType.flags() & QMetaType::IsEnumeration){
-        switch(metaData.metaType.sizeOf()){
-        case 1: return *reinterpret_cast<const qint8*>(ptr) < *reinterpret_cast<const qint8*>(ptr2);
-        case 2: return *reinterpret_cast<const qint16*>(ptr) < *reinterpret_cast<const qint16*>(ptr2);
-        case 4: return *reinterpret_cast<const qint32*>(ptr) < *reinterpret_cast<const qint32*>(ptr2);
-        case 8: return *reinterpret_cast<const qint64*>(ptr) < *reinterpret_cast<const qint64*>(ptr2);
-        default: break;
-        }
-    }else if((metaData.metaType.flags() & QMetaType::PointerToGadget) || metaData.metaType.flags() & QMetaType::PointerToQObject){
-        return *reinterpret_cast<void*const*const>(ptr) < *reinterpret_cast<void*const*const>(ptr2);
-    }
-    return false;
+    return is_less(metaData.metaType, ptr, ptr2);
 #else
     QPartialOrdering po = metaData.metaType.compare(ptr, ptr2);
     return po == QPartialOrdering::Less;
@@ -7414,7 +7128,7 @@ QMetaType::Destructor wrapDestructor(int metaType,
                                     uint index,
                                     QMetaType::Destructor destructor,
                                     uint hash){
-    return qtjambi_function_pointer<64,void(void*)>([index, metaType, hashFunction, destructor](void * ptr){
+    return qtjambi_function_pointer<16,void(void*)>([index, metaType, hashFunction, destructor](void * ptr){
         destruct(index, metaType, hashFunction, destructor, ptr);
     }, hash);
 }
@@ -7434,7 +7148,7 @@ QMetaType::Constructor wrapConstructor(int metaType,
                                       QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::Constructor constructor, uint hash){
-    return qtjambi_function_pointer<64,void*(void*, const void *)>([index, metaType, hashFunction, constructor](void *where, const void * copy)->void *{
+    return qtjambi_function_pointer<16,void*(void*, const void *)>([index, metaType, hashFunction, constructor](void *where, const void * copy)->void *{
         return construct(index, metaType, hashFunction, constructor, where, copy);
     }, hash);
 }
@@ -7453,7 +7167,7 @@ QMetaType::SaveOperator wrapSaveOperator(int metaType,
                                       QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::SaveOperator saveOperator, uint hash){
-    return qtjambi_function_pointer<64,void(QDataStream &, const void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, const void * data){
+    return qtjambi_function_pointer<16,void(QDataStream &, const void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, const void * data){
         _saveOperator(index, metaType, hashFunction, saveOperator, stream, data);
     }, hash);
 }
@@ -7472,7 +7186,7 @@ QMetaType::LoadOperator wrapLoadOperator(int metaType,
                                       QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::LoadOperator saveOperator, uint hash){
-    return qtjambi_function_pointer<64,void(QDataStream &, void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, void * data){
+    return qtjambi_function_pointer<16,void(QDataStream &, void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, void * data){
         _loadOperator(index, metaType, hashFunction, saveOperator, stream, data);
     }, hash);
 }
@@ -7498,7 +7212,7 @@ QMetaType::Destructor wrapDestructor(int metaType1,
                                     QHashFunction hashFunction2,
                                     QMetaType::Destructor destructor,
                                     uint hash){
-    return qtjambi_function_pointer<64,void(void*)>([metaType1, hashFunction1,
+    return qtjambi_function_pointer<16,void(void*)>([metaType1, hashFunction1,
                                                                           metaType2, hashFunction2,
                                                                           destructor](void * ptr){
         destruct(metaType1, hashFunction1,
@@ -7527,7 +7241,7 @@ QMetaType::Constructor wrapConstructor(int metaType1,
                                       int metaType2,
                                       QHashFunction hashFunction2,
                                       QMetaType::Constructor constructor, uint hash){
-    return qtjambi_function_pointer<64,void*(void*, const void *)>([metaType1, hashFunction1,
+    return qtjambi_function_pointer<16,void*(void*, const void *)>([metaType1, hashFunction1,
                                                                                          metaType2, hashFunction2,
                                                                                          constructor](void *where, const void * copy)->void *{
         return construct(metaType1, hashFunction1,
@@ -7555,7 +7269,7 @@ QMetaType::SaveOperator wrapSaveOperator(int metaType1,
                                          int metaType2,
                                          QHashFunction hashFunction2,
                                          QMetaType::SaveOperator saveOperator, uint hash){
-    return qtjambi_function_pointer<64,void(QDataStream &, const void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, const void * data){
+    return qtjambi_function_pointer<16,void(QDataStream &, const void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, const void * data){
         _saveOperator(metaType1, hashFunction1, metaType2, hashFunction2, saveOperator, stream, data);
     }, hash);
 }
@@ -7579,7 +7293,7 @@ QMetaType::LoadOperator wrapLoadOperator(int metaType1,
                                          int metaType2,
                                          QHashFunction hashFunction2,
                                          QMetaType::LoadOperator saveOperator, uint hash){
-    return qtjambi_function_pointer<64,void(QDataStream &, void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, void * data){
+    return qtjambi_function_pointer<16,void(QDataStream &, void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, void * data){
         _loadOperator(metaType1, hashFunction1, metaType2, hashFunction2, saveOperator, stream, data);
     }, hash);
 }
@@ -7653,11 +7367,11 @@ int qtjambi_register_container_type(const QByteArray& typeName, size_t container
         int _metaType = metaType.id();
         insertHashFunctionByMetaType(newMetaType,
                                             [_metaType, hashFunction, hashWrapper]
-                                            (const void* ptr)->hash_type{
+                                            (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     MetaData oldMetaData = currentMetaData(0);
                                                     setCurrentMetaData(0, MetaData(_metaType, hashFunction));
-                                                    hash_type result = hashWrapper(ptr, hashFunction);
+                                                    hash_type result = hashWrapper(ptr, seed, hashFunction);
                                                     setCurrentMetaData(0, oldMetaData);
                                                     return result;
                                                 }else{
@@ -7767,13 +7481,13 @@ int qtjambi_register_bicontainer_type(const QByteArray& typeName,
         insertHashFunctionByMetaType(newMetaType,
                                             [_metaType1, hashFunction1,
                                              _metaType2, hashFunction2, hashWrapper]
-                                            (const void* ptr)->hash_type{
+                                            (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     MetaData oldMetaData1 = currentMetaData(0);
                                                     setCurrentMetaData(0, MetaData(_metaType1, hashFunction1));
                                                     MetaData oldMetaData2 = currentMetaData(1);
                                                     setCurrentMetaData(1, MetaData(_metaType2, hashFunction2));
-                                                    hash_type result = hashWrapper(ptr, hashFunction1, hashFunction2);
+                                                    hash_type result = hashWrapper(ptr, seed, hashFunction1, hashFunction2);
                                                     setCurrentMetaData(0, oldMetaData1);
                                                     setCurrentMetaData(1, oldMetaData2);
                                                     return result;
@@ -8068,7 +7782,7 @@ bool qtjambi_container_lessThan(const QtPrivate::QMetaTypeInterface * metaTypeIn
 void qtjambi_container_debugStream(const QtPrivate::QMetaTypeInterface * metaTypeInterface, QDebug & debug, const void *container){
     if(gContainerInfos->contains(metaTypeInterface)){
         const ContainerInfo& info = (*gContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.debugStream){
             if(info.isPointer){
                 info.debugStream(metaTypeInterface, debug, container);
             }else{
@@ -8080,7 +7794,7 @@ void qtjambi_container_debugStream(const QtPrivate::QMetaTypeInterface * metaTyp
         }
     }else if(gBiContainerInfos->contains(metaTypeInterface)){
         const BiContainerInfo& info = (*gBiContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.debugStream){
             if(info.isPointer1 && info.isPointer2){
                 info.debugStream(metaTypeInterface, debug, container);
             }else if(info.isPointer1){
@@ -8109,7 +7823,7 @@ void qtjambi_container_debugStream(const QtPrivate::QMetaTypeInterface * metaTyp
 void qtjambi_container_dataStreamOut(const QtPrivate::QMetaTypeInterface * metaTypeInterface, QDataStream & dataStream, const void *container){
     if(gContainerInfos->contains(metaTypeInterface)){
         const ContainerInfo& info = (*gContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.dataStreamOut){
             if(info.isPointer){
                 info.dataStreamOut(metaTypeInterface, dataStream, container);
             }else{
@@ -8121,7 +7835,7 @@ void qtjambi_container_dataStreamOut(const QtPrivate::QMetaTypeInterface * metaT
         }
     }else if(gBiContainerInfos->contains(metaTypeInterface)){
         const BiContainerInfo& info = (*gBiContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.dataStreamOut){
             if(info.isPointer1 && info.isPointer2){
                 info.dataStreamOut(metaTypeInterface, dataStream, container);
             }else if(info.isPointer1){
@@ -8150,7 +7864,7 @@ void qtjambi_container_dataStreamOut(const QtPrivate::QMetaTypeInterface * metaT
 void qtjambi_container_dataStreamIn(const QtPrivate::QMetaTypeInterface * metaTypeInterface, QDataStream & dataStream, void *container){
     if(gContainerInfos->contains(metaTypeInterface)){
         const ContainerInfo& info = (*gContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.dataStreamIn){
             if(info.isPointer){
                 info.dataStreamIn(metaTypeInterface, dataStream, container);
             }else{
@@ -8162,7 +7876,7 @@ void qtjambi_container_dataStreamIn(const QtPrivate::QMetaTypeInterface * metaTy
         }
     }else if(gBiContainerInfos->contains(metaTypeInterface)){
         const BiContainerInfo& info = (*gBiContainerInfos)[metaTypeInterface];
-        if(info.lessThan){
+        if(info.dataStreamIn){
             if(info.isPointer1 && info.isPointer2){
                 info.dataStreamIn(metaTypeInterface, dataStream, container);
             }else if(info.isPointer1){
@@ -8211,9 +7925,9 @@ const QtMetaContainerPrivate::QMetaSequenceInterface& qtjambi_find_meta_sequence
     }
 }
 
-const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_association(QMetaType keyMetaType, QMetaType valueMetaType, const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface)
+const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_association(QMetaType metaType1, QHashFunction hashFunction1, QMetaType metaType2, QHashFunction hashFunction2, const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface)
 {
-    hash_type hash = hashSum({qHash(quintptr(&defaultInterface)), qHash(keyMetaType.id()), qHash(valueMetaType.id())});
+    hash_type hash = hashSum({qHash(quintptr(&defaultInterface)), qHash(metaType1.id()), qHash(metaType2.id())});
     {
         QReadLocker locker(gCacheLock());
         Q_UNUSED(locker)
@@ -8226,8 +7940,168 @@ const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_assoc
         if(gMetaAssociationHash->contains(hash))
            return (*gMetaAssociationHash)[hash];
         QtMetaContainerPrivate::QMetaAssociationInterface d(defaultInterface);
-        d.keyMetaType = keyMetaType.iface();
-        d.mappedMetaType = valueMetaType.iface();
+        d.keyMetaType = metaType1.iface();
+        d.mappedMetaType = metaType2.iface();
+
+        if(auto insertKeyFn = d.insertKeyFn){
+            d.insertKeyFn = qtjambi_function_pointer<16,void(void *, const void *)>([insertKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](void *c, const void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                insertKeyFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto removeKeyFn = d.removeKeyFn){
+            d.removeKeyFn = qtjambi_function_pointer<16,void(void *, const void *)>([removeKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](void *c, const void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                removeKeyFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto containsKeyFn = d.containsKeyFn){
+            d.containsKeyFn = qtjambi_function_pointer<16,bool(const void *, const void *)>([containsKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, const void *k) -> bool {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                bool result = containsKeyFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+                return result;
+            }, hash);
+        }
+
+        if(auto mappedAtKeyFn = d.mappedAtKeyFn){
+            d.mappedAtKeyFn = qtjambi_function_pointer<16,void(const void *, const void *, void *)>([mappedAtKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, const void *k, void *r) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                mappedAtKeyFn(c,k, r);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto setMappedAtKeyFn = d.setMappedAtKeyFn){
+            d.setMappedAtKeyFn = qtjambi_function_pointer<16,void(void *, const void *, const void *)>([setMappedAtKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](void *c, const void *k, const void *r) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                setMappedAtKeyFn(c,k, r);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto createIteratorAtKeyFn = d.createIteratorAtKeyFn){
+            d.createIteratorAtKeyFn = qtjambi_function_pointer<16,void*(void *, const void *)>([createIteratorAtKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](void *c, const void *k) -> void* {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                void* result = createIteratorAtKeyFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+                return result;
+            }, hash);
+        }
+
+        if(auto createConstIteratorAtKeyFn = d.createConstIteratorAtKeyFn){
+            d.createConstIteratorAtKeyFn = qtjambi_function_pointer<16,void*(const void *, const void *)>([createConstIteratorAtKeyFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, const void *k) -> void* {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                void* result = createConstIteratorAtKeyFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+                return result;
+            }, hash);
+        }
+
+        if(auto keyAtIteratorFn = d.keyAtIteratorFn){
+            d.keyAtIteratorFn = qtjambi_function_pointer<16,void(const void *, void *)>([keyAtIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                keyAtIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto keyAtConstIteratorFn = d.keyAtConstIteratorFn){
+            d.keyAtConstIteratorFn = qtjambi_function_pointer<16,void(const void *, void *)>([keyAtConstIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                keyAtConstIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto mappedAtIteratorFn = d.mappedAtIteratorFn){
+            d.mappedAtIteratorFn = qtjambi_function_pointer<16,void(const void *, void *)>([mappedAtIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                mappedAtIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto mappedAtConstIteratorFn = d.mappedAtConstIteratorFn){
+            d.mappedAtConstIteratorFn = qtjambi_function_pointer<16,void(const void *, void *)>([mappedAtConstIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                mappedAtConstIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+        if(auto setMappedAtIteratorFn = d.setMappedAtIteratorFn){
+            d.setMappedAtIteratorFn = qtjambi_function_pointer<16,void(const void *, const void *)>([setMappedAtIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](const void *c, const void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                setMappedAtIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
+            if(auto eraseKeyAtIteratorFn = d.eraseKeyAtIteratorFn){
+            d.eraseKeyAtIteratorFn = qtjambi_function_pointer<16,void(void *, const void *)>([eraseKeyAtIteratorFn,metaType1,hashFunction1,metaType2,hashFunction2](void *c, const void *k) {
+                MetaData oldMetaData1 = currentMetaData(0);
+                setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
+                MetaData oldMetaData2 = currentMetaData(1);
+                setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
+                eraseKeyAtIteratorFn(c,k);
+                setCurrentMetaData(0, oldMetaData1);
+                setCurrentMetaData(1, oldMetaData2);
+            }, hash);
+        }
+
         gMetaAssociationHash->insert(hash, d);
         return (*gMetaAssociationHash)[hash];
     }
@@ -8249,23 +8123,20 @@ int qtjambi_register_container_type(const QByteArray& typeName, size_t container
                                     HashWrapper hashWrapper)
 {
     QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType.id());
-    if(!const_cast<QMetaType&>(metaType).iface()->defaultCtr)
-        defaultCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->copyCtr)
-        copyCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->moveCtr)
-        moveCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->dtor)
-        dtor = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->equals)
+    if(!const_cast<QMetaType&>(metaType).iface()->equals
+            && !(metaType.flags() & QMetaType::IsPointer)
+            && !(metaType.flags() & QMetaType::IsEnumeration))
         equals = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->lessThan)
-        lessThan = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->debugStream)
+    lessThan = nullptr;
+    if(!const_cast<QMetaType&>(metaType).iface()->debugStream
+            && !(metaType.flags() & QMetaType::IsPointer)
+            && !(metaType.flags() & QMetaType::IsEnumeration))
         debugStream = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->dataStreamIn)
+    if(!const_cast<QMetaType&>(metaType).iface()->dataStreamIn
+                && !(metaType.flags() & QMetaType::IsEnumeration))
         dataStreamIn = nullptr;
-    if(!const_cast<QMetaType&>(metaType).iface()->dataStreamOut)
+    if(!const_cast<QMetaType&>(metaType).iface()->dataStreamOut
+                && !(metaType.flags() & QMetaType::IsEnumeration))
         dataStreamOut = nullptr;
     QMetaType _newMetaType = createMetaType(typeName,
                                             true,
@@ -8319,11 +8190,11 @@ int qtjambi_register_container_type(const QByteArray& typeName, size_t container
     if(!hashFunctionByMetaType(newMetaType)){
         insertHashFunctionByMetaType(newMetaType,
                                             [metaType, hashFunction, hashWrapper]
-                                            (const void* ptr)->hash_type{
+                                            (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     MetaData oldMetaData = currentMetaData(0);
                                                     setCurrentMetaData(0, MetaData(metaType, hashFunction));
-                                                    hash_type result = hashWrapper(ptr, hashFunction);
+                                                    hash_type result = hashWrapper(ptr, seed, hashFunction);
                                                     setCurrentMetaData(0, oldMetaData);
                                                     return result;
                                                 }else{
@@ -8356,23 +8227,30 @@ int qtjambi_register_bicontainer_type(const QByteArray& typeName,
 {
     QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
     QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
-    if(!const_cast<QMetaType&>(metaType1).iface()->defaultCtr || !const_cast<QMetaType&>(metaType2).iface()->defaultCtr)
-        defaultCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->copyCtr || !const_cast<QMetaType&>(metaType2).iface()->copyCtr)
-        copyCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->moveCtr || !const_cast<QMetaType&>(metaType2).iface()->moveCtr)
-        moveCtr = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->dtor || !const_cast<QMetaType&>(metaType2).iface()->dtor)
-        dtor = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->equals || !const_cast<QMetaType&>(metaType2).iface()->equals)
+    if((!const_cast<QMetaType&>(metaType1).iface()->equals
+        && !(metaType1.flags() & QMetaType::IsPointer)
+        && !(metaType1.flags() & QMetaType::IsEnumeration))
+        || (!const_cast<QMetaType&>(metaType2).iface()->equals
+            && !(metaType2.flags() & QMetaType::IsPointer)
+            && !(metaType2.flags() & QMetaType::IsEnumeration)))
         equals = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->lessThan || !const_cast<QMetaType&>(metaType2).iface()->lessThan)
-        lessThan = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->debugStream || !const_cast<QMetaType&>(metaType2).iface()->debugStream)
+    lessThan = nullptr;
+    if((!const_cast<QMetaType&>(metaType1).iface()->debugStream
+        && !(metaType1.flags() & QMetaType::IsPointer)
+        && !(metaType1.flags() & QMetaType::IsEnumeration))
+        || (!const_cast<QMetaType&>(metaType2).iface()->debugStream
+            && !(metaType2.flags() & QMetaType::IsPointer)
+            && !(metaType2.flags() & QMetaType::IsEnumeration)))
         debugStream = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->dataStreamIn || !const_cast<QMetaType&>(metaType2).iface()->dataStreamIn)
+    if((!const_cast<QMetaType&>(metaType1).iface()->dataStreamIn
+        && !(metaType1.flags() & QMetaType::IsEnumeration))
+            || (!const_cast<QMetaType&>(metaType2).iface()->dataStreamIn
+                && !(metaType2.flags() & QMetaType::IsEnumeration)))
         dataStreamIn = nullptr;
-    if(!const_cast<QMetaType&>(metaType1).iface()->dataStreamOut || !const_cast<QMetaType&>(metaType2).iface()->dataStreamOut)
+    if((!const_cast<QMetaType&>(metaType1).iface()->dataStreamOut
+        && !(metaType1.flags() & QMetaType::IsEnumeration))
+            || (!const_cast<QMetaType&>(metaType2).iface()->dataStreamOut
+                && !(metaType2.flags() & QMetaType::IsEnumeration)))
         dataStreamOut = nullptr;
     QMetaType _newMetaType = createMetaType(typeName,
                                             true,
@@ -8414,16 +8292,16 @@ int qtjambi_register_bicontainer_type(const QByteArray& typeName,
             if (createMetaAssociationConstIterator && !QMetaType::hasRegisteredConverterFunction(_newMetaType, to)) {
                 QMetaType _metaType1 = metaType1;
                 QMetaType _metaType2 = metaType2;
-                QMetaType::registerConverterFunction([_metaType1, _metaType2, defaultInterface, createMetaAssociationConstIterator](const void *src, void *target) -> bool {
-                    const QtMetaContainerPrivate::QMetaAssociationInterface &d = qtjambi_find_meta_association(_metaType1, _metaType2, *defaultInterface);
+                QMetaType::registerConverterFunction([_metaType1, hashFunction1, _metaType2, hashFunction2, defaultInterface, createMetaAssociationConstIterator](const void *src, void *target) -> bool {
+                    const QtMetaContainerPrivate::QMetaAssociationInterface &d = qtjambi_find_meta_association(_metaType1, hashFunction1, _metaType2, hashFunction2, *defaultInterface);
                     return createMetaAssociationConstIterator(src, target, &d);
                 }, _newMetaType, to);
             }
             if (createMetaAssociationIterator && !QMetaType::hasRegisteredMutableViewFunction(_newMetaType, to)) {
                 QMetaType _metaType1 = metaType1;
                 QMetaType _metaType2 = metaType2;
-                QMetaType::registerMutableViewFunction([_metaType1,_metaType2, defaultInterface, createMetaAssociationIterator](void *src, void *target) -> bool {
-                    const QtMetaContainerPrivate::QMetaAssociationInterface &d = qtjambi_find_meta_association(_metaType1, _metaType2, *defaultInterface);
+                QMetaType::registerMutableViewFunction([_metaType1, hashFunction1,_metaType2, hashFunction2, defaultInterface, createMetaAssociationIterator](void *src, void *target) -> bool {
+                    const QtMetaContainerPrivate::QMetaAssociationInterface &d = qtjambi_find_meta_association(_metaType1, hashFunction1, _metaType2, hashFunction2, *defaultInterface);
                     return createMetaAssociationIterator(src, target, &d);
                 }, _newMetaType, to);
             }
@@ -8442,13 +8320,13 @@ int qtjambi_register_bicontainer_type(const QByteArray& typeName,
         insertHashFunctionByMetaType(newMetaType,
                                             [metaType1, hashFunction1,
                                              metaType2, hashFunction2, hashWrapper]
-                                            (const void* ptr)->hash_type{
+                                            (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     MetaData oldMetaData1 = currentMetaData(0);
                                                     setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
                                                     MetaData oldMetaData2 = currentMetaData(1);
                                                     setCurrentMetaData(1, MetaData(metaType2, hashFunction2));
-                                                    hash_type result = hashWrapper(ptr, hashFunction1, hashFunction2);
+                                                    hash_type result = hashWrapper(ptr,  seed, hashFunction1, hashFunction2);
                                                     setCurrentMetaData(0, oldMetaData1);
                                                     setCurrentMetaData(1, oldMetaData2);
                                                     return result;
@@ -8472,14 +8350,29 @@ QHashFunction QtJambiTypeManager::findHashFunction(bool isPointer, int metaType)
         if(metaTypeName.startsWith("const "))
             metaTypeName = metaTypeName.mid(6);
         if(metaTypeName.endsWith("*") || metaTypeName.endsWith("&"))
-            metaTypeName.chop(1);
+            return &pointerHashFunction;
         const std::type_info* typeId = getTypeByQtName(metaTypeName.data());
         if(!typeId){
             typeId = getTypeByMetaType(metaType);
         }
-        if(typeId){
-            return registeredHashFunction(*typeId);
+        QHashFunction f;
+        if(typeId)
+            f = registeredHashFunction(*typeId);
+        if(!f)
+            f = hashFunctionByMetaType(metaType);
+        if(!f){
+            QMetaType::TypeFlags typeFlags = QMetaType::typeFlags(metaType);
+            if(typeFlags & QMetaType::IsEnumeration){
+                switch(QMetaType::sizeOf(metaType)){
+                case sizeof(qint8): f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint8*>(ptr), seed);}; break;
+                case sizeof(qint16): f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint16*>(ptr), seed);}; break;
+                case sizeof(qint32): f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint32*>(ptr), seed);}; break;
+                case sizeof(qint64): f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint64*>(ptr), seed);}; break;
+                }
+            }
         }
-        return hashFunctionByMetaType(metaType);
+        if(!f && metaTypeName.startsWith("QFlags<"))
+            f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint32*>(ptr), seed);};
+        return f;
     }
 }

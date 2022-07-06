@@ -48,10 +48,10 @@ QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject c
 #else
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
     public: static inline void throwNew(JNIEnv* env, const char* message){\
-        JavaException(env, newInstanceWithMessage(env, message)).raise();\
+        throw JavaException(env, newInstanceWithMessage(env, message));\
     }\
     public: static inline void throwNew(JNIEnv* env, const QString& message){\
-        JavaException(env, newInstanceWithMessage(env, message)).raise();\
+        throw JavaException(env, newInstanceWithMessage(env, message));\
     }
 #endif
 
@@ -471,6 +471,16 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QValidator$QValidationData,
               QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(string)
               QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(position))
 }
+
+#ifdef Q_OS_ANDROID
+namespace Android{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtNative,
+              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activity)
+              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activityDelegate)
+              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(service)
+              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getContext))
+}
+#endif //def Q_OS_ANDROID
 }
 
 #undef DECLARE_CLASS_REF

@@ -44,6 +44,15 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtGui">
+    <required-library name="libGLESv2" mode="optional" platforms="windows" until="5.*"/>
+    <required-library name="libEGL" mode="optional" platforms="windows" until="5.*"/>
+    <required-library name="QtANGLE" mode="optional" platforms="windows" until="5.14.*"/>
+    <required-library name="QtWidgets" mode="provide-only" platforms="macos" until="5.*"/>
+    <required-library name="QtPrintSupport" mode="provide-only" platforms="macos" until="5.*"/>
+    <required-library name="QtSvg" mode="provide-only"/>
+    <required-library name="QtVirtualKeyboard" mode="provide-only"/>
+    <required-library name="QtDBus" mode="provide-only" platforms="macos,linux"/>
+    <required-library name="QtNetwork" mode="provide-only" platforms="linux"/>
     <rejection class="*" function-name="d_func"/>
     <rejection class="*" field-name="d_ptr"/>
     <rejection class="*" field-name="d"/>
@@ -383,9 +392,9 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <functional-type name="QAccessible::InterfaceFactory" count="1"/>
-    <functional-type name="QAccessible::RootObjectHandler" count="1"/>
-    <functional-type name="QAccessible::UpdateHandler" count="1"/>
+    <functional-type name="QAccessible::InterfaceFactory"/>
+    <functional-type name="QAccessible::RootObjectHandler"/>
+    <functional-type name="QAccessible::UpdateHandler"/>
     <object-type name="QAccessibleBridgePlugin">
         <modify-function signature="create(QString)">
             <modify-argument index="return">
@@ -1415,27 +1424,6 @@
     </object-type>
 
     <object-type name="QIntValidator">
-        <modify-function signature="fixup(QString&amp;)const">
-            <modify-argument index="1">
-                <replace-type modified-type="java.lang.String"/>
-                <conversion-rule class="shell">
-                    jstring %out = qtjambi_cast&lt;jstring>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QString %out = qtjambi_cast&lt;QString>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-
-            <modify-argument index="0">
-                <replace-type modified-type="java.lang.String"/>
-                <conversion-rule class="native">
-                    jstring %out = qtjambi_cast&lt;jstring>(%env, __qt_%1);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                    %1 = qtjambi_cast&lt;QString>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
     </object-type>
 
     <value-type name="QKeySequence">
@@ -2700,7 +2688,7 @@
     </extra-includes>
     </object-type>
     
-    <functional-type name="GLDEBUGPROC" package="io.qt.gui.gl" count="1">
+    <functional-type name="GLDEBUGPROC" package="io.qt.gui.gl">
         <extra-includes>
             <include file-name="QtGui/QOpenGLExtraFunctions" location="global"/>
         </extra-includes>
@@ -2905,7 +2893,14 @@
     <object-type name="QOpenGLVertexArrayObject" until="5.*">
     </object-type>
 
-    <object-type name="QOpenGLVertexArrayObject::Binder" until="5.*">
+    <object-type name="QOpenGLVertexArrayObject::Binder" implements="AutoCloseable" until="5.*">
+		<inject-code class="java">
+		@Override
+		@io.qt.QtUninvokable
+		public final void close(){
+			dispose();
+		}
+		</inject-code>
     </object-type>
     <enum-type name="QOpenGLTextureBlitter::Origin" since="5.8.0" until="5.*"/>
     <object-type name="QOpenGLTextureBlitter" since="5.8.0" until="5.*"/>

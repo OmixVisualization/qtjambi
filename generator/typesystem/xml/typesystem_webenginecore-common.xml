@@ -45,6 +45,10 @@
 <typesystem qt-library="QtWebEngineCore">
     <description until="5.*">Provides public API shared by both modules {@code qtjambi.webengine} and {@code qtjambi.webenginewidgets}.</description>
     <description since="6.0.0">Provides public API shared by both modules {@code qtjambi.webenginequick} and {@code qtjambi.webenginewidgets}.</description>
+    <required-library name="QtQuick"/>
+    <required-library name="QtWebChannel"/>
+    <required-library name="QtPositioning"/>
+    <required-library name="QtDBus" mode="optional"/>
     <namespace-type name="QtWebEngineCore">
         <extra-includes since="6.2.0">
             <include file-name="qwebenginecontextmenurequest.h" location="global"/>

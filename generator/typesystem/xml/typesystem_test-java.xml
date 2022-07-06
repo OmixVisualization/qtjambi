@@ -43,8 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.test" module="qtjambi.test" default-superclass="io.qt.QtObject">
-    <required-library name="QtDBus" optional="yes"/>
-    <required-library name="QtWidgets"/>
     <namespace-type name="QTest">
       <modify-function signature="failOnWarning(const char*)" since="6.3.0">
           <modify-argument index="1">
@@ -337,11 +335,11 @@
                 <replace-type modified-type="java.lang.Object" />
                 <conversion-rule class="native" until="5.*">
                     QVariant variant_%in(%2, %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
                     QVariant variant_%in(QMetaType(%2), %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -353,11 +351,11 @@
                 <replace-type modified-type="java.lang.Object" />
                 <conversion-rule class="native" until="5.*">
                     QVariant variant_%in(%2, %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
                     QVariant variant_%in(QMetaType(%2), %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -369,11 +367,11 @@
                 <replace-type modified-type="java.lang.Object" />
                 <conversion-rule class="native" until="5.*">
                     QVariant variant_%in(%2, %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
                     QVariant variant_%in(QMetaType(%2), %in);
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
+                    %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

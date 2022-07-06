@@ -49,7 +49,55 @@ class QtJambi_LibraryUtilities_2_{
     }
     java.io.File coreLib = NativeLibraryManager.loadQtCore();
     try{
-        NativeLibraryManager.loadQtJambiLibrary();
+        java.io.File qtjambiLib = NativeLibraryManager.loadQtJambiLibrary();
+		if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.Android) {
+			java.util.List<String> paths = new java.util.ArrayList<>();
+			String path;
+			switch(NativeLibraryManager.operatingSystem) {
+			case MacOSX:
+				path = io.qt.QtUtilities.getenv("DYLD_LIBRARY_PATH");
+				String path2 = io.qt.QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
+				java.util.List<String> paths2 = new java.util.ArrayList<>();
+				paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
+				if(path2!=null && !path2.isEmpty()) {
+					for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
+						if(!paths2.contains(p))
+							paths2.add(p);
+					}
+				}
+				path2 = String.join(java.io.File.pathSeparator, paths2);
+				io.qt.QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
+				break;
+			case Windows:
+				path = io.qt.QtUtilities.getenv("PATH");
+				break;
+			default:
+				path = io.qt.QtUtilities.getenv("LD_LIBRARY_PATH");
+				break;
+			}
+			if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.MacOSX)
+				paths.add(coreLib.getParentFile().getAbsolutePath());
+			if(!paths.contains(qtjambiLib.getParentFile().getAbsolutePath()))
+				paths.add(qtjambiLib.getParentFile().getAbsolutePath());
+			if(path!=null && !path.isEmpty()) {
+				for(String p : path.split("\\"+java.io.File.pathSeparator)) {
+					if(!paths.contains(p))
+						paths.add(p);
+				}
+			}
+			path = String.join(java.io.File.pathSeparator, paths);
+			switch(NativeLibraryManager.operatingSystem) {
+			case MacOSX:
+				io.qt.QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
+				break;
+			case Windows:
+				io.qt.QtUtilities.putenv("PATH", path);
+				break;
+			default:
+				io.qt.QtUtilities.putenv("LD_LIBRARY_PATH", path);
+				break;
+			}
+		}
     } catch(UnsatisfiedLinkError t) {
         switch(NativeLibraryManager.operatingSystem) {
         case MacOSX:
@@ -63,7 +111,7 @@ class QtJambi_LibraryUtilities_2_{
                     String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
                     if(!version.isEmpty()) {
                         if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + "." + t.getMessage(), t);
                         }
                     }
                 }
@@ -83,14 +131,14 @@ class QtJambi_LibraryUtilities_2_{
                     String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
                     if(!version.isEmpty()) {
                         if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ". " + t.getMessage(), t);
                         }
                     }
                 }
                 if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || NativeLibraryManager.isMinGWBuilt()) {
-                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead.", t);
+                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead. " + t.getMessage(), t);
                 }else {
-                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead. " + t.getMessage(), t);
                 }
             }
             break;
@@ -105,7 +153,7 @@ class QtJambi_LibraryUtilities_2_{
                     String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
                     if(!version.isEmpty()) {
                         if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ".", t);
+                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ". " + t.getMessage(), t);
                         }
                     }
                 }
@@ -6577,14 +6625,24 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public QPropertyBinding<T> setBinding(QtUtilities.Supplier<? extends T> functor)
         {
-            return setBinding(new QPropertyBinding<>(functor));
+    		try {
+    			QPropertyBinding.setPendingMetaType(this::valueMetaType);
+    			return setBinding(new QPropertyBinding<>(functor));
+    		}finally {
+    			QPropertyBinding.setPendingMetaType(null);
+    		}
         }
         
         @QtUninvokable
         private QPropertyBinding<T> makeBinding()
         {
             core.initialize(this);
-            return new QPropertyBinding<>(this::value);
+    		try {
+    			QPropertyBinding.setPendingMetaType(this::valueMetaType);
+				return new QPropertyBinding<>(this::value);
+    		}finally {
+    			QPropertyBinding.setPendingMetaType(null);
+    		}
         }
         
         /**
@@ -9748,7 +9806,7 @@ class QTimer___ extends QTimer {
         private QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
             super(QAbstractEventDispatcher.instance());
             QMetaObject.Connection connection = timeout.connect(slot);
-            if(connection==null || (obj!=null && connection.receiver()!=obj)) {
+            if(connection==null || connection.isConnected() || (obj!=null && connection.receiver()!=obj)) {
                 this.slot = slot;
                 this.receiver = obj;
             }else {
@@ -9998,7 +10056,6 @@ class QCoreApplication___ extends QCoreApplication {
             if(app.thread().loopLevel()>0)
                 throw new IllegalStateException("Must not call QCoreApplication.shutdown() in event loop.");
             System.gc();
-            System.runFinalization();
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
             processEvents();    // process quit
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
@@ -10045,7 +10102,6 @@ class QCoreApplication___ extends QCoreApplication {
                 }
                 if(deleted){
                     System.gc();
-                    System.runFinalization();
                     QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
                     processEvents();    // process quit
                     QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
@@ -10054,7 +10110,6 @@ class QCoreApplication___ extends QCoreApplication {
             app.dispose();
             app = null;        // discard hard-reference
             System.gc();
-            System.runFinalization();
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
             processEvents();    // process quit
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
@@ -10062,7 +10117,6 @@ class QCoreApplication___ extends QCoreApplication {
         if (instance() != null)
             QLogging.qWarning("Failed to delete QCoreApplication instance.");
         System.gc();
-        System.runFinalization();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     }
     
@@ -11202,6 +11256,8 @@ class QByteArray_5__ extends QByteArray {
 class QByteArray_6__ extends QByteArray {
 
     private static byte[] getBytes(String s) {
+		if(s==null)
+			return new byte[0];
         try {
             return s.getBytes("UTF-8");
         } catch (java.io.UnsupportedEncodingException e) {
@@ -12637,10 +12693,10 @@ class QMetaType___ extends QMetaType {
     public static <T> int registerDataStreamOperators(DataStreamInFn<T> datastreamInFn, DataStreamOutFn<T> datastreamOutFn) {
         java.util.Objects.requireNonNull(datastreamInFn);
         java.util.Objects.requireNonNull(datastreamOutFn);
-        int[] datastreamInTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(datastreamInFn);
-        int[] datastreamOutTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(datastreamOutFn);
-        Class<?>[] datastreamOutFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(datastreamOutFn);
-        Class<?>[] datastreamInFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(datastreamInFn);
+        int[] datastreamInTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DataStreamInFn.class, datastreamInFn);
+        int[] datastreamOutTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DataStreamOutFn.class, datastreamOutFn);
+        Class<?>[] datastreamOutFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DataStreamOutFn.class, datastreamOutFn);
+        Class<?>[] datastreamInFnClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DataStreamInFn.class, datastreamInFn);
         if(datastreamInTypes==null || datastreamOutTypes==null 
                 || datastreamInTypes.length!=3 || datastreamOutTypes.length!=2)
             throw new IllegalArgumentException("DataStreamIn and/or DataStreamOut function not a lambda expression.");
@@ -12667,8 +12723,8 @@ class QMetaType___ extends QMetaType {
      */
     public static <T> int registerDebugStreamOperator(DebugStreamFn<T> debugstreamFn) {
         java.util.Objects.requireNonNull(debugstreamFn);
-        int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(debugstreamFn);
-        Class<?>[] debugstreamClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(debugstreamFn);
+        int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DebugStreamFn.class, debugstreamFn);
+        Class<?>[] debugstreamClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DebugStreamFn.class, debugstreamFn);
         if(debugstreamTypes==null || debugstreamTypes.length!=3)
             throw new IllegalArgumentException("DataStreamIn and/or DataStreamOut function not a lambda expression.");
         if(debugstreamTypes[2]==0)
@@ -13838,6 +13894,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -13861,6 +13928,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -13888,6 +13966,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -13911,6 +14000,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -13938,6 +14038,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -13961,6 +14072,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -13988,6 +14110,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e, f);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14013,6 +14146,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e, f, g);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14034,6 +14178,17 @@ class QFactoryLoader__{
                             return create.invoke(factory);
                         } catch (Throwable e) {
                             Logger.getLogger(QFactoryLoader.class.getName()).throwing(QFactoryLoader.class.getName(), "loadPlugin", e);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -14061,6 +14216,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14084,6 +14250,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -14111,6 +14288,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14134,6 +14322,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -14161,6 +14360,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14184,6 +14394,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }
@@ -14211,6 +14432,17 @@ class QFactoryLoader__{
                             throw new RuntimeException(ex);
                         }
                     }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f, g);
+                        } catch (Throwable ex) {
+                        	return null;
+                        }
+                    }
                 }
             }
         }
@@ -14234,6 +14466,17 @@ class QFactoryLoader__{
                             throw ex;
                         } catch (Throwable ex) {
                             throw new RuntimeException(ex);
+                        }
+                    }
+                }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
+                	QObject factoryObject = instance(index);
+                    @SuppressWarnings("unchecked")
+					P factory = (P)factoryObject;
+                	if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f, g, h);
+                        } catch (Throwable ex) {
+                        	return null;
                         }
                     }
                 }

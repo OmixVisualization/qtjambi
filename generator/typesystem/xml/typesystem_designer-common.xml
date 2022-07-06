@@ -44,6 +44,9 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtDesigner" description="Classes for loading QWidget based forms created in Qt Designer dynamically, at runtime.">
+    <required-library name="QtPrintSupport" mode="provide-only"/>
+    <required-library name="QtWebEngineCore" mode="provide-only"/>
+    <required-library name="QtWebEngineWidgets" mode="provide-only"/>
     <rejection class="QAbstractFormBuilder" function-name="toString" />
     <rejection class="QAbstractFormBuilder" function-name="propertyMap" />
     <rejection class="QAbstractFormBuilder" function-name="domPixmap" />
@@ -192,10 +195,6 @@
     <interface-type name="QDesignerSettingsInterface" />
     <object-type name="QDesignerResourceBrowserInterface">
     </object-type>
-
-    <!--interface-type name="QtJambiPropertySheet" />
-    <interface-type name="QtJambiMemberSheet" /-->
-    <object-type name="QtJambiResourceBrowser" />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtResourceModel*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerIntrospectionInterface*'" />

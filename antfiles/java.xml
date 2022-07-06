@@ -20,7 +20,7 @@
         TODO: refactor. Names are horrible, atleast
     -->
 
-    <target name="java.build.qtjambi">
+    <target name="java.build.qtjambi" unless="${skip-java-build}">
         <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-build" value="true"/>
         </ant>

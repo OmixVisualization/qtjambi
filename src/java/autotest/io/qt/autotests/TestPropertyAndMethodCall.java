@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -61,6 +62,7 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QDrag;
 import io.qt.gui.QPainter;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
@@ -107,6 +109,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	
 	@Test
 	public void testMethodCallColorPtr() {
+		Assume.assumeTrue(QtJambiInternal.useAnnotatedType);
 		assertTrue(PropertyAndMethodCallTest.testMethodCallColorPtr(javaObject));
 	}
 
@@ -172,6 +175,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	
 	@Test
 	public void testFetchPropertyColorPtrCPP() {
+		Assume.assumeTrue(QtJambiInternal.useAnnotatedType);
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyColorPtr(javaObject));
 	}
 
@@ -297,40 +301,40 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testConnectSignalsAndSlots() {
-		assertTrue(object.connectSignals(javaObject));
+		assertTrue(object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType));
 	}
 
 	@Test
 	public void testSignalCustomEnumNULL() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		javaObject.customEnumChanged.emit(null);
 		assertEquals(null, object.receivedCustomEnum());
 	}
 
 	@Test
 	public void testSignalCustomEnum() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		javaObject.customEnumChanged.emit(TestQObject.CustomEnum.Entry3);
 		assertEquals(TestQObject.CustomEnum.Entry3, object.receivedCustomEnum());
 	}
 
 	@Test
 	public void testSignalCustomQtEnumNULL() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		javaObject.customQtEnumChanged.emit(null);
 		assertEquals(null, object.receivedCustomQtEnum());
 	}
 
 	@Test
 	public void testSignalCustomQtEnum() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		javaObject.customQtEnumChanged.emit(TestQObject.CustomQtEnum.Entry3);
 		assertEquals(TestQObject.CustomQtEnum.Entry3, object.receivedCustomQtEnum());
 	}
 
 	@Test
 	public void testSignalQtFlags() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		TestQObject.CustomQtFlags flags = new TestQObject.CustomQtFlags(TestQObject.CustomQtEnum.Entry1,
 				TestQObject.CustomQtEnum.Entry2);
 		javaObject.customQtFlagsChanged.emit(flags);
@@ -339,7 +343,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalCustomQtValue() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		TestQObject.CustomQtValue customQtValue = new TestQObject.CustomQtValue();
 		javaObject.customQtValueChanged.emit(customQtValue);
 		assertEquals(customQtValue, object.receivedCustomQtValue());
@@ -347,7 +351,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	
 	@Test
 	public void testSignalCustomQtInterfaceValue() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		TestQObject.CustomQtInterfaceValue customQtInterfaceValue = new TestQObject.CustomQtInterfaceValue();
 		javaObject.customQtInterfaceValueChanged.emit(customQtInterfaceValue);
 		assertEquals(customQtInterfaceValue, object.receivedCustomQtInterfaceValue());
@@ -355,7 +359,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalCustomJavaType() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		TestQObject.CustomJavaType customJavaType = new TestQObject.CustomJavaType();
 		javaObject.customJavaTypeChanged.emit(customJavaType);
 		assertEquals(customJavaType, object.receivedCustomJavaType());
@@ -363,7 +367,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalDerivedQObject() {
-		object.connectSignals(javaObject);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		TestQObject.DerivedQObject derivedObject = new TestQObject.DerivedQObject();
 		javaObject.derivedQObjectChanged.emit(derivedObject);
 		assertEquals(derivedObject, object.receivedDerivedQObject());

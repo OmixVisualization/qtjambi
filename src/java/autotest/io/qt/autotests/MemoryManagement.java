@@ -179,8 +179,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
     protected final void resetAll() {
         clearGcReferences();
 
-        System.gc();
-        System.runFinalization();
+        ApplicationInitializer.runGC();
 
         QApplication.processEvents();
         
@@ -849,8 +848,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
                     QApplication.processEvents();
                 }
 
-                System.gc();
-                System.runFinalization();
+                ApplicationInitializer.runGC();
 
                 if (needsEventProcessing()) {
                     java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, debugPrefix + ": QApplication.processEvents()");

@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtQuick" description="A declarative framework for building highly dynamic applications with custom user interfaces.">
+    <required-library name="QtDBus" mode="optional" since="6.0.0"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_mipmap_filtering"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_filtering"/>
@@ -126,7 +127,7 @@
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="shell">
-        jobject %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+        jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
                 <conversion-rule class="native">
         QByteArray b1 = qtjambi_to_qstring(%env, (jstring) %in).toUtf8();
@@ -307,7 +308,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
                 <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -383,7 +384,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
                 <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
                 QMatrix4x4* %out = qtjambi_cast&lt;QMatrix4x4*>(%env, %in);
@@ -421,7 +422,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="shell">
-                jobject %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                %out = qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
                 <conversion-rule class="native">
                 QByteArray b1 = qtjambi_to_qstring(%env, jstring(%in)).toUtf8();

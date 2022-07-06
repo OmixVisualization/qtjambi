@@ -29,8 +29,6 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,15 +37,13 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
 
 public abstract class QtJambiIteratorObject<E> extends QtObject{
 	
-	private static final Map<Class<?>, MethodHandle> endMethodHandles;
+	private static final Map<Class<?>, Function<Object,QtJambiIteratorObject<?>>> endMethodHandles;
 	
 	static {
 		endMethodHandles = Collections.synchronizedMap(new HashMap<>());
@@ -67,7 +63,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 		}else if(owner instanceof QtJambiAbstractMultiMapObject) {
 			endSupplier = (Function)(Function<QtJambiAbstractMultiMapObject,QtJambiIteratorObject<?>>)QtJambiAbstractMultiMapObject::end;
 		}else {
-			MethodHandle end = endMethodHandles.computeIfAbsent(owner.getClass(), cls -> {
+			endSupplier = endMethodHandles.computeIfAbsent(owner.getClass(), cls -> {
 				Method endMethod = null;
 				while (endMethod == null && cls != QtJambiObject.class) {
 					Method methods[] = cls.getDeclaredMethods();
@@ -81,25 +77,10 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 					}
 					cls = cls.getSuperclass();
 				}
-				if (endMethod != null) {
-					try {
-						MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(endMethod.getDeclaringClass());
-						return lookup.unreflect(endMethod);
-					} catch (IllegalAccessException e) {
-						Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to find end method", e);
-					}
-				}
-				return null;
+				if (endMethod != null)
+					return QtJambiInternal.functionFromMethod(endMethod);
+				else return null;
 			});
-			endSupplier = object -> {
-				try {
-					return (QtJambiIteratorObject<?>)end.invoke(object);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				} catch (Throwable e) {
-					throw new RuntimeException(e);
-				}
-			};
 		}
 	}
 	

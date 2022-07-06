@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="Qt3DCore" description="The Qt 3D module contains functionality to support near-realtime simulation systems.">
+    <required-library name="QtConcurrent"/>
     <namespace-type name="Qt3DCore">
         <modify-function signature="functorTypeId()" remove="all"/>
         <modify-function signature="elementType(GLint)" remove="all"/>
@@ -420,7 +421,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                %out = qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -439,7 +440,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                %out = qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -458,7 +459,7 @@
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                %out = qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

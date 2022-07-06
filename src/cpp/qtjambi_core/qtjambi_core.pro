@@ -8,7 +8,6 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 
 HEADERS += \
     qtjambi_biginteger.h \
-    qtjambi_core_future.h \
     qtjambi_core_qhashes.h \
     qtjambi_core_repository.h \
     qtjambi_stringutil.h

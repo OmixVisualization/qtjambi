@@ -33,11 +33,15 @@ package io.qt.widgets;
 
 import java.io.Serializable;
 import java.lang.invoke.MethodHandleInfo;
+import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QMetaObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.internal.QtJambiInternal;
 
 /**
@@ -54,15 +58,42 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
     public QStandardItemEditorCreator(ConstructorHandle<T> constructor) {
         super();
         SerializedLambda serializedLambda = QtJambiInternal.serializeLambdaExpression(Objects.requireNonNull(constructor));
-        if(serializedLambda==null || serializedLambda.getImplMethodKind()!=MethodHandleInfo.REF_newInvokeSpecial)
-        	throw new RuntimeException("Constructor handle required as argument, e.g. QWidget::new");
-        Class<?> implClass;
-        try {
-        	implClass = constructor.getClass().getClassLoader().loadClass(serializedLambda.getImplClass().replace('/', '.'));
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-		this.valuePropertyName = new QByteArray(QMetaObject.forType(implClass).userProperty().name());
+        QMetaObject metaObject = null;
+        if(serializedLambda==null) {
+            Class<?> implClass = null;
+			for(Type iface : QtJambiInternal.getClass(constructor).getGenericInterfaces()) {
+				if(iface instanceof ParameterizedType) {
+					ParameterizedType piface = (ParameterizedType)iface;
+					if(piface.getRawType()==ConstructorHandle.class) {
+						Type[] args = piface.getActualTypeArguments();
+						for (int i = 0; i < args.length; i++) {
+							implClass = QtJambiInternal.toClass(args[i]);
+						}
+					}
+				}
+			}
+			if(implClass==null) {
+				if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+					QWidget widget = constructor.create(null);
+					metaObject = widget.metaObject();
+					widget.dispose();
+				}else {
+					throw new RuntimeException("Constructor handle required as argument, e.g. QWidget::new");
+				}
+	    	}else {
+	    		metaObject = QMetaObject.forType(implClass);
+	    	}
+        }else if(serializedLambda.getImplMethodKind()==MethodHandleInfo.REF_newInvokeSpecial){
+	        try {
+	        	metaObject = QMetaObject.forType(QtJambiInternal.getClass(constructor).getClassLoader().loadClass(serializedLambda.getImplClass().replace('/', '.')));
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+        }else{
+        	MethodType methodType = MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(), QtJambiInternal.getClass(constructor).getClassLoader());
+        	metaObject = QMetaObject.forType(methodType.returnType());
+        }
+		this.valuePropertyName = new QByteArray(metaObject.userProperty().name());
         this.constructorHandle = constructor;
     }
     

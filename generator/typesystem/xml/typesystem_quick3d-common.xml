@@ -43,6 +43,10 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtQuick3D" description="Provides a high-level API for creating 3D content or UIs based on Qt Quick.">
+    <required-library name="QtQuick3DUtils" mode="optional" until="6.2.*"/>
+    <required-library name="QtQuick3DAssetImport" mode="optional" until="6.2.*"/>
+    <required-library name="QtQuick3DRender" mode="optional" until="5.*"/>
+    <required-library name="QtShaderTools" mode="optional" since="6.0.0" until="6.2.*"/>
     <object-type name="QQuick3D" target-type="final class">
         <modify-function signature="QQuick3D()" remove="all" />
     </object-type>

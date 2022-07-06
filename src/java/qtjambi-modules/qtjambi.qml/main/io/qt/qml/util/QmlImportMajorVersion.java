@@ -37,9 +37,11 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation specified a package's major version for qml use.
+ * @deprecated use {@link QmlImport} instead
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
+@Deprecated
 public @interface QmlImportMajorVersion {
 	int value();
 }

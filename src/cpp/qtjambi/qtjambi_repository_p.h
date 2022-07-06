@@ -39,6 +39,12 @@ namespace Java{
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPostRoutines)
                                          )
         }
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QException,
+                                         QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
+                                         QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
+                                         )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFunctionPointer,)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFunctionPointerUtil,
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createProxy)
@@ -202,9 +208,23 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getTypeParameters)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isArray)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPrimitive)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isInterface))
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isSynthetic)
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isInterface)
+                     public: static inline jstring tryGetName(JNIEnv* env,jobject object){
+                         auto _this = __qt_get_this(env);
+                         jobject result = env->CallObjectMethod(object,_this.__getName);
+                         return jstring(result);
+                     }
+                )
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassLoader,QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(loadClass))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassLoader,
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(loadClass)
+                                         public: static inline jclass tryLoadClass(JNIEnv* env, jobject object, jstring className){
+                                             auto _this = __qt_get_this(env);
+                                             jobject result = env->CallObjectMethod(object,_this.__loadClass, className);
+                                             return jclass(result);
+                                         }
+                                        )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Optional,
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(empty)
@@ -233,6 +253,7 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(System,
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(gc)
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(getProperty)
+                      QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(setProperty)
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(identityHashCode))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(URLClassLoader,
@@ -385,15 +406,22 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Throwable,
                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(addSuppressed)
+                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(printStackTrace)
                      QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getMessage)
                      public: static inline jstring tryGetMessage(JNIEnv* env,jobject object){
                          auto _this = __qt_get_this(env);
                          jobject result = env->CallObjectMethod(object,_this.__getMessage);
                          return jstring(result);
                      }
+                     static inline void tryPrintStackTrace(JNIEnv* env,jobject object){
+                          auto _this = __qt_get_this(env);
+                          env->CallVoidMethod(object,_this.__printStackTrace);
+                      }
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(IllegalAccessException,
+                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(MissingResourceException,
                       QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NumberFormatException, QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
@@ -457,7 +485,6 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(createAssociation)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(deleteAssociation)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
-            QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(lambdaReturnType)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(objectToString)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(terminateCleanupThread)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(internalAccess)
@@ -465,6 +492,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeLibraryManager,
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(resetDeploymentSpecs)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(deployContainerAccess)
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiEnums,
@@ -665,6 +693,7 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(makeUrl)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveUrlToMyJarFile)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(pathToJarFiles)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addSearchPath)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isDirectory)
                                          )
 
@@ -675,7 +704,7 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getOrReopen)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(put)
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(entryList)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(entryList)
                                          )
     }
 
@@ -705,5 +734,37 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getReturnType)
                     )
     }
+
+#ifdef Q_OS_ANDROID
+    namespace Android{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(ContextWrapper,
+                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getPackageName)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getPackageManager)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getAssets)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getResources))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Context,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getApplicationInfo))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(ApplicationInfo,
+                  QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(sourceDir))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(AssetManager,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(open)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(list))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(PackageManager,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getApplicationInfo)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getActivityInfo)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getServiceInfo)
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_FIELD(GET_META_DATA))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Activity,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getApplication)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getComponentName))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Service,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getApplication)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getComponentName))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(PackageItemInfo,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(metaData))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(BaseBundle,
+                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getString))
+    }
+#endif //def Q_OS_ANDROID
 }
 #endif // QTJAMBI_REPOSITORY_P_H

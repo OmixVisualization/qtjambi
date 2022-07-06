@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.qt.core.QIODevice;
+import io.qt.internal.QtJambiInternal;
 
 /**
  *   QNativePointer encapsulates a native C++ pointer. The class
@@ -1011,7 +1012,7 @@ public final class QNativePointer {
     	}else {
     		verifyWriteAccess(Type.Pointer, pos);
     	}
-        Class<?> valueType = value.getClass();
+        Class<?> valueType = QtJambiInternal.getClass(value);
         writeObject(data.m_ptr, data.m_knownSize, valueType, pos, value);
     }
 
@@ -1186,7 +1187,7 @@ public final class QNativePointer {
     
     @SafeVarargs
 	public static <T extends QtObjectInterface> QNativePointer fromArray(T... array) {
-    	Class<?> arrayClass = array.getClass();
+    	Class<?> arrayClass = QtJambiInternal.getClass(array);
     	Class<?> componentType = arrayClass.getComponentType();
     	return fromArray(componentType, array);
     }

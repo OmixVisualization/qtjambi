@@ -338,7 +338,7 @@ struct deref_ptr_or_default<true,O>{
     }
 };
 
-template<typename O, bool has_std_constructor, bool is_const, bool o_is_reference>
+template<typename O, bool has_std_constructor, bool has_copy_constructor, bool is_const, bool o_is_reference>
 struct qtjambi_deref_value{
     Q_STATIC_ASSERT_X(!has_std_constructor && false, "Cannot deref type");
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
@@ -348,16 +348,16 @@ struct qtjambi_deref_value{
 };
 
 template<typename O, bool is_const>
-struct qtjambi_deref_value<O,false, is_const, false>{
+struct qtjambi_deref_value<O,false, true, is_const, false>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
     static O_const deref(JNIEnv *env, O* o){
         qtjambi_check_resource<O>(env, o);
-        return *o;
+        return O(*o);
     }
 };
 
-template<typename O, bool is_const>
-struct qtjambi_deref_value<O,false, is_const, true>{
+template<typename O, bool has_copy_constructor, bool is_const>
+struct qtjambi_deref_value<O,false, has_copy_constructor, is_const, true>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
     static O_const& deref(JNIEnv *env, O* o){
         qtjambi_check_resource<O>(env, o);
@@ -365,16 +365,16 @@ struct qtjambi_deref_value<O,false, is_const, true>{
     }
 };
 
-template<typename O>
-struct qtjambi_deref_value<O,true,true,true>{
+template<typename O, bool has_copy_constructor>
+struct qtjambi_deref_value<O,true, has_copy_constructor,true,true>{
     typedef typename std::add_const<O>::type O_const;
     static O_const& deref(JNIEnv *, O_const* o){
         return o ? *o : qtjambi_get_default_value<typename std::remove_const<O>::type>();
     }
 };
 
-template<typename O>
-struct qtjambi_deref_value<O,true,false,true>{
+template<typename O, bool has_copy_constructor>
+struct qtjambi_deref_value<O,true,has_copy_constructor,false,true>{
     static O& deref(JNIEnv *env, O* o){
         qtjambi_check_resource<O>(env, o);
         return *o;
@@ -382,10 +382,10 @@ struct qtjambi_deref_value<O,true,false,true>{
 };
 
 template<typename O, bool is_const>
-struct qtjambi_deref_value<O,true,is_const,false>{
+struct qtjambi_deref_value<O,true,true,is_const,false>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
     static O deref(JNIEnv *, O_const* o){
-        return o ? *o : O();
+        return o ? O(*o) : O();
     }
 };
 

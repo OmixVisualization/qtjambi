@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.MissingFormatArgumentException;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.autotests.generated.FutureHandler;
@@ -44,6 +45,7 @@ import io.qt.concurrent.QtConcurrent;
 import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QFutureSynchronizer;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 
 public class TestConcurrent extends ApplicationInitializer {
@@ -429,6 +431,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testJavaQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
     	QtConcurrent.run(()->{
@@ -450,6 +453,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testJavaQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
     	QtConcurrent.run(()->{
@@ -471,6 +475,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testExceptionJavaQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
     	QtConcurrent.run(()->{
@@ -492,6 +497,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testExceptionJavaQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
     	QtConcurrent.run(()->{
@@ -513,6 +519,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testCanceledJavaQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		boolean[] isCanceled = {false};
@@ -534,6 +541,7 @@ public class TestConcurrent extends ApplicationInitializer {
     
     @Test
     public void testCanceledJavaQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureInterface<String> promise = new QFutureInterface<>();
 		promise.reportStarted();
 		boolean[] isCanceled = {false};

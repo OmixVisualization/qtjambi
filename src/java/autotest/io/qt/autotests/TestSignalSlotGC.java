@@ -56,7 +56,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
+import io.qt.core.QEvent;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 
 public class TestSignalSlotGC extends ApplicationInitializer {
 
@@ -151,13 +154,14 @@ public class TestSignalSlotGC extends ApplicationInitializer {
 		final long start = System.currentTimeMillis();
 
 		while (System.currentTimeMillis() - start < TIME_LIMIT) {
-			System.gc();
-			System.runFinalization();
+			ApplicationInitializer.runGC();
 			try {
 				Thread.sleep(100);
 			} catch(InterruptedException e) {
 				break;
 			}
+			QCoreApplication.processEvents();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);
 
 			Reference<? extends Object> thisWr;
 			while ((thisWr = weakReferenceQueue.poll()) != null) {
@@ -203,7 +207,10 @@ public class TestSignalSlotGC extends ApplicationInitializer {
 
 	static class Receiver extends QObject {
 		public Receiver(Emitter e) {
-			e.signal.connect(this::slot);
+			if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				e.signal.connect(this, "slot()");
+			else
+				e.signal.connect(this::slot);
 		}
 
 		void slot() {

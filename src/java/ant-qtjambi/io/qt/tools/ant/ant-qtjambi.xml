@@ -40,8 +40,6 @@
         classname="io.qt.tools.ant.GeneratorTask"/>
     <taskdef name="install-name-tool"
         classname="io.qt.tools.ant.InstallNameToolTask"/>
-    <taskdef name="qtjambi-platform-jar"
-        classname="io.qt.tools.ant.PlatformJarTask"/>
     <taskdef name="qtjambi-initialize"
         classname="io.qt.tools.ant.InitializeTask"/>
     <taskdef name="qtjambi-initialize-build"
@@ -68,5 +66,9 @@
          classname="io.qt.tools.ant.ForeachNativeTask"/>
     <typedef name="gpg"
          classname="io.qt.tools.ant.GPGTask"/>
+    <typedef name="aidl"
+         classname="io.qt.tools.ant.AidlTask"/>
+    <typedef name="create-function-pointer-qrc"
+         classname="io.qt.tools.ant.CreateFunctionPointerQrcTask"/>
 </antlib>
 

@@ -355,74 +355,78 @@ int Wrapper::runJambiGenerator() {
     return 0;
 }
 
+QStringList readDependencies(const QString& file){
+    QFile f(file);
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QStringList result;
+    while(!s.atEnd()){
+        QString line = s.readLine().trimmed();
+        if(line.startsWith('#')){
+            line = line.mid(1).trimmed();
+            if(line.startsWith("include")){
+                line = line.mid(7).trimmed();
+                if(line.startsWith("<") && line.endsWith(">")){
+                    line.chop(1);
+                    line = line.mid(1);
+                    QStringList include = line.split("/");
+                    if((include.size()==2 && include[0]==include[1]) || include.size()==1){
+                        result << include[0];
+                    }
+                }
+            }
+        }
+    }
+    f.close();
+    return result;
+}
+
 void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
 {
     const QStringList pathsList = QStringList() << include_directory << includePathsList;
-    const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary = typeDatabase->typeSystemsByQtLibrary();
-    QList<TypeSystemTypeEntry*> typeSystems(typeSystemsByQtLibrary.values());
-    while(!typeSystems.isEmpty()){
-        TypeSystemTypeEntry * entry = typeSystems.takeFirst();
-        for(const QString& path : pathsList){
-            QString file(path+"/"+entry->qtLibrary()+"/"+entry->qtLibrary()+"Depends");
-            if(!QFileInfo::exists(file)){
-                file = path+"/"+entry->qtLibrary()+"Depends";
+    QMap<QString,QStringList> dependenciesByLib;
+    for(QDir dir : pathsList){
+        if(dir.exists()){
+            for(const QString& entry : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)){
+                if(entry.endsWith(".framework")){
+                    QString dependsFile(entry+"/Headers/"+entry.chopped(10)+"Depends");
+                    if(dir.exists(dependsFile)){
+                        dependenciesByLib[entry] = readDependencies(dir.absoluteFilePath(dependsFile));
+                    }
+                }else{
+                    QString dependsFile(entry+"/"+entry+"Depends");
+                    if(dir.exists(dependsFile)){
+                        dependenciesByLib[entry] = readDependencies(dir.absoluteFilePath(dependsFile));
+                    }
+                }
             }
 #ifdef Q_OS_MAC
-            if(!QFileInfo::exists(file)){
-                file = path+"/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
-            }
-            if(!QFileInfo::exists(file)){
-                file = path+"/../lib/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
-            }
-#endif
-            if(QFileInfo::exists(file)){
-                QFile f(file);
-                f.open(QIODevice::ReadOnly);
-                QTextStream s(&f);
-                while(!s.atEnd()){
-                    QString line = s.readLine().trimmed();
-                    if(line.startsWith('#')){
-                        line = line.mid(1).trimmed();
-                        if(line.startsWith("include")){
-                            line = line.mid(7).trimmed();
-                            if(line.startsWith("<") && line.endsWith(">")){
-                                line.chop(1);
-                                line = line.mid(1);
-                                QStringList include = line.split("/");
-                                if((include.size()==2 && include[0]==include[1]) || include.size()==1){
-                                    entry->addRequiredQtLibrary(include[0]);
-                                    if(!typeSystemsByQtLibrary.contains(include[0])){
-                                        // let's create a dummy typesystem to make sure all dependencies are loaded correctly
-                                        for(const QString& path : pathsList){
-                                            QString file(path+"/"+include[0]+"/"+include[0]+"Depends");
-                                            if(!QFileInfo::exists(file)){
-                                                file = path+"/"+include[0]+"Depends";
-                                            }
-#ifdef Q_OS_MAC
-                                            if(!QFileInfo::exists(file)){
-                                                file = path+"/" + include[0] + ".framework/Headers/"+include[0]+"Depends";
-                                            }
-                                            if(!QFileInfo::exists(file)){
-                                                file = path+"/../lib/" + include[0] + ".framework/Headers/"+include[0]+"Depends";
-                                            }
-#endif
-                                            if(QFileInfo::exists(file)){
-                                                TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(QString("io.qt.%1").arg((include[0].startsWith("Qt") ? include[0].mid(2) : include[0]).toLower()),
-                                                                                                     include[0],
-                                                                                                     QString("qtjambi.%1").arg((include[0].startsWith("Qt") ? include[0].mid(2) : include[0]).toLower()));
-                                                entry->setCodeGeneration(TypeEntry::GenerateNothing);
-                                                TypeDatabase::instance()->addType(entry);
-                                                typeSystems << entry;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            if(dir.dirName()=="include" && dir.cdUp() && dir.cd("lib")){
+                for(const QString& entry : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)){
+                    if(entry.endsWith(".framework")){
+                        QString dependsFile(entry+"/Headers/"+entry.chopped(10)+"Depends");
+                        if(dir.exists(dependsFile)){
+                            dependenciesByLib[entry] = readDependencies(dir.absoluteFilePath(dependsFile));
                         }
                     }
                 }
-                break;
             }
+#endif
+        }
+    }
+    QMap<QString,TypeSystemTypeEntry*> typeSystemsByQtLibrary = typeDatabase->typeSystemsByQtLibrary();
+    for(const QString& libName : dependenciesByLib.keys()){
+        if(!typeSystemsByQtLibrary.contains(libName)){
+            TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(libName, libName, {});
+            entry->setCodeGeneration(TypeEntry::GenerateNothing);
+            TypeDatabase::instance()->addType(entry);
+            typeSystemsByQtLibrary[entry->qtLibrary()] = entry;
+        }
+    }
+
+    for(TypeSystemTypeEntry* entry : typeSystemsByQtLibrary.values()){
+        for(const QString& dependency : dependenciesByLib[entry->qtLibrary()]){
+            entry->addRequiredQtLibrary(QString(dependency));
         }
     }
 }

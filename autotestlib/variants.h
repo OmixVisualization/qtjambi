@@ -262,6 +262,12 @@ public:
 	
     static QVariant getSpinBox();
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static QMetaType propertyType(const QObject* object, const QString& propertyName);
+#else
+    static int propertyType(const QObject* object, const QString& propertyName);
+#endif
+
     static QColor fetchColorProperty(const QObject* object, const QString& propertyName);
 
     static QObject* fetchObjectProperty(const QObject* object, const QString& propertyName);

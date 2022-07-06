@@ -37,8 +37,13 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,15 +52,35 @@ import io.qt.core.QObject;
 import io.qt.core.QResource;
 import io.qt.core.QUrl;
 import io.qt.gui.QGuiApplication;
+import io.qt.internal.QtJambiInternal;
 import io.qt.qml.QQmlApplicationEngine;
 
 public class TestQmlMultimedia extends ApplicationInitializer {
+	
+	private static File tmpFile;
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		ApplicationInitializer.testDispose();
+		if(tmpFile!=null) {
+			QResource.removeClassPath(tmpFile.getAbsolutePath());
+			tmpFile.delete();
+		}
+	}
 
     @BeforeClass
     public static void testInitialize() throws Exception {
         ApplicationInitializer.testInitializeWithGui();
         URL url = TestQmlMultimedia.class.getResource("resources.jar");
-        QResource.addClassPath(new java.io.File(url.toURI()).getAbsolutePath());
+        if(url.getProtocol().equals("file")) {
+        	QResource.addClassPath(new java.io.File(url.toURI()).getAbsolutePath());
+        }else {
+        	tmpFile = File.createTempFile("resources", ".jar");
+        	try (InputStream is = url.openStream()){
+        		Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        	}
+        	QResource.addClassPath(tmpFile.getAbsolutePath());
+        }
     }
     
 	@Test
@@ -64,9 +89,13 @@ public class TestQmlMultimedia extends ApplicationInitializer {
 		io.qt.QtUtilities.initializePackage("io.qt.quick");
 		io.qt.QtUtilities.initializePackage("io.qt.multimedia");
 		io.qt.QtUtilities.loadQtLibrary("MultimediaQuick");
+		if(QtJambiInternal.majorVersion()==5) {
+			io.qt.QtUtilities.loadQtLibrary("Widgets");
+			io.qt.QtUtilities.loadQtLibrary("Network");
+		}
 		Object[] objectCreated = {null,null};
 		applicationEngine.objectCreated.connect((object, url)->{objectCreated[0] = object; objectCreated[1] = url;}); // must not crash!
-		applicationEngine.load(new QUrl("qrc:/io/qt/qtjambi/resources/multimedia.qml"));
+		applicationEngine.load(new QUrl("qrc:/io/qt/qtjambi/resources/multimedia"+QtJambiInternal.majorVersion()+".qml"));
 		Assert.assertFalse(applicationEngine.rootObjects().isEmpty());
 		assertTrue(objectCreated[0] instanceof QObject);
 		assertTrue(objectCreated[1] instanceof QUrl);

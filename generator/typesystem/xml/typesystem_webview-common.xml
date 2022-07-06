@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtWebView" description="Displays web content in a QML application by using APIs native to the platform, without the need to include a full web browser stack.">
+    <required-library name="QtQuick"/>
     <namespace-type name="QtWebView">
     </namespace-type>
 </typesystem>

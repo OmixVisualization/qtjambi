@@ -56,7 +56,7 @@
                 <replace-type modified-type="io.qt.network.QAuthenticator"/>
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
@@ -68,7 +68,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator"/>
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);
@@ -82,7 +82,7 @@
                 <replace-type modified-type="io.qt.websockets.QWebSocketCorsAuthenticator"/>
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QWebSocketCorsAuthenticator* %out  = qtjambi_cast&lt;QWebSocketCorsAuthenticator*>(%env, %scope, %in);
@@ -94,7 +94,7 @@
                 <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator"/>
                 <no-null-pointer/>
                 <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="native">
                     QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);

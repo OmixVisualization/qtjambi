@@ -1,5 +1,5 @@
-#ifndef QTJAMBI_CONTAINERACCESS_PAIR_P_H
-#define QTJAMBI_CONTAINERACCESS_PAIR_P_H
+#ifndef QTJAMBI_CONTAINERACCESS_PAIR_H
+#define QTJAMBI_CONTAINERACCESS_PAIR_H
 
 #include <QtCore/QPair>
 #include <qtjambi/qtjambi_containeraccess.h>
@@ -98,9 +98,6 @@ public:
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_qpair_type<QPair<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());
     }
-    PtrDeleterFunction containerDeleter() override {
-        return nullptr;
-    }
     bool isConstant() override {return false;}
 
     jobject first(JNIEnv * env, const void* container) override {
@@ -159,4 +156,4 @@ struct BiContainerAccessFac<QPair,align1,size1,align2,size2>{
 
 }
 
-#endif // QTJAMBI_CONTAINERACCESS_PAIR_P_H
+#endif // QTJAMBI_CONTAINERACCESS_PAIR_H

@@ -72,6 +72,6 @@ public class TestWidgetsWithoutShutdown {
 	    	QTimer.singleShot(500, window::close);
 	    	QCoreApplication.exec();
     	}
-    	System.gc();
+    	ApplicationInitializer.runGC();
     }
 }

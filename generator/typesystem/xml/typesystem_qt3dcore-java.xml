@@ -43,7 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.qt3d.core" module="qtjambi.qt3dcore" default-superclass="io.qt.QtObject">
-    <required-library name="QtConcurrent"/>
     <object-type name="Qt3DCore::QScenePropertyChange">
         <extra-includes>
             <include file-name="QtCore/QScopedPointer" location="global"/>
@@ -61,7 +60,7 @@ private:
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-            jobject %out = (jobject)qtjambi_from_qstring(%env, QLatin1String(%in));
+            %out = (jobject)qtjambi_from_qstring(%env, QLatin1String(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

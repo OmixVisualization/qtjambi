@@ -111,35 +111,41 @@
             </if>
             <pathconvert property="librarypath">
                 <path>
-                    <pathelement location="${qtjambi.builddir}/lib/"/>
                     <pathelement location="${tools.qt.bindir}"/>
                     <pathelement location="${tools.qt.libdir}"/>
                 </path>
             </pathconvert>
             <pathconvert property="classpath">
                 <path>
-                    <pathelement location="${qtjambi.builddir}/lib/"/>
                     <pathelement location="${tools.qt.bindir}"/>
                     <pathelement location="${tools.qt.libdir}"/>
                 </path>
             </pathconvert>
-            <java fork="true" classname="io.qt.uic.Main" failonerror="true">
-                <jvmarg value="-Djava.library.path=${librarypath}"/>
-                <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-                <jvmarg value="${XstartOnFirstThread}"/>
-                <arg value="-f" />
-                <arg value="-o" />
-                <arg value="@{targetdirectory}" />
-                <arg value="-p" />
-                <arg value="@{targetpackage}" />
-                <arg value="-c" />
-                <arg value="@{connections}" />
-                <arg value="@{uifile}" />
-                <env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-                <classpath>
-                    <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
-                </classpath>
-            </java>
+			<trycatch>
+				<try>
+					<java fork="true" classname="io.qt.uic.Main" failonerror="true">
+						<jvmarg value="-Djava.library.path=${librarypath}"/>
+						<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+						<jvmarg value="-Dio.qt.verbose-loading=true"/>
+						<jvmarg value="${XstartOnFirstThread}"/>
+						<arg value="-f" />
+						<arg value="-o" />
+						<arg value="@{targetdirectory}" />
+						<arg value="-p" />
+						<arg value="@{targetpackage}" />
+						<arg value="-c" />
+						<arg value="@{connections}" />
+						<arg value="@{uifile}" />
+						<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+						<classpath>
+							<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
+						</classpath>
+					</java>
+				</try>
+				<finally>
+					<delete dir="${outputDir}/tmp"/>
+				</finally>
+			</trycatch>
         </sequential>
     </macrodef>
 
@@ -174,16 +180,7 @@ Further options:
     -->
     
     <target name="targetproxy">
-        <antcall inheritAll="false" target="${proxy.target}">
-            <param name="qtjambi.qtdir" value="${qtjambi.qtdir}"/>
-            <param name="QTDIR" value="${QTDIR}"/>
-            <param name="java.srcdir" value="${java.srcdir}"/>
-            <param name="qtjambi.build.module" value="${qtjambi.build.module}"/>
-            <param name="qtjambi.autotests" value="${qtjambi.autotests}"/>
-            <param name="qtjambi.autotests.jnicheck" value="${qtjambi.autotests.jnicheck}"/>
-            <param name="qtjambi.autotests.enable.criticals" value="${qtjambi.autotests.enable.criticals}"/>
-        </antcall>
-        <!--property file="build.properties"/-->
+        <antcall inheritAll="false" target="${proxy.target}"/>
    </target>
 
     <target name="javadocs" depends="log, setenv, init.taskdef" description="Generates the Java Doc pages for QtJambi">
@@ -225,7 +222,7 @@ Further options:
         description="Compiles and bundles the Qt Jambi native libraries.">
         <foreach-version targets="library.native-impl"/>
     </target>
-    <target name="library.native-impl" depends="library.native.qmake-impl, library.native.make-impl, library.native.bundle"/>
+    <target name="library.native-impl" depends="library.native.qmake-impl, library.native.make-impl, library.native.bundle-impl"/>
     
     <target name="library.native.qmake" depends="log, setenv, init.taskdef" description="Runs qmake on the Qt Jambi native library">
         <foreach-version targets="library.native.qmake-impl"/>
@@ -238,7 +235,7 @@ Further options:
     <target name="library.native.compile" depends="log, setenv, init.taskdef">
         <foreach-version targets="library.native.compile-impl"/>
     </target>
-
+	
     <target name="library.native.makebundle" depends="log, setenv, init.taskdef">
         <foreach-version targets="library.native.makebundle-impl"/>
     </target>
@@ -249,6 +246,10 @@ Further options:
 
     <target name="library.native.bundle.plugins" depends="log, setenv, init.taskdef">
         <foreach-version targets="library.native.bundle.plugins-impl"/>
+    </target>
+	
+    <target name="bundle.qtlib" depends="log, setenv, init.taskdef">
+        <foreach-version targets="bundle.qtlib-impl"/>
     </target>
 
     <target name="library.java" depends="log, setenv, init.taskdef"

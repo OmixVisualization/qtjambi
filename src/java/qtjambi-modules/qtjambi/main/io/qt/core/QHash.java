@@ -32,8 +32,10 @@ package io.qt.core;
 import static io.qt.core.QMap.findMapMetaType;
 
 import java.util.Map;
+import java.util.Objects;
 
 import io.qt.NativeAccess;
+import io.qt.QNoImplementationException;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
@@ -68,7 +70,7 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V> implements
     
     public QHash(Map<K,V> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(other);
+		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other));
 		if(metaTypes.first.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
 		if(metaTypes.first.id()==QMetaType.Type.Void.value())
@@ -318,6 +320,9 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V> implements
     }
     @QtUninvokable
     static native int __qt_QHash_size(long __this__nativeId);
+    
+    @QtUninvokable
+    public final void squeeze() { reserve(1); }
 
     @QtUninvokable
     public final V take(K key)    {
@@ -369,11 +374,28 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V> implements
     @Override
     @QtUninvokable
     public int hashCode() { 
-    	int hashCode = getClass().hashCode();
-        for (QPair<K,V> e : this)
-            hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-        return hashCode;
+    	try {
+    		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoNativeResourcesException e) {
+			return 0;
+		}
     }
+    @QtUninvokable
+    private static native int hashCode(long __this__nativeId);
+    
+    @Override
+    @QtUninvokable
+    public String toString() {
+    	try {
+			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (QNoImplementationException e) {
+			return super.toString();
+		} catch (QNoNativeResourcesException e) {
+			return "null";
+		}
+    }
+    @QtUninvokable
+    private static native String toString(long __this__nativeId);
     
     @QtUninvokable
     static native <K> boolean lessThan(K key1, K key2);

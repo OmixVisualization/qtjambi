@@ -34,6 +34,7 @@ public class TestDesignerQuick extends ApplicationInitializer {
     	{
 			QFormBuilder loader = new QFormBuilder();
 			for(String path : QCoreApplication.libraryPaths()) {
+				loader.addPluginPath(path);
 				loader.addPluginPath(path+"/designer");
 			}
 	    	QIODevice device = new QFile(":io/qt/autotests/ui/quicktest.ui");
@@ -41,7 +42,7 @@ public class TestDesignerQuick extends ApplicationInitializer {
 	    	widget = loader.load(device);
 	    	device.close();
     	}
-    	System.gc();
+    	ApplicationInitializer.runGC();
     	Assert.assertTrue("QFormBuilder did not load widget", widget != null);
     	Assert.assertEquals(QQuickWidget.staticMetaObject, widget.metaObject());
 		if(!(widget instanceof QQuickWidget)) {
@@ -60,6 +61,8 @@ public class TestDesignerQuick extends ApplicationInitializer {
     			lib += "d";
     		}
     	}
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    		lib = "plugins/"+lib;
     	QPluginLoader pluginLoader = new QPluginLoader(lib);
     	if(!pluginLoader.load())
     		Assert.assertTrue(pluginLoader.errorString()+" "+lib, false);

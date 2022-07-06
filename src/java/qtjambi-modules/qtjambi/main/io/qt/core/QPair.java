@@ -103,7 +103,7 @@ public class QPair <T, S> implements Cloneable {
     @Override
     @QtUninvokable
     public String toString() {
-        return "Pair(" + (first != null ? first.toString() : "null")
+        return QList.pairPrefix() + "(" + (first != null ? first.toString() : "null")
          + "," + (second != null ? second.toString() : "null") + ")";
     }
 

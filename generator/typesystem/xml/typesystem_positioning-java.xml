@@ -43,6 +43,12 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.positioning" module="qtjambi.positioning" default-superclass="io.qt.QtObject">
+    <inject-code class="metainfo" position="1">
+    void initialize_meta_info_QtPositioning();
+    </inject-code>
+    <inject-code class="metainfo">
+    initialize_meta_info_QtPositioning();
+    </inject-code>
     <object-type name="QGeoAreaMonitorSource">
         <inject-code>
             <import-file name="typesystem/java/typesystem_positioning-java.java" quote-after-line="class QGeoAreaMonitorSource___" quote-before-line="}// class"/>
@@ -71,14 +77,20 @@
                 </conversion-rule>
                 <conversion-rule class="shell">
                 QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);
-                if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal)
-                    return false;
-                jobject __java_metaSignal = qtjambi_cast&lt;jobject>(%env, metaSignal);
-                if(!__java_metaSignal)
-                    return false;
-                jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);
+                if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal){
+					__qt_return_value = false;
+                }else{
+					jobject __java_metaSignal = qtjambi_cast&lt;jobject>(%env, metaSignal);
+					if(!__java_metaSignal){
+						__qt_return_value = false;
+					}else{
+						jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);
                 </conversion-rule>
             </modify-argument>
+			<inject-code class="shell" position="end">
+				}
+			}
+			</inject-code>
         </modify-function>
     </object-type>
     <object-type name="QNmeaPositionInfoSource">
@@ -90,7 +102,7 @@
                 <replace-type modified-type="io.qt.positioning.QNmeaPositionInfoSource$Result"/>
                 <conversion-rule class="native">
                     jobject %out = nullptr;
-                    if(%in){
+					if(%in){
                         %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %3), %4);
                     }

@@ -43,6 +43,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtWebEngineWidgets" description="Provides C++ classes for rendering web content in a QWidget based application.">
+    <required-library name="QtQuickWidgets" mode="optional"/>
+    <required-library name="QtPrintSupport"/>
     <enum-type name="QWebEngineCertificateError::Error" until="5.*"/>
     <enum-type name="QWebEngineDownloadItem::DownloadState" until="5.*"/>
     <enum-type name="QWebEngineDownloadItem::DownloadType" until="5.*"/>

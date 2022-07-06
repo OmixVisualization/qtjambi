@@ -46,6 +46,10 @@
 Generator::Generator() {
     m_num_generated = 0;
     m_num_generated_written = 0;
+    m_qtVersionMajor = QT_VERSION_MAJOR;
+    m_qtVersionMinor = QT_VERSION_MINOR;
+    m_qtVersionPatch = QT_VERSION_PATCH;
+    m_qtjambiVersionPatch = 0;
 }
 
 void Generator::generate() {

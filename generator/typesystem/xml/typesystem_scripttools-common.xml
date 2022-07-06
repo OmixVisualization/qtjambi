@@ -43,6 +43,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtScriptTools" description="Additional components for applications that use Qt Script.">
+    <required-library name="QtWidgets"/>
+    <required-library name="QtScript"/>
   <enum-type name="QScriptEngineDebugger::DebuggerAction"/>
   <enum-type name="QScriptEngineDebugger::DebuggerState"/>
   <enum-type name="QScriptEngineDebugger::DebuggerWidget"/>

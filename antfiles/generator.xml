@@ -3,7 +3,7 @@
         Building and running the Generator
     -->
 
-    <target name="tools.generator.run">
+    <target name="tools.generator.run" unless="${skip-generate}">
 		<antcall target="generator.xmlmerge-impl"/>
         <mkdir dir="${generator.outputdir}"/>
         <generator dir="${generator.builddir}"

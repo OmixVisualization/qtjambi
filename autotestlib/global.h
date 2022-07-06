@@ -83,6 +83,7 @@
 #include "propertyandmethodcalltest.h"
 #include "settingstest.h"
 #include "multisignaltest.h"
+#include "exceptiontest.h"
 
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>

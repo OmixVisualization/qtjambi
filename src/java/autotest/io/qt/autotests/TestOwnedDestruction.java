@@ -89,8 +89,7 @@ public class TestOwnedDestruction extends ApplicationInitializer {
         	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": delete QTextDocument");
         	document.dispose();
         	document = null;
-	    	System.gc();
-	    	System.runFinalization();
+	    	ApplicationInitializer.runGC();
         	QThread.yieldCurrentThread();
         	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": send dispose events");
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -101,8 +100,7 @@ public class TestOwnedDestruction extends ApplicationInitializer {
         	threads.clear();
         	threads = null;
         	java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "Test"+(k+1)+": all threads terminated. purging...");
-	    	System.gc();
-	    	System.runFinalization();
+	    	ApplicationInitializer.runGC();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
     }

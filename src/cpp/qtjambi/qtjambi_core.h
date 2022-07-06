@@ -67,7 +67,11 @@ QTJAMBI_EXPORT void qtjambi_assert(const char *assertion, const char *file, int 
 #  define QTJAMBI_EXCEPTION_CHECK_CLEAR(env) Q_UNUSED(env)
 #  define QTJAMBI_DEBUG_TRACE(location)
 #  define QTJAMBI_DEBUG_METHOD_PRINT(context, methodname)
-#define QTJAMBI_DEBUG_METHOD_PRINT_WHERE(context, methodname, shell)
+#  define QTJAMBI_DEBUG_METHOD_PRINT_WHERE(context, methodname, shell)
+#if defined(Q_ASSERT) && defined(QT_FORCE_ASSERTS)
+#  undef Q_ASSERT
+#  define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qtjambi_assert(#cond, __FILE__, __LINE__))
+#endif
 #else
 #  define QTJAMBI_EXCEPTION_CHECK(env) \
       if (env->ExceptionCheck()) { \
@@ -84,7 +88,7 @@ QTJAMBI_EXPORT void qtjambi_debug_trace(const char *location, const char *file, 
 #  define QTJAMBI_DEBUG_TRACE(location) qtjambi_debug_trace(location, __FILE__, __LINE__);
 
 #if defined(Q_ASSERT)
-#undef Q_ASSERT
+#  undef Q_ASSERT
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_ASSERT(cond) static_cast<void>(false && (cond))
 #  else
@@ -225,10 +229,11 @@ class JavaExceptionPrivate;
 class QTJAMBI_EXPORT JavaException : public QException
 {
 public:
-    JavaException();
+    JavaException() Q_DECL_NOEXCEPT;
     JavaException(JNIEnv *env, jthrowable obj);
-    JavaException(const JavaException& copy);
-    virtual ~JavaException() override;
+    JavaException(const JavaException& copy) Q_DECL_NOEXCEPT;
+    JavaException(JavaException&& copy) Q_DECL_NOEXCEPT;
+    ~JavaException() Q_DECL_NOEXCEPT override;
     void raiseInJava(JNIEnv* env) const;
     void raise() const override;
     void report(JNIEnv* env) const;
@@ -238,8 +243,9 @@ public:
 #endif
     void addSuppressed(JNIEnv* env, const JavaException& exn) const;
     jthrowable object() const;
-    JavaException& operator =(const JavaException& other);
-    operator bool() const;
+    JavaException& operator =(const JavaException& other) Q_DECL_NOEXCEPT;
+    JavaException& operator =(JavaException&& other) Q_DECL_NOEXCEPT;
+    operator bool() const Q_DECL_NOEXCEPT;
     char const* what() const Q_DECL_NOEXCEPT override;
 
 #ifdef QTJAMBI_STACKTRACE
@@ -264,6 +270,55 @@ private:
     void update(JNIEnv *env);
     QSharedDataPointer<JavaExceptionPrivate> p;
 };
+
+#if defined(QTJAMBI_CENTRAL_TRY_CATCH)
+
+class TypedTrial{
+public:
+    template<typename Functor>
+    TypedTrial(Functor&& fun)
+        : m_functor(&fun),
+          m_caller(&caller<Functor>){}
+    void operator()();
+private:
+    template<typename Functor>
+    static void caller(void* ptr){(*reinterpret_cast<Functor*>(ptr))();}
+    void* m_functor;
+    void(*m_caller)(void*);
+};
+
+class TypedCatcher{
+public:
+    template<typename Functor>
+    TypedCatcher(Functor&& fun)
+        : m_functor(&fun),
+          m_caller(&caller<Functor>){}
+    void operator()(const JavaException& exn);
+private:
+    template<typename Functor>
+    static void caller(void* ptr, const JavaException& exn){(*reinterpret_cast<Functor*>(ptr))(exn);}
+    void* m_functor;
+    void(*m_caller)(void*,const JavaException&);
+};
+
+QTJAMBI_EXPORT void qtjambi_try_catch(TypedTrial&& fct, TypedCatcher&& handler);
+QTJAMBI_EXPORT void qtjambi_try_catch_any(TypedTrial&& fct, TypedTrial&& anyHandler);
+
+#define QTJAMBI_TRY qtjambi_try_catch([&]()->void
+#define QTJAMBI_TRY_ANY qtjambi_try_catch_any([&]()->void
+#define QTJAMBI_TRY_RETURN(variable,value) variable = value;\
+                                           return;
+#define QTJAMBI_CATCH(EXN) , [&](EXN)->void
+#define QTJAMBI_CATCH_ANY , [&]()->void
+#define QTJAMBI_TRY_END );
+#else
+#define QTJAMBI_TRY try
+#define QTJAMBI_TRY_ANY try
+#define QTJAMBI_TRY_RETURN(variable,value) return value;
+#define QTJAMBI_CATCH catch
+#define QTJAMBI_CATCH_ANY catch(...)
+#define QTJAMBI_TRY_END
+#endif
 
 #define qtjambi_throw_java_exception(env)\
     JavaException::check(env QTJAMBI_STACKTRACEINFO )
@@ -307,27 +362,6 @@ private:
     quint8 data;
     Q_DISABLE_COPY_MOVE(QtJambiExceptionRaiser)
 };
-
-#ifdef QTJAMBI_STACKTRACE
-#define qtjambi_rethrowing(env, epression)\
-    try{\
-        epression\
-    }catch(const JavaException& exn){\
-        exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );\
-    }
-#else
-#define qtjambi_rethrowing(env, epression)\
-    {\
-        epression\
-    }
-#endif
-
-#define qtjambi_suppress_exception(env, exn, epression)\
-    try{\
-        epression\
-    }catch(const JavaException& exn##_2){\
-        exn.addSuppressed(env, exn##_2);\
-    }
 
 QTJAMBI_EXPORT QByteArray qtjambi_type_name(const std::type_info& typeId);
 

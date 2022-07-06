@@ -32,6 +32,7 @@ package io.qt.autotests;
 import java.util.Arrays;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.QMissingVirtualOverridingException;
@@ -48,6 +49,7 @@ import io.qt.core.QFutureWatcher;
 import io.qt.core.QFutureWatcherBase;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QUnhandledException;
 
 public class TestFuture extends ApplicationInitializer {
@@ -87,6 +89,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testNativeQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFuture<String> future = FutureHandler.forward(FutureHandler.returnInTheFuture(Arrays.asList("testNativeQFuture1", "testNativeQFuture_nested"), 200));
     	future.waitForFinished();
 		Assert.assertFalse(future.isCanceled());
@@ -97,6 +100,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testJavaQFutureWatcher() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureWatcher<String> watcher = new QFutureWatcher<>();
     	QEventLoop loop = new QEventLoop();
     	int[] count = {0};
@@ -122,6 +126,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testJavaQFutureWatcher_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureWatcher<String> watcher = new QFutureWatcher<>();
     	QEventLoop loop = new QEventLoop();
     	int[] count = {0};
@@ -147,6 +152,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testNativeQFutureWatcher() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureWatcher<String> watcher = FutureHandler.watcherString();
     	try {
 	    	QEventLoop loop = new QEventLoop();
@@ -177,6 +183,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testJavaToNativeQFutureWatcher_String() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureWatcher<String> watcher = new QFutureWatcher<>();
     	watcher.setFuture(FutureHandler.returnInTheFuture(Arrays.asList("testJavaToNativeQFutureWatcher_String"), 500));
     	Assert.assertEquals("testJavaToNativeQFutureWatcher_String", FutureHandler.checkWatcherString(watcher));
@@ -286,6 +293,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testExceptionNativeQFuture() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFuture<String> future = FutureHandler.throwInTheFuture(Arrays.asList("testNativeQFuture1", "testNativeQFuture_nested"), 200);
     	try {
 			future.waitForFinished();
@@ -298,6 +306,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testExceptionNativeQFuture_nested() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFuture<String> future = FutureHandler.forward(FutureHandler.throwInTheFuture(Arrays.asList("testNativeQFuture1", "testNativeQFuture_nested"), 200));
     	try {
 			future.waitForFinished();
@@ -310,6 +319,7 @@ public class TestFuture extends ApplicationInitializer {
     
     @Test
     public void testExceptionNativeQFuture_Void() {
+    	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	boolean isQt5 = QLibraryInfo.version().majorVersion()==5;
     	/*
     	for (int i = 0; i < 9; i++) {

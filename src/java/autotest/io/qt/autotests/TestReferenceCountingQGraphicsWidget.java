@@ -80,8 +80,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
                 act = null;
 	        }
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(getClass()) {
 	            	Thread.sleep(25);
 	            }
@@ -98,8 +97,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
 	        w = null;
 		}
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -121,8 +119,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
                 act = null;
 	        }
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(getClass()) {
 	            	Thread.sleep(25);
 	            }
@@ -139,8 +136,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
 	        w = null;
 		}
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -162,8 +158,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
                 act = null;
 	        }
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
-	            System.gc();
-	            System.runFinalization();
+	            ApplicationInitializer.runGC();
 	            synchronized(getClass()) {
 	            	Thread.sleep(25);
 	            }
@@ -180,8 +175,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
 	        w = null;
 		}
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -203,8 +197,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
             act = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -222,8 +215,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
         }
         actions = null;
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -245,8 +237,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
             act = null;
         }
         for (int i = 0; i < 20 && counter.get()==0; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }
@@ -264,8 +255,7 @@ public class TestReferenceCountingQGraphicsWidget extends ApplicationInitializer
         }
         actions = null;
         for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
-            System.gc();
-            System.runFinalization();
+            ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }

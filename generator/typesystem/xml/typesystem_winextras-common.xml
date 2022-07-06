@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtWinExtras" description="Provides platform-specific APIs for Windows.">
+    <required-library name="QtWidgets"/>
   <rejection class="QWinMime"/>
   <rejection class="QWindowsWindowFunctions::IsTabletModeType"/>
   <rejection class="QWindowsWindowFunctions::SetHasBorderInFullScreen"/>

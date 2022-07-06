@@ -63,26 +63,26 @@ import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileDevice;
 import io.qt.core.QIODevice;
-import io.qt.core.QList;
 import io.qt.core.QStringList;
 import io.qt.qtjambi.deployer.Main.JVMDetectionModes;
 import io.qt.qtjambi.deployer.Main.Parameters;
 
 class AppGenerator {
-	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException{
-	    QCommandLineOption applicationJNIMinVersionOption = new QCommandLineOption(QList.of("jni-minimum-version"), "Minimum version for the required JNI", "version");
-	    QCommandLineOption applicationNameOption = new QCommandLineOption(QList.of("application", "application-name"), "Application name", "name");
-	    QCommandLineOption applicationIcoOption = new QCommandLineOption(QList.of("ico", "application-icon"), "Application icon", "file");
-	    QCommandLineOption applicationMPOption = new QCommandLineOption(QList.of("mp", "module-path"), "Module path for application execution", "path");
-	    QCommandLineOption applicationLPOption = new QCommandLineOption(QList.of("lp", "library-path"), "Library path for application execution", "path");
-	    QCommandLineOption applicationMainClassOption = new QCommandLineOption(QList.of("main-class"), "Main class", "class");
-	    QCommandLineOption applicationAutodetectJvmOption = new QCommandLineOption(QList.of("autodetect-jvm"), "Autodetect Java Virtual Machine at runtime");
-	    QCommandLineOption applicationJVMMinVersionOption = new QCommandLineOption(QList.of("minversion-jvm", "jvm-minimum-version"), "Minimum version for the autodetected Java Virtual Machine", "version");
-	    QCommandLineOption applicationJVMPathOption = new QCommandLineOption(QList.of("jvm-path"), "Path to Java Virtual Machine (absolute or relative to app binary)", "version");
-	    QCommandLineOption applicationExeOption = new QCommandLineOption(QList.of("executable"), "Path to executable file.\nExamples:\n--executable=path"+File.separator+"QtJambiLauncher.exe\n--executable=macos"+File.pathSeparator+"path"+File.separator+"QtJambiLauncher.app", "file");
-	    QCommandLineOption applicationExeLocationOption = new QCommandLineOption(QList.of("executable-location"), "Directory containing QtJambiLauncher executable", "path");
-	    QCommandLineOption applicationJVMArgOption = new QCommandLineOption(QList.of("jvmarg"), "JVM argument", "arg");
-	    parser.addOptions(QList.of(
+	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException{
+	    QCommandLineOption applicationJNIMinVersionOption = new QCommandLineOption(QStringList.of("jni-minimum-version"), "Minimum version for the required JNI", "version");
+	    QCommandLineOption applicationNameOption = new QCommandLineOption(QStringList.of("application", "application-name"), "Application name", "name");
+	    QCommandLineOption applicationIcoOption = new QCommandLineOption(QStringList.of("ico", "application-icon"), "Application icon", "file");
+	    QCommandLineOption applicationMPOption = new QCommandLineOption(QStringList.of("mp", "module-path"), "Module path for application execution", "path");
+	    QCommandLineOption applicationLPOption = new QCommandLineOption(QStringList.of("lp", "library-path"), "Library path for application execution", "path");
+	    QCommandLineOption applicationMainClassOption = new QCommandLineOption(QStringList.of("main-class"), "Main class", "class");
+	    QCommandLineOption applicationAutodetectJvmOption = new QCommandLineOption(QStringList.of("autodetect-jvm"), "Autodetect Java Virtual Machine at runtime");
+	    QCommandLineOption applicationJVMMinVersionOption = new QCommandLineOption(QStringList.of("minversion-jvm", "jvm-minimum-version"), "Minimum version for the autodetected Java Virtual Machine", "version");
+	    QCommandLineOption applicationJVMPathOption = new QCommandLineOption(QStringList.of("jvm-path"), "Path to Java Virtual Machine (absolute or relative to app binary)", "version");
+	    QCommandLineOption applicationExeOption = new QCommandLineOption(QStringList.of("executable"), "Path to executable file.\nExamples:\n--executable=path"+File.separator+"QtJambiLauncher.exe\n--executable=macos"+File.pathSeparator+"path"+File.separator+"QtJambiLauncher.app", "file");
+	    QCommandLineOption applicationExeLocationOption = new QCommandLineOption(QStringList.of("executable-location"), "Directory containing QtJambiLauncher executable", "path");
+	    QCommandLineOption applicationJVMArgOption = new QCommandLineOption(QStringList.of("jvmarg"), "JVM argument", "arg");
+	    parser.addOptions(Arrays.asList(
+	    		platformOption,
 	    		configurationOption,
 	    		
 	    		applicationJNIMinVersionOption,
@@ -109,6 +109,10 @@ class AppGenerator {
 		
 		QStringList additionalArguments = new QStringList(parser.positionalArguments());
 		
+		String platform = null;
+		if(parser.isSet(platformOption))
+			platform = parser.value(platformOption);
+
 		String appName = null;
 		if(parser.isSet(applicationNameOption))
 			appName = parser.value(applicationNameOption);
@@ -167,6 +171,26 @@ class AppGenerator {
 						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
 					}
 					os = "macos";
+				}else if(exeinfo[0].endsWith("_x86_64")) {
+					if(!exeFile.isDirectory()) {
+						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
+					}
+					os = "android-x64";
+				}else if(exeinfo[0].endsWith("_x86")) {
+					if(!exeFile.isDirectory()) {
+						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
+					}
+					os = "android-x86";
+				}else if(exeinfo[0].endsWith("_arm64-v8a")) {
+					if(!exeFile.isDirectory()) {
+						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
+					}
+					os = "android-arm64";
+				}else if(exeinfo[0].endsWith("_armeabi-v7a")) {
+					if(!exeFile.isDirectory()) {
+						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
+					}
+					os = "android-arm";
 				}else {
 					if(!exeFile.isFile()) {
 						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
@@ -185,6 +209,14 @@ class AppGenerator {
                     os = "windows";
                 }else if(entry.equals("QtJambiLauncher.app")) {
                     os = "macos";
+                }else if(entry.equals("QtJambiLauncher_x86_64")) {
+                    os = "android-x64";
+                }else if(entry.equals("QtJambiLauncher_x86")) {
+                    os = "android-x86";
+                }else if(entry.equals("QtJambiLauncher_armeabi-v7a")) {
+                    os = "android-arm";
+                }else if(entry.equals("QtJambiLauncher_arm64-v8a")) {
+                    os = "android-arm64";
                 }else if(entry.equals("QtJambiLauncher")) {
                     os = "linux";
                 }
@@ -273,7 +305,7 @@ class AppGenerator {
 		}else {
 			cborValue.setValue(Parameters.JVMPath.value(), new QCborValue(jvmPath));				
 		}
-		IntFunction<QCborValue[]> arrayFactory = length->new QCborValue[length];
+		IntFunction<QCborValue[]> arrayFactory = QCborValue[]::new;
 		cborValue.setValue(Parameters.MainClass.value(), new QCborValue(mainClass));
 		QCborArray argumentArray = new QCborArray(arguments.stream().map(QByteArray::new).map(QCborValue::new).toArray(arrayFactory));
 		cborValue.setValue(Parameters.JVMArguments.value(), new QCborValue(argumentArray));
@@ -295,23 +327,41 @@ class AppGenerator {
 		
 		for(Map.Entry<String,URL> entry : executables) {
 			String os = entry.getKey();
-			if(os!=null) {
+			if(os!=null && (platform==null || platform.startsWith(os))) {
                 URL file = entry.getValue();
 				QFile newFile;
                 switch(os.toLowerCase()) {
 				case "linux":
 				case "linux32":
 				case "linux64":
+				case "linux-arm":
+				case "linux-arm32":
 				case "linux-arm64":
 				case "linux-aarch64":
 				case "linux-x86":
 				case "linux-x64":
 					newFile = new QFile(dir.absoluteFilePath(appName));
 					break;
+				case "android-arm":
+				case "android-arm32":
+					newFile = new QFile(dir.absoluteFilePath(appName+"_armeabi-v7a"));
+					break;
+				case "android-arm64":
+				case "android-aarch64":
+					newFile = new QFile(dir.absoluteFilePath(appName+"_arm64-v8a"));
+					break;
+				case "android-x86":
+					newFile = new QFile(dir.absoluteFilePath(appName+"_x86"));
+					break;
+				case "android-x64":
+					newFile = new QFile(dir.absoluteFilePath(appName+"_x86_64"));
+					break;
 //				default: continue;
 				case "win32":
 				case "win64":
 				case "windows":
+				case "windows-arm":
+				case "windows-arm32":
 				case "windows-aarch64":
 				case "windows-arm64":
 				case "windows-x86":

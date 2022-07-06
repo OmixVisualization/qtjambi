@@ -3,27 +3,27 @@
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
-** This file is part of Qt Jambi.
+** instance file is part of Qt Jambi.
 **
 ** ** $BEGIN_LICENSE$
 ** GNU Lesser General Public License Usage
-** This file may be used under the terms of the GNU Lesser
+** instance file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
+** packaging of instance file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ** 
 ** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
+** Alternatively, instance file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
 ** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
+** packaging of instance file.  Please review the following information to
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
 **
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** instance file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
@@ -60,43 +60,53 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject.Connection;
 import io.qt.core.Qt;
 
-public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
+public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 	
-	public TestFlagsAndEnumParameters() {
-		ApplicationInitializer.instances.add(new WeakReference<>(this));
-	}
-	
-	@BeforeClass
-    public static void testInitialize() throws Exception {
-		ApplicationInitializer.testInitialize();
-    }
-	
-	@AfterClass
-    public static void testDispose() throws Exception {
-		ApplicationInitializer.testDispose();
+	public static class FlagsAndEnumParameters extends FlagsAndEnumTest{
+		public final Signal1<TestEnum> testSignal6 = new Signal1<TestEnum>();
+		public final Signal1<TestEnum2> testSignal7 = new Signal1<TestEnum2>();
+		public final Signal1<MyFlags> testSignal8 = new Signal1<MyFlags>();
+		
+		public FlagsAndEnumParameters() {
+			ApplicationInitializer.instances.add(new WeakReference<>(this));
+		}
+		
+		private io.qt.core.Qt.WidgetAttribute[] buffer;
+		private final FlagsAndEnumTest flagsAndEnumTest = new FlagsAndEnumTest(){
+			{
+				ApplicationInitializer.instances.add(new WeakReference<>(this));
+			}
+		    @io.qt.QtPropertyWriter(enabled=false)
+			public void setAttributes(io.qt.core.Qt.WidgetAttribute ... attributes){
+				buffer = attributes;
+				super.setAttributes(attributes);
+			}
+		};
+		
+		public void processResult(int result) {
+			this.result = result;
+		}
+		
+		private int result;
 	}
 	
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestDestruction.class.getName());
     }
-	
-	public final Signal1<TestEnum> testSignal6 = new Signal1<TestEnum>();
-	public final Signal1<TestEnum2> testSignal7 = new Signal1<TestEnum2>();
-	public final Signal1<MyFlags> testSignal8 = new Signal1<MyFlags>();
-	
-	private io.qt.core.Qt.WidgetAttribute[] buffer;
-	private final FlagsAndEnumTest flagsAndEnumTest = new FlagsAndEnumTest(){
-		{
-			ApplicationInitializer.instances.add(new WeakReference<>(this));
-		}
-	    @io.qt.QtPropertyWriter(enabled=false)
-		public void setAttributes(io.qt.core.Qt.WidgetAttribute ... attributes){
-			buffer = attributes;
-			super.setAttributes(attributes);
-		}
-	};
-	
-	private int result;
+    
+    private static FlagsAndEnumParameters instance;
+    
+    @BeforeClass
+	public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitialize();
+    	instance = new FlagsAndEnumParameters();
+    }
+    
+    @AfterClass
+    public static void testDispose() throws Exception {
+    	instance = null;
+    	ApplicationInitializer.testDispose();
+    }
 	
 	@Test
 	public void testGlobalEnums(){
@@ -138,75 +148,75 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 	@Test
 	public void testEmitNativeSignal1() throws Throwable{
 		try{
-			result = 0;
-			QMetaMethod method = this.metaObject().method("testSignal1", Qt.AlignmentFlag.class);
+			instance.result = 0;
+			QMetaMethod method = instance.metaObject().method("testSignal1", Qt.AlignmentFlag.class);
 			assertTrue(method!=null);
-			method.invoke(this, Qt.AlignmentFlag.AlignJustify);
-			assertEquals(Qt.AlignmentFlag.AlignJustify, Qt.AlignmentFlag.resolve(result));
+			method.invoke(instance, Qt.AlignmentFlag.AlignJustify);
+			assertEquals(Qt.AlignmentFlag.AlignJustify, Qt.AlignmentFlag.resolve(instance.result));
 		}catch(io.qt.QNoSuchEnumValueException e){
-			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " + result+"\n"+e.getMessage());
+			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " +instance.result+"\n"+e.getMessage());
 		}
 	}
 	
 	@Test
 	public void testEmitSignal1() throws Throwable{
 		try{
-			result = 0;
-			testSignal1.emit(Qt.AlignmentFlag.AlignJustify);
-			assertEquals(Qt.AlignmentFlag.AlignJustify, Qt.AlignmentFlag.resolve(result));
+			instance.result = 0;
+			instance.testSignal1.emit(Qt.AlignmentFlag.AlignJustify);
+			assertEquals(Qt.AlignmentFlag.AlignJustify, Qt.AlignmentFlag.resolve(instance.result));
 		}catch(io.qt.QNoSuchEnumValueException e){
-			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " + result+"\n"+e.getMessage());
+			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " +instance.result+"\n"+e.getMessage());
 		}
 	}
 	
 	@Test
 	public void testEmitNativeSignal2() throws Throwable{
 		try{			
-			result = 0;
-			QMetaMethod method = this.metaObject().method("testSignal2", Qt.Orientation.class);
+			instance.result = 0;
+			QMetaMethod method = instance.metaObject().method("testSignal2", Qt.Orientation.class);
 			assertTrue(method!=null);
-			method.invoke(this, Qt.Orientation.Horizontal);
-			assertEquals(Qt.Orientation.Horizontal, Qt.Orientation.resolve(result));
+			method.invoke(instance, Qt.Orientation.Horizontal);
+			assertEquals(Qt.Orientation.Horizontal, Qt.Orientation.resolve(instance.result));
 		}catch(io.qt.QNoSuchEnumValueException e){
-			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " + result+"\n"+e.getMessage());
+			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " +instance.result+"\n"+e.getMessage());
 		}
 	}
 	
 	@Test
 	public void testEmitSignal2() throws Throwable{
 		try{			
-			result = 0;
-			testSignal2.emit(Qt.Orientation.Horizontal);
-			assertEquals(Qt.Orientation.Horizontal, Qt.Orientation.resolve(result));
+			instance.result = 0;
+			instance.testSignal2.emit(Qt.Orientation.Horizontal);
+			assertEquals(Qt.Orientation.Horizontal, Qt.Orientation.resolve(instance.result));
 		}catch(io.qt.QNoSuchEnumValueException e){
-			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " + result+"\n"+e.getMessage());
+			org.junit.Assert.fail("No Such Enum Value: Qt.AlignmentFlag " +instance.result+"\n"+e.getMessage());
 		}
 	}
 	
 	@Test
 	public void testEmitNativeSignal3() throws Throwable{
-		result = 0;
-		QMetaMethod method = this.metaObject().method("testSignal3", Qt.Alignment.class);
+		instance.result = 0;
+		QMetaMethod method = instance.metaObject().method("testSignal3", Qt.Alignment.class);
 		assertTrue(method!=null);
 		Qt.Alignment a = new Qt.Alignment(Qt.AlignmentFlag.AlignTop, Qt.AlignmentFlag.AlignJustify);
-		method.invoke(this, a);
-		assertEquals(a, new Qt.Alignment(result));
+		method.invoke(instance, a);
+		assertEquals(a, new Qt.Alignment(instance.result));
 	}
 	
 	@Test
 	public void testEmitSignal3() throws Throwable{
-		result = 0;
+		instance.result = 0;
 		Qt.Alignment a = new Qt.Alignment(Qt.AlignmentFlag.AlignTop, Qt.AlignmentFlag.AlignJustify);
-		testSignal3.emit(a);
-		assertEquals(a, new Qt.Alignment(result));
+		instance.testSignal3.emit(a);
+		assertEquals(a, new Qt.Alignment(instance.result));
 	}
 	
 	@Test
 	public void testCustomEnumSignals() throws Throwable{
 		// must not crash internally inside MetaObjectTools.emitNativeSignal()
-		testSignal6.emit(TestEnum.ENTRY1);
-		testSignal7.emit(TestEnum2.ENTRY2);
-		testSignal8.emit(new MyFlags(TestEnum2.ENTRY3, TestEnum2.ENTRY2));
+		instance.testSignal6.emit(TestEnum.ENTRY1);
+		instance.testSignal7.emit(TestEnum2.ENTRY2);
+		instance.testSignal8.emit(new MyFlags(TestEnum2.ENTRY3, TestEnum2.ENTRY2));
 	}
 	
 	@Test
@@ -216,26 +226,26 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 			Qt.WidgetAttribute.WA_X11NetWmWindowTypeDesktop,
 			Qt.WidgetAttribute.WA_OpaquePaintEvent
 		};
-		result = 0;
+		instance.result = 0;
 		Qt.WidgetAttribute[][] receivedAttributes = {null};
-		Connection connection = testSignal4.connect(attr->{
+		Connection connection = instance.testSignal4.connect(attr->{
 			receivedAttributes[0] = attr;
 		});
 		assertTrue(connection!=null);
-		testSignal4.emit(attributes);
+		instance.testSignal4.emit(attributes);
 		assertEquals("testSignal4 result",
 						Qt.WidgetAttribute.WA_TranslucentBackground.value() +
 						Qt.WidgetAttribute.WA_X11NetWmWindowTypeDesktop.value() +
-						Qt.WidgetAttribute.WA_OpaquePaintEvent.value(), result);
-		result = 0;
-		assertArrayEquals("getAttributes() after emmitting testSignal4", attributes, getAttributes().toArray(new Qt.WidgetAttribute[3]));
-		assertArrayEquals("receivedAttributes after emmitting testSignal4", attributes, receivedAttributes[0]);
+						Qt.WidgetAttribute.WA_OpaquePaintEvent.value(), instance.result);
+		instance.result = 0;
+		assertArrayEquals("getAttributes() after emmitting instance.testSignal4", attributes, instance.getAttributes().toArray(new Qt.WidgetAttribute[3]));
+		assertArrayEquals("receivedAttributes after emmitting instance.testSignal4", attributes, receivedAttributes[0]);
 	}
 	
 	@Test
 	public void testInitializerList3(){
-		this.setAttributes(Qt.WidgetAttribute.WA_DeleteOnClose, Qt.WidgetAttribute.WA_PaintOnScreen);
-		assertArrayEquals("getAttributes() after setAttributes(...)", new Qt.WidgetAttribute[]{Qt.WidgetAttribute.WA_DeleteOnClose, Qt.WidgetAttribute.WA_PaintOnScreen}, getAttributes().toArray(new Qt.WidgetAttribute[2]));
+		instance.setAttributes(Qt.WidgetAttribute.WA_DeleteOnClose, Qt.WidgetAttribute.WA_PaintOnScreen);
+		assertArrayEquals("getAttributes() after setAttributes(...)", new Qt.WidgetAttribute[]{Qt.WidgetAttribute.WA_DeleteOnClose, Qt.WidgetAttribute.WA_PaintOnScreen}, instance.getAttributes().toArray(new Qt.WidgetAttribute[2]));
 	}
 	
 	@Test
@@ -245,10 +255,10 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 			Qt.WidgetAttribute.WA_DontShowOnScreen,
 			Qt.WidgetAttribute.WA_KeyboardFocusChange
 		};
-		buffer = null;
-		flagsAndEnumTest.testSignal4.emit(attributes);
-		assertArrayEquals("buffer after emmitting testSignal4 in overriding class", attributes, buffer);
-		assertArrayEquals("getAttributes() after emmitting testSignal4 in overriding class", attributes, flagsAndEnumTest.getAttributes().toArray(new Qt.WidgetAttribute[3]));
+		instance.buffer = null;
+		instance.flagsAndEnumTest.testSignal4.emit(attributes);
+		assertArrayEquals("buffer after emmitting instance.testSignal4 in overriding class", attributes, instance.buffer);
+		assertArrayEquals("getAttributes() after emmitting instance.testSignal4 in overriding class", attributes, instance.flagsAndEnumTest.getAttributes().toArray(new Qt.WidgetAttribute[3]));
 	}
 	
 	@Test
@@ -259,10 +269,10 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 			Qt.WidgetAttribute.WA_OpaquePaintEvent,
 			Qt.WidgetAttribute.WA_TransparentForMouseEvents
 		};
-		buffer = null;
-		flagsAndEnumTest.setAttributes(attributes);
-		assertArrayEquals("buffer after setAttributes(...) in overriding class", attributes, buffer);
-		assertArrayEquals("getAttributes() after setAttributes(...) in overriding class", attributes, flagsAndEnumTest.getAttributes().toArray(new Qt.WidgetAttribute[3]));
+		instance.buffer = null;
+		instance.flagsAndEnumTest.setAttributes(attributes);
+		assertArrayEquals("buffer after setAttributes(...) in overriding class", attributes, instance.buffer);
+		assertArrayEquals("getAttributes() after setAttributes(...) in overriding class", attributes, instance.flagsAndEnumTest.getAttributes().toArray(new Qt.WidgetAttribute[3]));
 	}
 	
 	@Test
@@ -270,26 +280,26 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		int[] numbers = {
 			9752,3971,657941,3
 		};
-		result = 0;
+		instance.result = 0;
 		int[][] receivedNumbers = {null};
-		Connection connection = testSignal5.connect(n->{
+		Connection connection = instance.testSignal5.connect(n->{
 			receivedNumbers[0] = n;
 		});
 		assertTrue(connection!=null);
-		testSignal5.emit(numbers);
+		instance.testSignal5.emit(numbers);
 		int sum = 0;
 		for (int i = 0; i < numbers.length; i++) {
 			sum += numbers[i];
 		}
-		assertEquals("testSignal5 result", sum, result);
-		result = 0;
-		List<Integer> ints = getInts();
+		assertEquals("testSignal5 result", sum, instance.result);
+		instance.result = 0;
+		List<Integer> ints = instance.getInts();
 		int[] _ints = new int[ints.size()];
 		for (int i = 0; i < _ints.length; i++) {
 			_ints[i] = ints.get(i);
 		}
-		assertArrayEquals("getInts() after emmitting testSignal5", numbers, _ints);
-		assertArrayEquals("receivedNumbers after emmitting testSignal5", numbers, receivedNumbers[0]);
+		assertArrayEquals("getInts() after emmitting instance.testSignal5", numbers, _ints);
+		assertArrayEquals("receivedNumbers after emmitting instance.testSignal5", numbers, receivedNumbers[0]);
 	}
 	
 	public enum AutoFlag implements QtFlagEnumerator{
@@ -306,10 +316,6 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		assertEquals(0x0200000, AutoFlag.X.value());
 		assertEquals(0x02000, AutoFlag.P.value());
 		assertEquals(AutoFlags.class, AutoFlag.P.asFlags().getClass());
-	}
-	
-	public void processResult(int result) {
-		this.result = result;
 	}
 	
 	public enum TestEnum{
