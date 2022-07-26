@@ -81,9 +81,9 @@ This saves compilation time.
 
 `> ant tests.generate tests.run`
 
-* Find unit test results here: `build/tests/TestResults-release` and `build/tests/TestResults-debug`.
+* Find unit test results in directory `TestResults`.
 
-* Finally, find all Java libraries in directory `deployment` and all native libraries in platform- and configuration-specific subdirectory, e.g. `native/windows-x64/release`.
+* Finally, find all Java libraries in directory `$VERSION/deployment` and all native libraries in platform- and configuration-specific subdirectory, e.g. `native/windows-x64/release`.
 
 ## How To Use QtJambi
 

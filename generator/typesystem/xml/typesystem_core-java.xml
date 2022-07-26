@@ -2767,23 +2767,24 @@ struct RegistryHelper&lt;QPointF, false>{
             </inject-code>
         </modify-function>
       <modify-function signature="exec()">
-            <inject-code class="native" position="beginning">bool classNotFound = false;
+            <inject-code class="native" position="beginning">bool useQGuiApplicationExec = false;
 QCoreApplication* instance = QCoreApplication::instance();
 if (!instance)
 	JavaException::raiseRuntimeException(%env, "QCoreApplication has not been initialized with QCoreApplication.initialize()" QTJAMBI_STACKTRACEINFO );
 else if(instance->inherits("QGuiApplication")){
+	useQGuiApplicationExec = true;
 	QTJAMBI_TRY_ANY{
 		Java::QtGui::QGuiApplication::getClass(%env);
 	}QTJAMBI_CATCH_ANY{
-		classNotFound = true;
+		useQGuiApplicationExec = false;
 	}QTJAMBI_TRY_END
-	if(!classNotFound)
+	if(useQGuiApplicationExec)
 		__java_return_value = Java::QtGui::QGuiApplication::exec(%env);
 }else if(instance->thread()!=QThread::currentThread())
 	JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
 else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
 	JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
-if(classNotFound){</inject-code>
+if(!useQGuiApplicationExec){</inject-code>
             <inject-code class="native" position="end">}</inject-code>
       </modify-function>
       <modify-function signature="sendPostedEvents(QObject *, int)">

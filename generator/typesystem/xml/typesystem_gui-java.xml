@@ -2291,24 +2291,24 @@ public final void copyDataTo(float[] values)    {
         </modify-function>
         <!-- We implement a custom Java wrapper to this -->
         <modify-function signature="exec()">
-            <inject-code class="native" position="beginning">bool classNotFound = false;
+            <inject-code class="native" position="beginning">bool useQApplicationExec = false;
 QCoreApplication* instance = QCoreApplication::instance();
 if (!instance)
 	JavaException::raiseRuntimeException(%env, "QGuiApplication has not been initialized with QGuiApplication.initialize()" QTJAMBI_STACKTRACEINFO );
 else if(instance->inherits("QApplication")){
-	bool classNotFound = false;
+	useQApplicationExec = true;
 	QTJAMBI_TRY_ANY{
 		Java::QtWidgets::QApplication::getClass(%env);
 	}QTJAMBI_CATCH_ANY{
-		classNotFound = true;
+		useQApplicationExec = false;
 	}QTJAMBI_TRY_END
-	if(!classNotFound)
+	if(useQApplicationExec)
 		__java_return_value = Java::QtWidgets::QApplication::exec(%env);
 }else if(instance->thread()!=QThread::currentThread())
 	JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
 else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
 	JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
-if(classNotFound){</inject-code>
+if(!useQApplicationExec){</inject-code>
             <inject-code class="native" position="end">}</inject-code>
         </modify-function>
         <modify-function signature="overrideCursor()">
