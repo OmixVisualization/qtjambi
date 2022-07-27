@@ -1,5 +1,4 @@
 TEMPLATE = subdirs
-CONFIG += ordered
 SUBDIRS += GenericFunction
 SUBDIRS += Generic1Function
 SUBDIRS += Generic2Function
