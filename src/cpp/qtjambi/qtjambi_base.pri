@@ -113,6 +113,10 @@ linux-g++* | freebsd-g++* | win32-g++* {
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 }
 
+linux-g++* : lessThan(QT_MAJOR_VERSION, 6):{
+    QMAKE_CXXFLAGS += -fno-sized-deallocation
+}
+
 # Extra options to be set when using jump tables...
 jumptable{
     CONFIG += hide_symbols
