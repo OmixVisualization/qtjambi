@@ -394,6 +394,8 @@ public class BundleGenerator {
 					|| !new File(qtdir, "plugins").isDirectory()) {
 				throw new Error("Qt bundle generation: Specified Qt location does not contain Qt libraries.");
 			}
+			if(parser.isSet(platformOption))
+				osArchName = parser.value(platformOption);
 			if(osArchName==null) {
 				if(qtdir.getName().equals("android")) {
 					osArchName = "android";
