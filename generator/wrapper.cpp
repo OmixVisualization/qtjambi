@@ -327,6 +327,12 @@ int Wrapper::runJambiGenerator() {
             DocIndexReader reader;
             return reader.readDocIndexes(docsDirectory, targetThread);
         }, docsDirectory, QThread::currentThread());
+    }else{
+        QFutureInterface<const DocModel*> promise;
+        promise.reportStarted();
+        promise.reportResult(static_cast<const DocModel*>(nullptr));
+        promise.reportFinished();
+        gs->m_docModelFuture = promise.future();
     }
 
     //parse the type system file
