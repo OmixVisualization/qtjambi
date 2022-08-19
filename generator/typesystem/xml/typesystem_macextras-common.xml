@@ -59,10 +59,10 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'NSImage*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'NSToolbar*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'NSData*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'CG*Ref*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*NSImage*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*NSToolbar*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*NSData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*CG*Ref*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'nativeToolbar()const' for function modification in 'QMacToolBar' not found. Possible candidates:*"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'nativeToolbarItem()const' for function modification in 'QMacToolBarItem' not found. Possible candidates:*"/>
 </typesystem>

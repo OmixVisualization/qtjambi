@@ -208,6 +208,7 @@ class AbstractMetaType {
             ValuePattern,
             StringPattern,
             Latin1StringPattern,
+            Latin1StringViewPattern,
             StringViewPattern,
             AnyStringViewPattern,
             Utf8StringViewPattern,
@@ -342,6 +343,7 @@ class AbstractMetaType {
         bool isString() const {
             return m_pattern == StringPattern
                     || m_pattern == Latin1StringPattern
+                    || m_pattern == Latin1StringViewPattern
                     || m_pattern == StringViewPattern
                     || m_pattern == AnyStringViewPattern
                     || m_pattern == Utf8StringViewPattern
@@ -353,6 +355,9 @@ class AbstractMetaType {
 
         // returns true if the type was originally a QLatin1String
         bool isTargetLangLatin1String() const { return m_pattern == Latin1StringPattern; }
+
+        // returns true if the type was originally a QLatin1StringView
+        bool isTargetLangLatin1StringView() const { return m_pattern == Latin1StringViewPattern; }
 
         // returns true if the type was originally a QString or const QString & or equivalent for QLatin1String
         bool isTargetLangStringView() const { return m_pattern == StringViewPattern; }

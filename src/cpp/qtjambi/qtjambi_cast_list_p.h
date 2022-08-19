@@ -102,28 +102,6 @@ struct ContainerToList{
         return qtjambi_scoped_cast<false,jobject,const QList<T>>::cast(env, container->toList(), nullptr, nullptr);
     }
 };
-
-template<template<typename T> class Container, typename T, bool = supports_qHash<T>::value && supports_equal<T>::value>
-struct ContainerToSet{
-    static jobject function(JNIEnv * env, const void*) {
-        JavaException::raiseUnsupportedOperationException(env, "toSet()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-#ifdef QSET_H
-template<template<typename T> class Container, typename T>
-struct ContainerToSet<Container, T, true>{
-    static jobject function(JNIEnv * env, const void* ptr) {
-        const Container<T>  *container = static_cast<const Container<T> *>(ptr);
-#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
-        return qtjambi_scoped_cast<false,jobject,const QSet<T>>::cast(env, container->toSet(), nullptr, nullptr);
-#else
-        return qtjambi_scoped_cast<false,jobject,const QSet<T>>::cast(env, QSet<T>(container->begin(), container->end()), nullptr, nullptr);
-#endif
-    }
-};
-#endif
 #endif
 
 template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
@@ -877,16 +855,28 @@ public:
 
     bool isConstant() override {return true;}
     const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QList<T>();}
-    void* copyContainer(const void* container) override {return container ? new QList<T>(*reinterpret_cast<const QList<T>*>(container)) : createContainer();}
+    size_t sizeOf() override {
+        return sizeof(QList<T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QList<T>(*reinterpret_cast<const QList<T>*>(copyOf));
+        }else{
+            return new(placement) QList<T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QList<T>(std::move(*reinterpret_cast<const QList<T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QList<T>*>(container)->~QList<T>();
+        return true;
+    }
     void assign(void* container, const void* other) override { (*reinterpret_cast<QList<T>*>(container)) = (*reinterpret_cast<const QList<T>*>(other)); }
-    void deleteContainer(void* container) override {delete reinterpret_cast<QList<T>*>(container);}
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QList<T>>(containerTypeName);
-    }
-
-    void append(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::append" QTJAMBI_STACKTRACEINFO );
     }
 
     void appendList(JNIEnv * env, void*, jobject) override {
@@ -905,11 +895,6 @@ public:
         return ContainerValueDefault<QList, T>::function(env, container, index, defaultValue);
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    jobject toSet(JNIEnv * env,const void* container) override {
-        return ContainerToSet<QList, T>::function(env, container);
-    }
-#endif
     void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::swapItemsAt" QTJAMBI_STACKTRACEINFO );
     }
@@ -930,22 +915,16 @@ public:
         JavaException::raiseUnsupportedOperationException(env, "QList::replace" QTJAMBI_STACKTRACEINFO );
     }
 
-    jboolean removeOne(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::removeOne" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-
-    void removeAt(JNIEnv * env, void*, jint) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::removeAt" QTJAMBI_STACKTRACEINFO );
+    void remove(JNIEnv * env, void*, jint, jint n) override {
+        if(n==1)
+            JavaException::raiseUnsupportedOperationException(env, "QList::removeAt" QTJAMBI_STACKTRACEINFO );
+        else
+            JavaException::raiseUnsupportedOperationException(env, "QList::remove" QTJAMBI_STACKTRACEINFO );
     }
 
     jint removeAll(JNIEnv * env, void*, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::removeAll" QTJAMBI_STACKTRACEINFO );
         return 0;
-    }
-
-    void prepend(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::prepend" QTJAMBI_STACKTRACEINFO );
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
@@ -964,7 +943,7 @@ public:
         return ContainerLastIndexOf<QList, T>::function(env, container, value, index);
     }
 
-    void insert(JNIEnv * env, void*, jint, jobject) override {
+    void insert(JNIEnv * env, void*, jint, jint, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::insert" QTJAMBI_STACKTRACEINFO );
     }
 
@@ -997,13 +976,6 @@ public:
         JavaException::raiseUnsupportedOperationException(env, "QList::fill" QTJAMBI_STACKTRACEINFO );
     }
 
-    void remove(JNIEnv * env, void*, jint, jint) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::remove" QTJAMBI_STACKTRACEINFO );
-    }
-
-    void insert(JNIEnv * env, void*, jint, jint, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QList::insert" QTJAMBI_STACKTRACEINFO );
-    }
     void resize(JNIEnv * env, void*, jint) override {
         JavaException::raiseUnsupportedOperationException(env, "QList::resize" QTJAMBI_STACKTRACEINFO );
     }
@@ -1045,10 +1017,6 @@ public:
 
     bool isConstant() override {return false;}
 
-    void append(JNIEnv * env, void* container, jobject value) override {
-        ContainerAppend<QList, T>::function(env, container, value);
-    }
-
     void appendList(JNIEnv * env, void* container, jobject list) override {
         ContainerAppendList<T>::function(env, container, list);
     }
@@ -1065,28 +1033,30 @@ public:
         ContainerReplace<QList, T>::function(env, container, index, value);
     }
 
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
-        return ContainerRemoveOne<QList, T>::function(env, container, value);
-    }
-
-    void removeAt(JNIEnv * env, void* container, jint index) override {
+    void remove(JNIEnv * env, void* container, jint index, jint n) override {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        ContainerRemoveN<QList, T>::function(env, container, index, n);
+#else
+        Q_ASSERT(n==1);
         ContainerRemoveAt<QList, T>::function(env, container, index);
+#endif
     }
 
     jint removeAll(JNIEnv * env, void* container, jobject value) override {
         return ContainerRemoveAll<QList, T>::function(env, container, value);
     }
 
-    void prepend(JNIEnv * env, void* container, jobject value) override {
-        ContainerPrepend<QList, T>::function(env, container, value);
-    }
-
     void move(JNIEnv * env, void* container, jint index1, jint index2) override {
         ContainerMove<QList, T>::function(env, container, index1, index2);
     }
 
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override {
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        ContainerInsertN<QList, T>::function(env, container, index, n, value);
+#else
+        Q_ASSERT(n==1);
         ContainerInsertAt<QList, T>::function(env, container, index, value);
+#endif
     }
 
     void clear(JNIEnv * env, void* container) override {
@@ -1096,14 +1066,6 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void fill(JNIEnv * env, void* container, jobject value, jint size) override {
         ContainerFill<QList, T>::function(env, container, value, size);
-    }
-
-    void remove(JNIEnv * env, void* container, jint index, jint n) override {
-        ContainerRemoveN<QList, T>::function(env, container, index, n);
-    }
-
-    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override {
-        ContainerInsertN<QList, T>::function(env, container, index, n, value);
     }
     void resize(JNIEnv * env, void* container, jint newSize) override {
         ContainerResize<QList, T>::function(env, container, newSize);
@@ -1132,16 +1094,28 @@ public:
 
     bool isConstant() override {return true;}
     const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QVector<T>();}
-    void* copyContainer(const void* container) override {return container ? new QVector<T>(*reinterpret_cast<const QVector<T>*>(container)) : createContainer();}
     void assign(void* container, const void* other) override { (*reinterpret_cast<QVector<T>*>(container)) = (*reinterpret_cast<const QVector<T>*>(other)); }
-    void deleteContainer(void* container) override {delete reinterpret_cast<QVector<T>*>(container);}
+    size_t sizeOf() override {
+        return sizeof(QVector<T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QVector<T>(*reinterpret_cast<const QVector<T>*>(copyOf));
+        }else{
+            return new(placement) QVector<T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QVector<T>(std::move(*reinterpret_cast<const QVector<T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QVector<T>*>(container)->~QVector<T>();
+        return true;
+    }
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QVector<T>>(qPrintable(containerTypeName));
-    }
-
-    void append(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::append" QTJAMBI_STACKTRACEINFO );
     }
 
     void appendVector(JNIEnv * env, void*, jobject) override {
@@ -1158,10 +1132,6 @@ public:
 
     jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override {
         return ContainerValueDefault<QVector, T>::function(env, container, index, defaultValue);
-    }
-
-    jobject toSet(JNIEnv * env,const void* container) override {
-        return ContainerToSet<QVector, T>::function(env, container);
     }
 
     void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
@@ -1184,22 +1154,9 @@ public:
         JavaException::raiseUnsupportedOperationException(env, "QVector::replace" QTJAMBI_STACKTRACEINFO );
     }
 
-    jboolean removeOne(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::removeOne" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-
-    void removeAt(JNIEnv * env, void*, jint) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::removeAt" QTJAMBI_STACKTRACEINFO );
-    }
-
     jint removeAll(JNIEnv * env, void*, jobject) override {
         JavaException::raiseUnsupportedOperationException(env, "QVector::removeAll" QTJAMBI_STACKTRACEINFO );
         return 0;
-    }
-
-    void prepend(JNIEnv * env, void*, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::prepend" QTJAMBI_STACKTRACEINFO );
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
@@ -1216,10 +1173,6 @@ public:
 
     jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
         return ContainerLastIndexOf<QVector, T>::function(env, container, value, index);
-    }
-
-    void insert(JNIEnv * env, void*, jint, jobject) override {
-        JavaException::raiseUnsupportedOperationException(env, "QVector::insert" QTJAMBI_STACKTRACEINFO );
     }
 
     jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
@@ -1297,10 +1250,6 @@ public:
 
     bool isConstant() override {return false;}
 
-    void append(JNIEnv * env, void* container, jobject value) override {
-        ContainerAppend<QVector, T>::function(env, container, value);
-    }
-
     void appendVector(JNIEnv * env, void* container, jobject list) override {
         ContainerAppendVector<T>::function(env, container, list);
     }
@@ -1317,28 +1266,12 @@ public:
         ContainerReplace<QVector, T>::function(env, container, index, value);
     }
 
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
-        return ContainerRemoveOne<QVector, T>::function(env, container, value);
-    }
-
-    void removeAt(JNIEnv * env, void* container, jint index) override {
-        ContainerRemoveAt<QVector, T>::function(env, container, index);
-    }
-
     jint removeAll(JNIEnv * env, void* container, jobject value) override {
         return ContainerRemoveAll<QVector, T>::function(env, container, value);
     }
 
-    void prepend(JNIEnv * env, void* container, jobject value) override {
-        ContainerPrepend<QVector, T>::function(env, container, value);
-    }
-
     void move(JNIEnv * env, void* container, jint index1, jint index2) override {
         ContainerMove<QVector, T>::function(env, container, index1, index2);
-    }
-
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override {
-        ContainerInsertAt<QVector, T>::function(env, container, index, value);
     }
 
     void clear(JNIEnv * env, void* container) override {
@@ -1382,10 +1315,26 @@ public:
 
     bool isConstant() override {return true;}
     const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QLinkedList<T>();}
-    void* copyContainer(const void* container) override {return container ? new QLinkedList<T>(*reinterpret_cast<const QLinkedList<T>*>(container)) : createContainer();}
     void assign(void* container, const void* other) override { (*reinterpret_cast<QLinkedList<T>*>(container)) = (*reinterpret_cast<const QLinkedList<T>*>(other)); }
-    void deleteContainer(void* container) override {delete reinterpret_cast<QLinkedList<T>*>(container);}
+    size_t sizeOf() override {
+        return sizeof(QLinkedList<T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QLinkedList<T>(*reinterpret_cast<const QLinkedList<T>*>(copyOf));
+        }else{
+            return new(placement) QLinkedList<T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QLinkedList<T>(std::move(*reinterpret_cast<const QLinkedList<T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QLinkedList<T>*>(container)->~QLinkedList<T>();
+        return true;
+    }
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QLinkedList<T>>(qPrintable(containerTypeName));
     }
@@ -1550,10 +1499,27 @@ public:
 
     bool isConstant() override {return true;}
     const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QSet<T>();}
-    void* copyContainer(const void* container) override {return container ? new QSet<T>(*reinterpret_cast<const QSet<T>*>(container)) : createContainer();}
     void assign(void* container, const void* other) override { (*reinterpret_cast<QSet<T>*>(container)) = (*reinterpret_cast<const QSet<T>*>(other)); }
-    void deleteContainer(void* container) override {delete reinterpret_cast<QSet<T>*>(container);}
+    size_t sizeOf() override {
+        return sizeof(QSet<T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QSet<T>(*reinterpret_cast<const QSet<T>*>(copyOf));
+        }else{
+            return new(placement) QSet<T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QSet<T>(std::move(*reinterpret_cast<const QSet<T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QSet<T>*>(container)->~QSet<T>();
+        return true;
+    }
+
     int registerContainer(const QByteArray& containerTypeName) override {
         return registerMetaType<QSet<T>>(containerTypeName);
     }

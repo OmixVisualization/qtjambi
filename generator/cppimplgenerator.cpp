@@ -497,14 +497,9 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaFunctional *java_
             writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
         }
         writeInclude(s, java_class->typeEntry()->include(), included);
+        writeExtraIncludes(s, java_class, included, true);
         writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), included);
-        IncludeList list = java_class->typeEntry()->extraIncludes();
-        std::sort(list.begin(), list.end());
-        for(const Include &inc : list) {
-            if (inc.type != Include::TargetLangImport)
-                writeInclude(s, inc, included);
-        }
-        s << Qt::endl;
+        writeExtraIncludes(s, java_class, included);
     }
     writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), included);
     if(java_class->isFunctionPointer()){
@@ -1175,6 +1170,7 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
             }
         }
         writeInclude(s, java_class->typeEntry()->include(), included);
+        writeExtraIncludes(s, java_class, included, true);
         writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), included);
         if(java_class->typeEntry()->isNativeInterface() || (java_class->extractInterface() && java_class->extractInterface()->typeEntry()->isNativeInterface())){
             writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_nativeinterface.h"), included);
@@ -1418,24 +1414,20 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
                 defaultArgumentOverloads << QList<const AbstractMetaArgument *>();
             }else{
                 for(const AbstractMetaArgument *argument : function->arguments()) {
+                    ArgumentRemove argumentRemoved = function->argumentRemoved(argument->argumentIndex()+1);
+                    bool hasDefault = !argument->originalDefaultValueExpression().isEmpty();
                     if(defaultArgumentOverloads.isEmpty()){
-                        if(function->argumentRemoved(argument->argumentIndex()+1)==ArgumentRemove_No
-                                && !argument->originalDefaultValueExpression().isEmpty()){
+                        if(argumentRemoved!=ArgumentRemove_Remove && hasDefault){
                             defaultArgumentOverloads << ( QList<const AbstractMetaArgument *>() << nullptr);
                         }
                         defaultArgumentOverloads << ( QList<const AbstractMetaArgument *>() << argument);
                     }else{
-                        if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
-                            if(argument->originalDefaultValueExpression().isEmpty()){
-                                for(int i=0; i<defaultArgumentOverloads.size(); ++i){
-                                    defaultArgumentOverloads[i] << argument;
-                                }
-                            }
-                        }else if(argument->originalDefaultValueExpression().isEmpty()){
+                        if(!hasDefault
+                                 || argumentRemoved==ArgumentRemove_UseAsLength){
                             for(int i=0; i<defaultArgumentOverloads.size(); ++i){
                                 defaultArgumentOverloads[i] << argument;
                             }
-                        }else{
+                        }else if(argumentRemoved!=ArgumentRemove_Remove){
                             QList<QList<const AbstractMetaArgument *>> copy;
                             for(int i=0; i<defaultArgumentOverloads.size(); ++i){
                                 if(defaultArgumentOverloads[i].last()){
@@ -1853,7 +1845,10 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
                         }
                     }
                     s << INDENT << "qtjambi_check_resource(__jni_env, __qt_this);" << Qt::endl;
-                    s << INDENT << "__java_return_value = qtjambi_from_qstring(__jni_env, QVariant(*__qt_this).toString());" << Qt::endl;
+                    if(cls->qualifiedCppName()=="QString")
+                        s << INDENT << "__java_return_value = qtjambi_from_qstring(__jni_env, *__qt_this);" << Qt::endl;
+                    else
+                        s << INDENT << "__java_return_value = qtjambi_from_qstring(__jni_env, QVariant(*__qt_this).toString());" << Qt::endl;
                     if(!cls->typeEntry()->ppCondition().isEmpty()){
                         s << "#else" << Qt::endl
                           << INDENT << "Q_UNUSED(";
@@ -2098,6 +2093,10 @@ void CppImplGenerator::writeCloneFunction(QTextStream &s, const AbstractMetaClas
             if(java_class->typeEntry()->isValue() && static_cast<const ValueTypeEntry*>(java_class->typeEntry())->skipMetaTypeRegistration()){
                 s << INDENT << "__java_return_value = qtjambi_from_object(__jni_env, new " << java_class->typeEntry()->qualifiedCppName() << "(*__qt_this), false, false);" << Qt::endl
                   << INDENT << "qtjambi_set_java_ownership(__jni_env, __java_return_value);" << Qt::endl;
+            }else if(java_class->qualifiedCppName()=="QString"){
+                s << INDENT << "__java_return_value = qtjambi_to_stringobject(__jni_env, *__qt_this);" << Qt::endl;
+            }else if(java_class->qualifiedCppName()=="QChar"){
+                s << INDENT << "__java_return_value = qtjambi_to_charobject(__jni_env, *__qt_this);" << Qt::endl;
             }else{
                 s << INDENT << "__java_return_value = qtjambi_cast<jobject>(__jni_env, *__qt_this);" << Qt::endl;
             }
@@ -3702,7 +3701,10 @@ void CppImplGenerator::writeFunctionName(QTextStream &s,
                     }
                 }else if (!modified_type.isEmpty() || !argument->type()->hasNativeId() || java_function->isConstructor()) {
                     if (modified_type.isEmpty()){
-                        args += jni_signature(argument->type(), format);
+                        QString arg = jni_signature(argument->type(), format);
+                        if(arg=="Lio_qt_core_QString_2")
+                            arg = "Ljava_lang_CharSequence_2";
+                        args += arg;
                     }else if(jniType.isEmpty()){
                         args += jni_signature(modified_type, format);
                     }else{
@@ -4147,6 +4149,18 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const AbstractMetaFuncti
         QScopedPointer<AbstractMetaType> scope;
         for(const AbstractMetaArgument *argument : arguments) {
             if(argument){
+                switch (java_function->argumentRemoved(argument->argumentIndex()+1)) {
+                case ArgumentRemove_UseAsLength:
+                    {
+                        s << INDENT << "size_t " << argument->indexedName() << " = 0;" << Qt::endl;
+                    }
+                    break;
+                default: break;
+                }
+            }
+        }
+        for(const AbstractMetaArgument *argument : arguments) {
+            if(argument){
                 AbstractMetaType* argumentType = argument->type();
                 if(argumentType->getReferenceType()==AbstractMetaType::RReference){
                     argumentType = argumentType->copy();
@@ -4155,57 +4169,71 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const AbstractMetaFuncti
                     scope.reset(argumentType);
                 }
                 switch (java_function->argumentRemoved(argument->argumentIndex()+1)) {
-                case ArgumentRemove_UseAsLength:
-                    {
-                        s << INDENT << "size_t " << argument->indexedName() << " = 0;" << Qt::endl;
-                    }
-                    break;
                 case ArgumentRemove_No:
                     {
-                    QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
                     QString jniType;
-                    if(typeReplaced=="int")
-                        jniType = "jint";
-                    else if(typeReplaced=="long")
-                        jniType = "jlong";
-                    else if(typeReplaced=="short")
-                        jniType = "jshort";
-                    else if(typeReplaced=="byte")
-                        jniType = "jbyte";
-                    else if(typeReplaced=="boolean")
-                        jniType = "jboolean";
-                    else if(typeReplaced=="char")
-                        jniType = "jchar";
-                    else if(typeReplaced=="float")
-                        jniType = "jfloat";
-                    else if(typeReplaced=="double")
-                        jniType = "jdouble";
-                    else if(typeReplaced=="int[]")
-                        jniType = "jintArray";
-                    else if(typeReplaced=="long[]")
-                        jniType = "jlongArray";
-                    else if(typeReplaced=="short[]")
-                        jniType = "jshortArray";
-                    else if(typeReplaced=="byte[]")
-                        jniType = "jbyteArray";
-                    else if(typeReplaced=="boolean[]")
-                        jniType = "jbooleanArray";
-                    else if(typeReplaced=="char[]")
-                        jniType = "jcharArray";
-                    else if(typeReplaced=="float[]")
-                        jniType = "jfloatArray";
-                    else if(typeReplaced=="double[]")
-                        jniType = "jdoubleArray";
-                    else if(typeReplaced.endsWith("[]"))
-                        jniType = "jobjectArray";
-                    else if(typeReplaced.startsWith("java.lang.Class"))
-                        jniType = "jclass";
-                    else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
-                        jniType = "jstring";
-                    else if(!typeReplaced.isEmpty())
-                        jniType = "jobject";
-                    else
-                        jniType = translateType(argumentType, options);
+                    QString typeReplaced = java_function->typeReplaced(argument->argumentIndex()+1, &jniType);
+                    if(jniType.isEmpty()){
+                        if(typeReplaced.isEmpty() && java_function->argumentTypeArray(argument->argumentIndex()+1)){
+                            QScopedPointer<AbstractMetaType> array(argument->type()->copy());
+                            array->setConstant(false);
+                            array->setReferenceType(AbstractMetaType::NoReference);
+                            QScopedPointer<AbstractMetaType> cpy(argument->type()->copy());
+                            cpy->setConstant(false);
+                            cpy->setReferenceType(AbstractMetaType::NoReference);
+                            QList<bool> indirections = cpy->indirections();
+                            if(!indirections.isEmpty()){
+                                indirections.removeLast();
+                                cpy->setIndirections(indirections);
+                            }
+                            AbstractMetaBuilder::decideUsagePattern(cpy.get());
+                            array->setTypeUsagePattern(AbstractMetaType::ArrayPattern);
+                            array->setArrayElementType(cpy.get());
+                            typeReplaced = jni_signature(array.get(), JNISignatureFormat(ReturnType));
+                        }
+                        if(typeReplaced=="int" || typeReplaced=="I")
+                            jniType = "jint";
+                        else if(typeReplaced=="long" || typeReplaced=="J")
+                            jniType = "jlong";
+                        else if(typeReplaced=="short" || typeReplaced=="S")
+                            jniType = "jshort";
+                        else if(typeReplaced=="byte" || typeReplaced=="B")
+                            jniType = "jbyte";
+                        else if(typeReplaced=="boolean" || typeReplaced=="Z")
+                            jniType = "jboolean";
+                        else if(typeReplaced=="char" || typeReplaced=="C")
+                            jniType = "jchar";
+                        else if(typeReplaced=="float" || typeReplaced=="F")
+                            jniType = "jfloat";
+                        else if(typeReplaced=="double" || typeReplaced=="D")
+                            jniType = "jdouble";
+                        else if(typeReplaced=="int[]" || typeReplaced=="[I")
+                            jniType = "jintArray";
+                        else if(typeReplaced=="long[]" || typeReplaced=="[J")
+                            jniType = "jlongArray";
+                        else if(typeReplaced=="short[]" || typeReplaced=="[S")
+                            jniType = "jshortArray";
+                        else if(typeReplaced=="byte[]" || typeReplaced=="[B")
+                            jniType = "jbyteArray";
+                        else if(typeReplaced=="boolean[]" || typeReplaced=="[Z")
+                            jniType = "jbooleanArray";
+                        else if(typeReplaced=="char[]" || typeReplaced=="[C")
+                            jniType = "jcharArray";
+                        else if(typeReplaced=="float[]" || typeReplaced=="[F")
+                            jniType = "jfloatArray";
+                        else if(typeReplaced=="double[]" || typeReplaced=="[D")
+                            jniType = "jdoubleArray";
+                        else if(typeReplaced.endsWith("[]") || typeReplaced.startsWith("["))
+                            jniType = "jobjectArray";
+                        else if(typeReplaced.startsWith("java.lang.Class"))
+                            jniType = "jclass";
+                        else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
+                            jniType = "jstring";
+                        else if(!typeReplaced.isEmpty())
+                            jniType = "jobject";
+                        else
+                            jniType = translateType(argumentType, options);
+                    }
                     s << INDENT << jniType << " " << argument->indexedName() << " = ";
                     bool isJObject = false;
                     if(jniType=="jobjectArray"
@@ -4599,7 +4627,7 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
             QString argName;
             if(!arguments.isEmpty()){
                 const AbstractMetaArgument * argument = arguments[0];
-                QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
+                QString typeReplaced = java_function->typeReplaced(argument->argumentIndex()+1);
                 if(typeReplaced=="int")
                     jniType = "jint";
                 else if(typeReplaced=="long")
@@ -4673,7 +4701,7 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const AbstractMetaF
             for(int i=0; i<arguments.size(); ++i){
                 const AbstractMetaArgument * argument = arguments[i];
                 QString jniType;
-                QString typeReplaced = java_function->argumentReplaced(argument->argumentIndex());
+                QString typeReplaced = java_function->typeReplaced(argument->argumentIndex()+1);
                 if(typeReplaced=="int")
                     jniType = "jint";
                 else if(typeReplaced=="long")
@@ -6033,7 +6061,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6045,7 +6073,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jintArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6071,7 +6099,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6083,7 +6111,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jlongArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6109,7 +6137,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6121,7 +6149,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jshortArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6147,7 +6175,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6159,7 +6187,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jbyteArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6185,7 +6213,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6197,7 +6225,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jcharArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6223,7 +6251,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6235,7 +6263,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jfloatArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6261,7 +6289,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6273,7 +6301,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jdoubleArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6299,7 +6327,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                         s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                         s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                         s << INDENT << "}" << Qt::endl;
                                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                         s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6311,7 +6339,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << ">(" << __jni_env << ", ";
                                 if((option & OptionalScope) == OptionalScope)
                                         s << "*";
-                                s << qtjambi_scope << ", jbooleanArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                                s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                                 if(argumentTypeArrayLength)
                                     s << argumentTypeArrayLength->indexedName();
                                 else
@@ -6374,7 +6402,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                     s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                                     s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
                                     s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                                    s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                                    s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                                     s << INDENT << "}" << Qt::endl;
                                     s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                                     s << INDENT << "*reinterpret_cast<void**>(" << qt_name << ")";
@@ -6393,7 +6421,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                             }
                             if((option & OptionalScope) == OptionalScope)
                                     s << "*";
-                            s << qtjambi_scope << ", jobjectArray(" << in_name << "), " << (argumentTypeArrayDeref ? "*" : "");
+                            s << qtjambi_scope << ", " << in_name << ", " << (argumentTypeArrayDeref ? "*" : "");
                             if(argumentTypeArrayLength)
                                 s << argumentTypeArrayLength->indexedName();
                             else
@@ -6795,7 +6823,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << INDENT << "if(!" << qt_name << "){" << Qt::endl
                                   << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl
                                   << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl
-                                  << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl
+                                  << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl
                                   << INDENT << "}" << Qt::endl
                                   << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl
                                   << INDENT << "*reinterpret_cast<void**>(" << qt_name << ") = " << out_name << "_buffer->data();" << Qt::endl;
@@ -6828,7 +6856,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << INDENT << "if(!" << qt_name << "){" << Qt::endl
                                   << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl
                                   << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl
-                                  << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl
+                                  << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl
                                   << INDENT << "}" << Qt::endl
                                   << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl
                                   << INDENT << "*reinterpret_cast<void**>(" << qt_name << ") = " << out_name << "_buffer->data();" << Qt::endl;
@@ -6907,7 +6935,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << INDENT << "if(!" << qt_name << "){" << Qt::endl
                                   << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl
                                   << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl
-                                  << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl
+                                  << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl
                                   << INDENT << "}" << Qt::endl
                                   << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl
                                   << INDENT << "*reinterpret_cast<void**>(" << qt_name << ") = " << out_name << "_buffer->data();" << Qt::endl;
@@ -6948,7 +6976,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                                 s << INDENT << "if(!" << qt_name << "){" << Qt::endl
                                   << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl
                                   << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl
-                                  << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl
+                                  << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl
                                   << INDENT << "}" << Qt::endl
                                   << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl
                                   << INDENT << "*reinterpret_cast<void**>(" << qt_name << ") = " << out_name << "_buffer->data();" << Qt::endl;
@@ -7087,7 +7115,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                             s << "void** _" << qt_name << " = new void*;" << Qt::endl;
                         }
                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                         s << INDENT << "}" << Qt::endl;
                         s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                         s << INDENT << "*reinterpret_cast<";
@@ -7275,7 +7303,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JObjectWrapper* _" << qt_name << " = new JObjectWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JObjectWrapper*>(" << qt_name << ") = ";
@@ -7295,7 +7323,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JMapWrapper* _" << qt_name << " = new JMapWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JMapWrapper*>(" << qt_name << ") = ";
@@ -7315,7 +7343,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JCollectionWrapper* _" << qt_name << " = new JCollectionWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JCollectionWrapper*>(" << qt_name << ") = ";
@@ -7335,7 +7363,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JIteratorWrapper* _" << qt_name << " = new JIteratorWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JIteratorWrapper*>(" << qt_name << ") = ";
@@ -7353,7 +7381,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JEnumWrapper* _" << qt_name << " = new JEnumWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JEnumWrapper*>(" << qt_name << ") = ";
@@ -7373,7 +7401,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    JQFlagsWrapper* _" << qt_name << " = new JQFlagsWrapper();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<JQFlagsWrapper*>(" << qt_name << ") = ";
@@ -7391,7 +7419,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QVariant* _" << qt_name << " = new QVariant();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QVariant*>(" << qt_name << ") = ";
@@ -7435,7 +7463,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QString* _" << qt_name << " = new QString();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QString*>(" << qt_name << ") = ";
@@ -7491,6 +7519,26 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             semiRequired = false;
         }else{
             s << "qtjambi_cast<QLatin1String>(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
+        }
+    } else if (java_type->isTargetLangLatin1StringView()) {
+        if((option & DirectReturn) == DirectReturn){
+            s << INDENT << "return ";
+        }else if((option & NoTmpVariable) == NoTmpVariable){
+            if(!qt_name.isEmpty())
+                s << INDENT << qt_name << " = ";
+        }else{
+            s << INDENT;
+            writeTypeInfo(s, java_type, NoOption); //ForceConstReference
+            s << ' ' << qt_name << " = ";
+        }
+        if(qtjambi_scope.isEmpty()){
+            s << INDENT << "QByteArray " << qt_name << "_qByteArray = qtjambi_cast<QString>(" << __jni_env << ", " << java_name << ").toLatin1();" << Qt::endl;
+            s << INDENT;
+            writeTypeInfo(s, java_type, ForceValueType); //ForceConstReference
+            s << qt_name << " = QLatin1StringView(" << qt_name << "_qByteArray);" << Qt::endl;
+            semiRequired = false;
+        }else{
+            s << "qtjambi_cast<QLatin1StringView>(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
         }
     } else if (java_type->isTargetLangStringView()) {
         if((option & DirectReturn) == DirectReturn){
@@ -7557,7 +7605,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QChar* _" << qt_name << " = new QChar;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QChar*>(" << qt_name << ") = ";
@@ -7586,7 +7634,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                     s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                     s << INDENT << "    qint" << enumType->size() << "* _" << qt_name << " = new qint" << enumType->size() << ";" << Qt::endl;
                     s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                    s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                    s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                     s << INDENT << "}" << Qt::endl;
                     s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                     s << INDENT << "*reinterpret_cast<qint" << enumType->size() << "*>(" << qt_name << ") = ";
@@ -7617,7 +7665,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                 s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                 s << INDENT << "    " << qualified_name << "* _" << qt_name << " = new " << qualified_name << ";" << Qt::endl;
                 s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                 s << INDENT << "}" << Qt::endl;
                 s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                 s << INDENT << "*reinterpret_cast<" << qualified_name << "*>(" << qt_name << ") = ";
@@ -7658,7 +7706,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                             writeTypeInfo(s, java_type, Option(SkipName | ForceValueType));
                             s << ";" << Qt::endl;
                             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                             s << INDENT << "}" << Qt::endl;
                             s << INDENT << "*reinterpret_cast<";
                             writeTypeInfo(s, java_type, Option(SkipName | ForceValueType));
@@ -7704,7 +7752,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                             writeTypeInfo(s, java_type, Option(SkipName | ForceValueType));
                             s << ";" << Qt::endl;
                             s << INDENT << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                            s << INDENT << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                            s << INDENT << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                         }
                         s << INDENT << "}" << Qt::endl;
                         s << INDENT << "if(!out)" << Qt::endl;
@@ -7800,7 +7848,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                         writeTypeInfo(s, java_type, Option(SkipName | ForceValueType));
                         s << ";" << Qt::endl;
                         s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                        s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                        s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                         s << INDENT << "}" << Qt::endl;
                         s << INDENT << "*reinterpret_cast<";
                         writeTypeInfo(s, java_type, Option(SkipName | ExcludeReference));
@@ -7841,7 +7889,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    void** _" << qt_name << " = new void*;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "**reinterpret_cast<";
@@ -7864,7 +7912,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QModelIndex* _" << qt_name << " = new QModelIndex;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QModelIndex*>(" << qt_name << ") = ";
@@ -7887,7 +7935,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                 s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
                 s << INDENT << "    QMetaObject** _" << qt_name << " = new QMetaObject*;" << Qt::endl;
                 s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-                s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                 s << INDENT << "}" << Qt::endl;
                 s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
                 s << INDENT << "*reinterpret_cast<QMetaObject**>(" << qt_name << ") = qtjambi_cast<QMetaObject*>(" << __jni_env << ", " << java_name << ")";
@@ -7913,7 +7961,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QMetaProperty* _" << qt_name << " = new QMetaProperty;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QMetaProperty*>(" << qt_name << ") = ";
@@ -7933,7 +7981,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QMetaObject::Connection* _" << qt_name << " = new QMetaObject::Connection;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QMetaObject::Connection*>(" << qt_name << ") = ";
@@ -7953,7 +8001,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QMetaMethod* _" << qt_name << " = new QMetaMethod;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QMetaMethod*>(" << qt_name << ") = ";
@@ -7973,7 +8021,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
             s << INDENT << "    QMetaEnum* _" << qt_name << " = new QMetaEnum;" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
-            s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+            s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
             s << INDENT << "*reinterpret_cast<QMetaEnum*>(" << qt_name << ") = ";
@@ -8286,26 +8334,36 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                             s << "* _" << qt_name << " = new ";
                             writeTypeInfo(s, java_type, _option);
                             s << ";" << Qt::endl;
-                            s << INDENT << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                            s << INDENT << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                             s << INDENT << qt_name << " = _" << qt_name << ";" << Qt::endl;
                         }else{
                             s << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl
-                              << INDENT << "int metaTypeID = QMetaType::type(\"" << qualified_class_name << "\");" << Qt::endl
-                              << "#else" << Qt::endl
-                              << INDENT << "int metaTypeID = QMetaType::fromType<" << qualified_class_name << ">().id();" << Qt::endl
-                              << "#endif" << Qt::endl;
+                              << INDENT << "int metaTypeID = QMetaType::type(\"" << qualified_class_name << "\");" << Qt::endl;
                             s << INDENT << "if(metaTypeID!=QMetaType::UnknownType){" << Qt::endl;
                             {
                                 INDENTATION(INDENT)
                                 s << INDENT << "void* _" << qt_name << " = QMetaType::create(metaTypeID, nullptr);" << Qt::endl;
-                                s << INDENT << qtjambi_scope << "->addFinalAction([metaTypeID, _" << qt_name << "](){QMetaType::destroy(metaTypeID, _" << qt_name << ");});" << Qt::endl;
+                                s << INDENT << qtjambi_scope << "->addDeletion(metaTypeID, _" << qt_name << ");" << Qt::endl;
                                 s << INDENT << qt_name << " = _" << qt_name << ";" << Qt::endl;
                             }
                             s << INDENT << "}" << Qt::endl;
+
+                            s << "#else" << Qt::endl
+                              << INDENT << "QMetaType metaType = QMetaType::fromType<" << qualified_class_name << ">();" << Qt::endl;
+                            s << INDENT << "if(metaType.id()!=QMetaType::UnknownType){" << Qt::endl;
+                            {
+                                INDENTATION(INDENT)
+                                s << INDENT << "void* _" << qt_name << " = metaType.create(nullptr);" << Qt::endl;
+                                s << INDENT << qtjambi_scope << "->addDeletion(metaType, _" << qt_name << ");" << Qt::endl;
+                                s << INDENT << qt_name << " = _" << qt_name << ";" << Qt::endl;
+                            }
+                            s << INDENT << "}" << Qt::endl;
+
+                            s << "#endif" << Qt::endl;
                         }
                     }else{
                         s << INDENT << "void** _" << qt_name << " = new void*;" << Qt::endl;
-                        s << INDENT << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
+                        s << INDENT << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
                         s << INDENT << qt_name << " = _" << qt_name << ";" << Qt::endl;
                     }
                 }
@@ -8609,28 +8667,55 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                || java_type->isTargetLangStringView()
                || java_type->isTargetLangAnyStringView()
                || java_type->isTargetLangUtf8StringView()
-               || java_type->isTargetLangLatin1String()) {
-        s << INDENT;
-        if((option & DirectReturn) == DirectReturn){
-            s << "return ";
-        }else if((option & NoTmpVariable) == NoTmpVariable){
-            if(!java_name.isEmpty())
-                s << java_name << " = ";
+               || java_type->isTargetLangLatin1String()
+               || java_type->isTargetLangLatin1StringView()) {
+        if(java_type->isTargetLangString() && !java_type->typeEntry()->isQString()){
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << "jobject " << java_name << " = ";
+            }
+            s << "qtjambi_to_stringobject(" << __jni_env << ", " << qt_name << ")";
         }else{
-            s << "jstring " << java_name << " = ";
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << "jstring " << java_name << " = ";
+            }
+            s << "qtjambi_cast<jstring>(" << __jni_env << ", " << qt_name << ")";
         }
-        s << "qtjambi_cast<jstring>(" << __jni_env << ", " << qt_name << ")";
     } else if (java_type->isTargetLangChar()) {
-        s << INDENT;
-        if((option & DirectReturn) == DirectReturn){
-            s << "return ";
-        }else if((option & NoTmpVariable) == NoTmpVariable){
-            if(!java_name.isEmpty())
-                s << java_name << " = ";
+        if(java_type->typeEntry()->isChar()){
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << "jchar " << java_name << " = ";
+            }
+            s << qt_name << ".unicode()";
         }else{
-            s << "jchar " << java_name << " = ";
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << "jobject " << java_name << " = ";
+            }
+            s << "qtjambi_to_charobject(" << __jni_env << ", " << qt_name << ")";
         }
-        s << qt_name << ".unicode()";
     } else if (java_type->isIntegerFlags()
                || ((option & EnumAsInts)
                    && java_type->isFlags()
@@ -10010,7 +10095,7 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
     for (int i = 0; i < arguments.size(); ++i) {
         if(const AbstractMetaArgument *argument = arguments.at(i)){
             if ((options & SkipRemovedArguments) == SkipRemovedArguments
-                    && java_function->argumentRemoved(argument->argumentIndex() + 1)!=ArgumentRemove_No
+                    && java_function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_Remove
                     && !java_function->hasConversionRule(TypeSystem::NativeCode, argument->argumentIndex() + 1)
                     && !argument->originalDefaultValueExpression().isEmpty()) {
                 continue;
@@ -10192,7 +10277,7 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
     }
 }
 
-void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class, QSet<QString>& dedupe) {
+void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class, QSet<QString>& dedupe, bool skipQtJambi) {
     IncludeList includes = java_class->typeEntry()->extraIncludes();
     if(java_class->typeEntry()->designatedInterface()){
         includes << java_class->typeEntry()->designatedInterface()->extraIncludes();
@@ -10229,7 +10314,13 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClas
     auto used = dedupe.size();
     for(const Include &i : includes) {
         if (i.type != Include::TargetLangImport) {
-            writeInclude(s, i, dedupe);
+            if(skipQtJambi){
+                if(!i.name.startsWith("qtjambi")){
+                    writeInclude(s, i, dedupe);
+                }
+            }else{
+                writeInclude(s, i, dedupe);
+            }
         }
     }
 
@@ -10237,13 +10328,19 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaClas
         s << Qt::endl;
 }
 
-void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaFunctional *java_class, QSet<QString>& dedupe) {
+void CppImplGenerator::writeExtraIncludes(QTextStream &s, const AbstractMetaFunctional *java_class, QSet<QString>& dedupe, bool skipQtJambi) {
     IncludeList includes = java_class->typeEntry()->extraIncludes();
 
     auto used = dedupe.size();
     for(const Include &i : includes) {
         if (i.type != Include::TargetLangImport) {
-            writeInclude(s, i, dedupe);
+            if(skipQtJambi){
+                if(!i.name.startsWith("qtjambi")){
+                    writeInclude(s, i, dedupe);
+                }
+            }else{
+                writeInclude(s, i, dedupe);
+            }
         }
     }
 
@@ -10551,7 +10648,7 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const AbstractMetaFun
                                 }else{
                                     s << INDENT << "InvalidateAfterUse* __invalidate_out_after_use = new InvalidateAfterUse(env, out->l);" << Qt::endl;
                                 }
-                                s << INDENT << "scope->addFinalAction([__invalidate_out_after_use](){ delete __invalidate_out_after_use; });" << Qt::endl;
+                                s << INDENT << "scope->addDeletion(__invalidate_out_after_use);" << Qt::endl;
                             }
                             s << INDENT << "return true;" << Qt::endl;
                         }
@@ -10649,6 +10746,29 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const AbstractMetaFun
                             QString scopedConvert;
                             {
                                 QTextStream _s(&scopedConvert);
+                                if(function->argumentTypeArray(index)){
+                                    if(type->typeEntry()->isPrimitive()){
+                                        if(type->typeEntry()->targetLangName()=="int"){
+                                            javaIn = "jintArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="long"){
+                                            javaIn = "jlongArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="short"){
+                                            javaIn = "jshortArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="byte"){
+                                            javaIn = "jbyteArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="boolean"){
+                                            javaIn = "jbooleanArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="char"){
+                                            javaIn = "jcharArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="float"){
+                                            javaIn = "jfloatArray(in.l)";
+                                        }else if(type->typeEntry()->targetLangName()=="double"){
+                                            javaIn = "jdoubleArray(in.l)";
+                                        }
+                                    }else{
+                                        javaIn = "jobjectArray(in.l)";
+                                    }
+                                }
                                 isCustomized |= writeJavaToQt(_s,
                                                               type,
                                                               "out",
@@ -10786,8 +10906,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     }
                     return javaName;
             }();
-            if(cls->isNamespace()){
-            }else if(!cls->isFake()){
+            if(!cls->isNamespace() && !cls->isFake() && cls->qualifiedCppName()!="QString" && cls->qualifiedCppName()!="QChar"){
                 bool isInterface = false;
                 if (!entry->isInterface()){ //  ?? && cls->hasStandardConstructor() ??
                     for(AbstractMetaClass *iface : cls->interfaces()){
@@ -11551,55 +11670,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                         }
                     }
                 }
-                if(cls->typeEntry()->isValue()){
-                    /*
-                    TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(cls->targetTypeSystem());
-                    if(cls->hasPublicStandardConstructor() && cls->hasPublicCopyConstructor() && !cls->hasExplicitCopyConstructor()){
-                        const QSet<QString>& containerBaseClasses = m_containerBaseClasses[ts];
-                        if(!containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QList<" << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QListAccess<" << qtName << ">::newInstance));" << Qt::endl;
-                        s << "#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
-                        if(!containerBaseClasses.contains("QVector<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QVector<" << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QVectorAccess<" << qtName << ">::newInstance));" << Qt::endl;
-                        s << "#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)" << Qt::endl;
-                        if(cls->hasHashFunction() && !cls->needsHashWorkaround() && cls->hasEqualsOperator()){
-                            if(!containerBaseClasses.contains("QSet<" + qtName + ">")
-                                    && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                                s << INDENT << "registerContainerAccessFactory(typeid(QSet<" << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QSetAccess<" << qtName << ">::newInstance));" << Qt::endl;
-                        }
-                    }
-                    if(cls->hasPublicStandardConstructor() && !cls->hasExplicitStandardConstructor() && !cls->hasExplicitCopyConstructor()){
-                        if(!containerBaseClasses.contains("QMap<QString," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMap<QString," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMapAccess<QString," << qtName << ">::newInstance));" << Qt::endl;
-                        if(!containerBaseClasses.contains("QMap<int," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMap<int," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMapAccess<int," << qtName << ">::newInstance));" << Qt::endl;
-                        if(cls->hasEqualsOperator()){
-                            if(!containerBaseClasses.contains("QHash<QString," + qtName + ">")
-                                    && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                                s << INDENT << "registerContainerAccessFactory(typeid(QHash<QString," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<QString," << qtName << ">::newInstance));" << Qt::endl;
-                            if(!containerBaseClasses.contains("QHash<int," + qtName + ">")
-                                    && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                                s << INDENT << "registerContainerAccessFactory(typeid(QHash<int," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<int," << qtName << ">::newInstance));" << Qt::endl;
-                        }
-                    }
-                    if(!cls->hasExplicitCopyConstructor()){
-                        if(!containerBaseClasses.contains("QMultiMap<QString," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMultiMap<QString," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMultiMapAccess<QString," << qtName << ">::newInstance));" << Qt::endl;
-                        if(!containerBaseClasses.contains("QMultiMap<int," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMultiMap<int," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMultiMapAccess<int," << qtName << ">::newInstance));" << Qt::endl;
-                        if(!containerBaseClasses.contains("QMultiHash<QString," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMultiHash<QString," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMultiHashAccess<QString," << qtName << ">::newInstance));" << Qt::endl;
-                        if(!containerBaseClasses.contains("QMultiHash<int," + qtName + ">")
-                                && !containerBaseClasses.contains("QList<" + qtName + ">"))
-                            s << INDENT << "registerContainerAccessFactory(typeid(QMultiHash<int," << qtName << ">), NewContainerAccessFunction(&QtJambiPrivate::QMultiHashAccess<int," << qtName << ">::newInstance));" << Qt::endl;
-                    }
-                    */
-                }
 
                 s << "// END: type registration" << Qt::endl << Qt::endl;
 
@@ -11864,6 +11934,8 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *ow
         return;
     const EnumTypeEntry *entry = enm->typeEntry();
     if (entry->codeGeneration() == TypeEntry::GenerateForSubclass)
+        return;
+    if(enm->enclosingClass()!=owner)
         return;
 
     const QString qtEnumName = entry->qualifiedCppName();

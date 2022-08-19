@@ -53,186 +53,50 @@ void insertHashFunctionByMetaType(int type, const QHashFunction& fct);
 
 class WrapperListAccess : public AbstractListAccess{
 public:
-    inline WrapperListAccess(AbstractListAccess* containerAccess)
-        : AbstractListAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperListAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractListAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override{
-        m_containerAccess->analyzeElements(container, analyzer, data);
-    }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& elementMetaType() override{
-        return m_containerAccess->elementMetaType();
-    }
-
-    inline void append(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->append(env, container, value);
-    }
-
-    inline void appendList(JNIEnv * env, void* container, jobject list) override{
-        m_containerAccess->appendList(env, container, list);
-    }
-
-    inline jobject at(JNIEnv * env, const void* container, jint index) override{
-        return m_containerAccess->at(env, container, index);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jint index) override{
-        return m_containerAccess->value(env, container, index);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override{
-        return m_containerAccess->value(env, container, index, defaultValue);
-    }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    inline jobject toSet(JNIEnv * env,const void* container) override{
-        return m_containerAccess->toSet(env, container);
-    }
+    WrapperListAccess(AbstractListAccess* containerAccess);
+    ~WrapperListAccess() override;
+    AbstractListAccess* clone() override;
+    void dispose() final override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) final override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
 #endif
-
-    inline void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override{
-        m_containerAccess->swapItemsAt(env, container, index1, index2);
-    }
-
-    inline jboolean startsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->startsWith(env, container, value);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override{
-        return m_containerAccess->size(env, container);
-    }
-
-    inline void reserve(JNIEnv * env, void* container, jint size) override{
-        return m_containerAccess->reserve(env, container, size);
-    }
-
-    inline void replace(JNIEnv * env, void* container, jint index, jobject value) override{
-        m_containerAccess->replace(env, container, index, value);
-    }
-
-    inline jboolean removeOne(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeOne(env, container, value);
-    }
-
-    inline void removeAt(JNIEnv * env, void* container, jint index) override{
-        m_containerAccess->removeAt(env, container, index);
-    }
-
-    inline jint removeAll(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeAll(env, container, value);
-    }
-
-    inline void prepend(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->prepend(env, container, value);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override{
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline void move(JNIEnv * env, void* container, jint index1, jint index2) override{
-        m_containerAccess->move(env, container, index1, index2);
-    }
-
-    inline jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override{
-        return m_containerAccess->mid(env, container, index1, index2);
-    }
-
-    inline jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override{
-        return m_containerAccess->lastIndexOf(env, container, value, index);
-    }
-
-    inline void insert(JNIEnv * env, void* container, jint index, jobject value) override{
-        m_containerAccess->insert(env, container, index, value);
-    }
-
-    inline jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override{
-        return m_containerAccess->indexOf(env, container, value, index);
-    }
-
-    inline jboolean endsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->endsWith(env, container, value);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->count(env, container, value);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
+    bool destructContainer(void* container) final override;
+    void assign(void* container, const void* other) override;
+    int registerContainer(const QByteArray& containerTypeName) final override;
+    bool isConstant() final override;
+    const QMetaType& elementMetaType() final override;
+    void appendList(JNIEnv * env, void* container, jobject list) override;
+    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
+    void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    void reserve(JNIEnv * env, void* container, jint size) override;
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void move(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    void clear(JNIEnv * env, void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void remove(JNIEnv * env, void* container, jint index, jint n) override;
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    inline jint capacity(JNIEnv * env, const void* container) override{
-        return m_containerAccess->capacity(env, container);
-    }
-
-    inline void fill(JNIEnv * env, void* container, jobject value, jint size) override{
-        m_containerAccess->fill(env, container, value, size);
-    }
-
-    inline void remove(JNIEnv * env, void* container, jint index, jint n) override{
-        m_containerAccess->remove(env, container, index, n);
-    }
-
-    inline void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override{
-        m_containerAccess->insert(env, container, index, n, value);
-    }
-
-    inline void resize(JNIEnv * env, void* container, jint newSize) override{
-        return m_containerAccess->resize(env, container, newSize);
-    }
-
-    inline void squeeze(JNIEnv * env, void* container) override{
-        return m_containerAccess->squeeze(env, container);
-    }
+    jint capacity(JNIEnv * env, const void* container) override;
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override;
+    void resize(JNIEnv * env, void* container, jint newSize) override;
+    void squeeze(JNIEnv * env, void* container) override;
 #endif
     Q_DISABLE_COPY_MOVE(WrapperListAccess)
 private:
@@ -242,184 +106,48 @@ private:
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 class WrapperVectorAccess : public AbstractVectorAccess{
 public:
-    inline WrapperVectorAccess(AbstractVectorAccess* containerAccess)
-        : AbstractVectorAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperVectorAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractVectorAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& elementMetaType() override{
-        return m_containerAccess->elementMetaType();
-    }
-
-    inline void append(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->append(env, container, value);
-    }
-
-    inline void appendVector(JNIEnv * env, void* container, jobject list) override{
-        m_containerAccess->appendVector(env, container, list);
-    }
-
-    inline jobject at(JNIEnv * env, const void* container, jint index) override{
-        return m_containerAccess->at(env, container, index);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jint index) override{
-        return m_containerAccess->value(env, container, index);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override{
-        return m_containerAccess->value(env, container, index, defaultValue);
-    }
-
-    inline jobject toSet(JNIEnv * env,const void* container) override{
-        return m_containerAccess->toSet(env, container);
-    }
-
-    inline void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override{
-        m_containerAccess->swapItemsAt(env, container, index1, index2);
-    }
-
-    inline jboolean startsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->startsWith(env, container, value);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override{
-        return m_containerAccess->size(env, container);
-    }
-
-    inline void reserve(JNIEnv * env, void* container, jint size) override{
-        return m_containerAccess->reserve(env, container, size);
-    }
-
-    inline void replace(JNIEnv * env, void* container, jint index, jobject value) override{
-        m_containerAccess->replace(env, container, index, value);
-    }
-
-    inline jboolean removeOne(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeOne(env, container, value);
-    }
-
-    inline void removeAt(JNIEnv * env, void* container, jint index) override{
-        m_containerAccess->removeAt(env, container, index);
-    }
-
-    inline jint removeAll(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeAll(env, container, value);
-    }
-
-    inline void prepend(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->prepend(env, container, value);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override{
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline void move(JNIEnv * env, void* container, jint index1, jint index2) override{
-        m_containerAccess->move(env, container, index1, index2);
-    }
-
-    inline jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override{
-        return m_containerAccess->mid(env, container, index1, index2);
-    }
-
-    inline jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override{
-        return m_containerAccess->lastIndexOf(env, container, value, index);
-    }
-
-    inline void insert(JNIEnv * env, void* container, jint index, jobject value) override{
-        m_containerAccess->insert(env, container, index, value);
-    }
-
-    inline jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override{
-        return m_containerAccess->indexOf(env, container, value, index);
-    }
-
-    inline jboolean endsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->endsWith(env, container, value);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->count(env, container, value);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline jint capacity(JNIEnv * env, const void* container) override{
-        return m_containerAccess->capacity(env, container);
-    }
-
-    inline void fill(JNIEnv * env, void* container, jobject value, jint size) override{
-        m_containerAccess->fill(env, container, value, size);
-    }
-
-    inline void remove(JNIEnv * env, void* container, jint index, jint n) override{
-        m_containerAccess->remove(env, container, index, n);
-    }
-
-    inline void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override{
-        m_containerAccess->insert(env, container, index, n, value);
-    }
-
-    inline void resize(JNIEnv * env, void* container, jint newSize) override{
-        return m_containerAccess->resize(env, container, newSize);
-    }
-
-    inline void squeeze(JNIEnv * env, void* container) override{
-        return m_containerAccess->squeeze(env, container);
-    }
-
-    inline void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override{
-        m_containerAccess->analyzeElements(container, analyzer, data);
-    }
-
+    WrapperVectorAccess(AbstractVectorAccess* containerAccess);
+    ~WrapperVectorAccess() override;
+    AbstractVectorAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& elementMetaType() override;
+    void appendVector(JNIEnv * env, void* container, jobject list) override;
+    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index) override;
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
+    void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    void reserve(JNIEnv * env, void* container, jint size) override;
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void move(JNIEnv * env, void* container, jint index1, jint index2) override;
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    void clear(JNIEnv * env, void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env, const void* container) override;
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override;
+    void remove(JNIEnv * env, void* container, jint index, jint n) override;
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
+    void resize(JNIEnv * env, void* container, jint newSize) override;
+    void squeeze(JNIEnv * env, void* container) override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperVectorAccess)
 private:
     AbstractVectorAccess* m_containerAccess;
@@ -427,128 +155,37 @@ private:
 
 class WrapperLinkedListAccess : public AbstractLinkedListAccess{
 public:
-    inline WrapperLinkedListAccess(AbstractLinkedListAccess* containerAccess)
-        : AbstractLinkedListAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperLinkedListAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractLinkedListAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& elementMetaType() override{
-        return m_containerAccess->elementMetaType();
-    }
-
-    inline void append(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->append(env, container, value);
-    }
-
-    inline jobject first(JNIEnv * env, const void* container) override{
-        return m_containerAccess->first(env, container);
-    }
-
-    inline jobject last(JNIEnv * env, const void* container) override{
-        return m_containerAccess->last(env, container);
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->count(env, container, value);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jboolean endsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->endsWith(env, container, value);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override{
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline void prepend(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->prepend(env, container, value);
-    }
-
-    inline void removeFirst(JNIEnv * env, void* container) override{
-        m_containerAccess->removeFirst(env, container);
-    }
-
-    inline jint removeAll(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeAll(env, container, value);
-    }
-
-    inline void removeLast(JNIEnv * env, void* container) override{
-        m_containerAccess->removeLast(env, container);
-    }
-
-    inline jboolean removeOne(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->removeOne(env, container, value);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override{
-        return m_containerAccess->size(env, container);
-    }
-
-    inline jboolean startsWith(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->startsWith(env, container, value);
-    }
-
-    inline jobject takeFirst(JNIEnv * env, void* container) override{
-        return m_containerAccess->takeFirst(env, container);
-    }
-
-    inline jobject takeLast(JNIEnv * env, void* container) override{
-        return m_containerAccess->takeLast(env, container);
-    }
-
-    inline void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override{
-        m_containerAccess->analyzeElements(container, analyzer, data);
-    }
-
+    WrapperLinkedListAccess(AbstractLinkedListAccess* containerAccess);
+    ~WrapperLinkedListAccess() override;
+    AbstractLinkedListAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& elementMetaType() override;
+    void append(JNIEnv * env, void* container, jobject value) override;
+    jobject first(JNIEnv * env, const void* container) override;
+    jobject last(JNIEnv * env, const void* container) override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    void prepend(JNIEnv * env, void* container, jobject value) override;
+    void removeFirst(JNIEnv * env, void* container) override;
+    jint removeAll(JNIEnv * env, void* container, jobject value) override;
+    void removeLast(JNIEnv * env, void* container) override;
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
+    jobject takeFirst(JNIEnv * env, void* container) override;
+    jobject takeLast(JNIEnv * env, void* container) override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperLinkedListAccess)
 private:
     AbstractLinkedListAccess* m_containerAccess;
@@ -557,112 +194,36 @@ private:
 
 class WrapperSetAccess : public AbstractSetAccess{
 public:
-    inline WrapperSetAccess(AbstractSetAccess* containerAccess)
-        : AbstractSetAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperSetAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractSetAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& elementMetaType() override{
-        return m_containerAccess->elementMetaType();
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline jint capacity(JNIEnv * env, const void* container) override{
-        return m_containerAccess->capacity(env, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline void insert(JNIEnv * env, void* container, jobject value) override{
-        m_containerAccess->insert(env, container, value);
-    }
-
-    inline void intersect(JNIEnv * env, void* container, jobject other) override{
-        m_containerAccess->intersect(env, container, other);
-    }
-
-    inline jboolean intersects(JNIEnv * env, const void* container, jobject other) override{
-        return m_containerAccess->intersects(env, container, other);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override{
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline jboolean remove(JNIEnv * env, void* container, jobject value) override{
-        return m_containerAccess->remove(env, container, value);
-    }
-
-    inline void reserve(JNIEnv * env, void* container, jint newSize) override{
-        m_containerAccess->reserve(env, container, newSize);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override{
-        return m_containerAccess->size(env, container);
-    }
-
-    inline void subtract(JNIEnv * env, void* container, jobject other) override{
-        m_containerAccess->subtract(env, container, other);
-    }
-
-    inline void unite(JNIEnv * env, void* container, jobject other) override{
-        m_containerAccess->unite(env, container, other);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container) override{
-        return m_containerAccess->values(env, container);
-    }
-
-    inline void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override{
-        m_containerAccess->analyzeElements(container, analyzer, data);
-    }
-
+    WrapperSetAccess(AbstractSetAccess* containerAccess);
+    ~WrapperSetAccess() override;
+    AbstractSetAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& elementMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void insert(JNIEnv * env, void* container, jobject value) override;
+    void intersect(JNIEnv * env, void* container, jobject other) override;
+    jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jboolean remove(JNIEnv * env, void* container, jobject value) override;
+    void reserve(JNIEnv * env, void* container, jint newSize) override;
+    jint size(JNIEnv * env, const void* container) override;
+    void subtract(JNIEnv * env, void* container, jobject other) override;
+    void unite(JNIEnv * env, void* container, jobject other) override;
+    jobject values(JNIEnv * env, const void* container) override;
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperSetAccess)
 private:
     AbstractSetAccess* m_containerAccess;
@@ -670,148 +231,45 @@ private:
 
 class WrapperMapAccess : public AbstractMapAccess{
 public:
-    inline WrapperMapAccess(AbstractMapAccess* containerAccess)
-        : AbstractMapAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperMapAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractMapAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& keyMetaType() override{
-        return m_containerAccess->keyMetaType();
-    }
-
-    inline const QMetaType& valueMetaType() override{
-        return m_containerAccess->valueMetaType();
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject key) override {
-         return m_containerAccess->count(env, container, key);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->find(env, ownerId, container, key);
-    }
-
-    inline jobject first(JNIEnv * env, const void* container) override {
-         return m_containerAccess->first(env, container);
-    }
-
-    inline jobject firstKey(JNIEnv * env, const void* container) override {
-         return m_containerAccess->firstKey(env, container);
-    }
-
-    inline void insert(JNIEnv * env, void* container,jobject key,jobject value) override {
-        m_containerAccess->insert(env, container, key, value);
-    }
-
-    inline jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
-         return m_containerAccess->key(env, container, value, defaultKey);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container) override {
-         return m_containerAccess->keys(env, container);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container, jobject value) override {
-         return m_containerAccess->keys(env, container, value);
-    }
-
-    inline jobject last(JNIEnv * env, const void* container) override {
-         return m_containerAccess->last(env, container);
-    }
-
-    inline jobject lastKey(JNIEnv * env, const void* container) override {
-         return m_containerAccess->lastKey(env, container);
-    }
-
-    inline jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->lowerBound(env, ownerId, container, key);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-         return m_containerAccess->equal(env, container, other);
-    }
-
-    inline jint remove(JNIEnv * env, void* container,jobject key) override {
-        return m_containerAccess->remove(env, container, key);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override {
-         return m_containerAccess->size(env, container);
-    }
-
-    inline jobject take(JNIEnv *env, void* container,jobject key) override {
-        return m_containerAccess->take(env, container, key);
-    }
-
-    inline jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->upperBound(env, ownerId, container, key);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
-         return m_containerAccess->value(env, container, key, defaultValue);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container) override {
-         return m_containerAccess->values(env, container);
-    }
-
-    inline bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
-        return m_containerAccess->keyLessThan(env, key1, key2);
-    }
-
-    inline void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
-        m_containerAccess->analyzeEntries(container, analyzer, data);
-    }
-
+    WrapperMapAccess(AbstractMapAccess* containerAccess);
+    ~WrapperMapAccess() override;
+    AbstractMapAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject key) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jobject first(JNIEnv * env, const void* container) override;
+    jobject firstKey(JNIEnv * env, const void* container) override;
+    void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
+    jobject keys(JNIEnv * env, const void* container) override;
+    jobject keys(JNIEnv * env, const void* container, jobject value) override;
+    jobject last(JNIEnv * env, const void* container) override;
+    jobject lastKey(JNIEnv * env, const void* container) override;
+    jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jint remove(JNIEnv * env, void* container,jobject key) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jobject take(JNIEnv *env, void* container,jobject key) override;
+    jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
+    jobject values(JNIEnv * env, const void* container) override;
+    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperMapAccess)
 private:
     AbstractMapAccess* m_containerAccess;
@@ -819,180 +277,53 @@ private:
 
 class WrapperMultiMapAccess : public AbstractMultiMapAccess{
 public:
-    inline WrapperMultiMapAccess(AbstractMultiMapAccess* containerAccess)
-        : AbstractMultiMapAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperMultiMapAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractMultiMapAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& keyMetaType() override{
-        return m_containerAccess->keyMetaType();
-    }
-
-    inline const QMetaType& valueMetaType() override{
-        return m_containerAccess->valueMetaType();
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jint count(JNIEnv * env,const void* container, jobject key) override{
-        return m_containerAccess->count(env, container, key);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->find(env, ownerId, container, key);
-    }
-
-    inline jobject first(JNIEnv * env, const void* container) override {
-         return m_containerAccess->first(env, container);
-    }
-
-    inline jobject firstKey(JNIEnv * env, const void* container) override {
-         return m_containerAccess->firstKey(env, container);
-    }
-
-    inline void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
-        m_containerAccess->insert(env, container, key, value);
-    }
-
-    inline jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
-         return m_containerAccess->key(env, container, value, defaultKey);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container) override {
-         return m_containerAccess->keys(env, container);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container, jobject value) override {
-         return m_containerAccess->keys(env, container, value);
-    }
-
-    inline jobject last(JNIEnv * env, const void* container) override {
-         return m_containerAccess->last(env, container);
-    }
-
-    inline jobject lastKey(JNIEnv * env, const void* container) override {
-         return m_containerAccess->lastKey(env, container);
-    }
-
-    inline jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->lowerBound(env, ownerId, container, key);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-         return m_containerAccess->equal(env, container, other);
-    }
-
-    inline jint remove(JNIEnv * env, void* container, jobject key, jobject value) override {
-        return m_containerAccess->remove(env, container, key, value);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override {
-         return m_containerAccess->size(env, container);
-    }
-
-    inline jobject take(JNIEnv *env, void* container,jobject key) override {
-        return m_containerAccess->take(env, container, key);
-    }
-
-    inline jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-         return m_containerAccess->upperBound(env, ownerId, container, key);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
-         return m_containerAccess->value(env, container, key, defaultValue);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container) override {
-         return m_containerAccess->values(env, container);
-    }
-
-    inline bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
-        return m_containerAccess->keyLessThan(env, key1, key2);
-    }
-
-    inline jobject uniqueKeys(JNIEnv * env, const void* container) override {
-        return m_containerAccess->uniqueKeys(env, container);
-    }
-
-    inline void unite(JNIEnv *env, void* container, jobject other) override {
-         m_containerAccess->unite(env, container, other);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container, jobject key) override {
-        return m_containerAccess->values(env, container, key);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override{
-        return m_containerAccess->contains(env, container, key, value);
-    }
-
-    inline jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
-         return m_containerAccess->count(env, container, key, value);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override {
-        return m_containerAccess->find(env, ownerId, container, key, value);
-    }
-
-    inline jint remove(JNIEnv * env, void* container,jobject key) override {
-         return m_containerAccess->remove(env, container, key);
-    }
-
-    inline void replace(JNIEnv * env, void* container,jobject key, jobject value) override {
-        m_containerAccess->replace(env, container, key, value);
-    }
-
-    inline void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
-        m_containerAccess->analyzeEntries(container, analyzer, data);
-    }
-
+    WrapperMultiMapAccess(AbstractMultiMapAccess* containerAccess);
+    ~WrapperMultiMapAccess() override;
+    AbstractMultiMapAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env,const void* container, jobject key) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jobject first(JNIEnv * env, const void* container) override;
+    jobject firstKey(JNIEnv * env, const void* container) override;
+    void insert(JNIEnv *env, void* container,jobject key,jobject value) override;
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
+    jobject keys(JNIEnv * env, const void* container) override;
+    jobject keys(JNIEnv * env, const void* container, jobject value) override;
+    jobject last(JNIEnv * env, const void* container) override;
+    jobject lastKey(JNIEnv * env, const void* container) override;
+    jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jint remove(JNIEnv * env, void* container, jobject key, jobject value) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jobject take(JNIEnv *env, void* container,jobject key) override;
+    jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
+    jobject values(JNIEnv * env, const void* container) override;
+    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override;
+    jobject uniqueKeys(JNIEnv * env, const void* container) override;
+    void unite(JNIEnv *env, void* container, jobject other) override;
+    jobject values(JNIEnv * env, const void* container, jobject key) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
+    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override;
+    jint remove(JNIEnv * env, void* container,jobject key) override;
+    void replace(JNIEnv * env, void* container,jobject key, jobject value) override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperMultiMapAccess)
 private:
     AbstractMultiMapAccess* m_containerAccess;
@@ -1000,128 +331,40 @@ private:
 
 class WrapperHashAccess : public AbstractHashAccess{
 public:
-    inline WrapperHashAccess(AbstractHashAccess* containerAccess)
-        : AbstractHashAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperHashAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractHashAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& keyMetaType() override{
-        return m_containerAccess->keyMetaType();
-    }
-
-    inline const QMetaType& valueMetaType() override{
-        return m_containerAccess->valueMetaType();
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline jint capacity(JNIEnv * env,const void* container) override{
-        return m_containerAccess->capacity(env, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject key) override {
-        return m_containerAccess->count(env, container, key);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-        return m_containerAccess->find(env, ownerId, container, key);
-    }
-
-    inline void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
-        m_containerAccess->insert(env, container, key, value);
-    }
-
-    inline jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
-        return m_containerAccess->key(env, container, value, defaultKey);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container) override {
-        return m_containerAccess->keys(env, container);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container, jobject value) override {
-        return m_containerAccess->keys(env, container, value);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline jint remove(JNIEnv * env, void* container,jobject key) override {
-        return m_containerAccess->remove(env, container, key);
-    }
-
-    inline void reserve(JNIEnv * env,void* container, jint newSize) override {
-        m_containerAccess->reserve(env, container, newSize);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override {
-        return m_containerAccess->size(env, container);
-    }
-
-    inline jobject take(JNIEnv *env, void* container, jobject key) override {
-        return m_containerAccess->take(env, container, key);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
-        return m_containerAccess->value(env, container, key, defaultValue);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container) override {
-        return m_containerAccess->values(env, container);
-    }
-
-    inline void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
-        m_containerAccess->analyzeEntries(container, analyzer, data);
-    }
-
+    WrapperHashAccess(AbstractHashAccess* containerAccess);
+    ~WrapperHashAccess() override;
+    AbstractHashAccess* clone() override;
+    void dispose() override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    void assign(void* container, const void* other) override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env,const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject key) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    void insert(JNIEnv *env, void* container,jobject key,jobject value) override;
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
+    jobject keys(JNIEnv * env, const void* container) override;
+    jobject keys(JNIEnv * env, const void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jint remove(JNIEnv * env, void* container,jobject key) override;
+    void reserve(JNIEnv * env,void* container, jint newSize) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jobject take(JNIEnv *env, void* container, jobject key) override;
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
+    jobject values(JNIEnv * env, const void* container) override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperHashAccess)
 private:
     AbstractHashAccess* m_containerAccess;
@@ -1129,159 +372,48 @@ private:
 
 class WrapperMultiHashAccess : public AbstractMultiHashAccess{
 public:
-    inline WrapperMultiHashAccess(AbstractMultiHashAccess* containerAccess)
-        : AbstractMultiHashAccess(), m_containerAccess(containerAccess) {}
-
-    inline ~WrapperMultiHashAccess() override{
-        m_containerAccess->dispose();
-        m_containerAccess = nullptr;
-    }
-
-    inline AbstractMultiHashAccess* clone() override{
-        return m_containerAccess->clone();
-    }
-
-    inline void dispose() override { delete this; }
-
-    inline void* createContainer() override{
-        return m_containerAccess->createContainer();
-    }
-
-    inline void* copyContainer(const void* container) override{
-        return m_containerAccess->copyContainer(container);
-    }
-
-    inline void assign(void* container, const void* other) override{
-        m_containerAccess->assign(container, other);
-    }
-
-    inline void deleteContainer(void* container) override{
-        m_containerAccess->deleteContainer(container);
-    }
-
-    inline int registerContainer(const QByteArray& containerTypeName) override{
-        return m_containerAccess->registerContainer(containerTypeName);
-    }
-
-    inline bool isConstant() override{
-        return m_containerAccess->isConstant();
-    }
-
-    inline const QMetaType& keyMetaType() override{
-        return m_containerAccess->keyMetaType();
-    }
-
-    inline const QMetaType& valueMetaType() override{
-        return m_containerAccess->valueMetaType();
-    }
-
-    inline jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->begin(env, ownerId, container);
-    }
-
-    inline jint capacity(JNIEnv * env,const void* container) override{
-        return m_containerAccess->capacity(env, container);
-    }
-
-    inline void clear(JNIEnv * env, void* container) override{
-        m_containerAccess->clear(env, container);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject value) override{
-        return m_containerAccess->contains(env, container, value);
-    }
-
-    inline jint count(JNIEnv * env, const void* container, jobject key) override {
-        return m_containerAccess->count(env, container, key);
-    }
-
-    inline jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override{
-        return m_containerAccess->end(env, ownerId, container);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-        return m_containerAccess->find(env, ownerId, container, key);
-    }
-
-    inline void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
-        m_containerAccess->insert(env, container, key, value);
-    }
-
-    inline jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
-        return m_containerAccess->key(env, container, value, defaultKey);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container) override {
-        return m_containerAccess->keys(env, container);
-    }
-
-    inline jobject keys(JNIEnv * env, const void* container, jobject value) override {
-        return m_containerAccess->keys(env, container, value);
-    }
-
-    inline jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return m_containerAccess->equal(env, container, other);
-    }
-
-    inline jint remove(JNIEnv * env, void* container,jobject key) override {
-        return m_containerAccess->remove(env, container, key);
-    }
-
-    inline void reserve(JNIEnv * env,void* container, jint newSize) override {
-        m_containerAccess->reserve(env, container, newSize);
-    }
-
-    inline jint size(JNIEnv * env, const void* container) override {
-        return m_containerAccess->size(env, container);
-    }
-
-    inline jobject take(JNIEnv *env, void* container, jobject key) override {
-        return m_containerAccess->take(env, container, key);
-    }
-
-    inline jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
-        return m_containerAccess->value(env, container, key, defaultValue);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container) override {
-        return m_containerAccess->values(env, container);
-    }
-
-    inline jobject values(JNIEnv * env, const void* container, jobject key) override {
-        return m_containerAccess->values(env, container, key);
-    }
-
-    inline jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override{
-        return m_containerAccess->contains(env, container, key, value);
-    }
-
-    inline jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
-        return m_containerAccess->count(env, container, key, value);
-    }
-
-    inline jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override {
-        return m_containerAccess->find(env, ownerId, container, key, value);
-    }
-
-    inline jint remove(JNIEnv * env, void* container, jobject key, jobject value) override {
-         return m_containerAccess->remove(env, container, key, value);
-    }
-
-    inline void replace(JNIEnv * env, void* container, jobject key, jobject value) override {
-        m_containerAccess->replace(env, container, key, value);
-    }
-
-    inline jobject uniqueKeys(JNIEnv * env,const void* container) override {
-        return m_containerAccess->uniqueKeys(env, container);
-    }
-
-    inline void unite(JNIEnv * env, void* container, jobject other) override {
-        m_containerAccess->unite(env, container, other);
-    }
-
-    inline void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
-        m_containerAccess->analyzeEntries(container, analyzer, data);
-    }
+    WrapperMultiHashAccess(AbstractMultiHashAccess* containerAccess);
+    ~WrapperMultiHashAccess() override;
+    AbstractMultiHashAccess* clone() override;
+    void dispose() override;
+    void assign(void* container, const void* other) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) override;
+#endif
+    bool destructContainer(void* container) final override;
+    int registerContainer(const QByteArray& containerTypeName) override;
+    bool isConstant() override;
+    const QMetaType& keyMetaType() override;
+    const QMetaType& valueMetaType() override;
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jint capacity(JNIEnv * env,const void* container) override;
+    void clear(JNIEnv * env, void* container) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
+    jint count(JNIEnv * env, const void* container, jobject key) override;
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override;
+    void insert(JNIEnv *env, void* container,jobject key,jobject value) override;
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
+    jobject keys(JNIEnv * env, const void* container) override;
+    jobject keys(JNIEnv * env, const void* container, jobject value) override;
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
+    jint remove(JNIEnv * env, void* container,jobject key) override;
+    void reserve(JNIEnv * env,void* container, jint newSize) override;
+    jint size(JNIEnv * env, const void* container) override;
+    jobject take(JNIEnv *env, void* container, jobject key) override;
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
+    jobject values(JNIEnv * env, const void* container) override;
+    jobject values(JNIEnv * env, const void* container, jobject key) override;
+    jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
+    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override;
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override;
+    jint remove(JNIEnv * env, void* container, jobject key, jobject value) override;
+    void replace(JNIEnv * env, void* container, jobject key, jobject value) override;
+    jobject uniqueKeys(JNIEnv * env,const void* container) override;
+    void unite(JNIEnv * env, void* container, jobject other) override;
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override;
     Q_DISABLE_COPY_MOVE(WrapperMultiHashAccess)
 private:
     AbstractMultiHashAccess* m_containerAccess;
@@ -1346,20 +478,16 @@ public:
     PointerRCListAccess(AbstractListAccess* containerAccess);
     PointerRCListAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
-    void append(JNIEnv * env, void* container, jobject value) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
     void appendList(JNIEnv * env, void* container, jobject list) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv * env, void* container, jint index) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void remove(JNIEnv * env, void* container, jint index, jint n) override;
     void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* moved) override;
     void fill(JNIEnv * env, void* container, jobject value, jint size) override;
 #endif
 };
@@ -1372,7 +500,10 @@ public:
     PointerRCSetAccess(AbstractSetAccess* containerAccess);
     PointerRCSetAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void insert(JNIEnv * env, void* container, jobject value) override;
     jboolean remove(JNIEnv * env, void* container, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
@@ -1390,7 +521,7 @@ public:
     PointerRCLinkedListAccess(AbstractLinkedListAccess* containerAccess);
     PointerRCLinkedListAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
     void clear(JNIEnv * env, void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void prepend(JNIEnv * env, void* container, jobject value) override;
@@ -1410,16 +541,11 @@ public:
     PointerRCVectorAccess(AbstractVectorAccess* containerAccess);
     PointerRCVectorAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
-    void append(JNIEnv * env, void* container, jobject value) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
     void appendVector(JNIEnv * env, void* container, jobject list) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv * env, void* container, jint index) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
     void remove(JNIEnv * env, void* container, jint index, jint n) override;
     void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
@@ -1435,7 +561,10 @@ public:
     KeyPointerRCMapAccess(AbstractMapAccess* containerAccess);
     KeyPointerRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1450,7 +579,10 @@ public:
     KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
     KeyPointerRCMultiMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1468,7 +600,10 @@ public:
     KeyPointerRCHashAccess(AbstractHashAccess* containerAccess);
     KeyPointerRCHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1483,7 +618,10 @@ public:
     KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
     KeyPointerRCMultiHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1501,7 +639,10 @@ public:
     ValuePointerRCMapAccess(AbstractMapAccess* containerAccess);
     ValuePointerRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1516,7 +657,10 @@ public:
     ValuePointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
     ValuePointerRCMultiMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1534,7 +678,10 @@ public:
     ValuePointerRCHashAccess(AbstractHashAccess* containerAccess);
     ValuePointerRCHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1549,7 +696,10 @@ public:
     ValuePointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
     ValuePointerRCMultiHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1567,7 +717,10 @@ public:
     PointersRCMapAccess(AbstractMapAccess* containerAccess);
     PointersRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1582,7 +735,10 @@ public:
     PointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
     PointersRCMultiMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1600,7 +756,10 @@ public:
     PointersRCHashAccess(AbstractHashAccess* containerAccess);
     PointersRCHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1615,7 +774,10 @@ public:
     PointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
     PointersRCMultiHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1634,20 +796,18 @@ public:
     NestedPointersRCListAccess(AbstractListAccess* containerAccess);
     NestedPointersRCListAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
-    void append(JNIEnv * env, void* container, jobject value) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void appendList(JNIEnv * env, void* container, jobject list) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv * env, void* container, jint index) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void remove(JNIEnv * env, void* container, jint index, jint n) override;
     void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void fill(JNIEnv * env, void* container, jobject value, jint size) override;
 #endif
 };
@@ -1661,7 +821,10 @@ public:
     NestedPointersRCSetAccess(AbstractSetAccess* containerAccess);
     NestedPointersRCSetAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void insert(JNIEnv * env, void* container, jobject value) override;
     jboolean remove(JNIEnv * env, void* container, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
@@ -1680,16 +843,16 @@ public:
     NestedPointersRCLinkedListAccess(AbstractLinkedListAccess* containerAccess);
     NestedPointersRCLinkedListAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
     void clear(JNIEnv * env, void* container) override;
     void append(JNIEnv * env, void* container, jobject value) override;
     void prepend(JNIEnv * env, void* container, jobject value) override;
     void removeFirst(JNIEnv * env, void* container) override;
     void removeLast(JNIEnv * env, void* container) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
     jobject takeFirst(JNIEnv * env, void* container) override;
     jobject takeLast(JNIEnv * env, void* container) override;
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
 };
 
 class NestedPointersRCVectorAccess : public WrapperVectorAccess, public RCSet{
@@ -1701,16 +864,11 @@ public:
     NestedPointersRCVectorAccess(AbstractVectorAccess* containerAccess);
     NestedPointersRCVectorAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
-    void append(JNIEnv * env, void* container, jobject value) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
     void appendVector(JNIEnv * env, void* container, jobject list) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv * env, void* container, jint index) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     void clear(JNIEnv * env, void* container) override;
     void remove(JNIEnv * env, void* container, jint index, jint n) override;
     void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
@@ -1727,7 +885,10 @@ public:
     NestedPointersRCMapAccess(AbstractMapAccess* containerAccess);
     NestedPointersRCMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1743,7 +904,10 @@ public:
     NestedPointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
     NestedPointersRCMultiMapAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1762,7 +926,10 @@ public:
     NestedPointersRCHashAccess(AbstractHashAccess* containerAccess);
     NestedPointersRCHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1778,7 +945,10 @@ public:
     NestedPointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
     NestedPointersRCMultiHashAccess* clone() override;
     void assign(void* container, const void* other) override;
-    void* copyContainer(const void* container) override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* moved) override;
+#endif
     void clear(JNIEnv * env, void* container) override;
     void insert(JNIEnv * env, void* container,jobject key,jobject value) override;
     jint remove(JNIEnv * env, void* container,jobject key) override;
@@ -1833,10 +1003,12 @@ public:
 
     void dispose() override;
     AutoPairAccess* clone() override;
-private:
-    void* constructContainer(void* result, const void* container = nullptr);
+    bool destructContainer(void* container) override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+    size_t sizeOf() override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    void* constructContainer(void* result, void* container);
+    void* constructContainer(void* result, void* container) override;
+private:
     bool equals(const void* p1, const void* p2);
     void debugStream(QDebug &s, const void *ptr);
     void dataStreamOut(QDataStream &s, const void *ptr);
@@ -1851,11 +1023,7 @@ private:
     static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
 #endif
 public:
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void destructContainer(void* container);
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& typeName) override;
     bool isConstant() override {return false;}
     jobject first(JNIEnv * env, const void* container) override;
@@ -1949,13 +1117,12 @@ public:
     void dispose() override;
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
     AutoListAccess* clone() override;
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
-private:
-    void* constructContainer(void* result, const void* container = nullptr);
-    void destructContainer(void* container);
+    void* constructContainer(void* result, const void* container = nullptr) override;
+    bool destructContainer(void* container) override;
+    size_t sizeOf() override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    void* constructContainer(void* result, void* container);
+    void* constructContainer(void* result, void* container) override;
+private:
     bool equals(const void* p1, const void* p2);
     void debugStream(QDebug &s, const void *ptr);
     void dataStreamOut(QDataStream &s, const void *ptr);
@@ -1971,45 +1138,36 @@ private:
 #endif
 public:
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     bool isConstant() override {return false;}
     const QMetaType& elementMetaType() override {return m_elementMetaType;}
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
-    void append(JNIEnv * env, void* container, jobject value) override;
     void appendList(JNIEnv * env, void* container, jobject list) override;
     jobject at(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    jobject toSet(JNIEnv *,const void*) override {return nullptr;}
-#endif
     void swapItemsAt(JNIEnv *, void* container, jint index1, jint index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
     jint size(JNIEnv *, const void* container) override;
     void reserve(JNIEnv *, void* container, jint size) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv *, void* container, jint index) override;
+    void remove(JNIEnv *, void* container, jint index, jint n) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     void move(JNIEnv *, void* container, jint index1, jint index2) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
     jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
     jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
     jint count(JNIEnv * env, const void* container, jobject value) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     void clear(JNIEnv *, void* container) override;
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     jint capacity(JNIEnv *, const void* container) override;
     void fill(JNIEnv * env, void* container, jobject value, jint size) override;
-    void remove(JNIEnv *, void* container, jint index, jint n) override;
-    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override;
     void resize(JNIEnv *, void* container, jint newSize) override;
     void squeeze(JNIEnv *, void* container) override;
 #endif
@@ -2089,10 +1247,7 @@ public:
                     const InternalToExternalConverter& valueInternalToExternalConverter,
                     const ExternalToInternalConverter& valueExternalToInternalConverter
             );
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractMapAccess* clone() override;
@@ -2123,12 +1278,16 @@ public:
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     jobject values(JNIEnv *,const void*) override;
     bool keyLessThan(JNIEnv *,jobject,jobject) override;
+    bool destructContainer(void* container) override;
+    size_t sizeOf() override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container) override;
+#endif
 private:
     virtual IsBiContainerFunction getIsBiContainerFunction();
-    virtual uint sizeOf() const;
     virtual ushort alignOf() const;
     bool equal(const void* containerA, const void* containerB);
-    void destructContainer(void* container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void detach(QMapDataBase ** map);
     void detach_helper(QMapDataBase ** map);
@@ -2178,10 +1337,7 @@ public:
                     const InternalToExternalConverter& valueInternalToExternalConverter,
                     const ExternalToInternalConverter& valueExternalToInternalConverter
             );
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     bool isConstant() override {return false;}
@@ -2220,8 +1376,13 @@ public:
     jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) override;
     jint remove(JNIEnv *,void*,jobject,jobject) override;
     void replace(JNIEnv *,void*,jobject,jobject) override;
+    size_t sizeOf() override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+    bool destructContainer(void* container) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container) override;
+#endif
 private:
-    uint sizeOf() const override;
     ushort alignOf() const override;
     IsBiContainerFunction getIsBiContainerFunction() override;
 };
@@ -2272,10 +1433,7 @@ public:
                     const ExternalToInternalConverter& valueExternalToInternalConverter
             );
     bool isConstant() override;
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractHashAccess* clone() override;
@@ -2300,13 +1458,16 @@ public:
     jobject take(JNIEnv *,void*,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     jobject values(JNIEnv *,const void*) override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+    bool destructContainer(void* container) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container) override;
+#endif
+    size_t sizeOf() override;
 private:
-    virtual uint sizeOf() const;
     virtual ushort alignOf() const;
     virtual IsBiContainerFunction getIsBiContainerFunction();
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    void destructContainer(void* container);
-    virtual void* constructContainer(void* result, const void* container = nullptr);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     typedef QHashData::Node Node;
     static inline Node *concrete(QHashData::Node *node) {
@@ -2361,7 +1522,6 @@ private:
     static QThreadStorage<quintptr> currentAccess;
 #else
     static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
-    void* constructContainer(void* result, void* container);
     void debugStream(QDebug &s, const void *ptr);
     virtual void dataStreamOut(QDataStream &s, const void *ptr);
     void dataStreamIn(QDataStream &s, void *ptr);
@@ -2551,10 +1711,7 @@ public:
                     const InternalToExternalConverter& valueInternalToExternalConverter,
                     const ExternalToInternalConverter& valueExternalToInternalConverter
             );
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractMultiHashAccess* clone() override;
@@ -2588,11 +1745,15 @@ public:
     jobject find(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) override;
     jint remove(JNIEnv *,void*,jobject,jobject) override;
     void replace(JNIEnv *,void*,jobject,jobject) override;
+    bool destructContainer(void* container) override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container) override;
+#endif
+    size_t sizeOf() override;
 private:
     friend class AutoHashAccess;
-    uint sizeOf() const override;
     ushort alignOf() const override;
-    void* constructContainer(void* result, const void* container = nullptr) override;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     typedef AutoHashAccess::QHashData QHashData;
     struct MultiHashData{
@@ -2647,11 +1808,7 @@ public:
                     const InternalToExternalConverter& internalToExternalConverter,
                     const ExternalToInternalConverter& externalToInternalConverter
             );
-    void* createContainer() override;
-    void* constructContainer(void* result, const void* container = nullptr);
-    void* copyContainer(const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AutoSetAccess* clone() override;
@@ -2673,12 +1830,16 @@ public:
     void subtract(JNIEnv * env, void* container, jobject other) override;
     void unite(JNIEnv * env, void* container, jobject other) override;
     jobject values(JNIEnv * env, const void* container) override;
+    void* constructContainer(void* result, const void* container = nullptr) override;
+    bool destructContainer(void* container) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* result, void* container) override;
+#endif
+    size_t sizeOf() override;
 private:
-    void destructContainer(void* container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     typedef QHashData::Node Node;
 #else
-    void* constructContainer(void* result, void* container);
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
     typedef AutoHashAccess::QHashData QHashData;
     typedef AutoHashAccess::iterator iterator;
@@ -2700,7 +1861,6 @@ class AutoVectorAccess : public AbstractVectorAccess{
 
     AutoVectorAccess(const AutoVectorAccess&);
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    void destructContainer(void* container);
     void detach(QTypedArrayData<char> ** vector);
     bool isDetached(QTypedArrayData<char> *const* vector);
     void realloc(QTypedArrayData<char> ** vector, int aalloc, QArrayData::AllocationOptions options = QArrayData::Default);
@@ -2715,36 +1875,30 @@ public:
                     const InternalToExternalConverter& internalToExternalConverter,
                     const ExternalToInternalConverter& externalToInternalConverter
             );
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
+    size_t sizeOf() override;
+    void* constructContainer(void* placement, const void* container = nullptr) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
+    bool destructContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AutoVectorAccess* clone() override;
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override;
     bool isConstant() override {return false;}
     const QMetaType& elementMetaType() override;
-    void append(JNIEnv * env, void* container, jobject value) override;
     void appendVector(JNIEnv * env, void* container, jobject list) override;
     jobject at(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
-    jobject toSet(JNIEnv *,const void*) override{return nullptr;}
     void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
     jint size(JNIEnv * env, const void* container) override;
     void reserve(JNIEnv * env, void* container, jint size) override;
     void replace(JNIEnv * env, void* container, jint index, jobject value) override;
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override;
-    void removeAt(JNIEnv * env, void* container, jint index) override;
     jint removeAll(JNIEnv * env, void* container, jobject value) override;
-    void prepend(JNIEnv * env, void* container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     void move(JNIEnv * env, void* container, jint index1, jint index2) override;
     jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override;
     jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override;
     jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
     jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
     jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override;
@@ -2779,10 +1933,10 @@ public:
             const ExternalToInternalConverter& externalToInternalConverter
             );
     AutoLinkedListAccess* clone() override;
-    void* createContainer() override;
-    void* copyContainer(const void* container) override;
+    size_t sizeOf() override;
+    void* constructContainer(void* placement, const void* container) override;
     void assign(void* container, const void* other) override;
-    void deleteContainer(void* container) override;
+    bool destructContainer(void* container) override;
     int registerContainer(const QByteArray& containerTypeName) override;
     bool isConstant() override {return false;}
     void dispose() override;
@@ -2809,7 +1963,6 @@ public:
     jobject takeLast(JNIEnv * env, void* container) override;
 private:
     typedef QLinkedListNode<char> Node;
-    void destructContainer(void* container);
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     void detach(QLinkedListData*& d);
     void detach_helper(QLinkedListData*& d);

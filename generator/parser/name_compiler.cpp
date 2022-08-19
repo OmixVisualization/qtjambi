@@ -129,7 +129,19 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
 
         _M_name.last() += q.join("::");
 
-        if(!decl_cc.parameters().isEmpty()){
+        if (decl_cc.getReferenceType()==DeclaratorCompiler::Reference)
+            _M_name.last() += "&";
+        if (decl_cc.getReferenceType()==DeclaratorCompiler::RReference)
+            _M_name.last() += "&&";
+        for (int i=0; i<decl_cc.indirection().size(); i++){
+            if(decl_cc.indirection()[i]){
+                _M_name.last() += "*const ";
+            }else{
+                _M_name.last() += "*";
+            }
+        }
+
+        if(decl_cc.isFunction()){
             _M_functionalReturnType.setQualifiedName(type_cc.qualifiedName());
             _M_functionalReturnType.setConstant(type_cc.isConstant());
             _M_functionalReturnType.setVolatile(type_cc.isVolatile());
@@ -144,28 +156,16 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             for(const DeclaratorCompiler::Parameter& parameter : decl_cc.parameters()){
                 if(!isBegin)
                     _M_name.last() += ",";
-                if(!parameter.name.isEmpty()){
+                if(parameter.type.qualifiedName().isEmpty()){
                     _M_name.last() += parameter.name;
                 }else{
-                    _M_name.last() += parameter.type.qualifiedName().join("::");
+                    _M_name.last() += parameter.type.toString();
                 }
                 _M_functionalArgumentTypes << parameter.type;
                 _M_functionalArgumentNames << parameter.name;
                 isBegin = false;
             }
             _M_name.last() += ")";
-        }
-
-        if (decl_cc.getReferenceType()==DeclaratorCompiler::Reference)
-            _M_name.last() += "&";
-        if (decl_cc.getReferenceType()==DeclaratorCompiler::RReference)
-            _M_name.last() += "&&";
-        for (int i=0; i<decl_cc.indirection().size(); i++){
-            if(decl_cc.indirection()[i]){
-                _M_name.last() += "*const ";
-            }else{
-                _M_name.last() += "*";
-            }
         }
         _M_name.last() += QLatin1String(",");
     }else if(node->expression){

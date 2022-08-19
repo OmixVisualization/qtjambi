@@ -53,38 +53,38 @@ public final class QIterator<T> extends io.qt.internal.QtJambiIteratorObject<T> 
     
     @QtUninvokable
     private T val() {
-        return __qt_QIterator_value(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return value(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <T> T __qt_QIterator_value(long __this__nativeId);
+    static native <T> T value(long __this__nativeId);
 
     @QtUninvokable
     protected final void increment() {
-        __qt_QIterator_increment(QtJambi_LibraryUtilities.internal.nativeId(this));
+        increment(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native void __qt_QIterator_increment(long __this__nativeId);
+    static native void increment(long __this__nativeId);
 
     @QtUninvokable
     protected final void decrement() {
-        __qt_QIterator_decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
+        decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native void __qt_QIterator_decrement(long __this__nativeId);
+    static native void decrement(long __this__nativeId);
 
     @QtUninvokable
     private boolean lessThan(QtJambiIteratorObject<?> other) {
-        return __qt_QIterator_lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+        return lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
     }
     @QtUninvokable
-    static native boolean __qt_QIterator_lessThan(long __this__nativeId, long other);
+    static native boolean lessThan(long __this__nativeId, long other);
 
     @QtUninvokable
     private boolean operator_equal(QIterator<T> o)        {
-        return __qt_QIterator_operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
+        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
     }
     @QtUninvokable
-    static native boolean __qt_QIterator_operator_equal(long __this__nativeId, long o);
+    static native boolean operator_equal(long __this__nativeId, long o);
 
 	@Override
     @QtUninvokable

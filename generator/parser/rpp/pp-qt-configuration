@@ -9,6 +9,7 @@
 #define decltype(A) DECL_TYPE
 #define QT6_ONLY(...)
 #define QT7_ONLY(...)
+#define Q_DECLARE_JNI_TYPE(...)
 
 // not yet supported
 #define Q_COMPILER_DELETE_MEMBERS

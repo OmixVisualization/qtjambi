@@ -29,23 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QHash.__qt_QHash_begin;
-import static io.qt.core.QHash.__qt_QHash_capacity;
-import static io.qt.core.QHash.__qt_QHash_clear;
-import static io.qt.core.QHash.__qt_QHash_contains;
-import static io.qt.core.QHash.__qt_QHash_count;
-import static io.qt.core.QHash.__qt_QHash_end;
-import static io.qt.core.QHash.__qt_QHash_find;
-import static io.qt.core.QHash.__qt_QHash_insert;
-import static io.qt.core.QHash.__qt_QHash_key;
-import static io.qt.core.QHash.__qt_QHash_keys;
-import static io.qt.core.QHash.__qt_QHash_keysForValue;
-import static io.qt.core.QHash.__qt_QHash_operator_equal;
-import static io.qt.core.QHash.__qt_QHash_remove;
-import static io.qt.core.QHash.__qt_QHash_reserve;
-import static io.qt.core.QHash.__qt_QHash_size;
-import static io.qt.core.QHash.__qt_QHash_take;
-import static io.qt.core.QHash.__qt_QHash_value;
+import static io.qt.core.QHash.keysForValue;
 import static io.qt.core.QMap.findMapMetaType;
 
 import java.util.Collections;
@@ -172,23 +156,23 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     
 	@QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> begin()    {
-        return __qt_QHash_begin(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QHash.begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
     @QtUninvokable
     public final int capacity()    {
-        return __qt_QHash_capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QHash.capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final void clear()    {
-        __qt_QHash_clear(QtJambi_LibraryUtilities.internal.nativeId(this));
+    	QHash.clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final boolean contains(K key)    {
         try{
-        	return __qt_QHash_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QHash.contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -204,7 +188,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final int count(K key)    {
         try{
-        	return __qt_QHash_count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QHash.count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -214,18 +198,18 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
 
     @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {
-        return __qt_QHash_end(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QHash.end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key)    {
-        return __qt_QHash_find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        return QHash.find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     }
 
     @QtUninvokable
     public final void insert(K key, V value)    {
         try{
-        	__qt_QHash_insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	QHash.insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -246,7 +230,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final K key(V value, K defaultKey)    {
         try{
-        	return __qt_QHash_key(QtJambi_LibraryUtilities.internal.nativeId(this), value, defaultKey);
+        	return QHash.key(QtJambi_LibraryUtilities.internal.nativeId(this), value, defaultKey);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -256,13 +240,13 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
 
     @QtUninvokable
     public final java.util.List<K> keys()    {
-        return __qt_QHash_keys(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QHash.keys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final java.util.List<K> keys(V value)    {
         try{
-        	return __qt_QHash_keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
+        	return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -272,13 +256,13 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Map<K,V> other)    {
-        return __qt_QHash_operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        return QHash.operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
 
     @QtUninvokable
     public final int removeAll(Object key)    {
         try{
-        	return __qt_QHash_remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QHash.remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -293,18 +277,18 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     
     @QtUninvokable
     public final void reserve(int size)    {
-        __qt_QHash_reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
+    	QHash.reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
 
     @QtUninvokable
     public final int size()    {
-        return __qt_QHash_size(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QHash.size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final V take(K key)    {
         try{
-        	return __qt_QHash_take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QHash.take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -314,17 +298,17 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
 
     @QtUninvokable
     public final java.util.List<K> uniqueKeys()    {
-        return __qt_QMultiHash_uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <K> java.util.List<K> __qt_QMultiHash_uniqueKeys(long __this__nativeId);
+    private static native <K> java.util.List<K> uniqueKeys(long __this__nativeId);
 
     @QtUninvokable
     public final void unite(java.util.Map<? super K,? extends java.util.Collection<? super V>> other)    {
-        __qt_QMultiHash_unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native void __qt_QMultiHash_unite(long __this__nativeId, Object other);
+    private static native void unite(long __this__nativeId, Object other);
 
     @QtUninvokable
     public final V value(K key) {
@@ -334,7 +318,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final V value(K key, V defaultValue)    {
         try{
-        	return __qt_QHash_value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
+        	return QHash.value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -346,8 +330,8 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     public final java.util.Collection<java.util.List<V>> values()    {
     	long id = QtJambi_LibraryUtilities.internal.nativeId(this);
     	java.util.List<java.util.List<V>> result = new java.util.ArrayList<>();
-        for(Object key : __qt_QMultiHash_uniqueKeys(id)) {
-            result.add(__qt_QMultiHash_valuesKey(id, key));
+        for(Object key : uniqueKeys(id)) {
+            result.add(valuesKey(id, key));
         }
         return result;
     }
@@ -355,7 +339,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final java.util.List<V> values(K key)    {
         try{
-        	return __qt_QMultiHash_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -363,67 +347,67 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
         }
     }
     @QtUninvokable
-    private static native <K,V> java.util.List<V> __qt_QMultiHash_valuesKey(long __this__nativeId, K key);
+    private static native <K,V> java.util.List<V> valuesKey(long __this__nativeId, K key);
     
     @QtUninvokable
     public final int count(K key, V value)    {
         try{
-        	return __qt_QMultiHash_count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    private static native <K,V> int __qt_QMultiHash_count(long __this__nativeId, K key, V value);
+    private static native <K,V> int count(long __this__nativeId, K key, V value);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key, V value)    {
         try{
-        	return __qt_QMultiHash_find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QMultiHash_find(long __this__nativeId, K key);
+    private static native <K,V> io.qt.core.QMapIterator<K,V> find(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final int removeAll(K key, V value)    {
     	try{
-    		return __qt_QMultiHash_remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+    		return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
     	}
     }
-    static native <K,V> int __qt_QMultiHash_remove(long __this__nativeId, K key, V value);
+    private static native <K,V> int remove(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final void replaceOne(K key, V value)    {
         try{
-        	__qt_QMultiHash_replaceOne(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	replaceOne(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    static native <K,V> void __qt_QMultiHash_replaceOne(long __this__nativeId, K key, V value);
+    private static native <K,V> void replaceOne(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final boolean contains(K key, V value)    {
         try{
-        	return __qt_QMultiHash_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    static native <K,V> boolean __qt_QMultiHash_contains(long __this__nativeId, K key, V value);
+    private static native <K,V> boolean contains(long __this__nativeId, K key, V value);
 
     @SuppressWarnings("unchecked")
 	@Override
@@ -461,14 +445,11 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     private static native String toString(long __this__nativeId);
     
-    @QtUninvokable
-    static native <K> boolean lessThan(K key1, K key2);
-
     @Override
     @QtUninvokable
     public final boolean containsKey(Object key){
         try{
-        	return __qt_QHash_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QHash.contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -485,7 +466,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final List<V> get(Object key){
 		try{
-			return __qt_QMultiHash_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+			return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -512,7 +493,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     public final java.util.List<V> remove(Object key){
         try{
         	@SuppressWarnings("unchecked")
-			java.util.List<V> result = __qt_QMultiHash_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), (K)key);
+			java.util.List<V> result = valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), (K)key);
         	removeAll(key);
         	return result;
     	}catch(QNoNativeResourcesException e) {
@@ -531,7 +512,7 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     @QtUninvokable
     public final boolean containsValue(Object value){
     	try {
-    		return __qt_QHash_keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
+    		return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -546,19 +527,19 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V> 
     
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
-        __qt_QMultiHash_writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QMultiHash_writeTo(long __this__nativeId, long stream);
+    private native void writeTo(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
-        __qt_QMultiHash_readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QMultiHash_readFrom(long __this__nativeId, long stream);
+    private native void readFrom(long __this__nativeId, long stream);
 
     @io.qt.QtUninvokable
     final QMetaType keyMetaType() {

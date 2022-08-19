@@ -322,6 +322,8 @@ namespace rpp {
 
                         //_InputIterator arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
                         _InputIterator arg_end = skip_argument(arg_it, last);
+                        while(arg_it != arg_end && *arg_it == '\n')
+                            ++arg_it;
                         if (arg_it != arg_end) {
                             std::string actual(arg_it, arg_end);
                             QByteArray _actual(actual.c_str(), actual.size());
@@ -343,7 +345,10 @@ namespace rpp {
 
                         while (arg_it != last && *arg_end == ',') {
                             ++arg_it; // skip ','
-
+                            while(arg_it != last && *arg_it == '\n')
+                                ++arg_it;
+                            if(arg_it == last)
+                                continue;
                             //arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
                             arg_end = skip_argument(arg_it, last);
                             std::string actual(arg_it, arg_end);

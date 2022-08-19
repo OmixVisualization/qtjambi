@@ -716,6 +716,7 @@
         <modify-function signature="operator=(QQuickGraphicsConfiguration)" remove="all"/>
     </value-type>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::BlendFactor" since="6.0.0"/>
+    <enum-type name="QSGMaterialShader::GraphicsPipelineState::PolygonMode" since="6.4.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialShader::GraphicsPipelineState::ColorMask" since="6.0.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::CullMode" since="6.0.0"/>
 

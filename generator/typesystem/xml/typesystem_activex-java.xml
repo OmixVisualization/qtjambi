@@ -78,8 +78,6 @@
         </inject-code>
     </object-type>
     <interface-type name="QAxBase">
-        <modify-function signature="queryInterface(QUuid,void**)const" access="non-final">
-        </modify-function>
         <modify-function signature="propertyWritable(const char*)const">
             <modify-argument index="1" replace-type="java.lang.String"/>
         </modify-function>

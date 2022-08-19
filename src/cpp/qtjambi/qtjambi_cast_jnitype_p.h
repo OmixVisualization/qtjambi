@@ -251,9 +251,8 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
     static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
         jobject o = qtjambi_from_object(env, in, typeid(NativeType), false, false);
-        if(scope){
-            scope->addFinalAction([env, o](){qtjambi_invalidate_object(env, o);});
-        }
+        if(scope)
+            scope->addObjectInvalidation(env, o, true, false);
         return o;
     }
 };
@@ -269,9 +268,8 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
         jobject o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
         if(!o){
             o = qtjambi_from_object(env, in, typeid(NativeType), false, false);
-            if(scope){
-                scope->addFinalAction([env, o](){qtjambi_invalidate_object(env, o);});
-            }
+            if(scope)
+                scope->addObjectInvalidation(env, o, true, false);
         }
         return o;
     }
@@ -464,7 +462,7 @@ struct qtjambi_jstring_caster<has_scope, QString, is_arithmetic, is_enum, is_poi
         if(!qtjambi_convert_to_native(env, typeid(QString), nativeTypeName, in, result)){
             JavaException::raiseRuntimeException(env, "Cannot cast to type QString" QTJAMBI_STACKTRACEINFO );
         }
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return deref_ptr<is_pointer,typename std::conditional<is_pointer, QString*, QString>::type>::deref(result);
     }
 };
@@ -487,7 +485,7 @@ struct qtjambi_jstring_caster<has_scope, QStringRef, is_arithmetic, is_enum, fal
             delete result;
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return QStringRef(result);
     }
 };
@@ -509,7 +507,8 @@ struct qtjambi_jstring_caster<has_scope, QStringRef, is_arithmetic, is_enum, tru
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
         QStringRef* ref = new QStringRef(result);
-        scope->addFinalAction([result,ref](){delete result; delete ref;});
+        scope->addDeletion(result);
+        scope->addDeletion(ref);
         return ref;
     }
 };
@@ -529,7 +528,7 @@ struct qtjambi_jstring_caster<has_scope, QAnyStringView, is_arithmetic, is_enum,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toAnyStringView();
     }
 };
@@ -547,7 +546,8 @@ struct qtjambi_jstring_caster<has_scope, QAnyStringView, is_arithmetic, is_enum,
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
         QAnyStringView* ref = new QAnyStringView(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -565,7 +565,7 @@ struct qtjambi_jstring_caster<has_scope, QUtf8StringView, is_arithmetic, is_enum
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toLatin1String();
     }
 };
@@ -583,7 +583,8 @@ struct qtjambi_jstring_caster<has_scope, QUtf8StringView, is_arithmetic, is_enum
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
         QUtf8StringView* ref = new QUtf8StringView(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -603,7 +604,7 @@ struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, fa
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toStringView();
     }
 };
@@ -621,7 +622,8 @@ struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, tr
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
         QStringView* ref = new QStringView(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -639,7 +641,7 @@ struct qtjambi_jstring_caster<has_scope, QLatin1String, is_arithmetic, is_enum, 
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toLatin1String();
     }
 };
@@ -657,10 +659,50 @@ struct qtjambi_jstring_caster<has_scope, QLatin1String, is_arithmetic, is_enum, 
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
         QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
+
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+template<bool has_scope, bool is_arithmetic, bool is_enum, bool is_const, bool is_reference, bool is_function, bool is_template>
+struct qtjambi_jstring_caster<has_scope, QLatin1StringView, is_arithmetic, is_enum, false, is_const, is_reference, is_function, is_template>{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1StringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        scope->addDeletion(buffer);
+        return buffer->toLatin1StringView();
+    }
+};
+
+template<bool has_scope, bool is_arithmetic, bool is_enum, bool is_const, bool is_function, bool is_template>
+struct qtjambi_jstring_caster<has_scope, QLatin1StringView, is_arithmetic, is_enum, true, is_const, false, is_function, is_template>{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        QLatin1StringView* ref = new QLatin1StringView(buffer->data(), buffer->length());
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
+        return ref;
+    }
+};
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<bool has_scope,
@@ -699,7 +741,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             delete result;
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return QStringRef(result);
     }
 };
@@ -739,7 +781,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             delete result;
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return QStringRef(result);
     }
 };
@@ -778,7 +820,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
         QStringRef* ref = new QStringRef(result);
-        scope->addFinalAction([result,ref](){delete result; delete ref;});
+        scope->addDeletion(ref);
+        scope->addDeletion(result);
         return ref;
     }
 };
@@ -817,7 +860,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseRuntimeException(env, "Cannot cast to type QStringRef" QTJAMBI_STACKTRACEINFO );
         }
         QStringRef* ref = new QStringRef(result);
-        scope->addFinalAction([result,ref](){delete result; delete ref;});
+        scope->addDeletion(ref);
+        scope->addDeletion(result);
         return ref;
     }
 };
@@ -854,7 +898,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toAnyStringView();
     }
 };
@@ -890,7 +934,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
         JString2QChars* buffer = new JString2QChars(env, _in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toAnyStringView();
     }
 };
@@ -925,7 +969,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
         QAnyStringView* ref = new QAnyStringView(buffer->constData(), buffer->length());
-        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -961,7 +1006,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
         jstring _in = qtjambi_to_jstring(env, in);
         JString2QChars* buffer = new JString2QChars(env, _in);
         QAnyStringView* ref = new QAnyStringView(buffer->constData(), buffer->length());
-        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -996,7 +1042,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toUtf8StringView();
     }
 };
@@ -1032,7 +1078,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
         J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toUtf8StringView();
     }
 };
@@ -1068,7 +1114,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
         QUtf8StringView* ref = new QUtf8StringView(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -1104,7 +1151,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
         jstring _in = qtjambi_to_jstring(env, in);
         J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
         QUtf8StringView* ref = new QUtf8StringView(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -1141,7 +1189,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toStringView();
     }
 };
@@ -1177,7 +1225,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
         JString2QChars* buffer = new JString2QChars(env, _in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toStringView();
     }
 };
@@ -1212,7 +1260,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         JString2QChars* buffer = new JString2QChars(env, in);
         QStringView* ref = new QStringView(buffer->constData(), buffer->length());
-        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -1248,7 +1297,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
         jstring _in = qtjambi_to_jstring(env, in);
         JString2QChars* buffer = new JString2QChars(env, _in);
         QStringView* ref = new QStringView(buffer->constData(), buffer->length());
-        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -1283,7 +1333,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toLatin1String();
     }
 };
@@ -1319,7 +1369,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
         J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
-        scope->addFinalAction([buffer](){delete buffer;});
+        scope->addDeletion(buffer);
         return buffer->toLatin1String();
     }
 };
@@ -1355,7 +1405,8 @@ struct qtjambi_jnitype_caster<false, has_scope,
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
         QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
@@ -1391,10 +1442,158 @@ struct qtjambi_jnitype_caster<false, has_scope,
         jstring _in = qtjambi_to_jstring(env, in);
         J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
         QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
-        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
         return ref;
     }
 };
+
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
+        jstring,
+        QLatin1StringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    constexpr static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+        return qtjambi_from_qstring(env, in);
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QLatin1StringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1StringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        scope->addDeletion(buffer);
+        return buffer->toLatin1String();
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
+        jobject,
+        QLatin1StringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+        return qtjambi_from_qstring(env, in);
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QLatin1StringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1StringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        jstring _in = qtjambi_to_jstring(env, in);
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
+        scope->addDeletion(buffer);
+        return buffer->toLatin1String();
+    }
+};
+
+template<bool has_scope,
+         bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
+        jstring,
+        QLatin1StringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+        return in ? qtjambi_from_qstring(env, *in) : nullptr;
+    }
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QLatin1StringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        QLatin1StringView* ref = new QLatin1StringView(buffer->data(), buffer->length());
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
+        return ref;
+    }
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
+        jobject,
+        QLatin1StringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+        return in ? qtjambi_from_qstring(env, *in) : nullptr;
+    }
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QLatin1StringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1StringView>::type, QLatin1StringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1StringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1StringView without scope." QTJAMBI_STACKTRACEINFO );
+        jstring _in = qtjambi_to_jstring(env, in);
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
+        QLatin1StringView* ref = new QLatin1StringView(buffer->data(), buffer->length());
+        scope->addDeletion(ref);
+        scope->addDeletion(buffer);
+        return ref;
+    }
+};
+#endif
 
 template<bool has_scope,
          bool is_const, bool is_reference, bool is_function, bool is_template>

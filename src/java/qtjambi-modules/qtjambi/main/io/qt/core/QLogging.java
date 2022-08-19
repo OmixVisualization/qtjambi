@@ -47,6 +47,7 @@ package io.qt.core;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.IllegalFormatException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -251,7 +252,13 @@ public final class QLogging {
     
     @QtUninvokable
     private static Supplier<String> format(String message, Object...args) {
-    	return ()->String.format(message, args);
+    	return ()->{
+    		try {
+				return String.format(message, args);
+			} catch (IllegalFormatException e) {
+				return QString.format(message, args).toString();
+			}
+    	};
     }
 
     /**

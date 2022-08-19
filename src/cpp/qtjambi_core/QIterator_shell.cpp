@@ -63,7 +63,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // Iterator::operator*() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMapIterator__1_1qt_1QMapIterator_1key__J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMapIterator_key__J)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId)
@@ -82,7 +82,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1value__J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_value__J)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId)
@@ -102,7 +102,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // Iterator::operator++()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1increment__J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_increment__J)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId)
@@ -120,7 +120,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QI
 }
 
 // Iterator::operator--()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1decrement__J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_decrement__J)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId)
@@ -138,7 +138,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QI
 }
 
 // Iterator::operator<(const Iterator & other) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1lessThan__JJ)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_lessThan__JJ)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
@@ -161,7 +161,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // Iterator::operator==(const Iterator & o) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1operator_1equal__JJ)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_operator_1equal__JJ)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,

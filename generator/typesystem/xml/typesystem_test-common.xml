@@ -50,6 +50,7 @@
     <rejection class="QSignalSpy" function-name="initArgs" /><!-- not public API -->
     <rejection class="QSignalSpy" function-name="qt_metacall" /><!-- not public API -->
 
+    <enum-type name="QTest::ComparisonOperation" since="6.4"/>
     <enum-type name="QTest::AttributeIndex"/>
     <enum-type name="QTest::KeyAction"/>
     <enum-type name="QTest::LogElementType"/>
@@ -61,6 +62,8 @@
     <namespace-type name="QTest">
         <extra-includes>
             <include file-name="QTest" location="global"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
         </extra-includes>
 
         <modify-function signature="touchEvent(QWindow *, QTouchDevice *, bool)" remove="all" until="5.*"/>
@@ -70,7 +73,8 @@
         <modify-function signature="formatString(const char *, const char *, size_t)" remove="all"/><!-- not public API -->
         <modify-function signature="compare_helper(bool,const char *,const char *,int)" remove="all" /><!-- not public API -->
         <modify-function signature="compare_string_helper(const char *,const char *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="toHexRepresentation(const char*,int)" remove="all" /><!-- FIXME: arg1 (const char *) -->
+        <modify-function signature="toHexRepresentation(const char*,int)" remove="all" until="6.3.*"/><!-- FIXME: arg1 (const char *) -->
+        <modify-function signature="toHexRepresentation(const char*,qsizetype)" remove="all" since="6.4.0"/><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const char*)" remove="all" /><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const void*)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toString(const QObject*)" remove="all" since="6.2.0"/><!-- probably not useful to QtJambi, other overload exist -->
@@ -85,15 +89,20 @@
         <modify-function signature="toString(QList&lt;QNetworkCookie>)" remove="all" />
         <modify-function signature="toString(QNetworkCookie)" remove="all" />
         <modify-function signature="toString(std::nullptr_t)" remove="all" />
-        <modify-function signature="toPrettyCString(const char *, int)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
+        <modify-function signature="toPrettyCString(const char *, int)" remove="all" until="6.3.*"/><!-- probably not useful to QtJambi, other overload exist -->
+        <modify-function signature="toPrettyCString(const char *, qsizetype)" remove="all" since="6.4.0"/><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toPrettyUnicode(QStringView)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="qFindTestData(const char*, const char*, int, const char*)" remove="all" until="5.*"/>
         <modify-function signature="qFindTestData(const char*, const char*, int, const char*, const char*)" remove="all" since="6.0.0"/>
-        <modify-function signature="qCompare(QStringView, const QLatin1String &amp;, const char *, const char *, const char *, int)" remove="all"/>
-        <modify-function signature="qCompare(QString, const QLatin1String &amp;, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(QStringView, QLatin1StringView, const char *, const char *, const char *, int)" remove="all" since="6.4.0"/>
+        <modify-function signature="qCompare(QStringView, QLatin1String, const char *, const char *, const char *, int)" remove="all" until="6.3"/>
+        <modify-function signature="qCompare(QString, QLatin1StringView, const char *, const char *, const char *, int)" remove="all" since="6.4.0"/>
+        <modify-function signature="qCompare(QString, QLatin1String, const char *, const char *, const char *, int)" remove="all" until="6.3"/>
         <modify-function signature="qCompare(QString, QString, const char *, const char *, const char *, int)" remove="all"/>
-        <modify-function signature="qCompare(const QLatin1String &amp;, QStringView, const char *, const char *, const char *, int)" remove="all"/>
-        <modify-function signature="qCompare(const QLatin1String &amp;, QString, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(QLatin1StringView, QStringView, const char *, const char *, const char *, int)" remove="all" since="6.4.0"/>
+        <modify-function signature="qCompare(QLatin1String, QStringView, const char *, const char *, const char *, int)" remove="all" until="6.3"/>
+        <modify-function signature="qCompare(QLatin1StringView, QString, const char *, const char *, const char *, int)" remove="all" since="6.4"/>
+        <modify-function signature="qCompare(QLatin1String, QString, const char *, const char *, const char *, int)" remove="all" until="6.3"/>
         <modify-function signature="qCompare(char *, char *, const char *, const char *, const char *, int)" remove="all"/>
         <modify-function signature="qCompare(const char *, char *, const char *, const char *, const char *, int)" remove="all"/>
         <modify-function signature="qCompare(char *, const char *, const char *, const char *, const char *, int)" remove="all"/>
@@ -201,15 +210,16 @@ namespace QtJambiPrivate{
         </inject-code>
         <modify-function signature="clear()" rename="purge" />
     </value-type>
+	<functional-type name="QTest::Supplier" using="qxp::function_ref&lt;const char*()>" generate="no" since="6.4"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type 'QTestData&amp;'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type 'T*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type '*QTestData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type '*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::toString', unmatched parameter type '*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qTest', unmatched parameter type 'T const&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qTest', unmatched parameter type '*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'compare_helper(bool,const char*,const char*,int)' for function modification in 'QTest' not found. Possible candidates: compare_helper(bool,const char*,char*,char*,const char*,const char*,const char*,int) in QTest"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::compare_ptr_helper', unmatched parameter type 'void const volatile*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addRow', unmatched return type 'QTestData&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addRow', unmatched return type '*QTestData*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qCompare', unmatched parameter type '*'"/>
   <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTestEventList."/>
 </typesystem>

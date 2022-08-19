@@ -72,10 +72,9 @@ AutoMultiMapAccess::AutoMultiMapAccess(
 {
 }
 
-void* AutoMultiMapAccess::createContainer() {return AutoMapAccess::createContainer();}
-void* AutoMultiMapAccess::copyContainer(const void* container) {return AutoMapAccess::copyContainer(container);}
+void* AutoMultiMapAccess::constructContainer(void* result, const void* container) {return AutoMapAccess::constructContainer(result, container);}
 void AutoMultiMapAccess::assign(void* container, const void* other) {AutoMapAccess::assign(container, other);}
-void AutoMultiMapAccess::deleteContainer(void* container) {AutoMapAccess::deleteContainer(container);}
+bool AutoMultiMapAccess::destructContainer(void* container) {return AutoMapAccess::destructContainer(container);}
 int AutoMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
 void AutoMultiMapAccess::dispose() {delete this;}
 void AutoMultiMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) {AutoMapAccess::analyzeEntries(container, analyzer, data);}
@@ -164,9 +163,10 @@ jobject AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const void* container)
         Node *firstNode(beginNode(map));
         Node *lastNode(endNode(map));
         listAccess->reserve(env, listContainer, d->size);
+        jint idx = listAccess->size(env, listContainer);
         while(firstNode != lastNode){
             void* key1 = reinterpret_cast<char*>(firstNode)+m_offset1;
-            listAccess->append(env, listContainer, nodeKey(env, firstNode));
+            listAccess->insert(env, listContainer, idx++, 1, nodeKey(env, firstNode));
             firstNode = firstNode->nextNode();
             while(firstNode != lastNode && !qMapLessThanKey(key1, *firstNode)){
                 firstNode = firstNode->nextNode();
@@ -253,8 +253,9 @@ jobject AutoMultiMapAccess::values(JNIEnv *env, const void* container, jobject k
                 void* listContainer = listAccess->createContainer();
                 listAccess = checkContainerAccess(env, listAccess);
                 Node *lastNode(endNode(map));
+                jint idx = listAccess->size(env, listContainer);
                 do{
-                    listAccess->append(env, listContainer, nodeValue(env, firstNode));
+                    listAccess->insert(env, listContainer, idx++, 1, nodeValue(env, firstNode));
                     firstNode = firstNode->nextNode();
                 }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
                 return qtjambi_from_QList(env, listContainer, listAccess);
@@ -375,8 +376,8 @@ jint AutoMultiMapAccess::remove(JNIEnv *env, void* container, jobject key, jobje
 
 void AutoMultiMapAccess::replace(JNIEnv *env, void* container, jobject key, jobject value) {AutoMapAccess::insert(env, container, key, value);}
 
-uint AutoMultiMapAccess::sizeOf() const{
-    return uint(sizeof(QMultiMap<char,char>));
+size_t AutoMultiMapAccess::sizeOf() {
+    return sizeof(QMultiMap<char,char>);
 }
 
 ushort AutoMultiMapAccess::alignOf() const{

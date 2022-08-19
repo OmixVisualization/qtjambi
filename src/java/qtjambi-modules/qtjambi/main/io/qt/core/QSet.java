@@ -103,29 +103,29 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     
     @QtUninvokable
     protected final QIterator<T> begin()    {
-        return __qt_QSet_begin(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QIterator<T> __qt_QSet_begin(long __this__nativeId);
+    private static native <T> QIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
     public final int capacity()    {
-        return __qt_QSet_capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int __qt_QSet_capacity(long __this__nativeId);
+    private static native <T> int capacity(long __this__nativeId);
 
     @QtUninvokable
     public final void clear()    {
-        __qt_QSet_clear(QtJambi_LibraryUtilities.internal.nativeId(this));
+        clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_clear(long __this__nativeId);
+    private static native <T> void clear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean contains(Object t)    {
         try {
-        	return __qt_QSet_contains(QtJambi_LibraryUtilities.internal.nativeId(this), t);
+        	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -138,7 +138,7 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     	}
     }
     @QtUninvokable
-    private static native <T> boolean __qt_QSet_contains(long __this__nativeId, T t);
+    private static native <T> boolean contains(long __this__nativeId, T t);
 
     @QtUninvokable
     public final int count()    {
@@ -147,15 +147,15 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
 
     @QtUninvokable
     protected final QIterator<T> end()    {
-        return __qt_QSet_end(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QIterator<T> __qt_QSet_end(long __this__nativeId);
+    private static native <T> QIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
     public final void insert(T t)    {
     	try {
-    		__qt_QSet_insert(QtJambi_LibraryUtilities.internal.nativeId(this), t);
+    		insert(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -163,21 +163,21 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     	}
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_insert(long __this__nativeId, T t);
+    private static native <T> void insert(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void intersect(java.util.Collection<T> other)    {
-        __qt_QSet_intersect(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        intersect(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_intersect(long __this__nativeId, java.util.Collection<T> other);
+    private static native <T> void intersect(long __this__nativeId, java.util.Collection<T> other);
 
     @QtUninvokable
     public final boolean intersects(java.util.Collection<T> other)    {
-        return __qt_QSet_intersects(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        return intersects(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> boolean __qt_QSet_intersects(long __this__nativeId, java.util.Collection<T> other);
+    private static native <T> boolean intersects(long __this__nativeId, java.util.Collection<T> other);
 
     @QtUninvokable
     public final boolean isEmpty()    {
@@ -186,15 +186,15 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Collection<T> l)    {
-        return __qt_QSet_operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
+        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
-    private static native <T> boolean __qt_QSet_operator_equal(long __this__nativeId, java.util.Collection<T> l);
+    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
     public final boolean remove(Object t)    {
     	try {
-    		return __qt_QSet_remove(QtJambi_LibraryUtilities.internal.nativeId(this), t);
+    		return remove(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -207,42 +207,42 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     	}
     }
     @QtUninvokable
-    private static native <T> boolean __qt_QSet_remove(long __this__nativeId, T t);
+    private static native <T> boolean remove(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void reserve(int size)    {
-        __qt_QSet_reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
+        reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_reserve(long __this__nativeId, int size);
+    private static native <T> void reserve(long __this__nativeId, int size);
 
     @QtUninvokable
     public final int size()    {
-        return __qt_QSet_size(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int __qt_QSet_size(long __this__nativeId);
+    private static native <T> int size(long __this__nativeId);
 
     @QtUninvokable
     public final void subtract(java.util.Collection<T> other)    {
-        __qt_QSet_subtract(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        subtract(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_subtract(long __this__nativeId, java.util.Collection<T> other);
+    private static native <T> void subtract(long __this__nativeId, java.util.Collection<T> other);
 
     @QtUninvokable
     public final void unite(java.util.Collection<T> other)    {
-        __qt_QSet_unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void __qt_QSet_unite(long __this__nativeId, java.util.Collection<T> other);
+    private static native <T> void unite(long __this__nativeId, java.util.Collection<T> other);
 
     @QtUninvokable
     public final QList<T> values()    {
-        return __qt_QSet_values(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return values(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QList<T> __qt_QSet_values(long __this__nativeId);
+    private static native <T> QList<T> values(long __this__nativeId);
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -289,19 +289,19 @@ public class QSet<T> extends io.qt.internal.QtJambiCollectionObject<T> implement
     
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
-        __qt_QSet_writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QSet_writeTo(long __this__nativeId, long stream);
+    private native void writeTo(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
-        __qt_QSet_readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QSet_readFrom(long __this__nativeId, long stream);
+    private native void readFrom(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
     final QMetaType elementMetaType() {

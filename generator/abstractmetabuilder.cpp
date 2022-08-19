@@ -423,7 +423,7 @@ void AbstractMetaBuilder::sortLists() {
     std::sort(m_meta_classes.begin(), m_meta_classes.end(), [](AbstractMetaClass *a, AbstractMetaClass *b) -> bool {
                   return a->qualifiedCppName() < b->qualifiedCppName();
               });
-    for(AbstractMetaClass *cls : m_meta_classes) {
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
         cls->sortFunctions();
         cls->sortEnums();
         cls->sortFields();
@@ -530,6 +530,8 @@ void writeContent(QTextStream &stream,
         }
     }
 }
+
+void add_extra_includes_for_function(AbstractMetaClass *meta_class, const AbstractMetaFunction *meta_function);
 
 bool AbstractMetaBuilder::build() {
     Q_ASSERT(!m_file_name.isEmpty());
@@ -708,8 +710,9 @@ bool AbstractMetaBuilder::build() {
         AbstractMetaClass *meta_class = traverseNamespace(i.value());
         if (meta_class){
             m_meta_classes << meta_class;
-            if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(meta_class->targetTypeSystem()))
-                m_typeSystemByPackage[meta_class->package()] = ts;
+            if(!meta_class->typeEntry()->isString())
+                if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(meta_class->targetTypeSystem()))
+                    m_typeSystemByPackage[meta_class->package()] = ts;
         }
     }
 
@@ -745,7 +748,9 @@ bool AbstractMetaBuilder::build() {
     // Go through all typedefs to see if we have defined any
     // specific typedefs to be used as classes.
     for(QHash<QString, TypeAliasModelItem>::const_iterator i = m_dom->typeAliasMap().begin(); i!=m_dom->typeAliasMap().end(); i++){
-        if(i.value()->type().qualifiedName().join("::").startsWith("std::function<") || i.value()->type().isFunctionPointer()){
+        if(i.value()->type().qualifiedName().join("::").startsWith("std::function<")
+                || i.value()->type().qualifiedName().join("::").startsWith("qxp::function_ref<")
+                || i.value()->type().isFunctionPointer()){
             AbstractMetaFunctional *fnl = traverseFunctional(i.value());
             if(fnl)
                 addAbstractMetaFunctional(fnl);
@@ -757,7 +762,16 @@ bool AbstractMetaBuilder::build() {
         }
     }
 
-    for(AbstractMetaClass *cls : m_meta_classes) {
+    for(AbstractMetaEnum *enm : qAsConst(m_scopeChangedEnums)){
+        if(AbstractMetaClass *cls = m_meta_classes.findClass(enm->typeEntry()->javaScope(), AbstractMetaClassList::QualifiedCppName)){
+            if(cls!=enm->enclosingClass()){
+                cls->addEnum(enm);
+                enm->setEnclosingClass(cls);
+            }
+        }
+    }
+
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
         if (!cls->isInterface() && !cls->isNamespace()) {
             setupInheritance(cls);
         }else if(cls->isInterface()){
@@ -768,7 +782,7 @@ bool AbstractMetaBuilder::build() {
 
     fixMissingIterator();
 
-    for(AbstractMetaClass *cls : m_meta_classes) {
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
         cls->fixFunctions([this](TypeEntry * etype) -> AbstractMetaArgument*{
             AbstractMetaType* type = this->createMetaType();
             type->setTypeEntry(etype);
@@ -793,8 +807,32 @@ bool AbstractMetaBuilder::build() {
         }
     }
 
-    for(AbstractMetaClass *cls : m_meta_classes) {
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
         cls->fixUnimplmentablePureVirtualFunctions();
+    }
+
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
+        if(!cls->typeEntry()->extendType().isEmpty()){
+            if(AbstractMetaClass *extendedClass = m_meta_classes.findClass(cls->typeEntry()->extendType())){
+                for(AbstractMetaFunction* function : cls->functions()){
+                    function = function->copy();
+                    if(function->isConstructor()){
+                        function->setName(extendedClass->simpleName());
+                    }
+                    function->setImplementingClass(extendedClass);
+                    function->setDeclaringClass(extendedClass);
+                    function->setOwnerClass(extendedClass);
+                    extendedClass->addFunction(function);
+                    //add_extra_includes_for_function(extendedClass, function);
+                }
+                for(const Include& incl : cls->typeEntry()->extraIncludes()){
+                    extendedClass->typeEntry()->addExtraInclude(incl);
+                }
+            }else{
+                ReportHandler::warning(QString("Unable to extend class '%1'.")
+                                       .arg(cls->typeEntry()->extendType()));
+            }
+        }
     }
 
     QList<TypeEntry *> entries = TypeDatabase::instance()->entries().values();
@@ -946,7 +984,7 @@ bool AbstractMetaBuilder::build() {
         setupClonable(cls);
         setupBeginEnd(cls);
     }
-    for(AbstractMetaClass *cls : m_meta_classes) {
+    for(AbstractMetaClass *cls : qAsConst(m_meta_classes)) {
         setupEquals(cls);
         setupComparable(cls);
         setupClonable(cls);
@@ -959,6 +997,8 @@ bool AbstractMetaBuilder::build() {
 
 void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
     if(docModel){
+        static TypeEntry* qstringType = TypeDatabase::instance()->findType("QtJambiString");
+        static TypeEntry* qcharType = TypeDatabase::instance()->findType("QtJambiChar");
         QHash<QString, QSharedPointer<AbstractMetaType>> analyzedTypes;
         AbstractMetaFunctionalList meta_functionals = m_meta_functionals;
         for(AbstractMetaClass *meta_class : m_meta_classes) {
@@ -970,6 +1010,10 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                         if(qualifiedCppName.last().startsWith("QtJambi")){
                             qualifiedCppName.last().replace("QtJambi", "Q");
                             ns = docModel->getNamespace(qualifiedCppName.join("::"));
+                            if(!ns && qualifiedCppName.last().endsWith("Util")){
+                                qualifiedCppName.last().replace("Util", "");
+                                ns = docModel->getNamespace(qualifiedCppName.join("::"));
+                            }
                         }
                     }
                 }
@@ -978,7 +1022,10 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                     meta_class->setBrief(ns->brief());
                     for(AbstractMetaFunction * meta_function : meta_class->functions()){
                         QList<const DocFunction*> functions = ns->getFunctions(meta_function->originalName());
-                        for(const DocFunction* function : functions){
+                        if(functions.size()==1){
+                            meta_function->setHref(functions[0]->href());
+                            meta_function->setBrief(functions[0]->brief());
+                        }else for(const DocFunction* function : functions){
                             if(meta_function->isConstant()==function->isConst()
                                     && meta_function->isStatic()==function->isStatic()
                                     && meta_function->arguments().size()==function->parameters().size()){
@@ -998,15 +1045,37 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                         if(!type){
                                             TypeInfo typeInfo = analyzeTypeInfo(meta_class, arg);
                                             type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            if(!ok || !type){
+                                                QString qualifiedName = typeInfo.qualifiedName().join("::");
+                                                if(qualifiedName=="ushort"){
+                                                    typeInfo.setQualifiedName({"unsigned short"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="uint"){
+                                                    typeInfo.setQualifiedName({"unsigned int"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="uchar"){
+                                                    typeInfo.setQualifiedName({"unsigned char"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="ulonglong"){
+                                                    typeInfo.setQualifiedName({"unsigned long long"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }
+                                            }
                                             analyzedTypes[arg] = type;
                                         }
                                         if(ok && type){
                                             if(type->isConstant()!=argument->type()->isConstant()
                                                     || type->getReferenceType()!=argument->type()->getReferenceType()
-                                                    || type->indirections()!=argument->type()->indirections()
-                                                    || type->typeEntry()!=argument->type()->typeEntry()){
+                                                    || type->indirections()!=argument->type()->indirections()){
                                                 ok = false;
                                                 break;
+                                            }else{
+                                                if(type->typeEntry()!=argument->type()->typeEntry()
+                                                        && !(type->typeEntry()->isQString() && argument->type()->typeEntry()==qstringType)
+                                                        && !(type->typeEntry()->isChar() && argument->type()->typeEntry()==qcharType)){
+                                                    ok = false;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -1084,7 +1153,10 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                             }
                         }
                         QList<const DocFunction*> functions = _cls->getFunctions(meta_function->originalName());
-                        for(const DocFunction* function : functions){
+                        if(functions.size()==1){
+                            meta_function->setHref(functions[0]->href());
+                            meta_function->setBrief(functions[0]->brief());
+                        }else for(const DocFunction* function : functions){
                             if(meta_function->isConstant()==function->isConst()
                                     && meta_function->isStatic()==function->isStatic()
                                     && meta_function->arguments().size()==function->parameters().size()){
@@ -1104,15 +1176,37 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                         if(!type){
                                             TypeInfo typeInfo = analyzeTypeInfo(meta_class, arg);
                                             type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            if(!ok || !type){
+                                                QString qualifiedName = typeInfo.qualifiedName().join("::");
+                                                if(qualifiedName=="ushort"){
+                                                    typeInfo.setQualifiedName({"unsigned short"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="uint"){
+                                                    typeInfo.setQualifiedName({"unsigned int"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="uchar"){
+                                                    typeInfo.setQualifiedName({"unsigned char"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }else if(qualifiedName=="ulonglong"){
+                                                    typeInfo.setQualifiedName({"unsigned long long"});
+                                                    type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                                }
+                                            }
                                             analyzedTypes[arg] = type;
                                         }
                                         if(ok && type){
                                             if(type->isConstant()!=argument->type()->isConstant()
                                                     || type->getReferenceType()!=argument->type()->getReferenceType()
-                                                    || type->indirections()!=argument->type()->indirections()
-                                                    || type->typeEntry()!=argument->type()->typeEntry()){
+                                                    || type->indirections()!=argument->type()->indirections()){
                                                 ok = false;
                                                 break;
+                                            }else{
+                                                if(type->typeEntry()!=argument->type()->typeEntry()
+                                                        && !(type->typeEntry()->isQString() && argument->type()->typeEntry()==qstringType)
+                                                        && !(type->typeEntry()->isChar() && argument->type()->typeEntry()==qcharType)){
+                                                    ok = false;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -1685,6 +1779,15 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
             break;
         }
     }
+    if(meta_functional->typeEntry()->codeGeneration()==TypeEntry::GenerateNothing && !meta_functional->javaFunctionalInterface().isEmpty()){
+        auto idx = meta_functional->javaFunctionalInterface().lastIndexOf('.');
+        if(idx>0){
+            meta_functional->typeEntry()->setGenericClass(!meta_functional->javaFunctionalInterfaceParameterTypes().isEmpty());
+            meta_functional->typeEntry()->setQualifier({});
+            meta_functional->typeEntry()->setTargetLangName(meta_functional->javaFunctionalInterface().mid(idx+1));
+            meta_functional->typeEntry()->setTargetLangPackage(meta_functional->javaFunctionalInterface().mid(0, idx));
+        }
+    }
 }
 
 AbstractMetaFunctional * AbstractMetaBuilder::findFunctional(AbstractMetaClass *cls, const FunctionalTypeEntry * fentry)
@@ -1694,15 +1797,16 @@ AbstractMetaFunctional * AbstractMetaBuilder::findFunctional(AbstractMetaClass *
     if(!_using.isEmpty()){
         FunctionalTypeEntry *ftype = const_cast<FunctionalTypeEntry *>(fentry);
         if(ftype){
-            if(_using.startsWith("std::function<") && _using.endsWith(">")){
-                QString normalizedSignature = "std::function<";
-                QString newUsing = "std::function<";
+            bool is_qxp = false;
+            if((_using.startsWith("std::function<") || (is_qxp = _using.startsWith("qxp::function_ref<"))) && _using.endsWith(">")){
+                QString normalizedSignature = is_qxp ? "qxp::function_ref<" : "std::function<";
+                QString newUsing = is_qxp ? "qxp::function_ref<" : "std::function<";
                 std::unique_ptr<AbstractMetaFunctional> meta_functional;
                 meta_functional.reset(createMetaFunctional());
                 meta_functional->setTypeEntry(ftype);
                 meta_functional->setBaseTypeName(fentry->targetLangName());
                 bool ok = false;
-                QString functionalReturnType = _using.mid(14).chopped(1);
+                QString functionalReturnType = _using.mid(is_qxp ? 18 : 14).chopped(1);
                 QString functionalArguments = functionalReturnType;
                 auto idx = functionalReturnType.indexOf("(");
                 functionalReturnType = functionalReturnType.mid(0, idx).trimmed();
@@ -1743,18 +1847,18 @@ AbstractMetaFunctional * AbstractMetaBuilder::findFunctional(AbstractMetaClass *
                     newUsing += ")";
                     normalizedSignature += ")";
                     analyzeFunctional(meta_functional.get(), actualArguments);
+                    newUsing += ">";
+                    normalizedSignature += ">";
+                    e = meta_functional.release();
+                    cls->addFunctional(e);
+                    cls->addFunctionalByUsing(_using, e);
+                    cls->addFunctionalByUsing(QMetaObject::normalizedSignature(qPrintable(_using)), e);
+                    cls->addFunctionalByUsing(newUsing, e);
+                    cls->addFunctionalByUsing(QMetaObject::normalizedSignature(qPrintable(newUsing)), e);
+                    cls->addFunctionalByUsing(normalizedSignature, e);
+                    ftype->setUsing(newUsing);
+                    ftype->setNormalizedSignature(normalizedSignature);
                 }
-                newUsing += ">";
-                normalizedSignature += ">";
-                e = meta_functional.release();
-                cls->addFunctional(e);
-                cls->addFunctionalByUsing(_using, e);
-                cls->addFunctionalByUsing(QMetaObject::normalizedSignature(qPrintable(_using)), e);
-                cls->addFunctionalByUsing(newUsing, e);
-                cls->addFunctionalByUsing(QMetaObject::normalizedSignature(qPrintable(newUsing)), e);
-                cls->addFunctionalByUsing(normalizedSignature, e);
-                ftype->setUsing(newUsing);
-                ftype->setNormalizedSignature(normalizedSignature);
             }
         }
     }
@@ -1872,8 +1976,9 @@ void AbstractMetaBuilder::addAbstractMetaClass(AbstractMetaClass *cls) {
             }
         }
         m_meta_classes << cls;
-        if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(cls->targetTypeSystem()))
-            m_typeSystemByPackage[cls->package()] = ts;
+        if(!cls->typeEntry()->isString())
+            if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(cls->targetTypeSystem()))
+                m_typeSystemByPackage[cls->package()] = ts;
         if(cls->isInterface()){
             AbstractMetaClass *interfaceImpl = cls->extractInterfaceImpl();
             m_meta_classes << interfaceImpl;
@@ -1928,8 +2033,9 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
                 meta_class->addEnclosedClass(mjc);
             }
             m_meta_classes << mjc;
-            if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(mjc->targetTypeSystem()))
-                m_typeSystemByPackage[mjc->package()] = ts;
+            if(!mjc->typeEntry()->isString())
+                if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(mjc->targetTypeSystem()))
+                    m_typeSystemByPackage[mjc->package()] = ts;
             if(mjc->isInterface()){
                 AbstractMetaClass *interfaceImpl = mjc->extractInterfaceImpl();
                 m_meta_classes << interfaceImpl;
@@ -1941,7 +2047,9 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
     // Go through all typedefs to see if we have defined any
     // specific typedefs to be used as classes.
     for(QHash<QString, TypeAliasModelItem>::const_iterator i = namespace_item->typeAliasMap().begin(); i!=namespace_item->typeAliasMap().end(); i++){
-        if(i.value()->type().qualifiedName().join("::").startsWith("std::function<") || i.value()->type().isFunctionPointer()){
+        if(i.value()->type().qualifiedName().join("::").startsWith("std::function<")
+                || i.value()->type().qualifiedName().join("::").startsWith("qxp::function_ref<")
+                || i.value()->type().isFunctionPointer()){
             AbstractMetaFunctional *fnl = traverseFunctional(i.value());
             if(fnl)
                 meta_class->addFunctional(fnl);
@@ -1955,8 +2063,9 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
                     meta_class->addEnclosedClass(cls);
                 }
                 m_meta_classes << cls;
-                if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(cls->targetTypeSystem()))
-                    m_typeSystemByPackage[cls->package()] = ts;
+                if(!cls->typeEntry()->isString())
+                    if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(cls->targetTypeSystem()))
+                        m_typeSystemByPackage[cls->package()] = ts;
                 if(cls->isInterface()){
                     AbstractMetaClass *interfaceImpl = cls->extractInterfaceImpl();
                     m_meta_classes << interfaceImpl;
@@ -1978,8 +2087,9 @@ AbstractMetaClass *AbstractMetaBuilder::traverseNamespace(NamespaceModelItem nam
                 meta_class->addEnclosedClass(mjc);
             }
             m_meta_classes << mjc;
-            if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(mjc->targetTypeSystem()))
-                m_typeSystemByPackage[mjc->package()] = ts;
+            if(!mjc->typeEntry()->isString())
+                if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(mjc->targetTypeSystem()))
+                    m_typeSystemByPackage[mjc->package()] = ts;
         }
     }
 
@@ -3485,7 +3595,8 @@ AbstractMetaFunctional *AbstractMetaBuilder::traverseFunctional(TypeAliasModelIt
         meta_functional->setFunctionPointer(item->type().isFunctionPointer());
         QList<AbstractMetaArgument*> actualArguments;
         bool ok = false;
-        if(item->type().qualifiedName().join("::").startsWith("std::function<")){
+        if(item->type().qualifiedName().join("::").startsWith("std::function<")
+                || item->type().qualifiedName().join("::").startsWith("qxp::function_ref<")){
             AbstractMetaType * type = translateType(item->type().functionalReturnType(), &ok, QString("traverseFunctional %1").arg(item->type().qualifiedName().join("::")));
             if(ok){
                 meta_functional->setType(type);
@@ -3667,6 +3778,12 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     }
 
     ComplexTypeEntry *type = TypeDatabase::instance()->findComplexType(full_class_name);
+    if(type){
+        if(type->isQString())
+            type = TypeDatabase::instance()->findComplexType("QtJambiString");
+        else if(type->isChar())
+            type = TypeDatabase::instance()->findComplexType("QtJambiChar");
+    }
     if(type && type->designatedInterface())
         type = type->designatedInterface();
     RejectReason reason = NoReason;
@@ -3797,7 +3914,9 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     // specific typedefs to be used as classes.
     for(QHash<QString, TypeAliasModelItem>::const_iterator i = class_item->typeAliasMap().begin(); i!=class_item->typeAliasMap().end(); i++){
         TypeAliasModelItem tai = i.value();
-        if(tai->type().qualifiedName().join("::").startsWith("std::function<") || tai->type().isFunctionPointer()){
+        if(tai->type().qualifiedName().join("::").startsWith("std::function<")
+                || tai->type().qualifiedName().join("::").startsWith("qxp::function_ref<")
+                || tai->type().isFunctionPointer()){
             AbstractMetaFunctional *fnl = traverseFunctional(tai);
             if(fnl)
                 meta_class->addFunctional(fnl);
@@ -4632,6 +4751,9 @@ void AbstractMetaBuilder::traverseEnums(ScopeModelItem scope_item, AbstractMetaC
         AbstractMetaEnum *meta_enum = traverseEnum(enum_item, meta_class, QSet<QString>(enumsDeclarations.begin(), enumsDeclarations.end()));
         if (meta_enum) {
             meta_enum->setOriginalAttributes(meta_enum->attributes());
+            if(!meta_enum->typeEntry()->javaScope().isEmpty()){
+                m_scopeChangedEnums << meta_enum;
+            }
             meta_class->addEnum(meta_enum);
             meta_enum->setEnclosingClass(meta_class);
         }
@@ -4643,6 +4765,8 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         return nullptr;
     if(function_item->name()=="static_assert")
         return nullptr;
+    static TypeEntry* qstringType = TypeDatabase::instance()->findType("QtJambiString");
+    static TypeEntry* qcharType = TypeDatabase::instance()->findType("QtJambiChar");
     const ArgumentList& arguments = function_item->arguments();
     QString function_name = function_item->name();
     QString class_name = m_current_class->typeEntry()->qualifiedCppName();
@@ -4823,7 +4947,14 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
                     function_type.setQualifiedName(typeInfo.qualified_name);
                 }
             }
-            type = translateType(function_type, &ok, QString("traverseField %1.%2").arg(class_name).arg(function_name));
+            type = translateType(function_type, &ok, QString("traverseFunction %1.%2").arg(class_name).arg(function_name));
+            if(type){
+                if(type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==qstringType){
+                    type->setTypeEntry(qstringType);
+                }else if(type->typeEntry()->isChar() && m_current_class && m_current_class->typeEntry()==qcharType){
+                    type->setTypeEntry(qcharType);
+                }
+            }
         }
 
         if (!ok) {
@@ -4902,6 +5033,13 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
 
         if(!ok){
             meta_type = translateType(arg->type(), &ok, QString("traverseFunction %1.%2 arg#%3").arg(class_name).arg(function_name).arg(i));
+            if(meta_type){
+                if(meta_type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==qstringType){
+                    meta_type->setTypeEntry(qstringType);
+                }else if(meta_type->typeEntry()->isChar() && m_current_class && m_current_class->typeEntry()==qcharType){
+                    meta_type->setTypeEntry(qcharType);
+                }
+            }
             if (meta_type && ok && meta_type->typeEntry()->isEnum() && !meta_type->typeEntry()->qualifiedCppName().contains("::")) {
                 bool _ok = false;
                 TypeInfo typeInfo = arg->type();
@@ -4966,7 +5104,10 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
     if(function_item->isConstant()){
         originalSignature += "const";
     }
-    meta_function->setOriginalSignature(QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(originalSignature))));
+    if(!originalSignature.contains("std::function<") && !originalSignature.contains("qxp::function_ref<"))
+        meta_function->setOriginalSignature(QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(originalSignature))));
+    else
+        meta_function->setOriginalSignature(originalSignature);
     if (function_item->isFriend() && function_item->hasBody()){
         meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
         meta_function->setOriginalAttributes(meta_function->attributes());
@@ -5376,8 +5517,10 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
     if (!type && m_current_class) {
         QList<TypeEntry *> template_args = m_current_class->templateArguments();
         for(TypeEntry *te : template_args) {
-            if (te->name() == qualified_name)
+            if (te->name() == qualified_name){
                 type = te;
+                break;
+            }
         }
     }
 
@@ -5461,11 +5604,26 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         QStringList contexts;
         QSet<QString> visitedContexts;
         contexts.append(m_current_class->qualifiedCppName());
+        QStringList superClasses;
         for(const QPair<QString,bool>& p : m_current_class->baseClassNames()){
             if(p.second){
+                superClasses << p.first;
                 contexts.append(p.first);
-                break;
             }
+        }
+        while(!superClasses.isEmpty()){
+            QStringList _superClasses;
+            for(const QString& scl : qAsConst(superClasses)){
+                if(AbstractMetaClass* superClass = m_meta_classes.findClass(scl)){
+                    for(const QPair<QString,bool>& p : superClass->baseClassNames()){
+                        if(p.second){
+                            _superClasses << p.first;
+                            contexts.append(p.first);
+                        }
+                    }
+                }
+            }
+            superClasses = _superClasses;
         }
         contexts.append(currentScope()->qualifiedName().join("::"));
         contexts.removeDuplicates();
@@ -5787,7 +5945,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
                         typeAliasType->setIndirections(indirections);
                     }
                     typeAliasType->setReferenceType(AbstractMetaType::Reference);
-                    AbstractMetaBuilder::decideUsagePattern(typeAliasType);
+                    decideUsagePattern(typeAliasType);
                     meta_type->addIteratorInstantiation(typeAliasType);
                     found = true;
                 }
@@ -5884,43 +6042,50 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
 
     } else if (type->isQString()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::StringPattern);
 
     } else if (type->isLatin1String()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::Latin1StringPattern);
+
+    } else if (type->isLatin1StringView()
+               && meta_type->indirections().size() == 0
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
+        meta_type->setTypeUsagePattern(AbstractMetaType::Latin1StringViewPattern);
 
     } else if (type->isStringView()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::StringViewPattern);
 
     } else if (type->isUtf8StringView()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::Utf8StringViewPattern);
 
     } else if (type->isAnyStringView()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::AnyStringViewPattern);
 
     } else if (type->isStringRef()
                && meta_type->indirections().size() == 0
-               && (meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)
-                   || meta_type->isConstant())) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::StringRefPattern);
 
     } else if (type->isChar()
                && meta_type->indirections().size() == 0
-               && meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::CharPattern);
 
     } else if ((
@@ -5932,7 +6097,8 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
                    || type->isJQFlagsWrapper()
                 )
                && meta_type->indirections().size() == 0
-               && meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         if(type->isJObjectWrapper())
             meta_type->setTypeUsagePattern(AbstractMetaType::JObjectWrapperPattern);
         else if(type->isJMapWrapper())
@@ -5947,7 +6113,8 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
             meta_type->setTypeUsagePattern(AbstractMetaType::JQFlagsWrapperPattern);
     } else if (type->isVariant()
                && meta_type->indirections().size() == 0
-               && meta_type->isConstant() == (meta_type->getReferenceType()==AbstractMetaType::Reference)) {
+               && ((meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->isConstant())
+                   || meta_type->getReferenceType()==AbstractMetaType::NoReference)) {
         meta_type->setTypeUsagePattern(AbstractMetaType::VariantPattern);
 
     } else if (type->isEnum() && (meta_type->actualIndirections() == 0
@@ -6056,6 +6223,10 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             }
         } else if (expr == "ULONG_MAX") {
             return "Long.MAX_VALUE";
+        } else if (expr.startsWith("u'") && expr.endsWith("'")) {
+            return expr.mid(1);
+        } else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')")) {
+            return expr.chopped(1).mid(12);
         } else if (expr == "QVariant::Invalid") {
             return "0";
         } else {
@@ -6120,10 +6291,18 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             }
             if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
                 return expr.mid(8, expr.length()-9);
+            if(expr.startsWith("QLatin1String(\"") && expr.endsWith("\")"))
+                return expr.mid(14, expr.length()-15);
+            else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
+                return expr.mid(1);
+            else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
+                return expr.chopped(1).mid(12);
+            else if (expr.startsWith("u8'") && expr.endsWith("'"))
+                return expr.mid(2);
             else if(expr.startsWith("u8\"") && expr.endsWith("\""))
-                return expr.mid(2, expr.length()-2);
+                return expr.mid(2);
             else if((expr.startsWith("u\"") || expr.startsWith("U\"") || expr.startsWith("L\"")) && expr.endsWith("\""))
-                return expr.mid(1, expr.length()-1);
+                return expr.mid(1);
             else if(expr.startsWith("R\"(") && expr.endsWith(")\"")){
                 expr = expr.mid(3, expr.length()-5);
                 expr.replace("\\", "\\\\");
@@ -6143,6 +6322,10 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             if (expr == "{}"){
                 return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") + "()";
             }
+            else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
+                return expr.chopped(1).mid(12);
+            else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
+                return expr.mid(1);
             TypeEntry *typeEntry = TypeDatabase::instance()->findType(expr.left(expr.indexOf("::")));
 
             expr = expr.right(expr.length() - expr.indexOf("::") - 2);
@@ -6150,6 +6333,10 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
                 return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") +
                        "(" + typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr + ")";
             }
+        }else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')")){
+            return expr.chopped(1).mid(12);
+        } else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'")){
+            return expr.mid(1);
         } else if (expr == "QString()" || expr == "QStringRef()" || expr == "QStringView()") {
             return "null";
         } else if (expr == "QChar()") {

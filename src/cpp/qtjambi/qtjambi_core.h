@@ -568,6 +568,8 @@ QTJAMBI_EXPORT int qtjambi_to_enum(JNIEnv *env, jobject java_object);
 
 QTJAMBI_EXPORT jstring qtjambi_to_jstring(JNIEnv *env, jobject object);
 
+QTJAMBI_EXPORT QString qtjambi_to_qstring(JNIEnv *env, jobject object);
+
 QTJAMBI_EXPORT QString qtjambi_to_qstring(JNIEnv *env, jstring java_string);
 
 extern "C" QTJAMBI_EXPORT void qtjambi_to_qstring(QString& result, JNIEnv *env, jstring java_string);
@@ -654,6 +656,18 @@ jobject qtjambi_from_object(JNIEnv *env, const void *qt_object, const char *clas
 
 QTJAMBI_EXPORT
 jobject qtjambi_from_object(JNIEnv *env, const void *qt_object, jclass clazz, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_stringobject(JNIEnv *env, const QString &strg);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_stringobject(JNIEnv *env, QString *strg);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_charobject(JNIEnv *env, const QChar &strg);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_charobject(JNIEnv *env, QChar *strg);
 
 QTJAMBI_EXPORT
 jobject qtjambi_from_functional(JNIEnv *env, const void *qt_object, const std::type_info& typeId);
@@ -1387,6 +1401,34 @@ public:
     ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
 };
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+class QTJAMBI_EXPORT Char16PointerArray : public PointerArray<jcharArray,char16_t>
+{
+public:
+    Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size);
+    ~Char16PointerArray() override;
+};
+
+class QTJAMBI_EXPORT ConstChar16PointerArray : public PointerArray<jcharArray,const char16_t>
+{
+public:
+    ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size);
+};
+
+class QTJAMBI_EXPORT Char32PointerArray : public PointerArray<jintArray,char32_t>
+{
+public:
+    Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size);
+    ~Char32PointerArray() override;
+};
+
+class QTJAMBI_EXPORT ConstChar32PointerArray : public PointerArray<jintArray,const char32_t>
+{
+public:
+    ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size);
+};
+#endif
+
 template<typename T>
 class ConstObjectPointerArray : public PointerArray<jobjectArray,const T>
 {
@@ -1503,6 +1545,10 @@ public:
     operator const int* () const { return reinterpret_cast<int*>(m_array_elements); }
     operator uint* () { return reinterpret_cast<uint*>(m_array_elements); }
     operator const uint* () const { return reinterpret_cast<uint*>(m_array_elements); }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    operator char32_t* () { return reinterpret_cast<char32_t*>(m_array_elements); }
+    operator const char32_t* () const { return reinterpret_cast<char32_t*>(m_array_elements); }
+#endif
     static bool isValidArray(JNIEnv *env, jobject object);
 };
 
@@ -1565,6 +1611,8 @@ public:
     operator const QChar* () const { return reinterpret_cast<QChar*>(m_array_elements); }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
+    operator char16_t*() const { return reinterpret_cast<char16_t*>(m_array_elements); }
+    operator const char16_t*() const { return reinterpret_cast<const char16_t*>(m_array_elements); }
 #endif
     operator QString() const { return QString(reinterpret_cast<const QChar*>(m_array_elements), size()); }
     static bool isValidArray(JNIEnv *env, jobject object);
@@ -1640,6 +1688,9 @@ public:
     inline operator QByteArrayView() const { return toByteArrayView(); }
     inline QUtf8StringView toUtf8StringView() const { return QUtf8StringView(constData(), length()); }
     inline operator QUtf8StringView() const { return toUtf8StringView(); }
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+    inline QLatin1StringView toLatin1StringView() const { return QLatin1StringView(constData(), length()); }
 #endif
     inline QLatin1String toLatin1String() const { return QLatin1String(constData(), length()); }
     inline operator QLatin1String() const { return toLatin1String(); }
@@ -1817,7 +1868,21 @@ public:
     QtJambiScope(QtJambiNativeID nativeId);
     QtJambiScope(JNIEnv *env, jobject object);
     ~QtJambiScope();
-    void addFinalAction(std::function<void()> action);
+    void addFinalAction(std::function<void()>&& action);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    void addDeletion(int metaTypeId, void* pointer);
+#else
+    void addDeletion(QMetaType metaType, void* pointer);
+#endif
+    template<typename T>
+    void addDeletion(T* pointer){
+        addFinalAction([pointer](){delete pointer;});
+    }
+    template<typename T>
+    void addArrayDeletion(T* pointer){
+        addFinalAction([pointer](){delete[] pointer;});
+    }
+    void addObjectInvalidation(JNIEnv *env, jobject object, bool checkJavaOwnership, bool persistent = true);
     QtJambiNativeID relatedNativeID() const;
 protected:
     QtJambiScope(QtJambiScopePrivate&);

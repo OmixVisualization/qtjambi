@@ -51,7 +51,6 @@ import io.qt.core.QMultiMap;
 import io.qt.core.QPair;
 import io.qt.core.QSet;
 import io.qt.core.QStack;
-import io.qt.core.QString;
 import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
 import io.qt.core.QVersionNumber;
@@ -1440,12 +1439,12 @@ public class WriteInitialization extends TreeWalker {
 	private void writePropertyList(String varName, String setFunction, String value, String defaultValue) {
 	    if (value.isEmpty())
 	        return;
-	    QStringList list = QString.split(value, ',');
-	    int count =  list.count();
+	    String[] list = value.split(",");
+	    int count =  list.length;
 	    for (int i = 0; i < count; i++) {
-	        if (list.at(i) != defaultValue) {
+	        if (!list[i].equals(defaultValue)) {
 	            m_output.append(m_indent).append(varName).append('.').append(setFunction
-	               ).append('(').append(i).append(", ").append(list.at(i)).append(");").endl();
+	               ).append('(').append(i).append(", ").append(list[i]).append(");").endl();
 	        }
 	    }
 	}

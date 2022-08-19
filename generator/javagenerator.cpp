@@ -704,6 +704,46 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
                         s += '>';
                     }
                 }
+            }else if(type->isFunctional()){
+                const FunctionalTypeEntry *ftype = reinterpret_cast<const FunctionalTypeEntry *>(type);
+                if(ftype->isGenericClass() && context){
+                    AbstractMetaFunctional* functional = nullptr;
+                    for(AbstractMetaFunctional* f : context->functionals()){
+                        if(f->typeEntry()==ftype){
+                            functional = f;
+                            break;
+                        }
+                    }
+                    if(functional && !functional->javaFunctionalInterfaceParameterTypes().isEmpty()){
+                        s += '<';
+                        const QList<uint>& args = functional->javaFunctionalInterfaceParameterTypes();
+                        for (int i=0; i<args.size(); ++i) {
+                            if (i != 0)
+                                s += ", ";
+                            //s += args[i]->name();
+                            QString modifiedType = functional->typeReplaced(args[i]);
+                            if(modifiedType.isEmpty()){
+                                if(args[i]==0){
+                                    s += translateType(functional->type(), context, Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers));
+                                }else{
+                                    s += translateType(functional->arguments()[args[i]-1]->type(), context, Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers));
+                                }
+                            }else{
+                                s += modifiedType;
+                            }
+                        }
+                        s += '>';
+                    }else if(!context->templateArguments().isEmpty()){
+                        s += '<';
+                        const QList<TypeEntry *>& args = context->templateArguments();
+                        for (int i=0; i<args.size(); ++i) {
+                            if (i != 0)
+                                s += ", ";
+                            s += args[i]->name();
+                        }
+                        s += '>';
+                    }
+                }
             }
         }
     }
@@ -763,6 +803,9 @@ QString JavaGenerator::argumentString(const AbstractMetaFunction *java_function,
         }
     }else {
         modified_type = java_function->typeReplaced(java_argument->argumentIndex() + 1);
+        if((options & InitializerListAsArray) && modified_type.endsWith("...")){
+            modified_type = modified_type.replace("...", "[]");
+        }
     }
     QString arg;
 
@@ -770,6 +813,8 @@ QString JavaGenerator::argumentString(const AbstractMetaFunction *java_function,
         if(java_argument->argumentIndex()<java_function->arguments().size()-1)
             options = Option(options | InitializerListAsArray);
         arg = translateType(java_argument->type(), java_function->implementingClass(), Option(options));
+        if(arg=="io.qt.core.QString")
+            arg = "java.lang.CharSequence";
         if((options & SkipTemplateParameters) == 0 && java_argument->type()->typeEntry()->isComplex()){
             const ComplexTypeEntry* ctype = dynamic_cast<const ComplexTypeEntry*>(java_argument->type()->typeEntry());
             if(ctype->isGenericClass() && java_argument->type()->instantiations().isEmpty()){
@@ -959,13 +1004,13 @@ void JavaGenerator::writeFunctional(QTextStream &s, const AbstractMetaFunctional
                 if(index==0){
                     Q_ASSERT(java_functional->type());
                     if(returnArrayLengthIndex>=0){
-                        s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers)) << "[]";
+                        s << translateType(java_functional->type(), nullptr, Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers)) << "[]";
                     }else{
                         if(!replacedReturnType.isEmpty()){
                             registerPackage(replacedReturnType);
                             s << replacedReturnType.replace('$', '.');
                         }else
-                            s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers));
+                            s << translateType(java_functional->type(), nullptr, Option(BoxedPrimitive | InitializerListAsArray | NoQCollectionContainers));
                     }
                 }else{
                     Q_ASSERT(index<=uint(java_functional->arguments().size()));
@@ -1010,45 +1055,68 @@ void JavaGenerator::writeFunctional(QTextStream &s, const AbstractMetaFunctional
         {
             if(!java_functional->javaFunctionalInterface().isEmpty())
                 s << INDENT << "@Override" << Qt::endl;
-            s << INDENT << "public ";
-            if(!needsCallThrough && (java_functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)){
-                s << "native ";
-            }
-            if(returnArrayLengthIndex>=0){
-                s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers)) << "[]";
-            }else{
-                if(!replacedReturnType.isEmpty()){
-                    registerPackage(replacedReturnType);
-                    s << replacedReturnType.replace('$', '.');
-                }else
-                    s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers));
-            }
-            s << " ";
-            if(java_functional->typeEntry()->functionName().isEmpty())
-                s << "call";
-            else
-                s << java_functional->typeEntry()->functionName();
-            s << "(";
-            int counter = 0;
-            for(AbstractMetaArgument * arg : java_functional->arguments()){
-                if(java_functional->argumentRemoved(arg->argumentIndex() + 1))
-                    continue;
-                if(counter!=0)
-                    s << ", ";
-                int arrayLengthIndex = java_functional->argumentTypeArrayLengthIndex(arg->argumentIndex() + 1);
-                if(arrayLengthIndex>=0){
-                    s << translateType(arg->type(), nullptr, Option(CollectionAsCollection)) << "[]";
-                }else{
-                    QString replacedArgType = java_functional->typeReplaced(arg->argumentIndex() + 1);
-                    if(!replacedArgType.isEmpty()){
-                        registerPackage(replacedArgType);
-                        s << replacedArgType.replace('$', '.');
-                    }else
-                        s << translateType(arg->type(), nullptr, Option(CollectionAsCollection));
+
+            QString functionSignature;
+            bool needsSuppressExportsWarning = false;
+            {
+                m_exportedPackages.clear();
+                QTextStream s(&functionSignature);
+                s << INDENT << "public ";
+                if(!needsCallThrough && (java_functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)){
+                    s << "native ";
                 }
-                s << " " << arg->modifiedArgumentName();
-                ++counter;
+                if(returnArrayLengthIndex>=0){
+                    s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers)) << "[]";
+                }else{
+                    if(!replacedReturnType.isEmpty()){
+                        registerPackage(replacedReturnType);
+                        s << replacedReturnType.replace('$', '.');
+                    }else
+                        s << translateType(java_functional->type(), nullptr, Option(InitializerListAsArray | NoQCollectionContainers));
+                }
+                s << " ";
+                if(java_functional->typeEntry()->functionName().isEmpty())
+                    s << "call";
+                else
+                    s << java_functional->typeEntry()->functionName();
+                s << "(";
+                int counter = 0;
+                for(AbstractMetaArgument * arg : java_functional->arguments()){
+                    if(java_functional->argumentRemoved(arg->argumentIndex() + 1))
+                        continue;
+                    if(counter!=0)
+                        s << ", ";
+                    int arrayLengthIndex = java_functional->argumentTypeArrayLengthIndex(arg->argumentIndex() + 1);
+                    if(arrayLengthIndex>=0){
+                        s << translateType(arg->type(), nullptr, Option(CollectionAsCollection)) << "[]";
+                    }else{
+                        QString replacedArgType = java_functional->typeReplaced(arg->argumentIndex() + 1);
+                        if(!replacedArgType.isEmpty()){
+                            registerPackage(replacedArgType);
+                            s << replacedArgType.replace('$', '.');
+                        }else
+                            s << translateType(arg->type(), nullptr, Option(CollectionAsCollection));
+                    }
+                    s << " " << arg->modifiedArgumentName();
+                    ++counter;
+                }
+
+                for(const QString& pkg : m_exportedPackages){
+                    if(pkg!=java_functional->package()
+                            && !pkg.isEmpty()
+                            && m_typeSystemByPackage[pkg]
+                            && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
+                            && m_typeSystemByPackage[pkg]!=m_typeSystemByPackage[java_functional->package()]
+                            && !pkg.startsWith("io.qt.internal")
+                            && pkg!="io.qt"){
+                        needsSuppressExportsWarning = true;
+                        break;
+                    }
+                }
             }
+            if (needsSuppressExportsWarning)
+                s << INDENT << "@SuppressWarnings(\"exports\")" << Qt::endl;
+            s << functionSignature;
             if(java_functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell){
                 if(needsCallThrough){
                     s << "){" << Qt::endl;
@@ -1889,7 +1957,7 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
     }
 
     writeFunctionAttributes(s, java_function, -1, include_attributes, exclude_attributes,
-                            Option(EnumAsInts
+                            Option(EnumAsInts | InitializerListAsArray
                             | ( (
                                   java_function->isEmptyFunction()
                                || java_function->isNormal()
@@ -1960,9 +2028,9 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
             needsComma = true;
 
             if(java_function->isConstructor())
-                writeArgument(s, java_function, arg, Option(CollectionAsCollection));
+                writeArgument(s, java_function, arg, Option(CollectionAsCollection | InitializerListAsArray));
             else if (!arg->type()->hasNativeId() || !java_function->typeReplaced(arg->argumentIndex()+1).isEmpty())
-                writeArgument(s, java_function, arg, Option(EnumAsInts | UseNativeIds | CollectionAsCollection));
+                writeArgument(s, java_function, arg, Option(EnumAsInts | UseNativeIds | CollectionAsCollection | InitializerListAsArray));
             else
                 s << "long " << arg->modifiedArgumentName();
         }
@@ -3110,10 +3178,12 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
             for(const QString& pkg : m_exportedPackages){
                 if(pkg!=java_function->implementingClass()->package()
                         && !pkg.isEmpty()
-                        && m_typeSystemByPackage[pkg]
-                        && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
                         && !pkg.startsWith("io.qt.internal")
-                        && pkg!="io.qt"){
+                        && pkg!="io.qt"
+                        && m_typeSystemByPackage[pkg]
+                        && !m_typeSystemByPackage[pkg]->module().isEmpty()
+                        && m_typeSystemByPackage[pkg]->module()!="qtjambi" // because it's transitive
+                        ){
                     exp = true;
                     break;
                 }
@@ -4048,6 +4118,26 @@ void JavaGenerator::write_equals_parts(QTextStream &s, const AbstractMetaFunctio
                 }
             }
         }
+        QString boxedType = type;
+        if(boxedType=="io.qt.core.QString")
+            boxedType = type = "java.lang.CharSequence";
+        else if(boxedType=="int")
+            boxedType = "java.lang.Integer";
+        else if(boxedType=="byte")
+            boxedType = "java.lang.Byte";
+        else if(boxedType=="short")
+            boxedType = "java.lang.Short";
+        else if(boxedType=="long")
+            boxedType = "java.lang.Long";
+        else if(boxedType=="double")
+            boxedType = "java.lang.Double";
+        else if(boxedType=="float")
+            boxedType = "java.lang.Float";
+        else if(boxedType=="boolean")
+            boxedType = "java.lang.Boolean";
+        else if(boxedType=="char")
+            boxedType = "java.lang.Character";
+
         if(type=="null"){
             s << INDENT << (first ? "if" : "else if") << " (other==" << type;
             s << ") {" << Qt::endl;
@@ -4055,7 +4145,7 @@ void JavaGenerator::write_equals_parts(QTextStream &s, const AbstractMetaFunctio
             if (prefix != 0) s << prefix;
             s << f->name() << "();" << Qt::endl;
         }else{
-            s << INDENT << (first ? "if" : "else if") << " (other instanceof " << type;
+            s << INDENT << (first ? "if" : "else if") << " (other instanceof " << boxedType;
             if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                 s << " && checkContainerType((" << type << ") other";
                 for(const AbstractMetaType * instantiation : arg->type()->instantiations()){
@@ -4126,8 +4216,27 @@ static void write_compareto_parts(QTextStream &s, const AbstractMetaFunctionList
                 }
             }
         }
+        QString boxedType = type;
+        if(boxedType=="io.qt.core.QString")
+            boxedType = type = "java.lang.CharSequence";
+        else if(boxedType=="int")
+            boxedType = "java.lang.Integer";
+        else if(boxedType=="byte")
+            boxedType = "java.lang.Byte";
+        else if(boxedType=="short")
+            boxedType = "java.lang.Short";
+        else if(boxedType=="long")
+            boxedType = "java.lang.Long";
+        else if(boxedType=="double")
+            boxedType = "java.lang.Double";
+        else if(boxedType=="float")
+            boxedType = "java.lang.Float";
+        else if(boxedType=="boolean")
+            boxedType = "java.lang.Boolean";
+        else if(boxedType=="char")
+            boxedType = "java.lang.Character";
         if(value==0){
-            s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << type;
+            s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << boxedType;
             if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                 s << " && checkContainerType((" << type << ") other";
                 for(const AbstractMetaType * instantiation : arg->type()->instantiations()){
@@ -4147,7 +4256,7 @@ static void write_compareto_parts(QTextStream &s, const AbstractMetaFunctionList
                   << INDENT << "    else return " << -value << ";" << Qt::endl
                   << INDENT << "}" << Qt::endl;
             }else{
-                s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << type;
+                s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << boxedType;
                 if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                     s << " && checkContainerType((" << type << ") other";
                     for(const AbstractMetaType * instantiation : arg->type()->instantiations()){
@@ -4303,6 +4412,22 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                     auto idx = nonGenericType.indexOf("<");
                     if(idx>0)
                         nonGenericType = nonGenericType.left(idx);
+                    if(nonGenericType=="int")
+                        nonGenericType = "java.lang.Integer";
+                    else if(nonGenericType=="byte")
+                        nonGenericType = "java.lang.Byte";
+                    else if(nonGenericType=="short")
+                        nonGenericType = "java.lang.Short";
+                    else if(nonGenericType=="long")
+                        nonGenericType = "java.lang.Long";
+                    else if(nonGenericType=="double")
+                        nonGenericType = "java.lang.Double";
+                    else if(nonGenericType=="float")
+                        nonGenericType = "java.lang.Float";
+                    else if(nonGenericType=="boolean")
+                        nonGenericType = "java.lang.Boolean";
+                    else if(nonGenericType=="char")
+                        nonGenericType = "java.lang.Character";
                     s << INDENT << "if(other instanceof " << nonGenericType << ")" << Qt::endl
                       << INDENT << "    return hashCode()==other.hashCode();" << Qt::endl
                       << INDENT << "else return super.equals(other);";
@@ -5527,14 +5652,19 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
             }
 
             // Enums
-            for(AbstractMetaEnum *java_enum : java_class->enums())
-                writeEnum(s, java_enum);
+            int writtenEnums = 0;
+            for(AbstractMetaEnum *java_enum : java_class->enums()){
+                if(java_enum->enclosingClass()==java_class){
+                    writeEnum(s, java_enum);
+                    ++writtenEnums;
+                }
+            }
 
             // functionals
             for(AbstractMetaFunctional *java_f : java_class->functionals())
                 writeFunctional(s, java_f);
 
-            if (!java_class->enums().isEmpty() && !java_class->enclosedClasses().isEmpty())
+            if ((writtenEnums>0 || !java_class->functionals().isEmpty()) && !java_class->enclosedClasses().isEmpty())
                 s << Qt::endl;
             // write enclosed types as static embedded classes
             for(AbstractMetaClass *enclosed_java_class : java_class->enclosedClasses()){
@@ -7128,7 +7258,6 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
                                && java_function->ownership(java_function->declaringClass(),
                                         TypeSystem::ShellCode, argument->argumentIndex() + 1).ownership ==
                                             TypeSystem::InvalidOwnership) {
-
                         resettableObject = true;
                         if (nativePointer) break ;
 
@@ -7221,11 +7350,18 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
         if (spec && java_function->isPropertyNotify()) {
             s << "    @io.qt.QtPropertyNotify(name=\"" << spec->name() << "\")" << Qt::endl;
         }
-        if (java_function->arguments().size()>0
-                && java_function->arguments().last()->type()->isInitializerList()
-                && java_function->arguments().last()->type()->instantiations().size()>0
-                && java_function->arguments().last()->type()->instantiations().first()->instantiations().size()>0) {
-            s << INDENT << "@SafeVarargs" << Qt::endl;
+        if (!(options & InitializerListAsArray) && java_function->arguments().size()>0) {
+            QString typeReplaced = java_function->typeReplaced(java_function->arguments().size());
+            if(java_function->arguments().last()->type()->isInitializerList()
+               && java_function->arguments().last()->type()->instantiations().size()>0
+               && java_function->arguments().last()->type()->instantiations().first()->instantiations().size()>0
+               && typeReplaced.isEmpty()){
+                s << INDENT << "@SafeVarargs" << Qt::endl;
+            }else if(!typeReplaced.isEmpty()
+                     && typeReplaced!="java.lang.Object..."
+                     && typeReplaced.endsWith("...")){
+                s << INDENT << "@SafeVarargs" << Qt::endl;
+            }
         }
 
         if(!java_function->isConstructor()

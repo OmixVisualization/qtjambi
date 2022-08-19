@@ -2236,6 +2236,8 @@ public final class QtJambiInternal {
 				methodInvocationHandler.invokeMethod(initialize, null);
 				initializedPackages.put(packagePath, Boolean.TRUE);
 				return true;
+			} catch (NoSuchMethodException | NoSuchMethodError t) {
+				return true;
 			} catch (NoClassDefFoundError t) {
 				if (t.getCause() instanceof Error && t.getCause() != t)
 					throw (Error) t.getCause();
@@ -2310,7 +2312,7 @@ public final class QtJambiInternal {
 		public final List<Object> lambdaArgs;
 	}
 
-	public static LambdaInfo lamdaInfo(Serializable slotObject) {
+	public static LambdaInfo lambdaInfo(Serializable slotObject) {
 		//String className = slotObject.getClass().getName();
 		Class<?> slotClass = QtJambiInternal.getClass(slotObject);
 		if (slotClass.isSynthetic()
@@ -2579,6 +2581,13 @@ public final class QtJambiInternal {
 	}
 	
 	public static native int findMetaType(String name);
+	
+	static int registerMetaType(Parameter parameter) {
+		AnnotatedElement annotatedParameterType = null;
+    	if(useAnnotatedType)
+    		annotatedParameterType = parameter.getAnnotatedType();
+    	return registerMetaType(parameter.getType(), parameter.getParameterizedType(), annotatedParameterType, false, false);
+	}
 
 	public static int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference) {
 		initializePackage(clazz);
@@ -3224,7 +3233,7 @@ public final class QtJambiInternal {
 	}
 
 	private static Class<?> getFactoryClass(Serializable method) {
-		LambdaInfo lamdaInfo = lamdaInfo(method);
+		LambdaInfo lamdaInfo = lambdaInfo(method);
 		if(lamdaInfo!=null) {
 			if (lamdaInfo.reflectiveMethod != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
 					&& !lamdaInfo.reflectiveMethod.isSynthetic() && !lamdaInfo.reflectiveMethod.isBridge()
@@ -3241,7 +3250,7 @@ public final class QtJambiInternal {
 
 	@SuppressWarnings("unchecked")
 	public static <R> Class<R> getReturnType(QMetaObject.Method1<?, R> method) {
-		LambdaInfo lamdaInfo = lamdaInfo(method);
+		LambdaInfo lamdaInfo = lambdaInfo(method);
 		if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
 			return (Class<R>) lamdaInfo.methodHandle.type().returnType();
 		} else {
@@ -4303,13 +4312,13 @@ public final class QtJambiInternal {
 		}
 
 		@Override
-		public <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(Class<S> type, S lambdaExpression) {
+		public <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(S lambdaExpression) {
 			if(lambdaExpression instanceof AbstractSignal) {
 				QtSignalEmitterInterface containingObject = ((AbstractSignal) lambdaExpression).containingObject();
 				if(containingObject instanceof QObject)
 					return (QObject)containingObject;
 			}
-			LambdaInfo lambdaInfo = lamdaInfo(lambdaExpression);
+			LambdaInfo lambdaInfo = lambdaInfo(lambdaExpression);
 			if (lambdaInfo != null) {
 				if(lambdaInfo.owner instanceof AbstractSignal) {
 					QtSignalEmitterInterface containingObject = ((AbstractSignal) lambdaInfo.owner).containingObject();
@@ -4324,7 +4333,7 @@ public final class QtJambiInternal {
 
 		@Override
 		public <S extends java.io.Serializable> Class<?> lambdaReturnType(Class<S> type, S lambdaExpression) {
-			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
+			LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
 				return lamdaInfo.methodHandle.type().returnType();
 			} else {
@@ -4363,16 +4372,16 @@ public final class QtJambiInternal {
 		
 		@Override
 		public <S extends java.io.Serializable> int[] lambdaMetaTypes(Class<S> type, S lambdaExpression) {
-			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
+			LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
 				int[] metaTypes = new int[1+lamdaInfo.reflectiveMethod.getParameterCount()];
 				AnnotatedElement rt = null;
 				if(useAnnotatedType)
 					rt = lamdaInfo.reflectiveMethod.getAnnotatedReturnType();
-				metaTypes[0] = registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), rt, false, false);
+				metaTypes[0] = QtJambiInternal.registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), rt, false, false);
 				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
 				for (int i = 0; i < parameters.length; i++) {
-					metaTypes[i+1] = registerMetaType(parameters[i].getType(), parameters[i].getParameterizedType(), parameters[i].getAnnotatedType(), false, false);
+					metaTypes[i+1] = registerMetaType(parameters[i]);
 				}
 				return metaTypes;
 			}else {
@@ -4408,15 +4417,11 @@ public final class QtJambiInternal {
 									if(useAnnotatedType) {
 										ae = mtd.getAnnotatedReturnType();
 									}
-									metaTypes[0] = registerMetaType(mtd.getReturnType(), mtd.getGenericReturnType(), ae, false, false);
+									metaTypes[0] = QtJambiInternal.registerMetaType(mtd.getReturnType(), mtd.getGenericReturnType(), ae, false, false);
 								}
 								Parameter[] params = mtd.getParameters();
 								for (int i = 0; i < params.length; i++) {
-									AnnotatedElement ae = null;
-									if(useAnnotatedType) {
-										ae = params[i].getAnnotatedType();
-									}
-									metaTypes[i+1] = registerMetaType(params[i].getType(), params[i].getParameterizedType(), ae, false, false);
+									metaTypes[i+1] = registerMetaType(params[i]);
 								}
 								return metaTypes;
 							}
@@ -4430,7 +4435,7 @@ public final class QtJambiInternal {
 		
 		@Override
 		public <S extends java.io.Serializable> Class<?>[] lambdaClassTypes(Class<S> type, S lambdaExpression) {
-			LambdaInfo lamdaInfo = lamdaInfo(lambdaExpression);
+			LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
 			if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
 				Class<?>[] classTypes = new Class[1+lamdaInfo.reflectiveMethod.getParameterCount()];
 				classTypes[0] = lamdaInfo.reflectiveMethod.getReturnType();
@@ -4484,6 +4489,17 @@ public final class QtJambiInternal {
 			}
 		}
 		
+		public <S extends java.io.Serializable> java.lang.reflect.Executable lambdaExecutable(S lambdaExpression){
+			LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
+			if (lamdaInfo!=null) {
+				if(lamdaInfo.reflectiveMethod != null)
+					return lamdaInfo.reflectiveMethod;
+				else
+					return lamdaInfo.reflectiveConstructor;
+			}else 
+				return null;
+		}
+		
 		@Override
 		public Class<?> findGeneratedSuperclass(Class<?> clazz){
 			return QtJambiInternal.findGeneratedSuperclass(clazz);
@@ -4518,6 +4534,26 @@ public final class QtJambiInternal {
 		public <Q extends QtObjectInterface,M> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass) {
 			QtJambiInternal.NativeLink link = QtJambiInternal.findInterfaceLink(ifc, true);
 			return accessClass.cast(link.getMemberAccess(interfaceClass));
+		}
+
+		@Override
+		public <T> Class<T> getClass(T object) {
+			return QtJambiInternal.getClass(object);
+		}
+
+		@Override
+		public int registerMetaType(Parameter parameter) {
+			return QtJambiInternal.registerMetaType(parameter);
+		}
+
+		@Override
+		public <T> Supplier<T> getFactory0(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory0(constructor);
+		}
+
+		@Override
+		public Package getDefinedPackage(ClassLoader cl, String pkg) {
+			return RetroHelper.getDefinedPackage(cl, pkg);
 		}
 	};
 }

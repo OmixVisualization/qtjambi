@@ -74,26 +74,31 @@ public:
         return new GenericPairAccess<align1, size1, align2, size2>(*this);
     }
 
-    void* createContainer() override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        QPair<K,T>* list = new QPair<K,T>();
-        return list;
+    size_t sizeOf() override {
+        return sizeof(QPair<K,T>);
     }
-    void* copyContainer(const void* container) override {
-        if(container){
-            QTJAMBI_KEY_VALUE_LOCKER
-            QPair<K,T>* list = new QPair<K,T>(*reinterpret_cast<const QPair<K,T>*>(container));
-            return list;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        if(copyOf){
+            return new(placement) QPair<K,T>(*reinterpret_cast<const QPair<K,T>*>(copyOf));
+        }else{
+            return new(placement) QPair<K,T>();
         }
-        return createContainer();
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        return new(placement) QPair<K,T>(std::move(*reinterpret_cast<const QPair<K,T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        reinterpret_cast<QPair<K,T>*>(container)->~QPair<K,T>();
+        return true;
     }
     void assign(void* container, const void* other) override {
         QTJAMBI_KEY_VALUE_LOCKER
         (*reinterpret_cast<QPair<K,T>*>(container)) = (*reinterpret_cast<const QPair<K,T>*>(other));
-    }
-    void deleteContainer(void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        delete reinterpret_cast<QPair<K,T>*>(container);
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_qpair_type<QPair<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());

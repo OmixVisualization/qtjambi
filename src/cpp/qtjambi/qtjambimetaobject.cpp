@@ -1334,7 +1334,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    qint8* _out = new qint8;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1367,7 +1367,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    qint16* _out = new qint16;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1403,7 +1403,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    qint32* _out = new qint32;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1436,7 +1436,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    qint64* _out = new qint64;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1470,7 +1470,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    qint32* _out = new qint32;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1501,7 +1501,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                            }
                                            if(scope && !out){
                                                qint64* _out = new qint64;
-                                               scope->addFinalAction([_out](){delete _out;});
+                                               scope->addDeletion(_out);
                                                out = _out;
                                            }
                                            if(!out)
@@ -1537,7 +1537,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    QChar* _out = new QChar;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1569,7 +1569,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    float* _out = new float;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1601,7 +1601,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    double* _out = new double;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1633,7 +1633,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                                }
                                                if(scope && !out){
                                                    bool* _out = new bool;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1654,7 +1654,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                         [](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType) -> bool {
                                                if(scope && !out){
                                                    QString* _out = new QString;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1675,7 +1675,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                         [](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType) -> bool {
                                                if(scope && !out){
                                                    QByteArray* _out = new QByteArray;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)
@@ -1696,7 +1696,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                         [](JNIEnv* env, QtJambiScope* scope, const jvalue& in, void* &out, jValueType) -> bool {
                                                if(scope && !out){
                                                    QVariant* _out = new QVariant;
-                                                   scope->addFinalAction([_out](){delete _out;});
+                                                   scope->addDeletion(_out);
                                                    out = _out;
                                                }
                                                if(!out)

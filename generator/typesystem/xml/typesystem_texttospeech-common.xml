@@ -45,6 +45,8 @@
 ****************************************************************************-->
 <typesystem qt-library="QtTextToSpeech" description="Provides support for accessibility features such as text-to-speech.">
     <enum-type name="QTextToSpeech::State"/>
+    <enum-type name="QTextToSpeech::BoundaryHint" since="6.4"/>
+    <enum-type name="QTextToSpeech::ErrorReason" since="6.4"/>
     <object-type name="QTextToSpeech">
     </object-type>
     <object-type name="QTextToSpeechEngine">

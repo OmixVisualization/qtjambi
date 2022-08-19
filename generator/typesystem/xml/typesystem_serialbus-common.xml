@@ -57,6 +57,10 @@
     <enum-type name="QCanBusDevice::ConfigurationKey"/>
     <enum-type name="QCanBusDevice::Direction" flags="QCanBusDevice::Directions"/>
     <object-type name="QCanBusDevice">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
     </object-type>
     <enum-type name="QCanBusDevice::Filter::FormatFilter" flags="QCanBusDevice::Filter::FormatFilters"/>
     <value-type name="QCanBusDevice::Filter">
@@ -177,6 +181,8 @@
             <include file-name="qtjambi_serialbus.h" location="local"/>
         </extra-includes>
     </interface-type>
+    <functional-type name="QCanBusDevice::ResetControllerFunction" using="std::function&lt;void()>" generate="no"/>
+    <functional-type name="QCanBusDevice::CanBusStatusGetter" using="std::function&lt;QCanBusDevice::CanBusStatus()>" generate="no"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: function '*::CalcFuncPtr' is specified in typesystem, but not declared" />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusDataUnit." />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusDeviceIdentification." />

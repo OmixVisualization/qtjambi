@@ -69,4 +69,5 @@
   <load-typesystem name="typesystem_statemachine.xml"        generate="yes"	            unless="QTJAMBI_NO_STATEMACHINE" since="6.1.0"/>
   <load-typesystem name="typesystem_pdf.xml"                 generate="yes"	            unless="QTJAMBI_NO_PDF"/>
   <load-typesystem name="typesystem_pdfwidgets.xml"          generate="yes"	            unless="QTJAMBI_NO_PDFWIDGETS"/>
+  <load-typesystem name="typesystem_httpserver.xml"          generate="yes"	            unless="QTJAMBI_NO_HTTPSERVER"/>
 </typesystem>

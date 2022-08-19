@@ -64,6 +64,14 @@ public class QThreadAffinityException extends RuntimeException {
         this.expectedThread = expectedThread;
         this.currentThread = currentThread;
     }
+	
+	@NativeAccess
+    private QThreadAffinityException(String message) {
+        super(message);
+        this.object = null;
+        this.expectedThread = null;
+        this.currentThread = null;		
+	}
 
 
     /**
@@ -74,39 +82,41 @@ public class QThreadAffinityException extends RuntimeException {
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(getMessage());
-        if(!getMessage().endsWith(".") && !getMessage().endsWith(",") && !getMessage().endsWith("!") && !getMessage().endsWith(":"))
-        	s.append(":");
-        if(object!=null) {
-	        if(object.isDisposed()) {
-	        	s.append(" object=").append(object.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(object)));
-	        }else {
-	        	s.append(" object=").append(object);
+        if(object!=null && expectedThread!=null && currentThread!=null) {
+	        if(!getMessage().endsWith(".") && !getMessage().endsWith(",") && !getMessage().endsWith("!") && !getMessage().endsWith(":"))
+	        	s.append(":");
+	        if(object!=null) {
+		        if(object.isDisposed()) {
+		        	s.append(" object=").append(object.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(object)));
+		        }else {
+		        	s.append(" object=").append(object);
+		        }
+		        s.append(", ");
 	        }
-	        s.append(", ");
-        }
-        Thread expectedJavaThread = null;
-        try {
-			expectedJavaThread = expectedThread.javaThread();
-		} catch (Exception e1) {
-		}
-        if(expectedJavaThread!=null) {
-        	s.append(" expectedThread=").append(expectedJavaThread);
-        }else if(object.isDisposed()) {
-        	s.append(" expectedThread=").append(expectedThread.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(expectedThread)));
-        }else {
-        	s.append(" expectedThread=").append(expectedThread);
-        }
-        Thread currentJavaThread = null;
-        try {
-			currentJavaThread = currentThread.javaThread();
-		} catch (Exception e) {
-		}
-        if(currentJavaThread!=null) {
-        	s.append(", currentThread=").append(currentJavaThread);
-        }else if(currentThread.isDisposed()) {
-        	s.append(", currentThread=").append(currentThread.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(currentThread)));
-        }else {
-        	s.append(", currentThread=").append(currentThread);
+	        Thread expectedJavaThread = null;
+	        try {
+				expectedJavaThread = expectedThread.javaThread();
+			} catch (Exception e1) {
+			}
+	        if(expectedJavaThread!=null) {
+	        	s.append(" expectedThread=").append(expectedJavaThread);
+	        }else if(object.isDisposed()) {
+	        	s.append(" expectedThread=").append(expectedThread.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(expectedThread)));
+	        }else {
+	        	s.append(" expectedThread=").append(expectedThread);
+	        }
+	        Thread currentJavaThread = null;
+	        try {
+				currentJavaThread = currentThread.javaThread();
+			} catch (Exception e) {
+			}
+	        if(currentJavaThread!=null) {
+	        	s.append(", currentThread=").append(currentJavaThread);
+	        }else if(currentThread.isDisposed()) {
+	        	s.append(", currentThread=").append(currentThread.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(currentThread)));
+	        }else {
+	        	s.append(", currentThread=").append(currentThread);
+	        }
         }
         return s.toString();
     }

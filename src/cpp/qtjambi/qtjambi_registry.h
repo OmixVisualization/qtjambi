@@ -43,91 +43,36 @@ public:
     template<typename T>
     static constexpr QtJambiTypeInfo of(){
         return QtJambiTypeInfo(
+                                 QTypeInfo<T>::isPointer
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 QTypeInfo<T>::isSpecialized,
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 QTypeInfo<T>::isPointer,
-                                 QTypeInfo<T>::isIntegral,
-                                 QTypeInfo<T>::isComplex,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 QTypeInfo<T>::isStatic,
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 QTypeInfo<T>::isRelocatable
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 ,QTypeInfo<T>::isLarge,
-                                 QTypeInfo<T>::isDummy,
-                                 QTypeInfo<T>::sizeOf
+                                 ,QTypeInfo<T>::isStatic
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                                  );
     }
 
     QtJambiTypeInfo(const QtJambiTypeInfo& info)
         :
+          isPointer(info.isPointer)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isSpecialized(info.isSpecialized),
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isPointer(info.isPointer),
-          isIntegral(info.isIntegral),
-          isComplex(info.isComplex),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isStatic(info.isStatic),
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isRelocatable(info.isRelocatable)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          ,isLarge(info.isLarge),
-          isDummy(info.isDummy),
-          sizeOf(info.sizeOf)
+          ,isStatic(info.isStatic)
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           {}
 
+    const uint isPointer : 1;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool isSpecialized;
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool isPointer;
-    const bool isIntegral;
-    const bool isComplex;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool isStatic;
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool isRelocatable;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool isLarge;
-    const bool isDummy;
-    const size_t sizeOf;
+    const uint isStatic : 1;
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 private:
     constexpr QtJambiTypeInfo(
+                    bool _isPointer
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    bool _isSpecialized,
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    bool _isPointer,
-                    bool _isIntegral,
-                    bool _isComplex,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    bool _isStatic,
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    bool _isRelocatable
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                   ,bool _isLarge,
-                    bool _isDummy,
-                    size_t _sizeOf
+                    ,bool _isStatic
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 )
         :
+          isPointer(_isPointer)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isSpecialized(_isSpecialized),
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isPointer(_isPointer),
-          isIntegral(_isIntegral),
-          isComplex(_isComplex),
-      #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isStatic(_isStatic),
-      #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          isRelocatable(_isRelocatable)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-         ,isLarge(_isLarge),
-          isDummy(_isDummy),
-          sizeOf(_sizeOf)
+          ,isStatic(_isStatic)
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           {}
 };

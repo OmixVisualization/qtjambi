@@ -65,10 +65,9 @@ The Qt classes `QString`, `QLatin1String`, `QStringView`,
 `java.lang.String`. Also in many cases `const char*` is used as Java
 String.
 
-The class `io.qt.core.QString` provides static methods corresponding to
-`QString` C++ methods not vailable in Java strings, e.g.
-`QString.split(String string, QRegularExpression sep)` splitting a
-string according to a regular expression.
+The java class `io.qt.core.QString` represents the mutable string type `QString`.
+However, this class is only available to provide data conversion and formatting features of `QString`.
+In nearly all cases you have to call `toString()` to use `QString` as string method parameter.
 
 ### Enums and Flags
 
@@ -643,7 +642,8 @@ Thread qtThreadAsJava = qtThread.javaThread();
 **__Remarks:__**
 
   - The native method `QThread::wait(...)` has been renamed in Java to `QThread.join(...)`.
-  - The Java thread features *uncaught exception handler*, *context class loader*, *thread group* and *thread name* are made available in `QThread`.
+  - The Java thread features *uncaught exception handler*, *context class loader*, *thread group*, *daemon thread* and *thread name* are made available in `QThread`.
+  - Never call `dispose()` on a running thread!
 
 ### Thread Synchronization
 
@@ -947,7 +947,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-uic-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-uic-6.3.3.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -955,7 +955,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.2.jar:qtjambi-uic-6.3.2.jar
+     -cp qtjambi-6.3.3.jar:qtjambi-uic-6.3.3.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1075,8 +1075,8 @@ be exported to QML.
 QmlTypes.registerPackage("com.mycompany.messaging", 1);
 ```
 
-You could also specify the package's version by annotating the
-**package-info.java** with `QmlImportMajorVersion`:
+You could also specify the package's version and qml classes by annotating the
+**package-info.java** with `QmlImport`:
 
 ``` java
 @io.qt.qml.util.QmlImport(majorVersion=1, classes={Message.class})
@@ -1199,7 +1199,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1211,7 +1211,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -cp qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1238,7 +1238,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

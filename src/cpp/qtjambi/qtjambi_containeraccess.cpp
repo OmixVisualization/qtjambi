@@ -253,6 +253,1174 @@ public:
     }
 };
 
+WrapperListAccess::WrapperListAccess(AbstractListAccess* containerAccess)
+    : AbstractListAccess(), m_containerAccess(containerAccess) {}
+
+WrapperListAccess::~WrapperListAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractListAccess* WrapperListAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperListAccess::dispose()  { delete this; }
+
+void WrapperListAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) {
+    m_containerAccess->analyzeElements(container, analyzer, data);
+}
+
+void WrapperListAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+size_t WrapperListAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+void* WrapperListAccess::constructContainer(void* container, const void* copyOf) {
+    return m_containerAccess->constructContainer(container, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperListAccess::constructContainer(void* container, void* moved) {
+    return m_containerAccess->constructContainer(container, moved);
+}
+#endif
+
+bool WrapperListAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperListAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperListAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperListAccess::elementMetaType() {
+    return m_containerAccess->elementMetaType();
+}
+
+void WrapperListAccess::appendList(JNIEnv * env, void* container, jobject list) {
+    m_containerAccess->appendList(env, container, list);
+}
+
+jobject WrapperListAccess::at(JNIEnv * env, const void* container, jint index) {
+    return m_containerAccess->at(env, container, index);
+}
+
+jobject WrapperListAccess::value(JNIEnv * env, const void* container, jint index) {
+    return m_containerAccess->value(env, container, index);
+}
+
+jobject WrapperListAccess::value(JNIEnv * env, const void* container, jint index, jobject defaultValue) {
+    return m_containerAccess->value(env, container, index, defaultValue);
+}
+
+void WrapperListAccess::swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) {
+    m_containerAccess->swapItemsAt(env, container, index1, index2);
+}
+
+jboolean WrapperListAccess::startsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->startsWith(env, container, value);
+}
+
+jint WrapperListAccess::size(JNIEnv * env, const void* container) {
+    return m_containerAccess->size(env, container);
+}
+
+void WrapperListAccess::reserve(JNIEnv * env, void* container, jint size) {
+    return m_containerAccess->reserve(env, container, size);
+}
+
+void WrapperListAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
+    m_containerAccess->replace(env, container, index, value);
+}
+
+void WrapperListAccess::remove(JNIEnv * env, void* container, jint index, jint n) {
+    m_containerAccess->remove(env, container, index, n);
+}
+
+jint WrapperListAccess::removeAll(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->removeAll(env, container, value);
+}
+
+jboolean WrapperListAccess::equal(JNIEnv * env, const void* container, jobject other) {
+    return m_containerAccess->equal(env, container, other);
+}
+
+void WrapperListAccess::move(JNIEnv * env, void* container, jint index1, jint index2) {
+    m_containerAccess->move(env, container, index1, index2);
+}
+
+jobject WrapperListAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
+    return m_containerAccess->mid(env, container, index1, index2);
+}
+
+jint WrapperListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) {
+    return m_containerAccess->lastIndexOf(env, container, value, index);
+}
+
+void WrapperListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
+    m_containerAccess->insert(env, container, index, n, value);
+}
+
+jint WrapperListAccess::indexOf(JNIEnv * env, const void* container, jobject value, jint index) {
+    return m_containerAccess->indexOf(env, container, value, index);
+}
+
+jboolean WrapperListAccess::endsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->endsWith(env, container, value);
+}
+
+jobject WrapperListAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jint WrapperListAccess::count(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->count(env, container, value);
+}
+
+jboolean WrapperListAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+void WrapperListAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jobject WrapperListAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+jint WrapperListAccess::capacity(JNIEnv * env, const void* container) {
+    return m_containerAccess->capacity(env, container);
+}
+
+void WrapperListAccess::fill(JNIEnv * env, void* container, jobject value, jint size) {
+    m_containerAccess->fill(env, container, value, size);
+}
+
+void WrapperListAccess::resize(JNIEnv * env, void* container, jint newSize) {
+    return m_containerAccess->resize(env, container, newSize);
+}
+
+void WrapperListAccess::squeeze(JNIEnv * env, void* container) {
+    return m_containerAccess->squeeze(env, container);
+}
+#endif
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+WrapperVectorAccess::WrapperVectorAccess(AbstractVectorAccess* containerAccess)
+    : AbstractVectorAccess(), m_containerAccess(containerAccess) {}
+
+WrapperVectorAccess::~WrapperVectorAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractVectorAccess* WrapperVectorAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperVectorAccess::dispose()  { delete this; }
+
+void WrapperVectorAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+size_t WrapperVectorAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+void* WrapperVectorAccess::constructContainer(void* container, const void* copyOf) {
+    return m_containerAccess->constructContainer(container, copyOf);
+}
+
+bool WrapperVectorAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperVectorAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperVectorAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperVectorAccess::elementMetaType() {
+    return m_containerAccess->elementMetaType();
+}
+
+void WrapperVectorAccess::appendVector(JNIEnv * env, void* container, jobject list) {
+    m_containerAccess->appendVector(env, container, list);
+}
+
+jobject WrapperVectorAccess::at(JNIEnv * env, const void* container, jint index) {
+    return m_containerAccess->at(env, container, index);
+}
+
+jobject WrapperVectorAccess::value(JNIEnv * env, const void* container, jint index) {
+    return m_containerAccess->value(env, container, index);
+}
+
+jobject WrapperVectorAccess::value(JNIEnv * env, const void* container, jint index, jobject defaultValue) {
+    return m_containerAccess->value(env, container, index, defaultValue);
+}
+
+void WrapperVectorAccess::swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) {
+    m_containerAccess->swapItemsAt(env, container, index1, index2);
+}
+
+jboolean WrapperVectorAccess::startsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->startsWith(env, container, value);
+}
+
+jint WrapperVectorAccess::size(JNIEnv * env, const void* container) {
+    return m_containerAccess->size(env, container);
+}
+
+void WrapperVectorAccess::reserve(JNIEnv * env, void* container, jint size) {
+    return m_containerAccess->reserve(env, container, size);
+}
+
+void WrapperVectorAccess::replace(JNIEnv * env, void* container, jint index, jobject value) {
+    m_containerAccess->replace(env, container, index, value);
+}
+
+jint WrapperVectorAccess::removeAll(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->removeAll(env, container, value);
+}
+
+jboolean WrapperVectorAccess::equal(JNIEnv * env, const void* container, jobject other) {
+    return m_containerAccess->equal(env, container, other);
+}
+
+void WrapperVectorAccess::move(JNIEnv * env, void* container, jint index1, jint index2) {
+    m_containerAccess->move(env, container, index1, index2);
+}
+
+jobject WrapperVectorAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
+    return m_containerAccess->mid(env, container, index1, index2);
+}
+
+jint WrapperVectorAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) {
+    return m_containerAccess->lastIndexOf(env, container, value, index);
+}
+
+jint WrapperVectorAccess::indexOf(JNIEnv * env, const void* container, jobject value, jint index) {
+    return m_containerAccess->indexOf(env, container, value, index);
+}
+
+jboolean WrapperVectorAccess::endsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->endsWith(env, container, value);
+}
+
+jobject WrapperVectorAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jint WrapperVectorAccess::count(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->count(env, container, value);
+}
+
+jboolean WrapperVectorAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+void WrapperVectorAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jobject WrapperVectorAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+jint WrapperVectorAccess::capacity(JNIEnv * env, const void* container) {
+    return m_containerAccess->capacity(env, container);
+}
+
+void WrapperVectorAccess::fill(JNIEnv * env, void* container, jobject value, jint size) {
+    m_containerAccess->fill(env, container, value, size);
+}
+
+void WrapperVectorAccess::remove(JNIEnv * env, void* container, jint index, jint n) {
+    m_containerAccess->remove(env, container, index, n);
+}
+
+void WrapperVectorAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
+    m_containerAccess->insert(env, container, index, n, value);
+}
+
+void WrapperVectorAccess::resize(JNIEnv * env, void* container, jint newSize) {
+    return m_containerAccess->resize(env, container, newSize);
+}
+
+void WrapperVectorAccess::squeeze(JNIEnv * env, void* container) {
+    return m_containerAccess->squeeze(env, container);
+}
+
+void WrapperVectorAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) {
+    m_containerAccess->analyzeElements(container, analyzer, data);
+}
+
+WrapperLinkedListAccess::WrapperLinkedListAccess(AbstractLinkedListAccess* containerAccess)
+    : AbstractLinkedListAccess(), m_containerAccess(containerAccess) {}
+
+WrapperLinkedListAccess::~WrapperLinkedListAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractLinkedListAccess* WrapperLinkedListAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperLinkedListAccess::dispose() { delete this; }
+
+void WrapperLinkedListAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+size_t WrapperLinkedListAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+void* WrapperLinkedListAccess::constructContainer(void* container, const void* copyOf) {
+    return m_containerAccess->constructContainer(container, copyOf);
+}
+
+bool WrapperLinkedListAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperLinkedListAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperLinkedListAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperLinkedListAccess::elementMetaType() {
+    return m_containerAccess->elementMetaType();
+}
+
+void WrapperLinkedListAccess::append(JNIEnv * env, void* container, jobject value) {
+    m_containerAccess->append(env, container, value);
+}
+
+jobject WrapperLinkedListAccess::first(JNIEnv * env, const void* container) {
+    return m_containerAccess->first(env, container);
+}
+
+jobject WrapperLinkedListAccess::last(JNIEnv * env, const void* container) {
+    return m_containerAccess->last(env, container);
+}
+
+jobject WrapperLinkedListAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+void WrapperLinkedListAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperLinkedListAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jint WrapperLinkedListAccess::count(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->count(env, container, value);
+}
+
+jobject WrapperLinkedListAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jboolean WrapperLinkedListAccess::endsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->endsWith(env, container, value);
+}
+
+jboolean WrapperLinkedListAccess::equal(JNIEnv * env, const void* container, jobject other) {
+    return m_containerAccess->equal(env, container, other);
+}
+
+void WrapperLinkedListAccess::prepend(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->prepend(env, container, value);
+}
+
+void WrapperLinkedListAccess::removeFirst(JNIEnv * env, void* container) {
+    m_containerAccess->removeFirst(env, container);
+}
+
+jint WrapperLinkedListAccess::removeAll(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->removeAll(env, container, value);
+}
+
+void WrapperLinkedListAccess::removeLast(JNIEnv * env, void* container) {
+    m_containerAccess->removeLast(env, container);
+}
+
+jboolean WrapperLinkedListAccess::removeOne(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->removeOne(env, container, value);
+}
+
+jint WrapperLinkedListAccess::size(JNIEnv * env, const void* container) {
+    return m_containerAccess->size(env, container);
+}
+
+jboolean WrapperLinkedListAccess::startsWith(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->startsWith(env, container, value);
+}
+
+jobject WrapperLinkedListAccess::takeFirst(JNIEnv * env, void* container) {
+    return m_containerAccess->takeFirst(env, container);
+}
+
+jobject WrapperLinkedListAccess::takeLast(JNIEnv * env, void* container) {
+    return m_containerAccess->takeLast(env, container);
+}
+
+void WrapperLinkedListAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) {
+    m_containerAccess->analyzeElements(container, analyzer, data);
+}
+#endif
+
+WrapperSetAccess::WrapperSetAccess(AbstractSetAccess* containerAccess)
+    : AbstractSetAccess(), m_containerAccess(containerAccess) {}
+
+WrapperSetAccess::~WrapperSetAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractSetAccess* WrapperSetAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperSetAccess::dispose() { delete this; }
+
+void* WrapperSetAccess::constructContainer(void* placement, const void* copyOf) {
+    return m_containerAccess->constructContainer(placement, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperSetAccess::constructContainer(void* placement, void* move) {
+    return m_containerAccess->constructContainer(placement, move);
+}
+#endif
+
+void WrapperSetAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+size_t WrapperSetAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+bool WrapperSetAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperSetAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperSetAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperSetAccess::elementMetaType() {
+    return m_containerAccess->elementMetaType();
+}
+
+jobject WrapperSetAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+jint WrapperSetAccess::capacity(JNIEnv * env, const void* container) {
+    return m_containerAccess->capacity(env, container);
+}
+
+void WrapperSetAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperSetAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jobject WrapperSetAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+void WrapperSetAccess::insert(JNIEnv * env, void* container, jobject value) {
+    m_containerAccess->insert(env, container, value);
+}
+
+void WrapperSetAccess::intersect(JNIEnv * env, void* container, jobject other) {
+    m_containerAccess->intersect(env, container, other);
+}
+
+jboolean WrapperSetAccess::intersects(JNIEnv * env, const void* container, jobject other) {
+    return m_containerAccess->intersects(env, container, other);
+}
+
+jboolean WrapperSetAccess::equal(JNIEnv * env, const void* container, jobject other) {
+    return m_containerAccess->equal(env, container, other);
+}
+
+jboolean WrapperSetAccess::remove(JNIEnv * env, void* container, jobject value) {
+    return m_containerAccess->remove(env, container, value);
+}
+
+void WrapperSetAccess::reserve(JNIEnv * env, void* container, jint newSize) {
+    m_containerAccess->reserve(env, container, newSize);
+}
+
+jint WrapperSetAccess::size(JNIEnv * env, const void* container) {
+    return m_containerAccess->size(env, container);
+}
+
+void WrapperSetAccess::subtract(JNIEnv * env, void* container, jobject other) {
+    m_containerAccess->subtract(env, container, other);
+}
+
+void WrapperSetAccess::unite(JNIEnv * env, void* container, jobject other) {
+    m_containerAccess->unite(env, container, other);
+}
+
+jobject WrapperSetAccess::values(JNIEnv * env, const void* container) {
+    return m_containerAccess->values(env, container);
+}
+
+void WrapperSetAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) {
+    m_containerAccess->analyzeElements(container, analyzer, data);
+}
+
+WrapperMapAccess::WrapperMapAccess(AbstractMapAccess* containerAccess)
+    : AbstractMapAccess(), m_containerAccess(containerAccess) {}
+
+WrapperMapAccess::~WrapperMapAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractMapAccess* WrapperMapAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperMapAccess::dispose()  { delete this; }
+
+void WrapperMapAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+void* WrapperMapAccess::constructContainer(void* placement, const void* copyOf) {
+    return m_containerAccess->constructContainer(placement, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperMapAccess::constructContainer(void* placement, void* move) {
+    return m_containerAccess->constructContainer(placement, move);
+}
+#endif
+
+size_t WrapperMapAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+bool WrapperMapAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperMapAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperMapAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperMapAccess::keyMetaType() {
+    return m_containerAccess->keyMetaType();
+}
+
+const QMetaType& WrapperMapAccess::valueMetaType() {
+    return m_containerAccess->valueMetaType();
+}
+
+jobject WrapperMapAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+void WrapperMapAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperMapAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jint WrapperMapAccess::count(JNIEnv * env, const void* container, jobject key)  {
+     return m_containerAccess->count(env, container, key);
+}
+
+jobject WrapperMapAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jobject WrapperMapAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->find(env, ownerId, container, key);
+}
+
+jobject WrapperMapAccess::first(JNIEnv * env, const void* container)  {
+     return m_containerAccess->first(env, container);
+}
+
+jobject WrapperMapAccess::firstKey(JNIEnv * env, const void* container)  {
+     return m_containerAccess->firstKey(env, container);
+}
+
+void WrapperMapAccess::insert(JNIEnv * env, void* container,jobject key,jobject value)  {
+    m_containerAccess->insert(env, container, key, value);
+}
+
+jobject WrapperMapAccess::key(JNIEnv * env, const void* container, jobject value, jobject defaultKey)  {
+     return m_containerAccess->key(env, container, value, defaultKey);
+}
+
+jobject WrapperMapAccess::keys(JNIEnv * env, const void* container)  {
+     return m_containerAccess->keys(env, container);
+}
+
+jobject WrapperMapAccess::keys(JNIEnv * env, const void* container, jobject value)  {
+     return m_containerAccess->keys(env, container, value);
+}
+
+jobject WrapperMapAccess::last(JNIEnv * env, const void* container)  {
+     return m_containerAccess->last(env, container);
+}
+
+jobject WrapperMapAccess::lastKey(JNIEnv * env, const void* container)  {
+     return m_containerAccess->lastKey(env, container);
+}
+
+jobject WrapperMapAccess::lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->lowerBound(env, ownerId, container, key);
+}
+
+jboolean WrapperMapAccess::equal(JNIEnv * env, const void* container, jobject other)  {
+     return m_containerAccess->equal(env, container, other);
+}
+
+jint WrapperMapAccess::remove(JNIEnv * env, void* container,jobject key)  {
+    return m_containerAccess->remove(env, container, key);
+}
+
+jint WrapperMapAccess::size(JNIEnv * env, const void* container)  {
+     return m_containerAccess->size(env, container);
+}
+
+jobject WrapperMapAccess::take(JNIEnv *env, void* container,jobject key)  {
+    return m_containerAccess->take(env, container, key);
+}
+
+jobject WrapperMapAccess::upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->upperBound(env, ownerId, container, key);
+}
+
+jobject WrapperMapAccess::value(JNIEnv * env, const void* container, jobject key, jobject defaultValue)  {
+     return m_containerAccess->value(env, container, key, defaultValue);
+}
+
+jobject WrapperMapAccess::values(JNIEnv * env, const void* container)  {
+     return m_containerAccess->values(env, container);
+}
+
+bool WrapperMapAccess::keyLessThan(JNIEnv *env, jobject key1, jobject key2)  {
+    return m_containerAccess->keyLessThan(env, key1, key2);
+}
+
+void WrapperMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data)  {
+    m_containerAccess->analyzeEntries(container, analyzer, data);
+}
+
+WrapperMultiMapAccess::WrapperMultiMapAccess(AbstractMultiMapAccess* containerAccess)
+    : AbstractMultiMapAccess(), m_containerAccess(containerAccess) {}
+
+WrapperMultiMapAccess::~WrapperMultiMapAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractMultiMapAccess* WrapperMultiMapAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperMultiMapAccess::dispose()  { delete this; }
+
+void WrapperMultiMapAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+void* WrapperMultiMapAccess::constructContainer(void* placement, const void* copyOf) {
+    return m_containerAccess->constructContainer(placement, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperMultiMapAccess::constructContainer(void* placement, void* move) {
+    return m_containerAccess->constructContainer(placement, move);
+}
+#endif
+
+size_t WrapperMultiMapAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+bool WrapperMultiMapAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperMultiMapAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperMultiMapAccess::keyMetaType() {
+    return m_containerAccess->keyMetaType();
+}
+
+const QMetaType& WrapperMultiMapAccess::valueMetaType() {
+    return m_containerAccess->valueMetaType();
+}
+
+jobject WrapperMultiMapAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+void WrapperMultiMapAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperMultiMapAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jint WrapperMultiMapAccess::count(JNIEnv * env,const void* container, jobject key) {
+    return m_containerAccess->count(env, container, key);
+}
+
+jobject WrapperMultiMapAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jobject WrapperMultiMapAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->find(env, ownerId, container, key);
+}
+
+jobject WrapperMultiMapAccess::first(JNIEnv * env, const void* container)  {
+     return m_containerAccess->first(env, container);
+}
+
+jobject WrapperMultiMapAccess::firstKey(JNIEnv * env, const void* container)  {
+     return m_containerAccess->firstKey(env, container);
+}
+
+void WrapperMultiMapAccess::insert(JNIEnv *env, void* container,jobject key,jobject value)  {
+    m_containerAccess->insert(env, container, key, value);
+}
+
+jobject WrapperMultiMapAccess::key(JNIEnv * env, const void* container, jobject value, jobject defaultKey)  {
+     return m_containerAccess->key(env, container, value, defaultKey);
+}
+
+jobject WrapperMultiMapAccess::keys(JNIEnv * env, const void* container)  {
+     return m_containerAccess->keys(env, container);
+}
+
+jobject WrapperMultiMapAccess::keys(JNIEnv * env, const void* container, jobject value)  {
+     return m_containerAccess->keys(env, container, value);
+}
+
+jobject WrapperMultiMapAccess::last(JNIEnv * env, const void* container)  {
+     return m_containerAccess->last(env, container);
+}
+
+jobject WrapperMultiMapAccess::lastKey(JNIEnv * env, const void* container)  {
+     return m_containerAccess->lastKey(env, container);
+}
+
+jobject WrapperMultiMapAccess::lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->lowerBound(env, ownerId, container, key);
+}
+
+jboolean WrapperMultiMapAccess::equal(JNIEnv * env, const void* container, jobject other)  {
+     return m_containerAccess->equal(env, container, other);
+}
+
+jint WrapperMultiMapAccess::remove(JNIEnv * env, void* container, jobject key, jobject value)  {
+    return m_containerAccess->remove(env, container, key, value);
+}
+
+jint WrapperMultiMapAccess::size(JNIEnv * env, const void* container)  {
+     return m_containerAccess->size(env, container);
+}
+
+jobject WrapperMultiMapAccess::take(JNIEnv *env, void* container,jobject key)  {
+    return m_containerAccess->take(env, container, key);
+}
+
+jobject WrapperMultiMapAccess::upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+     return m_containerAccess->upperBound(env, ownerId, container, key);
+}
+
+jobject WrapperMultiMapAccess::value(JNIEnv * env, const void* container, jobject key, jobject defaultValue)  {
+     return m_containerAccess->value(env, container, key, defaultValue);
+}
+
+jobject WrapperMultiMapAccess::values(JNIEnv * env, const void* container)  {
+     return m_containerAccess->values(env, container);
+}
+
+bool WrapperMultiMapAccess::keyLessThan(JNIEnv *env, jobject key1, jobject key2)  {
+    return m_containerAccess->keyLessThan(env, key1, key2);
+}
+
+jobject WrapperMultiMapAccess::uniqueKeys(JNIEnv * env, const void* container)  {
+    return m_containerAccess->uniqueKeys(env, container);
+}
+
+void WrapperMultiMapAccess::unite(JNIEnv *env, void* container, jobject other)  {
+     m_containerAccess->unite(env, container, other);
+}
+
+jobject WrapperMultiMapAccess::values(JNIEnv * env, const void* container, jobject key)  {
+    return m_containerAccess->values(env, container, key);
+}
+
+jboolean WrapperMultiMapAccess::contains(JNIEnv * env, const void* container, jobject key, jobject value) {
+    return m_containerAccess->contains(env, container, key, value);
+}
+
+jint WrapperMultiMapAccess::count(JNIEnv *env, const void* container, jobject key, jobject value)  {
+     return m_containerAccess->count(env, container, key, value);
+}
+
+jobject WrapperMultiMapAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value)  {
+    return m_containerAccess->find(env, ownerId, container, key, value);
+}
+
+jint WrapperMultiMapAccess::remove(JNIEnv * env, void* container,jobject key)  {
+     return m_containerAccess->remove(env, container, key);
+}
+
+void WrapperMultiMapAccess::replace(JNIEnv * env, void* container,jobject key, jobject value)  {
+    m_containerAccess->replace(env, container, key, value);
+}
+
+void WrapperMultiMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data)  {
+    m_containerAccess->analyzeEntries(container, analyzer, data);
+}
+
+WrapperHashAccess::WrapperHashAccess(AbstractHashAccess* containerAccess)
+    : AbstractHashAccess(), m_containerAccess(containerAccess) {}
+
+WrapperHashAccess::~WrapperHashAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractHashAccess* WrapperHashAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperHashAccess::dispose()  { delete this; }
+
+void WrapperHashAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+void* WrapperHashAccess::constructContainer(void* placement, const void* copyOf) {
+    return m_containerAccess->constructContainer(placement, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperHashAccess::constructContainer(void* placement, void* move) {
+    return m_containerAccess->constructContainer(placement, move);
+}
+#endif
+
+size_t WrapperHashAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+bool WrapperHashAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperHashAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperHashAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperHashAccess::keyMetaType() {
+    return m_containerAccess->keyMetaType();
+}
+
+const QMetaType& WrapperHashAccess::valueMetaType() {
+    return m_containerAccess->valueMetaType();
+}
+
+jobject WrapperHashAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+jint WrapperHashAccess::capacity(JNIEnv * env,const void* container) {
+    return m_containerAccess->capacity(env, container);
+}
+
+void WrapperHashAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperHashAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jint WrapperHashAccess::count(JNIEnv * env, const void* container, jobject key)  {
+    return m_containerAccess->count(env, container, key);
+}
+
+jobject WrapperHashAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jobject WrapperHashAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+    return m_containerAccess->find(env, ownerId, container, key);
+}
+
+void WrapperHashAccess::insert(JNIEnv *env, void* container,jobject key,jobject value)  {
+    m_containerAccess->insert(env, container, key, value);
+}
+
+jobject WrapperHashAccess::key(JNIEnv * env, const void* container, jobject value, jobject defaultKey)  {
+    return m_containerAccess->key(env, container, value, defaultKey);
+}
+
+jobject WrapperHashAccess::keys(JNIEnv * env, const void* container)  {
+    return m_containerAccess->keys(env, container);
+}
+
+jobject WrapperHashAccess::keys(JNIEnv * env, const void* container, jobject value)  {
+    return m_containerAccess->keys(env, container, value);
+}
+
+jboolean WrapperHashAccess::equal(JNIEnv * env, const void* container, jobject other)  {
+    return m_containerAccess->equal(env, container, other);
+}
+
+jint WrapperHashAccess::remove(JNIEnv * env, void* container,jobject key)  {
+    return m_containerAccess->remove(env, container, key);
+}
+
+void WrapperHashAccess::reserve(JNIEnv * env,void* container, jint newSize)  {
+    m_containerAccess->reserve(env, container, newSize);
+}
+
+jint WrapperHashAccess::size(JNIEnv * env, const void* container)  {
+    return m_containerAccess->size(env, container);
+}
+
+jobject WrapperHashAccess::take(JNIEnv *env, void* container, jobject key)  {
+    return m_containerAccess->take(env, container, key);
+}
+
+jobject WrapperHashAccess::value(JNIEnv * env, const void* container, jobject key, jobject defaultValue)  {
+    return m_containerAccess->value(env, container, key, defaultValue);
+}
+
+jobject WrapperHashAccess::values(JNIEnv * env, const void* container)  {
+    return m_containerAccess->values(env, container);
+}
+
+void WrapperHashAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data)  {
+    m_containerAccess->analyzeEntries(container, analyzer, data);
+}
+
+WrapperMultiHashAccess::WrapperMultiHashAccess(AbstractMultiHashAccess* containerAccess)
+    : AbstractMultiHashAccess(), m_containerAccess(containerAccess) {}
+
+WrapperMultiHashAccess::~WrapperMultiHashAccess() {
+    m_containerAccess->dispose();
+    m_containerAccess = nullptr;
+}
+
+AbstractMultiHashAccess* WrapperMultiHashAccess::clone() {
+    return m_containerAccess->clone();
+}
+
+void WrapperMultiHashAccess::dispose()  { delete this; }
+
+void WrapperMultiHashAccess::assign(void* container, const void* other) {
+    m_containerAccess->assign(container, other);
+}
+
+void* WrapperMultiHashAccess::constructContainer(void* placement, const void* copyOf) {
+    return m_containerAccess->constructContainer(placement, copyOf);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* WrapperMultiHashAccess::constructContainer(void* placement, void* move) {
+    return m_containerAccess->constructContainer(placement, move);
+}
+#endif
+
+size_t WrapperMultiHashAccess::sizeOf() {
+    return m_containerAccess->sizeOf();
+}
+
+bool WrapperMultiHashAccess::destructContainer(void* container) {
+    return m_containerAccess->destructContainer(container);
+}
+
+int WrapperMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {
+    return m_containerAccess->registerContainer(containerTypeName);
+}
+
+bool WrapperMultiHashAccess::isConstant() {
+    return m_containerAccess->isConstant();
+}
+
+const QMetaType& WrapperMultiHashAccess::keyMetaType() {
+    return m_containerAccess->keyMetaType();
+}
+
+const QMetaType& WrapperMultiHashAccess::valueMetaType() {
+    return m_containerAccess->valueMetaType();
+}
+
+jobject WrapperMultiHashAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->begin(env, ownerId, container);
+}
+
+jint WrapperMultiHashAccess::capacity(JNIEnv * env,const void* container) {
+    return m_containerAccess->capacity(env, container);
+}
+
+void WrapperMultiHashAccess::clear(JNIEnv * env, void* container) {
+    m_containerAccess->clear(env, container);
+}
+
+jboolean WrapperMultiHashAccess::contains(JNIEnv * env, const void* container, jobject value) {
+    return m_containerAccess->contains(env, container, value);
+}
+
+jint WrapperMultiHashAccess::count(JNIEnv * env, const void* container, jobject key)  {
+    return m_containerAccess->count(env, container, key);
+}
+
+jobject WrapperMultiHashAccess::end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) {
+    return m_containerAccess->end(env, ownerId, container);
+}
+
+jobject WrapperMultiHashAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)  {
+    return m_containerAccess->find(env, ownerId, container, key);
+}
+
+void WrapperMultiHashAccess::insert(JNIEnv *env, void* container,jobject key,jobject value)  {
+    m_containerAccess->insert(env, container, key, value);
+}
+
+jobject WrapperMultiHashAccess::key(JNIEnv * env, const void* container, jobject value, jobject defaultKey)  {
+    return m_containerAccess->key(env, container, value, defaultKey);
+}
+
+jobject WrapperMultiHashAccess::keys(JNIEnv * env, const void* container)  {
+    return m_containerAccess->keys(env, container);
+}
+
+jobject WrapperMultiHashAccess::keys(JNIEnv * env, const void* container, jobject value)  {
+    return m_containerAccess->keys(env, container, value);
+}
+
+jboolean WrapperMultiHashAccess::equal(JNIEnv * env, const void* container, jobject other)  {
+    return m_containerAccess->equal(env, container, other);
+}
+
+jint WrapperMultiHashAccess::remove(JNIEnv * env, void* container,jobject key)  {
+    return m_containerAccess->remove(env, container, key);
+}
+
+void WrapperMultiHashAccess::reserve(JNIEnv * env,void* container, jint newSize)  {
+    m_containerAccess->reserve(env, container, newSize);
+}
+
+jint WrapperMultiHashAccess::size(JNIEnv * env, const void* container)  {
+    return m_containerAccess->size(env, container);
+}
+
+jobject WrapperMultiHashAccess::take(JNIEnv *env, void* container, jobject key)  {
+    return m_containerAccess->take(env, container, key);
+}
+
+jobject WrapperMultiHashAccess::value(JNIEnv * env, const void* container, jobject key, jobject defaultValue)  {
+    return m_containerAccess->value(env, container, key, defaultValue);
+}
+
+jobject WrapperMultiHashAccess::values(JNIEnv * env, const void* container)  {
+    return m_containerAccess->values(env, container);
+}
+
+jobject WrapperMultiHashAccess::values(JNIEnv * env, const void* container, jobject key)  {
+    return m_containerAccess->values(env, container, key);
+}
+
+jboolean WrapperMultiHashAccess::contains(JNIEnv * env, const void* container, jobject key, jobject value) {
+    return m_containerAccess->contains(env, container, key, value);
+}
+
+jint WrapperMultiHashAccess::count(JNIEnv *env, const void* container, jobject key, jobject value)  {
+    return m_containerAccess->count(env, container, key, value);
+}
+
+jobject WrapperMultiHashAccess::find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value)  {
+    return m_containerAccess->find(env, ownerId, container, key, value);
+}
+
+jint WrapperMultiHashAccess::remove(JNIEnv * env, void* container, jobject key, jobject value)  {
+     return m_containerAccess->remove(env, container, key, value);
+}
+
+void WrapperMultiHashAccess::replace(JNIEnv * env, void* container, jobject key, jobject value)  {
+    m_containerAccess->replace(env, container, key, value);
+}
+
+jobject WrapperMultiHashAccess::uniqueKeys(JNIEnv * env,const void* container)  {
+    return m_containerAccess->uniqueKeys(env, container);
+}
+
+void WrapperMultiHashAccess::unite(JNIEnv * env, void* container, jobject other)  {
+    m_containerAccess->unite(env, container, other);
+}
+
+void WrapperMultiHashAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data)  {
+    m_containerAccess->analyzeEntries(container, analyzer, data);
+}
+
 template<typename AccessType>
 AccessType* createOwnedAccess(AccessType* containerAccess, OwnerFunctional&& ownerFunction)
 {
@@ -1271,25 +2439,42 @@ AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAcces
 AbstractContainerAccess::AbstractContainerAccess(){}
 AbstractContainerAccess::~AbstractContainerAccess(){}
 void AbstractContainerAccess::dispose(){}
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* AbstractContainerAccess::createContainer(void* moved){
+    size_t sz = sizeOf();
+    if(sz>0){
+        return constructContainer(operator new(sz), moved);
+    }else{
+        return nullptr;
+    }
+}
+#endif
+void* AbstractContainerAccess::createContainer(const void* copy){
+    size_t sz = sizeOf();
+    if(sz>0){
+        return constructContainer(operator new(sz), copy);
+    }else{
+        return nullptr;
+    }
+}
+void AbstractContainerAccess::deleteContainer(void* container){
+    if(destructContainer(container))
+        operator delete(container);
+}
 AbstractIteratorAccess::~AbstractIteratorAccess(){}
 AbstractIteratorAccess::AbstractIteratorAccess(){}
 const QObject* AbstractContainerAccess::getOwner(const void*){ return nullptr; }
-void* AbstractIteratorAccess::createContainer() {return nullptr;}
-void* AbstractIteratorAccess::copyContainer(const void*) {return nullptr;}
 void AbstractIteratorAccess::assign(void*, const void*) {}
-void AbstractIteratorAccess::deleteContainer(void*) {}
+size_t AbstractIteratorAccess::sizeOf() {return 0;}
+void* AbstractIteratorAccess::constructContainer(void*,const void*) {return nullptr;}
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* AbstractIteratorAccess::constructContainer(void*,void*) {return nullptr;}
+#endif
+bool AbstractIteratorAccess::destructContainer(void*) {return false;}
 int AbstractIteratorAccess::registerContainer(const QByteArray&) {return QMetaType::UnknownType;}
 
 AbstractBiIteratorAccess::~AbstractBiIteratorAccess(){}
 AbstractBiIteratorAccess::AbstractBiIteratorAccess(){}
-
-void* AbstractBiIteratorAccess::createContainer() {return nullptr;}
-void* AbstractBiIteratorAccess::copyContainer(const void*) {return nullptr;}
-void AbstractBiIteratorAccess::assign(void*, const void*) {}
-void AbstractBiIteratorAccess::deleteContainer(void*) {}
-int AbstractBiIteratorAccess::registerContainer(const QByteArray&) {
-    return QMetaType::UnknownType;
-}
 
 AbstractListAccess::~AbstractListAccess(){}
 AbstractListAccess::AbstractListAccess(){}
@@ -1529,12 +2714,12 @@ void PointerRCListAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointerRCListAccess::copyContainer(const void* container){
-    void* result = WrapperListAccess::copyContainer(container);
+void* PointerRCListAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperListAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1544,11 +2729,23 @@ void* PointerRCListAccess::copyContainer(const void* container){
     return result;
 }
 
-void PointerRCListAccess::append(JNIEnv * env, void* container, jobject value) {
-    WrapperListAccess::append(env, container, value);
-    if(value)
-        addRC(env, value);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointerRCListAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperListAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
 }
+#endif
 
 void PointerRCListAccess::appendList(JNIEnv * env, void* container, jobject list) {
     WrapperListAccess::appendList(env, container, list);
@@ -1565,33 +2762,12 @@ void PointerRCListAccess::replace(JNIEnv * env, void* container, jint index, job
         addRC(env, value);
 }
 
-jboolean PointerRCListAccess::removeOne(JNIEnv * env, void* container, jobject value) {
-    jboolean result = WrapperListAccess::removeOne(env, container, value);
-    if(result && !WrapperListAccess::contains(env, container, value)){
-        removeRC(env, value);
-    }
-    return result;
-}
-
-void PointerRCListAccess::removeAt(JNIEnv * env, void* container, jint index) {
-    jobject oldValue = WrapperListAccess::at(env, container, index);
-    WrapperListAccess::removeAt(env, container, index);
-    if(!WrapperListAccess::contains(env, container, oldValue))
-        removeRC(env, oldValue);
-}
-
 jint PointerRCListAccess::removeAll(JNIEnv * env, void* container, jobject value) {
     jint result = WrapperListAccess::removeAll(env, container, value);
     if(result>0){
         removeRC(env, value);
     }
     return result;
-}
-
-void PointerRCListAccess::prepend(JNIEnv * env, void* container, jobject value) {
-    WrapperListAccess::prepend(env, container, value);
-    if(value)
-        addRC(env, value);
 }
 
 jobject PointerRCListAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
@@ -1605,8 +2781,8 @@ jobject PointerRCListAccess::mid(JNIEnv * env, const void* container, jint index
     return result;
 }
 
-void PointerRCListAccess::insert(JNIEnv * env, void* container, jint index, jobject value) {
-    WrapperListAccess::insert(env, container, index, value);
+void PointerRCListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
+    WrapperListAccess::insert(env, container, index, n, value);
     if(value)
         addRC(env, value);
 }
@@ -1616,27 +2792,29 @@ void PointerRCListAccess::clear(JNIEnv * env, void* container) {
     clearRC(env);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void PointerRCListAccess::remove(JNIEnv * env, void* container, jint index, jint n) {
-    jint size = WrapperListAccess::size(env, container);
-    jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
-    for(jint i = index; i<=index+n && i<size; ++i){
-        Java::Runtime::Collection::add(env, removedValues, WrapperListAccess::at(env, container, i));
-    }
-    WrapperListAccess::remove(env, container, index, n);
-    jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
-    while(Java::Runtime::Iterator::hasNext(env, iter)){
-        jobject value = Java::Runtime::Iterator::next(env, iter);
-        if(!WrapperListAccess::contains(env, container, value))
-            removeRC(env, value);
+    if(n==1){
+        jobject oldValue = WrapperListAccess::at(env, container, index);
+        WrapperListAccess::remove(env, container, index, n);
+        if(!WrapperListAccess::contains(env, container, oldValue))
+            removeRC(env, oldValue);
+    }else{
+        jint size = WrapperListAccess::size(env, container);
+        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
+        for(jint i = index; i<=index+n && i<size; ++i){
+            Java::Runtime::Collection::add(env, removedValues, WrapperListAccess::at(env, container, i));
+        }
+        WrapperListAccess::remove(env, container, index, n);
+        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject value = Java::Runtime::Iterator::next(env, iter);
+            if(!WrapperListAccess::contains(env, container, value))
+                removeRC(env, value);
+        }
     }
 }
 
-void PointerRCListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
-    WrapperListAccess::insert(env, container, index, n, value);
-    addRC(env, value);
-}
-
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void PointerRCListAccess::fill(JNIEnv * env, void* container, jobject value, jint size){
     jint oldSize = WrapperListAccess::size(env, container);
     WrapperListAccess::fill(env, container, value, size);
@@ -1674,14 +2852,12 @@ void PointerRCSetAccess::assign(void* container, const void* other){
     }
 }
 
-
-
-void* PointerRCSetAccess::copyContainer(const void* container){
-    void* result = WrapperSetAccess::copyContainer(container);
+void* PointerRCSetAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperSetAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1690,6 +2866,24 @@ void* PointerRCSetAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointerRCSetAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperSetAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void PointerRCSetAccess::clear(JNIEnv * env, void* container) {
     WrapperSetAccess::clear(env, container);
@@ -1777,12 +2971,12 @@ void PointerRCLinkedListAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointerRCLinkedListAccess::copyContainer(const void* container){
-    void* result = WrapperLinkedListAccess::copyContainer(container);
+void* PointerRCLinkedListAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperLinkedListAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(placement)){
             if(PointerRCLinkedListAccess* access = dynamic_cast<PointerRCLinkedListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1865,12 +3059,12 @@ PointerRCVectorAccess* PointerRCVectorAccess::clone(){
     return new PointerRCVectorAccess(*this);
 }
 
-void* PointerRCVectorAccess::copyContainer(const void* container){
-    void* result = WrapperVectorAccess::copyContainer(container);
+void* PointerRCVectorAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperVectorAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(placement)){
             if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -1897,12 +3091,6 @@ void PointerRCVectorAccess::assign(void* container, const void* other){
     }
 }
 
-void PointerRCVectorAccess::append(JNIEnv * env, void* container, jobject value) {
-    WrapperVectorAccess::append(env, container, value);
-    if(value)
-        addRC(env, value);
-}
-
 void PointerRCVectorAccess::appendVector(JNIEnv * env, void* container, jobject list) {
     WrapperVectorAccess::appendVector(env, container, list);
     if(list)
@@ -1918,33 +3106,12 @@ void PointerRCVectorAccess::replace(JNIEnv * env, void* container, jint index, j
         addRC(env, value);
 }
 
-jboolean PointerRCVectorAccess::removeOne(JNIEnv * env, void* container, jobject value) {
-    jboolean result = WrapperVectorAccess::removeOne(env, container, value);
-    if(result && !WrapperVectorAccess::contains(env, container, value)){
-        removeRC(env, value);
-    }
-    return result;
-}
-
-void PointerRCVectorAccess::removeAt(JNIEnv * env, void* container, jint index) {
-    jobject oldValue = WrapperVectorAccess::at(env, container, index);
-    WrapperVectorAccess::removeAt(env, container, index);
-    if(!WrapperVectorAccess::contains(env, container, oldValue))
-        removeRC(env, oldValue);
-}
-
 jint PointerRCVectorAccess::removeAll(JNIEnv * env, void* container, jobject value) {
     jint result = WrapperVectorAccess::removeAll(env, container, value);
     if(result>0){
         removeRC(env, value);
     }
     return result;
-}
-
-void PointerRCVectorAccess::prepend(JNIEnv * env, void* container, jobject value) {
-    WrapperVectorAccess::prepend(env, container, value);
-    if(value)
-        addRC(env, value);
 }
 
 jobject PointerRCVectorAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
@@ -1956,12 +3123,6 @@ jobject PointerRCVectorAccess::mid(JNIEnv * env, const void* container, jint ind
         }
     }
     return result;
-}
-
-void PointerRCVectorAccess::insert(JNIEnv * env, void* container, jint index, jobject value) {
-    WrapperVectorAccess::insert(env, container, index, value);
-    if(value)
-        addRC(env, value);
 }
 
 void PointerRCVectorAccess::clear(JNIEnv * env, void* container) {
@@ -2027,12 +3188,12 @@ void KeyPointerRCMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* KeyPointerRCMapAccess::copyContainer(const void* container){
-    void* result = WrapperMapAccess::copyContainer(container);
+void* KeyPointerRCMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2041,6 +3202,24 @@ void* KeyPointerRCMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* KeyPointerRCMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void KeyPointerRCMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMapAccess::clear(env, container);
@@ -2095,12 +3274,12 @@ void ValuePointerRCMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* ValuePointerRCMapAccess::copyContainer(const void* container){
-    void* result = WrapperMapAccess::copyContainer(container);
+void* ValuePointerRCMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2109,6 +3288,24 @@ void* ValuePointerRCMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* ValuePointerRCMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void ValuePointerRCMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMapAccess::clear(env, container);
@@ -2164,12 +3361,12 @@ void PointersRCMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointersRCMapAccess::copyContainer(const void* container){
-    void* result = WrapperMapAccess::copyContainer(container);
+void* PointersRCMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2178,6 +3375,24 @@ void* PointersRCMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointersRCMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void PointersRCMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMapAccess::clear(env, container);
@@ -2232,12 +3447,12 @@ void KeyPointerRCMultiMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* KeyPointerRCMultiMapAccess::copyContainer(const void* container){
-    void* result = WrapperMultiMapAccess::copyContainer(container);
+void* KeyPointerRCMultiMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2246,6 +3461,24 @@ void* KeyPointerRCMultiMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* KeyPointerRCMultiMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void KeyPointerRCMultiMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiMapAccess::clear(env, container);
@@ -2333,12 +3566,12 @@ void ValuePointerRCMultiMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* ValuePointerRCMultiMapAccess::copyContainer(const void* container){
-    void* result = WrapperMultiMapAccess::copyContainer(container);
+void* ValuePointerRCMultiMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2347,6 +3580,24 @@ void* ValuePointerRCMultiMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* ValuePointerRCMultiMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void ValuePointerRCMultiMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiMapAccess::clear(env, container);
@@ -2446,12 +3697,12 @@ void PointersRCMultiMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointersRCMultiMapAccess::copyContainer(const void* container){
-    void* result = WrapperMultiMapAccess::copyContainer(container);
+void* PointersRCMultiMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2460,6 +3711,24 @@ void* PointersRCMultiMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointersRCMultiMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void PointersRCMultiMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiMapAccess::clear(env, container);
@@ -2543,12 +3812,12 @@ void KeyPointerRCHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* KeyPointerRCHashAccess::copyContainer(const void* container){
-    void* result = WrapperHashAccess::copyContainer(container);
+void* KeyPointerRCHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2557,6 +3826,24 @@ void* KeyPointerRCHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* KeyPointerRCHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void KeyPointerRCHashAccess::clear(JNIEnv * env, void* container) {
     WrapperHashAccess::clear(env, container);
@@ -2609,12 +3896,12 @@ void ValuePointerRCHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* ValuePointerRCHashAccess::copyContainer(const void* container){
-    void* result = WrapperHashAccess::copyContainer(container);
+void* ValuePointerRCHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2623,6 +3910,24 @@ void* ValuePointerRCHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* ValuePointerRCHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void ValuePointerRCHashAccess::clear(JNIEnv * env, void* container) {
     WrapperHashAccess::clear(env, container);
@@ -2678,12 +3983,12 @@ void PointersRCHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointersRCHashAccess::copyContainer(const void* container){
-    void* result = WrapperHashAccess::copyContainer(container);
+void* PointersRCHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2692,6 +3997,24 @@ void* PointersRCHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointersRCHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void PointersRCHashAccess::clear(JNIEnv * env, void* container) {
     WrapperHashAccess::clear(env, container);
@@ -2746,12 +4069,12 @@ void KeyPointerRCMultiHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* KeyPointerRCMultiHashAccess::copyContainer(const void* container){
-    void* result = WrapperMultiHashAccess::copyContainer(container);
+void* KeyPointerRCMultiHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2760,6 +4083,24 @@ void* KeyPointerRCMultiHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* KeyPointerRCMultiHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void KeyPointerRCMultiHashAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiHashAccess::clear(env, container);
@@ -2825,12 +4166,12 @@ void ValuePointerRCMultiHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* ValuePointerRCMultiHashAccess::copyContainer(const void* container){
-    void* result = WrapperMultiHashAccess::copyContainer(container);
+void* ValuePointerRCMultiHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2839,6 +4180,24 @@ void* ValuePointerRCMultiHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* ValuePointerRCMultiHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void ValuePointerRCMultiHashAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiHashAccess::clear(env, container);
@@ -2914,12 +4273,12 @@ void PointersRCMultiHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* PointersRCMultiHashAccess::copyContainer(const void* container){
-    void* result = WrapperMultiHashAccess::copyContainer(container);
+void* PointersRCMultiHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -2928,6 +4287,24 @@ void* PointersRCMultiHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* PointersRCMultiHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void PointersRCMultiHashAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiHashAccess::clear(env, container);
@@ -3011,12 +4388,12 @@ void NestedPointersRCListAccess::assign(void* container, const void* other){
     }
 }
 
-void* NestedPointersRCListAccess::copyContainer(const void* container){
-    void* result = WrapperListAccess::copyContainer(container);
+void* NestedPointersRCListAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperListAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3025,6 +4402,24 @@ void* NestedPointersRCListAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCListAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperListAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void unfoldAndAddContainer(JNIEnv * env, jobject set, jobject value){
     if(Java::Runtime::Collection::isInstanceOf(env, value)){
@@ -3045,11 +4440,6 @@ void unfoldAndAddContainer(JNIEnv * env, jobject set, jobject value){
     }else if(value){
         Java::Runtime::Collection::add(env, set, value);
     }
-}
-
-void NestedPointersRCListAccess::append(JNIEnv * env, void* container, jobject value) {
-    WrapperListAccess::append(env, container, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
 }
 
 void NestedPointersRCListAccess::appendList(JNIEnv * env, void* container, jobject list) {
@@ -3073,30 +4463,12 @@ void NestedPointersRCListAccess::replace(JNIEnv * env, void* container, jint ind
     updateRC(env, container);
 }
 
-jboolean NestedPointersRCListAccess::removeOne(JNIEnv * env, void* container, jobject value) {
-    jboolean result = WrapperListAccess::removeOne(env, container, value);
-    if(result){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-void NestedPointersRCListAccess::removeAt(JNIEnv * env, void* container, jint index) {
-    WrapperListAccess::removeAt(env, container, index);
-    updateRC(env, container);
-}
-
 jint NestedPointersRCListAccess::removeAll(JNIEnv * env, void* container, jobject value) {
     jint result = WrapperListAccess::removeAll(env, container, value);
     if(result>0){
         updateRC(env, container);
     }
     return result;
-}
-
-void NestedPointersRCListAccess::prepend(JNIEnv * env, void* container, jobject value) {
-    WrapperListAccess::prepend(env, container, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
 }
 
 jobject NestedPointersRCListAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
@@ -3110,8 +4482,8 @@ jobject NestedPointersRCListAccess::mid(JNIEnv * env, const void* container, jin
     return result;
 }
 
-void NestedPointersRCListAccess::insert(JNIEnv * env, void* container, jint index, jobject value) {
-    WrapperListAccess::insert(env, container, index, value);
+void NestedPointersRCListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
+    WrapperListAccess::insert(env, container, index, n, value);
     unfoldAndAddContainer(env, rcSet(env), value);
 }
 
@@ -3120,17 +4492,12 @@ void NestedPointersRCListAccess::clear(JNIEnv * env, void* container) {
     clearRC(env);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void NestedPointersRCListAccess::remove(JNIEnv * env, void* container, jint index, jint n) {
     WrapperListAccess::remove(env, container, index, n);
     updateRC(env, container);
 }
 
-void NestedPointersRCListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value) {
-    WrapperListAccess::insert(env, container, index, n, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
-}
-
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void NestedPointersRCListAccess::fill(JNIEnv * env, void* container, jobject value, jint size){
     WrapperListAccess::fill(env, container, value, size);
     unfoldAndAddContainer(env, rcSet(env), value);
@@ -3175,14 +4542,12 @@ void NestedPointersRCSetAccess::assign(void* container, const void* other){
     }
 }
 
-
-
-void* NestedPointersRCSetAccess::copyContainer(const void* container){
-    void* result = WrapperSetAccess::copyContainer(container);
+void* NestedPointersRCSetAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperSetAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3191,6 +4556,24 @@ void* NestedPointersRCSetAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCSetAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperSetAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void NestedPointersRCSetAccess::clear(JNIEnv * env, void* container) {
     WrapperSetAccess::clear(env, container);
@@ -3263,12 +4646,12 @@ void NestedPointersRCLinkedListAccess::assign(void* container, const void* other
     }
 }
 
-void* NestedPointersRCLinkedListAccess::copyContainer(const void* container){
-    void* result = WrapperLinkedListAccess::copyContainer(container);
+void* NestedPointersRCLinkedListAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperLinkedListAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(placement)){
             if(NestedPointersRCLinkedListAccess* access = dynamic_cast<NestedPointersRCLinkedListAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3352,12 +4735,12 @@ void NestedPointersRCVectorAccess::updateRC(JNIEnv * env, const void* container)
     addAllRC(env, set);
 }
 
-void* NestedPointersRCVectorAccess::copyContainer(const void* container){
-    void* result = WrapperVectorAccess::copyContainer(container);
+void* NestedPointersRCVectorAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperVectorAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(placement)){
             if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3384,27 +4767,9 @@ void NestedPointersRCVectorAccess::assign(void* container, const void* other){
     }
 }
 
-void NestedPointersRCVectorAccess::append(JNIEnv * env, void* container, jobject value) {
-    WrapperVectorAccess::append(env, container, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
-}
-
 void NestedPointersRCVectorAccess::appendVector(JNIEnv * env, void* container, jobject list) {
     WrapperVectorAccess::appendVector(env, container, list);
     unfoldAndAddContainer(env, rcSet(env), list);
-}
-
-jboolean NestedPointersRCVectorAccess::removeOne(JNIEnv * env, void* container, jobject value) {
-    jboolean result = WrapperVectorAccess::removeOne(env, container, value);
-    if(result){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-void NestedPointersRCVectorAccess::removeAt(JNIEnv * env, void* container, jint index) {
-    WrapperVectorAccess::removeAt(env, container, index);
-    updateRC(env, container);
 }
 
 jint NestedPointersRCVectorAccess::removeAll(JNIEnv * env, void* container, jobject value) {
@@ -3413,11 +4778,6 @@ jint NestedPointersRCVectorAccess::removeAll(JNIEnv * env, void* container, jobj
         updateRC(env, container);
     }
     return result;
-}
-
-void NestedPointersRCVectorAccess::prepend(JNIEnv * env, void* container, jobject value) {
-    WrapperVectorAccess::prepend(env, container, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
 }
 
 jobject NestedPointersRCVectorAccess::mid(JNIEnv * env, const void* container, jint index1, jint index2) {
@@ -3429,11 +4789,6 @@ jobject NestedPointersRCVectorAccess::mid(JNIEnv * env, const void* container, j
         }
     }
     return result;
-}
-
-void NestedPointersRCVectorAccess::insert(JNIEnv * env, void* container, jint index, jobject value) {
-    WrapperVectorAccess::insert(env, container, index, value);
-    unfoldAndAddContainer(env, rcSet(env), value);
 }
 
 void NestedPointersRCVectorAccess::clear(JNIEnv * env, void* container) {
@@ -3502,12 +4857,12 @@ void NestedPointersRCMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* NestedPointersRCMapAccess::copyContainer(const void* container){
-    void* result = WrapperMapAccess::copyContainer(container);
+void* NestedPointersRCMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3516,6 +4871,24 @@ void* NestedPointersRCMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void NestedPointersRCMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMapAccess::clear(env, container);
@@ -3580,12 +4953,12 @@ void NestedPointersRCMultiMapAccess::assign(void* container, const void* other){
     }
 }
 
-void* NestedPointersRCMultiMapAccess::copyContainer(const void* container){
-    void* result = WrapperMultiMapAccess::copyContainer(container);
+void* NestedPointersRCMultiMapAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3594,6 +4967,24 @@ void* NestedPointersRCMultiMapAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCMultiMapAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiMapAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void NestedPointersRCMultiMapAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiMapAccess::clear(env, container);
@@ -3676,12 +5067,12 @@ void NestedPointersRCHashAccess::assign(void* container, const void* other){
     }
 }
 
-void* NestedPointersRCHashAccess::copyContainer(const void* container){
-    void* result = WrapperHashAccess::copyContainer(container);
+void* NestedPointersRCHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3690,6 +5081,24 @@ void* NestedPointersRCHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void NestedPointersRCHashAccess::clear(JNIEnv * env, void* container) {
     WrapperHashAccess::clear(env, container);
@@ -3754,12 +5163,12 @@ void NestedPointersRCMultiHashAccess::assign(void* container, const void* other)
     }
 }
 
-void* NestedPointersRCMultiHashAccess::copyContainer(const void* container){
-    void* result = WrapperMultiHashAccess::copyContainer(container);
+void* NestedPointersRCMultiHashAccess::constructContainer(void* placement, const void* copyOf){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, copyOf);
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         clearRC(env);
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(container)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(copyOf)){
             if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(link->containerAccess())){
                 assignRC(env, *access);
                 break;
@@ -3768,6 +5177,24 @@ void* NestedPointersRCMultiHashAccess::copyContainer(const void* container){
     }
     return result;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* NestedPointersRCMultiHashAccess::constructContainer(void* placement, void* moved){
+    void* result = WrapperMultiHashAccess::constructContainer(placement, moved);
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        clearRC(env);
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(moved)){
+            if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(link->containerAccess())){
+                assignRC(env, *access);
+                access->clearRC(env);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif
 
 void NestedPointersRCMultiHashAccess::clear(JNIEnv * env, void* container) {
     WrapperMultiHashAccess::clear(env, container);

@@ -85,27 +85,31 @@ public:
     GenericMultiHashAccess<align1, size1, align2, size2>* clone() override{
         return new GenericMultiHashAccess<align1, size1, align2, size2>(*this);
     }
-
-    void* createContainer() override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        QMultiHash<K,T>* list = new QMultiHash<K,T>();
-        return list;
-    }
-    void* copyContainer(const void* container) override {
-        if(container){
-            QTJAMBI_KEY_VALUE_LOCKER
-            QMultiHash<K,T>* list = new QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(container));
-            return list;
-        }
-        return createContainer();
+    size_t sizeOf() override {
+        return sizeof(QMultiHash<K,T>);
     }
     void assign(void* container, const void* other) override {
         QTJAMBI_KEY_VALUE_LOCKER
         (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other));
     }
-    void deleteContainer(void* container) override {
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
         QTJAMBI_KEY_VALUE_LOCKER
-        delete reinterpret_cast<QMultiHash<K,T>*>(container);
+        if(copyOf){
+            return new(placement) QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(copyOf));
+        }else{
+            return new(placement) QMultiHash<K,T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        return new(placement) QMultiHash<K,T>(std::move(*reinterpret_cast<const QMultiHash<K,T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        reinterpret_cast<QMultiHash<K,T>*>(container)->~QMultiHash<K,T>();
+        return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_bicontainer_type<QMultiHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());

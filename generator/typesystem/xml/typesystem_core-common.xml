@@ -50,8 +50,12 @@
 &lt;li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.&lt;/li>
 &lt;li>QtWidgets - Classes to extend Qt GUI with C++ widgets.&lt;/li>
 &lt;/ul></description>
+    <rejection class="QOperatingSystemVersion" field-name="Windows11_21H2"/>
+    <rejection class="QOperatingSystemVersion" field-name="Windows11_22H2"/>
+    <rejection class="QStringConverterBase::State" function-name="reset"/>
     <rejection class="" enum-name="QtJambiNativeID"/>
     <rejection class="QNativeInterface::QAndroidApplication" function-name="runOnAndroidMainThread"/>
+    <rejection class="function_ref"/>
     <rejection class="QtPrivate::Deprecated_t"/>
     <rejection class="QFutureSynchronizer"/>
     <rejection class="JNIEnv_"/>
@@ -116,6 +120,33 @@
     <rejection class="QReadWriteLock" function-name="stateForWaitCondition"/>
     <rejection class="QFactoryLoader" function-name="library"/>
     <rejection class="QByteArrayView" function-name="m_data"/>
+    <rejection class="QBindingStorage" function-name="status"/>
+    <rejection class="QString" function-name="rightRef"/>
+    <rejection class="QString" function-name="leftRef"/>
+    <rejection class="QString" function-name="midRef"/>
+    <rejection class="QString" function-name="splitRef"/>
+    <rejection class="QString" function-name="sprintf"/>
+    <rejection class="QString" function-name="asprintf"/>
+    <rejection class="QString" function-name="vasprintf"/>
+    <rejection class="QString" function-name="fromStdU32String"/>
+    <rejection class="QString" function-name="crend"/>
+    <rejection class="QString" function-name="normalized"/>
+    <rejection class="QString" function-name="fromStdU16String"/>
+    <rejection class="QString" function-name="fromWCharArray"/>
+    <rejection class="QString" function-name="fromStdWString"/>
+    <rejection class="QString" function-name="tokenize"/>
+    <rejection class="QString" function-name="crbegin"/>
+    <rejection class="QString" function-name="rbegin"/>
+    <rejection class="QString" function-name="fromStdString"/>
+    <rejection class="QString" function-name="rend"/>
+    <rejection class="QString" function-name="toWCharArray"/>
+    <rejection class="QString" function-name="toUInt"/>
+    <rejection class="QString" function-name="toUShort"/>
+    <rejection class="QString" function-name="toULong"/>
+    <rejection class="QString" function-name="toULongLong"/>
+    <rejection class="QString" function-name="toLong"/>
+    <rejection class="QString" function-name="push_back"/>
+    <rejection class="QString" function-name="push_front"/>
     <rejection class="QList" function-name="empty"/>
     <rejection class="QList" function-name="front"/>
     <rejection class="QList" function-name="pop_back"/>
@@ -143,6 +174,7 @@
     <rejection class="QCborArray" function-name="pop_front"/>
     <rejection class="QCborArray" function-name="push_back"/>
     <rejection class="QCborArray" function-name="push_front"/>
+    <rejection class="QChar::SpecialCharacter"/>
     <rejection class="QSet::const_iterator"/>
     <rejection class="QSet" function-name="empty"/>
     <rejection class="QCborArray::Iterator"/>
@@ -470,6 +502,7 @@
 
     <rejection class="Qt" enum-name="Initialization" />
 
+    <rejection class="QFuture" function-name="unwrap"/>
     <rejection class="QFuture" function-name="then"/>
     <rejection class="QFuture" function-name="d"/>
     <rejection class="QHash" function-name="equal_range"/>
@@ -899,6 +932,7 @@
         <reject-enum-value name="Qt_6_1" since="6.1.0"/>
         <reject-enum-value name="Qt_6_2" since="6.2.0"/>
         <reject-enum-value name="Qt_6_3" since="6.3.0"/>
+        <reject-enum-value name="Qt_6_4" since="6.4.0"/>
         <reject-enum-value name="Qt_DefaultCompiledVersion"/>
     </enum-type>
 
@@ -1362,18 +1396,22 @@
     </value-type>
     <value-type name="QCborParserError" since="5.12.0">
     </value-type>
+    <value-type name="QCborValueConstRef" generate="no" java-name="QCborValue" since="6.4.0"/>
     <value-type name="QCborValueRef" since="5.12.0" generate="no" java-name="QCborValue"/>
     <value-type name="QCborValue" since="5.12.0">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="global"/>
         </extra-includes>
-        <modify-function signature="QCborValue(QLatin1String)" remove="all"/>
+        <modify-function signature="QCborValue(QLatin1String)" remove="all" until="6.3.*"/>
+		<modify-function signature="QCborValue(QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="QCborValue(QStringView)" remove="all" since="5.14.0"/>
         <modify-function signature="QCborValue(const char*)" remove="all"/>
         <modify-function signature="QCborValue(std::nullptr_t)" remove="all"/>
         <modify-function signature="QCborValue(unsigned)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String)const" remove="all"/>
+        <modify-function signature="operator[](QLatin1String)" remove="all" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="operator[](QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QString)" remove="all"/>
         <modify-function signature="operator[](long long)" remove="all"/>
         <modify-function signature="operator[](QString)const" rename="value"/>
@@ -1425,27 +1463,37 @@
         <modify-function signature="cbegin()const" remove="all"/>
         <modify-function signature="constEnd()const" remove="all"/>
         <modify-function signature="constBegin()const" remove="all"/>
-        <modify-function signature="contains(QLatin1String) const" remove="all"/>
+		<modify-function signature="contains(QLatin1StringView)const" remove="all" since="6.4.0"/>
+        <modify-function signature="contains(QLatin1String) const" remove="all" until="6.3.*"/>
         <modify-function signature="constFind(QString) const" remove="all"/>
-        <modify-function signature="constFind(QLatin1String) const" remove="all"/>
+        <modify-function signature="constFind(QLatin1String) const" remove="all" until="6.3.*"/>
+        <modify-function signature="constFind(QLatin1StringView) const" remove="all" since="6.4.0"/>
         <modify-function signature="constFind(long long) const" remove="all"/>
-        <modify-function signature="find(QLatin1String)" remove="all"/>
-        <modify-function signature="find(QLatin1String) const" remove="all"/>
+        <modify-function signature="find(QLatin1String)" remove="all" until="6.3.*"/>
+        <modify-function signature="find(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="find(QLatin1String) const" remove="all" until="6.3.*"/>
+		<modify-function signature="find(QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="find(QCborValue)" remove="all"/>
         <modify-function signature="find(QString)" remove="all"/>
         <modify-function signature="find(long long)" remove="all"/>
-        <modify-function signature="insert(QLatin1String,QCborValue)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String)" remove="all"/>
+        <modify-function signature="insert(QLatin1StringView,QCborValue)" remove="all" since="6.4.0"/>
+        <modify-function signature="insert(QLatin1String,QCborValue)" remove="all" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="operator[](QLatin1String)" remove="all" until="6.3.*"/>
         <modify-function signature="operator[](QString)" remove="all"/>
         <modify-function signature="operator[](long long)" remove="all"/>
         <modify-function signature="operator[](QCborValue)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String)const" remove="all"/>
+        <modify-function signature="operator[](QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QString)const" remove="all"/>
         <modify-function signature="operator[](QCborValue)const" remove="all"/>
         <modify-function signature="operator[](long long)const" remove="all"/>
-        <modify-function signature="remove(QLatin1String)" remove="all"/>
-        <modify-function signature="take(QLatin1String)" remove="all"/>
-        <modify-function signature="value(QLatin1String)const" remove="all"/>
+        <modify-function signature="remove(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="remove(QLatin1String)" remove="all" until="6.3.*"/>
+        <modify-function signature="take(QLatin1String)" remove="all" until="6.3.*"/>
+        <modify-function signature="take(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="value(QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="value(QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="operator=(const QCborMap &amp;)" rename="set">
             <modify-argument index="0">
                 <replace-type modified-type="void"/>
@@ -1473,7 +1521,8 @@
                 <reference-count action="set" variable-name="__rcDevice"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="append(QLatin1String)" remove="all"/>
+        <modify-function signature="append(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="append(QLatin1String)" remove="all" until="6.3.*"/>
         <modify-function signature="append(unsigned int)" remove="all"/>
         <modify-function signature="append(qfloat16)" remove="all"/>
         <modify-function signature="append(std::nullptr_t)" remove="all"/>
@@ -1501,7 +1550,8 @@
     <iterator-type name="QJsonArray::const_iterator"/>
     <value-type name="QJsonDocument">
         <modify-function signature="operator=(const QJsonDocument&amp;)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.10.0"/>
+        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.10.0" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView) const" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](const QString &amp;) const" rename="getObjectValue" since="5.10.0" until="5.13.0"/>
         <modify-function signature="operator[](const QString &amp;)const" remove="all" since="5.14.0"/>
         <modify-function signature="operator[](QStringView)const" rename="getObjectValue" since="5.14.0"/>
@@ -1511,35 +1561,46 @@
     <value-type name="QJsonObject">
         <modify-function signature="operator=(const QJsonObject&amp;)" remove="all"/>
         <modify-function signature="operator[](const QString &amp;) const" remove="all"/>
-        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.7.0"/>
-        <modify-function signature="operator[](QLatin1String)" remove="all" since="5.7.0"/>
+        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.7.0" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView) const" remove="all" since="6.4.0"/>
+        <modify-function signature="operator[](QLatin1String)" remove="all" since="5.7.0" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QStringView) const" remove="all" since="5.14.0"/>
         <modify-function signature="operator[](QStringView)" remove="all" since="5.14.0"/>
-        <modify-function signature="value(QLatin1String) const" remove="all" since="5.7.0"/>
+        <modify-function signature="value(QLatin1StringView) const" remove="all" since="6.4.0"/>
+        <modify-function signature="value(QLatin1String) const" remove="all" since="5.7.0" until="6.3.*"/>
         <modify-function signature="value(QString) const" remove="all" since="5.14.0"/>
-        <modify-function signature="contains(QLatin1String) const" remove="all" since="5.7.0"/>
+        <modify-function signature="contains(QLatin1String) const" remove="all" since="5.7.0" until="6.3.*"/>
+		<modify-function signature="contains(QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="constFind(const QString &amp;) const" remove="all" since="5.7.0"/>
-        <modify-function signature="constFind(QLatin1String) const" remove="all" since="5.7.0"/>
+        <modify-function signature="constFind(QLatin1StringView) const" remove="all" since="6.4.0"/>
+        <modify-function signature="constFind(QLatin1String) const" remove="all" since="5.7.0" until="6.3.*"/>
         <modify-function signature="constFind(QStringView) const" remove="all" since="5.14.0"/>
-        <modify-function signature="find(QLatin1String) const" remove="all" since="5.7.0"/>
+		<modify-function signature="find(QLatin1StringView)const" remove="all" since="6.4.0"/>
+        <modify-function signature="find(QLatin1String) const" remove="all" since="5.7.0" until="6.3.*"/>
         <modify-function signature="find(QString) const" remove="all" since="5.14.0"/>
-        <modify-function signature="remove(QLatin1String)" remove="all" since="5.14.0"/>
+        <modify-function signature="remove(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="remove(QLatin1String)" remove="all" since="5.14.0" until="6.3.*"/>
         <modify-function signature="remove(QString)" remove="all" since="5.14.0"/>
         <modify-function signature="contains(QString) const" remove="all" since="5.14.0"/>
-        <modify-function signature="take(QLatin1String)" remove="all" since="5.14.0"/>
+        <modify-function signature="take(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="take(QLatin1String)" remove="all" since="5.14.0" until="6.3.*"/>
         <modify-function signature="take(QString)" remove="all" since="5.14.0"/>
         <modify-function signature="constBegin() const" remove="all" since="5.7.0"/>
         <modify-function signature="constEnd() const" remove="all" since="5.7.0"/>
     </value-type>
     <iterator-type name="QJsonObject::const_iterator"/>
     <value-type name="QJsonParseError"/>
+    <value-type name="QJsonValueConstRef" generate="no" java-name="QJsonValue" since="6.4.0"/>
     <value-type name="QJsonValueRef" generate="no" java-name="QJsonValue"/>
     <value-type name="QJsonValue">
-        <modify-function signature="QJsonValue(QLatin1String)" remove="all"/>
+		<modify-function signature="QJsonValue(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="QJsonValue(QLatin1String)" remove="all" until="6.3.*"/>
         <modify-function signature="QJsonValue(const char*)" remove="all"/>
         <modify-function signature="operator=(QJsonValue)" remove="all"/>
         <modify-function signature="toBool(bool)const" rename="toBoolean"/>
-        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.10.0"/>
+        <modify-function signature="operator[](QLatin1String) const" remove="all" since="5.10.0" until="6.3.*"/>
+        <modify-function signature="operator[](QLatin1StringView) const" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](const QString &amp;) const" rename="getObjectValue" since="5.10.0" until="5.13.0"/>
         <modify-function signature="operator[](const QString &amp;)const" remove="all" since="5.14.0"/>
         <modify-function signature="operator[](QStringView)const" rename="getObjectValue" since="5.14.0"/>
@@ -2128,8 +2189,8 @@
         <!--custom-constructor type="default">
             new(placement) QVersionNumber();
         </custom-constructor-->
-        <modify-function signature="fromString(QLatin1String, int *)" remove="all" since="5.10.0"/>
-        <modify-function signature="fromString(QStringView, int *)" remove="all" since="5.10.0"/>
+        <modify-function signature="fromString(QLatin1String, int *)" remove="all" since="5.10.0" until="6.3"/>
+        <modify-function signature="fromString(QStringView, int *)" remove="all" since="5.10.0" until="6.3"/>
     </value-type>
     <object-type name="QEventLoop">
         <modify-function signature="wakeUp()" thread-affine="no"/>
@@ -2490,7 +2551,33 @@
             <reference-count action="set" variable-name="__rcIniCodec" />
         </modify-argument>
         </modify-function>
-        <modify-function signature="setValue(const QString &amp;, const QVariant &amp;)">
+        <modify-function signature="setValue(const QString &amp;, const QVariant &amp;)" until="6.3">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                    QVariant %out = qtjambi_to_qvariant(%env, %in);
+                    if(__qt_value1.type()==QVariant::UserType){
+                        if(%out.userType()==qMetaTypeId&lt;JCollectionWrapper>()){
+                            bool ok = false;
+                            QStringList stringList = %out.value&lt;JCollectionWrapper>().toStringList(&amp;ok);
+                            if(ok){
+                                %out.setValue(stringList);
+                            }else{
+                                QList&lt;QVariant> variantList = %out.value&lt;JCollectionWrapper>().toList();
+                                %out.setValue(variantList);
+                            }
+                        }else if(%out.userType()==qMetaTypeId&lt;JMapWrapper>()){
+                            bool ok = false;
+                            QVariantMap stringMap = %out.value&lt;JMapWrapper>().toStringMap(&amp;ok);
+                            if(ok){
+                                %out.setValue(stringMap);
+                            }
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setValue(QAnyStringView, const QVariant &amp;)" since="6.4">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.Object"/>
                 <conversion-rule class="native">
@@ -2637,7 +2724,10 @@
         <modify-function signature="QTextStream(QString*,QFlags&lt;QIODeviceBase::OpenModeFlag&gt;)" remove="all" since="6.0.0"/>
         <modify-function signature="device() const" access="private" rename="device_private"/>
         <modify-function signature="readLineInto(QString *, long long)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all"/>
+        <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="operator&lt;&lt;(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="operator&lt;&lt;(char16_t)" remove="all" since="6.3.0"/>
+        <modify-function signature="operator&gt;&gt;(char16_t&amp;)" remove="all" since="6.4.0"/>
         <modify-function signature="operator&lt;&lt;(const QStringRef &amp;)" remove="all" until="5.*"/>
         <modify-function signature="operator&lt;&lt;(QStringView)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(const char*)" remove="all"/>
@@ -2692,7 +2782,7 @@
     </namespace-type>
     <enum-type name="QtFuture::Launch" since="6.0.0"/>
     <enum-type name="QFutureInterfaceBase::State" extensible="true"/>
-    <functional-type name="QFutureInterfaceBase::Continuation" using="std::function&lt;void(const QFutureInterfaceBase &amp;)>" generate="no"/>
+    <functional-type name="QFutureInterfaceBase::Continuation" using="std::function&lt;void(const QFutureInterfaceBase&amp;)>" generate="no"/>
     <value-type name="QFutureInterfaceBase">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="local"/>
@@ -2747,10 +2837,14 @@
         <!--modify-function signature="operator+(QVector&lt;QXmlStreamAttribute>)const" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QVector&lt;QXmlStreamAttribute>)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QXmlStreamAttribute)" remove="all"/-->
-        <modify-function signature="value(const QString &amp;, const QLatin1String &amp;)const" remove="all"/>
-        <modify-function signature="value(const QLatin1String &amp;, const QLatin1String &amp;)const" remove="all"/>
-        <modify-function signature="value(const QLatin1String &amp;)const" remove="all"/>
-        <modify-function signature="hasAttribute(const QLatin1String &amp;)const" remove="all"/>
+        <modify-function signature="value(const QString &amp;, const QLatin1String &amp;)const" remove="all" until="6.3.*"/>
+        <modify-function signature="value(const QString &amp;, const QLatin1StringView &amp;)const" remove="all" since="6.4.0"/>
+        <modify-function signature="value(QLatin1String, QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="value(QLatin1StringView, QLatin1StringView)const" remove="all" since="6.4.0"/>
+        <modify-function signature="value(QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="value(QLatin1StringView)const" remove="all" since="6.4.0"/>
+        <modify-function signature="hasAttribute(QLatin1String)const" remove="all" until="6.3.*"/>
+        <modify-function signature="hasAttribute(QLatin1StringView)const" remove="all" since="6.4.0"/>
     </value-type>
 
     <value-type name="QXmlStreamNamespaceDeclaration">
@@ -2978,11 +3072,191 @@
     </object-type>
     <functional-type name="QFunctionPointer" function-name="invoke" generate="no-shell"/>
     <object-type name="QLibrary"/>
-    <namespace-type name="QtJambiStringUtil" java-name="QString" target-type="final class"/>
-    <namespace-type name="QtJambiStringListUtil" target-type="final class" force-friendly="yes"/>
+    <enum-type name="QString::SplitBehavior" until="5.13"/>
+    <enum-type name="QString::SectionFlag" flags="QString::SectionFlags"/>
+	<value-type name="QString">
+        <modify-function signature="QString(const char*)" remove="all"/>
+        <modify-function signature="append(const char*)" remove="all"/>
+        <modify-function signature="prepend(const char*)" remove="all"/>
+        <modify-function signature="QString(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="QString(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="prepend(QStringView)" remove="all" since="5.10"/>
+        <modify-function signature="prepend(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="prepend(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="prepend(QStringRef)" remove="all" until="5.*"/>
+        <modify-function signature="compare(QString,QStringRef,Qt::CaseSensitivity)" remove="all" until="5.*"/>
+        <modify-function signature="compare(QStringRef,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="contains(QStringRef,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="count(QStringRef,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="endsWith(QStringRef,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="startsWith(QStringRef,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="localeAwareCompare(QStringRef)const" remove="all" until="5.*"/>
+        <modify-function signature="localeAwareCompare(QString,QStringRef)" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString,QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="arg(QString,QString,QString,QString,QString,QString,QString,QString,QString)const" remove="all" until="5.*"/>
+        <modify-function signature="contains(QRegExp)const" remove="all" until="5.*"/>
+        <modify-function signature="append(QStringRef)" remove="all" until="5.*"/>
+        <modify-function signature="append(QStringView)" remove="all" since="5.10"/>
+        <modify-function signature="append(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="append(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="lastIndexOf(QStringView,Qt::CaseSensitivity)const" remove="all" since="6.0"/>
+        <modify-function signature="lastIndexOf(QStringView,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.0"/>
+        <modify-function signature="lastIndexOf(QStringView,int,Qt::CaseSensitivity)const" remove="all" since="5.10" until="5.*"/>
+        <modify-function signature="indexOf(QStringView,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.0"/>
+        <modify-function signature="indexOf(QStringView,int,Qt::CaseSensitivity)const" remove="all" since="5.10" until="5.*"/>
+        <modify-function signature="indexOf(QStringRef,int,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="startsWith(QStringView,Qt::CaseSensitivity)const" remove="all" since="5.10"/>
+        <modify-function signature="endsWith(QStringView,Qt::CaseSensitivity)const" remove="all" since="5.10"/>
+        <modify-function signature="count(QStringView,Qt::CaseSensitivity)const" remove="all" since="6.0"/>
+        <modify-function signature="contains(QStringView,Qt::CaseSensitivity)const" remove="all" since="5.10"/>
+        <modify-function signature="compare(QStringView,Qt::CaseSensitivity)const" remove="all" since="6.0"/>
+        <modify-function signature="compare(QStringView,QString,Qt::CaseSensitivity)" remove="all" since="6.0"/>
+        <modify-function signature="compare(QString,QStringView,Qt::CaseSensitivity)" remove="all" since="6.0"/>
+        <modify-function signature="lastIndexOf(QLatin1StringView,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="lastIndexOf(QLatin1StringView,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="indexOf(QLatin1StringView,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="startsWith(QLatin1StringView,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="endsWith(QLatin1StringView,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="contains(QLatin1StringView,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="lastIndexOf(QStringRef,int,Qt::CaseSensitivity)const" remove="all" until="5.*"/>
+        <modify-function signature="lastIndexOf(QLatin1String,int,Qt::CaseSensitivity)const" remove="all" since="5.10" until="5.*"/>
+        <modify-function signature="lastIndexOf(QLatin1String,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="lastIndexOf(QLatin1String,Qt::CaseSensitivity)const" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="indexOf(QLatin1String,qsizetype,Qt::CaseSensitivity)const" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="indexOf(QLatin1String,int,Qt::CaseSensitivity)const" remove="all" since="5.10" until="5.*"/>
+        <modify-function signature="startsWith(QLatin1String,Qt::CaseSensitivity)const" remove="all" until="6.3"/>
+        <modify-function signature="endsWith(QLatin1String,Qt::CaseSensitivity)const" remove="all" until="6.3"/>
+        <modify-function signature="contains(QLatin1String,Qt::CaseSensitivity)const" remove="all" until="6.3"/>
+        <modify-function signature="compare(QLatin1StringView,QString,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="compare(QLatin1String,QString,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="compare(QLatin1StringView,Qt::CaseSensitivity)const" remove="all" since="6.4"/>
+        <modify-function signature="compare(QString,QLatin1StringView,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="compare(QString,QLatin1String,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="compare(QLatin1String,Qt::CaseSensitivity)const" remove="all" until="6.3"/>
+        <modify-function signature="insert(qsizetype,QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="replace(QChar,QLatin1StringView,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="replace(QLatin1StringView,QLatin1StringView,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="replace(QString,QLatin1StringView,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="replace(QLatin1StringView,QString,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="remove(QLatin1StringView,Qt::CaseSensitivity)" remove="all" since="6.4"/>
+        <modify-function signature="insert(qsizetype,QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="replace(QChar,QLatin1String,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="replace(QLatin1String,QLatin1String,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="replace(QString,QLatin1String,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="replace(QLatin1String,QString,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="remove(QLatin1String,Qt::CaseSensitivity)" remove="all" until="6.3"/>
+        <modify-function signature="localeAwareCompare(QStringView,QStringView)" remove="all" since="6.0"/>
+        <modify-function signature="insert(qsizetype,QStringView)" remove="all" since="6.0"/>
+        <modify-function signature="insert(int,QStringRef)" remove="all" until="5.*"/>
+        <modify-function signature="insert(int,QLatin1String)" remove="all" until="5.*"/>
+        <modify-function signature="insert(int,QStringView)" remove="all" since="5.10" until="5.*"/>
+        <modify-function signature="insert(int,const char*)" remove="all" until="5.*"/>
+        <modify-function signature="insert(qsizetype,const char*)" remove="all" since="6.0"/>
+		<modify-function signature="indexOf(QRegExp,int)const" remove="all" until="5.*"/>
+		<modify-function signature="lastIndexOf(QRegExp,int)const" remove="all" until="5.*"/>
+        <modify-function signature="erase(const QChar*,const QChar*)" remove="all" since="6.0"/>
+        <modify-function signature="number(long,int)" remove="all"/>
+        <modify-function signature="number(unsigned long,int)" remove="all"/>
+        <modify-function signature="number(unsigned int,int)" remove="all"/>
+        <modify-function signature="number(unsigned long long,int)" remove="all"/>
+        <modify-function signature="arg(long,int,int,QChar)const" remove="all"/>
+        <modify-function signature="arg(unsigned long,int,int,QChar)const" remove="all"/>
+        <modify-function signature="arg(unsigned long long,int,int,QChar)const" remove="all"/>
+        <modify-function signature="arg(unsigned int,int,int,QChar)const" remove="all"/>
+        <modify-function signature="arg(unsigned short,int,int,QChar)const" remove="all"/>
+        <modify-function signature="front()" remove="all" since="6.0"/>
+        <modify-function signature="back()" remove="all" since="6.0"/>
+        <modify-function signature="end()" remove="all"/>
+        <modify-function signature="cend()const" remove="all"/>
+        <modify-function signature="constEnd()const" remove="all"/>
+        <modify-function signature="begin()" remove="all"/>
+        <modify-function signature="cbegin()const" remove="all"/>
+        <modify-function signature="constBegin()const" remove="all"/>
+        <modify-function signature="constData()const" remove="all"/>
+        <modify-function signature="end()const" remove="all"/>
+        <modify-function signature="begin()const" remove="all"/>
+        <modify-function signature="data()" remove="all"/>
+        <modify-function signature="data()const" remove="all"/>
+        <modify-function signature="localeAwareCompare(QStringView)const" remove="all" since="6.0"/>
+        <modify-function signature="arg(QLatin1StringView,int,QChar)const" remove="all" since="6.4"/>
+        <modify-function signature="arg(QLatin1String,int,QChar)const" remove="all" until="6.3"/>
+        <modify-function signature="arg(QStringView,int,QChar)const" remove="all"/>
+        <modify-function signature="setNum(long, int)" remove="all"/>
+        <modify-function signature="setNum(unsigned long long, int)" remove="all"/>
+        <modify-function signature="setNum(unsigned long, int)" remove="all"/>
+        <modify-function signature="setNum(unsigned int, int)" remove="all"/>
+        <modify-function signature="setNum(unsigned short, int)" remove="all"/>
+        <modify-function signature="operator=(char)" remove="all" until="5.*"/>
+        <modify-function signature="operator+=(char)" remove="all" until="5.*"/>
+        <modify-function signature="operator+=(QChar)" remove="all"/>
+        <modify-function signature="operator+=(QStringRef)" remove="all" until="5.*"/>
+        <modify-function signature="operator+=(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="operator+=(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator+=(QStringView)" remove="all"/>
+        <modify-function signature="operator+=(QByteArray)" remove="all"/>
+        <modify-function signature="operator+=(QString)" remove="all"/>
+        <modify-function signature="operator+=(const char*)" remove="all"/>
+        <modify-function signature="operator=(QChar)" remove="all"/>
+        <modify-function signature="operator=(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="operator=(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator=(QByteArray)" remove="all"/>
+        <modify-function signature="operator=(QString)" remove="all"/>
+        <modify-function signature="operator=(const char*)" remove="all"/>
+        <modify-function signature="operator>(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator>=(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator&lt;=(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator&lt;(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator==(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator!=(const char16_t*)" remove="all" since="6.0"/>
+        <modify-function signature="operator[](uint)const" remove="all" until="5.*"/>
+        <modify-function signature="operator[](qsizetype)" remove="all" since="6.0"/>
+        <modify-function signature="operator[](int)const" remove="all" until="5.*"/>
+        <modify-function signature="operator[](qsizetype)const" remove="all" since="6.0"/>
+        <modify-function signature="operator&lt;(const char*)const" remove="all"/>
+        <modify-function signature="operator&lt;(std::nullptr_t)" remove="all" since="6.0"/>
+        <modify-function signature="operator&lt;=(std::nullptr_t)" remove="all" since="6.0"/>
+        <modify-function signature="operator>=(std::nullptr_t)" remove="all" since="6.0"/>
+        <modify-function signature="operator>(std::nullptr_t)" remove="all" since="6.0"/>
+        <modify-function signature="operator==(std::nullptr_t)" remove="all" since="6.0"/>
+        <modify-function signature="operator==(const char*)const" remove="all"/>
+        <modify-function signature="operator!=(const char*)const" remove="all"/>
+        <modify-function signature="operator>(const char*)const" remove="all"/>
+        <modify-function signature="operator>=(const char*)const" remove="all"/>
+        <modify-function signature="operator&lt;=(const char*)const" remove="all"/>
+        <modify-function signature="operator&lt;(QLatin1String)const" remove="all" until="5.10"/>
+        <modify-function signature="operator&lt;(QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="operator&lt;(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator&lt;=(QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="operator&lt;=(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator>(QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="operator>(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator>=(QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="operator>=(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="operator==(QLatin1String)" remove="all" since="6.0" until="6.3"/>
+        <modify-function signature="operator==(QLatin1StringView)" remove="all" since="6.4"/>
+	</value-type>
+    <!--enum-type name="QChar::SpecialCharacter"/>
+    <enum-type name="QChar::Category"/>
+    <enum-type name="QChar::Script"/>
+    <enum-type name="QChar::Direction"/>
+    <enum-type name="QChar::Decomposition"/>
+    <enum-type name="QChar::JoiningType"/>
+    <enum-type name="QChar::Joining"/>
+    <enum-type name="QChar::CombiningClass"/>
+    <enum-type name="QChar::UnicodeVersion"/>
+	<value-type name="QChar">
+        <modify-function signature="QChar(unsigned char)" remove="all"/>
+        <modify-function signature="QChar(unsigned int)" remove="all"/>
+	</value-type-->
+    <object-type name="QtJambiStringList" extend-type="QStringList"/>
+    <object-type name="QtJambiItemSelection" extend-type="QItemSelection" since="6.0"/>
     <enum-type name="Qt::SplitBehaviorFlags" flags="Qt::SplitBehavior" since="5.14.0" />
-    <enum-type name="QtJambiStringUtil::SplitBehavior" until="5.13.0"/>
-    <enum-type name="QtJambiStringUtil::SectionFlag" flags="QtJambiStringUtil::SectionFlags"/>
     <enum-type name="QLibrary::LoadHint" flags="QLibrary::LoadHints"/>
     <object-type name="QPluginLoader" since="5.13.0">
     </object-type>
@@ -3059,7 +3333,7 @@
         <reject-enum-value name="HighestInternalId"/>
     </enum-type>
     <value-type name="QCalendar" since="5.14.0">
-        <modify-function signature="QCalendar(QLatin1String)" remove="all"/>
+        <modify-function signature="QCalendar(QLatin1String)" remove="all" until="6.3.*"/>
     </value-type>
     <value-type name="QCalendar::YearMonthDay" since="5.14.0">
     </value-type>
@@ -3162,7 +3436,8 @@
         </custom-constructor>
         <modify-function signature="QDebug(QString *)" remove="all"/>
         <modify-function signature="operator=(QDebug)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all"/>
+        <modify-function signature="operator&lt;&lt;(QLatin1StringView)" remove="all" since="6.4.0"/>
+        <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all" until="6.3"/>
         <modify-function signature="operator&lt;&lt;(QString)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QStringRef)" remove="all" until="5.*"/>
         <modify-function signature="operator&lt;&lt;(QStringView)" remove="all"/>
@@ -3227,7 +3502,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*Private const\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*Private&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMetaObject'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMetaMethod const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QMetaMethod&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'FILE\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QByteArray::Data\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QByteArrayDataPtr'"/>
@@ -3236,13 +3511,13 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QDataStream::ByteOrder'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'Data::AllocationOptions'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonValueRef'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonArray::const_iterator'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonArray::iterator'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QJsonArray::const_iterator*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QJsonArray::iterator*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping 'QJsonArray::*' unmatched *type '*iterator'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonObject::const_iterator'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonObject::iterator'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QJsonObject::const_iterator*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QJsonObject::iterator*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QJsonPrivate::Data\*'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMimeTypePrivate const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QMimeTypePrivate&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"/>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'"/>
@@ -3257,9 +3532,9 @@
     <suppress-warning text="* private virtual function '*' in 'QTextCodecPlugin'"/>
     <suppress-warning text="* private virtual function '*' in 'QSaveFile'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcherBase::futureInterface', unmatched return type 'QFutureInterfaceBase&amp;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcherBase::futureInterface', unmatched return type 'QFutureInterfaceBase const&amp;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcherBase::futureInterface', unmatched return type 'const QFutureInterfaceBase&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcher::futureInterface', unmatched return type 'QFutureInterfaceBase&amp;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcher::futureInterface', unmatched return type 'QFutureInterfaceBase const&amp;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcher::futureInterface', unmatched return type 'const QFutureInterfaceBase&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'T'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::constBegin', unmatched return type 'const_iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::end', unmatched return type 'const_iterator'" />
@@ -3289,17 +3564,17 @@
   <suppress-warning text="WARNING() :: Duplicate type entry: 'QXmlStreamEntityDeclaration'" />
   <suppress-warning text="WARNING() :: Duplicate type entry: 'QXmlStreamReader'" />
   <suppress-warning text="WARNING() :: Duplicate type entry: 'QXmlStreamWriter'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonDocument::QJsonDocument', unmatched parameter type 'QJsonPrivate::Data*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonValue::QJsonValue', unmatched parameter type 'QJsonPrivate::Data*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonArray::QJsonArray', unmatched parameter type 'QJsonPrivate::Data*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonDocument::QJsonDocument', unmatched parameter type '*QJsonPrivate::Data*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonValue::QJsonValue', unmatched parameter type '*QJsonPrivate::Data*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJsonArray::QJsonArray', unmatched parameter type '*QJsonPrivate::Data*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: type * is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum * is specified in typesystem, but not declared" />
   <suppress-warning text="WARNING(Parser) :: ** WARNING scope not found for function definition: '*' - definition *ignored*" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QListData::*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QtPrivate::*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::*', unmatched parameter type 'QPair&lt;TT1,TT2&gt; const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*QListData::*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*QtPrivate::*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::*', unmatched parameter type '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: isFunctionPointer: *" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QAbstractNativeEventFilter*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*QAbstractNativeEventFilter*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QListSpecialMethods&lt;T&gt;' of 'List' is not known" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'parent()const' for function modification in '*' not found. Possible candidates: parent(QModelIndex)const in *" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator&lt;(QCollatorSortKey,QCollatorSortKey)' for function modification in 'QCollatorSortKey' not found. Possible candidates: operator&lt;(QCollatorSortKey) in QCollatorSortKey" />
@@ -3332,19 +3607,17 @@
   <suppress-warning text="WARNING(Preprocessor) :: qtjambi_masterinclude.h:*  &lt;*/*>: No such file or directory" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractAnimation' set to non-final, as it is extended by other classes" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'beginEntryList*' for function modification in 'QAbstractFileEngine' not found. Possible candidates:*" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborMap::Iterator const&amp;'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborArray::Iterator const&amp;'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborMap::iterator'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborArray::Iterator'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborArray::iterator'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QJsonArray::iterator const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborMap::Iterator*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborArray::iterator*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborArray::Iterator*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QJsonArray::iterator*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair*', unmatched *type '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QCborNegativeInteger' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCborNegativeInteger*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMetaType::*', unmatched *type '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QMetaType::TypeFlag' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QJsonValuePtr'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QJsonObject::iterator const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'const QJsonObject::iterator&amp;'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * 'QSysInfo::*', *type 'QSysInfo::WinVersion'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * 'QSysInfo::*', *type 'QSysInfo::MacVersion'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Enum constant 'QSysInfo::BigEndian' belongs to unknown type QSysInfo" />
@@ -3356,7 +3629,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt::operator|', unmatched return type 'QIncompatibleFlag'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt::operator|', unmatched return type 'QFlags&lt;*::enum_type>'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'unsigned'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborMap::*', unmatched parameter type 'char const[N]'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborMap::*', unmatched parameter type 'const char[N]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Something has happened when trying to read array initialization: N" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'java.util.Collection' for enum 'AllocationOption' is not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborStreamReader::*', unmatched return type 'StringResult&lt;*>'" />
@@ -3374,29 +3647,28 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QFuture' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.QVariant' for enum 'Type' is not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTransform::asAffineMatrix', unmatched return type 'auto'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDataStream::operator*', unmatched parameter type 'char32_t*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDataStream::operator*', unmatched parameter type 'char16_t*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDataStream::operator*', unmatched parameter type '*char32_t*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDataStream::operator*', unmatched parameter type '*char16_t*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QStaticPlugin::QStaticPlugin', unmatched parameter type 'QtPluginInstanceFunction'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArray::QByteArray', unmatched parameter type 'QByteArray::DataPointer const&amp;'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMetaMethod::QMetaMethod', unmatched parameter type 'QMetaMethod::Data const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArray::QByteArray', unmatched parameter type '*QByteArray::DataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMetaMethod::QMetaMethod', unmatched parameter type '*QMetaMethod::Data*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QGenericArgument'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QGenericReturnArgument'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QStringConverter::Interface*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QFutureInterfaceBase*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QStringConverter::Interface*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QFutureInterfaceBase*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*::static_assert'*" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QStringConverterBase$State::clearFn' with unmatched type 'void'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QStringConverterBase$State::clearFn' with unmatched type '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QtJambiNativeID' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(CppImplGenerator) :: AbstractMeta::findEnum(), unknown class 'QVariant' in 'QVariant::Type'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QListSpecialMethods&lt;T>' of 'QList' is not known" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Something has happened when trying to read array initialization: Size" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArrayView::QByteArrayView', unmatched parameter type 'char const[Size]'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArrayView::QByteArrayView', unmatched parameter type 'const char[Size]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QIODeviceBase()' for function modification in 'QIODeviceBase' not found. Possible candidates: " />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QEvent::*EventTag'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtPrivate::*', *" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*QtPrivate::*', *" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QtPrivate::Deprecated_t' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QKeyCombination::QKeyCombination', unmatched parameter type 'Qt::Modifiers'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QException*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;*> (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QException*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QtPrivate::Ordering' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QtPrivate::Uncomparable' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Operator type unknown: QList::const_iterator::operator const T*()const" />
@@ -3417,24 +3689,44 @@
   <suppress-warning text="WARNING(CppImplGenerator) :: Unknown class 'QVariant' for enum 'QVariant::Type'"/>
   <suppress-warning text="WARNING(CppImplGenerator) :: Unknown class 'QMetaObject' for enum 'QMetaObject::Call'"/>
   <suppress-warning text="WARNING(CppImplGenerator) :: enum not found: 'QMetaObject::Call'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type char (&amp;)[Size] const (is_busted)"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QUntypedPropertyBinding::BindingFunctionVTable const*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyChangeHandler*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyNotifier*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyObserverBase::ChangeHandler'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type const char (&amp;)[Size] (is_busted)"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;void()> (is_busted)"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;void ()> (is_busted)"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*BindingFunctionVTable*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*std::chrono*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyChangeHandler*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyNotifier*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyObserverBase::ChangeHandler*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: function 'QtMessageHandler' is specified in typesystem, but not declared" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator', unmatched parameter type 'quint32 const[N]'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type quint32 (&amp;)[N] const (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator', unmatched parameter type 'const quint32[N]'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type const quint32 (&amp;)[N] (is_busted)" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::_fillRange', unmatched parameter type 'qptrdiff'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture'*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'reportFinished(const JObjectWrapper*)' for function modification in 'QtJambiFutureInterface' not found.*" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::*', unmatched parameter type 'QFuture*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::*', unmatched parameter type '*QFuture*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCalendar::QCalendar', unmatched parameter type 'QCalendar::SystemId'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMetaProperty::getMetaPropertyData', unmatched return type 'QMetaProperty::Data'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QPropertyObserverBase()' for function modification in 'QPropertyObserverBase' not found. Possible candidates: " />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Operator type unknown: QFuture::operator T()const" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Shadowing: QOperatingSystemVersionBase::isAnyOfType(std::initializer_list* types) const and QOperatingSystemVersion::isAnyOfType(std::initializer_list* types) const; Java code will not compile" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QtPrivate::bindingFunctionVTable' with unmatched type 'QtPrivate::BindingFunctionVTable'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QtPrivate::Deprecated' with unmatched type 'QtPrivate::Deprecated_t'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Shadowing: QOperatingSystemVersionBase::* and QOperatingSystemVersion::* Java code will not compile" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '*qfloat16*' for function modification in '*' not found.*" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*std::exception_ptr*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;bool(const void*,void*)> (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;bool(void*,void*)> (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QStringConverterBase()' for function modification in 'QStringConverterBase' not found. Possible candidates: " since="6.4.0"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QVersionNumber::QVersionNumber', unmatched parameter type '*QVarLengthArray*'" since="6.4.0"/>
+  <suppress-warning text="WARNING(Parser) :: scope not found for function definition: 'QLatin1StringView::*' - definition *ignored*" since="6.4.0"/>
+  <suppress-warning text="WARNING(Parser) :: scope not found for symbol: q23::invoke_r*" since="6.4.0"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '*char32_t*' for *modification in '*' not found. Possible candidates:"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QString::NormalizationForm' does not have a type entry or is not an enum"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QString::QString', unmatched parameter type 'QString::DataPointer*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCharRef'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'va_list'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QString::Null*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QStringDataPtr'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QChar::SpecialCharacter'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QString::SplitBehavior'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QString::SplitBehavior' does not have a type entry or is not an enum"/>
 </typesystem>

@@ -40,8 +40,10 @@ Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
 typedef QSet<size_t> TypeSet;
 Q_GLOBAL_STATIC(StringTypeHash, gIIDTypeHash)
 Q_GLOBAL_STATIC(StringStringHash, gTypeIIDHash)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 typedef QMap<QByteArray,QPair<const char*, int>> NativeInterfaceMap;
 Q_GLOBAL_STATIC(NativeInterfaceMap, gNativeInterfaceMap)
+#endif
 typedef QHash<QByteArray, QByteArray> IIDByteArrayHash;
 Q_GLOBAL_STATIC(IIDByteArrayHash, gIIDByteArrayHash)
 typedef QMap<size_t, const std::type_info*> ID2IDHash;
@@ -155,9 +157,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gQtSuperclassLock, (QReadWriteLock::Re
 typedef QHash<hash_type, jclass> ClassHash;
 Q_GLOBAL_STATIC(ClassHash, gQtSuperclassHash)
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEmitMethodLock, (QReadWriteLock::Recursive))
-Q_GLOBAL_STATIC(MethodIdHash, gEmitMethodHash)
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 typedef QHash<const QtPrivate::QMetaTypeInterface*,const QMetaObject*> MetaTypeMetaObjectHash;
 Q_GLOBAL_STATIC(MetaTypeMetaObjectHash, gMetaTypeMetaObjectHash)
@@ -260,6 +259,7 @@ void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info,
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void qtjambi_register_native_interface(const char* className, QPair<const char*, int>&& nameAndRevision){
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
@@ -276,6 +276,7 @@ bool registeredNativeInterface(JNIEnv* env, jclass cls, QPair<const char*, int>&
     }
     return false;
 }
+#endif
 
 void registerInterfaceTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid)
 {
@@ -2420,12 +2421,6 @@ void clear_registry_at_shutdown(JNIEnv * env){
         Q_UNUSED(locker)
         if(!gClassHash.isDestroyed())
             classIdHash.swap(*gClassHash);
-    }
-    {
-        QWriteLocker locker(gEmitMethodLock());
-        Q_UNUSED(locker)
-        if(!gEmitMethodHash.isDestroyed())
-            gEmitMethodHash->clear();
     }
     {
         QWriteLocker locker(gConstructorLock());

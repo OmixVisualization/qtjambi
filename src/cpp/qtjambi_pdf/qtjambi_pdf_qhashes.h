@@ -41,27 +41,19 @@
 #include <QtPdf/QPdfDocumentRenderOptions>
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 #include <QtPdf/QPdfSearchResult>
+#else
+#include <QtPdf/QPdfLink>
 #endif
 #include <QtPdf/QPdfSelection>
 
-inline hash_type qHash(const QPdfDocumentRenderOptions& value)
+inline hash_type qHash(const QPdfDocumentRenderOptions& value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.scaledClipRect());
-    hashCode = hashCode * 31 + qHash(value.scaledSize());
-    hashCode = hashCode * 31 + qHash(value.renderFlags());
-    hashCode = hashCode * 31 + qHash(qint32(value.rotation()));
-    return hashCode;
+    return qHashMulti(seed, value.scaledClipRect(), value.scaledSize(), value.renderFlags(), qint32(value.rotation()));
 }
 
-inline hash_type qHash(const QPdfSelection &value)
+inline hash_type qHash(const QPdfSelection &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.bounds());
-    hashCode = hashCode * 31 + qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.boundingRectangle());
-    hashCode = hashCode * 31 + qHash(value.startIndex());
-    hashCode = hashCode * 31 + qHash(value.endIndex());
-    return hashCode;
+    return qHashMulti(seed, value.isValid(), value.bounds(), value.text(), value.boundingRectangle(), value.startIndex(), value.endIndex());
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
@@ -110,6 +102,33 @@ inline bool operator==(const QPdfSearchResult &value1, const QPdfSearchResult &v
             && value1.contextAfter()==value2.contextAfter()
             && value1.rectangles()==value2.rectangles()
             && static_cast<const QPdfDestination &>(value1)==static_cast<const QPdfDestination &>(value2);
+}
+#else
+inline bool operator==(const QPdfLink &value1, const QPdfLink &value2)
+{
+    return value1.contextBefore()==value2.contextBefore()
+            && value1.contextAfter()==value2.contextAfter()
+            && value1.rectangles()==value2.rectangles()
+            && value1.isValid()==value2.isValid()
+            && value1.page()==value2.page()
+            && value1.location()==value2.location()
+            && qFuzzyCompare(value1.zoom(),value2.zoom())
+            && value1.url()==value2.url()
+            ;
+}
+
+inline hash_type qHash(const QPdfLink &value)
+{
+    hash_type hashCode = qHash(value.contextBefore());
+    hashCode = hashCode * 31 + qHash(value.contextAfter());
+    hashCode = hashCode * 31 + qHash(value.rectangles());
+    hashCode = hashCode * 31 + qHash(value.isValid());
+    hashCode = hashCode * 31 + qHash(value.page());
+    hashCode = hashCode * 31 + qHash(value.location().x());
+    hashCode = hashCode * 31 + qHash(value.location().y());
+    hashCode = hashCode * 31 + qHash(value.zoom());
+    hashCode = hashCode * 31 + qHash(value.url());
+    return hashCode;
 }
 #endif
 

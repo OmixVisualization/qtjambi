@@ -52,7 +52,8 @@ FunctionalTypeEntry::FunctionalTypeEntry(const QString &nspace, const QString &n
         m_pp_condition(),
         m_using(),
         m_normalizedSignature(),
-        m_isNativeIdBased(false) /* not possible to use native ids for functionals!!! */ {
+        m_generic_class(false)
+{
     m_qualifier = nspace;
     m_java_name = name;
 }
@@ -196,8 +197,17 @@ QString FunctionalTypeEntry::javaQualifier() const {
 }
 
 QString EnumTypeEntry::javaPackage() const {
-    if(!m_qualifier_type)
-        m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+    if(!m_qualifier_type){
+        if(m_javaScope.isEmpty()){
+            m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+        }else{
+            m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
+        }
+        if(m_qualifier_type && m_qualifier_type->isQString())
+            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiString");
+        else if(m_qualifier_type && m_qualifier_type->isChar())
+            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiChar");
+    }
     if (m_qualifier_type){
         if(m_qualifier_type->isVariant())
             return "io.qt.core";
@@ -210,8 +220,17 @@ QString EnumTypeEntry::javaPackage() const {
 }
 
 QString EnumTypeEntry::javaQualifier() const {
-    if(!m_qualifier_type)
-        m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+    if(!m_qualifier_type){
+        if(m_javaScope.isEmpty()){
+            m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+        }else{
+            m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
+        }
+        if(m_qualifier_type && m_qualifier_type->isQString())
+            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiString");
+        else if(m_qualifier_type && m_qualifier_type->isChar())
+            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiChar");
+    }
     if (m_qualifier_type){
         if(m_qualifier_type->isVariant())
             return "QVariant";

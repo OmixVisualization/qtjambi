@@ -29,29 +29,6 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QMap.__qt_QMap_begin;
-import static io.qt.core.QMap.__qt_QMap_clear;
-import static io.qt.core.QMap.__qt_QMap_contains;
-import static io.qt.core.QMap.__qt_QMap_count;
-import static io.qt.core.QMap.__qt_QMap_end;
-import static io.qt.core.QMap.__qt_QMap_find;
-import static io.qt.core.QMap.__qt_QMap_first;
-import static io.qt.core.QMap.__qt_QMap_firstKey;
-import static io.qt.core.QMap.__qt_QMap_insert;
-import static io.qt.core.QMap.__qt_QMap_key;
-import static io.qt.core.QMap.__qt_QMap_keys;
-import static io.qt.core.QMap.__qt_QMap_keysForValue;
-import static io.qt.core.QMap.__qt_QMap_last;
-import static io.qt.core.QMap.__qt_QMap_lastKey;
-import static io.qt.core.QMap.__qt_QMap_lowerBound;
-import static io.qt.core.QMap.__qt_QMap_operator_equal;
-import static io.qt.core.QMap.__qt_QMap_remove;
-import static io.qt.core.QMap.__qt_QMap_size;
-import static io.qt.core.QMap.__qt_QMap_take;
-import static io.qt.core.QMap.__qt_QMap_upperBound;
-import static io.qt.core.QMap.__qt_QMap_value;
-import static io.qt.core.QMap.createComparator;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -176,18 +153,18 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     
 	@QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> begin()    {
-        return __qt_QMap_begin(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final void clear()    {
-        __qt_QMap_clear(QtJambi_LibraryUtilities.internal.nativeId(this));
+    	QMap.clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final boolean contains(K key)    {
         try{
-        	return __qt_QMap_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -203,7 +180,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final int count(K key)    {
         try{
-        	return __qt_QMap_count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -213,13 +190,13 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {
-        return __qt_QMap_end(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key)    {
         try{
-        	return __qt_QMap_find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -229,18 +206,18 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     public final V first()    {
-        return __qt_QMap_first(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.first(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final K firstKey()    {
-        return __qt_QMap_firstKey(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.firstKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final void insert(K key, V value)    {
         try{
-        	__qt_QMap_insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	QMap.insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -260,7 +237,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final K key(V value, K defaultKey)    {
         try{
-        	return __qt_QMap_key(QtJambi_LibraryUtilities.internal.nativeId(this), value, defaultKey);
+        	return QMap.key(QtJambi_LibraryUtilities.internal.nativeId(this), value, defaultKey);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -270,13 +247,13 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     public final java.util.List<K> keys()    {
-        return __qt_QMap_keys(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.keys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final java.util.List<K> keys(V value)    {
         try{
-        	return __qt_QMap_keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
+        	return QMap.keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -286,18 +263,18 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     public final V last()    {
-        return __qt_QMap_last(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.last(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final K lastKey()    {
-        return __qt_QMap_lastKey(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.lastKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> lowerBound(K key)    {
         try{
-        	return __qt_QMap_lowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.lowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -307,13 +284,13 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Map<K,V> other)    {
-        return __qt_QMap_operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        return QMap.operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
 
     @QtUninvokable
     public final int removeAll(Object key)    {
         try{
-        	return __qt_QMap_remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -328,13 +305,13 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     public final int size()    {
-        return __qt_QMap_size(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QMap.size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     public final V take(K key)    {
     	try {
-    		return __qt_QMap_take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    		return QMap.take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -344,21 +321,21 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
 
     @QtUninvokable
     public final java.util.List<K> uniqueKeys()    {
-        return __qt_QMultiMap_uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <K> java.util.List<K> __qt_QMultiMap_uniqueKeys(long __this__nativeId);
+    private static native <K> java.util.List<K> uniqueKeys(long __this__nativeId);
 
     @QtUninvokable
     public final void unite(java.util.Map<? super K,? extends java.util.Collection<? super V>> other)    {
-        __qt_QMultiMap_unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
+        unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    static native void __qt_QMultiMap_unite(long __this__nativeId, Object other);
+    private static native void unite(long __this__nativeId, Object other);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> upperBound(K key)    {
-        return __qt_QMap_upperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        return QMap.upperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     }
 
 
@@ -370,7 +347,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final V value(K key, V defaultValue)    {
         try{
-        	return __qt_QMap_value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
+        	return QMap.value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -383,8 +360,8 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     public final java.util.Collection<java.util.List<V>> values() {
     	long id = QtJambi_LibraryUtilities.internal.nativeId(this);
         java.util.List<java.util.List<V>> result = new java.util.ArrayList<>();
-        for(Object key : __qt_QMultiMap_uniqueKeys(id)) {
-            result.add(__qt_QMultiMap_valuesKey(id, key));
+        for(Object key : uniqueKeys(id)) {
+            result.add(valuesKey(id, key));
         }
         return result;
     }
@@ -392,7 +369,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final java.util.List<V> values(K key)    {
         try{
-        	return __qt_QMultiMap_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -400,12 +377,12 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         }
     }
     @QtUninvokable
-    private static native <K,V> java.util.List<V> __qt_QMultiMap_valuesKey(long __this__nativeId, K key);
+    private static native <K,V> java.util.List<V> valuesKey(long __this__nativeId, K key);
     
     @QtUninvokable
     public final boolean contains(K key, V value)    {
         try{
-        	return __qt_QMultiMap_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -413,12 +390,12 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         }
     }
     @QtUninvokable
-    private static native <K,V> boolean __qt_QMultiMap_contains(long __this__nativeId, K key, V value);
+    private static native <K,V> boolean contains(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final int count(K key, V value)    {
         try{
-        	return __qt_QMultiMap_count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -426,12 +403,12 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         }
     }
     @QtUninvokable
-    private static native <K,V> int __qt_QMultiMap_count(long __this__nativeId, K key, V value);
+    private static native <K,V> int count(long __this__nativeId, K key, V value);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key, V value)    {
         try{
-        	return __qt_QMultiMap_find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -439,12 +416,12 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         }
     }
     @QtUninvokable
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QMultiMap_find(long __this__nativeId, K key);
+    private static native <K,V> io.qt.core.QMapIterator<K,V> find(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final int removeAll(K key, V value)    {
     	try{
-    		return __qt_QMultiMap_remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+    		return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -452,12 +429,12 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     	}
     }
     @QtUninvokable
-    static native <K,V> int __qt_QMultiMap_remove(long __this__nativeId, K key, V value);
+    private static native <K,V> int remove(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final void replaceOne(K key, V value)    {
         try{
-        	__qt_QMultiMap_replace(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	replace(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -465,7 +442,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         }
     }
     @QtUninvokable
-    static native <K,V> void __qt_QMultiMap_replace(long __this__nativeId, K key, V value);
+    private static native <K,V> void replace(long __this__nativeId, K key, V value);
 
     @SuppressWarnings("unchecked")
 	@Override
@@ -480,14 +457,14 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @Override
     @QtUninvokable
     public final java.util.Comparator<K> comparator(){
-    	return createComparator(keyMetaType().javaType(), this);
+    	return QMap.createComparator(keyMetaType().javaType(), this);
     }
 
     @Override
     @QtUninvokable
     public final boolean containsKey(Object key){
         try{
-        	return __qt_QMap_contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return QMap.contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -504,7 +481,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final List<V> get(Object key){
 		try{
-			return __qt_QMultiMap_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+			return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -531,7 +508,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final java.util.List<V> remove(Object key){
         try{
-        	java.util.List<V> result = __qt_QMultiMap_valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), (K)key);
+        	java.util.List<V> result = valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), (K)key);
         	removeAll(key);
         	return result;
     	}catch(QNoNativeResourcesException e) {
@@ -550,7 +527,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     @QtUninvokable
     public final boolean containsValue(Object value){
     	try {
-    		return __qt_QMap_keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
+    		return QMap.keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -591,19 +568,19 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
     
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
-        __qt_QMultiMap_writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QMultiMap_writeTo(long __this__nativeId, long stream);
+    private native void writeTo(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
-        __qt_QMultiMap_readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
+        readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
     @io.qt.QtUninvokable
-    private native void __qt_QMultiMap_readFrom(long __this__nativeId, long stream);
+    private native void readFrom(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
     final QMetaType keyMetaType() {
@@ -971,7 +948,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> im
         return result;
     }
     
-	static <K,V> QPair<QMetaType,QMetaType> findMapMetaType(Map<K,List<V>> elements){
+    private static <K,V> QPair<QMetaType,QMetaType> findMapMetaType(Map<K,List<V>> elements){
         if(elements.getClass()==QMap.class) {
             return new QPair<>(((QMap<?,?>)elements).keyMetaType(), ((QMap<?,?>)elements).valueMetaType());
         }else if(elements.getClass()==QHash.class) {

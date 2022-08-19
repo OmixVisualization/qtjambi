@@ -43,6 +43,20 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.test" module="qtjambi.test" default-superclass="io.qt.QtObject">
+    <template name="test.stringsupplier.function">
+		JObjectWrapper %in_wrapper(%env, %in);
+        qxp::function_ref&lt;const char*()> %out = [%in_wrapper]() -> const char* {
+			if(JNIEnv *env = qtjambi_current_environment()){
+				QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+				jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object()));
+				jsize length = env->GetStringUTFLength(value);
+				char* c = new char[size_t(length)];
+				env->GetStringUTFRegion(value, 0, length, c);
+				return c;
+			}
+			return nullptr;
+		};
+    </template>
     <namespace-type name="QTest">
       <modify-function signature="failOnWarning(const char*)" since="6.3.0">
           <modify-argument index="1">
@@ -301,6 +315,30 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="compare_helper(bool, const char *, const char *, const char *, const char *, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    jsize %in_length = %env->GetStringUTFLength(%in);
+                    char* %out = new char[size_t(%in_length)];
+                    %env->GetStringUTFRegion(%in, 0, %in_length, %out);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    jsize %in_length = %env->GetStringUTFLength(%in);
+                    char* %out = new char[size_t(%in_length)];
+                    %env->GetStringUTFRegion(%in, 0, %in_length, %out);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="qExpectFail(const char *,const char *,QTest::TestFailMode,const char *,int)">
             <modify-argument index="1">
                 <replace-type modified-type="java.lang.String"/>
@@ -488,6 +526,59 @@
                     if(%in!=%out)
                         JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="compare_helper(bool,const char*,qxp::function_ref&lt;const char*()>,qxp::function_ref&lt;const char*()>,const char*,const char*,const char*,int)" since="6.4.0">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="java.util.function.Supplier&lt;String>"/>
+				<no-null-pointer/>
+                <conversion-rule class="native">
+                    <insert-template name="test.stringsupplier.function"/>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="java.util.function.Supplier&lt;String>"/>
+				<no-null-pointer/>
+                <conversion-rule class="native">
+                    <insert-template name="test.stringsupplier.function"/>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="6">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="7">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="reportResult(bool,qxp::function_ref&lt;const char*()>,qxp::function_ref&lt;const char*()>,const char*,const char*,QTest::ComparisonOperation,const char*,int)" since="6.4.0">
+            <modify-argument index="2">
+                <replace-type modified-type="java.util.function.Supplier&lt;String>"/>
+				<no-null-pointer/>
+                <conversion-rule class="native">
+                    <insert-template name="test.stringsupplier.function"/>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="java.util.function.Supplier&lt;String>"/>
+				<no-null-pointer/>
+                <conversion-rule class="native">
+                    <insert-template name="test.stringsupplier.function"/>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="7">
+                <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
         <inject-code class="java">

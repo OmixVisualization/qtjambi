@@ -68,8 +68,8 @@ Therefore, open the file `app/build.gradle`.
 Add the following lines to the `dependencies` section (for ABI arm64-v8a):
 
 ```gradle
-    implementation 'io.qtjambi:qtjambi:6.3.2'
-    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.3.2'
+    implementation 'io.qtjambi:qtjambi:6.3.3'
+    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.3.3'
     implementation files('qt-lib-core-native-android-arm64-6.3.1.jar',
                          'qt-lib-core-native-android-common-6.3.1.jar',
                          'qt-lib-gui-native-android-arm64-6.3.1.jar',
@@ -121,17 +121,3 @@ fun main(args : Array<String>){
 ```
 
 [Read more](Characteristics-of-QtJambi.md) about how to develop with QtJambi.
-
-## Bugfix
-
-There might be an unexpected NullPointerException at startup on certain systems.
-Therefore, a small bugfix has been released under version `6.3.2a` (`6.2.5a`, `5.15.7a`).
-To apply this bugfix in your project just insert the following lines to the `dependencies` section:
-
-```gradle
-	configurations.all {
-		resolutionStrategy.dependencySubstitution {
-			substitute module('io.qtjambi:qtjambi:6.3.2') using module('io.qtjambi:qtjambi:6.3.2a')
-		}
-	}
-```

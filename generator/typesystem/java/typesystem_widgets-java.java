@@ -79,7 +79,7 @@ class QShortcut__{
     }
     
     private static io.qt.widgets.QWidget parent(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, java.util.Objects.requireNonNull(slot));
+        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(java.util.Objects.requireNonNull(slot));
         if(parent instanceof io.qt.widgets.QWidget)
             return (io.qt.widgets.QWidget)parent;
         throw new IllegalArgumentException("Slot needs to be member of a QWidget instance.");
@@ -347,7 +347,7 @@ class QColorDialog__java_{
         if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QColor.value()) {
             throw new IllegalArgumentException("Method does not take a single QColor argument: "+metaMethod.cppMethodSignature());
         }
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, selectedSlot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
         if(object==null) {
             throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
         }
@@ -394,7 +394,7 @@ class QFontDialog__java_ extends QFontDialog {
         if(metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.QFont.value()) {
             throw new IllegalArgumentException("Method does not take a single QFont argument: "+metaMethod.cppMethodSignature());
         }
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, selectedSlot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
         if(object==null) {
             throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
         }
@@ -494,7 +494,7 @@ class QFileDialog__java_ extends QFileDialog {
                 throw new IllegalArgumentException("Method does not take a single String argument: "+metaMethod.cppMethodSignature());
             }
         }
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, selectedSlot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
         if(object==null) {
             throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
         }
@@ -544,7 +544,7 @@ class QInputDialog__java_ extends QInputDialog {
         if(metaMethod.parameterCount()>0) {
             throw new IllegalArgumentException("Connected method must not take any arguments: "+metaMethod.cppMethodSignature());
         }
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, selectedSlot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
         if(object==null) {
             throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
         }
@@ -569,7 +569,7 @@ class QInputDialog__java_ extends QInputDialog {
             && metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Double.value()) {
             throw new IllegalArgumentException("Method does not take a single String, int or double argument: "+metaMethod.cppMethodSignature());
         }
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, selectedSlot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(selectedSlot);
         if(object==null) {
             throw new IllegalArgumentException("Unable to determine QObject from given slot handle.");
         }

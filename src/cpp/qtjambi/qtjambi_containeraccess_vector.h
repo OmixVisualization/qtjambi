@@ -64,22 +64,9 @@ public:
     GenericVectorAccess<_align, _size>* clone() override{
         return new GenericVectorAccess<_align, _size>(*this);
     }
-    void* createContainer() override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        QVector<T>* list = new QVector<T>();
-
-        return list;
-    }
-    void* copyContainer(const void* container) override {
-        if(container){
-
-            QTJAMBI_ELEMENT_LOCKER
-            QVector<T>* list = new QVector<T>(*reinterpret_cast<const QVector<T>*>(container));
-
-            return list;
-        }
-        return createContainer();
+    size_t sizeOf() override {
+        return sizeof(QVector<T>);
     }
     void assign(void* container, const void* other) override {
 
@@ -87,11 +74,18 @@ public:
         (*reinterpret_cast<QVector<T>*>(container)) = (*reinterpret_cast<const QVector<T>*>(other));
 
     }
-    void deleteContainer(void* container) override {
-
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
         QTJAMBI_ELEMENT_LOCKER
-        delete reinterpret_cast<QVector<T>*>(container);
-
+        if(copyOf){
+            return new(placement) QVector<T>(*reinterpret_cast<const QVector<T>*>(copyOf));
+        }else{
+            return new(placement) QVector<T>();
+        }
+    }
+    bool destructContainer(void* container) override {
+        QTJAMBI_ELEMENT_LOCKER
+        reinterpret_cast<QVector<T>*>(container)->~QVector<T>();
+        return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_container_type<QVector<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());
@@ -119,21 +113,6 @@ public:
                                       access);
     }
 
-    void append(JNIEnv * env, void* container, jobject value) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        {
-            T _qvalue;
-            void *_qvaluePtr = &_qvalue;
-            jvalue _value;
-            _value.l = value;
-            if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l)){
-                reinterpret_cast<QVector<T> *>(container)->append(_qvalue);
-            }
-        }
-
-    }
-
     void appendVector(JNIEnv * env, void* container, jobject list) override {
         if (qtjambi_is_QVector(env, list, elementMetaType())) {
             if(QVector<T>* ptr = qtjambi_to_object<QVector<T>>(env, list)){
@@ -143,7 +122,7 @@ public:
         }else{
             jobject iter = qtjambi_collection_iterator(env, list);
             while(qtjambi_iterator_has_next(env, iter)){
-                append(env, container, qtjambi_iterator_next(env, iter));
+                insert(env, container, size(env, container), 1, qtjambi_iterator_next(env, iter));
             }
         }
     }
@@ -201,29 +180,6 @@ public:
         return nullptr;
     }
 
-    jobject toSet(JNIEnv * env,const void* container) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = qtjambi_create_container_access(env, ContainerType::QSet, m_elementMetaTypeInfo.metaType());
-        if(!access)
-            access = qtjambi_create_container_access(env, ContainerType::QSet,
-                                                      m_elementMetaTypeInfo.metaType(),
-                                                      _align, _size,
-                                                      qtjambi_is_static_type(m_elementMetaTypeInfo.metaType()),
-                                                      qtjambi_is_pointer_type(m_elementMetaTypeInfo.metaType()),
-                                                      m_elementMetaTypeInfo.hashFunction(),
-                                                      m_internalToExternalConverter,
-                                                      m_externalToInternalConverter
-                                                    );
-        if(access){
-            const void* set = new QSet<T>(reinterpret_cast<const QVector<T> *>(container)->begin(), reinterpret_cast<const QVector<T> *>(container)->end());
-            result = qtjambi_from_QSet(env, set, access);
-        }
-
-        return result;
-    }
-
     void swapItemsAt(JNIEnv *, void* container, jint index1, jint index2) override {
 
         QTJAMBI_ELEMENT_LOCKER
@@ -276,29 +232,6 @@ public:
 
     }
 
-    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
-        jvalue _value;
-        _value.l = value;
-        bool success = false;
-
-        QTJAMBI_ELEMENT_LOCKER
-        {
-            T _qvalue;
-            void *_qvaluePtr = &_qvalue;
-            if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                success = reinterpret_cast<QVector<T> *>(container)->removeOne(_qvalue);
-        }
-
-        return success;
-    }
-
-    void removeAt(JNIEnv *, void* container, jint index) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->removeAt(index);
-
-    }
-
     jint removeAll(JNIEnv * env, void* container, jobject value) override {
         jvalue _value;
         _value.l = value;
@@ -313,20 +246,6 @@ public:
         }
 
         return count;
-    }
-
-    void prepend(JNIEnv * env, void* container, jobject value) override {
-        jvalue _value;
-        _value.l = value;
-
-        QTJAMBI_ELEMENT_LOCKER
-        {
-            T _qvalue;
-            void *_qvaluePtr = &_qvalue;
-            if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                reinterpret_cast<QVector<T> *>(container)->prepend(_qvalue);
-        }
-
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
@@ -385,20 +304,6 @@ public:
         }
 
         return idx;
-    }
-
-    void insert(JNIEnv * env, void* container, jint index, jobject value) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        {
-            T _qvalue;
-            void *_qvaluePtr = &_qvalue;
-            jvalue _value;
-            _value.l = value;
-            if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                reinterpret_cast<QVector<T> *>(container)->insert(index, _qvalue);
-        }
-
     }
 
     jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {

@@ -67,9 +67,9 @@ class CppImplGenerator : public CppGenerator {
 
         void write(QTextStream &s, const AbstractMetaFunctional *java_class, int nesting_level = 0) override;
 
-        void writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class, QSet<QString>& dedupe);
+        void writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class, QSet<QString>& dedupe, bool skipQtJambi = false);
 
-        void writeExtraIncludes(QTextStream &s, const AbstractMetaFunctional *java_class, QSet<QString>& dedupe);
+        void writeExtraIncludes(QTextStream &s, const AbstractMetaFunctional *java_class, QSet<QString>& dedupe, bool skipQtJambi = false);
 
         void writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
                              const AbstractMetaType *java_type);

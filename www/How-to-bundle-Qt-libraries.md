@@ -10,7 +10,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer qt
 ```
 
@@ -18,7 +18,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -cp qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      io.qt.qtjambi.deployer.Main qt
 ```
 

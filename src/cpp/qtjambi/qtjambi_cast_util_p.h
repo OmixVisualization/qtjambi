@@ -448,7 +448,7 @@ struct create_container_pointer<true, is_const, false, true, Container>{
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1* without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
         if(t){
             Container* result = new Container(*t);
-            scope->addFinalAction([result](){ delete result; });
+            scope->addDeletion(result);
             return result;
         }else{
             return nullptr;
@@ -479,7 +479,7 @@ struct create_container_pointer<false, true, true, buffer, Container>{
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
         if(ptr && scope){
             Container* t = ptr.release();
-            scope->addFinalAction([t](){ delete t; });
+            scope->addDeletion(t);
             return *t;
         }
         return qtjambi_get_default_value<Container>();
@@ -492,18 +492,18 @@ struct create_container_pointer<false, false, true, true, Container>{
         if(!scope)
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container))))) QTJAMBI_STACKTRACEINFO );
         Container* result = new Container();
-        scope->addFinalAction([result](){ delete result; });
+        scope->addDeletion(result);
         return *result;
     }
     static Container& create(JNIEnv *env, QtJambiScope* scope, Container* t){
         if(!scope)
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
         if(t){
-            scope->addFinalAction([t](){ delete t; });
+            scope->addDeletion(t);
             return *t;
         }else{
             Container* result = new Container();
-            scope->addFinalAction([result](){ delete result; });
+            scope->addDeletion(result);
             return *result;
         }
     }
@@ -512,11 +512,11 @@ struct create_container_pointer<false, false, true, true, Container>{
         if(!scope)
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
         if(t){
-            scope->addFinalAction([t](){ delete t; });
+            scope->addDeletion(t);
             return *t;
         }else{
             Container* result = new Container();
-            scope->addFinalAction([result](){ delete result; });
+            scope->addDeletion(result);
             return *result;
         }
     }
@@ -526,11 +526,11 @@ struct create_container_pointer<false, false, true, true, Container>{
             JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
         Container* t = ptr.release();
         if(t){
-            scope->addFinalAction([t](){ delete t; });
+            scope->addDeletion(t);
             return *t;
         }else{
             Container* result = new Container();
-            scope->addFinalAction([result](){ delete result; });
+            scope->addDeletion(result);
             return *result;
         }
     }

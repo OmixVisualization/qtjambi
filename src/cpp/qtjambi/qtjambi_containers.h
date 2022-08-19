@@ -194,12 +194,18 @@ class QTJAMBI_EXPORT AbstractContainerAccess{
 public:
     virtual void dispose();
     virtual AbstractContainerAccess* clone() = 0;
-    virtual void* createContainer() = 0;
-    virtual void* copyContainer(const void* container) = 0;
     virtual void assign(void* container, const void* other) = 0;
-    virtual void deleteContainer(void* container) = 0;
+    virtual size_t sizeOf() = 0;
+    virtual void* constructContainer(void* placement, const void* copyOf = nullptr) = 0;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual void* constructContainer(void* placement, void* move) = 0;
+    void* createContainer(void* moved);
+#endif
+    virtual bool destructContainer(void* container) = 0;
     virtual int registerContainer(const QByteArray& containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
+    void* createContainer(const void* copy = nullptr);
+    void deleteContainer(void* container);
     Q_DISABLE_COPY_MOVE(AbstractContainerAccess)
 protected:
     AbstractContainerAccess();
@@ -219,11 +225,14 @@ public:
     virtual bool canLess() = 0;
     virtual jboolean equals(JNIEnv * env, void* iterator, void* other) = 0;
 private:
-    void* createContainer() override;
-    void* copyContainer(const void*) override;
-    void assign(void*, const void*) override;
-    void deleteContainer(void*) override;
-    int registerContainer(const QByteArray&) override;
+    size_t sizeOf() final override;
+    void* constructContainer(void* placement, const void* copyOf = nullptr) final override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void* constructContainer(void* placement, void* move) final override;
+#endif
+    bool destructContainer(void* container) final override;
+    void assign(void*, const void*) final override;
+    int registerContainer(const QByteArray&) final override;
     Q_DISABLE_COPY_MOVE(AbstractIteratorAccess)
 };
 
@@ -235,11 +244,6 @@ public:
     AbstractBiIteratorAccess* clone() override = 0;
     virtual jobject key(JNIEnv * env, void* iterator) = 0;
 private:
-    void* createContainer() override;
-    void* copyContainer(const void*) override;
-    void assign(void*, const void*) override;
-    void deleteContainer(void*) override;
-    int registerContainer(const QByteArray&) override;
     Q_DISABLE_COPY_MOVE(AbstractBiIteratorAccess)
 };
 
@@ -255,28 +259,22 @@ public:
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
     virtual bool isConstant() = 0;
     virtual const QMetaType& elementMetaType() = 0;
-    virtual void append(JNIEnv * env, void* container, jobject value) = 0;
     virtual void appendList(JNIEnv * env, void* container, jobject list) = 0;
     virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    virtual jobject toSet(JNIEnv * env,const void* container) = 0;
-#endif
     virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint size(JNIEnv * env, const void* container) = 0;
     virtual void reserve(JNIEnv * env, void* container, jint size) = 0;
     virtual void replace(JNIEnv * env, void* container, jint index, jobject value) = 0;
-    virtual jboolean removeOne(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void removeAt(JNIEnv * env, void* container, jint index) = 0;
+    virtual void remove(JNIEnv * env, void* container, jint index, jint n) = 0;
     virtual jint removeAll(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void prepend(JNIEnv * env, void* container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
     virtual void move(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) = 0;
     virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
-    virtual void insert(JNIEnv * env, void* container, jint index, jobject value) = 0;
+    virtual void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) = 0;
     virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
@@ -287,8 +285,6 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
     virtual void fill(JNIEnv * env, void* container, jobject value, jint size) = 0;
-    virtual void remove(JNIEnv * env, void* container, jint index, jint n) = 0;
-    virtual void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) = 0;
     virtual void resize(JNIEnv * env, void* container, jint newSize) = 0;
     virtual void squeeze(JNIEnv * env, void* container) = 0;
 #endif
@@ -305,26 +301,20 @@ public:
     virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
     virtual bool isConstant() = 0;
     virtual const QMetaType& elementMetaType() = 0;
-    virtual void append(JNIEnv * env, void* container, jobject value) = 0;
     virtual void appendVector(JNIEnv * env, void* container, jobject list) = 0;
     virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
-    virtual jobject toSet(JNIEnv * env,const void* container) = 0;
     virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint size(JNIEnv * env, const void* container) = 0;
     virtual void reserve(JNIEnv * env, void* container, jint size) = 0;
     virtual void replace(JNIEnv * env, void* container, jint index, jobject value) = 0;
-    virtual jboolean removeOne(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void removeAt(JNIEnv * env, void* container, jint index) = 0;
     virtual jint removeAll(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void prepend(JNIEnv * env, void* container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
     virtual void move(JNIEnv * env, void* container, jint index1, jint index2) = 0;
     virtual jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) = 0;
     virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
-    virtual void insert(JNIEnv * env, void* container, jint index, jobject value) = 0;
     virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;

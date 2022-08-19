@@ -14,3 +14,7 @@ HEADERS += \
 
 SOURCES += \
     qtjambi_texttospeech.cpp
+
+macx : greaterThan(QT_MAJOR_VERSION, 5) : {
+    INCLUDEPATH += $(QTDIR)/include
+}

@@ -284,6 +284,20 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <object-type name="QSslServer">
+        <modify-function signature="preSharedKeyAuthenticationRequired(QSslSocket*,QSslPreSharedKeyAuthenticator*)">
+            <modify-argument index="2" invalidate-after-use="yes">
+                <replace-type modified-type="io.qt.network.QSslPreSharedKeyAuthenticator" />
+                <no-null-pointer/>
+                <conversion-rule class="shell">
+                    %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast&lt;QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QNetworkAccessManager">
         <modify-function signature="proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)">
             <modify-argument index="2" invalidate-after-use="yes">

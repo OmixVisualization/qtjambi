@@ -533,6 +533,9 @@
     <enum-type name="QVideoFrameFormat::PixelFormat" since="6.2.0"/>
     <enum-type name="QVideoFrameFormat::Direction" since="6.2.0"/>
     <enum-type name="QVideoFrameFormat::YCbCrColorSpace" since="6.2.0"/>
+    <enum-type name="QVideoFrameFormat::ColorTransfer" since="6.4.0"/>
+    <enum-type name="QVideoFrameFormat::ColorRange" since="6.4.0"/>
+    <enum-type name="QVideoFrameFormat::ColorSpace" since="6.4.0"/>
 
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'" />

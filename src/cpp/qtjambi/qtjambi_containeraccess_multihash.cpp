@@ -89,12 +89,9 @@ AutoMultiHashAccess::AutoMultiHashAccess(
 
 jint AutoMultiHashAccess::capacity(JNIEnv * env, const void* container){ return AutoHashAccess::capacity(env, container); }
 void AutoMultiHashAccess::reserve(JNIEnv * env, void* container, jint capacity){ AutoHashAccess::reserve(env, container, capacity); }
-void* AutoMultiHashAccess::createContainer() {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    return AutoHashAccess::createContainer();
-#else
-    return new MultiHashData;
-#endif
+
+bool AutoMultiHashAccess::destructContainer(void* container) {
+    return AutoHashAccess::destructContainer(container);
 }
 
 void* AutoMultiHashAccess::constructContainer(void* result, const void* container) {
@@ -108,7 +105,19 @@ void* AutoMultiHashAccess::constructContainer(void* result, const void* containe
     return result;
 }
 
-void* AutoMultiHashAccess::copyContainer(const void* container) {return AutoHashAccess::copyContainer(container);}
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void* AutoMultiHashAccess::constructContainer(void* result, void* container) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return AutoHashAccess::constructContainer(result, container);
+#else
+    MultiHashData* _this = new(result) MultiHashData;
+    MultiHashData* other = reinterpret_cast<MultiHashData*>(container);
+    std::swap(_this->d, other->d);
+    std::swap(_this->m_size, other->m_size);
+#endif
+    return result;
+}
+#endif
 
 void AutoMultiHashAccess::assign(void* container, const void* other) {
     AutoHashAccess::assign(container, other);
@@ -119,7 +128,6 @@ void AutoMultiHashAccess::assign(void* container, const void* other) {
 #endif
 }
 
-void AutoMultiHashAccess::deleteContainer(void* container) {AutoHashAccess::deleteContainer(container);}
 int AutoMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {return AutoHashAccess::registerContainer(containerTypeName);}
 void AutoMultiHashAccess::dispose() {delete this;}
 void AutoMultiHashAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) {AutoHashAccess::analyzeEntries(container, analyzer, data);}
@@ -158,8 +166,8 @@ IsBiContainerFunction AutoMultiHashAccess::getIsBiContainerFunction(){
     return qtjambi_is_QMultiHash;
 }
 
-uint AutoMultiHashAccess::sizeOf() const{
-    return uint(sizeof(QMultiHash<char,char>));
+size_t AutoMultiHashAccess::sizeOf() {
+    return sizeof(QMultiHash<char,char>);
 }
 
 ushort AutoMultiHashAccess::alignOf() const{
@@ -247,9 +255,10 @@ jobject AutoMultiHashAccess::uniqueKeys(JNIEnv *env, const void* container)
         Node *firstNode(d->firstNode());
         Node *lastNode(reinterpret_cast<Node*>(d));
         listAccess->reserve(env, listContainer, d->size);
+        jint idx = listAccess->size(env, listContainer);
         while(firstNode != lastNode){
             void* key1 = reinterpret_cast<char*>(firstNode)+m_offset1;
-            listAccess->append(env, listContainer, nodeKey(env, firstNode));
+            listAccess->insert(env, listContainer, idx++, 1, nodeKey(env, firstNode));
             firstNode = QHashData::nextNode(firstNode);
             while(firstNode != lastNode && same_key(firstNode, key1)){
                 firstNode = QHashData::nextNode(firstNode);
@@ -258,11 +267,12 @@ jobject AutoMultiHashAccess::uniqueKeys(JNIEnv *env, const void* container)
 #else
         QHashData::iterator e = d->end(*this);
         QHashData::iterator n = d->begin(*this);
+        jint idx = listAccess->size(env, listContainer);
         while (n != e) {
             jvalue jv;
             jv.l = nullptr;
             m_keyInternalToExternalConverter(env, nullptr, n.key(), &jv, true);
-            listAccess->append(env, listContainer, jv.l);
+            listAccess->insert(env, listContainer, idx++, 1, jv.l);
             ++n;
         }
 #endif
@@ -359,9 +369,10 @@ jobject AutoMultiHashAccess::values(JNIEnv *env, const void* container, jobject 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             Node* e = reinterpret_cast<Node*>(d);
             Node *n = *findNode(map, akey);
+            jint idx = listAccess->size(env, listContainer);
             if(n && n != e){
                 do{
-                    listAccess->append(env, listContainer, nodeValue(env, n));
+                    listAccess->insert(env, listContainer, idx++, 1, nodeValue(env, n));
                     n = QHashData::nextNode(n);
                 }while(n != e && same_key(n, akey));
             }
@@ -370,11 +381,12 @@ jobject AutoMultiHashAccess::values(JNIEnv *env, const void* container, jobject 
             if(i.e){
                 multi_iterator& it = reinterpret_cast<multi_iterator&>(i);
                 const Chain* chain = *it.e;
+                jint idx = listAccess->size(env, listContainer);
                 while(chain){
                     jvalue jv;
                     jv.l = nullptr;
                     m_valueInternalToExternalConverter(env, nullptr, chain->value(), &jv, true);
-                    listAccess->append(env, listContainer, jv.l);
+                    listAccess->insert(env, listContainer, idx++, 1, jv.l);
                     chain = chain->next(*this);
                 }
             }

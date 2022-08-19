@@ -47,9 +47,15 @@
     <enum-type name="QPdfSearchModel::Role" />
     <enum-type name="QPdfDocument::DocumentError" until="6.3.*"/>
     <enum-type name="QPdfDocument::Error" since="6.4.0"/>
+    <enum-type name="QPdfDocument::PageModelRole" since="6.4.0"/>
     <enum-type name="QPdfBookmarkModel::StructureMode" />
     <enum-type name="QPdfBookmarkModel::Role" />
+    <value-type name="QPdfLink" since="6.4.0">
+        <modify-function signature="operator=(QPdfLink)" remove="all"/>
+    </value-type>
     <object-type name="QPdfBookmarkModel">
+    </object-type>
+    <object-type name="QPdfPageNavigator" since="6.4.0">
     </object-type>
     <value-type name="QPdfDestination" generate="no-shell" no-meta-type="true">
         <modify-function signature="operator=(QPdfDestination)" remove="all"/>
@@ -85,10 +91,12 @@
         <modify-function signature="QPdfSelection(QPdfSelection)" remove="all"/>
         <modify-function signature="operator=(QPdfSelection)" remove="all"/>
     </value-type>
-    <namespace-type name="QPdf">
+    <namespace-type name="QPdf" until="6.3">
     </namespace-type>
-    <enum-type name="QPdf::RenderFlag" flags="QPdf::RenderFlags" />
-    <enum-type name="QPdf::Rotation" />
+    <enum-type name="QPdf::RenderFlag" flags="QPdf::RenderFlags" until="6.3"/>
+    <enum-type name="QPdf::Rotation" until="6.3"/>
+    <enum-type name="QPdfDocumentRenderOptions::RenderFlag" flags="QPdfDocumentRenderOptions::RenderFlags" since="6.4"/>
+    <enum-type name="QPdfDocumentRenderOptions::Rotation" since="6.4"/>
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QPdfDestination' is missing a default constructor.*" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QPdfSelection' is missing a default constructor.*" />
 </typesystem>

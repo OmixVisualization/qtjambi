@@ -1276,7 +1276,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1306,7 +1306,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1613,7 +1613,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1644,7 +1644,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -7184,5 +7184,10 @@ public final &lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterf
 private native &lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class&lt;QNativeInterface> name);
         </inject-code>
     </object-type>
+    <value-type name="QColorTransform">
+        <inject-code class="native" position="beginning">
+			hash_type qHash(const QColorTransform &amp;value, hash_type seed = 0);
+        </inject-code>
+    </value-type>
 </typesystem>
 

@@ -36,6 +36,10 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+#  define QT_CORE_INLINE_SINCE(major, minor) inline
+#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#endif
 #include "qtjambi_functionpointer.h"
 QT_WARNING_DISABLE_DEPRECATED
 
@@ -283,6 +287,37 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isObjectWrapperType)
             || metaTypeId == registeredMetaTypeID(typeid(JMapWrapper))
             || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+struct QObjectPrivate::ConnectionData
+{
+    // the id below is used to avoid activating new connections. When the object gets
+    // deleted it's set to 0, so that signal emission stops
+    QAtomicInteger<uint> currentConnectionId;
+    QAtomicInt ref;
+    QAtomicPointer<SignalVector> signalVector;
+    Connection *senders = nullptr;
+    Sender *currentSender = nullptr;   // object currently activating the object
+    QAtomicPointer<Connection> orphaned;
+};
+
+struct QObjectPrivate::Sender
+{
+    Sender(QObject *receiver, QObject *sender, int signal)
+        : receiver(receiver), sender(sender), signal(signal)
+    {
+        if (receiver) {
+            ConnectionData *cd = receiver->d_func()->connections.loadRelaxed();
+            previous = cd->currentSender;
+            cd->currentSender = this;
+        }
+    }
+    Sender *previous;
+    QObject *receiver;
+    QObject *sender;
+    int signal;
+};
+#endif
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_00024CurrentSenderSetter_setQObjectSender)

@@ -112,7 +112,7 @@
         auto _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         if(!env->IsInstanceOf(object, _this.class_ref))\
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QLatin1String("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         va_start(args, object);\
         env->CallVoidMethodV(object,_this.__##method,args);\
@@ -138,7 +138,7 @@
         auto _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         if(!env->IsInstanceOf(object, _this.class_ref))\
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QLatin1String("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         va_start(args, object);\
         jtype result = jtype(env->Call##TYPE##MethodV(object,_this.__##method,args));\
@@ -168,7 +168,7 @@
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
         if(!env->IsInstanceOf(object, _this.class_ref))\
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QLatin1String("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jtype _result = jtype(env->Get##TYPE##Field(object, _this.__##field));\
         JavaException::check(env);\
         return _result;\
@@ -179,7 +179,7 @@
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
         if(!env->IsInstanceOf(object, _this.class_ref))\
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QLatin1String("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, _this.class_ref), qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->Set##TYPE##Field(object, _this.__##field, value);\
         JavaException::check(env);\
     }

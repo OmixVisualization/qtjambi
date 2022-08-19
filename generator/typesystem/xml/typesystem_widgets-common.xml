@@ -3092,7 +3092,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <functional-type name="QFileDialog::FileContentHandler" using="std::function&lt;void(const QString &amp;, const QByteArray &amp;)>" generate="no"/>
+    <functional-type name="QFileDialog::FileContentHandler" using="std::function&lt;void(const QString&amp;,const QByteArray&amp;)>" generate="no"/>
     <object-type name="QFileDialog">
         <extra-includes>
             <include file-name="QUrl" location="global"/>
@@ -4086,7 +4086,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unsupported default value 'QVector&lt;FormatRange&gt;()' of argument in function '*', class '*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unsupported default value 'QVariantList()' of argument in function '*', class '*'"/>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFileDialog::QFileDialog', unmatched parameter type 'QFileDialogArgs const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFileDialog::QFileDialog', unmatched parameter type 'const QFileDialogArgs&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWidget::windowSurface', unmatched return type 'QWindowSurface*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWidget::setWindowSurface', unmatched parameter type 'QWindowSurface*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QStyleOption::StyleOptionType' does not have a type entry or is not an enum"/>
@@ -4102,9 +4102,9 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QGraphicsObject' passed as value. Resulting code will not compile." />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QGenericMatrix*' of * is not known" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QGenericMatrix*'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QPlatformMenu*'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QPlatformMenuBar*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type '*QGenericMatrix*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type '*QPlatformMenu*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type '*QPlatformMenuBar*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QStyleOptionGroupBox::features' with unmatched type 'QStyleOptionFrameV2::FrameFeatures'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'children()const' for function modification in 'QGraphicsWidget' not found. Possible candidates:*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'addAction(QAction*)' for function modification in 'QToolBar' not found. Possible candidates:*"/>

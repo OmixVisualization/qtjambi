@@ -322,6 +322,14 @@ int Wrapper::runJambiGenerator() {
         return 1;
     }
 
+    if(!docsDirectory.exists() && gs->qtVersionMajor==QT_VERSION_MAJOR && gs->qtVersionMinor==QT_VERSION_MINOR){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        docsDirectory = QLibraryInfo::location(QLibraryInfo::DocumentationPath);
+#else
+        docsDirectory = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
+#endif
+    }
+
     if(docsDirectory.exists()){
         gs->m_docModelFuture = QtConcurrent::run([](const QDir& docsDirectory, QThread* targetThread) -> const DocModel* {
             DocIndexReader reader;

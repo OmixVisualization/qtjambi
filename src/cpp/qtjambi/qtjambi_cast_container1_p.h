@@ -276,10 +276,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
             } else {
                 if(is_const){
                     list = new NativeType();
-                    scope->addFinalAction([list](){ delete list; });
+                    scope->addDeletion(list);
                 }else{
                     list = new IntermediateContainer<QList,T>(env, in, *scope);
-                    scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QList,T>*>(list); });
+                    scope->addDeletion(static_cast<IntermediateContainer<QList,T>*>(list));
                 }
                 jobject iterator = qtjambi_collection_iterator(env, in);
                 while(qtjambi_iterator_has_next(env, iterator)) {
@@ -289,7 +289,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
             }
         }else{
             list = new NativeType();
-            scope->addFinalAction([list](){ delete list; });
+            scope->addDeletion(list);
         }
         return *list;
     }
@@ -402,10 +402,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
              } else {
                  if(is_const){
                      list = new NativeType();
-                     scope->addFinalAction([list](){ delete list; });
+                     scope->addDeletion(list);
                  }else{
                      list = new IntermediateContainer<QSet,T>(env, in, *scope);
-                     scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QSet,T>*>(list); });
+                     scope->addDeletion(static_cast<IntermediateContainer<QSet,T>*>(list));
                  }
                  jobject iterator = qtjambi_collection_iterator(env, in);
                  while(qtjambi_iterator_has_next(env, iterator)) {
@@ -415,7 +415,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
              }
          }else{
              list = new NativeType();
-             scope->addFinalAction([list](){ delete list; });
+             scope->addDeletion(list);
          }
          return *list;
      }
@@ -530,10 +530,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
              } else {
                  if(is_const){
                      list = new NativeType();
-                     scope->addFinalAction([list](){ delete list; });
+                     scope->addDeletion(list);
                  }else{
                      list = new IntermediateContainer<QLinkedList,T>(env, in, *scope);
-                     scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QLinkedList,T>*>(list); });
+                     scope->addDeletion(static_cast<IntermediateContainer<QLinkedList,T>*>(list));
                  }
                  jobject iterator = qtjambi_collection_iterator(env, in);
                  while(qtjambi_iterator_has_next(env, iterator)) {
@@ -543,7 +543,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
              }
          }else{
              list = new NativeType();
-             scope->addFinalAction([list](){ delete list; });
+             scope->addDeletion(list);
          }
          return *list;
      }
@@ -665,10 +665,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
              } else {
                  if(is_const){
                      list = new NativeType();
-                     scope->addFinalAction([list](){ delete list; });
+                     scope->addDeletion(list);
                  }else{
                      list = new IntermediateContainer<QVector,T>(env, in, *scope);
-                     scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QVector,T>*>(list); });
+                     scope->addDeletion(static_cast<IntermediateContainer<QVector,T>*>(list));
                  }
                  jobject iterator = qtjambi_collection_iterator(env, in);
                  while(qtjambi_iterator_has_next(env, iterator)) {
@@ -678,7 +678,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
              }
          }else{
              list = new NativeType();
-             scope->addFinalAction([list](){ delete list; });
+             scope->addDeletion(list);
          }
          return *list;
      }
@@ -811,10 +811,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
             } else {
                 if(is_const){
                     list = new QStack<T>();
-                    scope->addFinalAction([list](){delete list;});
+                    scope->addDeletion(list);
                 }else{
                     list = new IntermediateContainer<QStack,T>(env, in, *scope);
-                    scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QStack,T>*>(list); });
+                    scope->addDeletion(static_cast<IntermediateContainer<QStack,T>*>(list));
                 }
                 jobject iterator = qtjambi_collection_iterator(env, in);
                 while(qtjambi_iterator_has_next(env, iterator)) {
@@ -825,7 +825,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
             }
         }else{
             list = new QStack<T>();
-            scope->addFinalAction([list](){delete list;});
+            scope->addDeletion(list);
         }
         return *list;
     }
@@ -939,10 +939,10 @@ struct qtjambi_jnitype_container1_cast<false, true,
              } else {
                  if(is_const){
                      list = new NativeType();
-                     scope->addFinalAction([list](){ delete list; });
+                     scope->addDeletion(list);
                  }else{
                      list = new IntermediateContainer<QQueue,T>(env, in, *scope);
-                     scope->addFinalAction([list](){ delete static_cast<IntermediateContainer<QQueue,T>*>(list); });
+                     scope->addDeletion(static_cast<IntermediateContainer<QQueue,T>*>(list));
                  }
                  jobject iterator = qtjambi_collection_iterator(env, in);
                  while(qtjambi_iterator_has_next(env, iterator)) {
@@ -952,7 +952,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
              }
          }else{
              list = new NativeType();
-             scope->addFinalAction([list](){ delete list; });
+             scope->addDeletion(list);
          }
          return *list;
      }
@@ -1349,6 +1349,33 @@ struct qtjambi_jnitype_container1_cast<true, has_scope,
 };
 
 template<typename T>
+struct FutureVariantHandler{
+    static void reportNativeResults(JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
+       if(count==1){
+           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResult(QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>()), beginIndex);
+       }else{
+           QVector<QVariant> results(count);
+           for(int i=0; i<count; ++i){
+               results << QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>());
+           }
+           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResults(results, count);
+       }
+    }
+
+    static void reportJavaResults(JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>&targetFuture, int beginIndex, int count){
+        if(count==1){
+            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(beginIndex).template value<QVariant>().template value<T>(), beginIndex);
+        }else{
+            QVector<T> results(count);
+            for(int i=0; i<count; ++i){
+                results << sourceFuture->resultStoreBase().resultAt(i).template value<QVariant>().template value<T>();
+            }
+            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResults(results, count);
+        }
+    }
+};
+
+template<typename T>
 QFutureInterface<T> convert_future_interface(QFutureInterface<QVariant>* future, const char* translatedType = "QFutureInterface"){
     QFutureInterface<T> result;
     if(future){
@@ -1356,28 +1383,8 @@ QFutureInterface<T> convert_future_interface(QFutureInterface<QVariant>* future,
                     QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<QVariant>(*future)),
                     QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<T>(result)),
                     translatedType,
-                    [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>&targetFuture, int beginIndex, int count){
-                        if(count==1){
-                            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(beginIndex).template value<QVariant>().template value<T>(), beginIndex);
-                        }else{
-                            QVector<T> results(count);
-                            for(int i=0; i<count; ++i){
-                                results << sourceFuture->resultStoreBase().resultAt(i).template value<QVariant>().template value<T>();
-                            }
-                            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResults(results, count);
-                        }
-                    },
-                    [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
-                       if(count==1){
-                           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResult(QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>()), beginIndex);
-                       }else{
-                           QVector<QVariant> results(count);
-                           for(int i=0; i<count; ++i){
-                               results << QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>());
-                           }
-                           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResults(results, count);
-                       }
-                   });
+                    FutureVariantHandler<T>::reportJavaResults,
+                    FutureVariantHandler<T>::reportNativeResults);
         if(QFutureInterface<T>* newResult = dynamic_cast<QFutureInterface<T>*>(availableResult)){
             return *newResult;
         }
@@ -1578,9 +1585,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                     JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
                 QPromise<T>* promise = new QPromise<T>(_futureInterface);
                 QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
-                scope->addFinalAction([promiseContent](){
-                    delete promiseContent;
-                });
+                scope->addDeletion(promiseContent);
                 return *promise;
             }else if(QFutureInterface<QVariant>* futureInterface = dynamic_cast<QFutureInterface<QVariant>*>(base)){
                 if(scope==nullptr)
@@ -1588,9 +1593,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                 QFutureInterface<T> _futureInterface = convert_future_interface<T>(futureInterface, "QPromise");
                 QPromise<T>* promise = new QPromise<T>(_futureInterface);
                 QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
-                scope->addFinalAction([promiseContent](){
-                    delete promiseContent;
-                });
+                scope->addDeletion(promiseContent);
                 return *promise;
             }else if(base){
                 QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
@@ -1611,7 +1614,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                             JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
                         QPromise<T>* promise = new QPromise<T>(*futureInterface);
                         QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
-                        scope->addFinalAction([promiseContent](){delete promiseContent;});
+                        scope->addDeletion(promiseContent);
                         return *promise;
                     }else if constexpr (std::is_same<void, T>::value){
                         QFutureInterface<T> _futureInterface(*base);
@@ -1619,9 +1622,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                             JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
                         QPromise<T>* promise = new QPromise<T>(_futureInterface);
                         QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
-                        scope->addFinalAction([promiseContent](){
-                            delete promiseContent;
-                        });
+                        scope->addDeletion(promiseContent);
                         return *promise;
                     }else if(QFutureInterface<QVariant>* futureInterface = dynamic_cast<QFutureInterface<QVariant>*>(base)){
                         if(scope==nullptr)
@@ -1629,9 +1630,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                         QFutureInterface<T> _futureInterface = convert_future_interface<T>(futureInterface, "QPromise");
                         QPromise<T>* promise = new QPromise<T>(_futureInterface);
                         QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
-                        scope->addFinalAction([promiseContent](){
-                            delete promiseContent;
-                        });
+                        scope->addDeletion(promiseContent);
                         return *promise;
                     }else{
                         QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
@@ -2207,7 +2206,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                 data = new JObjectArrayPointer<T>(env, jobjectArray(in), [scope](T& d,JNIEnv * env, jobject obj){
                     d = qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, obj, nullptr, scope);
                 });
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<T> out;
             if (data) {
@@ -2267,7 +2266,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JIntArrayPointer * data = nullptr;
             if (JIntArrayPointer::isValidArray(env, in)) {
                 data = new JIntArrayPointer(env, jintArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<qint32> out;
             if (data) {
@@ -2327,7 +2326,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JShortArrayPointer * data = nullptr;
             if (JShortArrayPointer::isValidArray(env, in)) {
                 data = new JShortArrayPointer(env, jshortArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<qint16> out;
             if (data) {
@@ -2387,7 +2386,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JByteArrayPointer * data = nullptr;
             if (JByteArrayPointer::isValidArray(env, in)) {
                 data = new JByteArrayPointer(env, jbyteArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<qint8> out;
             if (data) {
@@ -2447,7 +2446,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JLongArrayPointer * data = nullptr;
             if (JLongArrayPointer::isValidArray(env, in)) {
                 data = new JLongArrayPointer(env, jlongArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<qint64> out;
             if (data) {
@@ -2507,7 +2506,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JIntArrayPointer * data = nullptr;
             if (JIntArrayPointer::isValidArray(env, in)) {
                 data = new JIntArrayPointer(env, jintArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<quint32> out;
             if (data) {
@@ -2567,7 +2566,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JShortArrayPointer * data = nullptr;
             if (JShortArrayPointer::isValidArray(env, in)) {
                 data = new JShortArrayPointer(env, jshortArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<quint16> out;
             if (data) {
@@ -2627,7 +2626,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JByteArrayPointer * data = nullptr;
             if (JByteArrayPointer::isValidArray(env, in)) {
                 data = new JByteArrayPointer(env, jbyteArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<quint8> out;
             if (data) {
@@ -2687,7 +2686,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JLongArrayPointer * data = nullptr;
             if (JLongArrayPointer::isValidArray(env, in)) {
                 data = new JLongArrayPointer(env, jlongArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<quint64> out;
             if (data) {
@@ -2747,7 +2746,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JFloatArrayPointer * data = nullptr;
             if (JFloatArrayPointer::isValidArray(env, in)) {
                 data = new JFloatArrayPointer(env, jfloatArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<float> out;
             if (data) {
@@ -2807,7 +2806,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JDoubleArrayPointer * data = nullptr;
             if (JDoubleArrayPointer::isValidArray(env, in)) {
                 data = new JDoubleArrayPointer(env, jdoubleArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<double> out;
             if (data) {
@@ -2867,7 +2866,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JBooleanArrayPointer * data = nullptr;
             if (JBooleanArrayPointer::isValidArray(env, in)) {
                 data = new JBooleanArrayPointer(env, jbooleanArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<bool> out;
             if (data) {
@@ -2927,7 +2926,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JCharArrayPointer * data = nullptr;
             if (JCharArrayPointer::isValidArray(env, in)) {
                 data = new JCharArrayPointer(env, jcharArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<wchar_t> out;
             if (data) {
@@ -2987,7 +2986,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
             JCharArrayPointer * data = nullptr;
             if (JCharArrayPointer::isValidArray(env, in)) {
                 data = new JCharArrayPointer(env, jcharArray(in), false);
-                scope->addFinalAction([data](){delete data;});
+                scope->addDeletion(data);
             }
             std::initializer_list<QChar> out;
             if (data) {

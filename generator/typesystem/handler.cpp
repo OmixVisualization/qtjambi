@@ -1063,6 +1063,8 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
     QString defaultSuperclass = attributeValue(attributes.removeNamedItem("default-superclass"));
     QString genericClass = attributeValue(attributes.removeNamedItem("generic-class"), "no");
     QString limit = attributeValue(attributes.removeNamedItem("expense-limit"), "none");
+    QString extendType = attributeValue(attributes.removeNamedItem("extend-type"));
+
     if(defaultSuperclass.isEmpty())
         defaultSuperclass = m_defaultSuperclass;
     if (!limit.isEmpty() && limit != "none") {
@@ -1161,6 +1163,10 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         }else{
             ctype->setTargetLangName(javaName);
         }
+    }
+    ctype->setExtendType(extendType);
+    if(!extendType.isEmpty()){
+        ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
     }
 }
 
@@ -2442,7 +2448,7 @@ QString Handler::parseTypeName(QDomNamedNodeMap& attributes, const QDomElement &
         TypesystemException::raise(QString("No 'name' attribute specified for tag <%1> in line %2").arg(element.localName()).arg(element.lineNumber()));
     }
     TypeEntry *tmp = m_database->findType(name);
-    if (tmp) {
+    if (tmp && !tmp->isQString() && !tmp->isChar()) {
         ReportHandler::warning(QString("Duplicate type entry: '%1'").arg(name));
     }
     return name;
@@ -2600,7 +2606,7 @@ void Handler::parseEnumType(const QDomElement &element){
         QString package = attributeValue(attributes.removeNamedItem("package"), m_defaultPackage);
         QString upperBound = attributeValue(attributes.removeNamedItem("upper-bound"));
         QString lowerBound = attributeValue(attributes.removeNamedItem("lower-bound"));
-        QString cppName = attributeValue(attributes.removeNamedItem("cpp-name"));
+        QString javaScope = attributeValue(attributes.removeNamedItem("java-scope"));
         QString implements = attributeValue(attributes.removeNamedItem("implements"));
         QString forceInteger = attributeValue(attributes.removeNamedItem("force-integer"), "no");
         QString extensible = attributeValue(attributes.removeNamedItem("extensible"), "no");
@@ -2628,8 +2634,8 @@ void Handler::parseEnumType(const QDomElement &element){
         eentry->setTargetTypeSystem(m_defaultPackage);
         eentry->setUpperBound(upperBound);
         eentry->setLowerBound(lowerBound);
-        if(!cppName.isEmpty()){
-            eentry->setCppName(cppName);
+        if(!javaScope.isEmpty()){
+            eentry->setJavaScope(javaScope);
         }
         eentry->setImplements(implements);
         eentry->setForceInteger(convertBoolean(forceInteger, "force-integer", false));
@@ -2717,14 +2723,6 @@ void Handler::parseEnumType(const QDomElement &element){
             std::unique_ptr<FlagsTypeEntry> ftype(new FlagsTypeEntry("QFlags<" + eentry->qualifiedCppName() + ">"));
             ftype->setOriginator(eentry.get());
             QStringList flagsNames = flags.split(QLatin1String("::"));
-            if(!cppName.isEmpty()){
-                QStringList scope = cppName.split(QLatin1String("::"));
-                Q_ASSERT(scope.size());
-                Q_ASSERT(flags.size());
-                scope.removeLast();
-                scope.append(flagsNames.last());
-                ftype->setCppName(scope.join("::"));
-            }
             ftype->setOriginalName(flags);
             ftype->setCodeGeneration(eentry->codeGeneration());
             QString n = ftype->originalName();

@@ -2089,6 +2089,7 @@ final class NativeLibraryManager {
         DeploymentSpec spec = null;
         try {
 			spec = readDeploySpec(deploymentSpec);
+        } catch (java.util.zip.ZipException e1) {
 		} catch (DeploymentSpecException e1) {
 			Logger.getLogger("io.qt.internal").warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
 		}

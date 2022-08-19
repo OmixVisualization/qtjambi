@@ -224,30 +224,20 @@ class QQmlProperty__{
     
     @io.qt.QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null && !lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
-            if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
-                throw new io.qt.QUninvokableSlotException(lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(method==null)
-                throw new io.qt.QNoSuchSlotException(lamdaInfo.qobject, lamdaInfo.reflectiveMethod.getName());
-            return connectNotifySignal(lamdaInfo.qobject, method.methodIndex());
-        }
-        return false;
+    	return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
     }
     
     @io.qt.QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot1<?> slot){
-        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
-        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null && !lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
-            if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
-                throw new io.qt.QUninvokableSlotException(lamdaInfo.reflectiveMethod);
-            }
-            io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
-            if(method==null)
-                throw new io.qt.QNoSuchSlotException(lamdaInfo.qobject, lamdaInfo.reflectiveMethod.getName());
-            return connectNotifySignal(lamdaInfo.qobject, method.methodIndex());
+    	return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
+    }
+    
+    @io.qt.QtUninvokable
+    private final boolean connectNotifySignal(io.qt.core.QMetaObject.AbstractSlot slot, io.qt.core.QMetaMethod metaMethod){
+        if(metaMethod!=null && metaMethod.isValid()) {
+			io.qt.core.QObject qobject = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+			if(qobject!=null)
+				return connectNotifySignal(qobject, metaMethod.methodIndex());
         }
         return false;
     }

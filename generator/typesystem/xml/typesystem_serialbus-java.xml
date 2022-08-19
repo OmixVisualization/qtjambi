@@ -395,6 +395,26 @@
             </modify-argument>
         </modify-function>
     </interface-type>
+    <object-type name="QCanBusDevice">
+        <modify-function signature="setResetControllerFunction(std::function&lt;void()>)" until="5.*">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Runnable"/>
+                <conversion-rule class="native">
+                    <insert-template name="core.runnable.function"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCanBusStatusGetter(std::function&lt;QCanBusDevice::CanBusStatus()>)" until="5.*">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Supplier&lt;CanBusStatus>"/>
+                <conversion-rule class="native">
+                    <insert-template name="core.supplier.function">
+                        <replace from="%TYPE" to="QCanBusDevice::CanBusStatus"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Class function '*::CalcFuncPtr' is specified in typesystem, but not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode', unmatched parameter type '*'" />
 </typesystem>

@@ -79,6 +79,51 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
     return jint(QCalendar::Unspecified);
 }
 
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QString_toUtf8)
+(JNIEnv *__jni_env, jclass, jobject string)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QString::toUtf8(string)")
+    jobject __java_return_value{0};
+    QTJAMBI_TRY {
+        QString __qt_this = qtjambi_to_qstring(__jni_env, string);
+        QByteArray __qt_return_value = __qt_this.toUtf8();
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return __java_return_value;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QString_toLatin1)
+(JNIEnv *__jni_env, jclass, jobject string)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QString::toUtf8(string)")
+    jobject __java_return_value{0};
+    QTJAMBI_TRY {
+        QString __qt_this = qtjambi_to_qstring(__jni_env, string);
+        QByteArray __qt_return_value = __qt_this.toUtf8();
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return __java_return_value;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QString_toLocal8Bit)
+(JNIEnv *__jni_env, jclass, jobject string)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QString::toUtf8(string)")
+    jobject __java_return_value{0};
+    QTJAMBI_TRY {
+        QString __qt_this = qtjambi_to_qstring(__jni_env, string);
+        QByteArray __qt_return_value = __qt_this.toUtf8();
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return __java_return_value;
+}
+
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDebug_bin)
 (JNIEnv *env, jobject, QtJambiNativeID debugId)
