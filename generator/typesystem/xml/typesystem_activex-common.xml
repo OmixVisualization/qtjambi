@@ -54,23 +54,25 @@
     <rejection class="QAxBase::qt_meta_stringdata_QAxBase_t"/>
     <rejection class="QAxBase" field-name="qt_meta_data_QAxBase"/>
     <rejection class="QAxBase" field-name="qt_meta_stringdata_QAxBase"/>
+    <rejection class="QAxBase" function-name="queryInterface"/>
+    <rejection class="QAxBaseObject" function-name="queryInterface"/>
+    <rejection class="QAxBaseWidget" function-name="queryInterface"/>
+    <rejection class="QAxWidget" function-name="queryInterface"/>
+    <rejection class="QAxObject" function-name="queryInterface"/>
+    <rejection class="QAxScriptEngine" function-name="queryInterface"/>
     <object-type name="QAxBaseObject" since="6.0.0">
-        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
         <modify-function signature="signal(QString, int, void *)" access="private"/>
     </object-type>
     <object-type name="QAxBaseWidget" since="6.0.0">
-        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
         <modify-function signature="signal(QString, int, void *)" access="private"/>
     </object-type>
     <object-type name="QAxWidget">
         <modify-function signature="qt_static_metacall(QObject *, QMetaObject::Call, int, void **)" remove="all" since="6.0.0"/>
-        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
     </object-type>
     <interface-type name="QAxObjectInterface">
     </interface-type>
     <interface-type name="QAxBase">
         <modify-function signature="qt_static_metacall(QAxBase *, QMetaObject::Call, int, void **)" remove="all" until="5.15.*"/>
-        <modify-function signature="queryInterface(QUuid,void**)const" remove="all" until="6.2.*"/>
         <modify-function signature="operator=(const QProcessEnvironment&amp;)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QDataStream&amp;,QAxBase)" remove="all"/>
         <modify-function signature="operator>>(QDataStream&amp;,QAxBase&amp;)" remove="all"/>
@@ -83,7 +85,6 @@
     <enum-type name="QAxScript::FunctionFlags">
     </enum-type>
     <object-type name="QAxScriptEngine">
-        <modify-function signature="queryInterface(QUuid,void**)const" remove="all"/>
     </object-type>
     <object-type name="QAxScriptManager">
     </object-type>

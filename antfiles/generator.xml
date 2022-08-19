@@ -143,6 +143,7 @@
 		<xmlmerge victim="pdfwidgets"/>
 		<xmlmerge victim="activex"/>
 		<xmlmerge victim="ui4"/>
+		<xmlmerge victim="httpserver"/>
     </target>
 
 </project>

@@ -196,21 +196,21 @@
     <object-type name="QDesignerResourceBrowserInterface">
     </object-type>
 
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtResourceModel*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerIntrospectionInterface*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtGradientManager*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerPluginManager*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtResourceSet*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QResourceBuilder*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QTextBuilder*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QAbstractFormBuilder::DomPropertyHash*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerDialogGuiInterface*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerFormWindowManagerInterface*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerWidgetBoxInterface*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerLanguageExtension*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerFormEditorPluginInterface*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'Dom*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QList&lt;Dom*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QList&lt;QDesignerDnDItemInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QtResourceModel*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerIntrospectionInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QtGradientManager*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerPluginManager*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QtResourceSet*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QResourceBuilder*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QTextBuilder*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QAbstractFormBuilder::DomPropertyHash*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerDialogGuiInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerFormWindowManagerInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerWidgetBoxInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerLanguageExtension*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerFormEditorPluginInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*Dom*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QList&lt;Dom*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QList&lt;QDesignerDnDItemInterface*'" />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QDesigner*::*." />
 </typesystem>

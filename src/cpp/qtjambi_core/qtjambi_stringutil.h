@@ -46,188 +46,58 @@
 #include <qtjambi/qtjambi_global.h>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#endif //QT_CONFIG(regularexpression)
 #include <QtCore/QList>
 #include <QtCore/QVariant>
 
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
-#endif //def QT_JAMBI_RUN
-
-namespace QtJambiStringListUtil{
+#else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+struct QtJambiItemSelection{
+    QtJambiItemSelection(std::initializer_list<QItemSelectionRange>);
+    QtJambiItemSelection();
+};
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+bool operator<(const QString &s1, const QString &s2) noexcept{return false;}
+bool operator<(const QChar &s1, const QChar &s2) noexcept{return false;}
+bool operator==(const QChar &s1, const QChar &s2) noexcept{return false;}
+#endif
 
-inline QString join(const QStringList& stringList, const QString &sep)
-{return stringList.join(sep);}
-
-inline QString join(const QStringList& stringList, QChar sep)
-{return stringList.join(sep);}
-
-inline QStringList filter(const QStringList& stringList, const QString &str, Qt::CaseSensitivity cs){
-    return stringList.filter(str, cs);
-}
-
-inline QStringList filter(const QStringList& stringList, const QRegularExpression  &re){
-    return stringList.filter(re);
-}
-
-inline int removeDuplicates(QStringList& stringList){
-    return int(stringList.removeDuplicates());
-}
-
-inline void replaceInStrings(QStringList& stringList, const QString &before, const QString &after, Qt::CaseSensitivity cs){
-    stringList.replaceInStrings(before, after, cs);
-}
-
-inline void replaceInStrings(QStringList& stringList, const QRegularExpression &re, const QString &after){
-    stringList.replaceInStrings(re, after);
-}
-
-inline void sort(QStringList& stringList, Qt::CaseSensitivity cs){
-    stringList.sort(cs);
-}
-
+struct QtJambiStringList{
+    QtJambiStringList() = delete;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QString join(const QString &sep);
+    QString join(QChar sep);
+    QStringList filter(const QString &str, Qt::CaseSensitivity cs);
+    QStringList filter(const QRegularExpression  &re);
+    int removeDuplicates();
+    void replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs);
+    void replaceInStrings(const QRegularExpression &re, const QString &after);
+    void sort(Qt::CaseSensitivity cs);
 #else
-inline void sort(QStringList& self, Qt::CaseSensitivity cs)
-{ QtPrivate::QStringList_sort(&self, cs); }
-inline qsizetype removeDuplicates(QStringList& self)
-{ return QtPrivate::QStringList_removeDuplicates(&self); }
-
-inline QString join(const QStringList& self, QStringView sep)
-{ return QtPrivate::QStringList_join(&self, sep); }
-inline QString join(const QStringList& self, QChar sep)
-{ return QtPrivate::QStringList_join(&self, &sep, 1); }
-
-inline QStringList filter(const QStringList& self, QStringView str, Qt::CaseSensitivity cs)
-{ return QtPrivate::QStringList_filter(&self, str, cs); }
-inline void replaceInStrings(QStringList& self, QStringView before, QStringView after, Qt::CaseSensitivity cs)
-{
-    QtPrivate::QStringList_replaceInStrings(&self, before, after, cs);
-}
-
-inline bool contains(const QStringList& self, QStringView str, Qt::CaseSensitivity cs) noexcept
-{ return QtPrivate::QStringList_contains(&self, str, cs); }
-
-#if QT_CONFIG(regularexpression)
-inline QStringList filter(const QStringList& self, const QRegularExpression &re)
-{ return QtPrivate::QStringList_filter(&self, re); }
-inline void replaceInStrings(QStringList& self, const QRegularExpression &re, const QString &after)
-{
-    QtPrivate::QStringList_replaceInStrings(&self, re, after);
-}
-inline qsizetype indexOf(const QStringList& self, const QRegularExpression &re, qsizetype from)
-{ return QtPrivate::QStringList_indexOf(&self, re, from); }
-inline qsizetype lastIndexOf(const QStringList& self, const QRegularExpression &re, qsizetype from)
-{ return QtPrivate::QStringList_lastIndexOf(&self, re, from); }
+    QtJambiStringList(std::initializer_list<QString>);
+    QtJambiStringList(QList<QString>);
+    void sort(Qt::CaseSensitivity cs);
+    qsizetype removeDuplicates();
+    QString join(QStringView sep);
+    QString join(QChar sep);
+    QStringList filter(const QStringView str, Qt::CaseSensitivity cs);
+    void replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs);
+    bool contains(const QStringView str, Qt::CaseSensitivity cs) noexcept;
+    #if QT_CONFIG(regularexpression)
+    QStringList filter(const QRegularExpression &re);
+    void replaceInStrings(const QRegularExpression &re, const QString &after);
+    qsizetype indexOf(const QRegularExpression &re, qsizetype from);
+    qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from);
 #endif // QT_CONFIG(regularexpression)
 #endif
-}
-
-namespace QtJambiStringUtil{
-
-#if QT_VERSION_CHECK(5,15,0)
-#define Q_SPLITBEHAVIOUR_PREFIX(e) Qt::e
-#define Q_SPLIT_PREFIX(e) Qt::e
-#else
-#ifdef QT_JAMBI_RUN
-enum SplitBehavior { KeepEmptyParts, SkipEmptyParts };
-#define Q_SPLIT_PREFIX(e) e
-#define Q_SPLITBEHAVIOUR_PREFIX(e) e
-#else
-#define Q_SPLITBEHAVIOUR_PREFIX(e) QString::e
-#define Q_SPLIT_PREFIX(e) QString::e
-#endif
-#endif
-
-#ifndef QT_JAMBI_RUN
-#define Q_STRING_PREFIX(e) QString::e
-#else
-#define Q_STRING_PREFIX(e) e
-#endif
-
-inline QStringList split(const QString& string, const QString &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
-{ return string.split(sep, behavior, cs); }
-
-inline QStringList split(const QString& string, QChar sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
-{ return string.split(sep, behavior, cs); }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifndef QT_NO_REGEXP
-inline QStringList split(const QString& string, const QRegExp &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
-{ return string.split(sep, behavior); }
-#endif
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-#if QT_CONFIG(regularexpression)
-inline QStringList split(const QString& string, const QRegularExpression &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
-{ return string.split(sep, behavior); }
-#endif
-
-inline QString repeated(const QString& string, int times)
-{ return string.repeated(times); }
-
-#ifdef QT_JAMBI_RUN
-enum SectionFlag {
-    SectionDefault             = 0x00,
-    SectionSkipEmpty           = 0x01,
-    SectionIncludeLeadingSep   = 0x02,
-    SectionIncludeTrailingSep  = 0x04,
-    SectionCaseInsensitiveSeps = 0x08
 };
-Q_DECLARE_FLAGS(SectionFlags, SectionFlag)
-#else
-typedef QString::SectionFlag SectionFlag;
-typedef QString::SectionFlags SectionFlags;
-#endif
-
-inline QString section(const QString& string, QChar sep, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
-{ return string.section(sep, start, end, flags); }
-
-inline QString section(const QString& string, const QString &in_sep, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
-{ return string.section(in_sep, start, end, flags); }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifndef QT_NO_REGEXP
-inline QString section(const QString& string, const QRegExp &reg, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
-{ return string.section(reg, start, end, flags); }
-#endif
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-#if QT_CONFIG(regularexpression)
-inline QString section(const QString& string, const QRegularExpression &re, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
-{ return string.section(re, start, end, flags); }
-#endif
-inline QString left(const QString& string, int n)
-{ return string.left(n); }
-
-inline QString right(const QString& string, int n)
-{ return string.right(n); }
-
-inline QString mid(const QString& string, int position, int n = -1)
-{ return string.mid(position, n); }
-
-inline QString chopped(const QString& string, int n)
-{ return string.chopped(n); }
-
-inline QString arg(QString string, std::initializer_list<QString> args)
-{
-    for(const QString& arg : args){
-        string = string.arg(arg);
-    }
-    return string;
-}
-
-inline QString format(QString string, std::initializer_list<QVariant> args)
-{
-    for(const QVariant& arg : args){
-        string = string.arg(arg.toString());
-    }
-    return string;
-}
-
-};
-
-#undef Q_STRING_PREFIX
+#endif //def QT_JAMBI_RUN
 
 #endif // QT_NO_QFUTURE
 

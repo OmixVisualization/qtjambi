@@ -93,7 +93,7 @@
         </modify-function>
     </object-type>
     <object-type name="QWebEngineCookieStore">
-        <modify-function signature="setCookieFilter(std::function&lt;bool(const QWebEngineCookieStore::FilterRequest &amp;)>)">
+        <modify-function signature="setCookieFilter(std::function&lt;bool(const QWebEngineCookieStore::FilterRequest&amp;)>)">
             <modify-argument index="1">
                 <replace-type modified-type="java.util.function.Predicate&lt;FilterRequest>"/>
                 <conversion-rule class="native">

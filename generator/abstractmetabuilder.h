@@ -221,6 +221,7 @@ class AbstractMetaBuilder {
         const QMap<QString, QString>* m_features;
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
         QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
+        QList<AbstractMetaEnum *> m_scopeChangedEnums;
         uint m_qtVersionMajor;
         uint m_qtVersionMinor;
         uint m_qtVersionPatch;

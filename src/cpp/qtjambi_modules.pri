@@ -28,6 +28,7 @@ contains(QT_CONFIG, qtjambi-networkauth):         SUBDIRS += qtjambi_network_aut
 contains(QT_CONFIG, qtjambi-printsupport):        SUBDIRS += qtjambi_printsupport
 contains(QT_CONFIG, qtjambi-charts):              SUBDIRS += qtjambi_charts
 contains(QT_CONFIG, qtjambi-virtualkeyboard):     SUBDIRS += qtjambi_virtkey
+contains(QT_CONFIG, qtjambi-httpserver):          SUBDIRS += qtjambi_httpserver
 
 contains(QT_CONFIG, qtjambi-sql):                 SUBDIRS += qtjambi_sql
 contains(QT_CONFIG, qtjambi-svg):                 SUBDIRS += qtjambi_svg

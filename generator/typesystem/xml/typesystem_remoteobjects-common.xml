@@ -192,7 +192,7 @@
         <interface-polymorphy interface="QRemoteObjectPendingCall" condition="false" />
   </object-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAbstractItemModelReplica::QAbstractItemModelReplica', unmatched parameter type 'QAbstractItemModelReplicaImplementation*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectHostBase::enableRemoting', unmatched parameter type 'SourceApiMap const*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectHostBase::enableRemoting', unmatched parameter type 'const SourceApiMap*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QRemoteObjectReplica::d_impl' with unmatched type 'QSharedPointer&lt;QReplicaImplementationInterface&gt;'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectPendingCall::QRemoteObjectPendingCall', unmatched parameter type 'QRemoteObjectPendingCallData*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'initialize()' in 'QRemoteObjectRegistry'" />

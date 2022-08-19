@@ -101,6 +101,73 @@ public class TestSignals extends ApplicationInitializer{
 		public final QDeclarableSignals.Signal1<String> testSignal = new QDeclarableSignals.Signal1<>(String.class);
 	}
 	
+	public static class GenericSender<E> extends QObject {
+        public final Signal1<E> genericSignal = new Signal1<>();
+        public void genericSignal(E value) {
+        	this.value = value;
+        }
+        private E value;
+        public GenericSender(){
+        	genericSignal.connect(this::genericSignal);
+        }
+    }
+	
+	public static class GenericReceiver<E> extends QObject {
+        private E value;
+		public E value() {
+			return value;
+		}
+		public void setValue(E value) {
+			this.value = value;
+		}
+    }
+	
+	private static Object[] receivedK = {null};
+	
+	private static <K> void receive(K value) {
+		receivedK[0] = value;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+    public void testGenericSignal() {
+		GenericSender<String> sender = new GenericSender<>();
+		GenericSender<String> sender2 = new GenericSender<>();
+		GenericReceiver<String> receiver = new GenericReceiver<>();
+		String[] result = {null};
+		QMetaObject.Connection connection = sender.genericSignal.connect(v->{result[0] = v;});
+		QMetaObject.Connection connection2 = sender2.genericSignal.connect(sender.genericSignal);
+		sender.genericSignal.emit("TEST");
+		Assert.assertEquals("TEST", result[0]);
+		result[0] = null;
+		sender2.genericSignal.emit("TEST2");
+		Assert.assertEquals("TEST2", result[0]);
+		result[0] = null;
+		
+//		try {
+//			((QObject.Signal1<Integer>)(QObject.Signal1<?>)sender2.genericSignal).emit(5);
+//			Assert.fail();
+//		} catch (ClassCastException e1) {
+//		}
+		
+		sender.genericSignal.disconnect(connection);
+		connection = sender.genericSignal.connect(receiver::setValue);
+		sender.genericSignal.emit("TEST3");
+		Assert.assertEquals("TEST3", receiver.value());
+		sender.genericSignal.disconnect(connection);
+
+		connection = sender.genericSignal.connect(e ->receiver.setValue(e));
+		sender.genericSignal.emit("TEST4");
+		Assert.assertEquals("TEST4", receiver.value());
+		sender.genericSignal.disconnect(connection);
+		
+		connection = sender.genericSignal.connect(TestSignals::receive);
+		sender.genericSignal.emit("TEST5");
+		Assert.assertEquals("TEST5", receivedK[0]);
+		receivedK[0] = null;
+		sender.genericSignal.disconnect(connection);
+	}
+	
 	@Test
     public void testQObjectSignal() {
 		try {

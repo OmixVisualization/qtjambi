@@ -268,7 +268,7 @@ Further options:
         description="Compiles and bundles the Qt Jambi plugins.">
         <foreach-version targets="plugins-impl"/>
     </target>
-    <target name="plugins-impl" depends="log, setenv, init.taskdef, init.build, javac.excludes, java.build.qtjambiplugins, library.native.bundle.plugins-impl"/>
+    <target name="plugins-impl" depends="init.build, javac.excludes, java.build.qtjambiplugins, library.native.bundle.plugins-impl"/>
 
     <target name="library" depends="log, setenv, init.taskdef"
         description="Compiles and bundles the Qt Jambi libraries.">

@@ -221,6 +221,7 @@ class Parser {
 
         uint m_isInTemplate;
         bool m_isShift;
+        bool m_isTemplateDecl;
 };
 
 #endif

@@ -106,7 +106,7 @@ public class TestContainers extends ApplicationInitializer {
     
     @Test
     public void testStringList(){
-    	Object container = QString.split("A::B", "::");
+    	Object container = new QString("A::B").split("::");
     	assertTrue(container instanceof QStringList);
     }
 

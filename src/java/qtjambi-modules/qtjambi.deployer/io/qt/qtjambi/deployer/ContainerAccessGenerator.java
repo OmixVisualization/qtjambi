@@ -29,7 +29,7 @@ import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
 import io.qt.internal.QtJambiInternal;
 
-public class ContainerAccessGenerator {
+final class ContainerAccessGenerator {
 	
 	private enum ContainerType{
 	    QList,

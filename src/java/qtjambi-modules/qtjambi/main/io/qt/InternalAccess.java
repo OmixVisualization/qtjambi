@@ -29,6 +29,8 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -122,13 +124,19 @@ public interface InternalAccess {
     
     Cleanable registerCleaner(Object object, Runnable action);
     
-    <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(Class<S> type, S lambdaExpression);
+    <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(S lambdaExpression);
     
     <S extends java.io.Serializable> Class<?> lambdaReturnType(Class<S> type, S lambdaExpression);
     
     <S extends java.io.Serializable> int[] lambdaMetaTypes(Class<S> type, S lambdaExpression);
     
     <S extends java.io.Serializable> Class<?>[] lambdaClassTypes(Class<S> type, S lambdaExpression);
+    
+    <S extends java.io.Serializable> java.lang.reflect.Executable lambdaExecutable(S lambdaExpression);
+    
+    <T> Class<T> getClass(T object);
+    
+    int registerMetaType(Parameter parameter);
     
     Class<?> findGeneratedSuperclass(Class<?> clazz);
     
@@ -154,4 +162,8 @@ public interface InternalAccess {
     public QObject owner(QtObjectInterface object);
     
     <Q extends QtObjectInterface,M> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass);
+    
+    <T> Supplier<T> getFactory0(Constructor<T> constructor);
+    
+    Package getDefinedPackage(ClassLoader cl, String pkg);
 }

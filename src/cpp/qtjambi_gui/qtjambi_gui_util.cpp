@@ -2,6 +2,7 @@
 #include <QtGui/QGuiApplication>
 #include <qtjambi/qtjambi_core.h>
 #include "qtjambi_gui_repository.h"
+#include "qtjambi_gui_qhashes.h"
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
@@ -165,3 +166,51 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_
 }
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+
+#ifndef QT_JAMBI_RUN
+#include <QtGui/private/qcolortransform_p.h>
+
+hash_type qHash(const QColorVector &value, hash_type seed = 0)
+{
+    hash_type hashCode = seed;
+    if(!value.isNull()){
+        hashCode = hashCode * 31 + qHash(value.x);
+        hashCode = hashCode * 31 + qHash(value.y);
+        hashCode = hashCode * 31 + qHash(value.z);
+    }
+    return hashCode;
+}
+
+hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
+{
+    hash_type hashCode = seed;
+    hashCode = hashCode * 31 + qHash(value.r);
+    hashCode = hashCode * 31 + qHash(value.g);
+    hashCode = hashCode * 31 + qHash(value.b);
+    return hashCode;
+}
+#endif
+
+hash_type qHash(const QColorTransform &value, hash_type seed)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QColorTransformPrivate* p = *reinterpret_cast<QColorTransformPrivate*const*>(&value);
+#else
+    QColorTransformPrivate* p = QColorTransformPrivate::get(value);
+#endif
+    hash_type hashCode = seed;
+    if(p){
+        hashCode = hashCode * 31 + qHash(p->colorMatrix);
+        hashCode = hashCode * 31 + qHash(bool(p->colorSpaceIn));
+        if(p->colorSpaceIn){
+            hashCode = hashCode * 31 + qHash(*reinterpret_cast<const QColorSpace*>(&p->colorSpaceIn));
+        }
+        hashCode = hashCode * 31 + qHash(bool(p->colorSpaceOut));
+        if(p->colorSpaceOut){
+            hashCode = hashCode * 31 + qHash(*reinterpret_cast<const QColorSpace*>(&p->colorSpaceOut));
+        }
+    }
+    return hashCode;
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)

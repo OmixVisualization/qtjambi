@@ -12,7 +12,7 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
+** 
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
@@ -21,22 +21,30 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
 
-#ifndef QTJAMBI_QUICK_REPOSITORY_H
-#define QTJAMBI_QUICK_REPOSITORY_H
+package io.qt.qml.util;
 
-#include <qtjambi/qtjambi_core.h>
-#include <qtjambi/qtjambi_repository.h>
+/**
+ * Is thrown when a class cannot be registered as qml type.
+ */
+public class QmlTypeRegistrationException extends RuntimeException{
+	static {
+		QtJambi_LibraryUtilities.initialize();
+	}
+	
+	private static final long serialVersionUID = 4953567883344704791L;
 
-namespace Java{
-namespace QtQuick3D {
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuick3DObject,)
+	public QmlTypeRegistrationException(String message) {
+		super(message);
+	}
+
+	public QmlTypeRegistrationException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }
-}
-
-#endif // QTJAMBI_QML_REPOSITORY_H

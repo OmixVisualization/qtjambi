@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtQml" description="Classes for QML and JavaScript languages.">
+    <rejection class="QQmlTriviallyDestructibleDebuggingEnabler"/>
     <rejection class="QJSEngine::FunctionWithArgSignature"/>
     <rejection class="QJSEngine::FunctionSignature"/>
     <rejection class="QJSEngine" function-name="fromScriptValue"/>

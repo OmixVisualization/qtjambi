@@ -83,27 +83,31 @@ public:
             }
         }
     }
-
-    void* createContainer() override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        QHash<K,T>* list = new QHash<K,T>();
-        return list;
-    }
-    void* copyContainer(const void* container) override {
-        if(container){
-            QTJAMBI_KEY_VALUE_LOCKER
-            QHash<K,T>* list = new QHash<K,T>(*reinterpret_cast<const QHash<K,T>*>(container));
-            return list;
-        }
-        return createContainer();
+    size_t sizeOf() override {
+        return sizeof(QHash<K,T>);
     }
     void assign(void* container, const void* other) override {
         QTJAMBI_KEY_VALUE_LOCKER
         (*reinterpret_cast<QHash<K,T>*>(container)) = (*reinterpret_cast<const QHash<K,T>*>(other));
     }
-    void deleteContainer(void* container) override {
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
         QTJAMBI_KEY_VALUE_LOCKER
-        delete reinterpret_cast<QHash<K,T>*>(container);
+        if(copyOf){
+            return new(placement) QHash<K,T>(*reinterpret_cast<const QHash<K,T>*>(copyOf));
+        }else{
+            return new(placement) QHash<K,T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        return new(placement) QHash<K,T>(std::move(*reinterpret_cast<const QHash<K,T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        QTJAMBI_KEY_VALUE_LOCKER
+        reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
+        return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_bicontainer_type<QHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());

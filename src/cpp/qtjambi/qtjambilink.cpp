@@ -36,6 +36,11 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+#  define QT_CORE_INLINE_SINCE(major, minor) inline
+#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#endif
+
 QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core.h"
 #include "qtjambi_repository_p.h"
@@ -2601,7 +2606,9 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                                 qPrintable(m_pointer->parent()->objectName()),
                                 m_pointer->parent()->metaObject()->className());
                     }else{
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
                         delete m_pointer;
+                        __qt_exceptionBlocker.release(env);
                     }
                 }else if (currentThread == objectThread || !objectThread->isRunning() || objectThread==m_pointer) {
                     QTJAMBI_DEBUG_TRACE_WITH_THREAD("call delete QObject")
@@ -2624,15 +2631,21 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                         }
                     }
                     if(currentThread == objectThread){
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
                         delete m_pointer;
+                        __qt_exceptionBlocker.release(env);
                     }else if(!objectThread->isRunning() && !m_pointer->parent() && !m_pointer->isWidgetType()){
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
                         delete m_pointer;
+                        __qt_exceptionBlocker.release(env);
                     }else if(objectThread==m_pointer){
                         if(objectThread->isRunning()){
                             qWarning("Trying to delete a running QThread '%s'",
                                     qPrintable(m_pointer->objectName()));
                         }
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
                         delete m_pointer;
+                        __qt_exceptionBlocker.release(env);
                     }else if(m_pointer->parent()){
                         qWarning("Skip deletion of QObject '%s' [%s] (thread='%s', parent='%s' [%s])",
                                 qPrintable(objectThread->objectName()),
@@ -2675,8 +2688,11 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                     // && objectThread not pointer
                     // && no QAbstractEventDispatcher
                     if(QThread* tpointer = qobject_cast<QThread*>(m_pointer)){
-                        if(!tpointer->parent())
+                        if(!tpointer->parent()){
+                            QtJambiExceptionBlocker __qt_exceptionBlocker;
                             delete tpointer;
+                            __qt_exceptionBlocker.release(env);
+                        }
                     }else{
                         qWarning("QObjects can only be implicitly garbage collected when owned"
                                 " by a thread with event dispatcher. Try to delete later. Otherwise, native resource is leaked: '%s' [%s]",

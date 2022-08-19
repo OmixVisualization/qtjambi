@@ -12,3 +12,6 @@ exists($$QTJAMBI_BUILDDIR): include($$QTJAMBI_BUILDDIR/generator/out/cpp/$$QTJAM
 #  and it might not include these files at all.
 
 QT = core network websockets
+
+HEADERS += \
+    qtjambi_websockets_hashes.h

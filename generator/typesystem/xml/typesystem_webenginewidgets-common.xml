@@ -174,10 +174,11 @@
     </functional-type>
     <object-type name="QWebEngineScriptCollection" until="5.*"/>
     <object-type name="QWebEngineSettings" until="5.*"/>
+    <functional-type name="QWebEngineFullScreenRequest::BooleanConsumer" using="std::function&lt;void(bool)>" generate="no" since="6.2.0"/>
     <functional-type name="QWebEngineView::BooleanConsumer" using="std::function&lt;void(bool)>" generate="no" since="6.2.0"/>
     <functional-type name="QWebEngineView::DataConsumer" using="std::function&lt;void(const QByteArray&amp;)>" generate="no" since="6.2.0"/>
     <functional-type name="QWebEngineView::DataConsumer2" using="std::function&lt;void (const QByteArray&amp;)>" generate="no" since="6.2.0"/>
-    <functional-type name="QWebEngineView::ResultConsumer" using="std::function&lt;void(QWebEngineFindTextResult)>" generate="no" since="6.2.0">
+    <functional-type name="QWebEngineView::ResultConsumer" using="std::function&lt;void(const QWebEngineFindTextResult&amp;)>" generate="no" since="6.2.0">
         <extra-includes>
             <include file-name="QtWebEngineCore/QWebEngineFindTextResult" location="global"/>
         </extra-includes>
@@ -206,12 +207,12 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineScript::QWebEngineScript', unmatched parameter type 'QtWebEngineCore::UserScript*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineContextMenuData::operator=', unmatched parameter type 'QWebEngineContextMenuData::QWebEngineContextDataPrivate*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection', unmatched parameter type 'QSharedPointer*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineCertificateError::QWebEngineCertificateError', unmatched parameter type 'QSharedPointer&lt;CertificateErrorController> const&amp;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineScript::QWebEngineScript', unmatched parameter type '*QtWebEngineCore::UserScript*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineContextMenuData::operator=', unmatched parameter type '*QWebEngineContextMenuData::QWebEngineContextDataPrivate*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection', unmatched parameter type '*QSharedPointer*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineCertificateError::QWebEngineCertificateError', unmatched parameter type '*QSharedPointer&lt;CertificateErrorController>*'" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineClientCertificateSelection' is missing a default constructor. The resulting C++ code will not compile.*" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineHistoryItem' is missing a default constructor. The resulting C++ code will not compile.*" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;void(bool)> * (is_busted)" since="6.2.0"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type *std::function&lt;void(bool)>* (is_busted)" since="6.2.0"/>
 </typesystem>
 

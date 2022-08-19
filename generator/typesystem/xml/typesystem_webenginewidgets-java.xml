@@ -293,7 +293,7 @@
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
             <include file-name="qtjambi_webenginewidgets_repository.h" location="local"/>
         </extra-includes>
-        <modify-function signature="findText(QString, QFlags&lt;QWebEnginePage::FindFlag>, std::function&lt;void(QWebEngineFindTextResult)>)" since="6.2.0">
+        <modify-function signature="findText(QString, QFlags&lt;QWebEnginePage::FindFlag>, std::function&lt;void(const QWebEngineFindTextResult&amp;)>)" since="6.2.0">
             <modify-argument index="3">
                 <replace-default-expression with="null"/>
                 <replace-type modified-type="java.util.function.Consumer&lt;io.qt.webengine.core.QWebEngineFindTextResult>"/>

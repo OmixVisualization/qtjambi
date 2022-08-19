@@ -109,7 +109,8 @@
     </value-type>
 
     <value-type name="QDBusObjectPath"><!-- since 4.2, inherits QString(private) -->
-    <modify-function signature="QDBusObjectPath(QLatin1String)" remove="all"/>
+    <modify-function signature="QDBusObjectPath(QLatin1StringView)" remove="all" since="6.4.0"/>
+    <modify-function signature="QDBusObjectPath(QLatin1String)" remove="all" until="6.3.*"/>
     <modify-function signature="QDBusObjectPath(const char *)" remove="all"/>
     </value-type>
 
@@ -160,7 +161,8 @@
     </object-type>
 
     <value-type name="QDBusSignature"><!-- since 4.2, inherits QString(private) -->
-    <modify-function signature="QDBusSignature(QLatin1String)" remove="all"/>
+    <modify-function signature="QDBusSignature(QLatin1StringView)" remove="all" since="6.4.0"/>
+    <modify-function signature="QDBusSignature(QLatin1String)" remove="all" until="6.3.*"/>
     <modify-function signature="QDBusSignature(const char*)" remove="all"/>
     </value-type>
 
@@ -177,7 +179,7 @@
 
     <object-type name="QDBusVariant"/><!-- since 4.2, inherits QVariant(private) -->
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusError::QDBusError', unmatched parameter type 'DBusError const*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusError::QDBusError', unmatched parameter type '*DBusError*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QDBusAbstractInterfaceBase' set to non-final, as it is extended by other classes" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qt_metacall(QMetaObject::Call,int,void**)' for function modification in 'QDBusInterface' not found. Possible candidates:*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtJambiDBusPendingReply::QtJambiDBusPendingReply', unmatched parameter type '*'" />

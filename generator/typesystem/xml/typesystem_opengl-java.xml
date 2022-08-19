@@ -1256,7 +1256,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1286,7 +1286,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1589,7 +1589,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
@@ -1620,7 +1620,7 @@
                     JObjectArrayPointer&lt;const void*> %out(%env, jobjectArray(%in),
                                                 [&amp;%scope](const void* &amp; pointer,JNIEnv *env, jobject o){
                                                     JBufferData* bufferData = new JBufferData(env, o);
-                                                    %scope.addFinalAction([bufferData](){ delete bufferData; });
+                                                    %scope.addDeletion(bufferData);
                                                     pointer = bufferData->data();
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {

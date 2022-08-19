@@ -1,0 +1,346 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.httpserver" module="qtjambi.httpserver" default-superclass="io.qt.QtObject">
+    <object-type name="QHttpServerFutureResponse">
+        <inject-code class="native">
+template&lt;> inline QHttpServerResponse qvariant_cast&lt;QHttpServerResponse>(const QVariant &amp;v)
+{
+    QMetaType targetType = QMetaType::fromType&lt;QHttpServerResponse>();
+    if (v.d.type() == targetType)
+        return QHttpServerResponse(const_cast&lt;QHttpServerResponse&amp;&amp;>(v.d.get&lt;QHttpServerResponse>()));
+    QHttpServerResponse t(QHttpServerResponse::StatusCode::NotFound);
+    QMetaType::convert(v.metaType(), v.constData(), targetType, &amp;t);
+    return t;
+}
+
+namespace QtJambiPrivate{
+template&lt;>
+struct FutureVariantHandler&lt;QHttpServerResponse>{
+    static QVariant create(JNIEnv *env, const QHttpServerResponse&amp; value){
+        jobject _value = qtjambi_cast&lt;jobject>(env, new QHttpServerResponse(std::move(const_cast&lt;QHttpServerResponse&amp;>(value))));
+        qtjambi_set_java_ownership(env, _value);
+        return QVariant::fromValue&lt;JObjectWrapper>(JObjectWrapper(env, _value));
+    }
+    static void reportNativeResults(JNIEnv *env, const QSharedPointer&lt;QFutureInterfaceBase>&amp; sourceFuture, const QSharedPointer&lt;QFutureInterfaceBase>&amp; targetFuture, int beginIndex, int count){
+       if(count==1){
+           dynamic_cast&lt;QFutureInterface&lt;QVariant>*>(sourceFuture.get())->reportResult(create(env, targetFuture->resultStoreBase().resultAt(beginIndex).value&lt;QHttpServerResponse>()), beginIndex);
+       }else{
+           QVector&lt;QVariant> results(count);
+           for(int i=0; i&lt;count; ++i){
+               results &lt;&lt; create(env, targetFuture->resultStoreBase().resultAt(beginIndex).value&lt;QHttpServerResponse>());
+           }
+           dynamic_cast&lt;QFutureInterface&lt;QVariant>*>(sourceFuture.get())->reportResults(results, count);
+       }
+    }
+
+    static void reportJavaResults(JNIEnv *, const QSharedPointer&lt;QFutureInterfaceBase>&amp; sourceFuture, const QSharedPointer&lt;QFutureInterfaceBase>&amp;targetFuture, int beginIndex, int count){
+        if(count==1){
+            dynamic_cast&lt;QFutureInterface&lt;QHttpServerResponse>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(beginIndex).value&lt;QVariant>().value&lt;QHttpServerResponse>(), beginIndex);
+        }else{
+            for(int i=0; i&lt;count; ++i){
+                dynamic_cast&lt;QFutureInterface&lt;QHttpServerResponse>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(i).value&lt;QVariant>().value&lt;QHttpServerResponse>(), i);
+            }
+        }
+    }
+};
+}
+        </inject-code>
+        <modify-function signature="QHttpServerFutureResponse(QByteArray, QByteArray, QHttpServerResponder::StatusCode)">
+            <modify-argument index="3">
+                    <replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
+                </modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerFutureResponse(QFuture&lt;QHttpServerResponse>)">
+            <modify-argument index="1">
+				<replace-type modified-type="io.qt.core.QFuture&lt;? extends QHttpServerResponse>"/>
+                <conversion-rule class="native">
+					QFuture&lt;QHttpServerResponse> %out = qtjambi_cast&lt;QFuture&lt;QHttpServerResponse>>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QHttpServerResponse">
+        <modify-function signature="addHeaders(QHttpServerResponder::HeaderList)">
+            <modify-argument index="1">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>..."/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="setHeaders(QHttpServerResponder::HeaderList)">
+            <modify-argument index="1">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>..."/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerResponse(QByteArray, QByteArray, QHttpServerResponder::StatusCode)">
+            <modify-argument index="3">
+				<replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="fromFile(QString)">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.httpserver.QHttpServerResponse"/>
+                <conversion-rule class="native">
+					%out = qtjambi_cast&lt;jobject>(%env, new QHttpServerResponse(std::move(%in)));
+					qtjambi_set_java_ownership(%env, %out);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+		<inject-code class="java">
+			<import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServerResponse___" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+    <object-type name="QHttpServerRouter">
+        <modify-function signature="converters() const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.core.QHash&lt;io.qt.core.QMetaType,String>"/>
+                <conversion-rule class="native">
+					QHash&lt;QMetaType,QString> converters;
+					for(std::pair&lt;QMetaType,QLatin1StringView> m : %in.asKeyValueRange()){
+						converters[m.first] = m.second;
+					}
+					%out = qtjambi_cast&lt;jobject>(%env, converters);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addConverter(QMetaType, QLatin1StringView)" access="private">
+            <modify-argument index="2">
+                <replace-type modified-type="io.qt.core.QByteArray"/>
+                <conversion-rule class="native">
+					QByteArray* data = qtjambi_cast&lt;QByteArray*>(%env, %in);
+					QLatin1StringView %out = QLatin1StringView(data->data());
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeConverter(QMetaType)">
+			<inject-code class="java">
+				converters.remove(metaType.id());
+			</inject-code>
+        </modify-function>
+        <modify-function signature="clearConverters()">
+			<inject-code class="java">
+				converters.clear();
+			</inject-code>
+        </modify-function>
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServerRouter___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="QAbstractHttpServer">
+        <modify-function signature="listen(QHostAddress,unsigned short)">
+            <modify-argument index="1">
+				<replace-default-expression with="new io.qt.network.QHostAddress(io.qt.network.QHostAddress.SpecialAddress.Any)"/>
+			</modify-argument>
+            <modify-argument index="2">
+				<replace-type modified-type="int"/>
+			</modify-argument>
+            <modify-argument index="0">
+				<replace-type modified-type="int"/>
+			</modify-argument>
+			<inject-code class="java" position="beginning">
+				if(port&lt;0 || port>=0x0ffff){
+					throw new IllegalArgumentException("Port out of range: "+port);
+				}
+			</inject-code>
+        </modify-function>
+        <modify-function signature="serverPorts()">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.core.QList&lt;java.lang.Integer>"/>
+                <conversion-rule class="native">
+				    QList&lt;int> tmp;
+					for(ushort s : %in){
+						tmp &lt;&lt; int(s);
+					}
+					%out = qtjambi_cast&lt;jobject>(%env, tmp);
+                </conversion-rule>				
+            </modify-argument>
+        </modify-function>
+		<inject-code class="java">
+			<import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QAbstractHttpServer___" quote-before-line="}// class"/>
+		</inject-code>
+        <modify-function signature="handleRequest(QHttpServerRequest,QTcpSocket*)">
+            <modify-argument index="1" invalidate-after-use="yes"/>
+            <modify-argument index="2" invalidate-after-use="yes"/>
+        </modify-function>
+        <modify-function signature="makeResponder(QHttpServerRequest,QTcpSocket*)">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.httpserver.QHttpServerResponder"/>
+                <conversion-rule class="native">
+					jobject %out = qtjambi_cast&lt;jobject>(%env, new QHttpServerResponder(std::move(%in)));
+					qtjambi_set_java_ownership(%env, %out);
+                </conversion-rule>				
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QHttpServerRouterRule">
+        <modify-function signature="QHttpServerRouterRule(QString,const char*,QHttpServerRouterRule::RouterHandler)">
+            <modify-argument index="2">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="matches(QHttpServerRequest,QRegularExpressionMatch *) const">
+			<modify-argument index="1" invalidate-after-use="yes"/>
+            <modify-argument index="2" invalidate-after-use="yes">
+				<replace-type modified-type="io.qt.core.QRegularExpressionMatch"/>
+                <conversion-rule class="native">
+					QRegularExpressionMatch* %out = qtjambi_cast&lt;QRegularExpressionMatch*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+					jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+			</modify-argument>
+        </modify-function>
+        <!--modify-function signature="createPathRegexp(std::initializer_list&lt;QMetaType>,QHash&lt;QMetaType, QLatin1StringView>)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.util.Map&lt;io.qt.core.QMetaType,String>"/>
+                <conversion-rule class="native">
+					QHash&lt;QMetaType,QByteArray> tmp2;
+					QHash&lt;QMetaType,QLatin1StringView> %out;
+					jobject iterator = qtjambi_map_entryset_iterator(%env, %in);
+					while(qtjambi_iterator_has_next(%env, iterator)){
+						jobject entry = qtjambi_iterator_next(%env, iterator);
+						jobject key = qtjambi_map$entry_key(%env, entry);
+						jstring value = jstring(qtjambi_map$entry_value(%env, entry));
+						QMetaType metaType = qtjambi_cast&lt;QMetaType>(%env, key);
+						QString strg = qtjambi_cast&lt;QString>(%env, value);
+						tmp2[metaType] = strg.toLatin1();
+						%out[metaType] = QLatin1StringView(tmp2[metaType].constData());
+					}
+                </conversion-rule>
+            </modify-argument>
+        </modify-function-->
+    </object-type>
+    <object-type name="QHttpServer">
+        <modify-function signature="router()">
+			<inject-code class="java" position="beginning">
+				if(__rcRouter!=null &amp;&amp; !__rcRouter.isDisposed())
+					return __rcRouter;
+			</inject-code>
+			<inject-code class="java" position="end">
+				__rcRouter = __qt_return_value;
+				QtJambi_LibraryUtilities.internal.registerDependentObject(__rcRouter, this);
+			</inject-code>
+        </modify-function>
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServer___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="QHttpServerResponder">
+        <modify-function signature="writeBody(const char*)">
+            <modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="writeBody(const char*, long long)">
+            <modify-argument index="1">
+				<array-type length-parameter="2" as-buffer="true"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="writeHeaders(QHttpServerResponder::HeaderList)">
+            <modify-argument index="1">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>..."/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="write(QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)">
+            <modify-argument index="1">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>[]"/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+            <modify-argument index="2">
+				<remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="write(QByteArray,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>[]"/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+            <modify-argument index="3">
+				<remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="write(QJsonDocument,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>[]"/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+            <modify-argument index="3">
+				<remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="write(QIODevice *,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-type modified-type="io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>[]"/>
+                <conversion-rule class="native">
+					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
+                </conversion-rule>
+			</modify-argument>
+            <modify-argument index="3">
+				<remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+		<inject-code class="java">
+			<import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServerResponder___" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+    <object-type name="QHttpServerRequest">
+		<inject-code class="java">
+			<import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServerRequest___" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+</typesystem>

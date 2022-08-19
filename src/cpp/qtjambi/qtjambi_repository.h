@@ -42,7 +42,7 @@ QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject c
     public: static inline void throwNew(JNIEnv* env, const char* message, const char *methodName, const char *fileName, int lineNumber){\
         JavaException(env, newInstanceWithMessage(env, message)).raise(env, methodName, fileName, lineNumber);\
     }\
-    public: static inline void throwNew(JNIEnv* env, const QString& message, const char *methodName, const char *fileName, int lineNumber){\
+    public: static inline void throwNew(JNIEnv* env, const ::QString& message, const char *methodName, const char *fileName, int lineNumber){\
         JavaException(env, newInstanceWithMessage(env, message)).raise(env, methodName, fileName, lineNumber);\
     }
 #else
@@ -50,7 +50,7 @@ QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject c
     public: static inline void throwNew(JNIEnv* env, const char* message){\
         throw JavaException(env, newInstanceWithMessage(env, message));\
     }\
-    public: static inline void throwNew(JNIEnv* env, const QString& message){\
+    public: static inline void throwNew(JNIEnv* env, const ::QString& message){\
         throw JavaException(env, newInstanceWithMessage(env, message));\
     }
 #endif
@@ -70,7 +70,7 @@ QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject c
     public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const char* message){\
         return newInstance(env, env->NewStringUTF(message));\
     }\
-    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const QString& message){\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const ::QString& message){\
         return newInstance(env, env->NewStringUTF(qPrintable(message)));\
     }\
     QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
@@ -218,6 +218,7 @@ namespace Runtime
                   DECLARE_CLASS_REF(TYPE))
 
     QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(String)
+    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(CharSequence)
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asCharBuffer)
@@ -293,6 +294,10 @@ namespace Runtime
 }
 
 namespace QtCore{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QString,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QChar,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCoreApplication,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_FIELD(__qt_isInitializing))
 

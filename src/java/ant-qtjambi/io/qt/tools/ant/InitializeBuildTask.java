@@ -170,6 +170,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		modules.put("pdf", new ModuleInfo("QTJAMBI_NO_PDF", "QtPdf"));
 		modules.put("pdfwidgets", new ModuleInfo("QTJAMBI_NO_PDFWIDGETS", "QtPdfWidgets"));
 		modules.put("activex", new ModuleInfo("QTJAMBI_NO_ACTIVEX", "QtAxBase"));
+		modules.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer"));
 	}
 
 	// did somebody mention something about methods never being longer than 10
@@ -666,8 +667,16 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			mySetProperty(-1, Constants.TOOLS_QMAKE_ABSPATH, sourceValue, toolsQmakeAbspath, true);
 		}
 
-		List<String> privateModules = Arrays
-				.asList(AntUtil.getPropertyAsString(propertyHelper, Constants.PRIVATE_MODULES).split(","));
+		List<String> privateModules = new ArrayList<>();
+		privateModules.add("QtCore");
+		privateModules.add("QtGui");
+		privateModules.add("QtDesigner");
+		privateModules.add("QtRemoteObjects");
+		{
+			String pm = AntUtil.getPropertyAsString(propertyHelper, Constants.PRIVATE_MODULES);
+			if(pm!=null)
+				privateModules.addAll(Arrays.asList(pm.split(",")));
+		}
 		if (OSInfo.os() == OSInfo.OS.MacOS) {
 			String wantedSdk = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_MACOSX_MAC_SDK);
 			detectMacosxSdk(wantedSdk);
@@ -730,7 +739,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		AntUtil.setProperty(propertyHelper, Constants.VERSION, s); // this won't overwrite existing value
 		{
 			File tryPath = new File(new File(new File(QTDIR).getParentFile().getParentFile(), "Docs"), "Qt-" + s);
-			mySetProperty(-1, Constants.DOCSDIR, " (auto-detected)", tryPath.getAbsolutePath(), true);
+			if(tryPath.isDirectory())
+				mySetProperty(-1, Constants.DOCSDIR, " (auto-detected)", tryPath.getAbsolutePath(), true);
 		}
 
 		s = String.valueOf(qtMajorVersion);

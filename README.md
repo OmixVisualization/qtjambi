@@ -33,14 +33,14 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 
 ### Requirements
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
-* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8 and 14)
+* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8 and 18)
 * Qt 5.15 or 6.x (using the Qt Online Installer)
 * C++ compiler (Gcc, Clang, MSVC2019)
 * chrpath (Linux only)
 * XCode command line tools (macOS only)
 
 ### Building QtJambi
-If you do'n need the entire set of Qt modules available in Java edit property `qtjambi.skipped.modules` in `build.properties` and exclude Qt modules you don't need.
+If you do'nt need the entire set of Qt modules available in Java edit property `qtjambi.skipped.modules` in `build.properties` and exclude Qt modules you don't need.
 This saves compilation time.
 
 #### Pre-Build Steps On Windows
@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.7`, `6.2.5` or by `6.3.2`).
+(exchange `$VERSION` either by `5.15.8`, `6.2.6` or by `6.3.3`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.2.jar Test.java
+javac -cp qtjambi-6.3.3.jar Test.java
 ```
 
 ### Execute Example
@@ -135,7 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.3.2.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
+java -cp qtjambi-6.3.3.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)

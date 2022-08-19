@@ -87,6 +87,10 @@ namespace Internal{
 }
 
 namespace QtCore{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QString,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QChar,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
 
 namespace Internal{
         QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCoreApplication,
@@ -255,6 +259,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Slot0,
 namespace Runtime{
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(java/lang,String)
+QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(java/lang,CharSequence)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/concurrent/atomic,AtomicBoolean,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Z)

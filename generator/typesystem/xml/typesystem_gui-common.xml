@@ -58,6 +58,8 @@
     <rejection class="*" field-name="d"/>
     <rejection class="QRgbaF"/>
     <rejection class="QRgbaFloat"/>
+    <rejection class="QRgbaFloat16"/>
+    <rejection class="QRgbaFloat32"/>
     <rejection class="QGuiApplication" function-name="nativeInterface" since="6.2.0"/>
     <rejection class="QBrushDataPointerDeleter" since="6.2.0"/>
     <rejection class="QColor::CT"/>
@@ -392,9 +394,21 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <functional-type name="QAccessible::InterfaceFactory"/>
-    <functional-type name="QAccessible::RootObjectHandler"/>
-    <functional-type name="QAccessible::UpdateHandler"/>
+    <functional-type name="QAccessible::InterfaceFactory">
+        <extra-includes since="6.4">
+            <include file-name="QAccessible" location="global"/>
+        </extra-includes>
+	</functional-type>
+    <functional-type name="QAccessible::RootObjectHandler">
+        <extra-includes since="6.4">
+            <include file-name="QAccessible" location="global"/>
+        </extra-includes>
+	</functional-type>
+    <functional-type name="QAccessible::UpdateHandler">
+        <extra-includes since="6.4">
+            <include file-name="QAccessible" location="global"/>
+        </extra-includes>
+	</functional-type>
     <object-type name="QAccessibleBridgePlugin">
         <modify-function signature="create(QString)">
             <modify-argument index="return">
@@ -524,6 +538,12 @@
         <modify-function signature="operator=(const QCloseEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QContextMenuEvent">
         <modify-field name="p" read="no" write="yes" rename="pos"/>
@@ -634,6 +654,12 @@
     <object-type name="QShowEvent">
         <modify-function signature="operator=(const QShowEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QStatusTipEvent">
@@ -808,13 +834,16 @@
     </value-type>
     <value-type name="QColor">
         <modify-function signature="QColor(QColor::Spec)" remove="all"/>
-        <modify-function signature="QColor(QLatin1String)" remove="all" since="5.8.0"/>
+        <modify-function signature="QColor(QLatin1String)" remove="all" since="5.8.0" until="6.3.*"/>
+        <modify-function signature="QColor(QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="QColor(QStringView)" remove="all" since="5.8.0"/>
         <modify-function signature="operator=(QColor)" remove="all" since="5.8.0" until="5.*"/>
         <modify-function signature="operator=(Qt::GlobalColor)" remove="all"/>
-        <modify-function signature="setNamedColor(QLatin1String)" remove="all" since="5.8.0"/>
+        <modify-function signature="setNamedColor(QLatin1String)" remove="all" since="5.8.0" until="6.3.*"/>
+        <modify-function signature="setNamedColor(QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="setNamedColor(QStringView)" remove="all" since="5.8.0"/>
-        <modify-function signature="isValidColor(QLatin1String)" remove="all" since="5.8.0"/>
+        <modify-function signature="isValidColor(QLatin1String)" remove="all" since="5.8.0" until="6.3.*"/>
+        <modify-function signature="isValidColor(QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="isValidColor(QStringView)" remove="all" since="5.10.0"/>
 
         <modify-function signature="QColor(const char*)">
@@ -944,10 +973,22 @@
         <modify-function signature="operator=(const QDragEnterEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QDragLeaveEvent">
         <modify-function signature="operator=(const QDragLeaveEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QDragMoveEvent">
@@ -1069,6 +1110,12 @@
         <modify-function signature="operator=(const QHideEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QHoverEvent">
         <modify-field name="p" read="no" write="yes" rename="posF" until="5.*"/>
@@ -1088,6 +1135,12 @@
     <object-type name="QIconDragEvent">
         <modify-function signature="operator=(const QIconDragEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.4.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QKeyEvent">
@@ -3051,9 +3104,9 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformWindow\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleInterface\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMatrix'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMatrix const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QMatrix&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMatrix3x3'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QGenericMatrix&lt;N,M,float> const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QGenericMatrix&lt;N,M,float>&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QOpenGLFunctionsPrivate const\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QFontPrivate const\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QTextDocumentPrivate const\*'"/>
@@ -3063,7 +3116,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformPixmap\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractNativeEventFilter\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformOpenGLContext\*'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QOpenGLVersionStatus const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QOpenGLVersionStatus&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformOffscreenSurface\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMatrix4x3*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QMatrix4x2*'"/>
@@ -3093,8 +3146,8 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'surfaceHandle() const' in '*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QRasterPaintEngine' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QPlatformSurface' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::QPair', unmatched parameter type 'QPair&lt;TT1,TT2> const&amp;'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::operator=', unmatched parameter type 'QPair&lt;TT1,TT2> const&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::QPair', unmatched parameter type 'const QPair&lt;TT1,TT2>&amp;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPair::operator=', unmatched parameter type 'const QPair&lt;TT1,TT2>&amp;'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QOpenGLTextureHelper*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'paintEngine() const' in 'QPaintDeviceWindow'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QPaintDeviceWindow' set to non-final, as it is extended by other classes"/>
@@ -3102,6 +3155,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QToolBar::addAction', unmatched return type 'QtPrivate::QEnableIf&lt;EXPRESSION,QAction*&gt;::Type'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setVulkanInstance(QVulkanInstance*)' for function modification in 'QWindow' not found.*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'vulkanInstance()const' for function modification in 'QWindow' not found.*"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QColorTransform::map', unmatched return type 'QRgbaFloat*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * '*', unmatched *type 'QVulkan*'"/>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QColorTransform."/>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QFontDatabase."/>

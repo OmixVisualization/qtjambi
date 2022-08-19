@@ -77,6 +77,7 @@ QString CppGenerator::translateType(const AbstractMetaType *java_type, Option op
     if (java_type->hasNativeId() && (option & UseNativeIds)){
         return "QtJambiNativeID";
     }else if (java_type->isPrimitive()
+            || java_type->isTargetLangChar()
             || java_type->isTargetLangString()
             || java_type->isTargetLangStringRef()
             || java_type->isVariant()
@@ -129,6 +130,7 @@ QString CppGenerator::translateType(const AbstractMetaType *java_type, Option op
                || java_type->isTargetLangAnyStringView()
                || java_type->isTargetLangUtf8StringView()
                || java_type->isTargetLangLatin1String()
+               || java_type->isTargetLangLatin1StringView()
                || (java_type->typeEntry()->qualifiedTargetLangName()=="java.lang.String" && java_type->indirections().isEmpty())){
         return "jstring";
     } else {
@@ -368,8 +370,35 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                 s << "jstring";
             else if(!typeReplaced.isEmpty())
                 s << "jobject";
-            else
-                s << translateType(arg->type(), Option(option & ~JNIProxyFunction));
+            else{
+                if(java_function->argumentTypeBuffer(arg->argumentIndex() + 1)){
+                    s << "jobject";
+                }else if(java_function->argumentTypeArray(arg->argumentIndex() + 1)){
+                    if(arg->type()->typeEntry()->isPrimitive()){
+                        if(arg->type()->typeEntry()->targetLangName()=="int"){
+                            s << "jintArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="long"){
+                            s << "jlongArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="short"){
+                            s << "jshortArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="byte"){
+                            s << "jbyteArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="boolean"){
+                            s << "jbooleanArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="char"){
+                            s << "jcharArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="float"){
+                            s << "jfloatArray";
+                        }else if(arg->type()->typeEntry()->targetLangName()=="double"){
+                            s << "jdoubleArray";
+                        }
+                    }else{
+                        s << "jobjectArray";
+                    }
+                }else{
+                    s << translateType(arg->type(), Option(option & ~JNIProxyFunction));
+                }
+            }
             if (!(option & SkipName)){
                 s << " " << arg->indexedName();
             }
@@ -981,8 +1010,8 @@ QString CppGenerator::jni_signature(const AbstractMetaType *java_type, JNISignat
     QString name = java_type->name();
     if (java_type->isFunctional()) {
         const FunctionalTypeEntry *func = static_cast<const FunctionalTypeEntry *>(java_type->typeEntry());
-        if(!func->qualifier().isEmpty())
-            name = func->qualifier()+"$"+name;
+        if(!func->javaQualifier().isEmpty())
+            name = func->javaQualifier()+"$"+name;
     } else if (java_type->isObject() || java_type->isValue()) {
         if (const InterfaceTypeEntry *ie
                 = static_cast<const ImplementorTypeEntry *>(java_type->typeEntry())->designatedInterface())

@@ -76,7 +76,7 @@ class QScxmlStateMachine___ {
      * <p>See <a href="https://doc.qt.io/qt/qscxmlstatemachine.html#onEntry">QScxmlStateMachine::onEntry(Functor)</a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onEntry(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, slot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
         return (isEnteringState) -> {
             if (isEnteringState && (object==null || !object.isDisposed()))
                 slot.invoke();
@@ -87,7 +87,7 @@ class QScxmlStateMachine___ {
      * <p>See <a href="https://doc.qt.io/qt/qscxmlstatemachine.html#onExit">QScxmlStateMachine::onExit(Functor)</a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onExit(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, slot);
+        io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
         return (isEnteringState) -> {
             if (!isEnteringState && (object==null || !object.isDisposed()))
                 slot.invoke();
@@ -125,7 +125,7 @@ class QScxmlStateMachine___ {
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, slot);
+            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
@@ -187,7 +187,7 @@ class QScxmlStateMachine___ {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Bool.value()) {
                 throw new IllegalArgumentException("Method does not take a single boolean argument: "+metaMethod.cppMethodSignature());
             }
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, slot);
+            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
@@ -275,7 +275,7 @@ class QScxmlStateMachine___ {
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, slot);
+            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
@@ -338,7 +338,7 @@ class QScxmlStateMachine___ {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {
                 throw new IllegalArgumentException("Method does not take a single QScxmlEvent argument: "+metaMethod.cppMethodSignature());
             }
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, slot);
+            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:

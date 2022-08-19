@@ -37,6 +37,10 @@
 
 #include <qglobal.h>
 QT_WARNING_DISABLE_DEPRECATED
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+#  define QT_CORE_INLINE_SINCE(major, minor) inline
+#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#endif
 
 #include <cstring>
 
@@ -579,7 +583,7 @@ void qtjambi_to_QModelRoleData(JNIEnv *env, QtJambiScope& scope, jobject java_ob
             QVariant m_data;
         };
         ModelRoleData* _data = new ModelRoleData[size_t(length)];
-        scope.addFinalAction([_data](){delete[] _data;});
+        scope.addArrayDeletion(_data);
         data = _data;
         jobject iter = qtjambi_map_entryset_iterator(env, java_object);
         size_t i=0;
@@ -1217,6 +1221,11 @@ QVariant qtjambi_to_qvariant(JNIEnv *env, jobject java_object, bool convert)
         if(!convert)
             return QVariant(META_TYPE(QMetaType::QString), nullptr);
         return qtjambi_to_qstring(env, static_cast<jstring>(java_object));
+    } else if (Java::QtCore::QString::isSameClass(env, object_class)) {
+        if(!convert)
+            return QVariant(META_TYPE(QMetaType::QString), nullptr);
+        QString* strg = qtjambi_to_object<QString>(env, java_object);
+        return QVariant(META_TYPE(QMetaType::QString), strg);
     } else if (Java::Runtime::Integer::isSameClass(env, object_class)) {
         if(!convert)
             return QVariant(META_TYPE(QMetaType::Int), nullptr);
@@ -3474,6 +3483,78 @@ jstring qtjambi_from_qstringview(JNIEnv *env, QStringView s)
     return str;
 }
 
+jobject qtjambi_to_charobject(JNIEnv *env, const QChar &strg)
+{
+    jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
+    QChar* sptr = new QChar(strg);
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+                env,
+                returned,
+                sptr,
+                LINK_NAME_ARG("QChar")
+                false,
+                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);})) {
+        // If the type is copied in, we own the pointer
+        link->setJavaOwnership(env);
+    } else {
+        delete sptr;
+        returned = nullptr;
+    }
+    return returned;
+}
+
+jobject qtjambi_to_charobject(JNIEnv *env, QChar *strg)
+{
+    jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+                env,
+                returned,
+                strg,
+                LINK_NAME_ARG("QChar")
+                false,
+                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);})) {
+    } else {
+        returned = nullptr;
+    }
+    return returned;
+}
+
+jobject qtjambi_to_stringobject(JNIEnv *env, const QString &strg)
+{
+    jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
+    QString* sptr = new QString(strg);
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+                env,
+                returned,
+                sptr,
+                LINK_NAME_ARG("QString")
+                false,
+                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);})) {
+        // If the type is copied in, we own the pointer
+        link->setJavaOwnership(env);
+    } else {
+        delete sptr;
+        returned = nullptr;
+    }
+    return returned;
+}
+
+jobject qtjambi_to_stringobject(JNIEnv *env, QString *strg)
+{
+    jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+                env,
+                returned,
+                strg,
+                LINK_NAME_ARG("QString")
+                false,
+                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);})) {
+    } else {
+        returned = nullptr;
+    }
+    return returned;
+}
+
 jstring qtjambi_from_qstring(JNIEnv *env, const QString &s)
 {
     Q_ASSERT(s.length()>=0);
@@ -3504,9 +3585,15 @@ void qtjambi_to_qstring(QString& result, JNIEnv *env, jobject object)
 
 QString qtjambi_to_qstring(JNIEnv *env, jobject object)
 {
-    QString result;
-    qtjambi_to_qstring(result, env, object);
-    return result;
+    if(Java::QtCore::QString::isInstanceOf(env, object)){
+        QString* strg = qtjambi_to_object<QString>(env, object);
+        qtjambi_check_resource(env, strg);
+        return *strg;
+    }else{
+        QString result;
+        qtjambi_to_qstring(result, env, object);
+        return result;
+    }
 }
 
 QString qtjambi_to_qstring(JNIEnv *env, jstring java_string)
@@ -4038,6 +4125,15 @@ ConstDoublePointerArray::ConstDoublePointerArray(JNIEnv *env, const double* poin
 ConstFloatPointerArray::ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size) PointerArrayINIT(Float,float)
 
 ConstQCharPointerArray::ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Char16PointerArray::Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
+Char16PointerArray::~Char16PointerArray() PointerArrayDEL(Char,char)
+ConstChar16PointerArray::ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
+Char32PointerArray::Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
+Char32PointerArray::~Char32PointerArray() PointerArrayDEL(Int,int)
+ConstChar32PointerArray::ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
+#endif
 
 #undef PointerArrayINIT
 #undef PointerArrayDEL
@@ -5668,9 +5764,9 @@ void JavaException::raise() const{
 }
 
 #ifdef QTJAMBI_STACKTRACE
-#define QTJAMBI_STACKTRACEINFO_DECL_USE env, t, methodName, fileName, lineNumber
+#define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t, methodName, fileName, lineNumber
 #else
-#define QTJAMBI_STACKTRACEINFO_DECL_USE env, t
+#define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t
 #endif
 
 #ifdef QTJAMBI_STACKTRACE
@@ -5714,9 +5810,8 @@ void JavaException::check(JNIEnv* env QTJAMBI_STACKTRACEINFO_DECL ){
     if(env->ExceptionCheck()){
         jthrowable t = env->ExceptionOccurred();
         env->ExceptionClear();
-        if(t){
-            raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
-        }
+        if(t)
+            raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
     }
 }
 
@@ -5724,63 +5819,63 @@ void JavaException::raiseIllegalAccessException(JNIEnv* env, const char *message
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::IllegalAccessException::newInstance(env, jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseNullPointerException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::NullPointerException::newInstance(env, jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::IndexOutOfBoundsException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseIllegalArgumentException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::IllegalArgumentException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseIllegalStateException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::IllegalStateException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseQNoNativeResourcesException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::QtJambi::QNoNativeResourcesException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseNumberFormatException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::NumberFormatException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseQNonVirtualOverridingException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::QtJambi::QNonVirtualOverridingException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseQNoImplementationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::QtJambi::QNoImplementationException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseQThreadAffinityException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3){
@@ -5790,35 +5885,35 @@ void JavaException::raiseQThreadAffinityException(JNIEnv* env, const char *messa
                                                           qtjambi_cast<jobject>(env, t2),
                                                           qtjambi_cast<jobject>(env, t3)
                                         );
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseIllegalAccessError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::IllegalAccessError::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::Error::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseRuntimeException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::RuntimeException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 void JavaException::raiseUnsupportedOperationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
     jstring jmessage = message ? env->NewStringUTF(message) : nullptr;
     check(env);
     jthrowable t = Java::Runtime::UnsupportedOperationException::newInstance(env,jmessage);
-    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE );
+    raiseJavaException( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
 #if defined(QTJAMBI_CENTRAL_TRY_CATCH)
@@ -6759,23 +6854,39 @@ bool qtjambi_thread_affine_event_notify(void **data)
 #endif
             }
             if(thr && currentThread != thr){
-                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
-                    if (JNIEnv *env = qtjambi_current_environment()){
-                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                        QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
-                        QString eventDescr;
-                        if(enm.isValid()){
-                            eventDescr = QLatin1String(enm.valueToKeys(event->type()));
+                QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
+                QString eventDescr;
+                if(enm.isValid()){
+                    eventDescr = QLatin1String(enm.valueToKeys(event->type()));
+                }else{
+                    eventDescr = QString::number(int(event->type()));
+                }
+                if(QCoreApplicationPrivate::is_app_closing)
+                    return false;
+                if (JNIEnv *env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    QtJambiExceptionHandler __exceptionHandler;
+                    try{
+                        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                            JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                           "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                           qUtf16Printable(eventDescr),
+                                                                                                           currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                           receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
+                                                                         link->getJavaObjectLocalRef(env),
+                                                                         nullptr, nullptr);
                         }else{
-                            eventDescr = QString::number(int(event->type()));
+                            JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                              "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                              qUtf16Printable(eventDescr),
+                                              currentThread, qUtf16Printable(receiver->objectName()),
+                                              receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
+                                              nullptr, nullptr, nullptr);
                         }
-                        if(QCoreApplicationPrivate::is_app_closing)
-                            return false;
-                        JavaException::raiseQThreadAffinityException(env, qPrintable(QString("Cannot send events to objects owned by a different thread (event type: %1).").arg(eventDescr)) QTJAMBI_STACKTRACEINFO ,
-                                                                     link->getJavaObjectLocalRef(env),
-                                                                     thr, currentThread);
-                        return true;
+                    }catch(const JavaException& exn){
+                        __exceptionHandler.handle(nullptr, exn, "QCoreApplication::sendEvent");
                     }
+                    return true;
                 }
             }
         }
@@ -7423,10 +7534,36 @@ QtJambiScope::~QtJambiScope(){
     }
 }
 
-void QtJambiScope::addFinalAction(std::function<void()> action){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+void QtJambiScope::addDeletion(int metaTypeId, void* pointer){
+    addFinalAction([metaTypeId,pointer](){QMetaType::destroy(metaTypeId, pointer);});
+}
+#else
+void QtJambiScope::addDeletion(QMetaType metaType, void* pointer){
+    addFinalAction([metaType,pointer](){metaType.destroy(pointer);});
+}
+#endif
+
+void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool checkJavaOwnership, bool persistent){
+    if(persistent){
+        JObjectWrapper obj(env, object);
+        addFinalAction([obj, checkJavaOwnership](){
+            if(JNIEnv* env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                qtjambi_invalidate_object(env, obj.object(), checkJavaOwnership);
+            }
+        });
+    }else{
+        addFinalAction([env, object, checkJavaOwnership](){
+            qtjambi_invalidate_object(env, object, checkJavaOwnership);
+        });
+    }
+}
+
+void QtJambiScope::addFinalAction(std::function<void()>&& action){
     if(!d)
         d = new QtJambiScopePrivate();
-    d->append(action);
+    d->append(std::move(action));
 }
 
 QtJambiNativeID QtJambiScope::relatedNativeID() const{
@@ -7585,7 +7722,7 @@ jobject qtjambi_method_from_javamethod(JNIEnv * env, jlong metaObjectPointer, jo
 
 jobject qtjambi_metamethod_invoke(JNIEnv * env, jobject _metaMethod, jobject _qobject, jobjectArray argClassTypeArray, jint connection, jobjectArray args)
 {
-    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    env->EnsureLocalCapacity(500);
     jvalue result;
     result.l = nullptr;
     QObject* object = qtjambi_to_qobject(env, _qobject);
@@ -7618,12 +7755,12 @@ jobject qtjambi_metamethod_invoke(JNIEnv * env, jobject _metaMethod, jobject _qo
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(method->returnType()!=QMetaType::Void){
                         resultPtr = QMetaType::create(method->returnType());
-                        scope.addFinalAction([resultPtr,method](){QMetaType::destroy(method->returnType(), resultPtr);});
+                        scope.addDeletion(method->returnType(), resultPtr);
                     }
 #else
                     if(method->returnMetaType().id()!=QMetaType::Void){
                         resultPtr = method->returnMetaType().create();
-                        scope.addFinalAction([resultPtr,method](){method->returnMetaType().destroy(resultPtr);});
+                        scope.addDeletion(method->returnMetaType(), resultPtr);
                     }
 #endif
                     ok = method->invoke(object,
@@ -7695,7 +7832,7 @@ jobject qtjambi_metamethod_to_reflected(JNIEnv * env, jobject _this){
 jobject qtjambi_metamethod_invoke_on_gadget
     (JNIEnv * env, jobject _metaMethod, jobject object, jobjectArray argClassTypeArray, jobjectArray args)
 {
-    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    env->EnsureLocalCapacity(500);
     jvalue result;
     result.l = nullptr;
     QMetaMethod* method = qtjambi_to_object<QMetaMethod>(env, _metaMethod);
@@ -7751,12 +7888,12 @@ jobject qtjambi_metamethod_invoke_on_gadget
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(method->returnType()!=QMetaType::Void){
                         resultPtr = QMetaType::create(method->returnType());
-                        scope.addFinalAction([resultPtr,method](){QMetaType::destroy(method->returnType(), resultPtr);});
+                        scope.addDeletion(method->returnType(), resultPtr);
                     }
 #else
                     if(method->returnMetaType().id()!=QMetaType::Void){
                         resultPtr = method->returnMetaType().create();
-                        scope.addFinalAction([resultPtr,method](){method->returnMetaType().destroy(resultPtr);});
+                        scope.addDeletion(method->returnMetaType(), resultPtr);
                     }
 #endif
                     ok = method->invokeOnGadget(ptr,

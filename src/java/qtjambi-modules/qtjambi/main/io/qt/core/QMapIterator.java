@@ -29,12 +29,6 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QIterator.__qt_QIterator_decrement;
-import static io.qt.core.QIterator.__qt_QIterator_increment;
-import static io.qt.core.QIterator.__qt_QIterator_lessThan;
-import static io.qt.core.QIterator.__qt_QIterator_operator_equal;
-import static io.qt.core.QIterator.__qt_QIterator_value;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -55,36 +49,36 @@ public final class QMapIterator<K,V> extends io.qt.internal.QtJambiMapIteratorOb
     
     @QtUninvokable
     protected final K key()        {
-        return __qt_QMapIterator_key(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return key(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <K> K __qt_QMapIterator_key(long __this__nativeId);
+    private static native <K> K key(long __this__nativeId);
 
     @QtUninvokable
     protected final V val()        {
-        return __qt_QIterator_value(QtJambi_LibraryUtilities.internal.nativeId(this));
+        return QIterator.value(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     protected final void increment()        {
-        __qt_QIterator_increment(QtJambi_LibraryUtilities.internal.nativeId(this));
+    	QIterator.increment(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     protected final void decrement()        {
-        __qt_QIterator_decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
+    	QIterator.decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
     private final boolean lessThan(QtJambiIteratorObject<?> other)        {
         if(compareOwners(other))
         	throw new IllegalArgumentException("Incomparable objects.");
-        return __qt_QIterator_lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+        return QIterator.lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
     }
 
     @QtUninvokable
     private final boolean operator_equal(QMapIterator<K,V> o)        {
-        return __qt_QIterator_operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
+        return QIterator.operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
     }
 
 	@Override

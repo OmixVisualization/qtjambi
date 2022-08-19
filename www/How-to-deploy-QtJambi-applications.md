@@ -7,7 +7,7 @@ along with platform-dependent **qtjambi-deployer-native-X.jar** for all platform
 
 In the examples below, we assume you created an application in a jar
 file `my-company-app.jar` with main class `my.company.app.Main`
-depending on `qtjambi-6.3.2.jar`.
+depending on `qtjambi-6.3.3.jar`.
 
 Call the app deployer as shown below. Make sure the library path points
 to the *Qt* libraries being `bin` on *Windows* and `lib`
@@ -15,7 +15,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer app
 ```
 
@@ -23,7 +23,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -cp qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      io.qt.qtjambi.deployer.Main app
 ```
 
@@ -48,8 +48,6 @@ Possible arguments are:
     automatically (minimum version required)
   - `--minversion-jvm=...` required when autodetection of Java is
     enabled
-  - `--ico=...` icon to be injected into the Windows executable (Windows
-    only)
   - `--application=...` name of the generated application
   - `--dir=...` target directory to place the prepared binary
   - ...additional Java runtime arguments after `-- `
@@ -72,8 +70,8 @@ installation directory
     | plugins
         | ... (platforms, styles and others)
     | lib
-        | qtjambi-6.3.2.jar
-        | qtjambi-native-windows-x64-6.3.2.jar
+        | qtjambi-6.3.3.jar
+        | qtjambi-native-windows-x64-6.3.3.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -84,11 +82,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.exe
-     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.3.2.jar:../lib/qtjambi-native-windows-x64-6.3.2.jar
+     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.3.3.jar:../lib/qtjambi-native-windows-x64-6.3.3.jar
      --library-path=.
      --jvm-path=../jre
      --main-class=my.company.app.Main
@@ -96,8 +94,7 @@ java -Djava.library.path=<path to Qt libraries>
      --ico=path to icons/app.ico
 ```
 
-The icon file has to provide 16,24,32,64 and 128 square pixel icons in
-uncompressed RGBA color mode. It must not exceed 90 KB (92.478 Bytes).
+The former argument `--ico` is now depdecated. If you want to change the executable's icon use third parts software.
 
 ## Deploying on Linux
 
@@ -114,8 +111,8 @@ installation directory
         | libQt6Core.so[.6.3.0]
         | libQt6Gui.so[.6.3.0]
         | libQt6Widgets.so[.6.3.0]
-        | qtjambi-6.3.2.jar
-        | qtjambi-native-linux-x64-6.3.2.jar
+        | qtjambi-6.3.3.jar
+        | qtjambi-native-linux-x64-6.3.3.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -126,11 +123,11 @@ the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher
-     --class-path=lib/my-company-app.jar:lib/qtjambi-6.3.2.jar:lib/qtjambi-native-linux-x64-6.3.2.jar
+     --class-path=lib/my-company-app.jar:lib/qtjambi-6.3.3.jar:lib/qtjambi-native-linux-x64-6.3.3.jar
      --library-path=lib
      --jvm-path=jre
      --main-class=my.company.app.Main
@@ -158,8 +155,8 @@ installation directory
                 | QtGui.framework
                 | QtWidgets.framework
              | lib
-                | qtjambi-6.3.2.jar
-                | qtjambi-native-macos-6.3.2.jar
+                | qtjambi-6.3.3.jar
+                | qtjambi-native-macos-6.3.3.jar
                 | my-company-app.jar
             | jre
                 | ... (Java Runtime Environment)
@@ -173,11 +170,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.2.jar:qtjambi-deployer-6.3.2.jar
+     -p qtjambi-6.3.3.jar:qtjambi-deployer-6.3.3.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.app
-     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.3.2.jar:../lib/qtjambi-native-macos-6.3.2.jar
+     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.3.3.jar:../lib/qtjambi-native-macos-6.3.3.jar
      --library-path=../Frameworks
      --jvm-path=../jre
      --main-class=my.company.app.Main

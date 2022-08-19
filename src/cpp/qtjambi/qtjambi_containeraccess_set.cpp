@@ -57,8 +57,6 @@ AutoSetAccess::AutoSetAccess(
 {
 }
 
-void* AutoSetAccess::createContainer(){ return m_hashAccess.createContainer(); }
-
 void* AutoSetAccess::constructContainer(void* result, const void* container){
     return m_hashAccess.constructContainer(result, container);
 }
@@ -69,20 +67,16 @@ void* AutoSetAccess::constructContainer(void* result, void* container){
 }
 #endif
 
-void* AutoSetAccess::copyContainer(const void* container){
-    return m_hashAccess.copyContainer(container);
+size_t AutoSetAccess::sizeOf(){
+    return m_hashAccess.sizeOf();
 }
 
 void AutoSetAccess::assign(void* container, const void* other){
     m_hashAccess.assign(container, other);
 }
 
-void AutoSetAccess::deleteContainer(void* container){
-    m_hashAccess.deleteContainer(container);
-}
-
-void AutoSetAccess::destructContainer(void* container){
-    m_hashAccess.destructContainer(container);
+bool AutoSetAccess::destructContainer(void* container){
+    return m_hashAccess.destructContainer(container);
 }
 
 int AutoSetAccess::registerContainer(const QByteArray& typeName)
@@ -111,7 +105,7 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                         }
                                         return new (result) QHashData const*(&QHashData::shared_null);
                                        },
-                                       uint(sizeof(QSet<char>)),
+                                       uint(sizeOf()),
                                        uint(alignof(QSet<char>)),
 #else
                                        AutoHashAccess::defaultCtr,
@@ -128,7 +122,7 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                        (iface->dataStreamOut || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamOutFn : nullptr,
                                        (iface->dataStreamIn || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamInFn : nullptr,
                                        nullptr,
-                                       uint(sizeof(QSet<char>)),
+                                       uint(sizeOf()),
                                        ushort(alignof(QSet<char>)),
                                        QMetaType::UnknownType,
 #endif
@@ -597,13 +591,13 @@ void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
     void* copy1;
     void* copy2;
     if ((d ? d->size : 0) <= (d2 ? d2->size : 0)) {
-        copy1 = m_hashAccess.copyContainer(container);
-        copy2 = m_hashAccess.copyContainer(ptr);
+        copy1 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container));
+        copy2 = m_hashAccess.createContainer(reinterpret_cast<const void *>(ptr));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy1));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy2));
     }else{
-        copy1 = m_hashAccess.copyContainer(ptr);
-        copy2 = m_hashAccess.copyContainer(container);
+        copy1 = m_hashAccess.createContainer(reinterpret_cast<const void *>(ptr));
+        copy2 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy1));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy2));
         m_hashAccess.assign(container, copy1);
@@ -653,8 +647,9 @@ void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
 #endif
     m_hashAccess.deleteContainer(copy1);
     m_hashAccess.deleteContainer(copy2);
-    if(deleteSet)
+    if(deleteSet){
         m_hashAccess.deleteContainer(ptr);
+    }
 }
 
 jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject other)

@@ -54,7 +54,7 @@ class QHostInfo___ extends QHostInfo {
      */
     @io.qt.QtUninvokable
     public static int lookupHost(String name, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
-        io.qt.core.QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, slot);
+        io.qt.core.QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
         if(metaMethod!=null && metaMethod.isValid()) {
             if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
@@ -85,7 +85,7 @@ class QHostInfo___ extends QHostInfo {
             if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
                 throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
             }
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot1.class, slot);
+            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(context!=null && context==object) {
                 switch(metaMethod.methodType()) {
                 case Signal:

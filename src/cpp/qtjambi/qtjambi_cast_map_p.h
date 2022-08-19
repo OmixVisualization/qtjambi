@@ -702,10 +702,26 @@ public:
     bool isConstant() override {return true;}
     const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
     const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QMap<K,T>();}
-     void* copyContainer(const void* container) override {return container ? new QMap<K,T>(*reinterpret_cast<const QMap<K,T>*>(container)) : createContainer();}
-         void assign(void* container, const void* other) override { (*reinterpret_cast<QMap<K,T>*>(container)) = (*reinterpret_cast<const QMap<K,T>*>(other)); }
-     void deleteContainer(void* container) override {delete reinterpret_cast<QMap<K,T>*>(container);}
+    void assign(void* container, const void* other) override { (*reinterpret_cast<QMap<K,T>*>(container)) = (*reinterpret_cast<const QMap<K,T>*>(other)); }
+    size_t sizeOf() override {
+        return sizeof(QMap<K,T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QMap<K,T>(*reinterpret_cast<const QMap<K,T>*>(copyOf));
+        }else{
+            return new(placement) QMap<K,T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QMap<K,T>(std::move(*reinterpret_cast<const QMap<K,T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QMap<K,T>*>(container)->~QMap<K,T>();
+        return true;
+    }
      int registerContainer(const QByteArray& containerTypeName) override {
          return registerMetaType<QMap<K,T>>(containerTypeName);
      }
@@ -866,13 +882,29 @@ public:
     bool isConstant() override {return true;}
     const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
     const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-    void* createContainer() override {return new QMultiMap<K,T>();}
-         void* copyContainer(const void* container) override {return container ? new QMultiMap<K,T>(*reinterpret_cast<const QMultiMap<K,T>*>(container)) : createContainer();}
-         void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiMap<K,T>*>(container)) = (*reinterpret_cast<const QMultiMap<K,T>*>(other)); }
-         void deleteContainer(void* container) override {delete reinterpret_cast<QMultiMap<K,T>*>(container);}
-         int registerContainer(const QByteArray& containerTypeName) override {
-             return registerMetaType<QMultiMap<K,T>>(containerTypeName);
-         }
+    size_t sizeOf() override {
+        return sizeof(QMultiMap<K,T>);
+    }
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+        if(copyOf){
+            return new(placement) QMultiMap<K,T>(*reinterpret_cast<const QMultiMap<K,T>*>(copyOf));
+        }else{
+            return new(placement) QMultiMap<K,T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        return new(placement) QMultiMap<K,T>(std::move(*reinterpret_cast<const QMultiMap<K,T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        reinterpret_cast<QMultiMap<K,T>*>(container)->~QMultiMap<K,T>();
+        return true;
+    }
+     void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiMap<K,T>*>(container)) = (*reinterpret_cast<const QMultiMap<K,T>*>(other)); }
+     int registerContainer(const QByteArray& containerTypeName) override {
+         return registerMetaType<QMultiMap<K,T>>(containerTypeName);
+     }
 
     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
         return BiContainerBegin<QMultiMap, K, T>::function(env, ownerId, container);
@@ -1075,13 +1107,30 @@ public:
      bool isConstant() override {return true;}
      const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
      const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-     void* createContainer() override {return new QHash<K,T>();}
-         void* copyContainer(const void* container) override {return container ? new QHash<K,T>(*reinterpret_cast<const QHash<K,T>*>(container)) : createContainer();}
-         void assign(void* container, const void* other) override { (*reinterpret_cast<QHash<K,T>*>(container)) = (*reinterpret_cast<const QHash<K,T>*>(other)); }
-         void deleteContainer(void* container) override {delete reinterpret_cast<QHash<K,T>*>(container);}
-         int registerContainer(const QByteArray& containerTypeName) override {
-             return registerMetaType<QHash<K,T>>(containerTypeName);
+     void assign(void* container, const void* other) override { (*reinterpret_cast<QHash<K,T>*>(container)) = (*reinterpret_cast<const QHash<K,T>*>(other)); }
+     int registerContainer(const QByteArray& containerTypeName) override {
+         return registerMetaType<QHash<K,T>>(containerTypeName);
+     }
+
+     size_t sizeOf() override {
+         return sizeof(QHash<K,T>);
+     }
+     void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+         if(copyOf){
+             return new(placement) QHash<K,T>(*reinterpret_cast<const QHash<K,T>*>(copyOf));
+         }else{
+             return new(placement) QHash<K,T>();
          }
+     }
+ #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+     void* constructContainer(void* placement, void* move) override {
+         return new(placement) QHash<K,T>(std::move(*reinterpret_cast<const QHash<K,T>*>(move)));
+     }
+ #endif
+     bool destructContainer(void* container) override {
+         reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
+         return true;
+     }
 
      jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
          return BiContainerBegin<QHash, K, T>::function(env, ownerId, container);
@@ -1220,13 +1269,30 @@ public:
      bool isConstant() override {return true;}
      const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
      const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
-     void* createContainer() override {return new QMultiHash<K,T>();}
-         void* copyContainer(const void* container) override {return container ? new QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(container)) : createContainer();}
-         void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other)); }
-         void deleteContainer(void* container) override {delete reinterpret_cast<QMultiHash<K,T>*>(container);}
-         int registerContainer(const QByteArray& containerTypeName) override {
-             return registerMetaType<QMultiHash<K,T>>(containerTypeName);
+     void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other)); }
+     int registerContainer(const QByteArray& containerTypeName) override {
+         return registerMetaType<QMultiHash<K,T>>(containerTypeName);
+     }
+
+     size_t sizeOf() override {
+         return sizeof(QMultiHash<K,T>);
+     }
+     void* constructContainer(void* placement, const void* copyOf = nullptr) override {
+         if(copyOf){
+             return new(placement) QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(copyOf));
+         }else{
+             return new(placement) QMultiHash<K,T>();
          }
+     }
+ #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+     void* constructContainer(void* placement, void* move) override {
+         return new(placement) QMultiHash<K,T>(std::move(*reinterpret_cast<const QMultiHash<K,T>*>(move)));
+     }
+ #endif
+     bool destructContainer(void* container) override {
+         reinterpret_cast<QMultiHash<K,T>*>(container)->~QMultiHash<K,T>();
+         return true;
+     }
 
      jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
          return BiContainerBegin<QMultiHash, K, T>::function(env, ownerId, container);

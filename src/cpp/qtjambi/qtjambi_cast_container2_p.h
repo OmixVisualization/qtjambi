@@ -313,9 +313,8 @@ struct qtjambi_jnitype_container2_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, _in.data(), nullptr, scope);
-        if(scope){
-            scope->addFinalAction([env, o](){ qtjambi_invalidate_object(env, o, false); });
-        }
+        if(scope)
+            scope->addObjectInvalidation(env, o, false, false);
         return o;
    }
 };
@@ -338,9 +337,8 @@ struct qtjambi_jnitype_container2_cast<false, has_scope,
         std::unique_ptr<QScopedPointer<K,T>> scp;
         if(in){
             scp.reset(new QScopedPointer<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, in, nullptr, scope)));
-            if(scope){
-                scope->addFinalAction([env, in](){ qtjambi_invalidate_object(env, in, false); });
-            }
+            if(scope)
+                scope->addObjectInvalidation(env, in, false, false);
         }
         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, scp);
     }
@@ -501,10 +499,10 @@ struct qtjambi_jnitype_container2_cast<false, true,
              } else {
                  if(is_const){
                      map = new NativeType();
-                     scope->addFinalAction([map](){delete map;});
+                     scope->addDeletion(map);
                  }else{
                      map = new IntermediateBiContainer<QMap,K,T>(env, in, *scope);
-                     scope->addFinalAction([map](){ delete static_cast<IntermediateBiContainer<QMap,K,T>*>(map); });
+                     scope->addDeletion(static_cast<IntermediateBiContainer<QMap,K,T>*>(map));
                  }
                  jobject iterator = qtjambi_map_entryset_iterator(env, in);
                  while(qtjambi_iterator_has_next(env, iterator)) {
@@ -516,7 +514,7 @@ struct qtjambi_jnitype_container2_cast<false, true,
              }
          }else{
              map = new NativeType();
-             scope->addFinalAction([map](){delete map;});
+             scope->addDeletion(map);
          }
          return *map;
     }
@@ -639,12 +637,12 @@ struct qtjambi_jnitype_container2_cast<false, true,
             } else {
                 if(is_const){
                     map = new NativeType();
-                    scope->addFinalAction([map](){delete map;});
+                    scope->addDeletion(map);
                 }else{
                     map = new IntermediateBiContainer<QMultiMap,K,T>(env, in, *scope);
-                    scope->addFinalAction([map](){ delete static_cast<IntermediateBiContainer<QMultiMap,K,T>*>(map); });
+                    scope->addDeletion(static_cast<IntermediateBiContainer<QMultiMap,K,T>*>(map));
                 }
-                scope->addFinalAction([map](){delete map;});
+                scope->addDeletion(map);
                 jobject iterator = qtjambi_map_entryset_iterator(env, in);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject entry = qtjambi_iterator_next(env, iterator);
@@ -655,7 +653,7 @@ struct qtjambi_jnitype_container2_cast<false, true,
             }
         }else{
             map = new NativeType();
-            scope->addFinalAction([map](){delete map;});
+            scope->addDeletion(map);
         }
         return *map;
     }
@@ -772,10 +770,10 @@ struct qtjambi_jnitype_container2_cast<false, true,
             } else {
                 if(is_const){
                     map = new NativeType();
-                    scope->addFinalAction([map](){delete map;});
+                    scope->addDeletion(map);
                 }else{
                     map = new IntermediateBiContainer<QHash,K,T>(env, in, *scope);
-                    scope->addFinalAction([map](){ delete static_cast<IntermediateBiContainer<QHash,K,T>*>(map); });
+                    scope->addDeletion(static_cast<IntermediateBiContainer<QHash,K,T>*>(map));
                 }
                 jobject iterator = qtjambi_map_entryset_iterator(env, in);
                 while(qtjambi_iterator_has_next(env, iterator)) {
@@ -787,7 +785,7 @@ struct qtjambi_jnitype_container2_cast<false, true,
             }
          }else{
             map = new NativeType();
-            scope->addFinalAction([map](){delete map;});
+            scope->addDeletion(map);
          }
          return *map;
      }
@@ -911,10 +909,10 @@ struct qtjambi_jnitype_container2_cast<false, true,
            } else {
                if(is_const){
                    map = new NativeType();
-                   scope->addFinalAction([map](){delete map;});
+                   scope->addDeletion(map);
                }else{
                    map = new IntermediateBiContainer<QMultiHash,K,T>(env, in, *scope);
-                   scope->addFinalAction([map](){ delete static_cast<IntermediateBiContainer<QMultiHash,K,T>*>(map); });
+                   scope->addDeletion(static_cast<IntermediateBiContainer<QMultiHash,K,T>*>(map));
                }
                jobject iterator = qtjambi_map_entryset_iterator(env, in);
                while(qtjambi_iterator_has_next(env, iterator)) {
@@ -926,7 +924,7 @@ struct qtjambi_jnitype_container2_cast<false, true,
            }
         }else{
            map = new NativeType();
-           scope->addFinalAction([map](){delete map;});
+           scope->addDeletion(map);
         }
         return *map;
     }
@@ -948,9 +946,8 @@ struct qtjambi_jnitype_container2_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, _in.get(), nullptr, scope);
-        if(scope){
-            scope->addFinalAction([env, o](){ qtjambi_invalidate_object(env, o, false); });
-        }
+        if(scope)
+            scope->addObjectInvalidation(env, o, false, false);
         return o;
    }
 };
@@ -972,9 +969,8 @@ struct qtjambi_jnitype_container2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         if(in){
             QScopedPointer<std::unique_ptr<K,T>> scp(new std::unique_ptr<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, in, nullptr, scope)));
-            if(scope){
-                scope->addFinalAction([env, in](){ qtjambi_invalidate_object(env, in, false); });
-            }
+            if(scope)
+                scope->addObjectInvalidation(env, in, false, false);
             return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
                         env, scope, scp);
         }else{

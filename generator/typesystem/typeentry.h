@@ -97,6 +97,7 @@ class TypeEntry {
             BasicValueType,
             StringType,
             Latin1StringType,
+            Latin1StringViewType,
             StringViewType,
             AnyStringViewType,
             Utf8StringViewType,
@@ -208,6 +209,7 @@ class TypeEntry {
         bool isString() const {
             return m_type == StringType
                     || m_type == Latin1StringType
+                    || m_type == Latin1StringViewType
                     || m_type == StringViewType
                     || m_type == AnyStringViewType
                     || m_type == Utf8StringViewType
@@ -218,6 +220,9 @@ class TypeEntry {
         }
         bool isLatin1String() const {
             return m_type == Latin1StringType;
+        }
+        bool isLatin1StringView() const {
+            return m_type == Latin1StringViewType;
         }
         bool isStringView() const {
             return m_type == StringViewType;
@@ -776,11 +781,10 @@ class FunctionalTypeEntry : public TypeEntry {
         uint count() const { return m_count; }
 
         void disableNativeIdUsage() {
-            m_isNativeIdBased = false;
         }
 
         bool isNativeIdBased() const override {
-            return m_isNativeIdBased;
+            return false;
         }
 
         const QString& ppCondition() const override {
@@ -830,6 +834,13 @@ class FunctionalTypeEntry : public TypeEntry {
         }
         const QString& functionName() const { return m_functionName; }
         void setFunctionName(const QString &names) { m_functionName = names; }
+
+        bool isGenericClass() const {
+            return m_generic_class;
+        }
+        void setGenericClass(bool isGeneric) {
+            m_generic_class = isGeneric;
+        }
     private:
         QString m_implements;
         QString m_package_name;
@@ -848,7 +859,7 @@ class FunctionalTypeEntry : public TypeEntry {
         QString m_target_typesystem;
         CodeSnipList m_code_snips;
         QString m_functionName;
-        uint m_isNativeIdBased : 1;
+        uint m_generic_class : 1;
 };
 
 class EnumTypeEntry : public TypeEntry {
@@ -906,14 +917,15 @@ class EnumTypeEntry : public TypeEntry {
         }
 
         QString qualifiedCppName() const override {
-            if(m_cppName.isEmpty())
-                return TypeEntry::qualifiedCppName();
-            else
-                return m_cppName;
+           return TypeEntry::qualifiedCppName();
         }
 
-        void setCppName(const QString& s){
-            m_cppName = s;
+        void setJavaScope(const QString& s){
+            m_javaScope = s;
+        }
+
+        const QString&javaScope() const {
+            return m_javaScope;
         }
 
         bool preferredConversion() const override {
@@ -1050,7 +1062,7 @@ class EnumTypeEntry : public TypeEntry {
         QString m_package_name;
         QString m_target_typesystem;
         QString m_qualifier;
-        QString m_cppName;
+        QString m_javaScope;
         mutable const TypeEntry *m_qualifier_type;
         QString m_java_name;
 
@@ -1124,21 +1136,12 @@ class FlagsTypeEntry : public TypeEntry {
         }
 
         QString qualifiedCppName() const override {
-            if(m_cppName.isEmpty())
-                return TypeEntry::qualifiedCppName();
-            else
-                return m_cppName;
+            return TypeEntry::qualifiedCppName();
         }
-
-        void setCppName(const QString& s){
-            m_cppName = s;
-        }
-
     private:
         QString m_original_name;
         QString m_java_name;
         EnumTypeEntry *m_enum;
-        QString m_cppName;
 };
 
 class ComplexTypeEntry : public TypeEntry {
@@ -1425,6 +1428,8 @@ class ComplexTypeEntry : public TypeEntry {
         const QMap<QStringList,const ComplexTypeEntry*>& instantiations() const {
             return m_instantiations;
         }
+        void setExtendType(const QString& extendType){ m_extendType = extendType; }
+        const QString& extendType() const { return m_extendType; }
 
     private:
         IncludeList m_extra_includes;
@@ -1462,6 +1467,7 @@ class ComplexTypeEntry : public TypeEntry {
         TypeFlags m_type_flags;
         QMap<QString,QString> m_delegatedBaseClasses;
         QMap<QStringList,const ComplexTypeEntry*> m_instantiations;
+        QString m_extendType;
         static bool useNativeIds;
         friend class Wrapper;
         friend class FunctionalTypeEntry;
@@ -1611,9 +1617,10 @@ class StringTypeEntry : public ValueTypeEntry {
                 : ValueTypeEntry(name,
                                  name=="QString" ? StringType :
                                 (name=="QLatin1String" ? Latin1StringType :
+                                (name=="QLatin1StringView" ? Latin1StringViewType :
                                 (name=="QStringView" ? StringViewType :
                                 (name=="QAnyStringView" ? AnyStringViewType :
-                                (name=="QUtf8StringView" ? Utf8StringViewType : StringRefType))))) {
+                                (name=="QUtf8StringView" ? Utf8StringViewType : StringRefType)))))) {
             setCodeGeneration(GenerateNothing);
         }
 

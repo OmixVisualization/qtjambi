@@ -2776,6 +2776,12 @@ AbstractMetaEnumValue *AbstractMetaClass::findEnumValue(const QString &enumValue
             if (v->cppName() == enumValueName)
                 return v;
         }
+        if(e->typeEntry()->isScopedEnum()){
+            for(AbstractMetaEnumValue *v : e->values()) {
+                if (v->name() == enumValueName)
+                    return v;
+            }
+        }
     }
 
     if (typeEntry()->isInterface())
@@ -2815,7 +2821,7 @@ QString AbstractMetaEnumValue::cppName() const {
     return m_enum && m_enum->typeEntry()->isScopedEnum() ? m_enum->typeEntry()->name() + "::" + m_name : m_name;
 }
 
-static void add_extra_include_for_type(AbstractMetaClass *meta_class, const AbstractMetaType *type) {
+void add_extra_include_for_type(AbstractMetaClass *meta_class, const AbstractMetaType *type) {
 
     if (!type)
         return;
@@ -2836,7 +2842,7 @@ static void add_extra_include_for_type(AbstractMetaClass *meta_class, const Abst
     }
 }
 
-static void add_extra_includes_for_function(AbstractMetaClass *meta_class, const AbstractMetaFunction *meta_function) {
+void add_extra_includes_for_function(AbstractMetaClass *meta_class, const AbstractMetaFunction *meta_function) {
     Q_ASSERT(meta_class);
     Q_ASSERT(meta_function);
     add_extra_include_for_type(meta_class, meta_function->type());
@@ -3003,7 +3009,11 @@ void AbstractMetaClass::fixFunctions(std::function<AbstractMetaArgument*(TypeEnt
                                     }
                                 }
 
-                                if (!hasNonFinalModifier && !isBaseImplPrivate && f->addedArguments().isEmpty()) {
+                                if (!hasNonFinalModifier
+                                        && !isBaseImplPrivate
+                                        && f->addedArguments().isEmpty()
+                                        && (f->implementingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang)
+                                        && (sf->implementingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang)) {
                                     ReportHandler::warning(QString::fromLatin1("Shadowing: %1::%2 and %3::%4; Java code will not compile")
                                                            .arg(sf->implementingClass()->qualifiedCppName())
                                                            .arg(sf->signature())
@@ -3206,9 +3216,12 @@ AbstractMetaEnum *AbstractMetaClassList::findEnum(const EnumTypeEntry *entry) co
     }
 
     AbstractMetaClass *meta_class = findClass(class_name);
+    if (!meta_class && !entry->javaScope().isEmpty()) {
+        meta_class = findClass(entry->javaScope(), FullName);
+    }
     if (!meta_class) {
         ReportHandler::warning(QString("Unknown class '%1' for enum '%2'")
-                               .arg(class_name).arg(entry->qualifiedCppName()));
+                               .arg(class_name, entry->qualifiedCppName()));
         return nullptr;
     }
 

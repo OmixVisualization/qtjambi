@@ -69,25 +69,25 @@ void AutoLinkedListAccess::dispose()
     delete this;
 }
 
-void* AutoLinkedListAccess::createContainer()
-{
-    return new QLinkedList<char>();
+size_t AutoLinkedListAccess::sizeOf(){
+    return sizeof(QLinkedList<char>);
 }
 
-void* AutoLinkedListAccess::copyContainer(const void* container)
+void* AutoLinkedListAccess::constructContainer(void* placement, const void* container)
 {
-    void* result = createContainer();
+    placement = new(placement) QLinkedList<char>();
     if(container)
-        assign(result, container);
-    return result;
+        assign(placement, container);
+    return placement;
 }
 
-void AutoLinkedListAccess::destructContainer(void* container)
+bool AutoLinkedListAccess::destructContainer(void* container)
 {
     QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
     QLinkedListData *&d = *linkedList;
     if (!d->ref.deref())
         freeData(d);
+    return true;
 }
 
 void AutoLinkedListAccess::assign(void* container, const void* other)
@@ -103,11 +103,6 @@ void AutoLinkedListAccess::assign(void* container, const void* other)
         if (!(*linkedList)->sharable)
             detach_helper(*linkedList);
     }
-}
-void AutoLinkedListAccess::deleteContainer(void* container)
-{
-    destructContainer(container);
-    operator delete(container);
 }
 
 int AutoLinkedListAccess::registerContainer(const QByteArray& typeName)
@@ -126,7 +121,7 @@ int AutoLinkedListAccess::registerContainer(const QByteArray& typeName)
                                                 return new(result) QLinkedList<char>();
                                             }
                                        },
-                                       uint(sizeof(QLinkedList<char>)),
+                                       uint(sizeOf()),
                                        uint(alignof(QLinkedList<char>)),
                                        QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction

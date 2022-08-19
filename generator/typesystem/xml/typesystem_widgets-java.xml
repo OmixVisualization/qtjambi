@@ -1588,6 +1588,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="setRowVisible(QWidget *, bool)" thread-affine="yes" since="6.4">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRowVisible(QLayout *, bool)" thread-affine="yes" since="6.4">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setLayout(int,QFormLayout::ItemRole,QLayout*)" thread-affine="yes">
             <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>

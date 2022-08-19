@@ -10189,23 +10189,14 @@ class QCoreApplication__62_ {
 class QTranslator___ extends QTranslator {
 }// class
 
-class QItemSelection_6__ extends QItemSelection {
-    
-    public QItemSelection() {
-        super((QPrivateConstructor)null);
-        initialize_native(this, null);
-    }
-    
-}// class
-
 class QItemSelection___ extends QItemSelection {
     
-    public QItemSelection(java.util.Collection<QItemSelectionRange> other) {
+    public QItemSelection(java.util.Collection<? extends QItemSelectionRange> other) {
         super((QPrivateConstructor)null);
         initialize_native(this, other);
     }
     
-    private native static <T> void initialize_native(QItemSelection instance, java.util.Collection<QItemSelectionRange> other);
+    private native static <T> void initialize_native(QItemSelection instance, java.util.Collection<? extends QItemSelectionRange> other);
 }// class
 
 class QXmlStreamAttributes___ extends QXmlStreamAttributes {
@@ -13470,6 +13461,9 @@ class QMetaMethod___ {
             qmethod = methodFromMethod(mo.metaObjectPointer, ok);
             if(qmethod==null && ok[0]==null) {
                 qmethod = mo.method(method.getName(), method.getParameterTypes());
+				if(qmethod!=null && qmethod.methodType()==MethodType.Signal) {
+                	qmethod = null;
+                }
             }
         }
         return qmethod;
@@ -13478,7 +13472,7 @@ class QMetaMethod___ {
     private static native QMetaMethod methodFromMethod(long metaObjectPointer, Object[] method);
     
     private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
-        io.qt.internal.QtJambiInternal.LambdaInfo info = io.qt.internal.QtJambiInternal.lamdaInfo(method);
+        io.qt.internal.QtJambiInternal.LambdaInfo info = io.qt.internal.QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.lambdaArgs.isEmpty()) {
             if(info.owner instanceof QMetaObject.Signal && info.reflectiveMethod.getName().equals("emit"))
                 return fromSignal((QMetaObject.Signal)info.owner);
@@ -15320,5 +15314,106 @@ class QDataStream___{
     public final QDataStream append(short v){
         return writeShort(v);
     }
+}// class
+
+class QString__{
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	@io.qt.QtUninvokable
+	public final char charAt(int index) {
+		return at(index);
+	}
+
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	@io.qt.QtUninvokable
+	public final QString subSequence(int start, int end) {
+		return mid(start, end-start);
+	}
+
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	@io.qt.QtUninvokable
+	public final QString append(CharSequence csq, int start, int end) throws java.io.IOException {
+		return append(csq.subSequence(start, end));
+	}
+	
+	/**
+     * <p>See <a href="https://doc.qt.io/qt/qstring.html#arg">QString::arg(Args &amp;&amp;... args) const</a></p>
+     */
+	@io.qt.QtUninvokable
+    public final io.qt.core.QString arg(Object... args){
+    	QString _this = this.clone();
+    	for(Object arg : args) {
+    		if(arg instanceof Integer)
+    			_this = _this.arg((int)arg);
+    		else if(arg instanceof Character)
+    			_this = _this.arg((char)arg);
+    		else if(arg instanceof Double)
+    			_this = _this.arg((double)arg);
+    		else if(arg instanceof Byte)
+    			_this = _this.arg((byte)arg);
+    		else if(arg instanceof Short)
+    			_this = _this.arg((short)arg);
+    		else if(arg instanceof Long)
+    			_this = _this.arg((long)arg);
+    		else if(arg instanceof Float)
+    			_this = _this.arg((float)arg);
+    		else if(arg instanceof CharSequence)
+    			_this = _this.arg((CharSequence)arg);
+    		else if(arg!=null)
+    			_this = _this.arg(arg.toString());
+    		else
+    			_this = _this.arg("null");
+    	}
+    	return _this;
+    }
+	
+    /**
+     * Similar to {@link java.lang.String#format(String, Object...)} but using {@link QString#arg(Object...)}.
+     * @param format format string
+     * @param args arguments
+     * @return formatted string
+     */
+	@io.qt.QtUninvokable
+    public static io.qt.core.QString format(CharSequence format, Object... args){
+		io.qt.core.QString strg;
+		if(format instanceof io.qt.core.QString){
+			strg = (io.qt.core.QString)format;
+		}else{
+			strg = new io.qt.core.QString(format);
+		}
+		return strg.arg(args);
+	}
+	
+    /**
+     * Static version of {@link QString#toUtf8()}
+     * @param string
+     * @return utf8
+     */
+	@io.qt.QtUninvokable
+    public static native io.qt.core.QByteArray toUtf8(CharSequence string);
+
+    /**
+     * Static version of {@link QString#toLatin1()}
+     * @param string
+     * @return latin1
+     */
+    @io.qt.QtUninvokable
+    public static native io.qt.core.QByteArray toLatin1(CharSequence string);
+
+    /**
+     * Static version of {@link QString#toLocal8Bit()}
+     * @param string
+     * @return local8Bit
+     */
+    @io.qt.QtUninvokable
+    public static native io.qt.core.QByteArray toLocal8Bit(CharSequence string);
 }// class
 

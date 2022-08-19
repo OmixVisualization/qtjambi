@@ -30,6 +30,10 @@
 #include <qglobal.h>
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
+#  define QT_CORE_INLINE_SINCE(major, minor) inline
+#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#endif
 
 #include <cstring>
 
@@ -1385,7 +1389,7 @@ void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNa
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1542,7 +1546,7 @@ void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNat
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1693,7 +1697,7 @@ void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJ
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1844,7 +1848,7 @@ void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambi
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1998,7 +2002,7 @@ void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNative
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2156,7 +2160,7 @@ void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiN
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2317,7 +2321,7 @@ void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeI
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2474,7 +2478,7 @@ void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNa
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->copyContainer(link->pointer());
+            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();

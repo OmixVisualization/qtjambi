@@ -102,7 +102,7 @@ class QShortcut__{
     }
     
     private static io.qt.core.QObject parent(io.qt.core.QMetaObject.Slot0 slot){
-        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(io.qt.core.QMetaObject.Slot0.class, java.util.Objects.requireNonNull(slot));
+        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(java.util.Objects.requireNonNull(slot));
         if(parent==null)
             throw new IllegalArgumentException("Slot needs to be member of a QObject instance.");
         return parent;

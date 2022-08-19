@@ -235,11 +235,11 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: horribly broken type ''"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QExplicitlySharedDataPointer&lt;QXmlSerializer&gt;' of 'QXmlSerializerPointer' is not known" />
 
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlItem::QXmlItem', unmatched parameter type 'QPatternist::Item const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlItem::QXmlItem', unmatched parameter type 'const QPatternist::Item&amp;'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlNodeModelIndex::sequencedTypedValue', unmatched return type 'QExplicitlySharedDataPointer&lt;QAbstractXmlForwardIterator&lt;QPatternist::Item&gt;&gt;"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlNamePool::QXmlNamePool', unmatched parameter type 'QPatternist::NamePool*'" />
 
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlNodeModelIndex::QXmlNodeModelIndex', unmatched parameter type 'QPatternist::NodeIndexStorage const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QXmlNodeModelIndex::QXmlNodeModelIndex', unmatched parameter type 'const QPatternist::NodeIndexStorage&amp;'" />
 
   <!-- To avoid warnings when running the generator on systems without XML patterns -->
   <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSimpleXmlNodeModel' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>

@@ -219,7 +219,7 @@ struct qtjambi_enum_container1_cast<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QFlags<T>*" QTJAMBI_STACKTRACEINFO );
         QFlags<T>* result = new QFlags<T>(in);
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return result;
     }
 };
@@ -286,7 +286,7 @@ struct qtjambi_enum_container2_cast<false, has_scope,
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QUrl::FormattingOptions*" QTJAMBI_STACKTRACEINFO );
         QUrl::FormattingOptions* result = new QUrl::FormattingOptions(int(in));
-        scope->addFinalAction([result](){delete result;});
+        scope->addDeletion(result);
         return result;
     }
 };

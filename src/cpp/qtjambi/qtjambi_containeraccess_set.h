@@ -60,19 +60,9 @@ public:
     GenericSetAccess<_align, _size>* clone() override{
         return new GenericSetAccess<_align, _size>(*this);
     }
-    void* createContainer() override {
-        QTJAMBI_ELEMENT_LOCKER
-        QSet<T>* list = new QSet<T>();
-        return list;
-    }
 
-    void* copyContainer(const void* container) override {
-        if(container){
-            QTJAMBI_ELEMENT_LOCKER
-            QSet<T>* list = new QSet<T>(*reinterpret_cast<const QSet<T>*>(container));
-            return list;
-        }
-        return createContainer();
+    size_t sizeOf() override {
+        return sizeof(QSet<T>);
     }
 
     void assign(void* container, const void* other) override {
@@ -80,9 +70,24 @@ public:
         (*reinterpret_cast<QSet<T>*>(container)) = (*reinterpret_cast<const QSet<T>*>(other));
     }
 
-    void deleteContainer(void* container) override {
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
         QTJAMBI_ELEMENT_LOCKER
-        delete reinterpret_cast<QSet<T>*>(container);
+        if(copyOf){
+            return new(placement) QSet<T>(*reinterpret_cast<const QSet<T>*>(copyOf));
+        }else{
+            return new(placement) QSet<T>();
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void* constructContainer(void* placement, void* move) override {
+        QTJAMBI_ELEMENT_LOCKER
+        return new(placement) QSet<T>(std::move(*reinterpret_cast<const QSet<T>*>(move)));
+    }
+#endif
+    bool destructContainer(void* container) override {
+        QTJAMBI_ELEMENT_LOCKER
+        reinterpret_cast<QSet<T>*>(container)->~QSet<T>();
+        return true;
     }
 
     int registerContainer(const QByteArray& containerTypeName) override {

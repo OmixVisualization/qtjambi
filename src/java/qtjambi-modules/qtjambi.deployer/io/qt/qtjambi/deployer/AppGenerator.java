@@ -29,11 +29,11 @@
 ****************************************************************************/
 package io.qt.qtjambi.deployer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.function.IntFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +66,7 @@ import io.qt.core.QStringList;
 import io.qt.qtjambi.deployer.Main.JVMDetectionModes;
 import io.qt.qtjambi.deployer.Main.Parameters;
 
-class AppGenerator {
+final class AppGenerator {
 	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException{
 	    QCommandLineOption applicationJNIMinVersionOption = new QCommandLineOption(QStringList.of("jni-minimum-version"), "Minimum version for the required JNI", "version");
 	    QCommandLineOption applicationNameOption = new QCommandLineOption(QStringList.of("application", "application-name"), "Application name", "name");
@@ -130,8 +129,10 @@ class AppGenerator {
 			dir = new QDir(QDir.fromNativeSeparators(parser.value(dirOption)));
 		
 		QFile ico = null;
-		if(parser.isSet(applicationIcoOption))
+		if(parser.isSet(applicationIcoOption)) {
 			ico = new QFile(QDir.fromNativeSeparators(parser.value(applicationIcoOption)));
+			System.out.println("Setting application icon is deprecated.");
+		}
 		
 		Integer jniMinimumVersion = null;
 		if(parser.isSet(applicationJNIMinVersionOption))
@@ -492,6 +493,12 @@ class AppGenerator {
         						case "win32":
         						case "win64":
         						case "windows":
+        						case "windows-arm":
+        						case "windows-arm32":
+        						case "windows-aarch64":
+        						case "windows-amd64":
+        						case "windows-x64":
+        						case "windows-x86":
                                 	idx = (int)exeData.indexOf(new QByteArray("QTJAMBI_ICO!"));
                                 	if(idx>254) {
                                         if(ico!=null) {
@@ -503,21 +510,6 @@ class AppGenerator {
         	                                    newFile.seek(idx-254);
         	                                    newFile.write(icoData);
         									}
-                                        }else {
-    	        							try(InputStream stream = Main.class.getResourceAsStream("icon.ico");
-    	        									ByteArrayOutputStream buffer = new ByteArrayOutputStream()){
-    	        								byte[] data = new byte[10240];
-    	        								int length = stream.read(data);
-    	        								while(length>0) {
-    	        									buffer.write(data, 0, length);
-    	        									length = stream.read(data);
-    	        								}
-    	        								data = buffer.toByteArray();
-    	        								if(data.length<92482) {
-	    	        								newFile.seek(idx-254);
-	        	                                    newFile.write(data);
-    	        								}
-    	        							}
                                         }
                                 	}
         							break;

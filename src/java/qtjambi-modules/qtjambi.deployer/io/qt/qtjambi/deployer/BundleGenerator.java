@@ -51,7 +51,11 @@ import io.qt.core.QStringList;
 import io.qt.core.QVersionNumber;
 import io.qt.internal.QtJambiInternal;
 
-public class BundleGenerator {
+final class BundleGenerator {
+	
+	static <K,V> Function<? super K, ArrayList<V>> getArrayListFactory(){
+		return key->new ArrayList<>();
+	}
 	
 //	private static final Map<String,String> pluginsModules;
 	private static final Map<String,Set<String>> pluginsByModules;
@@ -521,7 +525,7 @@ public class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -530,10 +534,10 @@ public class BundleGenerator {
 								if(debugLib.exists())
 									list.add(debugLib);
 							}else if(lib.equals("libGLESv2.dll") || lib.equals("libEGL.dll")) {
-								List<File> list = libraries.computeIfAbsent("gui", QtJambiInternal.getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
-								List<File> list = libraries.computeIfAbsent("core", QtJambiInternal.getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("core", getArrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -568,7 +572,7 @@ public class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -577,7 +581,7 @@ public class BundleGenerator {
 								String libNoSuffix = lib.substring(0, lib.length()-5);
 								if(new File(binDir, libNoSuffix+"dd.dll").exists())
 									continue;
-								List<File> list = libraries.computeIfAbsent("gui", QtJambiInternal.getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -615,7 +619,7 @@ public class BundleGenerator {
 								name = targetModule;
 								prepend = false;
 							}
-							List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 							if(prepend)
 								list.add(0, new File(binDir, lib));
 							else
@@ -624,10 +628,10 @@ public class BundleGenerator {
 							String libNoSuffix = lib.substring(0, lib.length()-5);
 							if(new File(binDir, libNoSuffix+".dll").exists())
 								continue;
-							List<File> list = libraries.computeIfAbsent("gui", QtJambiInternal.getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
-							List<File> list = libraries.computeIfAbsent("core", QtJambiInternal.getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent("core", getArrayListFactory());
 							list.add(new File(binDir, lib));
 						}
 					}
@@ -680,7 +684,7 @@ public class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
@@ -717,13 +721,13 @@ public class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
 							list.add(new File(libDir, lib));
 					}else if(lib.startsWith(prefix2) && lib.endsWith(suffix2)) {
-						libraries.computeIfAbsent("core", QtJambiInternal.getArrayListFactory()).add(new File(libDir, lib));
+						libraries.computeIfAbsent("core", getArrayListFactory()).add(new File(libDir, lib));
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -754,7 +758,7 @@ public class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, QtJambiInternal.getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
 						if(prepend)
 							list.add(0, lib);
 						else

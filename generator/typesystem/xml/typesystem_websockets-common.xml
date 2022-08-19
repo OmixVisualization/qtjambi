@@ -79,5 +79,13 @@
             </modify-argument>
         </modify-function>
   </value-type>
+  <value-type name="QWebSocketHandshakeOptions" since="6.4">
+        <modify-function signature="operator=(QWebSocketHandshakeOptions)" rename="set">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <replace-type modified-type="void" />
+            </modify-argument>
+        </modify-function>
+  </value-type>
   <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QWebSocketCorsAuthenticator." />
 </typesystem>

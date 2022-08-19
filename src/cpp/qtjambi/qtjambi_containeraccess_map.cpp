@@ -248,29 +248,19 @@ void AutoMapAccess::clear(JNIEnv *, void* container)
     assign(container, &empty);
 }
 
-void* AutoMapAccess::createContainer()
+void* AutoMapAccess::constructContainer(void* result, const void* container)
 {
-    return new const QMapDataBase*(&QMapDataBase::shared_null);
-}
-
-void* AutoMapAccess::copyContainer(const void* container)
-{
-    void* result = createContainer();
+    new(result) const QMapDataBase*(&QMapDataBase::shared_null);
     if(container)
         assign(result, container);
     return result;
 }
 
-void AutoMapAccess::deleteContainer(void* container)
-{
-    destructContainer(container);
-    operator delete(container);
-}
-
-void AutoMapAccess::destructContainer(void* container){
+bool AutoMapAccess::destructContainer(void* container){
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
     if (!d->ref.deref()) destroy(d);
+    return true;
 }
 
 jint AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
@@ -508,7 +498,7 @@ int AutoMapAccess::registerContainer(const QByteArray& typeName)
                                             }
                                             return new (ptr) QMapDataBase const*(&QMapDataBase::shared_null);
                                        },
-                                       sizeOf(),
+                                       uint(sizeOf()),
                                        alignOf(),
 #else
                                        AutoMapAccess::defaultCtr,
@@ -537,7 +527,7 @@ int AutoMapAccess::registerContainer(const QByteArray& typeName)
                                                 && (viface->dataStreamIn
                                                     || (viface->flags & QMetaType::IsEnumeration)) ? AutoMapAccess::dataStreamInFn : nullptr,
                                        nullptr,
-                                       sizeOf(),
+                                       uint(sizeOf()),
                                        alignOf(),
                                        QMetaType::UnknownType,
 #endif
@@ -849,8 +839,9 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container)
         Node *firstNode(beginNode(map));
         Node *lastNode(endNode(map));
         listAccess->reserve(env, listContainer, d->size);
+        jint idx = listAccess->size(env, listContainer);
         while(firstNode != lastNode){
-            listAccess->append(env, listContainer, nodeKey(env, firstNode));
+            listAccess->insert(env, listContainer, idx++, 1, nodeKey(env, firstNode));
             firstNode = firstNode->nextNode();
         }
         return qtjambi_from_QList(env, listContainer, listAccess);
@@ -891,10 +882,11 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container, jobject value)
             listAccess = checkContainerAccess(env, listAccess);
             Node *firstNode(beginNode(map));
             Node *lastNode(endNode(map));
+            jint idx = listAccess->size(env, listContainer);
             while(firstNode != lastNode){
                 void* value = reinterpret_cast<char*>(firstNode)+m_offset2;
                 if(is_equals(m_valueMetaType, value, _qvaluePtr))
-                    listAccess->append(env, listContainer, nodeKey(env, firstNode));
+                    listAccess->insert(env, listContainer, idx++, 1, nodeKey(env, firstNode));
                 firstNode = firstNode->nextNode();
             }
         }
@@ -967,8 +959,9 @@ jobject AutoMapAccess::values(JNIEnv *env, const void* container)
         listAccess = checkContainerAccess(env, listAccess);
         Node *firstNode(beginNode(map));
         Node *lastNode(endNode(map));
+        jint idx = listAccess->size(env, listContainer);
         while(firstNode != lastNode){
-            listAccess->append(env, listContainer, nodeValue(env, firstNode));
+            listAccess->insert(env, listContainer, idx++, 1, nodeValue(env, firstNode));
             firstNode = firstNode->nextNode();
         }
         return qtjambi_from_QList(env, listContainer, listAccess);
@@ -1188,8 +1181,8 @@ jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, voi
     }, containerAccess);
 }
 
-uint AutoMapAccess::sizeOf() const{
-    return uint(sizeof(QMap<char,char>));
+size_t AutoMapAccess::sizeOf() {
+    return sizeof(QMap<char,char>);
 }
 
 ushort AutoMapAccess::alignOf() const{

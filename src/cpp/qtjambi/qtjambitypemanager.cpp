@@ -1327,6 +1327,12 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             p->l = qtjambi_from_qstring(env, *strp);
             return true;
         };
+    }else if(Java::Runtime::CharSequence::isSameClass(_env,externalClass) || Java::QtCore::QString::isSameClass(_env,externalClass)){
+        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+            const QString *strp = reinterpret_cast<const QString *>(in);
+            p->l = qtjambi_to_stringobject(env, *strp);
+            return true;
+        };
     }else if(Java::QtJambi::QNativePointer::isSameClass(_env,externalClass)){
         return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
             const void * const*in_p = reinterpret_cast<const void * const*>(in);
@@ -1496,15 +1502,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             p->l = qtjambi_from_object(env, in, Java::QtCore::QMetaType$GenericObject::getClass(env), false);
             if(p->l){
                 Java::QtCore::QMetaType$GenericObject::set_type(env, p->l, _internalMetaType);
-                if(scope){
-                    JObjectWrapper obj(env, p->l);
-                    scope->addFinalAction([obj](){
-                        if(JNIEnv* env = qtjambi_current_environment()){
-                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                            qtjambi_invalidate_object(env, obj.object());
-                        }
-                    });
-                }
+                if(scope)
+                    scope->addObjectInvalidation(env, p->l, true, true);
             }
             return true;
         };
@@ -1517,15 +1516,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     Java::QtCore::QMetaType$GenericGadget::set_type(env, p->l, _internalMetaType);
                     jobject mo = qtjambi_cast<jobject>(env, QMetaType::metaObjectForType(_internalMetaType));
                     Java::QtJambi::QtGadget::set_staticMetaObject(env, p->l, mo);
-                    if(scope){
-                        JObjectWrapper obj(env, p->l);
-                        scope->addFinalAction([obj](){
-                            if(JNIEnv* env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                qtjambi_invalidate_object(env, obj.object());
-                            }
-                        });
-                    }
+                    if(scope)
+                        scope->addObjectInvalidation(env, p->l, true, true);
                 }
                 return true;
             };
@@ -1901,7 +1893,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             p->l = Java::QtCore::QList::newInstance(env, nullptr);
                             break;
                         }
-                        void* ptr = access->copyContainer(in);
+                        void* ptr = access->createContainer(in);
                         QMetaType _containerMetaType(containerMetaType);
                         QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForContainer(env, p->l, ptr, _containerMetaType,
                                                                                             false, true, access);
@@ -2334,7 +2326,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                     p->l = Java::QtCore::QHash::newInstance(env, nullptr);
                                     break;
                                 }
-                                void* ptr = access->copyContainer(in);
+                                void* ptr = access->createContainer(in);
                                 QMetaType _containerMetaType(containerMetaType);
                                 QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForContainer(env, p->l, ptr, _containerMetaType,
                                                                                                     false, true, access);
@@ -2436,15 +2428,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const QScopedPointer<QObject>* ptr = reinterpret_cast<const QScopedPointer<QObject>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_qobject(env, ptr->data(), *typeId);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2453,15 +2438,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const std::unique_ptr<QObject>* ptr = reinterpret_cast<const std::unique_ptr<QObject>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_qobject(env, ptr->get(), *typeId);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2527,15 +2505,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_interface(env, ptr->data(), *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2544,15 +2515,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_interface(env, ptr->get(), *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2586,15 +2550,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 }
                                 if(!found){
                                     p->l = qtjambi_from_interface(env, *ptr, *typeId, false);
-                                    if(scope){
-                                        JObjectWrapper object(env, p->l);
-                                        scope->addFinalAction([object](){
-                                            if(JNIEnv* env = qtjambi_current_environment()){
-                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                qtjambi_invalidate_object(env, object.object(), false);
-                                            }
-                                        });
-                                    }
+                                    if(scope)
+                                        scope->addObjectInvalidation(env, p->l, false, true);
                                 }
                             }
                             return true;
@@ -2660,15 +2617,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_object(env, ptr->data(), *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2677,15 +2627,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_object(env, ptr->get(), *typeId, false);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2703,15 +2646,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                         link->invalidate(env);
                                         p->l = qtjambi_from_object(env, in, *typeId, false);
                                         found = true;
-                                        if(scope){
-                                            JObjectWrapper object(env, p->l);
-                                            scope->addFinalAction([object](){
-                                                if(JNIEnv* env = qtjambi_current_environment()){
-                                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                    qtjambi_invalidate_object(env, object.object());
-                                                }
-                                            });
-                                        }
+                                        if(scope)
+                                            scope->addObjectInvalidation(env, p->l, false, true);
                                     }else{
                                         QByteArray className = getJavaName(*typeId);
                                         jclass targetType = nullptr;
@@ -2726,15 +2662,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 }
                                 if(!found){
                                     p->l = qtjambi_from_object(env, *ptr, *typeId, false);
-                                    if(scope){
-                                        JObjectWrapper object(env, p->l);
-                                        scope->addFinalAction([object](){
-                                            if(JNIEnv* env = qtjambi_current_environment()){
-                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                qtjambi_invalidate_object(env, object.object());
-                                            }
-                                        });
-                                    }
+                                    if(scope)
+                                        scope->addObjectInvalidation(env, p->l, false, true);
                                 }
                             }
                             return true;
@@ -2752,15 +2681,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                             link->invalidate(env);
                                             p->l = qtjambi_from_object(env, in, *typeId, false);
                                             found = true;
-                                            if(scope){
-                                                JObjectWrapper object(env, p->l);
-                                                scope->addFinalAction([object](){
-                                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                        qtjambi_invalidate_object(env, object.object());
-                                                    }
-                                                });
-                                            }
+                                            if(scope)
+                                                scope->addObjectInvalidation(env, p->l, false, true);
                                         }else{
                                             QByteArray className = getJavaName(*typeId);
                                             jclass targetType = nullptr;
@@ -2775,15 +2697,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                     }
                                     if(!found){
                                         p->l = qtjambi_from_object(env, in, *typeId, false);
-                                        if(scope){
-                                            JObjectWrapper object(env, p->l);
-                                            scope->addFinalAction([object](){
-                                                if(JNIEnv* env = qtjambi_current_environment()){
-                                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                    qtjambi_invalidate_object(env, object.object());
-                                                }
-                                            });
-                                        }
+                                        if(scope)
+                                            scope->addObjectInvalidation(env, p->l, false, true);
                                     }
                                 }
                                 return true;
@@ -2851,15 +2766,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const QScopedPointer<QObject>* ptr = reinterpret_cast<const QScopedPointer<QObject>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_qobject(env, ptr->data(), className);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2868,15 +2776,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         const std::unique_ptr<QObject>* ptr = reinterpret_cast<const std::unique_ptr<QObject>*>(in);
                         if(ptr){
                             p->l = qtjambi_from_qobject(env, ptr->get(), className);
-                            if(scope){
-                                JObjectWrapper object(env, p->l);
-                                scope->addFinalAction([object](){
-                                    if(JNIEnv* env = qtjambi_current_environment()){
-                                        QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                        qtjambi_invalidate_object(env, object.object(), false);
-                                    }
-                                });
-                            }
+                            if(scope)
+                                scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
@@ -2941,15 +2842,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
                     if(ptr){
                         p->l = qtjambi_from_object(env, ptr->data(), className.constData(), false);
-                        if(scope){
-                            JObjectWrapper object(env, p->l);
-                            scope->addFinalAction([object](){
-                                if(JNIEnv* env = qtjambi_current_environment()){
-                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                    qtjambi_invalidate_object(env, object.object(), false);
-                                }
-                            });
-                        }
+                        if(scope)
+                            scope->addObjectInvalidation(env, p->l, false, true);
                     }
                     return true;
                 };
@@ -2958,15 +2852,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
                     if(ptr){
                         p->l = qtjambi_from_object(env, ptr->get(), className.constData(), false);
-                        if(scope){
-                            JObjectWrapper object(env, p->l);
-                            scope->addFinalAction([object](){
-                                if(JNIEnv* env = qtjambi_current_environment()){
-                                    QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                    qtjambi_invalidate_object(env, object.object(), false);
-                                }
-                            });
-                        }
+                        if(scope)
+                            scope->addObjectInvalidation(env, p->l, false, true);
                     }
                     return true;
                 };
@@ -2997,15 +2884,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                     link->invalidate(env);
                                     p->l = qtjambi_from_object(env, *ptr, className, false);
                                     found = true;
-                                    if(scope){
-                                        JObjectWrapper object(env, p->l);
-                                        scope->addFinalAction([object](){
-                                            if(JNIEnv* env = qtjambi_current_environment()){
-                                                QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                                qtjambi_invalidate_object(env, object.object());
-                                            }
-                                        });
-                                    }
+                                    if(scope)
+                                        scope->addObjectInvalidation(env, p->l, true, true);
                                 }else{
                                     jclass targetType = nullptr;
                                     try{
@@ -3019,15 +2899,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             }
                             if(!found){
                                 p->l = qtjambi_from_object(env, *ptr, className, false);
-                                if(scope){
-                                    JObjectWrapper object(env, p->l);
-                                    scope->addFinalAction([object](){
-                                        if(JNIEnv* env = qtjambi_current_environment()){
-                                            QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                                            qtjambi_invalidate_object(env, object.object());
-                                        }
-                                    });
-                                }
+                                if(scope)
+                                    scope->addObjectInvalidation(env, p->l, true, true);
                             }
                         }
                         return true;
@@ -3075,15 +2948,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         }else if(const std::type_info* interfaceTypeId = getTypeByQtName(metaObject->className())){
             return [interfaceTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                 p->l = qtjambi_from_object(env, in, *interfaceTypeId, true, false);
-                if(scope){
-                    JObjectWrapper object(env, p->l);
-                    scope->addFinalAction([object](){
-                        if(JNIEnv* env = qtjambi_current_environment()){
-                            QTJAMBI_JNI_LOCAL_FRAME(env, 300)
-                            qtjambi_invalidate_object(env, object.object(), false);
-                        }
-                    });
-                }
+                if(scope)
+                    scope->addObjectInvalidation(env, p->l, false, true);
                 return true;
             };
         }else if(const std::type_info* interfaceTypeId = getTypeByMetaType(internalMetaType)){
@@ -3174,9 +3040,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QVariant* ptr;
                 out = ptr = new QVariant();
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -3262,9 +3126,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 }else{
                     out = ptr = new JObjectWrapper;
                 }
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -3291,9 +3153,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     qint32 * ptr;
                     out = ptr = new qint32;
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3320,9 +3180,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3366,9 +3228,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     qint64 *ptr;
                     out = ptr = new qint64(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3396,9 +3256,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3440,9 +3302,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     qint16* ptr;
                     out = ptr = new qint16(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3468,9 +3328,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3510,9 +3372,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     qint8* ptr;
                     out = ptr = new qint8(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3536,9 +3396,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3578,9 +3440,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     bool* ptr;
                     out = ptr = new bool(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3604,9 +3464,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3646,9 +3508,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     QChar* ptr;
                     out = ptr = new QChar(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3671,9 +3531,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     unsigned short* ptr;
                     out = ptr = new unsigned short(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3697,9 +3555,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3743,9 +3603,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     float* ptr;
                     out = ptr = new float(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3773,9 +3631,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3815,9 +3675,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     double* ptr;
                     out = ptr = new double(v);
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3841,9 +3699,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &v);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3872,9 +3732,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     QString* ptr;
                     out = ptr = new QString;
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -3894,9 +3752,62 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, &s);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
+                }else{
+                    if(!out)
+                        return false;
+                    QMetaType::destruct(_internalMetaType, out);
+                    QByteArray ba;
+                    bool saved;
+                    /* write the copy to the stream */ {
+                        QDataStream stream(&ba, QIODevice::WriteOnly);
+                        saved = QMetaType::save(stream, qMetaTypeId<QString>(), &s);
+                    }
+
+                    /* read it back into the destination */
+                    if(saved){
+                        QDataStream stream(&ba, QIODevice::ReadOnly);
+                        QMetaType::load(stream, _internalMetaType, out);
+                    }else if(QMetaType::construct(_internalMetaType, out, &s)!=out){
+                        return false;
+                    }
+                }
+                return true;
+            };
+        }
+    }else if(Java::Runtime::CharSequence::isSameClass(_env,externalClass)){
+        if(!internalMetaType.isValid() || internalMetaType.id()==qMetaTypeId<QString>()){
+            return [](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
+                if(scope && !out){
+                    QString* ptr;
+                    out = ptr = new QString;
+                    scope->addDeletion(ptr);
+                }
+                if(!out)
+                    return false;
+                if(val.l && !Java::Runtime::CharSequence::isInstanceOf(env, val.l))
+                    Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: java.lang.CharSequence").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                *reinterpret_cast<QString*>(out) = qtjambi_to_qstring(env, val.l);
+                return true;
+            };
+        }else{
+            int _internalMetaType = internalMetaType.id();
+            return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
+                if(val.l && !Java::Runtime::CharSequence::isInstanceOf(env, val.l))
+                    Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: java.lang.String").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                QString s(qtjambi_to_qstring(env, val.l));
+                if(scope && !out){
+                    void* ptr;
+                    out = ptr = QMetaType::create(_internalMetaType, &s);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else{
                     if(!out)
                         return false;
@@ -3927,9 +3838,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void** ptr;
                     out = ptr = new void*(!val.l ? nullptr : qtjambi_to_cpointer(env, val.l, 1));
-                    scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                    scope->addDeletion(ptr);
                     return true;
                 }else if(out){
                     *reinterpret_cast<void**>(out) = !val.l ? nullptr : qtjambi_to_cpointer(env, val.l, 1);
@@ -3946,9 +3855,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, nptr);
-                    scope->addFinalAction([_internalMetaType,ptr](){
-                        QMetaType::destroy(_internalMetaType, ptr);
-                    });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    scope->addDeletion(_internalMetaType, ptr);
+#else
+                    scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                 }else if(out){
                     QMetaType::destruct(_internalMetaType, out);
                     if(QMetaType::construct(_internalMetaType, out, nptr)!=out){
@@ -4009,9 +3920,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void** pptr;
                     out = pptr = new void*(ptr);
-                    scope->addFinalAction([pptr](){
-                        delete pptr;
-                    });
+                    scope->addDeletion(pptr);
                 }else if(out){
                     *reinterpret_cast<void**>(out) = ptr;
                 }
@@ -4046,9 +3955,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             void* ptr;
                             out = ptr = QMetaType::create(_internalMetaType, nptr);
-                            scope->addFinalAction([_internalMetaType,ptr](){
-                                QMetaType::destroy(_internalMetaType, ptr);
-                            });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            scope->addDeletion(_internalMetaType, ptr);
+#else
+                            scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                         }else if(out){
                             QMetaType::destruct(_internalMetaType, out);
                             if(QMetaType::construct(_internalMetaType, out, nptr)!=out){
@@ -4078,9 +3989,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         void* ptr;
                         out = ptr = QMetaType::create(_internalMetaType);
-                        scope->addFinalAction([_internalMetaType, ptr](){
-                            QMetaType::destroy(_internalMetaType, ptr);
-                        });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        scope->addDeletion(_internalMetaType, ptr);
+#else
+                        scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                     }
                     return out;
                 }
@@ -4122,9 +4035,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void** pptr;
                     out = pptr = new void*(ptr);
-                    scope->addFinalAction([pptr](){
-                        delete pptr;
-                    });
+                    scope->addDeletion(pptr);
                 }else if(out){
                     *reinterpret_cast<void**>(out) = ptr;
                 }
@@ -4159,9 +4070,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             void* ptr;
                             out = ptr = QMetaType::create(_internalMetaType, nptr);
-                            scope->addFinalAction([_internalMetaType,ptr](){
-                                QMetaType::destroy(_internalMetaType, ptr);
-                            });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            scope->addDeletion(_internalMetaType, ptr);
+#else
+                            scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                         }else if(out){
                             QMetaType::destruct(_internalMetaType, out);
                             if(QMetaType::construct(_internalMetaType, out, nptr)!=out){
@@ -4191,9 +4104,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         void* ptr;
                         out = ptr = QMetaType::create(_internalMetaType);
-                        scope->addFinalAction([_internalMetaType, ptr](){
-                            QMetaType::destroy(_internalMetaType, ptr);
-                        });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        scope->addDeletion(_internalMetaType, ptr);
+#else
+                        scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                     }
                     return out;
                 }
@@ -4270,9 +4185,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     void** pptr;
                     out = pptr = new void*(ptr);
-                    scope->addFinalAction([pptr](){
-                        delete pptr;
-                    });
+                    scope->addDeletion(pptr);
                 }else if(out){
                     *reinterpret_cast<void**>(out) = nullptr;
                 }
@@ -4296,9 +4209,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     JObjectWrapper* ptr;
                     out = ptr = new JObjectWrapper;
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -4318,9 +4229,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             qint32* ptr;
                             out = ptr = new qint32;
-                            scope->addFinalAction([ptr](){
-                                delete ptr;
-                            });
+                            scope->addDeletion(ptr);
                         }
                         if(!out)
                             return false;
@@ -4345,9 +4254,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             qint32* ptr;
                             out = ptr = new qint32;
-                            scope->addFinalAction([ptr](){
-                                delete ptr;
-                            });
+                            scope->addDeletion(ptr);
                         }
                         if(!out)
                             return false;
@@ -4358,9 +4265,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint32* ptr;
                         out = ptr = new qint32;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4382,9 +4287,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             qint32* ptr;
                             out = ptr = new qint32;
-                            scope->addFinalAction([ptr](){
-                                delete ptr;
-                            });
+                            scope->addDeletion(ptr);
                         }
                         if(!out)
                             return false;
@@ -4395,9 +4298,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             qint32* ptr;
                             out = ptr = new qint32;
-                            scope->addFinalAction([ptr](){
-                                delete ptr;
-                            });
+                            scope->addDeletion(ptr);
                         }
                         if(!out)
                             return false;
@@ -4408,9 +4309,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint32* ptr;
                         out = ptr = new qint32;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4439,9 +4338,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 if(scope && !out){
                     JEnumWrapper* ptr;
                     out = ptr = new JEnumWrapper;
-                    scope->addFinalAction([ptr](){
-                        delete ptr;
-                    });
+                    scope->addDeletion(ptr);
                 }
                 if(!out)
                     return false;
@@ -4517,9 +4414,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         out = QMetaType::create(_internalMetaType, value.data());
                         void* ptr = out;
-                        scope->addFinalAction([_internalMetaType, ptr](){
-                            QMetaType::destroy(_internalMetaType, ptr);
-                        });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        scope->addDeletion(_internalMetaType, ptr);
+#else
+                        scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                     }else{
                         if(!out)
                             return false;
@@ -4589,9 +4488,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         out = QMetaType::create(_internalMetaType, value.data());
                         void* ptr = out;
-                        scope->addFinalAction([_internalMetaType, ptr](){
-                            QMetaType::destroy(_internalMetaType, ptr);
-                        });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        scope->addDeletion(_internalMetaType, ptr);
+#else
+                        scope->addDeletion(QMetaType(_internalMetaType), ptr);
+#endif
                     }else{
                         if(!out)
                             return false;
@@ -4626,9 +4527,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint32* ptr;
                         out = ptr = new qint32;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4638,9 +4537,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint32* ptr;
                         out = ptr = new qint32;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4658,9 +4555,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint64* ptr;
                         out = ptr = new qint64;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4670,9 +4565,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint64* ptr;
                         out = ptr = new qint64;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4690,9 +4583,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint16* ptr;
                         out = ptr = new qint16;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4702,9 +4593,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint16* ptr;
                         out = ptr = new qint16;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4722,9 +4611,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint8* ptr;
                         out = ptr = new qint8;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4734,9 +4621,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(scope && !out){
                         qint16* ptr;
                         out = ptr = new qint16;
-                        scope->addFinalAction([ptr](){
-                            delete ptr;
-                        });
+                        scope->addDeletion(ptr);
                     }
                     if(!out)
                         return false;
@@ -4761,7 +4646,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 containerAccess->assign(out, link->pointer());
                                 return true;
                             }else if(scope){
-                                out = containerAccess->copyContainer(link->pointer());
+                                out = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                 auto _containerAccess = containerAccess->clone();
                                 scope->addFinalAction([_containerAccess,out](){
                                     _containerAccess->deleteContainer(out);
@@ -4785,7 +4670,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 jobject iter = qtjambi_collection_iterator(env, val.l);
                 while(qtjambi_iterator_has_next(env, iter)){
                     jobject next = qtjambi_iterator_next(env, iter);
-                    if(next && !env->IsInstanceOf(next, Java::Runtime::String::getClass(env)))
+                    if(next && !Java::Runtime::String::isInstanceOf(env, next))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong collection content given: %1, expected: %2").arg(qtjambi_object_class_name(env, next).replace("$", ".")).arg(qtjambi_class_name(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << jstring(next);
                 }
@@ -4793,9 +4678,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QStringList* ptr;
                 out = ptr = new QStringList;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -4822,7 +4705,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 containerAccess->assign(out, link->pointer());
                                 return true;
                             }else if(scope){
-                                out = containerAccess->copyContainer(link->pointer());
+                                out = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                 auto _containerAccess = containerAccess->clone();
                                 scope->addFinalAction([_containerAccess,out](){
                                     _containerAccess->deleteContainer(out);
@@ -4854,9 +4737,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QByteArrayList* ptr;
                 out = ptr = new QByteArrayList;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -4883,7 +4764,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 containerAccess->assign(out, link->pointer());
                                 return true;
                             }else if(scope){
-                                out = containerAccess->copyContainer(link->pointer());
+                                out = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                 auto _containerAccess = containerAccess->clone();
                                 scope->addFinalAction([_containerAccess,out](){
                                     _containerAccess->deleteContainer(out);
@@ -4903,9 +4784,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QVariantList* ptr;
                 out = ptr = new QVariantList;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -4935,7 +4814,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     containerAccess->assign(out, link->pointer());
                                     return true;
                                 }else if(scope){
-                                    out = containerAccess->copyContainer(link->pointer());
+                                    out = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                     auto _containerAccess = containerAccess->clone();
                                     scope->addFinalAction([_containerAccess,out](){
                                         _containerAccess->deleteContainer(out);
@@ -4961,7 +4840,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 while(qtjambi_iterator_has_next(env, iter)){
                     jobject next = qtjambi_iterator_next(env, iter);
                     jobject key = qtjambi_map$entry_key(env, next);
-                    if(key && !env->IsInstanceOf(key, Java::Runtime::String::getClass(env)))
+                    if(key && !Java::Runtime::String::isInstanceOf(env, key))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(qtjambi_object_class_name(env, key).replace("$", ".")).arg(qtjambi_class_name(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << next;
                 }
@@ -4969,9 +4848,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QMap<QString,QVariant>* ptr;
                 out = ptr = new QMap<QString,QVariant>;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -5001,7 +4878,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     containerAccess->assign(out, link->pointer());
                                     return true;
                                 }else if(scope){
-                                    out = containerAccess->copyContainer(link->pointer());
+                                    out = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                     auto _containerAccess = containerAccess->clone();
                                     scope->addFinalAction([_containerAccess,out](){
                                         _containerAccess->deleteContainer(out);
@@ -5027,7 +4904,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 while(qtjambi_iterator_has_next(env, iter)){
                     jobject next = qtjambi_iterator_next(env, iter);
                     jobject key = qtjambi_map$entry_key(env, next);
-                    if(key && !env->IsInstanceOf(key, Java::Runtime::String::getClass(env)))
+                    if(key && !Java::Runtime::String::isInstanceOf(env, key))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(qtjambi_object_class_name(env, key).replace("$", ".")).arg(qtjambi_class_name(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << next;
                 }
@@ -5035,9 +4912,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QHash<QString,QVariant>* ptr;
                 out = ptr = new QHash<QString,QVariant>;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -5082,9 +4957,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QMetaObject** ptr;
                 out = ptr = new QMetaObject*;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -5098,9 +4971,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QMetaObject::Connection* ptr;
                 out = ptr = new QMetaObject::Connection;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -5115,9 +4986,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             if(scope && !out){
                 QModelIndex* ptr;
                 out = ptr = new QModelIndex;
-                scope->addFinalAction([ptr](){
-                    delete ptr;
-                });
+                scope->addDeletion(ptr);
             }
             if(!out)
                 return false;
@@ -5147,12 +5016,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jbyte>* _out = new std::initializer_list<jbyte>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jbyte* data = new jbyte[size_t(arrayLength)];
                                         env->GetByteArrayRegion(jbyteArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jbyte>*>(out) = std::initializer_list<jbyte>(data, data + size_t(arrayLength));
 #else
@@ -5179,12 +5048,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jshort>* _out = new std::initializer_list<jshort>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jshort* data = new jshort[size_t(arrayLength)];
                                         env->GetShortArrayRegion(jshortArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jshort>*>(out) = std::initializer_list<jshort>(data, data + size_t(arrayLength));
 #else
@@ -5211,12 +5080,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jint>* _out = new std::initializer_list<jint>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jint* data = new jint[size_t(arrayLength)];
                                         env->GetIntArrayRegion(jintArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jint>*>(out) = std::initializer_list<jint>(data, data + size_t(arrayLength));
 #else
@@ -5243,12 +5112,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jlong>* _out = new std::initializer_list<jlong>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jlong* data = new jlong[size_t(arrayLength)];
                                         env->GetLongArrayRegion(jlongArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jlong>*>(out) = std::initializer_list<jlong>(data, data + size_t(arrayLength));
 #else
@@ -5275,12 +5144,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jfloat>* _out = new std::initializer_list<jfloat>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jfloat* data = new jfloat[size_t(arrayLength)];
                                         env->GetFloatArrayRegion(jfloatArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jfloat>*>(out) = std::initializer_list<jfloat>(data, data + size_t(arrayLength));
 #else
@@ -5307,12 +5176,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jdouble>* _out = new std::initializer_list<jdouble>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jdouble* data = new jdouble[size_t(arrayLength)];
                                         env->GetDoubleArrayRegion(jdoubleArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jdouble>*>(out) = std::initializer_list<jdouble>(data, data + size_t(arrayLength));
 #else
@@ -5339,12 +5208,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jchar>* _out = new std::initializer_list<jchar>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         jchar* data = new jchar[size_t(arrayLength)];
                                         env->GetCharArrayRegion(jcharArray(in.l), 0, arrayLength, data);
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<jchar>*>(out) = std::initializer_list<jchar>(data, data + size_t(arrayLength));
 #else
@@ -5372,7 +5241,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<jboolean>* _out = new std::initializer_list<jboolean>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         bool* data = new bool[size_t(arrayLength)];
@@ -5382,7 +5251,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             data[i] = _data[i];
                                         }
                                         delete[] _data;
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<bool>*>(out) = std::initializer_list<bool>(data, data + size_t(arrayLength));
 #else
@@ -5416,7 +5285,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         if(!out){
                                             std::initializer_list<char>* _out = new std::initializer_list<char>;
                                             out = _out;
-                                            scope->addFinalAction([_out](){delete _out;});
+                                            scope->addDeletion(_out);
                                         }
                                         jsize arrayLength = env->GetArrayLength(jarray(in.l));
                                         char* data = new char[size * size_t(arrayLength)];
@@ -5426,7 +5295,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             val.l = env->GetObjectArrayElement(jobjectArray(in.l), i);
                                             externalToInternalComponentConverter(env, scope, val, ptr, jValueType::l);
                                         }
-                                        scope->addFinalAction([data](){delete[] data;});
+                                        scope->addArrayDeletion(data);
 #ifdef Q_CC_MSVC
                                         *reinterpret_cast<std::initializer_list<char>*>(out) = std::initializer_list<char>(data, data + size * size_t(arrayLength));
 #else
@@ -5465,9 +5334,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             QObject** optr;
                             out = optr = new QObject*(object);
-                            scope->addFinalAction([optr](){
-                                delete optr;
-                            });
+                            scope->addDeletion(optr);
                         }else if(out)
                             *reinterpret_cast<QObject**>(out) = object;
                         return true;
@@ -5485,9 +5352,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(scope && !out){
                             QObject** optr;
                             out = optr = new QObject*(object);
-                            scope->addFinalAction([optr](){
-                                delete optr;
-                            });
+                            scope->addDeletion(optr);
                         }else if(out)
                             *reinterpret_cast<QObject**>(out) = object;
                         return out;
@@ -5659,7 +5524,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     isContainerFunction = qtjambi_is_QVector;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractVectorAccess* _access = dynamic_cast<AbstractVectorAccess*>(access))
-                            _access->append(env, container, value);
+                            _access->insert(env, container, _access->size(env, container), 1, value);
                     };
                     break;
                 case ContainerType::QLinkedList:
@@ -5675,7 +5540,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     isContainerFunction = qtjambi_is_QList;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractListAccess* _access = dynamic_cast<AbstractListAccess*>(access))
-                            _access->append(env, container, value);
+                            _access->insert(env, container, _access->size(env, container), 1, value);
                     };
                     break;
                 }
@@ -5786,7 +5651,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     if(out){
                                         access->assign(out, link->pointer());
                                     }else if(scope){
-                                        out = access->copyContainer(link->pointer());
+                                        out = access->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                         scope->addFinalAction([access,out](){
                                             access->deleteContainer(out);
                                             access->dispose();
@@ -6309,7 +6174,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             if(out){
                                                 access->assign(out, link->pointer());
                                             }else if(scope){
-                                                out = access->copyContainer(link->pointer());
+                                                out = access->createContainer(reinterpret_cast<const void*>(link->pointer()));
                                                 scope->addFinalAction([access,out](){
                                                     access->deleteContainer(out);
                                                     access->dispose();
@@ -6543,9 +6408,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(scope && !out){
                                 out = QMetaType::create(_internalMetaType, ptr);
                                 void* pptr = out;
-                                scope->addFinalAction([_internalMetaType,pptr](){
-                                    QMetaType::destroy(_internalMetaType, pptr);
-                                });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                scope->addDeletion(_internalMetaType, pptr);
+#else
+                                scope->addDeletion(QMetaType(_internalMetaType), pptr);
+#endif
                             }else if(out){
                                 QMetaType::destruct(_internalMetaType, out);
                                 if(QMetaType::construct(_internalMetaType, out, ptr)!=out){
@@ -6596,9 +6463,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(scope && !out){
                                 out = QMetaType::create(_internalMetaType, ptr);
                                 void* pptr = out;
-                                scope->addFinalAction([_internalMetaType,pptr](){
-                                    QMetaType::destroy(_internalMetaType, pptr);
-                                });
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                scope->addDeletion(_internalMetaType, pptr);
+#else
+                                scope->addDeletion(QMetaType(_internalMetaType), pptr);
+#endif
                             }else if(out){
                                 QMetaType::destruct(_internalMetaType, out);
                                 if(QMetaType::construct(_internalMetaType, out, ptr)!=out){
@@ -6639,9 +6508,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(scope && !out){
                                 void** pptr;
                                 out = pptr = new void*(ptr);
-                                scope->addFinalAction([pptr](){
-                                    delete pptr;
-                                });
+                                scope->addDeletion(pptr);
                             }else if(out)
                                 *reinterpret_cast<void**>(out) = ptr;
                             return out;
@@ -6661,9 +6528,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(scope && !out){
                                 void** pptr;
                                 out = pptr = new void*(ptr);
-                                scope->addFinalAction([pptr](){
-                                    delete pptr;
-                                });
+                                scope->addDeletion(pptr);
                             }else if(out)
                                 *reinterpret_cast<void**>(out) = ptr;
                             return out;

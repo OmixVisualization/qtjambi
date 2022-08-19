@@ -30,8 +30,6 @@
 
 package io.qt.qml.util;
 
-import static io.qt.qml.util.RetroHelper.getDefinedPackage;
-
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -62,7 +60,7 @@ import io.qt.qml.QtQml;
 public final class QmlTypes {
 	
 	static {
-		QtJambi_LibraryInitializer.init();
+		QtJambi_LibraryUtilities.initialize();
 	}
 	
 	private QmlTypes() throws java.lang.InstantiationError { throw new java.lang.InstantiationError("Cannot instantiate class QmlTypes."); }
@@ -208,12 +206,12 @@ public final class QmlTypes {
 	 * @throws QmlNoMajorVersionException if {@link QmlImport} not available
 	 */
 	public static void registerPackage(String pkg, String uri) {
-		java.lang.Package _package = getDefinedPackage(qmlClassLoader, pkg);
+		java.lang.Package _package = QtJambi_LibraryUtilities.internal.getDefinedPackage(qmlClassLoader, pkg);
 		if(_package==null) {
-			_package = getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
+			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
 		}
 		if(_package==null) {
-			_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
+			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null){
 			QDir classPath = new QDir(":"+pkg.replace('.', '/'));
@@ -264,12 +262,12 @@ public final class QmlTypes {
 	 * @param versionMajor major version for qml import
 	 */
 	public static void registerPackage(String pkg, String uri, int versionMajor) {
-		java.lang.Package _package = getDefinedPackage(qmlClassLoader, pkg);
+		java.lang.Package _package = QtJambi_LibraryUtilities.internal.getDefinedPackage(qmlClassLoader, pkg);
 		if(_package==null) {
-			_package = getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
+			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
 		}
 		if(_package==null) {
-			_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
+			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
@@ -344,7 +342,7 @@ public final class QmlTypes {
 					return QtQml.qmlRegisterUncreatableType((Class<? extends QObject>)cls, uri, versionMajor, getMinorVersion(cls), qmlName, reason);
 				}else if(cls.isAnnotationPresent(QmlSingleton.class)) {
 					Class<? extends QObject> _cls = (Class<? extends QObject>)cls;
-					Supplier<? extends QObject> fac = io.qt.internal.QtJambiInternal.getFactory0(_cls.getDeclaredConstructor());
+					Supplier<? extends QObject> fac = QtJambi_LibraryUtilities.internal.getFactory0(_cls.getDeclaredConstructor());
 					return QtQml.qmlRegisterSingletonType((Class<? extends QObject>)cls, uri, versionMajor, getMinorVersion(cls), qmlName, (qengine,jsengine)->{
 						try {
 							return fac.get();
@@ -419,12 +417,12 @@ public final class QmlTypes {
 					Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
 				}
 			}
-			java.lang.Package _package = getDefinedPackage(qmlClassLoader, uri);
+			java.lang.Package _package = QtJambi_LibraryUtilities.internal.getDefinedPackage(qmlClassLoader, uri);
 			if(_package==null) {
-				_package = getDefinedPackage(ClassLoader.getSystemClassLoader(), uri);
+				_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(ClassLoader.getSystemClassLoader(), uri);
 			}
 			if(_package==null) {
-				_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), uri);
+				_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), uri);
 			}
 			if(_package==null){
 				QDir classPathDir = new QDir(":"+uri.replace('.', '/'));

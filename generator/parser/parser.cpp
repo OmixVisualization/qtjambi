@@ -86,7 +86,8 @@ Parser::Parser(Control *c)
         control(c),
         lexer(_M_location, control),
         m_isInTemplate(0),
-        m_isShift(false)
+        m_isShift(false),
+        m_isTemplateDecl(false)
 {
     _M_block_errors = false;
 }
@@ -540,22 +541,85 @@ bool Parser::parseDeclaration(DeclarationAST *&node) {
         Q_FALLTHROUGH();
 
         default: {
+            if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
+                token_stream.nextToken();
+                token_stream.nextToken();
+                ExpressionAST *annotationExpression(nullptr);
+                if(!parseExpression(annotationExpression)){
+                    token_stream.rewind(start);
+                }else{
+                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
+                        token_stream.nextToken();
+                        token_stream.nextToken();
+                    }else{
+                        token_stream.rewind(start);
+                    }
+                }
+            }
+            if (token_stream.lookAhead() == Token_inline)
+                token_stream.nextToken();
+
             const ListNode<std::size_t> *cv = nullptr;
             parseCvQualify(cv);
 
             const ListNode<std::size_t> *storageSpec = nullptr;
             StringLiteralAST *deprecationComment = nullptr;
             bool hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+            if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
+                token_stream.nextToken();
+                token_stream.nextToken();
+                ExpressionAST *annotationExpression(nullptr);
+                if(!parseExpression(annotationExpression)){
+                    token_stream.rewind(start);
+                }else{
+                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
+                        token_stream.nextToken();
+                        token_stream.nextToken();
+                    }else{
+                        token_stream.rewind(start);
+                    }
+                }
+            }
 
             parseStorageClassSpecifier(storageSpec);
 
             if(!hasDeprecated)
                 hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+            if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
+                token_stream.nextToken();
+                token_stream.nextToken();
+                ExpressionAST *annotationExpression(nullptr);
+                if(!parseExpression(annotationExpression)){
+                    token_stream.rewind(start);
+                }else{
+                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
+                        token_stream.nextToken();
+                        token_stream.nextToken();
+                    }else{
+                        token_stream.rewind(start);
+                    }
+                }
+            }
 
             parseCvQualify(cv);
 
             if(!hasDeprecated)
                 hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+            if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
+                token_stream.nextToken();
+                token_stream.nextToken();
+                ExpressionAST *annotationExpression(nullptr);
+                if(!parseExpression(annotationExpression)){
+                    token_stream.rewind(start);
+                }else{
+                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
+                        token_stream.nextToken();
+                        token_stream.nextToken();
+                    }else{
+                        token_stream.rewind(start);
+                    }
+                }
+            }
 
             TypeSpecifierAST *spec = nullptr;
             if (parseEnumSpecifier(spec)
@@ -792,7 +856,7 @@ bool Parser::parseUsing(DeclarationAST *&node) {
                   && token_stream.lookAhead(offset+1) == Token_scope){
                 offset += 2;
             }
-            if(token_stream.lookAhead(offset) == '*'
+            if((token_stream.lookAhead(offset) == '*' || token_stream.lookAhead(offset) == '&')
                     && token_stream.lookAhead(offset+1) == ')'){
                 offset += 2;
                 token_stream.rewind(token_stream.cursor()+offset);
@@ -805,8 +869,22 @@ bool Parser::parseUsing(DeclarationAST *&node) {
             if(!parseParameterDeclarationClause(parameters)){
                 return false;
             }else{
-                if (token_stream.lookAhead() == ')')
+                if (token_stream.lookAhead() == ')'){
                     token_stream.nextToken();
+                    if (token_stream.lookAhead() == Token_noexcept){
+                        token_stream.nextToken();
+                        if (token_stream.lookAhead() == '('){
+                            std::size_t start = token_stream.cursor();
+                            CHECK('(');
+                            ExpressionAST *expr = nullptr;
+                            if (parseExpression(expr)){
+                                CHECK(')');
+                            }else{
+                                token_stream.rewind(start);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1040,9 +1118,12 @@ bool Parser::parseTemplateDeclaration(DeclarationAST *&node) {
     }
 
     DeclarationAST *declaration = nullptr;
+    m_isTemplateDecl = true;
     if (!parseDeclaration(declaration)) {
+        m_isTemplateDecl = false;
         reportError(("expected a declaration"));
     }
+    m_isTemplateDecl = false;
 
     TemplateDeclarationAST *ast = CreateNode<TemplateDeclarationAST>(_M_pool);
     ast->exported = exported;
@@ -2038,6 +2119,22 @@ bool Parser::parseParameterDeclarationList(const ListNode<ParameterDeclarationAS
 bool Parser::parseParameterDeclaration(ParameterDeclarationAST *&node) {
     std::size_t start = token_stream.cursor();
 
+    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
+        token_stream.nextToken();
+        token_stream.nextToken();
+        ExpressionAST *annotationExpression(nullptr);
+        if(!parseExpression(annotationExpression)){
+            token_stream.rewind(start);
+        }else{
+            if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
+                token_stream.nextToken();
+                token_stream.nextToken();
+            }else{
+                token_stream.rewind(start);
+            }
+        }
+    }
+
     const ListNode<std::size_t> *storage = nullptr;
     parseStorageClassSpecifier(storage);
 
@@ -2198,23 +2295,6 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
             return false;
         }
         ADVANCE(')', ")")
-    }
-
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        ExpressionAST *annotationExpression(nullptr);
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
     }
 
     WinDeclSpecAST *winDeclSpec = nullptr;
@@ -2798,6 +2878,9 @@ bool Parser::parseInitializerClause(InitializerClauseAST *&node) {
             }else{
                 //reportError(("Expression expected"));
             }
+        }else if (ast->expression && token_stream.lookAhead() == Token_ellipsis) {
+            ast->expression->ellipsis_token = token_stream.cursor();
+            token_stream.nextToken();
         }
     }
 
@@ -3668,13 +3751,18 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
 
         InitDeclaratorAST *declarator = nullptr;
         if (parseInitDeclarator(declarator, true)) {
+            UnqualifiedNameAST *arrowDecl = nullptr;
+            if(m_isTemplateDecl && declarator && !declarator->initializer && token_stream.lookAhead()==Token_arrow){
+                token_stream.nextToken();
+                parseUnqualifiedName(arrowDecl, true);
+            }
             switch (token_stream.lookAhead()) {
                 case ';': {
                     token_stream.nextToken();
 
                     SimpleDeclarationAST *ast
                     = CreateNode<SimpleDeclarationAST>(_M_pool);
-
+                    ast->arrowDecl = arrowDecl;
                     ast->storage_specifiers = storageSpec;
                     ast->deprecationComment = deprecationComment;
                     ast->function_specifiers = funSpec;
@@ -3964,13 +4052,11 @@ bool Parser::parseLambdaExpression(ExpressionAST *&) {
     if(token_stream.lookAhead()=='['){
         std::size_t start = token_stream.cursor();
         token_stream.nextToken();
-        if(token_stream.lookAhead()=='=' && token_stream.lookAhead(1)==']'){
-            token_stream.nextToken();
-        }else if((token_stream.lookAhead()=='&' || token_stream.lookAhead()==Token_this) && token_stream.lookAhead(1)==']'){
+        if((token_stream.lookAhead()=='&' || token_stream.lookAhead()=='=') && token_stream.lookAhead(1)==']'){
             token_stream.nextToken();
         }else if(token_stream.lookAhead()!=']'){
-            const ListNode<InitDeclaratorAST*> * list = nullptr;
-            if(!parseInitDeclaratorList(list, false)){
+            ExpressionAST *expressions = nullptr;
+            if(!parseCommaExpression(expressions)){
                 token_stream.rewind(start);
                 return false;
             }
@@ -3994,6 +4080,22 @@ bool Parser::parseLambdaExpression(ExpressionAST *&) {
                 }
             }
             token_stream.nextToken();
+        }
+        if(token_stream.lookAhead()==Token_mutable){
+            token_stream.nextToken();
+        }
+        if (token_stream.lookAhead() == Token_noexcept){
+            token_stream.nextToken();
+            if (token_stream.lookAhead() == '('){
+                std::size_t start = token_stream.cursor();
+                CHECK('(');
+                ExpressionAST *expr = nullptr;
+                if (parseExpression(expr)){
+                    CHECK(')');
+                }else{
+                    token_stream.rewind(start);
+                }
+            }
         }
         if(token_stream.lookAhead()==Token_mutable){
             token_stream.nextToken();
@@ -4238,11 +4340,16 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node) {
             if (!parseName(name, true))
                 return false;
 
-            CHECK('(');
             ExpressionAST *expr = nullptr;
-            parseCommaExpression(expr);
-            CHECK(')');
-
+            if(token_stream.lookAhead() == '{'){
+                CHECK('{');
+                parseCommaExpression(expr);
+                CHECK('}');
+            }else{
+                CHECK('(');
+                parseCommaExpression(expr);
+                CHECK(')');
+            }
             TypeIdentificationAST *ast = CreateNode<TypeIdentificationAST>(_M_pool);
             ast->typename_token = token;
             ast->name = name;
@@ -4425,11 +4532,6 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node) {
             SizeofExpressionAST *ast = CreateNode<SizeofExpressionAST>(_M_pool);
             ast->ellipsis_token = 0;
             ast->sizeof_token = sizeof_token;
-
-            if (token_stream.lookAhead() == Token_ellipsis) {
-                ast->ellipsis_token = token_stream.cursor();
-                token_stream.nextToken();
-            }
             std::size_t index = token_stream.cursor();
             if (token_stream.lookAhead() == '(') {
                 token_stream.nextToken();
@@ -4460,11 +4562,6 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node) {
             AlignofExpressionAST *ast = CreateNode<AlignofExpressionAST>(_M_pool);
             ast->ellipsis_token = 0;
             ast->alignof_token = sizeof_token;
-
-            if (token_stream.lookAhead() == Token_ellipsis) {
-                ast->ellipsis_token = token_stream.cursor();
-                token_stream.nextToken();
-            }
             std::size_t index = token_stream.cursor();
             if (token_stream.lookAhead() == '(') {
                 token_stream.nextToken();
@@ -5049,6 +5146,10 @@ bool Parser::parseConditionalExpression(ExpressionAST *&node, bool templArgs) {
         ExpressionAST *rightExpr = nullptr;
         if (!parseAssignmentExpression(rightExpr, templArgs))
             return false;
+        if (rightExpr && token_stream.lookAhead() == Token_ellipsis) {
+            rightExpr->ellipsis_token = token_stream.cursor();
+            token_stream.nextToken();
+        }
 
         ConditionalExpressionAST *ast
         = CreateNode<ConditionalExpressionAST>(_M_pool);
@@ -5104,6 +5205,10 @@ bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs) {
 
     if (!parseAssignmentExpression(node, templArgs))
         return false;
+    if (node && token_stream.lookAhead() == Token_ellipsis) {
+        node->ellipsis_token = token_stream.cursor();
+        token_stream.nextToken();
+    }
 
     while (token_stream.lookAhead() == ',') {
         std::size_t op = token_stream.cursor();
@@ -5122,6 +5227,10 @@ bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs) {
             ExpressionAST *rightExpr = nullptr;
             if (!parseAssignmentExpression(rightExpr, templArgs))
                 return false;
+            if (rightExpr && token_stream.lookAhead() == Token_ellipsis) {
+                rightExpr->ellipsis_token = token_stream.cursor();
+                token_stream.nextToken();
+            }
 
             BinaryExpressionAST *ast = CreateNode<BinaryExpressionAST>(_M_pool);
             ast->op = op;
@@ -5131,17 +5240,6 @@ bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs) {
             UPDATE_POS(ast, start, token_stream.cursor());
             node = ast;
         }
-    }
-
-    if(token_stream.lookAhead() == Token_ellipsis){
-        BinaryExpressionAST *ast = CreateNode<BinaryExpressionAST>(_M_pool);
-        ast->op = token_stream.cursor();
-        ast->left_expression = node;
-        ast->right_expression = nullptr;
-        token_stream.nextToken();
-
-        UPDATE_POS(ast, start, token_stream.cursor());
-        node = ast;
     }
 
     return true;

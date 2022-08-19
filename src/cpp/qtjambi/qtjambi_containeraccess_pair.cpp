@@ -164,6 +164,10 @@ AutoPairAccess* AutoPairAccess::clone(){
     return new AutoPairAccess(*this);
 }
 
+size_t AutoPairAccess::sizeOf(){
+    return m_size;
+}
+
 void* AutoPairAccess::constructContainer(void* result, const void* container) {
     m_keyMetaType.construct(result, container);
     m_valueMetaType.construct(reinterpret_cast<char*>(result)+m_offset, container ? reinterpret_cast<const char*>(container)+m_offset : nullptr);
@@ -213,14 +217,6 @@ void AutoPairAccess::dataStreamIn(QDataStream &s, void *ptr){
 }
 #endif
 
-void* AutoPairAccess::createContainer() {
-    return constructContainer(operator new(m_size));
-}
-
-void* AutoPairAccess::copyContainer(const void* container) {
-    return constructContainer(operator new(m_size), container);
-}
-
 void AutoPairAccess::assign(void* container, const void* other) {
     if(other){
         void* v1 = reinterpret_cast<char*>(container)+m_offset;
@@ -232,15 +228,11 @@ void AutoPairAccess::assign(void* container, const void* other) {
     }
 }
 
-void AutoPairAccess::destructContainer(void* container) {
+bool AutoPairAccess::destructContainer(void* container) {
     void* v1 = reinterpret_cast<char*>(container)+m_offset;
     m_keyMetaType.destruct(container);
     m_valueMetaType.destruct(v1);
-}
-
-void AutoPairAccess::deleteContainer(void* container) {
-    destructContainer(container);
-    operator delete(container);
+    return true;
 }
 
 int AutoPairAccess::registerContainer(const QByteArray& typeName) {

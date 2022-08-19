@@ -73,6 +73,13 @@
 #include <qtjambi_core/qtjambi_stringutil.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 
+/*#ifdef QT_IMPL_METATYPE_EXTERN_TAGGED
+#undef QT_DECL_METATYPE_EXTERN_TAGGED
+#undef QT_IMPL_METATYPE_EXTERN_TAGGED
+#define QT_DECL_METATYPE_EXTERN_TAGGED(...)
+#define QT_IMPL_METATYPE_EXTERN_TAGGED(...)
+#endif*/
+
 #ifndef QTJAMBI_NO_GUI
 #define QACCESSIBLE_H
 #include <QtGui/QtGui>
@@ -218,12 +225,12 @@
 
 #ifndef QTJAMBI_NO_QUICK3D
 #include <QtQuick3D/QtQuick3D>
-#include <qtjambi_qt3d/qtjambi_quick3d/qtjambi_quick3d_hashes.h>
+#include <qtjambi_quick3d/qtjambi_quick3d_hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_DATA_VISUALIZATION
 #include <QtDataVisualization/QtDataVisualization>
-#include <qtjambi_qt3d/qtjambi_datavis/qtjambi_datavis3d_hashes.h>
+#include <qtjambi_datavis/qtjambi_datavis3d_hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_CHARTS
@@ -330,6 +337,7 @@
 
 #ifndef QTJAMBI_NO_WEBSOCKETS
 #include <QtWebSockets/QtWebSockets>
+#include <qtjambi_websockets/qtjambi_websockets_hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_WEBCHANNEL
@@ -421,7 +429,7 @@
 
 //#define Q_COMPILER_EXPLICIT_OVERRIDES
 #ifndef QTJAMBI_NO_QT3DCORE
-#include <qtjambi_qt3d/qtjambi_3dcore/qtjambi_3dcore.h>
+#include <qtjambi_3dcore/qtjambi_3dcore.h>
 #include <Qt3DCore/Qt3DCore>
 #endif
 
@@ -430,7 +438,7 @@
 #endif
 
 #ifndef QTJAMBI_NO_QT3DINPUT
-#include <qtjambi_qt3d/qtjambi_3dinput/qt3dinput.h>
+#include <qtjambi_3dinput/qt3dinput.h>
 #include <Qt3DInput/Qt3DInput>
 #endif
 
@@ -451,7 +459,7 @@
 #endif
 
 #ifndef QTJAMBI_NO_QT3DRENDER
-#include <qtjambi_qt3d/qtjambi_3drender/qt3drender.h>
+#include <qtjambi_3drender/qt3drender.h>
 #include <Qt3DRender/Qt3DRender>
 #endif
 
@@ -460,7 +468,7 @@
 #endif
 
 #ifndef QTJAMBI_NO_QT3DANIMATION
-#include <qtjambi_qt3d/qtjambi_3danimation/qtjambi_3danimation_hashes.h>
+#include <qtjambi_3danimation/qtjambi_3danimation_hashes.h>
 #include <Qt3DAnimation/Qt3DAnimation>
 #endif
 
@@ -491,6 +499,11 @@
 #endif
 #ifndef QTJAMBI_NO_PDFWIDGETS
 #include <QtPdfWidgets/QtPdfWidgets>
+#endif
+
+#ifndef QTJAMBI_NO_HTTPSERVER
+#define QT_WEBSOCKETS_LIB
+#include <QtHttpServer/QtHttpServer>
 #endif
 
 #ifndef QTJAMBI_NO_OPENGL

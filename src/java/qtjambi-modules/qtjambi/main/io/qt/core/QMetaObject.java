@@ -923,7 +923,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <R> R invokeMethod(Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()) {
@@ -1035,7 +1035,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,R> R invokeMethod(Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+1) {
@@ -1153,7 +1153,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,R> R invokeMethod(Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+2) {
@@ -1276,7 +1276,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+3) {
@@ -1404,7 +1404,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+4) {
@@ -1537,7 +1537,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+5) {
@@ -1678,7 +1678,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+6) {
@@ -1821,7 +1821,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+7) {
@@ -1969,7 +1969,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+8) {
@@ -2122,7 +2122,7 @@ public final class QMetaObject {
     @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
             if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+9) {
@@ -2233,7 +2233,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static void invokeMethod(Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
             if(info.reflectiveMethod!=null) {
@@ -2358,7 +2358,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
             if(info.reflectiveMethod!=null) {
@@ -2494,7 +2494,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
             if(info.reflectiveMethod!=null) {
@@ -2639,7 +2639,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
             if(info.reflectiveMethod!=null) {
@@ -2785,7 +2785,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
             if(info.reflectiveMethod!=null) {
@@ -2936,7 +2936,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
             if(info.reflectiveMethod!=null) {
@@ -3091,7 +3091,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
             if(info.reflectiveMethod!=null) {
@@ -3252,7 +3252,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
             if(info.reflectiveMethod!=null) {
@@ -3418,7 +3418,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
             if(info.reflectiveMethod!=null) {
@@ -3589,7 +3589,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
-        QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
+        QtJambiInternal.LambdaInfo info = QtJambiInternal.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
             if(info.reflectiveMethod!=null) {

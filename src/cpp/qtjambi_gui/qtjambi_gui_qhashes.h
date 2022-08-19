@@ -786,4 +786,8 @@ inline bool operator==(const QAbstractTextDocumentLayout::PaintContext &v1, cons
             && v1.selections==v2.selections;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0) && defined(QT_JAMBI_RUN)
+hash_type qHash(const QColorTransform &value, hash_type seed = 0);
+#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+
 #endif // QTJAMBI_GUI_QHASHES_H

@@ -38,14 +38,9 @@ inline hash_type qHash(const QWebEngineQuotaRequest &value)
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QWebEngineScript &value)
+inline hash_type qHash(const QWebEngineScript &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.worldId());
-    hashCode = hashCode * 31 + qHash(value.sourceCode());
-    hashCode = hashCode * 31 + qHash(value.injectionPoint());
-    hashCode = hashCode * 31 + qHash(value.runsOnSubFrames());
-    return hashCode;
+    return qHashMulti(seed, value.name(), value.worldId(), value.sourceCode(), value.injectionPoint(), value.runsOnSubFrames());
 }
 
 inline bool operator==(const QWebEngineCertificateError& arg1, const QWebEngineCertificateError& arg2){
@@ -76,25 +71,48 @@ inline bool operator==(const QWebEngineCookieStore::FilterRequest& arg1, const Q
             && arg1.thirdParty==arg2.thirdParty;
 }
 
-inline hash_type qHash(const QWebEngineCookieStore::FilterRequest &value)
+inline hash_type qHash(const QWebEngineCookieStore::FilterRequest &value, hash_type seed = 0)
 {
-    return qHashMulti(0, value.thirdParty, value.origin, value.firstPartyUrl);
+    return qHashMulti(seed, value.thirdParty, value.origin, value.firstPartyUrl);
 }
 
-inline hash_type qHash(const QWebEngineHistoryItem &value)
+inline hash_type qHash(const QWebEngineHistoryItem &value, hash_type seed = 0)
 {
-    return qHashMulti(0, value.originalUrl(), value.url(), value.title(), value.lastVisited(), value.iconUrl(), value.isValid());
+    return qHashMulti(seed, value.originalUrl(), value.url(), value.title(), value.lastVisited(), value.iconUrl(), value.isValid());
 }
 
-inline hash_type qHash(const QWebEngineCertificateError &value)
+inline hash_type qHash(const QWebEngineCertificateError &value, hash_type seed = 0)
 {
-    return qHashMulti(0, value.certificateChain(), value.url(), value.description(), value.isOverridable(), value.type());
+    return qHashMulti(seed, value.certificateChain(), value.url(), value.description(), value.isOverridable(), value.type());
 }
 
-inline hash_type qHash(const QWebEngineFindTextResult &value)
+inline hash_type qHash(const QWebEngineFindTextResult &value, hash_type seed = 0)
 {
-    return qHashMulti(0, value.numberOfMatches(), value.activeMatch());
+    return qHashMulti(seed, value.numberOfMatches(), value.activeMatch());
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+#if defined(QT_JAMBI_RUN)
+hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type seed = 0);
+#else
+#include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
+
+namespace QtWebEngineCore{
+class FileSystemAccessPermissionRequestManagerQt{
+public:
+    static hash_type hash(const QWebEngineFileSystemAccessRequest& value, hash_type seed){
+        return qHash(quintptr(value.d_ptr.data()), seed);
+    }
+};
+}
+
+inline hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type seed = 0)
+{
+    return QtWebEngineCore::FileSystemAccessPermissionRequestManagerQt::hash(value, seed);
+}
+#endif
+#endif
+
 #endif
 
 #endif // QTJAMBI_QWEBENGINECORE_HASHES_H

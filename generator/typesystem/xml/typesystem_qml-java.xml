@@ -295,6 +295,11 @@
             <replace-type modified-type="java.lang.String" />
             </modify-argument>
         </modify-function>
+        <modify-function signature="QQmlListReference ( QObject *, const char *)" since="6.4">
+            <modify-argument index="2">
+            <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
     </value-type>
     <value-type name="QQmlProperty">
         <extra-includes>

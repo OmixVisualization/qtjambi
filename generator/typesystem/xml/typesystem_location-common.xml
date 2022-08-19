@@ -184,15 +184,15 @@
   <value-type name="QGeoRouteSegment">
     <modify-function signature="operator=(const QGeoRouteSegment &amp;)" remove="all"/>
   </value-type>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::d', unmatched return type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::const_d', unmatched return type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::QGeoRoute', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::d', unmatched return type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::QGeoRouteSegment', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteLeg::QGeoRouteLeg', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::d', unmatched return type 'QSharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::QPlace', unmatched parameter type 'QSharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoManeuver::QGeoManeuver', unmatched parameter type 'QSharedDataPointer*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'QGeoMappingManager*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'QNavigationManager*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::d', unmatched return type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::const_d', unmatched return type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::QGeoRoute', unmatched parameter type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::d', unmatched return type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::QGeoRouteSegment', unmatched parameter type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteLeg::QGeoRouteLeg', unmatched parameter type '*QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::d', unmatched return type '*QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::QPlace', unmatched parameter type '*QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoManeuver::QGeoManeuver', unmatched parameter type '*QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*QGeoMappingManager*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*QNavigationManager*'" />
 </typesystem>

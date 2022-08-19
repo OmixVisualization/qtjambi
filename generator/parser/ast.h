@@ -53,7 +53,7 @@
 class QString;
 
 #define DECLARE_AST_NODE(k) \
-    enum { __node_kind = Kind_##k };
+    static constexpr AST::NODE_KIND __node_kind = Kind_##k;
 
 class TokenStream;
 
@@ -250,7 +250,7 @@ struct AST {
 
     QString toString(TokenStream *stream) const;
 
-    int kind;
+    NODE_KIND kind;
 
     std::size_t start_token;
     std::size_t end_token;
@@ -269,6 +269,7 @@ struct StatementAST: public AST {
 };
 
 struct ExpressionAST: public AST {
+    std::size_t ellipsis_token;
 };
 
 struct DeclarationAST: public AST {
@@ -724,6 +725,7 @@ struct SimpleDeclarationAST: public DeclarationAST {
     const ListNode<InitDeclaratorAST*> *init_declarators;
     WinDeclSpecAST *win_decl_specifiers;
     StringLiteralAST *deprecationComment;
+    UnqualifiedNameAST *arrowDecl;
 };
 
 struct SimpleTypeSpecifierAST: public TypeSpecifierAST {
@@ -755,7 +757,6 @@ struct NoexceptExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(NoexceptExpression)
 
     std::size_t sizeof_token;
-    std::size_t ellipsis_token;
     ExpressionAST *expression;
 };
 
@@ -763,7 +764,6 @@ struct SizeofExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(SizeofExpression)
 
     std::size_t sizeof_token;
-    std::size_t ellipsis_token;
     TypeIdAST *type_id;
     ExpressionAST *expression;
 };

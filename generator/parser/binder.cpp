@@ -217,16 +217,18 @@ void Binder::visitAccessSpecifier(AccessSpecifierAST *node) {
 }
 
 void Binder::visitSimpleDeclaration(SimpleDeclarationAST *node) {
-    visit(node->type_specifier);
+    if(!node->arrowDecl){
+        visit(node->type_specifier);
 
-    if (const ListNode<InitDeclaratorAST*> *it = node->init_declarators) {
-        it = it->toFront();
-        const ListNode<InitDeclaratorAST*> *end = it;
-        do {
-            InitDeclaratorAST *init_declarator = it->element;
-            declare_symbol(node, init_declarator);
-            it = it->next;
-        } while (it != end);
+        if (const ListNode<InitDeclaratorAST*> *it = node->init_declarators) {
+            it = it->toFront();
+            const ListNode<InitDeclaratorAST*> *end = it;
+            do {
+                InitDeclaratorAST *init_declarator = it->element;
+                declare_symbol(node, init_declarator);
+                it = it->next;
+            } while (it != end);
+        }
     }
 }
 

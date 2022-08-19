@@ -61,7 +61,7 @@ import io.qt.core.QCommandLineParser;
 import io.qt.core.QDir;
 import io.qt.core.QStringList;
 
-class QMLGenerator {
+final class QMLGenerator {
 	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
 	    QCommandLineOption qmlTargetOption = new QCommandLineOption(QStringList.of("library"), "Java library for qml.", "jar");
 	    QCommandLineOption qmlLibraryOption = new QCommandLineOption(QStringList.of("jarimport"), "Path to jarimport library.\nExamples:\n--jarimport=path"+File.separator+"jarimport.dll\n--jarimport=macos"+File.pathSeparator+"path"+File.separator+"jarimport.dylib", "file");

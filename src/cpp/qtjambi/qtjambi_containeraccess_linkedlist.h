@@ -54,6 +54,10 @@ public:
         return new GenericLinkedListAccess<_align, _size>(*this);
     }
 
+    size_t sizeOf() override {
+        return sizeof(QLinkedList<T>);
+    }
+
     void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
         for(auto iter = reinterpret_cast<const QLinkedList<T>*>(container)->begin();
             iter != reinterpret_cast<const QLinkedList<T>*>(container)->end();
@@ -64,27 +68,22 @@ public:
             }
         }
     }
-
-    void* createContainer() override {
+    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
         QTJAMBI_ELEMENT_LOCKER
-        QLinkedList<T>* list = new QLinkedList<T>();
-        return list;
-    }
-    void* copyContainer(const void* container) override {
-        if(container){
-            QTJAMBI_ELEMENT_LOCKER
-            QLinkedList<T>* list = new QLinkedList<T>(*reinterpret_cast<const QLinkedList<T>*>(container));
-            return list;
+        if(copyOf){
+            return new(placement) QLinkedList<T>(*reinterpret_cast<const QLinkedList<T>*>(copyOf));
+        }else{
+            return new(placement) QLinkedList<T>();
         }
-        return createContainer();
+    }
+    bool destructContainer(void* container) override {
+        QTJAMBI_ELEMENT_LOCKER
+        reinterpret_cast<QLinkedList<T>*>(container)->~QLinkedList<T>();
+        return true;
     }
     void assign(void* container, const void* other) override {
         QTJAMBI_ELEMENT_LOCKER
         (*reinterpret_cast<QLinkedList<T>*>(container)) = (*reinterpret_cast<const QLinkedList<T>*>(other));
-    }
-    void deleteContainer(void* container) override {
-        QTJAMBI_ELEMENT_LOCKER
-        delete reinterpret_cast<QLinkedList<T>*>(container);
     }
     int registerContainer(const QByteArray& containerTypeName) override {
         return qtjambi_register_container_type<QLinkedList<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());

@@ -221,6 +221,11 @@
 							<then>
 								<move file="${plugindestdir}/plugins/${plugin-subdir}/${module}.jar" 
 									  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+								<copy file="${outputDir}/plugins/${module}-sources.jar" 
+									  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+							    <jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
+									<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
+								</jar>
 								<!--if>
 									<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
 									<then>

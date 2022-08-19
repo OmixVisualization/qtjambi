@@ -206,7 +206,13 @@ NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) {
 }
 
 void TypeDatabase::addType(TypeEntry *e) {
-    m_entries[e->qualifiedCppName()].append(e);
+    if(e->qualifiedCppName()=="QString" && !e->isQString()){
+        m_entries["QtJambiString"].append(e);
+    }else if(e->qualifiedCppName()=="QChar" && !e->isChar()){
+        m_entries["QtJambiChar"].append(e);
+    }else{
+        m_entries[e->qualifiedCppName()].append(e);
+    }
     QString name = e->qualifiedCppName().contains("::") ? e->qualifiedCppName().split("::").last() : e->qualifiedCppName();
     m_class_name_counter[name]++;
     if(e->type()==TypeEntry::TypeSystemType){
@@ -237,11 +243,21 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
     ContainerTypeEntry* stringListEntry(nullptr);
     {
         ReportHandler::setContext("Typesystem");
-        addType(new StringTypeEntry("QString"));
+        {
+            StringTypeEntry *e = new StringTypeEntry("QString");
+            e->setCodeGeneration(TypeEntry::GenerateAll);
+            addType(e);
+        }
 
         Q_UNUSED(&privateAccess)
         {
             StringTypeEntry *e = new StringTypeEntry("QLatin1String");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        if(m_qtVersion >= QT_VERSION_CHECK(6,4,0)){
+            StringTypeEntry *e = new StringTypeEntry("QLatin1StringView");
             e->setPreferredConversion(false);
             addType(e);
         }
@@ -264,7 +280,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(e);
         }
 
-        {
+        if(m_qtVersion < QT_VERSION_CHECK(6,0,0)){
             // We need the generator to perform type conversion in C++ with the
             //  construct:
             // QString qstring = QString("string"); QStringRef(&qstring)"
@@ -516,119 +532,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
                 removeFunction(stringListEntry, "lastIndexOf(QRegExp &, int) const");
                 removeFunction(stringListEntry, "operator=(const QList<QString> &)");
             }
-            CodeSnip ship;
-            ship.addCode(QLatin1String(R"(
-    @io.qt.QtUninvokable
-    public final java.lang.String join(char sep){
-        return QtJambiStringListUtil.join(this, sep);
-    }
-
-    @io.qt.QtUninvokable
-    public final java.lang.String join(String sep){
-        return QtJambiStringListUtil.join(this, sep);
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList filter(String str){
-        return QtJambiStringListUtil.filter(this, str, Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList filter(String str, Qt.CaseSensitivity cs){
-        return QtJambiStringListUtil.filter(this, str, cs);
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList filter(QRegularExpression re){
-        return QtJambiStringListUtil.filter(this, re);
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList replaceInStrings(String before, String after){
-        QtJambiStringListUtil.replaceInStrings(this, before, after, Qt.CaseSensitivity.CaseSensitive);
-        return this;
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList replaceInStrings(String before, String after, Qt.CaseSensitivity cs){
-        QtJambiStringListUtil.replaceInStrings(this, before, after, cs);
-        return this;
-    }
-
-    @io.qt.QtUninvokable
-    public final QStringList replaceInStrings(QRegularExpression re, String after){
-        QtJambiStringListUtil.replaceInStrings(this, re, after);
-        return this;
-    }
-
-    @io.qt.QtUninvokable
-    public final void sort(){
-        sort(Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    @io.qt.QtUninvokable
-    public final void sort(Qt.CaseSensitivity cs){
-        QtJambiStringListUtil.sort(this, cs);
-    }
-
-    @Override
-    public QStringList clone(){
-        return new QStringList(this);
-    }
-)"));
-            if(qtVersion < QT_VERSION_CHECK(6,0,0)){
-                ship.addCode(QLatin1String(R"(
-    @io.qt.QtUninvokable
-    public final int removeDuplicates(){
-        return QtJambiStringListUtil.removeDuplicates(this);
-    }
-                )"));
-            }else{
-                ship.addCode(QLatin1String(R"(
-
-   public QStringList(java.util.Collection<String> other) {
-       super((QPrivateConstructor)null);
-       initialize_native(this, other);
-   }
-
-   private native static <T> void initialize_native(QStringList instance, java.util.Collection<String> other);
-
-   public QStringList(String... content) {
-       this(java.util.Arrays.asList(content));
-   }
-
-    @io.qt.QtUninvokable
-    public final long removeDuplicates(){
-        return QtJambiStringListUtil.removeDuplicates(this);
-    }
-
-    @io.qt.QtUninvokable
-    public final boolean contains(String str, Qt.CaseSensitivity cs){
-        return QtJambiStringListUtil.contains(this, str, cs);
-    }
-
-    @io.qt.QtUninvokable
-    public final long indexOf(io.qt.core.QRegularExpression re){
-        return indexOf(re, (long)0);
-    }
-
-    @io.qt.QtUninvokable
-    public final long indexOf(io.qt.core.QRegularExpression re, long from){
-        return QtJambiStringListUtil.indexOf(this, re, from);
-    }
-
-    @io.qt.QtUninvokable
-    public final long lastIndexOf(io.qt.core.QRegularExpression re){
-        return lastIndexOf(re, (long)-1);
-    }
-
-    @io.qt.QtUninvokable
-    public final long lastIndexOf(io.qt.core.QRegularExpression re, long from){
-        return QtJambiStringListUtil.lastIndexOf(this, re, from);
-    }
-                )"));
-            }
-            stringListEntry->addCodeSnip(ship);
             addType(stringListEntry);
         }
         if(qtVersion < QT_VERSION_CHECK(6,0,0)){

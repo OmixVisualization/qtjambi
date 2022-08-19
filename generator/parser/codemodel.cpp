@@ -201,12 +201,13 @@ TypeInfo TypeInfo::resolveType(TypeInfo const &__type, CodeModelItem __scope) {
 QString TypeInfo::toString() const {
     QString tmp;
 
-    tmp += m_qualifiedName.join("::");
     if (isConstant())
-        tmp += QLatin1String(" const");
+        tmp += QLatin1String("const ");
 
     if (isVolatile())
-        tmp += QLatin1String(" volatile");
+        tmp += QLatin1String("volatile ");
+
+    tmp += m_qualifiedName.join("::");
 
     for (int i=0; i<indirections().size(); i++){
         if(indirections()[i]){

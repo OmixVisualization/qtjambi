@@ -30,12 +30,14 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.*;
 import io.qt.core.*;
 import io.qt.qml.*;
+import io.qt.quick.QQuickItem;
 
 public class TestQmlThreadAffinity extends ApplicationInitializer {
 	
@@ -67,21 +69,19 @@ public class TestQmlThreadAffinity extends ApplicationInitializer {
 		QQmlIncubator incubator = new QQmlIncubator(QQmlIncubator.IncubationMode.Asynchronous);
 		
 		QEventLoop loop = new QEventLoop();
+		QObject[] objects = new QObject[3];
 		QThread thread = QThread.create(()->{
 			try{
 				new QQmlContext(engine);
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
+			component.setData(new QByteArray("import QtQuick 2.0\n Item {}"), null);
 //			try{
-				component.setData(new QByteArray("import QtQuick 2.0\n Item {}"), null);
+			objects[0] = component2.create();
 //				fail("QThreadAffinityException expected to be thrown.");
 //			}catch(QThreadAffinityException e) {}
 //			try{
-			    component2.create();
-//				fail("QThreadAffinityException expected to be thrown.");
-//			}catch(QThreadAffinityException e) {}
-//			try{
-			    component.create(context);
+			objects[1] = component.create(context);
 //				fail("QThreadAffinityException expected to be thrown.");
 //			}catch(QThreadAffinityException e) {}
 			    
@@ -92,7 +92,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer {
 				QQmlIncubationController.WhileFlag flag = new QQmlIncubationController.WhileFlag(true);
 				incubationController.incubateWhile(flag);
 				incubator.forceCompletion();
-				incubator.object();
+				objects[2] = incubator.object();
 		});
 		thread.setUncaughtExceptionHandler((Thread t, Throwable e)->throwable = e);
 		thread.finished.connect(loop::quit);
@@ -100,6 +100,26 @@ public class TestQmlThreadAffinity extends ApplicationInitializer {
 		loop.exec();
 		if(throwable!=null)
 			throw throwable;
+		thread.join();
+		Assert.assertTrue(objects[0] instanceof QObject);
+		Assert.assertTrue(objects[1] instanceof QQuickItem);
+		Assert.assertTrue(objects[2] instanceof QQuickItem);
+		try{
+			QCoreApplication.sendPostedEvents(objects[0]);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {}
+		try{
+			QCoreApplication.sendPostedEvents(objects[1]);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {}
+		try{
+			QCoreApplication.sendPostedEvents(objects[2]);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {}
+		try{
+			QCoreApplication.sendEvent(objects[1], new QEvent(QEvent.Type.AcceptDropsChange));
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {}
 	}
 	
     public static void main(String args[]) {

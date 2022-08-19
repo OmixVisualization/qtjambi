@@ -181,6 +181,7 @@
         </modify-function>
     </object-type>
     <object-type name="QTcpSocket" />
+    <object-type name="QSslServer" since="6.4"/>
     <object-type name="QUdpSocket" />
     <object-type name="QHttpPart">
         <modify-function signature="operator=(const QHttpPart &amp;)" rename="set">
@@ -438,7 +439,7 @@
     <!--object-type name="QNetworkAccessBackend"/>
     <object-type name="QNetworkAccessBackendFactory"/-->
 
-    <suppress-warning text="*unmatched parameter type 'sockaddr const*" />
+    <suppress-warning text="*unmatched parameter type 'const sockaddr*" />
     <!-- For people building without SSL support -->
     <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSslSocket' for enum 'SslMode' is not declared" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslError' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />

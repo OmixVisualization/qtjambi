@@ -73,7 +73,7 @@ import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
 import io.qt.internal.QtJambiPlugins;
 
-class PluginGenerator {
+final class PluginGenerator {
 
 	private static class PluginClassLoader extends URLClassLoader{
 		public PluginClassLoader() {

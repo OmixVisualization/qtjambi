@@ -140,7 +140,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
-		QtJambiInternal.LambdaInfo lamdaInfo = QtJambiInternal.lamdaInfo(functor);
+		QtJambiInternal.LambdaInfo lamdaInfo = QtJambiInternal.lambdaInfo(functor);
 		if(lamdaInfo==null || lamdaInfo.reflectiveMethod==null) {
 			if(functor instanceof QtUtilities.Supplier) {
 				Class<?> functorClass = QtJambiInternal.getClass(functor);
