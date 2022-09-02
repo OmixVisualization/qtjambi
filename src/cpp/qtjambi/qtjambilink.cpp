@@ -36,10 +36,6 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#  define QT_CORE_INLINE_SINCE(major, minor) inline
-#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
-#endif
 
 QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core.h"
@@ -429,44 +425,6 @@ jobject getNativeLink(JNIEnv *env, jobject java){
     return nativeLink;
 }
 
-QList<QMetaMethod> extra_signals(const QMetaObject* metaObject){
-    QList<QMetaMethod> extraSignals;
-    if (!QtJambiMetaObject::isInstance(metaObject)){
-        const QMetaObject* knownMetaObject = metaObject;
-        {
-            const QVector<const SignalMetaInfo> *infos = nullptr;
-            do{
-                infos = signalMetaInfos(knownMetaObject);
-                if(infos!=nullptr)
-                    break;
-                knownMetaObject = knownMetaObject->superClass();
-            }while(knownMetaObject);
-            if(infos==nullptr){
-                knownMetaObject = metaObject;
-            }
-        }
-
-        if(knownMetaObject != metaObject){
-            QSet<const QMetaObject*> knownMetaObjects;
-            {
-                const QMetaObject* parentMetaObject = knownMetaObject;
-                do{
-                    knownMetaObjects.insert(parentMetaObject);
-                    parentMetaObject = parentMetaObject->superClass();
-                }while(parentMetaObject);
-            }
-            const int methodCount = metaObject->methodCount();
-            for(int i=0; i<methodCount; ++i){
-                QMetaMethod method = metaObject->method(i);
-                if(method.isValid() && !knownMetaObjects.contains(method.enclosingMetaObject()) && method.methodType()==QMetaMethod::Signal){
-                    extraSignals << method;
-                }
-            }
-        }
-    }
-    return extraSignals;
-}
-
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env, jobject javaObject, QObject *object, bool created_by_java, bool is_shell, const QMetaObject* superTypeForCustomMetaObject)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambiLink::createLinkForQObject(JNIEnv *env, jobject java, QObject *object, bool created_by_java, bool hasCustomMetaObject)")
@@ -487,17 +445,17 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env
         }
     }else{
         const QMetaObject* metaObject = object->metaObject();
-        QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
             if(extraSignals.isEmpty())
                 qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, ocurredException);
             else
-                qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+                qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, ocurredException);
         }else{
             if(extraSignals.isEmpty())
                 qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
             else
-                qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, extraSignals, ocurredException);
+                qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
         }
     }
     if(ocurredException.object()){
@@ -530,18 +488,18 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *
                 qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
             }
         }else{
-            QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+            QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
             if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
                 if(extraSignals.isEmpty()){
                     qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
                 }else{
-                    qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
+                    qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
                 }
             }else{
                 if(extraSignals.isEmpty()){
                     qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
                 }else{
-                    qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, extraSignals, ocurredException);
+                    qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException);
                 }
             }
         }
@@ -2462,11 +2420,10 @@ void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
 // ### BEGIN ###################  PointerToQObjectLink  ###################### BEGIN ####
 
 void qtjambi_resolve_signals(JNIEnv *env, jobject java_object, const QMetaObject* metaObject, JavaException& ocurredException);
-const QHash<int,QtJambiSignalInfo> qtjambi_resolve_extra_signals(JNIEnv *env, jobject java_object, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException);
+JObjectWrapper qtjambi_resolve_extra_signal(JNIEnv *env, jobject java_object, const QMetaMethod& method);
 
-PointerToQObjectWithExtraSignalsLink::PointerToQObjectWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool isDeclarativeCall, bool is_shell, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException),
-    m_extraSignals(qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException))
+PointerToQObjectWithExtraSignalsLink::PointerToQObjectWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *object, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
+    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, object, created_by_java, isDeclarativeCall, is_shell, ocurredException)
 {
 }
 
@@ -3006,11 +2963,11 @@ QSharedPointerToQObjectLink::QSharedPointerToQObjectLink(JNIEnv *env, jobject na
         if(superTypeForCustomMetaObject){
             m_pointerContainer = new PointerContainerWithPendingExtraSignals(env, local, superTypeForCustomMetaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
         }else{
-            QList<QMetaMethod> extraSignals = extra_signals(metaObject);
+            QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
             if(extraSignals.isEmpty())
                 m_pointerContainer = new PointerContainer(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
             else
-                m_pointerContainer = new PointerContainerWithExtraSignals(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, extraSignals, ocurredException);
+                m_pointerContainer = new PointerContainerWithExtraSignals(env, local, metaObject, this->getStrongPointer(), ptr_shared_pointer, isShell(), shared_pointer_deleter, pointerGetter, ocurredException);
         }
     }
     if(!ocurredException.object()){
@@ -3219,23 +3176,8 @@ bool QSharedPointerToObjectLink::isQObject() const {
     return false;
 }
 
-jobject PointerToQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
-    return qtjambi_arraylist_new(env, 0);
-}
-
-void PointerToPendingQObjectLink::resolveListOfExtraSignal(JNIEnv * env) const{
-    JavaException ocurredException;
-    if(jobject jobj = getJavaObjectLocalRef(env)){
-        if(QObject* object = qobject()){
-            m_metaObject = object->metaObject();
-            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
-            m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
-            env->DeleteLocalRef(jobj);
-        }
-    }
-    const_cast<PointerToPendingQObjectLink*>(this)->m_flags.setFlag(Flag::IsPendingObjectResolved);
-    if(ocurredException.object())
-        ocurredException.raise();
+jobject PointerToQObjectLink::getExtraSignal(JNIEnv*, const QMetaMethod&) const{
+    return nullptr;
 }
 
 PointerToPendingQObjectLink::PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
@@ -3277,19 +3219,25 @@ void PointerToPendingQObjectLink::init(JNIEnv* env){
     }
 }
 
-jobject PointerToPendingQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
-    if(!m_flags.testFlag(Flag::IsPendingObjectResolved)){
-        resolveListOfExtraSignal(env);
-    }else if(QObject* object = qobject()){
-        if(m_metaObject != object->metaObject())
-            resolveListOfExtraSignal(env);
+jobject PointerToPendingQObjectLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
+        }
     }
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
-    }
-    return result;
+    return nullptr;
 }
 
 PointerToPendingQObjectInterfaceLink::PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
@@ -3331,56 +3279,71 @@ void PointerToPendingQObjectInterfaceLink::init(JNIEnv* env){
     }
 }
 
-void PointerToPendingQObjectInterfaceLink::resolveListOfExtraSignal(JNIEnv * env) const{
-    JavaException ocurredException;
-    if(jobject jobj = getJavaObjectLocalRef(env)){
-        if(QObject* object = qobject()){
-            m_metaObject = object->metaObject();
-            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
-            m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
-            env->DeleteLocalRef(jobj);
+jobject PointerToPendingQObjectInterfaceLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
         }
     }
-    const_cast<PointerToPendingQObjectInterfaceLink*>(this)->m_flags.setFlag(Flag::IsPendingObjectResolved);
-    if(ocurredException.object())
-        ocurredException.raise();
+    return nullptr;
 }
 
-jobject PointerToPendingQObjectInterfaceLink::getListOfExtraSignal(JNIEnv * env) const{
-    if(!m_flags.testFlag(Flag::IsPendingObjectResolved)){
-        resolveListOfExtraSignal(env);
-    }else if(QObject* object = qobject()){
-        if(m_metaObject != object->metaObject())
-            resolveListOfExtraSignal(env);
+jobject PointerToQObjectWithExtraSignalsLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
+        }
     }
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
-    }
-    return result;
+    return nullptr;
 }
 
-jobject PointerToQObjectWithExtraSignalsLink::getListOfExtraSignal(JNIEnv * env) const{
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
+jobject PointerToQObjectInterfaceWithExtraSignalsLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
+        }
     }
-    return result;
+    return nullptr;
 }
 
-jobject PointerToQObjectInterfaceWithExtraSignalsLink::getListOfExtraSignal(JNIEnv * env) const{
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
-    }
-    return result;
-}
-
-jobject PointerContainer::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink*) const{
-    return qtjambi_arraylist_new(env, 0);
+jobject PointerContainer::getExtraSignal(JNIEnv *, const QSharedPointerToQObjectLink*, const QMetaMethod&) const{
+    return nullptr;
 }
 
 QString PointerToObjectLink::describe() const{
@@ -3437,8 +3400,8 @@ QString QSharedPointerToObjectLink::describe() const{
     return strg;
 }
 
-jobject QSharedPointerToQObjectLink::getListOfExtraSignal(JNIEnv * env) const{
-    return m_pointerContainer->getListOfExtraSignal(env, this);
+jobject QSharedPointerToQObjectLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
+    return m_pointerContainer->getExtraSignal(env, this, method);
 }
 
 void QSharedPointerToQObjectLink::removeInterface(const std::type_info&){
@@ -3466,20 +3429,30 @@ QString QSharedPointerToQObjectLink::describe() const{
 
 // ### END #################  QSharedPointerToQObjectLink  ################### END ###
 
-PointerContainerWithExtraSignals::PointerContainerWithExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException)
-    : PointerContainer(env, jobj, metaObject, link, ptr_shared_pointer, isShell, shared_pointer_deleter, pointerGetter, ocurredException),
-      m_extraSignals(qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException))
+PointerContainerWithExtraSignals::PointerContainerWithExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
+    : PointerContainer(env, jobj, metaObject, link, ptr_shared_pointer, isShell, shared_pointer_deleter, pointerGetter, ocurredException)
 {
-
 }
 
-jobject PointerContainerWithExtraSignals::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink*) const{
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
+jobject PointerContainerWithExtraSignals::getExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, link->getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
+        }
     }
-    return result;
+    return nullptr;
 }
 
 PointerContainerWithPendingExtraSignals::PointerContainerWithPendingExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
@@ -3490,34 +3463,25 @@ PointerContainerWithPendingExtraSignals::PointerContainerWithPendingExtraSignals
 
 }
 
-void PointerContainerWithPendingExtraSignals::resolveListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const {
-    JavaException ocurredException;
-    if(jobject jobj = link->getJavaObjectLocalRef(env)){
-        if(QObject* object = qobject()){
-            m_metaObject = object->metaObject();
-            QList<QMetaMethod> extraSignals = extra_signals(m_metaObject);
-            m_extraSignals = qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException);
-            env->DeleteLocalRef(jobj);
+jobject PointerContainerWithPendingExtraSignals::getExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link, const QMetaMethod& method) const{
+    if(QObject* object = qobject()){
+        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+        if(extraSignals.contains(method)){
+            QReadLocker rlocker(QtJambiLinkUserData::lock());
+            if(!m_extraSignals.contains(method.methodIndex())){
+                rlocker.unlock();
+                JObjectWrapper signal = qtjambi_resolve_extra_signal(env, link->getJavaObjectLocalRef(env), method);
+                {
+                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
+                    if(!m_extraSignals.contains(method.methodIndex()))
+                        m_extraSignals[method.methodIndex()] = signal;
+                }
+                rlocker.relock();
+            }
+            return m_extraSignals.value(method.methodIndex()).object();
         }
     }
-    const_cast<QSharedPointerToQObjectLink*>(link)->m_flags.setFlag(QtJambiLink::Flag::IsPendingObjectResolved);
-    if(ocurredException.object())
-        ocurredException.raise();
-}
-
-jobject PointerContainerWithPendingExtraSignals::getListOfExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link) const{
-    if(!link->m_flags.testFlag(QtJambiLink::Flag::IsPendingObjectResolved)){
-        resolveListOfExtraSignal(env, link);
-    }else if(QObject* object = qobject()){
-        if(m_metaObject != object->metaObject())
-            resolveListOfExtraSignal(env, link);
-    }
-    jobject result = qtjambi_arraylist_new(env, 0);
-    for(const QtJambiSignalInfo& info : m_extraSignals){
-        if(info.signalObject())
-            qtjambi_collection_add(env, result, env->NewLocalRef(info.signalObject()));
-    }
-    return result;
+    return nullptr;
 }
 
 
@@ -3567,9 +3531,8 @@ void* PointerContainer::getSharedPointer() const{
     return m_ptr_shared_pointer;
 }
 
-PointerToQObjectInterfaceWithExtraSignalsLink::PointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException)
-    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException),
-    m_extraSignals(qtjambi_resolve_extra_signals(env, jobj, extraSignals, ocurredException))
+PointerToQObjectInterfaceWithExtraSignalsLink::PointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
+    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException)
 {
 }
 
@@ -3754,31 +3717,6 @@ INTERFACE_METHODS(DeletablePointerToContainerInterfaceLink, DeletablePointerToCo
 
 QObject* PointerContainer::qobject() const{
     return m_ptr_shared_pointer && m_shared_pointer_getter ? m_shared_pointer_getter(m_ptr_shared_pointer) : nullptr;
-}
-
-QtJambiSignalInfo::QtJambiSignalInfo(const QtJambiSignalInfo & info):
-    m_signalObject(info.m_signalObject)
-{}
-
-QtJambiSignalInfo::QtJambiSignalInfo(QtJambiSignalInfo && info):
-        m_signalObject(info.m_signalObject)
-{}
-
-QtJambiSignalInfo::QtJambiSignalInfo(): m_signalObject()
-{}
-
-QtJambiSignalInfo::QtJambiSignalInfo(JNIEnv* env, jobject object, bool global)
-  : m_signalObject(env, object, global)
-{}
-
-QtJambiSignalInfo & QtJambiSignalInfo::operator =(const QtJambiSignalInfo & info)
-{
-    m_signalObject = info.m_signalObject;
-    return *this;
-}
-
-jobject QtJambiSignalInfo::signalObject() const{
-    return m_signalObject.object();
 }
 
 void qtjambi_set_java_ownership_for_toplevel_object(JNIEnv *env, QObject* qobject)
@@ -4160,67 +4098,56 @@ void qtjambi_resolve_signals(JNIEnv *env, jobject java_object, const QMetaObject
     }
 }
 
-const QHash<int,QtJambiSignalInfo> qtjambi_resolve_extra_signals(JNIEnv *env, jobject java_object, const QList<QMetaMethod>& extraSignals, JavaException& ocurredException){
-    QHash<int,QtJambiSignalInfo> sinfos;
-    if(!ocurredException.object()){
-        try{
-            sinfos.reserve(extraSignals.size());
-            QSet<const QMetaObject*> convertedMetaObjects;
-            for(QMetaMethod method : extraSignals){
-                jobject signalObject = nullptr;
-                switch(method.parameterCount()){
-                case 0:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal0::newInstance(env, java_object);
-                    break;
-                case 1:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal1::newInstance(env, java_object);
-                    break;
-                case 2:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2::newInstance(env, java_object);
-                    break;
-                case 3:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3::newInstance(env, java_object);
-                    break;
-                case 4:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4::newInstance(env, java_object);
-                    break;
-                case 5:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5::newInstance(env, java_object);
-                    break;
-                case 6:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6::newInstance(env, java_object);
-                    break;
-                case 7:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7::newInstance(env, java_object);
-                    break;
-                case 8:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8::newInstance(env, java_object);
-                    break;
-                case 9:
-                    signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9::newInstance(env, java_object);
-                    break;
-                default:
-                    break;
-                }
-                if(signalObject){
-                    {
-                        const QMetaObject* parentMetaObject = method.enclosingMetaObject();
-                        while(parentMetaObject && !convertedMetaObjects.contains(parentMetaObject)){
-                            qtjambi_cast<jobject>(env, parentMetaObject);
-                            convertedMetaObjects.insert(parentMetaObject);
-                            parentMetaObject = parentMetaObject->superClass();
-                        }
-                    }
-                    jobject signalTypes = qtjambi_get_signal_types(env, nullptr, method);
-                    Java::QtJambi::QtJambiSignals$AbstractSignal::initializeSignal(env, signalObject, env->GetObjectClass(java_object), signalTypes, method.methodIndex(), jlong(method.enclosingMetaObject()));
-                    sinfos.insert(method.methodIndex(), QtJambiSignalInfo(env, signalObject, true));
-                }else{
-                    sinfos.insert(method.methodIndex(), QtJambiSignalInfo());
-                }
-            }
-        }catch(const JavaException& exn){
-            ocurredException.addSuppressed(env, exn);
-        }
+JObjectWrapper qtjambi_resolve_extra_signal(JNIEnv *env, jobject java_object, const QMetaMethod& method){
+    QSet<const QMetaObject*> convertedMetaObjects;
+    jobject signalObject = nullptr;
+    switch(method.parameterCount()){
+    case 0:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal0::newInstance(env, java_object);
+        break;
+    case 1:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal1::newInstance(env, java_object);
+        break;
+    case 2:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2::newInstance(env, java_object);
+        break;
+    case 3:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3::newInstance(env, java_object);
+        break;
+    case 4:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4::newInstance(env, java_object);
+        break;
+    case 5:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5::newInstance(env, java_object);
+        break;
+    case 6:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6::newInstance(env, java_object);
+        break;
+    case 7:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7::newInstance(env, java_object);
+        break;
+    case 8:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8::newInstance(env, java_object);
+        break;
+    case 9:
+        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9::newInstance(env, java_object);
+        break;
+    default:
+        break;
     }
-    return sinfos;
+    if(signalObject){
+        {
+            const QMetaObject* parentMetaObject = method.enclosingMetaObject();
+            while(parentMetaObject && !convertedMetaObjects.contains(parentMetaObject)){
+                qtjambi_cast<jobject>(env, parentMetaObject);
+                convertedMetaObjects.insert(parentMetaObject);
+                parentMetaObject = parentMetaObject->superClass();
+            }
+        }
+        jobject signalTypes = qtjambi_get_signal_types(env, nullptr, method);
+        Java::QtJambi::QtJambiSignals$AbstractSignal::initializeSignal(env, signalObject, env->GetObjectClass(java_object), signalTypes, method.methodIndex(), jlong(method.enclosingMetaObject()));
+        return JObjectWrapper(env, signalObject, true);
+    }else{
+        return JObjectWrapper();
+    }
 }

@@ -74,6 +74,8 @@ public class FindCompiler {
         MSVC2019_64("msvc2019x64"),
         MSVC2022("msvc2022"),
         MSVC2022_64("msvc2022x64"),
+        MSVC20XX("msvc20XX"),
+        MSVC20XX_64("msvc20XXx64"),
         MinGW("mingw"),
         MinGW_W64("mingw-w64"),
         OldGCC("gcc3.3"),
@@ -112,6 +114,8 @@ public class FindCompiler {
             if(name.equals("msvc2019x64")) return MSVC2019_64;
             if(name.equals("msvc2022")) return MSVC2022;
             if(name.equals("msvc2022x64")) return MSVC2022_64;
+            if(name.equals("msvc20XX")) return MSVC20XX;
+            if(name.equals("msvc20XXx64")) return MSVC20XX_64;
             if(name.equals("mingw")) return MinGW;
             if(name.equals("mingw-w64")) return MinGW_W64;
             if(name.equals("gcc3.3")) return OldGCC;
@@ -119,67 +123,6 @@ public class FindCompiler {
             if(name.equals("suncc")) return SUNCC;
             if(name.equals("clang")) return CLANG;
             return Other;
-        }
-
-        public boolean is64Only() {
-            return is64Only(name);
-        }
-        public static boolean is64Only(String name) {
-            Compiler compiler = resolve(name);
-            if(compiler == MSVC2005_64)
-                return true;
-            if(compiler == MSVC2008_64)
-                return true;
-            if(compiler == MSVC2010_64)
-                return true;
-            if(compiler == MSVC2012_64)
-                return true;
-            if(compiler == MSVC2013_64)
-                return true;
-            if(compiler == MSVC2015_64)
-                return true;
-            if(compiler == MSVC2017_64)
-                return true;
-            return false;
-        }
-
-        public boolean isCompiler(Compiler compiler) {
-            return isCompiler(name, compiler);
-        }
-        public static boolean isCompiler(String name, Compiler ...compilerA) {
-            Compiler thisCompiler = resolve(name);
-            for(Compiler c : compilerA) {
-                if(thisCompiler == c)
-                    return true;
-            }
-            return false;
-        }
-
-        public boolean isMsvcKind() {
-            Compiler compiler = resolve(name);
-            switch(compiler) {
-            case MSVC1998:
-            case MSVC2002:
-            case MSVC2003:
-            case MSVC2005:
-            case MSVC2005_64:
-            case MSVC2008:
-            case MSVC2008_64:
-            case MSVC2010:
-            case MSVC2010_64:
-            case MSVC2012:
-            case MSVC2012_64:
-            case MSVC2013:
-            case MSVC2013_64:
-            case MSVC2015:
-            case MSVC2015_64:
-            case MSVC2017:
-            case MSVC2017_64:
-                return true;
-			default:
-				break;
-            }
-            return false;
         }
     }
 
@@ -585,7 +528,9 @@ public class FindCompiler {
                         return Compiler.MSVC2022_64;
                     return Compiler.MSVC2022;
                 }
-                throw new BuildException("Failed to detect Visual Studio version\n  \"" + stderr + "\"");
+                if(stderr.contains("x64"))
+                    return Compiler.MSVC20XX_64;
+                return Compiler.MSVC20XX;
             }
         } catch(InterruptedException ex) {
             if(verbose)

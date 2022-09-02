@@ -43,4 +43,40 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.webengine.quick" module="qtjambi.webenginequick" default-superclass="io.qt.QtObject">
+    <namespace-type name="QtWebEngineQuick">
+      <inject-code>
+          <import-file name="typesystem/java/typesystem_webenginequick-java.java" quote-after-line="class QtWebEngineQuick___" quote-before-line="}// class"/>
+      </inject-code>
+    </namespace-type>
+    <object-type name="QQuickWebEngineProfile">
+        <extra-includes>
+            <include file-name="QtWebEngineCore/QWebEngineDownloadRequest" location="global"/>
+        </extra-includes>
+        <modify-function signature="downloadRequested(QQuickWebEngineDownloadRequest *)" private-signal="yes">
+            <modify-argument index="1">
+                <replace-type modified-type="? extends io.qt.webengine.core.QWebEngineDownloadRequest"/>
+                <conversion-rule class="native">
+				Q_UNUSED(in)
+                JavaException::raiseIllegalAccessException(%env, "Calling signal downloadRequested from Java not allowed." QTJAMBI_STACKTRACEINFO );
+				QQuickWebEngineDownloadRequest* %out{nullptr};
+                </conversion-rule>
+                <conversion-rule class="shell">
+                %out = qtjambi_cast&lt;jobject>(%env, reinterpret_cast&lt;QWebEngineDownloadRequest*>(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="downloadFinished(QQuickWebEngineDownloadRequest *)" private-signal="yes">
+            <modify-argument index="1">
+                <replace-type modified-type="? extends io.qt.webengine.core.QWebEngineDownloadRequest"/>
+                <conversion-rule class="native">
+                Q_UNUSED(in)
+				JavaException::raiseIllegalAccessException(%env, "Calling signal downloadFinished from Java not allowed." QTJAMBI_STACKTRACEINFO );
+				QQuickWebEngineDownloadRequest* %out{nullptr};
+                </conversion-rule>
+                <conversion-rule class="shell">
+                %out = qtjambi_cast&lt;jobject>(%env, reinterpret_cast&lt;QWebEngineDownloadRequest*>(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
 </typesystem>

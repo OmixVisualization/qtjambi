@@ -1427,6 +1427,24 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Lio_
 
 /*
  * Class:     io_qt_qml_QtQml
+ * Method:    qmlTypeId
+ * Signature: (Ljava/lang/String;IILjava/lang/String;)I
+ */
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlTypeId__Ljava_lang_String_2IILjava_lang_String_2
+  (JNIEnv * env, jclass, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
+    env->EnsureLocalCapacity(300);
+    jint _result{-1};
+    QTJAMBI_TRY{
+        QString _qmlName = qtjambi_to_qstring(env, qmlName);
+        _result = qmlTypeId(qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return _result;
+}
+
+/*
+ * Class:     io_qt_qml_QtQml
  * Method:    qmlProtectModule
  * Signature: (Ljava/lang/String;I)Z
  */
@@ -1887,4 +1905,231 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
     if(ptr) *reinterpret_cast<std::atomic<bool>*>(ptr) = flag;
 #endif
 }
+
+// QQmlEngine::singletonInstance(int)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlEngine_singletonInstance__JI)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId, jint qmlTypeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlEngine::singletonInstance(int)")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QQmlEngine *__qt_this = qtjambi_object_from_nativeId<QQmlEngine>(__this_nativeId);
+        qtjambi_check_resource(__jni_env, __qt_this);
+        QJSValue value = __qt_this->singletonInstance<QJSValue>(qmlTypeId);
+        result = qtjambi_cast<jobject>(__jni_env, value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+// qjsEngine
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QtQml_qjsEngine)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __object_nativeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "qjsEngine")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QObject *object = qtjambi_object_from_nativeId<QObject>(__object_nativeId);
+        result = qtjambi_cast<jobject>(__jni_env, qjsEngine(object));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
+using ConvertVariant = bool(QJSEngine::*)(const QVariant &value, QMetaType metaType, void *ptr);
+template <>
+constexpr ConvertVariant qjsvalue_cast<ConvertVariant>(const QJSValue &)
+{
+    return &QJSEngine::convertVariant;
+}
+// QJSEngine::fromVariant
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QJSEngine_fromVariant)
+(JNIEnv *env,
+ jclass,
+ QtJambiNativeID __this_nativeId, jobject jVariant, QtJambiNativeID metaTypeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QJSEngine::fromVariant")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QJSEngine *__qt_this = qtjambi_object_from_nativeId<QJSEngine>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        QVariant value = qtjambi_to_qvariant(env, jVariant);
+        QMetaType targetType = qtjambi_object_from_nativeId_deref<QMetaType>(env, metaTypeId);
+        if (value.metaType()==targetType){
+            result = jVariant;
+        }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+            if(!targetType.iface()->defaultCtr){
+                JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing default constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+            }
+            if(!targetType.iface()->copyCtr){
+                JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing copy constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+            }
+#endif
+            QVariant t(targetType, nullptr);
+            ConvertVariant convertVariant = qjsvalue_cast<ConvertVariant>(QJSValue{});
+            if ((__qt_this->*convertVariant)(value, targetType, t.data())){
+                result = qtjambi_from_qvariant(env, t);
+            }else{
+                QMetaType::convert(value.metaType(), value.constData(), targetType, t.data());
+                result = qtjambi_from_qvariant(env, t);
+            }
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+using ConvertV2 = bool (*)(const QJSValue &value, QMetaType metaType, void *ptr);
+template <>
+constexpr ConvertV2 qjsvalue_cast<ConvertV2>(const QJSValue &)
+{
+    return &QJSEngine::convertV2;
+}
+// QJSEngine::fromScriptValue
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QJSEngine_fromScriptValue)
+(JNIEnv *env,
+ jclass,
+ QtJambiNativeID __this_nativeId, QtJambiNativeID jmanaged, QtJambiNativeID metaTypeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QJSEngine::fromScriptValue")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QJSEngine *__qt_this = qtjambi_object_from_nativeId<QJSEngine>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        const QJSValue& value = qtjambi_object_from_nativeId_deref<QJSValue>(env, jmanaged);
+        QMetaType targetType = qtjambi_object_from_nativeId_deref<QMetaType>(env, metaTypeId);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+        if(!targetType.iface()->defaultCtr){
+            JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing default constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+        if(!targetType.iface()->copyCtr){
+            JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing copy constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
+        ConvertV2 convertV2 = qjsvalue_cast<ConvertV2>(QJSValue{});
+        QVariant t(targetType, nullptr);
+        if (convertV2(value, targetType, t.data())){
+            result = qtjambi_from_qvariant(env, t);
+        }else if (value.isVariant()){
+            t = value.toVariant();
+            t.convert(targetType);
+            result = qtjambi_from_qvariant(env, t);
+        }else{
+            result = qtjambi_from_qvariant(env, QVariant(targetType, nullptr));
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+using Create = QJSValue(QJSEngine::*)(QMetaType type, const void *ptr);
+template <>
+constexpr Create qjsvalue_cast<Create>(const QJSValue &)
+{
+    return &QJSEngine::create;
+}
+// QJSEngine::toScriptValue
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QJSEngine_toScriptValue)
+(JNIEnv *env,
+ jclass,
+ QtJambiNativeID __this_nativeId, jobject object)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QJSEngine::toScriptValue")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QJSEngine *__qt_this = qtjambi_object_from_nativeId<QJSEngine>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        QVariant variant = qtjambi_to_qvariant(env, object);
+        Create create = qjsvalue_cast<Create>(QJSValue{});
+        QJSValue jsval = (__qt_this->*create)(variant.metaType(), variant.data());
+        result = qtjambi_cast<jobject>(env, jsval);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+using ConvertManaged = bool(*)(const QJSManagedValue &value, QMetaType type, void *ptr);
+template <>
+constexpr ConvertManaged qjsvalue_cast<ConvertManaged>(const QJSValue &)
+{
+    return &QJSEngine::convertManaged;
+}
+// QJSEngine::fromManagedValue
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QJSEngine_fromManagedValue)
+(JNIEnv *env,
+ jclass,
+ QtJambiNativeID __this_nativeId, QtJambiNativeID jmanaged, QtJambiNativeID metaTypeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QJSEngine::fromManagedValue")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QJSEngine *__qt_this = qtjambi_object_from_nativeId<QJSEngine>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        const QJSManagedValue& value = qtjambi_object_from_nativeId_deref<QJSManagedValue>(env, jmanaged);
+        QMetaType targetType = qtjambi_object_from_nativeId_deref<QMetaType>(env, metaTypeId);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+        if(!targetType.iface()->defaultCtr){
+            JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing default constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+        if(!targetType.iface()->copyCtr){
+            JavaException::raiseRuntimeException(env, qPrintable(QString("Unable to convert to meta type %1 due to missing copy constructor.").arg(QLatin1String(targetType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
+        ConvertManaged convertManaged = qjsvalue_cast<ConvertManaged>(QJSValue{});
+        QVariant t(targetType, nullptr);
+        if (convertManaged(value, targetType, t.data())){
+            result = qtjambi_from_qvariant(env, t);
+        }else{
+            t = value.toVariant();
+            t.convert(targetType);
+            result = qtjambi_from_qvariant(env, t);
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+using CreateManaged = QJSManagedValue(QJSEngine::*)(QMetaType type, const void *ptr);
+template <>
+constexpr CreateManaged qjsvalue_cast<CreateManaged>(const QJSValue &)
+{
+    return &QJSEngine::createManaged;
+}
+// QJSEngine::toManagedValue
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QJSEngine_toManagedValue)
+(JNIEnv *env,
+ jclass,
+ QtJambiNativeID __this_nativeId, jobject object)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QJSEngine::toManagedValue")
+    jobject result{nullptr};
+    QTJAMBI_TRY {
+        QJSEngine *__qt_this = qtjambi_object_from_nativeId<QJSEngine>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        QVariant variant = qtjambi_to_qvariant(env, object);
+        CreateManaged createManaged = qjsvalue_cast<CreateManaged>(QJSManagedValue{});
+        QJSManagedValue jsval = (__qt_this->*createManaged)(variant.metaType(), variant.data());
+        result = qtjambi_cast<jobject>(env, jsval);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+#endif
 

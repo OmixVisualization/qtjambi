@@ -50,8 +50,6 @@
 &lt;li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.&lt;/li>
 &lt;li>QtWidgets - Classes to extend Qt GUI with C++ widgets.&lt;/li>
 &lt;/ul></description>
-    <rejection class="QOperatingSystemVersion" field-name="Windows11_21H2"/>
-    <rejection class="QOperatingSystemVersion" field-name="Windows11_22H2"/>
     <rejection class="QStringConverterBase::State" function-name="reset"/>
     <rejection class="" enum-name="QtJambiNativeID"/>
     <rejection class="QNativeInterface::QAndroidApplication" function-name="runOnAndroidMainThread"/>
@@ -289,6 +287,7 @@
     <rejection class="QDeadlineTimer" function-name="_q_data"/>
 
     <rejection class="Qt::QtMsgType"/>
+    <rejection class="Qt::Disambiguated_t"/>
     <rejection class="" enum-name="QtValidLicenseForTestModule"/>
     <rejection class="QTextCodecPlugin" function-name="create(const QString &amp;)"/>
     <rejection class="QTextCodecPlugin" function-name="keys()const"/>
@@ -2730,11 +2729,9 @@
         <modify-function signature="operator&gt;&gt;(char16_t&amp;)" remove="all" since="6.4.0"/>
         <modify-function signature="operator&lt;&lt;(const QStringRef &amp;)" remove="all" until="5.*"/>
         <modify-function signature="operator&lt;&lt;(QStringView)" remove="all"/>
-        <modify-function signature="operator&lt;&lt;(const char*)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(signed long)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(unsigned int)" remove="all"/>
         <modify-function signature="operator&gt;&gt;(ulong&amp;)" remove="all"/>
-        <modify-function signature="operator&gt;&gt;(char*)" remove="all"/>
         <modify-function signature="operator&gt;&gt;(signed long&amp;)" remove="all"/>
         <modify-function signature="operator&gt;&gt;(unsigned long long&amp;)" remove="all"/>
         <modify-function signature="operator&gt;&gt;(unsigned short&amp;)" remove="all"/>
@@ -2966,7 +2963,8 @@
         <modify-function signature="operator=(const QCollator&amp;)" remove="all"/>
         <modify-function signature="compare(const QStringRef &amp;, const QStringRef &amp;) const" remove="all" until="5.*"/>
         <modify-function signature="compare(const QString &amp;, const QString &amp;) const" remove="all" since="5.14.0"/>
-        <modify-function signature="compare(const QChar *, int, const QChar *, int) const" remove="all" />
+        <modify-function signature="compare(const QChar *, int, const QChar *, int) const" remove="all"  until="6.3.*"/>
+        <modify-function signature="compare(const QChar *, qsizetype, const QChar *, qsizetype) const" remove="all" since="6.4"/>
         <modify-function signature="sortKey(const QString &amp;) const">
         </modify-function>
     </value-type>
@@ -3438,7 +3436,6 @@
         <modify-function signature="operator=(QDebug)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all" until="6.3"/>
-        <modify-function signature="operator&lt;&lt;(QString)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QStringRef)" remove="all" until="5.*"/>
         <modify-function signature="operator&lt;&lt;(QStringView)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QUtf8StringView)" remove="all" since="6.0.0"/>
@@ -3725,8 +3722,10 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QCharRef'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'va_list'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QString::Null*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*Qt::Disambiguated_t*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QStringDataPtr'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QChar::SpecialCharacter'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QString::SplitBehavior'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QString::SplitBehavior' does not have a type entry or is not an enum"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type To (From::*)() (is_busted)"/>
 </typesystem>

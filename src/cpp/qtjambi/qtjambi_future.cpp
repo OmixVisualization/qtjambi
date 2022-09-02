@@ -41,39 +41,6 @@ FutureCallOut::FutureCallOut(QSharedPointer<QFutureInterfaceBase>&& sourceFuture
       m_resultRetranslator(resultRetranslator),
       m_reverseFutureCallOut(this) {}
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-#define CREATE_CALLOUT_EVENT(X) QFutureCallOutEvent(X)
-#define CREATE_CALLOUT_EVENT3(X,Y,Z) QFutureCallOutEvent(X,Y,Z)
-#else
-struct FutureCallOutEvent : public QEvent{
-    explicit FutureCallOutEvent(QFutureCallOutEvent::CallOutType callOutType, int index1 = -1)
-        : QEvent(QEvent::FutureCallOut), callOutType(callOutType), index1(index1), index2(-1)
-    { }
-    FutureCallOutEvent(QFutureCallOutEvent::CallOutType callOutType, int index1, int index2)
-        : QEvent(QEvent::FutureCallOut), callOutType(callOutType), index1(index1), index2(index2)
-    { }
-
-    FutureCallOutEvent(QFutureCallOutEvent::CallOutType callOutType, int index1, const QString &text)
-        : QEvent(QEvent::FutureCallOut),
-          callOutType(callOutType),
-          index1(index1),
-          index2(-1),
-          text(text)
-    { }
-
-    static const QFutureCallOutEvent& convert(const FutureCallOutEvent& evt){
-        return reinterpret_cast<const QFutureCallOutEvent&>(evt);
-    }
-
-    QFutureCallOutEvent::CallOutType callOutType;
-    int index1;
-    int index2;
-    QString text;
-};
-#define CREATE_CALLOUT_EVENT(X) FutureCallOutEvent::convert(FutureCallOutEvent(X))
-#define CREATE_CALLOUT_EVENT3(X,Y,Z) FutureCallOutEvent::convert(FutureCallOutEvent(X,Y,Z))
-#endif
-
 void FutureCallOut::initialize()
 {
     Q_ASSERT(!m_sourceFuture.isNull());
@@ -93,7 +60,7 @@ void FutureCallOut::initialize()
         const auto currentState = m_sourceFuture->d->state.loadRelaxed();
         try{
             if (currentState & QFutureInterfaceBase::Started) {
-                postCallOutEvent(CREATE_CALLOUT_EVENT(QFutureCallOutEvent::Started));
+                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
 #if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
                 postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                                 m_sourceFuture->d->m_progressMinimum,
@@ -103,14 +70,14 @@ void FutureCallOut::initialize()
                                                                 m_sourceFuture->d->m_progressText));
 #else
                 if(m_sourceFuture->d->m_progress){
-                    postCallOutEvent(CREATE_CALLOUT_EVENT3(QFutureCallOutEvent::ProgressRange,
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                                     m_sourceFuture->d->m_progress->minimum,
                                                                     m_sourceFuture->d->m_progress->maximum));
-                    postCallOutEvent(CREATE_CALLOUT_EVENT3(QFutureCallOutEvent::Progress,
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
                                                                     m_sourceFuture->d->m_progressValue,
                                                                     m_sourceFuture->d->m_progress->text));
                 }else{
-                    postCallOutEvent(CREATE_CALLOUT_EVENT3(QFutureCallOutEvent::Progress,
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
                                                                     m_sourceFuture->d->m_progressValue,
                                                                     QString()));
                 }
@@ -136,7 +103,7 @@ void FutureCallOut::initialize()
                 while (it != m_sourceFuture->d->data.m_results.end()) {
                     const int begin = it.resultIndex();
                     const int end = begin + it.batchSize();
-                        postCallOutEvent(CREATE_CALLOUT_EVENT3(QFutureCallOutEvent::ResultsReady,
+                        postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
                                                                         begin,
                                                                         end));
 
@@ -150,19 +117,19 @@ void FutureCallOut::initialize()
                 postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
 #else
             if (currentState & QFutureInterfaceBase::Suspended)
-                postCallOutEvent(CREATE_CALLOUT_EVENT(QFutureCallOutEvent::Suspended));
+                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
             else if (currentState & QFutureInterfaceBase::Suspending)
-                postCallOutEvent(CREATE_CALLOUT_EVENT(QFutureCallOutEvent::Suspending));
+                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
 #endif
 
             if (currentState & QFutureInterfaceBase::Canceled)
-                postCallOutEvent(CREATE_CALLOUT_EVENT(QFutureCallOutEvent::Canceled));
+                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
         }catch(...){
             delete this;
             throw;
         }
         if (currentState & QFutureInterfaceBase::Finished){
-            postCallOutEvent(CREATE_CALLOUT_EVENT(QFutureCallOutEvent::Finished));
+            postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
         }else{
             m_sourceFuture->d->outputConnections.append(this);
             QMutexLocker locker2(&m_targetFuture->d->m_mutex);

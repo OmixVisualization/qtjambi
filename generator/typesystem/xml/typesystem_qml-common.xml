@@ -48,13 +48,11 @@
     <rejection class="QJSEngine::FunctionSignature"/>
     <rejection class="QJSEngine" function-name="fromScriptValue"/>
     <rejection class="QJSEngine" function-name="toScriptValue"/>
-    <rejection class="QJSEngine" function-name="newQMetaObject"/>
     <rejection class="QJSEngine" function-name="registerCustomType"/>
     <rejection class="QJSEngine" function-name="scriptValueFromQMetaObject"/>
     <rejection class="QJSEngine" function-name="newFunction"/>
     <!-- objectById is marked as internal API and would expose memory pointer in QtJambi API -->
     <rejection class="QJSEngine" function-name="objectById"/>
-    <rejection class="QJSValue" function-name="toQMetaObject"/>
     <rejection class="QJSValueList"/>
     <rejection class="QJSValue::QJSValueList"/>
     <rejection class="QQmlInfo"/>
@@ -228,6 +226,7 @@
         </extra-includes>
     </functional-type>
     <object-type name="QJSEngine">
+        <modify-function signature="newQMetaObject()" remove="all"/>
         <modify-function signature="setObjectOwnership(QObject*,QJSEngine::ObjectOwnership)" since="6.0.0">
             <modify-argument index="1">
                 <reference-count action="ignore"/>

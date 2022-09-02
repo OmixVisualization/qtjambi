@@ -119,6 +119,20 @@ class __QJSValue extends QJSValue{
 
 class __QtQml__ extends QtQml{
 
+	/**
+     * Returns the QJSEngine associated with object, if any.
+	 *
+     * This function is useful if you have exposed a QObject to the JavaScript environment
+     * and later in your program would like to regain access. It does not require you to
+     * keep the wrapper around that was returned from QJSEngine::newQObject().
+     */
+	@io.qt.QtUninvokable
+    public static QJSEngine qjsEngine(io.qt.core.QObject object){
+		return qjsEngine(QtJambi_LibraryUtilities.internal.nativeId(object));
+	}
+	
+	private static native QJSEngine qjsEngine(long object);
+
     public static native int qmlRegisterTypeNotAvailable(String uri, int versionMajor, int versionMinor, String qmlName, String message);
     
     public static native int qmlRegisterUncreatableType(Class<? extends QObject> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
@@ -142,6 +156,8 @@ class __QtQml__ extends QtQml{
     public static native int qmlRegisterAnonymousType(Class<? extends QObject> type, String uri, int versionMajor);
 
     public static native int qmlRegisterType(QUrl url, String uri, int versionMajor, int versionMinor, String qmlName);
+	
+    public static native int qmlTypeId(String uri, int versionMajor, int versionMinor, String qmlName);
     
     public static native boolean qmlProtectModule(String uri, int majVersion);
 
@@ -242,6 +258,98 @@ class QQmlProperty__{
         return false;
     }
     
+}// class
+
+class QJSEngine__{
+
+	@io.qt.QtUninvokable
+    public final QJSValue newQMetaObject(Class<?> type) {
+    	return newQMetaObject(io.qt.core.QMetaObject.forType(type));
+    }
+}// class
+
+class QJSEngine_6_{
+	@io.qt.QtUninvokable
+    public final <T> T fromScriptValue(QJSValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    	return fromScriptValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T> T fromScriptValue(QJSValue value, io.qt.core.QMetaType type) {
+    	return fromScriptValue(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(value), QtJambi_LibraryUtilities.internal.checkedNativeId(type));
+    }
+    
+    private static native <T> T fromScriptValue(long thisId, long valueId, long typeId);
+    
+    @io.qt.QtUninvokable
+    public final <T> QJSValue toScriptValue(T value) {
+    	return toScriptValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
+    }
+    
+    private static native QJSValue toScriptValue(long thisId, Object value);
+}// class
+
+class QJSEngine_61_{
+    @io.qt.QtUninvokable
+    public final <T> T fromManagedValue(QJSManagedValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    	return fromManagedValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T> T fromManagedValue(QJSManagedValue value, io.qt.core.QMetaType type) {
+    	return fromManagedValue(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(value), QtJambi_LibraryUtilities.internal.checkedNativeId(type));
+    }
+    
+    private static native <T> T fromManagedValue(long thisId, long valueId, long typeId);
+    
+    @io.qt.QtUninvokable
+    public final <T> QJSManagedValue toManagedValue(T value) {
+    	return toManagedValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
+    }
+    
+    private static native QJSManagedValue toManagedValue(long thisId, Object value);
+    
+}// class
+
+class QJSEngine_63_{
+    @io.qt.QtUninvokable
+    public final <T> T fromVariant(Object variant, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    	return fromVariant(variant, io.qt.core.QMetaType.fromType(type, instantiations));
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T> T fromVariant(Object variant, io.qt.core.QMetaType type) {
+    	return fromVariant(QtJambi_LibraryUtilities.internal.nativeId(this), variant, QtJambi_LibraryUtilities.internal.checkedNativeId(type));
+    }
+    
+    private static native <T> T fromVariant(long thisId, Object variant, long typeId);
+	
+}// class
+
+class QQmlEngine__{
+	
+	/**
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int qmlTypeId)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.QtObjectInterface> T singletonInstance(Class<T> type, int qmlTypeId) {
+    	io.qt.core.QObject object = singletonInstance(QtJambi_LibraryUtilities.internal.nativeId(this), qmlTypeId).toQObject();
+    	if(object!=null)
+    		return object.qt_metacast(type);
+    	return null;
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int qmlTypeId)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QJSValue singletonInstance(int qmlTypeId) {
+    	return singletonInstance(QtJambi_LibraryUtilities.internal.nativeId(this), qmlTypeId);
+    }
+    
+    @io.qt.QtUninvokable
+    private static native QJSValue singletonInstance(long __this__nativeId, int qmlTypeId);
+	
 }// class
 
 class QQmlExpression__{

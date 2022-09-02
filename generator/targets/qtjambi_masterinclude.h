@@ -176,6 +176,7 @@
 #ifndef QTJAMBI_NO_QUICK
 #   if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #       include <QtQuick/QtQuick>
+#		define Q_QUICK_PRIVATE_EXPORT
 #   else
 #       define QSGTEXTURE_PLATFORM_H
 #       include <QtQuick/QtQuick>
@@ -188,6 +189,7 @@
 #           include <QtQuick/qsgtexture_platform.h>
 #       endif
 #   endif
+#	include <QtQuick/private/qquickevents_p_p.h>
 #   include <qtjambi_quick/qtjambi_quick_hashes.h>
 #endif
 

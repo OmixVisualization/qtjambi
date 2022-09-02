@@ -3,7 +3,7 @@
         <if>
             <istrue value="${qtjambi.testbuild}"/>
             <then>
-                <property name="destdir" value="${outputDir}/tests/jar" />
+                <property name="destdir" value="${outputDir}/${qtjambi.osname}/tests/jar" />
                 <subant target="build" inheritall="true" verbose="true">
                     <filelist dir="${basedir}/src/java/qtjambi-plugins" files="customwidgets,multimediawidgets,helpwidgets"/>
                 </subant>
@@ -27,14 +27,14 @@
                             <param name="isdebug" value="true"/>
                             <param name="debug.conf" value="debug"/>
                             <param name="platformjar.debug.suffix" value="-debug"/>
-                            <param name="plugindestdir" value="${outputDir}/tests/debug"/>
+                            <param name="plugindestdir" value="${outputDir}/${qtjambi.osname}/tests/debug"/>
                         </antcall>
                     </then>
                     <else>
                         <antcall target="bundle-plugin-impl">
                             <param name="debug.conf" value="release"/>
                             <param name="platformjar.debug.suffix" value=""/>
-                            <param name="plugindestdir" value="${outputDir}/tests/release"/>
+                            <param name="plugindestdir" value="${outputDir}/${qtjambi.osname}/tests/release"/>
                         </antcall>
                     </else>
                 </if>
@@ -62,7 +62,7 @@
         </if>
     </target>
     <target name="bundle-plugin-impl">
-		<condition property="plugindeploymentdir" value="${outputDir}/tests" else="${outputDir}/plugins">
+		<condition property="plugindeploymentdir" value="${outputDir}/${qtjambi.osname}/tests" else="${outputDir}/plugins">
 			<istrue value="${qtjambi.testbuild}"/>
 		</condition>
 		<if>
@@ -92,20 +92,25 @@
 					<equals arg1="${qtjambi.osname}" arg2="android"/>
 					<then>
 						<antcall inheritrefs="true" target="create-native-plugin-deployment-impl">
+							<param name="targetdirname" value="android"/>
 							<param name="qtjambi.osname" value="android-arm"/>
 						</antcall>
 						<antcall inheritrefs="true" target="create-native-plugin-deployment-impl">
+							<param name="targetdirname" value="android"/>
 							<param name="qtjambi.osname" value="android-arm64"/>
 						</antcall>
 						<antcall inheritrefs="true" target="create-native-plugin-deployment-impl">
+							<param name="targetdirname" value="android"/>
 							<param name="qtjambi.osname" value="android-x86"/>
 						</antcall>
 						<antcall inheritrefs="true" target="create-native-plugin-deployment-impl">
+							<param name="targetdirname" value="android"/>
 							<param name="qtjambi.osname" value="android-x64"/>
 						</antcall>
 					</then>
 					<else>
 						<antcall inheritrefs="true" target="create-native-plugin-deployment-impl">
+							<param name="targetdirname" value="${qtjambi.osname}"/>
 						</antcall>
 					</else>
 				</if>
@@ -211,61 +216,6 @@
 								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
 							</classpath>
 						</java>
-						<if>
-							<or>
-								<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-								<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-								<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-								<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
-							</or>
-							<then>
-								<move file="${plugindestdir}/plugins/${plugin-subdir}/${module}.jar" 
-									  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
-								<copy file="${outputDir}/plugins/${module}-sources.jar" 
-									  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
-							    <jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
-									<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
-								</jar>
-								<!--if>
-									<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-									<then>
-										<mkdir dir="${plugindestdir}/lib/armeabi-v7a"/>
-										<move file="${plugindestdir}/plugins/${plugin-subdir}/libplugins_${plugin-subdir}_${module}_armeabi-v7a.so" 
-											  todir="${plugindestdir}/lib/armeabi-v7a"/>
-									</then>
-									<else>
-										<if>
-											<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-											<then>
-												<mkdir dir="${plugindestdir}/lib/arm64-v8a"/>
-												<move file="${plugindestdir}/plugins/${plugin-subdir}/libplugins_${plugin-subdir}_${module}_arm64-v8a.so" 
-													  todir="${plugindestdir}/lib/arm64-v8a"/>
-											</then>
-											<else>
-												<if>
-													<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-													<then>
-														<mkdir dir="${plugindestdir}/lib/x86_64"/>
-														<move file="${plugindestdir}/plugins/${plugin-subdir}/libplugins_${plugin-subdir}_${module}_x86_64.so" 
-															  todir="${plugindestdir}/lib/x86_64"/>
-													</then>
-													<else>
-														<if>
-															<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
-															<then>
-																<mkdir dir="${plugindestdir}/lib/x86"/>
-																<move file="${plugindestdir}/plugins/${plugin-subdir}/libplugins_${plugin-subdir}_${module}_x86.so" 
-																	  todir="${plugindestdir}/lib/x86"/>
-															</then>
-														</if>
-													</else>
-												</if>
-											</else>
-										</if>
-									</else>
-								</if-->
-							</then>
-						</if>
 					</try>
 					<finally>
 						<delete dir="${outputDir}/tmp"/>
@@ -274,9 +224,52 @@
 			</else>
 		</if>
 		<if>
-			<not>
-				<istrue value="${qtjambi.testbuild}"/>
-			</not>
+			<or>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+			</or>
+			<then>
+				<if>
+					<istrue value="${qtjambi.testbuild}"/>
+					<then>
+						<mkdir dir="${outputDir}/${targetdirname}/tests"/>
+						<copy file="${plugindeploymentdir}/${module}.jar" 
+							  tofile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+						<copy file="${plugindeploymentdir}/${module}-sources.jar" 
+							  tofile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+					</then>
+					<else>
+						<copy file="${plugindestdir}/plugins/${plugin-subdir}/${module}.jar" 
+							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+						<copy file="${outputDir}/plugins/${module}-sources.jar" 
+							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+						<echo>create empty ${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar</echo>
+						<delete file="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar"/>
+						<jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
+							<manifest>
+								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+								<attribute name="Bundle-Name"      value="QtJambi ${module} plugin javadoc"/>
+								<attribute name="Bundle-Description"      value="QtJambi ${module} plugin javadoc"/>
+								<attribute name="Bundle-ManifestVersion" value="2"/>
+							</manifest>
+							<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
+						</jar>
+					</else>
+				</if>
+			</then>
+		</if>
+		<if>
+			<or>
+				<not>
+					<istrue value="${qtjambi.testbuild}"/>
+				</not>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+			</or>
 			<then>
 				<if>
 					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
@@ -313,7 +306,10 @@
 					</else>
 				</if>
 				<echo>jar-includes=${jar-includes}</echo>
-				<jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+				<condition property="plugintargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}">
+					<istrue value="${qtjambi.testbuild}"/>
+				</condition>
+				<jar destfile="${plugintargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 					<manifest>
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
@@ -420,7 +416,7 @@
                 </javac>
             </else>
         </if>
-		<condition property="plugindeploymentdir" value="${outputDir}/tests" else="${outputDir}/plugins">
+		<condition property="plugindeploymentdir" value="${outputDir}/${qtjambi.osname}/tests" else="${outputDir}/plugins">
 			<istrue value="${qtjambi.testbuild}"/>
 		</condition>
 		<echo message="Creating JAR file for ${module}"/>
@@ -445,21 +441,14 @@
 			</manifest>
 			<fileset dir="${java.outdir}/plugins/${module}"/>
 		</jar>
-		<if>
-			<not>
-				<istrue value="${qtjambi.testbuild}"/>
-			</not>
-			<then>
-				<jar destfile="${plugindeploymentdir}/${module}-sources.jar" excludes="${jar.excludes}">
-					<manifest>
-						<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-						<attribute name="Bundle-Name"             value="QtJambi Plugin ${module} sources"/>
-						<attribute name="Bundle-Description"      value="QtJambi Plugin ${module} sources"/>
-					</manifest>
-					<fileset dir="${java.outsrcdir}/plugins/${module}" excludes="**/*.class"/>
-				</jar>
-			</then>
-		</if>
+		<jar destfile="${plugindeploymentdir}/${module}-sources.jar" excludes="${jar.excludes}">
+			<manifest>
+				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+				<attribute name="Bundle-Name"             value="QtJambi Plugin ${module} sources"/>
+				<attribute name="Bundle-Description"      value="QtJambi Plugin ${module} sources"/>
+			</manifest>
+			<fileset dir="${java.outsrcdir}/plugins/${module}" excludes="**/*.class"/>
+		</jar>
     </target>
 
     <target name="build-plugin">

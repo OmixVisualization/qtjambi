@@ -228,13 +228,6 @@ class QHttpServer___{
     		return false;
     	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
-    
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, String methods, GenericViewHandler viewHandler, io.qt.core.QMetaType... metaTypes) {
-    	if(pathPattern==null || viewHandler==null || metaTypes==null)
-    		return false;
-    	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
-    }
 	
 	@io.qt.QtUninvokable
 	public <R> boolean route(java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory, java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler, io.qt.core.QMetaType... metaTypes) {
@@ -252,13 +245,6 @@ class QHttpServer___{
     
     @io.qt.QtUninvokable
     public <R> boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods, java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler, io.qt.core.QMetaType... metaTypes) {
-    	if(pathPattern==null || viewHandler==null || metaTypes==null)
-    		return false;
-    	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
-    }
-    
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern, String methods, java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler, io.qt.core.QMetaType... metaTypes) {
     	if(pathPattern==null || viewHandler==null || metaTypes==null)
     		return false;
     	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
@@ -284,13 +270,6 @@ class QHttpServer___{
     		return false;
     	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
-    
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, String methods, java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler, io.qt.core.QMetaType... metaTypes) {
-    	if(pathPattern==null || viewHandler==null || metaTypes==null)
-    		return false;
-    	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
-    }
 	
 	@io.qt.QtUninvokable
 	public <R> boolean route(java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory, java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
@@ -308,13 +287,6 @@ class QHttpServer___{
     
     @io.qt.QtUninvokable
     public <R> boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods, java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
-    	if(pathPattern==null || viewHandler==null || metaTypes==null)
-    		return false;
-    	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
-    }
-    
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern, String methods, java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
     	if(pathPattern==null || viewHandler==null || metaTypes==null)
     		return false;
     	return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, metaTypes)), metaTypes);
@@ -627,85 +599,14 @@ class QHttpServer___{
 			}
 		}
     }
-    
-    @io.qt.QtUninvokable
-    public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(String pathPattern, String methods, ViewHandler viewHandler) {
-		InvokableTypeInfo<ViewHandler> info = type(viewHandler);
-    	if(info.slotInvoker==null)
-    		return false;
-		java.lang.reflect.Parameter[] parameters = info.parameters;
-		int requestArg = -1;
-		int responderArg = -1;
-		for (int i = 0; i < parameters.length; i++) {
-			if(parameters[i].getType()==QHttpServerRequest.class) {
-				requestArg = i;
-			}else if(parameters[i].getType()==QHttpServerResponder.class) {
-				responderArg = i;
-			}
-		}
-		if(!info.hasReturnType) { // no responder!
-			if(responderArg==-1) {
-				throw new RuntimeException("QHttpServerResponder expected as argument.");
-			}else {
-				if(requestArg==-1) {
-					if(responderArg!=parameters.length-1) {
-						throw new RuntimeException("QHttpServerResponder expected to be last argument.");
-					}
-				}else {
-					if(responderArg<parameters.length-2) {
-						throw new RuntimeException("QHttpServerResponder and QHttpServerRequest expected to be last arguments.");
-					}
-					if(requestArg<parameters.length-2) {
-						throw new RuntimeException("QHttpServerResponder and QHttpServerRequest expected to be last arguments.");
-					}
-				}
-			}
-			io.qt.core.QMetaType[] metaTypes = new io.qt.core.QMetaType[parameters.length - (requestArg==-1 ? 1 : 2)];
-			for(int i=0; i<metaTypes.length; ++i) {
-				metaTypes[i] = new io.qt.core.QMetaType(QtJambi_LibraryUtilities.internal.registerMetaType(parameters[i]));
-			}
-			if(requestArg==-1) {
-				return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandlerResponder(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
-			}else if(requestArg<responderArg){
-				return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandlerRequestResponder(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
-			}else {
-				return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandlerResponderRequest(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
-			}
-		}else {
-			if(responderArg>0) {
-				throw new RuntimeException("QHttpServerResponder unexpected for suppliers.");
-			}
-			if(requestArg>0 && requestArg!=parameters.length-1) {
-				throw new RuntimeException("QHttpServerRequest expected to be last argument.");
-			}
-			io.qt.core.QMetaType[] metaTypes = new io.qt.core.QMetaType[parameters.length - (requestArg==-1 ? 0 : 1)];
-    		for(int i=0; i<metaTypes.length; ++i) {
-    			metaTypes[i] = new io.qt.core.QMetaType(QtJambi_LibraryUtilities.internal.registerMetaType(parameters[i]));
-    		}
-			if(requestArg==-1) {
-				return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandler(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
-			}else {
-				return router().addRule(new QHttpServerRouterRule(pathPattern, methods, createRouterHandlerRequest(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
-			}
-		}
-    }
 }// class
 
 class QHttpServerRouter___{
-	
-	private final java.util.Map<Integer,io.qt.core.QByteArray> converters = new java.util.TreeMap<>();
 	
 	@io.qt.QtUninvokable
     public final void addConverter(Class<?> type, java.lang.String regexp){
     	io.qt.core.QMetaType metaType = io.qt.core.QMetaType.fromType(type);
         addConverter(metaType, regexp);
-    }
-	
-	@io.qt.QtUninvokable
-    public final void addConverter(io.qt.core.QMetaType metaType, java.lang.String regexp){
-    	io.qt.core.QByteArray pointer = io.qt.core.QString.toLatin1(regexp);
-    	converters.put(metaType.id(), pointer);
-    	addConverter(metaType, pointer);
     }
 	
 	@io.qt.QtUninvokable

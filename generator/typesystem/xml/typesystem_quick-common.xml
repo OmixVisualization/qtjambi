@@ -77,6 +77,9 @@
     <rejection class="QQuickGraphicsDevice" function-name="fromAdapter"/>
     <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndContext"/>
     <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndCommandQueue"/>
+    <rejection class="QQuickWheelEvent"/>
+    <rejection class="QQuickMouseEvent"/>
+    <rejection class="QQuickKeyEvent"/>
 
     <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
     <enum-type name="QQuickItem::ItemChange"/>
@@ -141,6 +144,8 @@
     <object-type name="QQuickRenderControl">
     </object-type>
     <object-type name="QSGContextPlugin">
+    </object-type>
+    <object-type name="QQuickCloseEvent">
     </object-type>
     <object-type name="QQuickItem">
         <extra-includes>
@@ -747,12 +752,5 @@
     <rejection class="QNativeInterface::QSGMetalTexture" function-name="fromNative"/>
     <rejection class="QNativeInterface::QSGD3D11Texture" function-name="fromNative"/>
     
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'Vk*'" />
-  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QSG*." />
-  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickWindow::GraphicsStateInfo." />
-  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickGraphicsDevice." />
-  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickGraphicsConfiguration." />
 </typesystem>

@@ -394,6 +394,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
                      || metaTypeId==qMetaTypeId<JShortArrayWrapper>()){
                 JavaException::raiseIllegalArgumentException(__jni_env, qPrintable(QString("Unable to marhall/unmarshall type %1.").arg(qtjambi_class_name(__jni_env, classType))) QTJAMBI_STACKTRACEINFO );
             }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                if(!QMetaType(metaType).iface()->defaultCtr
+                        || !QMetaType(metaType).iface()->copyCtr){
+                    JavaException::raiseRuntimeException(__jni_env, qPrintable(QString("Meta type %1 does not provide default and copy constructor.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+                }
+#endif
                 JObjectWrapper _marshallFunction(__jni_env, marshallFunction);
                 mf = qtjambi_function_pointer<16,void(QDBusArgument &, const void *)>([metaTypeId,_marshallFunction](QDBusArgument &arg, const void *t) {
                     if(JNIEnv* env = qtjambi_current_environment()){
@@ -498,6 +504,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QVariant variant(metaType.id(), nullptr);
 #else
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+        if(!QMetaType(metaType).iface()->copyCtr || !QMetaType(metaType).iface()->defaultCtr){
+            JavaException::raiseUnsupportedOperationException(__jni_env, qPrintable(QString("Unable to extract value of type %1 from QDBusArgument.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
         QVariant variant(metaType, nullptr);
 #endif
         if(QDBusMetaType::demarshall(*arg, metaType

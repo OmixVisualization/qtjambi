@@ -305,8 +305,20 @@ void JavaGenerator::registerPackage(QString pkgName, bool inclExported){
     if(idx>0){
         pkgName = pkgName.mid(0, idx);
     }
-    if(pkgName=="io.qt.qml.QQmlListProperty")
+    if(pkgName==QStringLiteral("io.qt.qml.QQmlListProperty"))
         inclExported = false;
+    if(pkgName.startsWith(QStringLiteral("?"))){
+        pkgName = pkgName.mid(1).trimmed();
+        if(pkgName.startsWith(QStringLiteral("extends "))){
+            pkgName = pkgName.mid(8);
+        }else if(pkgName.startsWith(QStringLiteral("super "))){
+            pkgName = pkgName.mid(6);
+        }
+        for(const QString& pkg : pkgName.split("&")){
+            registerPackage(pkg.trimmed(), inclExported);
+        }
+        return;
+    }
     idx = pkgName.lastIndexOf('.');
     if(idx>0){
         pkgName = pkgName.mid(0, idx);
@@ -5295,6 +5307,7 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
 
         s << INDENT;
 
+        bool force_abstract = (java_class->typeEntry()->typeFlags() & ComplexTypeEntry::ForceAbstract) != 0;
         bool isInterface = false;
         if (java_class->isInterface()) {
             s << "public interface ";
@@ -5316,8 +5329,6 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                 isFinal = java_class->typeEntry()->targetType().contains("final");
                 isAbstract = java_class->typeEntry()->targetType().contains("abstract");
             }
-
-            bool force_abstract = (java_class->typeEntry()->typeFlags() & ComplexTypeEntry::ForceAbstract) != 0;
 
             if ((java_class->isFinal() || java_class->isNamespace())
                     && !java_class->hasSubClasses()
@@ -5601,7 +5612,7 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                 }
             }
 
-            if (!java_class->isInterface() && java_class->isAbstract()) {
+            if (!java_class->isInterface() && (java_class->isAbstract() || force_abstract)) {
                 s << INDENT << "@io.qt.NativeAccess" << Qt::endl
                   << INDENT << "private static final class ConcreteWrapper extends " << java_class->name().replace('$', '.') << " {" << Qt::endl;
 

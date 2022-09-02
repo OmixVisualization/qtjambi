@@ -5940,10 +5940,10 @@ class QObject___ extends QObject {
         if(slot.isEmpty())
             throw new IllegalArgumentException("Empty string not allowed as slot.");
         QMetaMethod signalMethod = sender.metaObject().method(signal);
-        if(signalMethod==null)
+        if(signalMethod==null || !signalMethod.isValid())
             throw new QNoSuchSignalException(signal);
         QMetaMethod slotMethod = receiver.metaObject().method(slot);
-        if(slotMethod==null)
+        if(slotMethod==null || !slotMethod.isValid())
             throw new QNoSuchSlotException(receiver, slot);
         return connect(
                 sender,
@@ -10215,7 +10215,15 @@ class autoclosedelete {
 }// class
 
 class QDebug___ extends QDebug {
-    
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public QDebug append(CharSequence csq, int start, int end) {
+		return append(csq==null ? "null" : csq.subSequence(start, end));
+	}
+
     /**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
      */
@@ -10568,6 +10576,14 @@ class QTextStream___ extends QTextStream {
         }
         return null;
     }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public QTextStream append(CharSequence csq, int start, int end) {
+		return append(csq==null ? "null" : csq.subSequence(start, end));
+	}
     
     /**
      * <p>See <a href="https://doc.qt.io/qt/qtextstream.html#device">QTextStream::device()const</a></p>
@@ -10698,6 +10714,11 @@ class QTextStream___ extends QTextStream {
     
     @io.qt.QtUninvokable
     public final QTextStream append(java.lang.String s){
+        return writeString(s);
+    }
+	
+	@io.qt.QtUninvokable
+    public final QTextStream append(java.lang.CharSequence s){
         return writeString(s);
     }
     
@@ -13421,7 +13442,8 @@ class QMetaMethod___ {
     public final QMetaObject.AbstractSignal toSignal(QObject sender) {
         if(isValid()) {
             if(methodType()==MethodType.Signal) {
-                return QMetaObject.findSignal(sender, name().toString(), parameterClassTypes().toArray(new Class[parameterCount()]));
+            	QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(sender));
+                return io.qt.internal.QtJambiInternal.findSignal(sender, this);
             }else {
                 throw new IllegalArgumentException("Method " + this + " is not a signal.");
             }
@@ -13435,7 +13457,7 @@ class QMetaMethod___ {
         io.qt.QtSignalEmitterInterface containingObject = signal.containingObject();
         if(containingObject instanceof QObject) {
             if(signal.methodIndex()>=0) {
-                method = ((QObject)containingObject).metaObject().methodByIndex(signal.methodIndex());
+                method = ((QObject)containingObject).metaObject().method(signal.methodIndex());
             }else{
                 java.util.List<Class<?>> signalTypeClasses = signal.argumentTypes();
                 method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));
@@ -15341,7 +15363,7 @@ class QString__{
 	@Override
 	@io.qt.QtUninvokable
 	public final QString append(CharSequence csq, int start, int end) throws java.io.IOException {
-		return append(csq.subSequence(start, end));
+		return append(csq==null ? "null" : csq.subSequence(start, end));
 	}
 	
 	/**

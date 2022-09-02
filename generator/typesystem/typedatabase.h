@@ -156,6 +156,14 @@ class TypeDatabase {
 
         inline uint qtVersion() const {return m_qtVersion;}
 
+        ComplexTypeEntry * qstringType() const{
+            return m_qstringType;
+        }
+
+        ComplexTypeEntry * qcharType() const{
+            return m_qcharType;
+        }
+
     private:
         uint m_qtVersion;
     uint m_suppressWarnings :
@@ -178,8 +186,10 @@ class TypeDatabase {
 
         DefinedPtr m_defined;
         QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;
-        const TypeEntry * m_pixmapType;
-        const TypeEntry * m_bitmapType;
+        ComplexTypeEntry * m_pixmapType;
+        ComplexTypeEntry * m_bitmapType;
+        ComplexTypeEntry * m_qstringType;
+        ComplexTypeEntry * m_qcharType;
 };
 
 #endif

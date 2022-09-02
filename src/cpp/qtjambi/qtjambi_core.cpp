@@ -37,10 +37,6 @@
 
 #include <qglobal.h>
 QT_WARNING_DISABLE_DEPRECATED
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#  define QT_CORE_INLINE_SINCE(major, minor) inline
-#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
-#endif
 
 #include <cstring>
 
@@ -489,6 +485,22 @@ jobject qtjambi_from_qvariant(JNIEnv *env, const QVariant &qt_variant)
         return Java::Runtime::Long::valueOf(env, qt_variant.toLongLong());
     case QMetaType::Bool:
         return Java::Runtime::Boolean::valueOf(env, qt_variant.toBool());
+    case QMetaType::QStringList:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QStringList>());
+    case QMetaType::QByteArrayList:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QByteArrayList>());
+    case QMetaType::QVariantMap:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QVariantMap>());
+    case QMetaType::QVariantHash:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QVariantHash>());
+    case QMetaType::QVariantList:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QVariantList>());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    case QMetaType::QVariantPair:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QVariantPair>());
+#endif
+    case QMetaType::QObjectStar:
+        return qtjambi_cast<jobject>(env, qt_variant.value<QObject*>());
     default:
         break;
     }
@@ -6842,51 +6854,46 @@ bool qtjambi_thread_affine_event_notify(void **data)
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
         {
-            QThread *currentThread = QThread::currentThread();
-            QThread *thr(nullptr);
             if(const QObjectPrivate* p = QObjectPrivate::get(receiver)){
-#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
-                if(p->threadData)
-                    thr = p->threadData->thread;
-#else
-                if(QThreadData* threadData = p->threadData.loadAcquire())
-                    thr = threadData->thread.loadAcquire();
-#endif
-            }
-            if(thr && currentThread != thr){
-                QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
-                QString eventDescr;
-                if(enm.isValid()){
-                    eventDescr = QLatin1String(enm.valueToKeys(event->type()));
-                }else{
-                    eventDescr = QString::number(int(event->type()));
-                }
-                if(QCoreApplicationPrivate::is_app_closing)
-                    return false;
-                if (JNIEnv *env = qtjambi_current_environment()){
-                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                    QtJambiExceptionHandler __exceptionHandler;
-                    try{
-                        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
-                            JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                                                                           "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                                                                                           qUtf16Printable(eventDescr),
-                                                                                                           currentThread, qUtf16Printable(receiver->objectName()),
-                                                                                                           receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
-                                                                         link->getJavaObjectLocalRef(env),
-                                                                         nullptr, nullptr);
-                        }else{
-                            JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                              "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                              qUtf16Printable(eventDescr),
-                                              currentThread, qUtf16Printable(receiver->objectName()),
-                                              receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
-                                              nullptr, nullptr, nullptr);
-                        }
-                    }catch(const JavaException& exn){
-                        __exceptionHandler.handle(nullptr, exn, "QCoreApplication::sendEvent");
+                QThreadData *thr = p->threadData;
+                QScopedScopeLevelCounter scopeLevelCounter(thr);
+                QThreadData *currentThread = QThreadData::get2(QThread::currentThread());
+                QScopedScopeLevelCounter cscopeLevelCounter(currentThread);
+                if(thr && thr->threadId!=nullptr && currentThread != thr){
+                    QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
+                    QString eventDescr;
+                    if(enm.isValid()){
+                        eventDescr = QLatin1String(enm.valueToKeys(event->type()));
+                    }else{
+                        eventDescr = QString::number(int(event->type()));
                     }
-                    return true;
+                    if(QCoreApplicationPrivate::is_app_closing)
+                        return false;
+                    if (JNIEnv *env = qtjambi_current_environment()){
+                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                        QtJambiExceptionHandler __exceptionHandler;
+                        try{
+                            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                                JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                               "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                               qUtf16Printable(eventDescr),
+                                                                                                               currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                               receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
+                                                                             link->getJavaObjectLocalRef(env),
+                                                                             nullptr, nullptr);
+                            }else{
+                                JavaException::raiseQThreadAffinityException(env, qPrintable(QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                  "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                  qUtf16Printable(eventDescr),
+                                                  currentThread, qUtf16Printable(receiver->objectName()),
+                                                  receiver->metaObject()->className(), thr)) QTJAMBI_STACKTRACEINFO ,
+                                                  nullptr, nullptr, nullptr);
+                            }
+                        }catch(const JavaException& exn){
+                            __exceptionHandler.handle(nullptr, exn, "QCoreApplication::sendEvent");
+                        }
+                        return true;
+                    }
                 }
             }
         }

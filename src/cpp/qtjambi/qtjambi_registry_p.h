@@ -80,6 +80,7 @@ const std::type_info* getTypeByMetaObject(const QMetaObject* metaObject);
 int registeredMetaTypeID(const std::type_info& typeId);
 int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface);
 const QVector<const SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject);
+QList<QMetaMethod> getExtraSignalsOfMetaObject(const QMetaObject* metaObject);
 ParameterInfoProvider registeredParameterInfoProvider(const QMetaObject* metaObject);
 bool isValueOwner(const QMetaObject* metaObject);
 const std::type_info* getTypeByMetaType(int metaType);

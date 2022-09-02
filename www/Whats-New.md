@@ -1,20 +1,21 @@
-# What's new in QtJambi 6.3.3 / 6.2.6 / 5.15.8
+# What's new in QtJambi 6.3.4 / 6.2.7 / 5.15.9
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 69](../../../issues/69): Signal connection does not work as expected with generics
-* [Issue 66](../../../issues/66): raiseQThreadAffinityException cores java instead of throwing an exception (blindfixed)
-* [Issue 64](../../../issues/64): QtJambi build failed
-* [Issue 63](../../../issues/63): Program cannot be started
-* [Issue 62](../../../issues/62): symbol lookup error
-* [Issue 60](../../../issues/60): Deployment Icon not working in windows (feature removed)
+* [Issue 73](../../../issues/73): Add support for QQuickWebEngineView
+* [Issue 72](../../../issues/72): Web page runJavascript always crashes jvm when you try to use the returned object
+* [Issue 71](../../../issues/71): Java DeferredDelete throws thread affinity exception, one of threads is undefined
+* Solved bug in converting QVariantMap
 
 ## New Features
 
-* Class `io.qt.core.QString` now makes all data conversion and formatting features available in Java.
+* Added QQmlEngine template method: `singletonInstance`
+* Added QJSEngine template methods: `fromScriptValue`, `toScriptValue`, `fromManagedValue`, `toManagedValue`
+* Added functions to QtQml: `qmlTypeId`, `qjsEngine`
+* Added functions to QtWebEngineQuick: `toWebEngineSettings`, `toWebEngineScriptCollection`
 * Qt 6.4 ready.
 
 ## Compatibility
 
-QtJambi 6.3.3, 6.2.6 and 5.15.8 are source- and binary-compatible to its predecessor releases. 
+QtJambi 6.3.4, 6.2.7 and 5.15.9 are source- and binary-compatible to its predecessor releases. 

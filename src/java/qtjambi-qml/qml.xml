@@ -149,10 +149,14 @@
             <then>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="release"/>
+                    <param name="dbgsuffix" value=""/>
+                    <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
                 </antcall>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="debug"/>
+                    <param name="dbgsuffix" value="_debug"/>
+                    <param name="platformjar.debug.suffix" value="-debug"/>
                     <param name="libisdebug" value="true"/>
                 </antcall>
             </then>
@@ -162,6 +166,8 @@
             <then>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="release"/>
+                    <param name="dbgsuffix" value=""/>
+                    <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
                 </antcall>
             </then>
@@ -172,16 +178,19 @@
             <then>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="release"/>
+                    <param name="dbgsuffix" value=""/>
+                    <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
                 </antcall>
             </then>
         </if>
-
         <if>
             <equals arg1="${qtjambi.configuration}" arg2="debug" />
             <then>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="debug"/>
+                    <param name="dbgsuffix" value="_debug"/>
+                    <param name="platformjar.debug.suffix" value="-debug"/>
                     <param name="libisdebug" value="true"/>
                 </antcall>
             </then>
@@ -192,10 +201,10 @@
     </target>
 
     <target name="createjarimpl">
-        <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${qtjambi.builddir}">
+        <condition property="destdir" value="${outputDir}/${qtjambi.osname}/tests/${subdir}" else="${qtjambi.builddir}">
             <istrue value="${qtjambi.testbuild}"/>
         </condition>
-        <jar destfile="${outputDir}/tests/${module}.jar" excludes="${jar.excludes}">
+        <jar destfile="${outputDir}/${qtjambi.osname}/tests/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
@@ -252,7 +261,7 @@
             <jvmarg value="-Xrs"/>
             <jvmarg value="-Xcheck:jni"/-->
             <arg value="qml" />
-            <arg value="--library=${outputDir}/tests/${module}.jar" />
+            <arg value="--library=${outputDir}/${qtjambi.osname}/tests/${module}.jar" />
             <arg value="--configuration=${debug.conf}" />
             <arg value="--dir=${destdir}" />
             <arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
@@ -261,5 +270,150 @@
                 <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
             </classpath>
         </java>
+		<if>
+			<equals arg1="${qtjambi.osname}" arg2="android"/>
+			<then>
+				<antcall inheritrefs="true" target="createjarimpl2">
+					<param name="targetdirname" value="android"/>
+					<param name="qtjambi.osname" value="android-arm"/>
+				</antcall>
+				<antcall inheritrefs="true" target="createjarimpl2">
+					<param name="targetdirname" value="android"/>
+					<param name="qtjambi.osname" value="android-arm64"/>
+				</antcall>
+				<antcall inheritrefs="true" target="createjarimpl2">
+					<param name="targetdirname" value="android"/>
+					<param name="qtjambi.osname" value="android-x86"/>
+				</antcall>
+				<antcall inheritrefs="true" target="createjarimpl2">
+					<param name="targetdirname" value="android"/>
+					<param name="qtjambi.osname" value="android-x64"/>
+				</antcall>
+			</then>
+			<else>
+				<antcall inheritrefs="true" target="createjarimpl2">
+					<param name="targetdirname" value="${qtjambi.osname}"/>
+				</antcall>
+			</else>
+		</if>
+    </target>
+
+    <target name="createjarimpl2">
+		<property name="qml-subdir" value="${module}"/>
+		<stringreplace property="qml-subdir" target="." replacement="/"/>
+		<property name="qml-usc" value="${module}"/>
+		<stringreplace property="qml-usc" target="." replacement="_"/>
+		<property name="moduledot" value="qtjambi.qml.${module}"/>
+		<stringreplace property="moduledot" target="-" replacement="."/>
+		<property name="moduledash" value="qtjambi-qml-${module}"/>
+		<stringreplace property="moduledash" target="." replacement="-"/>
+		<if>
+			<or>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+			</or>
+			<then>
+				<if>
+					<istrue value="${qtjambi.testbuild}"/>
+					<then>
+						<mkdir dir="${outputDir}/${targetdirname}/tests"/>
+						<mkdir dir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/${qml-subdir}"/>
+						<copy todir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/${qml-subdir}">
+							  <fileset dir="${outputDir}/${targetdirname}/tests/${subdir}/qml/${qml-subdir}" includes="*" excludes="*.class,*.jar,*.so"/>
+						</copy>
+						<copy todir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/">
+							<zipfileset includes="**" excludes="**/*.class" src="${outputDir}/${targetdirname}/tests/${module}.jar"/>
+						</copy>
+						<delete dir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/META-INF" failonerror="0"/>
+						<jar destfile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}.jar">
+							<manifest>
+								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+								<attribute name="Bundle-Name"      value="QtJambi ${module}"/>
+								<attribute name="Bundle-Description"      value="QtJambi ${module}"/>
+								<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+								<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+								<attribute name="Bundle-ManifestVersion" value="2"/>
+							</manifest>
+							<zipfileset includes="**/*class" excludes="META-INF" src="${outputDir}/${targetdirname}/tests/${module}.jar"/>
+							<fileset dir="${outputDir}/${targetdirname}/tests" includes="qt-project.org/**"/>
+						</jar>
+						<delete dir="${outputDir}/${targetdirname}/tests/qt-project.org"/>
+					</then>
+					<else>
+						<copy file="${plugindestdir}/qml/${module}.jar" 
+							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+						<copy file="${outputDir}/qml/${module}-sources.jar" 
+							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+						<jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
+							<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
+						</jar>
+					</else>
+				</if>
+			</then>
+		</if>
+		<if>
+			<or>
+				<not>
+					<istrue value="${qtjambi.testbuild}"/>
+				</not>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+			</or>
+			<then>
+				<if>
+					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+					<then>
+						<property name="jar-includes" value="lib/armeabi-v7a/libqml_${qml-usc}_jarimport${dbgsuffix}_armeabi-v7a.so"/>
+					</then>
+					<else>
+						<if>
+							<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+							<then>
+								<property name="jar-includes" value="lib/arm64-v8a/libqml_${qml-usc}_jarimport${dbgsuffix}_arm64-v8a.so"/>
+							</then>
+							<else>
+								<if>
+									<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+									<then>
+										<property name="jar-includes" value="lib/x86_64/libqml_${qml-usc}_jarimport${dbgsuffix}_x86_64.so"/>
+									</then>
+									<else>
+										<if>
+											<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+											<then>
+												<property name="jar-includes" value="lib/x86/libqml_${qml-usc}_jarimport${dbgsuffix}_x86.so"/>
+											</then>
+											<else>
+												<property name="jar-includes" value="qml/${qml-usc}/*,qtjambi-deployment.xml"/>
+												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${qml-subdir}" plugin="true"/>
+											</else>
+										</if>
+									</else>
+								</if>
+							</else>
+						</if>
+					</else>
+				</if>
+				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}">
+					<istrue value="${qtjambi.testbuild}"/>
+				</condition>
+				<echo>jar-includes=${qmltargetdir}/${subdir}/${jar-includes}</echo>
+				<jar destfile="${qmltargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+					<manifest>
+						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+						<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
+						<attribute name="Bundle-Description"      value="QtJambi ${module} plugin platform bundle"/>
+						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+						<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+						<attribute name="Bundle-ManifestVersion" value="2"/>
+					</manifest>
+					<fileset dir="${qmltargetdir}/${subdir}" includes="${jar-includes}"/>
+				</jar>
+			</then>
+		</if>
     </target>
 </project>

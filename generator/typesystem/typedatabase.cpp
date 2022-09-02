@@ -85,7 +85,9 @@ TypeDatabase::TypeDatabase() :
     m_suppressWarnings(true),
     m_includeEclipseWarnings(false),
     m_pixmapType(nullptr),
-    m_bitmapType(nullptr) {
+    m_bitmapType(nullptr),
+    m_qstringType(nullptr),
+    m_qcharType(nullptr){
 }
 
 TypeDatabase *TypeDatabase::instance() {
@@ -208,8 +210,10 @@ NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) {
 void TypeDatabase::addType(TypeEntry *e) {
     if(e->qualifiedCppName()=="QString" && !e->isQString()){
         m_entries["QtJambiString"].append(e);
+        m_qstringType = dynamic_cast<ComplexTypeEntry*>(e);
     }else if(e->qualifiedCppName()=="QChar" && !e->isChar()){
         m_entries["QtJambiChar"].append(e);
+        m_qcharType = dynamic_cast<ComplexTypeEntry*>(e);
     }else{
         m_entries[e->qualifiedCppName()].append(e);
     }
@@ -222,10 +226,10 @@ void TypeDatabase::addType(TypeEntry *e) {
         }
     }
     if(!m_pixmapType && e->qualifiedCppName()==QLatin1String("QPixmap")){
-        m_pixmapType = e;
+        m_pixmapType = dynamic_cast<ComplexTypeEntry*>(e);
     }
     if(!m_bitmapType && e->qualifiedCppName()==QLatin1String("QBitmap")){
-        m_bitmapType = e;
+        m_bitmapType = dynamic_cast<ComplexTypeEntry*>(e);
     }
 }
 

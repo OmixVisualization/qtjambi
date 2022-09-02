@@ -376,6 +376,12 @@
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
+#if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
+					if(!QMetaType(%2).iface()->copyCtr
+							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
+						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+					}
+#endif
                     QVariant variant_%in(QMetaType(%2), %in);
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
@@ -392,6 +398,12 @@
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
+#if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
+					if(!QMetaType(%2).iface()->copyCtr
+							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
+						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+					}
+#endif
                     QVariant variant_%in(QMetaType(%2), %in);
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
@@ -408,6 +420,12 @@
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>
                 <conversion-rule class="native" since="6.0.0">
+#if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
+					if(!QMetaType(%2).iface()->copyCtr
+							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
+						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+					}
+#endif
                     QVariant variant_%in(QMetaType(%2), %in);
                     %out = qtjambi_cast&lt;jobject>(%env, variant_%in);
                 </conversion-rule>

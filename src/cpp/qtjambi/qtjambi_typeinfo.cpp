@@ -29,10 +29,6 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#  define QT_CORE_INLINE_SINCE(major, minor) inline
-#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
-#endif
 
 #include <QtCore/QUrl>
 #include <QtCore/QModelIndex>
