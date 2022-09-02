@@ -111,6 +111,7 @@ import io.qt.core.QDebug;
 import io.qt.core.QHash;
 import io.qt.core.QList;
 import io.qt.core.QMap;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaObject.Method3;
 import io.qt.core.QMetaObject.Method4;
@@ -1854,44 +1855,47 @@ public final class QtJambiInternal {
 		return disposedSignals.remove(nativeLink);
 	}
 
-	public static QMetaObject.AbstractSignal findSignal(Object sender, String name,
-			Class<?>... types) {
-		for (Class<?> cls = QtJambiInternal.getClass(sender); cls!=null && cls!=Object.class; cls = cls.getSuperclass()) {
-			try {
-				Field f = cls.getDeclaredField(name);
-				if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
-					if (QMetaObject.AbstractSignal.class.isAssignableFrom(f.getType())) {
-						AbstractSignal signal = (AbstractSignal) fetchField(sender, f);
-						if (signal != null) {
-							if (signal.matchTypes(types)) {
-								return (QMetaObject.AbstractSignal) signal;
-							}
-						}
-					} else if (QtJambiSignals.AbstractMultiSignal.class.isAssignableFrom(f.getType())) {
-						QtJambiSignals.AbstractMultiSignal<?> multiSignal = (QtJambiSignals.AbstractMultiSignal<?>) fetchField(sender, f);
-						for (AbstractSignal signal : multiSignal.signals()) {
-							if (signal.matchTypes(types)) {
-								return (QMetaObject.AbstractSignal) signal;
-							}
+	@SuppressWarnings("unlikely-arg-type")
+	public static QMetaObject.AbstractSignal findSignal(QObject sender, QMetaMethod method) {
+		int methodIndex = method.methodIndex();
+		Class<?> cls = method.enclosingMetaObject().type();
+		if(cls==null)
+			cls = getClass(sender);
+		if(cls!=null) {
+			while(cls!=null && cls!=Object.class) {
+				try {
+					Field f = cls.getDeclaredField(method.name().toString());
+					if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+						if (AbstractSignal.class.isAssignableFrom(f.getType())) {
+							try {
+								AbstractSignal signal = (AbstractSignal) fetchField(sender, f);
+								if (signal != null) {
+									if(signal.methodIndex()==methodIndex)
+										return (QMetaObject.AbstractSignal) signal;
+									if(method.name().equals(signal.name()) && signal.argumentTypes().equals(method.parameterClassTypes())) {
+										return (QMetaObject.AbstractSignal) signal;
+									}
+								}
+							}catch(Throwable t) {}
+						} else if (QtJambiSignals.AbstractMultiSignal.class.isAssignableFrom(f.getType())) {
+							try {
+								QtJambiSignals.AbstractMultiSignal<?> multiSignal = (QtJambiSignals.AbstractMultiSignal<?>) fetchField(sender, f);
+								for (AbstractSignal signal : multiSignal.signals()) {
+									if (signal.methodIndex()==methodIndex) {
+										return (QMetaObject.AbstractSignal) signal;
+									}
+								}
+							}catch(Throwable t) {}
 						}
 					}
-				}
-			} catch (NoSuchFieldException | SecurityException t) {
+				}catch(Throwable t) {}
+				cls = cls.getSuperclass();
 			}
 		}
-		if (sender instanceof QObject) {
-			List<AbstractSignal> listOfExtraSignal = getListOfExtraSignal(
-					internalAccess.nativeId((QObject) sender));
-			for (AbstractSignal signal : listOfExtraSignal) {
-				if (signal.name().equals(name) && signal.matchTypes(types)) {
-					return (QMetaObject.AbstractSignal) signal;
-				}
-			}
-		}
-		return null;
+		return getExtraSignal(internalAccess.nativeId(sender), internalAccess.nativeId(method));
 	}
-
-	native static List<AbstractSignal> getListOfExtraSignal(long sender__id);
+	
+	native static QMetaObject.AbstractSignal getExtraSignal(long sender__id, long method__id);
 
 	private static interface Check {
 		void check() throws Exception;

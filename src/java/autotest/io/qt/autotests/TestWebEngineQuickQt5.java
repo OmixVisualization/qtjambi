@@ -30,74 +30,80 @@ package io.qt.autotests;
 
 import static org.junit.Assume.assumeTrue;
 
-import java.util.function.Consumer;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtInvokable;
 import io.qt.QtUtilities;
+import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
-import io.qt.core.QTimer;
-import io.qt.core.QUrl;
+import io.qt.core.QList;
+import io.qt.core.QMetaMethod;
+import io.qt.core.QObject;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QOpenGLContext;
-import io.qt.webengine.core.*;
-import io.qt.webengine.widgets.*;
+import io.qt.qml.QQmlApplicationEngine;
+import io.qt.webengine.QtWebEngine;
 import io.qt.widgets.QApplication;
 
-public class TestWebEngineWidgets extends ApplicationInitializer {
+public class TestWebEngineQuickQt5 extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	QtUtilities.initializePackage("io.qt.webengine.widgets");
+    	QtUtilities.initializePackage("io.qt.webengine");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        ApplicationInitializer.testInitializeWithWidgets();
+        ApplicationInitializer.testInitializeWithGui();
     	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
-			Class<?> cls = Class.forName("io.qt.webengine.widgets.QWebEngineView");
+			Class<?> cls = Class.forName("io.qt.webengine.QtWebEngine");
 			if (cls != null)
 				found = true;
 		} catch (ClassNotFoundException e) {
 		}
-    	assumeTrue("QWebEngineView not available.", found);
+    	assumeTrue("QtWebEngine not available.", found);
     	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
-    	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
-        QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
-        QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
+        QtWebEngine.initialize();
+        QtUtilities.initializePackage("io.qt.quick");
+        QtUtilities.loadQtLibrary("QuickControls2");
     }
-
-    @Test
-    public void test() {
-    	QWebEngineView webView = new QWebEngineView();
-    	webView.load(new QUrl("http://www.qt.io"));
-    	webView.loadProgress.connect(progress -> { if(progress>95) webView.close(); });
-    	webView.show();
-    	QTimer.singleShot(25000, QApplication::quit);
-    	QApplication.exec();
-    	webView.dispose();
+    
+    public static class UIController extends QObject {
+        @QtInvokable public void passWebView(Object obj) {
+            System.out.println("got " + obj.getClass().getName() + ": " + obj);
+            QApplication.quit();
+        }
     }
     
     @Test
-    public void testRunJavaScript() {
-        QWebEngineView view = new QWebEngineView();
-        QWebEnginePage page = new QWebEnginePage(view);
-        view.setPage(page);
-        page.load(new QUrl("http://info.cern.ch/"));
-        page.runJavaScript("window", new Consumer<Object>() {
-            @Override
-            public void accept(Object o) {
-               System.out.println("test "  + o); // always creates a crash if you interact with this object in any way
-               view.close();
-            }
-        });
-        view.show();
-    	QTimer.singleShot(25000, QApplication::quit);
-    	QApplication.exec();
+    public void test1() {
+    	QQmlApplicationEngine engine = new QQmlApplicationEngine();
+    	engine.loadData(new QByteArray("import QtWebEngine 1.0\nWebEngineView{}"));
+    	engine.setOutputWarningsToStandardError(true);
+    	engine.warnings.connect(e -> System.out.println(e));
+        QList<QObject> rootObjects = engine.rootObjects();
+        dump(rootObjects, 0);
+    }
+
+    private static void dump(QList<QObject> objects, int nestedLevel) {
+    	final StringBuilder suffix = new StringBuilder();
+    	for (int i = 0; i < nestedLevel; i++) {
+    		suffix.append("    ");
+		}
+    	for (QObject obj : objects) {
+    		System.out.println(suffix + "| " + obj.getClass().getName() + ": " + obj);
+    		obj.metaObject().methods().forEach(mtd -> {
+//    			System.out.println(suffix + "     "+mtd.cppMethodSignature());
+    			if(mtd.methodType()==QMetaMethod.MethodType.Signal) {
+    				System.out.println(suffix + "     "+mtd.toSignal(obj));
+    			}
+    		});
+    		dump(obj.children(), nestedLevel+1);
+		}
     }
     
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestWebEngineWidgets.class.getName());
+        org.junit.runner.JUnitCore.main(TestWebEngineQuickQt5.class.getName());
     }
 }

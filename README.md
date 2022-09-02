@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.8`, `6.2.6` or by `6.3.3`).
+(exchange `$VERSION` either by `5.15.9`, `6.2.7` or by `6.3.4`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.3.jar Test.java
+javac -cp qtjambi-6.3.4.jar Test.java
 ```
 
 ### Execute Example
@@ -135,7 +135,7 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.3.3.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
+java -cp qtjambi-6.3.4.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)

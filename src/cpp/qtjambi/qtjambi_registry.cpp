@@ -110,6 +110,8 @@ Q_GLOBAL_STATIC(MetaObjectHash, gOriginalMetaObjectHash)
 Q_GLOBAL_STATIC(MetaObjectHash, gHasCustomMetaObjectHash)
 typedef QHash<const QMetaObject*, QVector<SignalMetaInfo> > SignalMetaInfoHash;
 Q_GLOBAL_STATIC(SignalMetaInfoHash, gSignalMetaInfos)
+typedef QHash<const QMetaObject*, QList<QMetaMethod> > ExtraSignalsOfMetaObjectHash;
+Q_GLOBAL_STATIC(ExtraSignalsOfMetaObjectHash, gExtraSignalsOfMetaObject)
 typedef QHash<const QMetaObject*, const std::type_info* > TypeIdsByMetaObjectHash;
 Q_GLOBAL_STATIC(TypeIdsByMetaObjectHash, gTypeIdsByMetaObject)
 typedef QHash<const QMetaObject*, QMetaMethodRenamer > QMetaMethodRenamerByMetaObjectHash;
@@ -1694,6 +1696,44 @@ const QVector<const SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObje
     }
 }
 
+QList<QMetaMethod> getExtraSignalsOfMetaObject(const QMetaObject* metaObject){
+    {
+        QReadLocker lock(gLock());
+        if(gExtraSignalsOfMetaObject->contains(metaObject))
+            return gExtraSignalsOfMetaObject->value(metaObject);
+    }
+    QList<QMetaMethod> extraSignals;
+    QSet<int> availableSignalInfos;
+    {
+        const QMetaObject* currentMetaObject = metaObject;
+        do{
+            if(const QVector<const SignalMetaInfo>* infos = signalMetaInfos(currentMetaObject)){
+                for(const SignalMetaInfo& info : *infos){
+                    availableSignalInfos.insert(info.signal_method_index_provider());
+                }
+            }
+            currentMetaObject = currentMetaObject->superClass();
+        }while(currentMetaObject);
+    }
+    const int methodCount = metaObject->methodCount();
+    for(int i=0; i<methodCount; ++i){
+        QMetaMethod method = metaObject->method(i);
+        if(method.isValid()
+                && method.methodType()==QMetaMethod::Signal
+                && !availableSignalInfos.contains(method.methodIndex())
+                && !QtJambiMetaObject::isInstance(method.enclosingMetaObject())){
+            extraSignals << method;
+        }
+    }
+    {
+        QWriteLocker lock(gLock());
+        if(gExtraSignalsOfMetaObject->contains(metaObject))
+            return gExtraSignalsOfMetaObject->value(metaObject);
+        gExtraSignalsOfMetaObject->insert(metaObject, extraSignals);
+    }
+    return extraSignals;
+}
+
 ParameterInfoProvider registeredParameterInfoProvider(const QMetaObject* metaObject)
 {
     QReadLocker locker(gLock());
@@ -2445,6 +2485,12 @@ void clear_registry_at_shutdown(JNIEnv * env){
         Q_UNUSED(locker)
         if(!gFieldHash.isDestroyed())
             gFieldHash->clear();
+    }
+    {
+        QWriteLocker locker(gLock());
+        Q_UNUSED(locker)
+        if(!gExtraSignalsOfMetaObject.isDestroyed())
+            gExtraSignalsOfMetaObject->clear();
     }
     if(env){
 #ifdef QTJAMBI_LOG_CLASSNAMES

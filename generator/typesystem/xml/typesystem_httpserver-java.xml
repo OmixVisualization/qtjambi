@@ -43,64 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.httpserver" module="qtjambi.httpserver" default-superclass="io.qt.QtObject">
-    <object-type name="QHttpServerFutureResponse">
-        <inject-code class="native">
-template&lt;> inline QHttpServerResponse qvariant_cast&lt;QHttpServerResponse>(const QVariant &amp;v)
-{
-    QMetaType targetType = QMetaType::fromType&lt;QHttpServerResponse>();
-    if (v.d.type() == targetType)
-        return QHttpServerResponse(const_cast&lt;QHttpServerResponse&amp;&amp;>(v.d.get&lt;QHttpServerResponse>()));
-    QHttpServerResponse t(QHttpServerResponse::StatusCode::NotFound);
-    QMetaType::convert(v.metaType(), v.constData(), targetType, &amp;t);
-    return t;
-}
-
-namespace QtJambiPrivate{
-template&lt;>
-struct FutureVariantHandler&lt;QHttpServerResponse>{
-    static QVariant create(JNIEnv *env, const QHttpServerResponse&amp; value){
-        jobject _value = qtjambi_cast&lt;jobject>(env, new QHttpServerResponse(std::move(const_cast&lt;QHttpServerResponse&amp;>(value))));
-        qtjambi_set_java_ownership(env, _value);
-        return QVariant::fromValue&lt;JObjectWrapper>(JObjectWrapper(env, _value));
-    }
-    static void reportNativeResults(JNIEnv *env, const QSharedPointer&lt;QFutureInterfaceBase>&amp; sourceFuture, const QSharedPointer&lt;QFutureInterfaceBase>&amp; targetFuture, int beginIndex, int count){
-       if(count==1){
-           dynamic_cast&lt;QFutureInterface&lt;QVariant>*>(sourceFuture.get())->reportResult(create(env, targetFuture->resultStoreBase().resultAt(beginIndex).value&lt;QHttpServerResponse>()), beginIndex);
-       }else{
-           QVector&lt;QVariant> results(count);
-           for(int i=0; i&lt;count; ++i){
-               results &lt;&lt; create(env, targetFuture->resultStoreBase().resultAt(beginIndex).value&lt;QHttpServerResponse>());
-           }
-           dynamic_cast&lt;QFutureInterface&lt;QVariant>*>(sourceFuture.get())->reportResults(results, count);
-       }
-    }
-
-    static void reportJavaResults(JNIEnv *, const QSharedPointer&lt;QFutureInterfaceBase>&amp; sourceFuture, const QSharedPointer&lt;QFutureInterfaceBase>&amp;targetFuture, int beginIndex, int count){
-        if(count==1){
-            dynamic_cast&lt;QFutureInterface&lt;QHttpServerResponse>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(beginIndex).value&lt;QVariant>().value&lt;QHttpServerResponse>(), beginIndex);
-        }else{
-            for(int i=0; i&lt;count; ++i){
-                dynamic_cast&lt;QFutureInterface&lt;QHttpServerResponse>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(i).value&lt;QVariant>().value&lt;QHttpServerResponse>(), i);
-            }
-        }
-    }
-};
-}
-        </inject-code>
-        <modify-function signature="QHttpServerFutureResponse(QByteArray, QByteArray, QHttpServerResponder::StatusCode)">
-            <modify-argument index="3">
-                    <replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
-                </modify-argument>
-        </modify-function>
-        <modify-function signature="QHttpServerFutureResponse(QFuture&lt;QHttpServerResponse>)">
-            <modify-argument index="1">
-				<replace-type modified-type="io.qt.core.QFuture&lt;? extends QHttpServerResponse>"/>
-                <conversion-rule class="native">
-					QFuture&lt;QHttpServerResponse> %out = qtjambi_cast&lt;QFuture&lt;QHttpServerResponse>>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
     <object-type name="QHttpServerResponse">
         <modify-function signature="addHeaders(QHttpServerResponder::HeaderList)">
             <modify-argument index="1">
@@ -116,6 +58,26 @@ struct FutureVariantHandler&lt;QHttpServerResponse>{
                 <conversion-rule class="native">
 					QHttpServerResponder::HeaderList %out = qtjambi_cast&lt;QHttpServerResponder::HeaderList>(%env, %scope, %in);
                 </conversion-rule>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerResponse(QJsonArray, QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerResponse(QJsonObject, QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerResponse(QString, QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
+			</modify-argument>
+        </modify-function>
+        <modify-function signature="QHttpServerResponse(QByteArray, QHttpServerResponder::StatusCode)">
+            <modify-argument index="2">
+				<replace-default-expression with="QHttpServerResponder.StatusCode.Ok"/>
 			</modify-argument>
         </modify-function>
         <modify-function signature="QHttpServerResponse(QByteArray, QByteArray, QHttpServerResponder::StatusCode)">
@@ -137,37 +99,6 @@ struct FutureVariantHandler&lt;QHttpServerResponse>{
 		</inject-code>
     </object-type>
     <object-type name="QHttpServerRouter">
-        <modify-function signature="converters() const">
-            <modify-argument index="0">
-                <replace-type modified-type="io.qt.core.QHash&lt;io.qt.core.QMetaType,String>"/>
-                <conversion-rule class="native">
-					QHash&lt;QMetaType,QString> converters;
-					for(std::pair&lt;QMetaType,QLatin1StringView> m : %in.asKeyValueRange()){
-						converters[m.first] = m.second;
-					}
-					%out = qtjambi_cast&lt;jobject>(%env, converters);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addConverter(QMetaType, QLatin1StringView)" access="private">
-            <modify-argument index="2">
-                <replace-type modified-type="io.qt.core.QByteArray"/>
-                <conversion-rule class="native">
-					QByteArray* data = qtjambi_cast&lt;QByteArray*>(%env, %in);
-					QLatin1StringView %out = QLatin1StringView(data->data());
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="removeConverter(QMetaType)">
-			<inject-code class="java">
-				converters.remove(metaType.id());
-			</inject-code>
-        </modify-function>
-        <modify-function signature="clearConverters()">
-			<inject-code class="java">
-				converters.clear();
-			</inject-code>
-        </modify-function>
         <inject-code class="java">
             <import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QHttpServerRouter___" quote-before-line="}// class"/>
         </inject-code>
@@ -219,11 +150,6 @@ struct FutureVariantHandler&lt;QHttpServerResponse>{
         </modify-function>
     </object-type>
     <object-type name="QHttpServerRouterRule">
-        <modify-function signature="QHttpServerRouterRule(QString,const char*,QHttpServerRouterRule::RouterHandler)">
-            <modify-argument index="2">
-				<replace-type modified-type="java.lang.String"/>
-			</modify-argument>
-        </modify-function>
         <modify-function signature="matches(QHttpServerRequest,QRegularExpressionMatch *) const">
 			<modify-argument index="1" invalidate-after-use="yes"/>
             <modify-argument index="2" invalidate-after-use="yes">

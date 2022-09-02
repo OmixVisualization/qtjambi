@@ -5150,7 +5150,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="java.nio.ByteBuffer" />
                 <conversion-rule class="native">
-                jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->size());
+                %out = %env->NewDirectByteBuffer(%in, __qt_this->size());
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -5158,7 +5158,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="java.nio.ByteBuffer" />
                 <conversion-rule class="native">
-                jobject %out = %env->NewDirectByteBuffer(%in, qMin(%2, __qt_this->size()-%1));
+                %out = %env->NewDirectByteBuffer(%in, qMin(%2, __qt_this->size()-%1));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -5385,14 +5385,14 @@ __rcRedirections.remove(%1);
         <modify-function signature="action() const" until="5.*">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
+                    %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="before() const" until="5.*">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
+                    %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
                 </conversion-rule>
             </modify-argument>
         </modify-function>

@@ -66,6 +66,8 @@
     </object-type>
     <namespace-type name="QtWebEngineQuick">
     </namespace-type>
+    <object-type name="QQuickWebEngineDownloadRequest" generate="no">
+    </object-type>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQuickWebEngineDownloadItem*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQuickWebEngineDownloadRequest*'" />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QXml*." />

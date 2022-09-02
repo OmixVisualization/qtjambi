@@ -7,7 +7,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtUtilities;
 import io.qt.core.*;
 import io.qt.designer.*;
 import io.qt.quick.*;

@@ -270,6 +270,7 @@
         <reject-enum-value name="FontSizeIncrement"/>
         <reject-enum-value name="FirstFontProperty"/>
         <reject-enum-value name="LastFontProperty"/>
+        <reject-enum-value name="OldFontFamily" since="6.4"/>
     </enum-type>
     <enum-type name="QTouchDevice::CapabilityFlag" flags="QTouchDevice::Capabilities" until="5.*"/>
     <enum-type name="QTouchDevice::DeviceType" until="5.*"/>

@@ -1221,16 +1221,25 @@ void QtJambiMetaObject::registerQPropertyField(int index, jfieldID field){
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 jclass QtJambiMetaObject::javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull){
-    if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(metaObject)){
+    if(!metaObject){
+        return nullptr;
+    }else if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(metaObject)){
         return jclass(env->NewLocalRef(dynamicMetaObject->javaClass()));
     }else{
         if(const std::type_info* typeId = getTypeByMetaObject(metaObject)){
             jclass result = env->FindClass(getJavaName(*typeId));
             qtjambi_throw_java_exception(env);
             return result;
-        }else if(exactOrNull){
+        }else if(const std::type_info* typeId = getTypeByQtName(metaObject->className())){
+            if(!registeredOriginalMetaObject(*typeId)){
+                jclass result = env->FindClass(getJavaName(*typeId));
+                qtjambi_throw_java_exception(env);
+                return result;
+            }
+        }
+        if(exactOrNull){
             return nullptr;
-        }else if(metaObject && metaObject->superClass()){
+        }else if(metaObject->superClass()){
             return javaClass(env, metaObject->superClass(), exactOrNull);
         }else{
             return Java::QtJambi::QtGadget::getClass(env);

@@ -2387,18 +2387,26 @@ public abstract class QtJambiSignals {
         				|| sentType.genericType instanceof Class 
         				|| sentType.genericType==receivedType.genericType) {
         			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
-        		}else if(sentType.genericType instanceof ParameterizedType && receivedType.genericType instanceof ParameterizedType) {
+        		}else if(sentType.genericType instanceof ParameterizedType) {
         			ParameterizedType sentParamType = (ParameterizedType)sentType.genericType;
-        			ParameterizedType receivedParamType = (ParameterizedType)receivedType.genericType;
-        			Type[] sentArgs = sentParamType.getActualTypeArguments();
-        			Type[] receivedArgs = receivedParamType.getActualTypeArguments();
-        			if(sentArgs.length!=receivedArgs.length)
-        				return Match.NoMatch;
-        			for (int i = 0; i < receivedArgs.length; i++) {
-						if(!matches(isNativeConnect, sentArgs[i], receivedArgs[i]))
-							return Match.NoMatch;
-					}
-        			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        			if(receivedType.genericType instanceof ParameterizedType) {
+	        			ParameterizedType receivedParamType = (ParameterizedType)receivedType.genericType;
+	        			Type[] sentArgs = sentParamType.getActualTypeArguments();
+	        			Type[] receivedArgs = receivedParamType.getActualTypeArguments();
+	        			if(sentArgs.length!=receivedArgs.length)
+	        				return Match.NoMatch;
+	        			for (int i = 0; i < receivedArgs.length; i++) {
+							if(!matches(isNativeConnect, sentArgs[i], receivedArgs[i]))
+								return Match.NoMatch;
+						}
+	        			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        			}else if(receivedType.genericType instanceof Class){
+        				if(sentParamType.getRawType()==receivedType.genericType || ((Class<?>)receivedType.genericType).isAssignableFrom((Class<?>)sentParamType.getRawType())) {
+        					return Match.JavaMatch;
+        				}
+            		}else if(receivedType.genericType instanceof TypeVariable<?>) {
+            			return Match.JavaMatch;
+        			}
         		}else if(sentType.genericType instanceof TypeVariable<?>) {
 //        			TypeVariable<?> sentVarType = (TypeVariable<?>)sentType.genericType;
 //        			if(receivedType.genericType instanceof TypeVariable<?>) {

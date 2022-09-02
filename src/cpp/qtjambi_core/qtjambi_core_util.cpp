@@ -1989,6 +1989,22 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_propertyCount)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_propertyByIndex)
+    (JNIEnv *env, jobject, jlong metaObjectPointer, jint index)
+{
+    jobject _result{nullptr};
+    QTJAMBI_TRY{
+        if(metaObjectPointer){
+            const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
+            _result = qtjambi_cast<jobject>(env, metaObject->property(index));
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return _result;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_property)
     (JNIEnv *env, jobject, jlong metaObjectPointer, jobject name)
 {
@@ -2335,6 +2351,26 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_constructor)
     return result;
 }
 
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_constructorByIndex)
+    (JNIEnv * env, jobject, jlong metaObjectPointer, jint index)
+{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
+        if(metaObjectPointer){
+            env->EnsureLocalCapacity(100);
+            const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
+            QMetaMethod method = metaObject->constructor(index);
+            if(method.isValid() && method.methodType()==QMetaMethod::Constructor){
+                result = qtjambi_cast<jobject>(env, method);
+            }
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
 extern "C" Q_DECL_EXPORT jint JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_constructorCount)
     (JNIEnv * env, jobject, jlong metaObjectPointer)
@@ -2383,6 +2419,23 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_enumerator)
             const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
             int idx = metaObject->indexOfEnumerator(qPrintable(enumName));
             QMetaEnum enumerator = metaObject->enumerator(idx);
+            result = qtjambi_cast<jobject>(env, enumerator);
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_enumeratorByIndex)
+    (JNIEnv * env, jclass, jlong metaObjectPointer, jint index)
+{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
+        if(metaObjectPointer){
+            const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
+            QMetaEnum enumerator = metaObject->enumerator(index);
             result = qtjambi_cast<jobject>(env, enumerator);
         }
     }QTJAMBI_CATCH(const JavaException& exn){

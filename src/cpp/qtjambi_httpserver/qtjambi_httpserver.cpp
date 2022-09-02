@@ -9,7 +9,8 @@
 #include <qtjambi/qtjambi_cast.h>
 
 struct HttpServer : QAbstractHttpServer{
-    inline void afterRequestImpl(QHttpServer::AfterRequestHandler afterRequestHandler)
+    inline void afterRequestImpl(std::function<QHttpServerResponse(QHttpServerResponse &&response,
+                                                                           const QHttpServerRequest &request)> afterRequestHandler)
     {
         QHttpServerPrivate* d = reinterpret_cast<QHttpServerPrivate*>(QObjectPrivate::get(this));
         d->afterRequestHandlers.push_back(std::move(afterRequestHandler));
@@ -34,7 +35,7 @@ struct HttpServerRouterRule : QHttpServerRouterRule{
     bool hasValidMethods() const{ return QHttpServerRouterRule::hasValidMethods(); }
 
     bool createPathRegexp(std::initializer_list<QMetaType> metaTypes,
-                          const QHash<QMetaType, QLatin1StringView> &converters){
+                          const QHash<QMetaType, QString> &converters){
         return QHttpServerRouterRule::createPathRegexp(metaTypes, converters);
     }
 };

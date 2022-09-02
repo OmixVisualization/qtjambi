@@ -203,10 +203,10 @@ QString EnumTypeEntry::javaPackage() const {
         }else{
             m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
         }
-        if(m_qualifier_type && m_qualifier_type->isQString())
-            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiString");
-        else if(m_qualifier_type && m_qualifier_type->isChar())
-            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiChar");
+        if(m_qualifier_type && m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
+            m_qualifier_type = TypeDatabase::instance()->qstringType();
+        else if(m_qualifier_type && m_qualifier_type->isChar() && TypeDatabase::instance()->qcharType())
+            m_qualifier_type = TypeDatabase::instance()->qcharType();
     }
     if (m_qualifier_type){
         if(m_qualifier_type->isVariant())

@@ -205,6 +205,17 @@
                 <reference-count action="remove" variable-name="__rcUrlInterceptor" />
             </modify-argument>
         </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlEngine__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="QJSEngine">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QJSEngine__" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QJSEngine_6_" quote-before-line="}// class" since="6.0"/>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QJSEngine_61_" quote-before-line="}// class" since="6.1"/>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QJSEngine_63_" quote-before-line="}// class" since="6.3"/>
+        </inject-code>
     </object-type>
     <object-type name="QQmlComponent">
         <inject-code>

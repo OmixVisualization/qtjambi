@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.8`, `6.2.6` or by `6.3.3`).
+(exchange `$VERSION` either by `5.15.9`, `6.2.7` or by `6.3.4`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -34,7 +34,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.3.jar Test.java
+javac -cp qtjambi-6.3.4.jar Test.java
 ```
 
 For execution you need the platform dependent binaries of *QtJambi*. For
@@ -52,13 +52,13 @@ macOS) or the Java runtime property **java.library.path**. The example
 program can be executed this way:
 
 ``` powershell
-java -cp qtjambi-6.3.3.jar;qtjambi-native-windows-x64-6.3.3.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.3.4.jar;qtjambi-native-windows-x64-6.3.4.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
 On *macOS* you need to use the start parameter `-XstartOnFirstThread`:
 
 ``` bash
-java -XstartOnFirstThread -cp qtjambi-6.3.3.jar:qtjambi-native-windows-x64-6.3.3.jar:. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -XstartOnFirstThread -cp qtjambi-6.3.4.jar:qtjambi-native-windows-x64-6.3.4.jar:. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
 In general, you can start learning how to use Qt in Java [as it is
@@ -73,11 +73,11 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.8/),
+Documentation](https://doc.qtjambi.io/5.15.9/),
 [QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.6/)
+Documentation](https://doc.qtjambi.io/6.2.7/)
 and [QtJambi 6.3 API Reference
-Documentation](https://doc.qtjambi.io/6.3.3/)
+Documentation](https://doc.qtjambi.io/6.3.4/)
 
 ## Useful Java System Properties for QtJambi
 

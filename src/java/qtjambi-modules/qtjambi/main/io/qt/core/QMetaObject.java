@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -65,8 +64,8 @@ import io.qt.QtSignalEmitterInterface;
 import io.qt.QtThreadAffineInterface;
 import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
-import io.qt.internal.QtJambiPropertyInfo;
 import io.qt.internal.QtJambiInternal;
+import io.qt.internal.QtJambiPropertyInfo;
 import io.qt.internal.QtJambiSignals;
 
 /**
@@ -451,6 +450,13 @@ public final class QMetaObject {
     private native QMetaProperty property(long metaObjectPointer, String name);
     
     @QtUninvokable
+    public QMetaProperty property(int index) {
+        return propertyByIndex(this.metaObjectPointer, index);
+    }
+    @QtUninvokable
+    private native QMetaProperty propertyByIndex(long metaObjectPointer, int index);
+    
+    @QtUninvokable
     public QList<io.qt.core.QMetaEnum> enumerators() {
         return enumerators(this.metaObjectPointer);
     }
@@ -470,6 +476,13 @@ public final class QMetaObject {
     }
     @QtUninvokable
     private static native QMetaEnum enumerator(long metaObjectPointer, String name);
+    
+    @QtUninvokable
+    public io.qt.core.QMetaEnum enumerator(int index) {
+        return enumeratorByIndex(this.metaObjectPointer, index);
+    }
+    @QtUninvokable
+    private static native QMetaEnum enumeratorByIndex(long metaObjectPointer, int index);
     
     @QtUninvokable
     public static void connectSlotsByName(QObject object) {
@@ -496,7 +509,7 @@ public final class QMetaObject {
     }
     
     @QtUninvokable
-    QMetaMethod methodByIndex(int methodIndex) {
+    public final QMetaMethod method(int methodIndex) {
         return methodByIndex(metaObjectPointer, methodIndex);
     }
     @QtUninvokable
@@ -594,6 +607,13 @@ public final class QMetaObject {
     }
     @QtUninvokable
     private native QMetaMethod constructor(long metaObjectPointer, String normalizedSignature);
+    
+    @QtUninvokable
+    public QMetaMethod constructor(int index) {
+        return constructorByIndex(metaObjectPointer, index);
+    }
+    @QtUninvokable
+    private native QMetaMethod constructorByIndex(long metaObjectPointer, int index);
     
     @QtUninvokable
     public final QList<QMetaMethod> constructors(){
@@ -10211,8 +10231,8 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static AbstractSignal findSignalImpl(QObject sender, String name, Class<?>... types){
-    	QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(sender));
-        return QtJambiInternal.findSignal(sender, name, types);
+    	QMetaMethod signal = sender.metaObject().method(name, types);
+        return signal.toSignal(sender);		
     }
     
     @QtUninvokable

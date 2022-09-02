@@ -58,6 +58,7 @@ class AbstractMetaBuilder {
             UnmatchedArgumentType,
             UnmatchedReturnType,
             IsPrivate,
+            IsGlobal,
             NoReason
         };
 
@@ -193,6 +194,8 @@ class AbstractMetaBuilder {
         QMap<QPair<QString,QString>, RejectReason> m_rejected_functionals;
         QMap<QPair<QString,QString>, RejectReason> m_rejected_enums;
         QMap<QPair<QString,QString>, RejectReason> m_rejected_functions;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_template_functions;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_signals;
         QMap<QPair<QString,QString>, RejectReason> m_rejected_fields;
 
         QList<AbstractMetaEnum *> m_enums;

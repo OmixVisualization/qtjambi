@@ -700,6 +700,14 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
     case QMetaType::LongLong:
     case QMetaType::ULongLong: return "long";
     case QMetaType::Bool: return "boolean";
+    case QMetaType::QStringList: return "io/qt/core/QStringList";
+    case QMetaType::QByteArrayList: return "io/qt/core/QList";
+    case QMetaType::QVariantMap: return "io/qt/core/QMap";
+    case QMetaType::QVariantHash: return "io/qt/core/QHash";
+    case QMetaType::QVariantList: return "io/qt/core/QList";
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    case QMetaType::QVariantPair: return "io/qt/core/QPair";
+#endif
     case QMetaType::VoidStar: return "io/qt/QNativePointer";
     default:
         break;
@@ -738,10 +746,42 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
         return QLatin1String("java/lang/Enum");
     else if (_internalTypeName=="JQFlagsWrapper")
         return QLatin1String("io/qt/QFlags");
-    else if (_internalTypeName.startsWith("QPair<") && _internalTypeName.endsWith(">"))
+    else if ((_internalTypeName.startsWith("std::pair<") || _internalTypeName.startsWith("QPair<")) && _internalTypeName.endsWith(">"))
         return QLatin1String("io/qt/core/QPair");
-    else if (_internalTypeName.startsWith("std::pair<") && _internalTypeName.endsWith(">"))
-        return QLatin1String("io/qt/core/QPair");
+    else if (_internalTypeName.startsWith("QMap<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QMap");
+    else if (_internalTypeName.startsWith("QMultiMap<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QMultiMap");
+    else if (_internalTypeName.startsWith("QHash<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QHash");
+    else if (_internalTypeName.startsWith("QMultiHash<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QMultiHash");
+    else if (_internalTypeName.startsWith("QLinkedList<") && _internalTypeName.endsWith(">"))
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        return QLatin1String("java/util/LinkedList");
+#else
+        return QLatin1String("io/qt/core/QLinkedList");
+#endif
+    else if (_internalTypeName.startsWith("QList<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QList");
+    else if (_internalTypeName.startsWith("QSet<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QSet");
+    else if (_internalTypeName.startsWith("QQueue<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QQueue");
+    else if (_internalTypeName.startsWith("QVector<") && _internalTypeName.endsWith(">"))
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        return QLatin1String("io/qt/core/QList");
+#else
+        return QLatin1String("io/qt/core/QVector");
+#endif
+    else if (_internalTypeName.startsWith("QStack<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("io/qt/core/QStack");
+    else if (_internalTypeName.startsWith("std::vector<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("java/util/ArrayList");
+    else if (_internalTypeName.startsWith("std::map<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("java/util/HashMap");
+    else if (_internalTypeName.startsWith("std::set<") && _internalTypeName.endsWith(">"))
+        return QLatin1String("java/util/HashSet");
     const std::type_info* typeId = metaType.isValid() ? getTypeByMetaType(metaType) : nullptr;
     QString javaName;
     if(typeId){
@@ -801,23 +841,28 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
         if(metaType.isValid()
                 && metaType.id()!=QMetaType::Nullptr
                 && metaType.id()!=QMetaType::Void){
+            QByteArray name = registeredJavaClassForCustomMetaType(metaType);
+            if(!name.isEmpty()){
+                return QLatin1String(name);
+            }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QVariant variant(metaType.id(), nullptr);
-#else
-            QVariant variant(metaType, nullptr);
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             if(variant.canConvert(QMetaType::QVariantList)){
                 javaName = "io/qt/core/QList";
-            }else if(variant.canConvert(QMetaType::QVariantHash)){
-                javaName = "io/qt/core/QHash";
             }else if(variant.canConvert(QMetaType::QVariantMap)){
                 javaName = "io/qt/core/QMap";
-            }else{
-                QByteArray name = registeredJavaClassForCustomMetaType(metaType);
-                if(!name.isEmpty()){
-                    return QLatin1String(name);
-                }
+            }else if(variant.canConvert(QMetaType::QVariantHash)){
+                javaName = "io/qt/core/QHash";
             }
+#else
+            if(QMetaType::canConvert(QMetaType(metaType), QMetaType(QMetaType::QVariantList))){
+                javaName = "io/qt/core/QList";
+            }else if(QMetaType::canConvert(QMetaType(metaType), QMetaType(QMetaType::QVariantMap))){
+                javaName = "io/qt/core/QMap";
+            }else if(QMetaType::canConvert(QMetaType(metaType), QMetaType(QMetaType::QVariantHash))){
+                javaName = "io/qt/core/QHash";
+            }
+#endif
         }
     }
     if(!javaName.isEmpty() && pointerType==PointerType::initializer_list){

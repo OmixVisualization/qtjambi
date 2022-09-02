@@ -321,7 +321,7 @@ Further options:
            description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run-impl"/>
     </target>
-
+	
     <target name="tests.run.all" depends="log, setenv, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run.all-impl"/>

@@ -36,10 +36,11 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#  define QT_CORE_INLINE_SINCE(major, minor) inline
-#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#include <QtCore/private/qobject_p_p.h>
 #endif
+
 #include "qtjambi_functionpointer.h"
 QT_WARNING_DISABLE_DEPRECATED
 
@@ -223,9 +224,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_signalInfo)
                         QByteArray signalName = qtjambi_cast<QString>(env, Java::Runtime::Field::getName(env, field)).toUtf8();
                         const QMetaObject* containingObjectClass = object->metaObject();
                         QMap<QByteArray,QMetaMethod> matchingSignals;
-                        for(int i=0, length = containingObjectClass->methodCount(); i<length; ++i){
+                        for(int i=containingObjectClass->methodOffset(), length = containingObjectClass->methodCount(); i<length; ++i){
                             QMetaMethod method = containingObjectClass->method(i);
-                            if(method.methodType()==QMetaMethod::Signal && signalName==method.name()){
+                            if(method.methodType()==QMetaMethod::Signal
+                                    && signalName==method.name()
+                                    && !matchingSignals.contains(method.methodSignature())){
                                 matchingSignals[method.methodSignature()] = method;
                             }
                         }
@@ -287,37 +290,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isObjectWrapperType)
             || metaTypeId == registeredMetaTypeID(typeid(JMapWrapper))
             || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-struct QObjectPrivate::ConnectionData
-{
-    // the id below is used to avoid activating new connections. When the object gets
-    // deleted it's set to 0, so that signal emission stops
-    QAtomicInteger<uint> currentConnectionId;
-    QAtomicInt ref;
-    QAtomicPointer<SignalVector> signalVector;
-    Connection *senders = nullptr;
-    Sender *currentSender = nullptr;   // object currently activating the object
-    QAtomicPointer<Connection> orphaned;
-};
-
-struct QObjectPrivate::Sender
-{
-    Sender(QObject *receiver, QObject *sender, int signal)
-        : receiver(receiver), sender(sender), signal(signal)
-    {
-        if (receiver) {
-            ConnectionData *cd = receiver->d_func()->connections.loadRelaxed();
-            previous = cd->currentSender;
-            cd->currentSender = this;
-        }
-    }
-    Sender *previous;
-    QObject *receiver;
-    QObject *sender;
-    int signal;
-};
-#endif
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_00024CurrentSenderSetter_setQObjectSender)
@@ -1698,6 +1670,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1createMetaTy
         }
         if(copy){
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, copy)){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+                if(!QMetaType(id).iface()->copyCtr){
+                    JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Unable to create value of meta type %1 due to missing copy constructor.").arg(QLatin1String(QMetaType::typeName(id)))) QTJAMBI_STACKTRACEINFO );
+                }
+#endif
                 QVariant variant(QTJAMBI_METATYPE(id), link->pointer());
                 return qtjambi_from_qvariant(env, variant);
             }else{
@@ -1715,6 +1692,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1createMetaTy
                 }
             }
         }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+        if(!QMetaType(id).iface()->defaultCtr){
+            JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Unable to create value of meta type %1 due to missing default constructor.").arg(QLatin1String(QMetaType::typeName(id)))) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
         QVariant variant(QTJAMBI_METATYPE(id), nullptr);
         return qtjambi_from_qvariant(env, variant);
     }catch(const JavaException& exn){
@@ -2194,17 +2176,19 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_monitorExit)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getListOfExtraSignal)
-    (JNIEnv *env, jclass, QtJambiNativeID sender__id)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getExtraSignal)
+    (JNIEnv *env, jclass, QtJambiNativeID sender__id, QtJambiNativeID method__id)
 {
     try{
         if(QSharedPointer<QtJambiLink> sender = QtJambiLink::fromNativeId(sender__id)){
-            if(sender->isSharedPointer()){
-                QSharedPointerToQObjectLink* slink = static_cast<QSharedPointerToQObjectLink*>(sender.data());
-                return slink->getListOfExtraSignal(env);
-            }else{
-                PointerToQObjectLink* plink = static_cast<PointerToQObjectLink*>(sender.data());
-                return plink->getListOfExtraSignal(env);
+            if(const QMetaMethod *method = qtjambi_object_from_nativeId<QMetaMethod>(method__id)){
+                if(sender->isSharedPointer()){
+                    QSharedPointerToQObjectLink* slink = static_cast<QSharedPointerToQObjectLink*>(sender.data());
+                    return slink->getExtraSignal(env, *method);
+                }else{
+                    PointerToQObjectLink* plink = static_cast<PointerToQObjectLink*>(sender.data());
+                    return plink->getExtraSignal(env, *method);
+                }
             }
         }
     }catch(const JavaException& exn){
@@ -2571,20 +2555,28 @@ qint64 QJarEntryEngine::size() const{
 }
 
 qint64 QJarEntryEngine::read(char *data, qint64 maxlen) {
+    qint64 readBytes = 0;
     if(m_stream){
         if(JNIEnv* env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 600)
             try{
-                QtJambiScope __qtjambi_scope;
-                jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data, jsize(qMin(qint64(INT_MAX), maxlen)));
-                return Java::Runtime::InputStream::read(env, m_stream.object(), _data);
+                while(readBytes<maxlen){
+                    QtJambiScope __qtjambi_scope;
+                    jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data+readBytes, jsize(qMin(qint64(INT_MAX), maxlen-readBytes)));
+                    jint r = Java::Runtime::InputStream::read(env, m_stream.object(), _data);
+                    if(r<=0)
+                        break;
+                    readBytes += r;
+                }
             }catch(const JavaException& exn){
                 exn.report(env);
-                return 0;
             }
         }
     }
-    return 0;
+    if(readBytes==0)
+        return -1;
+    m_pos += readBytes;
+    return readBytes;
 }
 
 bool QJarEntryEngine::reset() {
@@ -2607,7 +2599,24 @@ bool QJarEntryEngine::reopen() {
 bool QJarEntryEngine::seek(qint64 offset) {
     if(offset < 0)
         return false;
+    if(m_pos < offset) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            while (m_pos < offset) {
+                qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
 
+                // InputStream#skip(long) may not skip all the requested bytes in a single invocation
+                qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(), skipBytesRemaining);
+                if(skipBytesActual > 0)
+                    m_pos += skipBytesActual;	// The actual number of bytes skipped
+                else
+                    break;
+            }
+        }
+    }
+
+    if(m_pos == offset)
+        return true;
     if (!open(m_openMode))  // open() will automatically force a close()
         return false;
     if (offset < m_pos) {
@@ -2615,21 +2624,23 @@ bool QJarEntryEngine::seek(qint64 offset) {
             return false;
     }
 
-    if(JNIEnv* env = qtjambi_current_environment()){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 600)
-        while (m_pos < offset) {
-            qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
+    if(m_pos < offset) {
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 600)
+            while (m_pos < offset) {
+                qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
 
-            // InputStream#skip(long) may not skip all the requested bytes in a single invocation
-            qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(), skipBytesRemaining);
-            if(skipBytesActual > 0)
-                m_pos += skipBytesActual;	// The actual number of bytes skipped
-            else
-                return false;
-        }
-        return true;
+                // InputStream#skip(long) may not skip all the requested bytes in a single invocation
+                qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(), skipBytesRemaining);
+                if(skipBytesActual > 0)
+                    m_pos += skipBytesActual;	// The actual number of bytes skipped
+                else
+                    return false;
+            }
+            return true;
+        }else return false;
     }
-    return false;
+    return true;
 }
 
 #ifdef Q_OS_ANDROID

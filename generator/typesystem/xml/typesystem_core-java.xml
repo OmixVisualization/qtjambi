@@ -3116,7 +3116,7 @@ if(!useQGuiApplicationExec){</inject-code>
       </inject-code>
   </object-type>
 
-  <object-type name="QTextStream">
+  <object-type name="QTextStream" implements="java.lang.Appendable">
       <import template="Stream"/>
       <modify-function signature="operator&lt;&lt;(char)">
           <rename to="writeByte"/>
@@ -3219,11 +3219,27 @@ if(!useQGuiApplicationExec){</inject-code>
           <modify-argument index="0" replace-value="this"/>
       </modify-function>
       <modify-function signature="operator&gt;&gt;(QString&amp;)">
+          <rename to="readQString"/>
+          <modify-argument index="0">
+                <replace-type modified-type="io.qt.core.QString"/>
+                <conversion-rule class="native">
+                    Q_UNUSED(__qt_return_value)
+                    %out = qtjambi_to_stringobject(%env, __qt_%1);
+                </conversion-rule>
+          </modify-argument>
+          <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="operator&gt;&gt;(char*)">
           <rename to="readString"/>
           <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-                    Q_UNUSED(__qt_return_value)
+					Q_UNUSED(__qt_return_value)
                     %out = qtjambi_from_qstring(%env, __qt_%1);
                 </conversion-rule>
           </modify-argument>
@@ -3234,9 +3250,22 @@ if(!useQGuiApplicationExec){</inject-code>
                 </conversion-rule>
           </modify-argument>
       </modify-function>
+	  <modify-function signature="operator&lt;&lt;(const char*)">
+          <rename to="writeString"/>
+          <modify-argument index="0" replace-value="this"/>
+          <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+          </modify-argument>
+      </modify-function>
       <modify-function signature="operator&lt;&lt;(QString)">
           <rename to="writeString"/>
           <modify-argument index="0" replace-value="this"/>
+          <modify-argument index="1">
+			  <replace-type modified-type="java.lang.CharSequence"/>
+			  <conversion-rule class="native">
+					QString %out = qtjambi_to_qstring(%env, %1);
+			  </conversion-rule>
+          </modify-argument>
       </modify-function>
       <modify-function signature="QTextStream(QByteArray*,QFlags&lt;QIODevice::OpenModeFlag&gt;)" until="5.*">
             <modify-argument index="1">
@@ -4057,7 +4086,20 @@ if(!useQGuiApplicationExec){</inject-code>
         </modify-function>
         <modify-function signature="fromString(QAnyStringView, qsizetype *)" since="6.4">
             <modify-argument index="2">
-                <array-type min-length="1"/>
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+					qsizetype* %out;
+                    if constexpr(sizeof(int)==sizeof(qsizetype)){
+						%out = qtjambi_array_cast&lt;qsizetype*>(%env, %scope, %in, 1);
+					}else{
+						if(int* tmp = qtjambi_array_cast&lt;int*>(%env, %scope, %in, 1)){
+							%out = new qsizetype(*tmp);
+							%scope.addFinalAction([=]{*tmp = jint(*%out); delete %out;});
+						}else{
+							%out = nullptr;
+						}
+					}
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </value-type>
@@ -4949,7 +4991,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
         </modify-function>
     </object-type>
-    <value-type name="QDebug" implements="java.lang.AutoCloseable">
+    <value-type name="QDebug" implements="java.lang.AutoCloseable, java.lang.Appendable">
         <inject-code>
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class autoclosedelete" quote-before-line="}// class"/>
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QDebug___" quote-before-line="}// class"/>
@@ -5002,6 +5044,17 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <modify-argument index="1">
                 <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+		<modify-function signature="operator&lt;&lt;(QString)" rename="append">
+            <modify-argument index="return" replace-value="this">
+                <replace-type modified-type="io.qt.core.QDebug" />
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.CharSequence"/>
+			    <conversion-rule class="native">
+					QString %out = qtjambi_to_qstring(%env, %1);
+			    </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="operator&lt;&lt;(bool)" rename="append">
@@ -5085,11 +5138,6 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <modify-argument index="2">
 				<remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="asprintf(const char *)">
-            <modify-argument index="1">
-                <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="fromLatin1(const char*,int)" until="5.*">

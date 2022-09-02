@@ -72,6 +72,8 @@
     </object-type>
     <object-type name="QQuickWebEngineScript">
     </object-type>
+    <object-type name="QQuickWebEngineDownloadItem" generate="no">
+    </object-type>
     <namespace-type name="QtWebEngine">
     </namespace-type>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QQuickWebEngineProfile::*', unmatched parameter type 'QQuickWebEngineDownloadItem*'" />

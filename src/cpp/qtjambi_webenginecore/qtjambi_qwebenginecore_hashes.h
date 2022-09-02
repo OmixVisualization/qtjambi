@@ -101,7 +101,7 @@ namespace QtWebEngineCore{
 class FileSystemAccessPermissionRequestManagerQt{
 public:
     static hash_type hash(const QWebEngineFileSystemAccessRequest& value, hash_type seed){
-        return qHash(quintptr(value.d_ptr.data()), seed);
+        return qHash(quintptr(&*value.d_ptr), seed);
     }
 };
 }

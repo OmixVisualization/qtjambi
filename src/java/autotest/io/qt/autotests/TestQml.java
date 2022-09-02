@@ -286,7 +286,7 @@ public class TestQml extends ApplicationInitializer{
     public void run_test() {
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
-		QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
+		int id = QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" + 
 				"TestObject {\n" + 
@@ -313,6 +313,7 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertEquals("child1", backEnd.testChildren.at(0).objectName());
 		Assert.assertEquals("child2", backEnd._testChildren.get(1).objectName());
 		Assert.assertEquals("child2", backEnd.testChildren.at(1).objectName());
+		Assert.assertEquals(id, QtQml.qmlTypeId("io.qt.test", 1, 0, "TestObject"));
 	}
 	
 	@Test
@@ -771,7 +772,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(Message.class, "io.qt.test", 1, 0, "Message");
 		AtomicBoolean singletonCreated = new AtomicBoolean();
 		QtQml.ObjectCallback objectCallback;
-		QtQml.qmlRegisterSingletonType(Singleton.class, "io.qt.test", 1, 0, "TextSource", objectCallback = (QQmlEngine qmlEngine, QJSEngine jsEngine)->{
+		int singletonId = QtQml.qmlRegisterSingletonType(Singleton.class, "io.qt.test", 1, 0, "TextSource", objectCallback = (QQmlEngine qmlEngine, QJSEngine jsEngine)->{
 			singletonCreated.set(true);
 			return new Singleton();
 		});
@@ -816,6 +817,12 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertTrue(singletonCreated.get());
 		objectCallback.dispose();
 		valueCallback.dispose();
+		QObject singleton = engine.singletonInstance(QObject.class, singletonId);
+		Assert.assertTrue(singleton!=null);
+		singleton = engine.singletonInstance(QQuickItem.class, singletonId);
+		Assert.assertTrue(singleton==null);
+		singleton = engine.singletonInstance(Singleton.class, singletonId);
+		Assert.assertTrue(singleton!=null);
 	}
 	
 	@Test

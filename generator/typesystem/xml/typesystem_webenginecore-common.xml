@@ -139,6 +139,7 @@
     </functional-type>
     <object-type name="QWebEnginePage" since="6.2.0">
         <extra-includes>
+            <include file-name="QtWebEngineCore/QWebEngineFileSystemAccessRequest" location="global"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>

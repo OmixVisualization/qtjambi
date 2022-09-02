@@ -1077,11 +1077,24 @@ public class TestInjectedCode extends ApplicationInitializer {
 
     @Test
     public void testQImageLoadFromData() {
-        QImage img = new QImage();
+        QImage img;
         QFile file = new QFile(":io/qt/autotests/svgcards-example.png");
 
         assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
+        img = new QImage();
+        img.load(file, "png");
+        assertFalse(img.isNull());
+        assertEquals(418, img.width());
 
+        file.reset();
+        QByteArray data = file.readAll();
+        img = new QImage();
+        img.loadFromData(data.toByteArray());
+        assertFalse(img.isNull());
+        assertEquals(418, img.width());
+        file.reset();
+
+        img = new QImage();
         img.load(file, "JPEG");
         assertTrue(img.isNull());  // this assert fails when plugins did not load
 

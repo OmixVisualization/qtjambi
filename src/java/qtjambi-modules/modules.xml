@@ -354,12 +354,12 @@
                 </javadoc>
             </else>
         </if>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#4A6782;" value="#174e1a;"/>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#bb7a2a;" value="#17a81a;"/>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#4D7A97;" value="#4f9d08;"/>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
-    <replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#2c4557;" value="#000000;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#4A6782;" value="#174e1a;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#bb7a2a;" value="#17a81a;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#4D7A97;" value="#4f9d08;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
+		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#2c4557;" value="#000000;"/>
         <delete file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
         <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar">
             <manifest>

@@ -36,10 +36,11 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#  define QT_CORE_INLINE_SINCE(major, minor) inline
-#  define QT_CORE_INLINE_IMPL_SINCE(major, minor) 1
+#include <QtCore/private/qobject_p_p.h>
 #endif
+
 QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core.h"
 #include "qtjambi_repository_p.h"
@@ -425,48 +426,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_00024NativeConnection
     }
     return false;
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-struct QObjectPrivate::ConnectionOrSignalVector
-{
-    union {
-        // linked list of orphaned connections that need cleaning up
-        ConnectionOrSignalVector *nextInOrphanList;
-        // linked list of connections connected to slots in this object
-        Connection *next;
-    };
-};
-
-struct QObjectPrivate::Connection : public ConnectionOrSignalVector
-{
-    // linked list of connections connected to slots in this object, next is in base class
-    Connection **prev;
-    // linked list of connections connected to signals in this object
-    QAtomicPointer<Connection> nextConnectionList;
-    Connection *prevConnectionList;
-
-    QObject *sender;
-    QAtomicPointer<QObject> receiver;
-    QAtomicPointer<QThreadData> receiverThreadData;
-    union {
-        StaticMetaCallFunction callFunction;
-        QtPrivate::QSlotObjectBase *slotObj;
-    };
-    QAtomicPointer<const int> argumentTypes;
-    QAtomicInt ref_{2};     //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
-    uint id = 0;
-    ushort method_offset;
-    ushort method_relative;
-    signed int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
-    ushort connectionType : 2; // 0 == auto, 1 == direct, 2 == queued, 3 == blocking
-    ushort isSlotObject : 1;
-    ushort ownArgumentTypes : 1;
-    ushort isSingleShot : 1;
-    Connection() = delete;
-    ~Connection() = delete;
-    int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
-};
-#endif
 
 QObject* connectionSender(const QMetaObject::Connection* connection){
     if(connection && *connection){

@@ -672,6 +672,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		privateModules.add("QtGui");
 		privateModules.add("QtDesigner");
 		privateModules.add("QtRemoteObjects");
+		privateModules.add("QtQuick");
 		{
 			String pm = AntUtil.getPropertyAsString(propertyHelper, Constants.PRIVATE_MODULES);
 			if(pm!=null)

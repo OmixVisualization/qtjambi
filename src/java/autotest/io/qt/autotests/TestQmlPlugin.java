@@ -28,6 +28,8 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -56,10 +58,10 @@ public class TestQmlPlugin extends ApplicationInitializer{
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
 		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-		if(QtJambiInternal.isDebugBuild()) {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
-		}else {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
+		String imports = System.getProperty("io.qt.qml.imports", "");
+		if(!imports.isEmpty()) {
+			for(String i : imports.split(File.pathSeparator))
+				qmlengine.addImportPath(i);
 		}
 		for(String path : QCoreApplication.libraryPaths()) {
 			qmlengine.addImportPath(path);
@@ -99,10 +101,10 @@ public class TestQmlPlugin extends ApplicationInitializer{
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; import io.qt.test.garage 2.0; Garage{Car{}}");
 		QQmlEngine qmlengine = new QQmlEngine();
 		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-		if(QtJambiInternal.isDebugBuild()) {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/qml");
-		}else {
-			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/qml");
+		String imports = System.getProperty("io.qt.qml-imports", "");
+		if(!imports.isEmpty()) {
+			for(String i : imports.split(File.pathSeparator))
+				qmlengine.addImportPath(i);
 		}
 		for(String path : QCoreApplication.libraryPaths()) {
 			qmlengine.addImportPath(path);

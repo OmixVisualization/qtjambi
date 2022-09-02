@@ -21,7 +21,14 @@ include(../src/cpp/qtjambi/qtjambi_include.pri)
 exists($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated): 
     include($$QTJAMBI_BUILDDIR/tests/autotest-generator/cpp/io_qt_autotests_generated/generated.pri)
 
-DESTDIR = ../lib
+android:{
+    armeabi-v7a: DESTDIR = ../lib/armeabi-v7a
+    arm64-v8a: DESTDIR = ../lib/arm64-v8a
+    x86: DESTDIR = ../lib/x86
+    x86_64: DESTDIR = ../lib/x86_64
+}else{
+    DESTDIR = ../lib
+}
 
 INCLUDEPATH += ./cpp/io_qt_autotests_generated
 
