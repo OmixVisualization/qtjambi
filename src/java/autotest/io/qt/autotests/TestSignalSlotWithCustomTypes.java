@@ -39,12 +39,14 @@ import io.qt.QtObject;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QMetaMethod;
+import io.qt.core.QMetaObject;
 import io.qt.core.QMetaObject.Connection;
 import io.qt.core.QObject;
 import io.qt.core.QRectF;
 import io.qt.gui.QIcon;
 import io.qt.gui.QPainter;
 import io.qt.widgets.QGraphicsItem;
+import io.qt.widgets.QSpinBox;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
@@ -247,4 +249,18 @@ public class TestSignalSlotWithCustomTypes extends ApplicationInitializer {
 		System.out.println("    native connection takes "+(time22-time12)+"ms");
 		System.out.println("reflective connection takes "+(time32-time22)+"ms");
 	}
+    
+    @Test
+    public void testVariantSlot() {
+    	Object[] result = {null};
+    	class Foobar extends QObject {
+            void onChanged(Object arg) { result[0] = arg; }
+        }
+        QSpinBox spinner = new QSpinBox();
+        Foobar foo = new Foobar();
+        QMetaObject.Connection connection = spinner.valueChanged.connect(foo::onChanged);
+        Assert.assertTrue(connection!=null && connection.isConnected());
+        spinner.setValue(5);
+        Assert.assertEquals(5, result[0]);
+    }
 }

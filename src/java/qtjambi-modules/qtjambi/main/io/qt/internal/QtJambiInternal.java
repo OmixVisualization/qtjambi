@@ -540,6 +540,7 @@ public final class QtJambiInternal {
 	}
 	
 	private static final MethodInvocationHandler methodInvocationHandler;
+	private static final Map<Class<?>, Function<Object,QtJambiIteratorObject<?>>> endMethodHandles;
 
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
@@ -873,6 +874,31 @@ public final class QtJambiInternal {
 			};
 		}
 		methodInvocationHandler = _methodInvoker;
+		endMethodHandles = Collections.synchronizedMap(new HashMap<>());
+	}
+	
+	static Function<Object,QtJambiIteratorObject<?>> findEndSupplier(Object beginOwner){
+		if(beginOwner!=null){
+			return endMethodHandles.computeIfAbsent(getClass(beginOwner), cls -> {
+				Method endMethod = null;
+				while (endMethod == null && cls!=null && cls != QtJambiObject.class) {
+					Method methods[] = cls.getDeclaredMethods();
+					for (Method method : methods) {
+						if (method.getParameterCount() == 0 && method.getName().equals("end")
+								&& QtJambiIteratorObject.class.isAssignableFrom(method.getReturnType())) {
+							endMethod = method;
+							break;
+						}
+					}
+					cls = cls.getSuperclass();
+				}
+				if (endMethod != null)
+					return functionFromMethod(endMethod);
+				else return null;
+			});
+		}else {
+			return null;
+		}
 	}
 
 	@NativeAccess

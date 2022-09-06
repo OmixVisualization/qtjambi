@@ -359,10 +359,11 @@ public abstract class QtJambiSignals {
 	        			flags |= ct.value();
 					}
 	        	}
-	            try {
+//	            try {
     				return connectNativeToMetaMethod(QtJambiInternal.internalAccess.checkedNativeId(senderObject), methodIndex, metaObjectId, QtJambiInternal.internalAccess.checkedNativeId((QObject)receiver), QtJambiInternal.internalAccess.checkedNativeId(slot), flags);
-    			} catch (QMisfittingSignatureException e) {
-    			}
+//    			} catch (QMisfittingSignatureException e) {
+//    				return null;
+//    			}
 			}else {
 				ReceiverReference reference = receiver==null ? null : new ReceiverReference(receiver);
 				MetaMethodConnection c = new MetaMethodConnection(reference, slot, connectionType);
@@ -391,7 +392,6 @@ public abstract class QtJambiSignals {
 				}
 				return connection;
 			}
-			return null;
 		}
 
 		@Override
@@ -2386,7 +2386,7 @@ public abstract class QtJambiSignals {
         		if(sentType.genericType==null
         				|| sentType.genericType instanceof Class 
         				|| sentType.genericType==receivedType.genericType) {
-        			return (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
+        			return (!isNativeConnect || sentClass==receivedClass) && (sentType.isReference==receivedType.isReference) && (sentType.isPointer==receivedType.isPointer) ? Match.NativeMatch : Match.JavaMatch;
         		}else if(sentType.genericType instanceof ParameterizedType) {
         			ParameterizedType sentParamType = (ParameterizedType)sentType.genericType;
         			if(receivedType.genericType instanceof ParameterizedType) {
@@ -3051,10 +3051,13 @@ public abstract class QtJambiSignals {
         protected final synchronized QMetaObject.Connection addConnectionToSignalObject(AbstractSignal signalObject, Qt.ConnectionType[] connectionType) {
         	this.name();
     		QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signalObject);
+    		QMisfittingSignatureException mfe = null;
     		if(method!=null && method.isValid()) {
-    			QMetaObject.Connection connection = addConnectionToMethod(signalObject.containingObject(), method, connectionType);
-    			if(connection!=null)
-    				return connection;
+    			try {
+					return addConnectionToMethod(signalObject.containingObject(), method, connectionType);
+				} catch (QMisfittingSignatureException e) {
+					mfe = e;
+				}
     		}
     		for(int signalTypeCount = signalTypes().size(); signalTypeCount>=0; --signalTypeCount) {
 	    		for(Method mtd : QtJambiInternal.getClass(signalObject).getMethods()) {
@@ -3065,6 +3068,8 @@ public abstract class QtJambiSignals {
 	    			}
 	    		}
     		}
+    		if(mfe!=null)
+    			throw mfe;
         	return null;//this.core.addConnectionToSignal(this, signalObject, connectionType);
         }
         

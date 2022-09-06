@@ -34,6 +34,7 @@ import static io.qt.internal.QtJambiInternal.internalTypeNameOfClass;
 import static io.qt.internal.QtJambiInternal.registerMetaType;
 import static io.qt.internal.QtJambiInternal.registerRefMetaType;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -413,8 +414,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return true;
     }
 
-    private static Object isDesignable(Method declaredMethod, Class<?> clazz) {
-        QtPropertyDesignable designable = declaredMethod.getAnnotation(QtPropertyDesignable.class);
+    private static Object isDesignable(AccessibleObject member, Class<?> clazz) {
+        QtPropertyDesignable designable = member.getAnnotation(QtPropertyDesignable.class);
 
         if (designable != null) {
             String value = designable.value();
@@ -439,8 +440,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return Boolean.TRUE;
     }
     
-    private static Object isScriptable(Method declaredMethod, Class<?> clazz) {
-        QtPropertyScriptable scriptable = declaredMethod.getAnnotation(QtPropertyScriptable.class);
+    private static Object isScriptable(AccessibleObject member, Class<?> clazz) {
+        QtPropertyScriptable scriptable = member.getAnnotation(QtPropertyScriptable.class);
 
         if (scriptable != null) {
             String value = scriptable.value();
@@ -464,8 +465,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return Boolean.TRUE;
     }
     
-    private static Object isStored(Method declaredMethod, Class<?> clazz) {
-        QtPropertyStored stored = declaredMethod.getAnnotation(QtPropertyStored.class);
+    private static Object isStored(AccessibleObject member, Class<?> clazz) {
+        QtPropertyStored stored = member.getAnnotation(QtPropertyStored.class);
 
         if (stored != null) {
             String value = stored.value();
@@ -489,7 +490,7 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return Boolean.TRUE;
     }
     
-    private static Object isEditable(Method declaredMethod, Class<?> clazz) {
+    private static Object isEditable(AccessibleObject member, Class<?> clazz) {
         return Boolean.TRUE;
     }
 
@@ -514,8 +515,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return (type == Boolean.class || type == Boolean.TYPE);
     }
 
-    private static Object isUser(Method declaredMethod, Class<?> clazz) {
-        QtPropertyUser user = declaredMethod.getAnnotation(QtPropertyUser.class);
+    private static Object isUser(AccessibleObject member, Class<?> clazz) {
+        QtPropertyUser user = member.getAnnotation(QtPropertyUser.class);
 
         if (user != null) {
             String value = user.value();
@@ -538,8 +539,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return Boolean.FALSE;
     }
 
-    private static Boolean isRequired(Method declaredMethod, Class<?> clazz) {
-        QtPropertyRequired required = declaredMethod.getAnnotation(QtPropertyRequired.class);
+    private static Boolean isRequired(AccessibleObject member, Class<?> clazz) {
+        QtPropertyRequired required = member.getAnnotation(QtPropertyRequired.class);
         if (required != null) {
             return required.value();
         }
@@ -550,8 +551,8 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
         return Modifier.isFinal(declaredMethod.getModifiers());
     }
 
-    private static Boolean isConstant(Method declaredMethod) {
-        QtPropertyConstant isConstant = declaredMethod.getAnnotation(QtPropertyConstant.class);
+    private static Boolean isConstant(AccessibleObject member) {
+        QtPropertyConstant isConstant = member.getAnnotation(QtPropertyConstant.class);
         if (isConstant != null) {
             return isConstant.value();
         }
@@ -593,8 +594,11 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
     @NativeAccess
     private static MetaData buildMetaData(Class<?> clazz) {
         try {
-            if(clazz.isPrimitive() || clazz.isArray() || clazz.isSynthetic() || clazz.getName().contains("$Lamda$")) {
-                return null;
+            if(clazz.isPrimitive()) {
+                throw new RuntimeException("Cannot resolve meta object from primitive type");
+            }
+            else if(clazz.isArray()) {
+            	throw new RuntimeException("Cannot resolve meta object from array type");
             }
             MetaData metaData = new MetaData();
             metaData.addStringData("Reserving the first string for QDynamicMetaObject identification.");
@@ -937,10 +941,32 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	            		PropertyAnnotation member = PropertyAnnotation.memberAnnotation(declaredField);
 	            		if(member!=null) {
 	            			if(member.enabled()) {
-	        					propertyMembers.put(member.name(), declaredField);
+    	            			String property = member.name();
+	            				if(isQObject && isValidQProperty(declaredField)) {
+	    	                		propertyQPropertyFields.put(property, declaredField);
+	    	                	}else {
+	    	                		propertyMembers.put(property, declaredField);
+	    	                	}
+            					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
+                                propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
+                                propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
+                                propertyStoredResolvers.put(property, isStored(declaredField, clazz));
+                                propertyUserResolvers.put(property, isUser(declaredField, clazz));
+                                propertyRequiredResolvers.put(property, isRequired(declaredField, clazz));
+                                propertyConstantResolvers.put(property, isConstant(declaredField));
+                                propertyFinalResolvers.put(property, true);
 	            			}
 	            		}else if(isQObject && isValidQProperty(declaredField)) {
-	                		propertyQPropertyFields.put(declaredField.getName(), declaredField);
+	            			String property = declaredField.getName();
+	                		propertyQPropertyFields.put(property, declaredField);
+        					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
+                            propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
+                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
+                            propertyStoredResolvers.put(property, isStored(declaredField, clazz));
+                            propertyUserResolvers.put(property, isUser(declaredField, clazz));
+                            propertyRequiredResolvers.put(property, isRequired(declaredField, clazz));
+                            propertyConstantResolvers.put(property, isConstant(declaredField));
+                            propertyFinalResolvers.put(property, true);
 	                	}
 	                }
 	            }
@@ -1429,11 +1455,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	        		}else if(name.endsWith("Property")) {
 	        			name = name.substring(0, name.length()-8);
 	        		}
+	        		PropertyAnnotation member;
 	            	if(!propertyReaders.containsKey(entry.getKey()) 
 	            			&& !propertyReaders.containsKey(name)
 	            			&& !Modifier.isStatic(entry.getValue().getModifiers())
 	            			&& Modifier.isFinal(entry.getValue().getModifiers())
-	            			&& Modifier.isPublic(entry.getValue().getModifiers())) {
+	            			&& (Modifier.isPublic(entry.getValue().getModifiers())
+	            					|| ((member = PropertyAnnotation.memberAnnotation(entry.getValue()))!=null && member.enabled()))) {
 	            		propertyReaders.put(name, null);
 	        			propertyQPropertyFields.put(name, entry.getValue());
 	            	}
@@ -1461,10 +1489,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     				if(isValidQProperty(propertyField)) {
                     					MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyField);
                     					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
-                            				propertyNotifies.put(property, propertyField);
+                            				propertyNotifies.put(property, signalInfo.field);
                             			}
                     				}else if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(propertyField.getType()))) {
-                        				propertyNotifies.put(property, propertyField);
+                        				propertyNotifies.put(property, signalInfo.field);
                         			}
                     			}else if(propertyQPropertyFields.get(property)!=null) {
                     				MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyQPropertyFields.get(property));
@@ -1794,6 +1822,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         boolean isReference;
                         boolean isMemberWritable = false;
                         boolean isMemberReadable = false;
+                        boolean isMemberBindable = false;
                         QtMetaType metaTypeDecl;
                         if(reader!=null) {
                         	propertyType = reader.getReturnType();
@@ -1822,6 +1851,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             	isReference = info.isReference;
                             	isMemberWritable = info.isWritable;
                             	isMemberReadable = true;
+                            	isMemberBindable = true;
                             	if(info.annotatedPropertyType!=null)
                             		metaTypeDecl = info.annotatedPropertyType.getAnnotation(QtMetaType.class);
                             	else
@@ -1853,6 +1883,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	isReference = info.isReference;
                         	isMemberWritable = info.isWritable;
                         	isMemberReadable = true;
+                        	isMemberBindable = true;
                         	if(info.annotatedPropertyType!=null)
                         		metaTypeDecl = info.annotatedPropertyType.getAnnotation(QtMetaType.class);
                         	else
@@ -1976,7 +2007,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             flags.set(PropertyFlags.Readable);
                         if (resetter!=null)
                             flags.set(PropertyFlags.Resettable);
-                        if ((bindable!=null || isMemberReadable) && Bindable!=null)
+                        if ((bindable!=null || isMemberBindable) && Bindable!=null)
                             flags.set(Bindable);
                         
                         if (designableVariant instanceof Boolean) {

@@ -133,7 +133,7 @@ public final class QShortBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QShortBindable(QObject.QComputedProperty<@QtPrimitiveType Short> property) {
-		super(property, bindableInterface(2));
+		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given QProperty is not of short type.");

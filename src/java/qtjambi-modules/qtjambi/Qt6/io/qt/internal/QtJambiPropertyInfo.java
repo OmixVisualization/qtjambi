@@ -48,7 +48,7 @@ public class QtJambiPropertyInfo {
 		this.metaType = property.metaType();
 		this.property = property;
 		QMetaMethod notifySignal = property.notifySignal();
-		if(notifySignal.isValid() && notifySignal.parameterCount()==0)
+		if(notifySignal.isValid() && notifySignal.parameterCount()<=1)
 			this.notifySignal = notifySignal;
 		else
 			this.notifySignal = null;

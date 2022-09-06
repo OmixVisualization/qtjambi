@@ -100,7 +100,7 @@ public final class QIntBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QIntBindable(QObject.QComputedIntProperty property) {
-		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
+		super(property, bindableInterface(2));
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public final class QIntBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QIntBindable(QObject.QComputedProperty<@QtPrimitiveType Integer> property) {
-		super(property, bindableInterface(2));
+		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given property is not an int type.");

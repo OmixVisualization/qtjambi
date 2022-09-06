@@ -29,12 +29,17 @@
 package io.qt.autotests;
 
 import static org.junit.Assume.assumeTrue;
+
+import java.util.function.Consumer;
+
 import org.junit.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtInvokable;
+import io.qt.QtPropertyReader;
+import io.qt.QtPropertyWriter;
 import io.qt.QtUtilities;
 import io.qt.core.*;
 import io.qt.gui.*;
@@ -50,8 +55,6 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
     public static void testInitialize() throws Exception {
     	QtUtilities.initializePackage("io.qt.webengine.quick");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        ApplicationInitializer.testInitializeWithGui();
-    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
 			Class<?> cls = Class.forName("io.qt.webengine.quick.QtWebEngineQuick");
@@ -60,11 +63,14 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
 		} catch (ClassNotFoundException e) {
 		}
     	assumeTrue("QWebEngineView not available.", found);
+        QtWebEngineQuick.initialize();
+        ApplicationInitializer.testInitializeWithGui();
+    	QLogging.qInstallLoggingMessageHandler(QtMsgType.QtWarningMsg);
+    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
     	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
         QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
         QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
-        QtWebEngineQuick.initialize();
         QtUtilities.initializePackage("io.qt.quick");
         QtUtilities.loadQtLibrary("QuickControls2");
     }
@@ -72,11 +78,33 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
     @Test
     public void test1() {
     	QQmlApplicationEngine engine = new QQmlApplicationEngine();
-    	engine.loadData(new QByteArray("import QtWebEngine\nWebEngineView{}"));
+    	engine.loadData(new QByteArray("import QtWebEngine\nWebEngineView{\n"
+    			+ "url: \"http://info.cern.ch/\"\n"
+    			+ "function doRunJavaScript(code,consumer){\n"
+    			+ "runJavaScript(code, value => consumer.accept(value));\n"
+    			+ "}\n"
+    			+ "}"));
         QList<QObject> rootObjects = engine.rootObjects();
         Assert.assertTrue(rootObjects.get(0)!=null);
         dump(rootObjects, 0);
         QObject webEngineView = rootObjects.get(0);
+//        webEngineView.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
+        QMetaMethod mtd = webEngineView.metaObject().method("doRunJavaScript", Object.class, Object.class);
+        Assert.assertTrue(mtd!=null && mtd.isValid());
+        QMetaObject.AbstractPrivateSignal4<?,?,?,?> javaScriptConsoleMessage = (QMetaObject.AbstractPrivateSignal4<?,?,?,?>)webEngineView.metaObject().method("javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString)").toSignal(webEngineView);
+        javaScriptConsoleMessage.connect((a,b,c,d)->{
+        	System.out.println(a+" "+b+" "+c+" "+d);
+        });
+        QJSValue received[] = {null};
+        QObject consumer = new QObject() {
+			@QtInvokable
+			public void accept(QJSValue value) {
+				received[0] = value;
+			}
+        };
+//        QMetaObject.forType(consumer.getClass()).methods().forEach(m->System.out.println(m.cppMethodSignature()+" "+m.attributes()));
+        mtd.invoke(webEngineView, "window", engine.newQObject(consumer));
+//        QCoreApplication.processEvents();
         QObject settings = (QObject)webEngineView.property("settings");
         QObject userScripts = (QObject)webEngineView.property("userScripts");
         QWebEngineSettings _settings = QtWebEngineQuick.toWebEngineSettings(settings);
@@ -96,6 +124,9 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
         _settings.dispose();
         Assert.assertFalse(settings.isDisposed());
         settings.property("autoLoadImages");// should not crash
+    	QTimer.singleShot(2000, QApplication::quit);
+    	QApplication.exec();
+    	Assert.assertTrue(received[0]!=null);
         engine.dispose();
         Assert.assertTrue(webEngineView.isDisposed());
         Assert.assertTrue(userScripts.isDisposed());
