@@ -130,7 +130,7 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QDoubleBindable(QObject.QComputedProperty<@QtPrimitiveType Double> property) {
-		super(property, bindableInterface(2));
+		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given QProperty is not of double type.");

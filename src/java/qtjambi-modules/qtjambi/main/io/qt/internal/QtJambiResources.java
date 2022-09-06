@@ -45,7 +45,6 @@
 package io.qt.internal;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -199,6 +198,8 @@ public final class QtJambiResources {
 
 					if(url!=null){
 						cache.addPath(url);
+						if(url.toString().endsWith("/"))
+							continue;
 					}else{
 						continue;
 					}
@@ -209,6 +210,8 @@ public final class QtJambiResources {
 						myJarFile2 = resolveUrlToMyJarFile(url);
 						if (myJarFile2 != null) {
 							for (URL otherURL : cpUrls) {
+								if(otherURL.toString().endsWith("/"))
+									continue;
 								myJarFile1 = resolveUrlToMyJarFile(otherURL);
 								if (myJarFile1 != null) {
 									File file1 = new File(myJarFile1.getName());
@@ -380,26 +383,19 @@ public final class QtJambiResources {
 				}
 			}
 	
-			InputStream inStream = null;
 			try {
 				URLAlias urlAlias = checkNeedWorkaround(result);
 				if (urlAlias.file != null) { // Due to workaround
-					if (urlAlias.file.isFile()) // skip dirs
-						inStream = new FileInputStream(urlAlias.file);
+					if (!urlAlias.file.isFile())
+						result = null;
 				} else if(!urlAlias.url.toString().endsWith("/")){
 					URLConnection urlConn = urlAlias.url.openConnection();
-					inStream = urlConn.getInputStream();
+					try(InputStream inStream = urlConn.getInputStream()){}
 				}
-			} catch (Exception e) {
-				if(!result.getProtocol().equals("jrt"))
+			} catch (Throwable e) {
+				if(!result.getProtocol().equals("jrt") && !result.getProtocol().equals("file"))
 					java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, ""+result, e);
-			} finally {
-				if (inStream != null) {
-					try {
-						inStream.close();
-					} catch (IOException eat) {
-					}
-				}
+				result = null;
 			}
 		}
 		return result;
@@ -632,7 +628,7 @@ public final class QtJambiResources {
                     JarURLConnection jarUrlConnection = (JarURLConnection) urlConnection;
                     jarFile = jarUrlConnection.getJarFile();
                 }else {
-                    IOException thr = new IOException("not a JarURLConnection: " + urlConnection.getClass().getName());
+                    IOException thr = new IOException("not a JarURLConnection: " + urlConnection.getClass().getName()+" for URL: "+urlToJarFile);
                     urlConnection = null;  // we only keep handle when we have active Jar open
                     throw thr;
                 }
@@ -853,6 +849,8 @@ public final class QtJambiResources {
                             myJarFile = new MyJarFile(fileDir);
                         } catch(IOException eat) {
                         }
+                    }else {
+                    	return;
                     }
                 }else if(url.toString().endsWith("/")) {
                 	classPathDirs.add(url.toString());
@@ -953,6 +951,8 @@ public final class QtJambiResources {
                             myJarFile = new MyJarFile(fileDir);
                         } catch(IOException eat) {
                         }
+                    }else {
+                    	return;
                     }
                 }else if(url.toString().endsWith("/")) {
                 	removeImpl(url.toString());

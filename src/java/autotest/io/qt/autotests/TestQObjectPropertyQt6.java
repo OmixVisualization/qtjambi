@@ -584,4 +584,20 @@ public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     	}catch(QNoNativeResourcesException e) {}
     	assertEquals(4, p1.x.value());
     }
+    
+    @Test
+    public void testFindNotifySignal() {
+    	class PropertyOwner extends QObject{
+    		@QtPropertyMember
+    		private final QIntProperty x = new QIntProperty();
+    		public final Signal1<Integer> xChanged = new Signal1<>();
+    	}
+    	PropertyOwner owner = new PropertyOwner();
+    	int[] received = {0};
+    	owner.xChanged.connect(i->received[0] = i);
+    	owner.x.setValue(5);
+    	assertEquals(5, received[0]);
+    	owner.setProperty("x", 8);
+    	assertEquals(8, received[0]);
+    }
 }

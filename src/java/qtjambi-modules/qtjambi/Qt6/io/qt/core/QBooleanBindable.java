@@ -124,7 +124,7 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QBooleanBindable(QObject.QComputedProperty<@QtPrimitiveType Boolean> property) {
-		super(property, bindableInterface(2));
+		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given QProperty is not of boolean type.");

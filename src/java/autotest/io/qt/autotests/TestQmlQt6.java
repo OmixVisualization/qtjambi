@@ -31,10 +31,15 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QIntProperty;
 import io.qt.core.QObject;
 import io.qt.qml.QJSEngine;
 import io.qt.qml.QJSValue;
+import io.qt.qml.QQmlComponent;
+import io.qt.qml.QQmlEngine;
+import io.qt.qml.QtQml;
 
 public class TestQmlQt6 extends ApplicationInitializer{
 	
@@ -48,5 +53,48 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		Assert.assertTrue(value.isObject());
 		QObject result = engine.fromScriptValue(value, QObject.class);
 		Assert.assertEquals(QCoreApplication.instance(), result);
+	}
+	
+	static class Singleton extends QObject{
+		public final QProperty<String> text = new QProperty<>("Hello, world!");
+		
+		private int m_number = 8;
+
+		public void setNumber(int number) {
+			if(this.m_number != number) {
+				this.m_number = number;
+				this.number.notifyProperty();
+			}
+		}
+		public final QComputedIntProperty number = new QComputedIntProperty(()->this.m_number);
+	}
+	
+	@Test
+    public void run_testSingletonInstance() {
+		QtQml.qmlClearTypeRegistrations();
+		Singleton s = new Singleton();
+		QtQml.qmlRegisterSingletonInstance(s, "io.qt.test", 1, 0, "Singleton");
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"Item{\n" + 
+				"    property string text: Singleton.text\n" + 
+				"    property int number: Singleton.number\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QObject root = component.create();
+		Assert.assertEquals("Hello, world!", root.property("text"));
+		s.text.setValue("Hello, world?");
+		Assert.assertEquals("Hello, world?", root.property("text"));
+		QIntProperty iprop = new QIntProperty();
+		iprop.setBinding(()->s.number.value());
+		Assert.assertEquals(8, iprop.value());
+		Assert.assertEquals(8, root.property("number"));
+		s.setNumber(29);
+		Assert.assertEquals(29, iprop.value());
+		Assert.assertEquals(29, root.property("number"));
 	}
 }

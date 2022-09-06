@@ -26,7 +26,7 @@ Following Qt 6.3 modules are provided by QtJambi:
 ### Qt6 Essentials
 
 * [QtCore](https://doc.qt.io/qt-6/qtcore-index.html), [QtGui](https://doc.qt.io/qt-6/qtgui-index.html) and [QtWidgets](https://doc.qt.io/qt-6/qtwidgets-index.html) in module **qtjambi**:
-    * [**qtjambi-6.3.4.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.3.4/jar)
+    * [**qtjambi-6.3.4a.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.3.4a/jar)
     * [**qtjambi-native-windows-x64-6.3.4.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/6.3.4/jar)
     * [**qtjambi-native-linux-x64-6.3.4.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-linux-x64/6.3.4/jar)
     * [**qtjambi-native-macos-6.3.4.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-macos/6.3.4/jar)
@@ -537,7 +537,7 @@ Following Qt 6.2 modules are provided by QtJambi:
 ### Qt6 Essentials
 
 * [QtCore](https://doc.qt.io/qt-6/qtcore-index.html), [QtGui](https://doc.qt.io/qt-6/qtgui-index.html) and [QtWidgets](https://doc.qt.io/qt-6/qtwidgets-index.html) in module **qtjambi**:
-    * [**qtjambi-6.2.7.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.2.7/jar)
+    * [**qtjambi-6.2.7a.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.2.7a/jar)
     * [**qtjambi-native-windows-x64-6.2.7.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/6.2.7/jar)
     * [**qtjambi-native-linux-x64-6.2.7.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-linux-x64/6.2.7/jar)
     * [**qtjambi-native-macos-6.2.7.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-macos/6.2.7/jar)
@@ -1038,7 +1038,7 @@ Following Qt 5.15 modules are provided by QtJambi:
 ### Qt5 Essentials
 
 * [QtCore](https://doc.qt.io/qt-5/qtcore-index.html), [QtGui](https://doc.qt.io/qt-5/qtgui-index.html) and [QtWidgets](https://doc.qt.io/qt-5/qtwidgets-index.html) in module **qtjambi**:
-    * [**qtjambi-5.15.9.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/5.15.9/jar)
+    * [**qtjambi-5.15.9a.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/5.15.9a/jar)
     * [**qtjambi-native-windows-x64-5.15.9.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/5.15.9/jar)
     * [**qtjambi-native-linux-x64-5.15.9.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-linux-x64/5.15.9/jar)
     * [**qtjambi-native-macos-5.15.9.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-macos/5.15.9/jar)

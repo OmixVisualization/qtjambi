@@ -130,7 +130,7 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * @param property
 	 */
 	public QFloatBindable(QObject.QComputedProperty<@QtPrimitiveType Float> property) {
-		super(property, bindableInterface(2));
+		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given QProperty is not of float type.");

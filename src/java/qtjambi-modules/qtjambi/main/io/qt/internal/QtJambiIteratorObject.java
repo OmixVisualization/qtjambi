@@ -29,11 +29,7 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,12 +38,6 @@ import io.qt.QtObject;
 import io.qt.QtUninvokable;
 
 public abstract class QtJambiIteratorObject<E> extends QtObject{
-	
-	private static final Map<Class<?>, Function<Object,QtJambiIteratorObject<?>>> endMethodHandles;
-	
-	static {
-		endMethodHandles = Collections.synchronizedMap(new HashMap<>());
-	}
 	
 	private final Object owner;
 	private final Function<Object,QtJambiIteratorObject<?>> endSupplier;
@@ -63,30 +53,13 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 		}else if(owner instanceof QtJambiAbstractMultiMapObject) {
 			endSupplier = (Function)(Function<QtJambiAbstractMultiMapObject,QtJambiIteratorObject<?>>)QtJambiAbstractMultiMapObject::end;
 		}else {
-			endSupplier = endMethodHandles.computeIfAbsent(owner.getClass(), cls -> {
-				Method endMethod = null;
-				while (endMethod == null && cls != QtJambiObject.class) {
-					Method methods[] = cls.getDeclaredMethods();
-
-					for (Method method : methods) {
-						if (method.getParameterCount() == 0 && method.getName().equals("end")
-								&& QtJambiIteratorObject.class.isAssignableFrom(method.getReturnType())) {
-							endMethod = method;
-							break;
-						}
-					}
-					cls = cls.getSuperclass();
-				}
-				if (endMethod != null)
-					return QtJambiInternal.functionFromMethod(endMethod);
-				else return null;
-			});
+			endSupplier = QtJambiInternal.findEndSupplier(owner);
 		}
 	}
 	
     @QtUninvokable
 	protected final QtJambiIteratorObject<?> end(){
-		return endSupplier.apply(owner);
+		return endSupplier==null ? null : endSupplier.apply(owner);
 	}
 	
     @QtUninvokable
@@ -101,7 +74,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
     		
             @Override
             public boolean hasNext() {
-                return !QtJambiIteratorObject.this.equals(end);
+                return end!=null && !QtJambiIteratorObject.this.equals(end);
             }
 
             @Override
@@ -145,7 +118,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 	    	private final QtJambiIteratorObject<?> end = end();
 	    	private int icursor;
 			{
-				for (int i = 0; i < index && !QtJambiIteratorObject.this.equals(end); i++) {
+				for (int i = 0; i < index && end!=null && !QtJambiIteratorObject.this.equals(end); i++) {
 					increment();
 					icursor++;
 				}
@@ -153,7 +126,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 	        
 	        @Override
 	        public boolean hasNext() {
-	        	return !QtJambiIteratorObject.this.equals(end);
+	        	return end!=null && !QtJambiIteratorObject.this.equals(end);
 	        }
 	
 	        @Override
@@ -170,7 +143,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 	        
 	        @Override
 	        public E previous() {
-	        	if(!hasNext())
+	        	if(!hasPrevious())
                     throw new NoSuchElementException();
             	if(!end.equals(end()))
             		throw new IllegalMonitorStateException();
