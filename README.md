@@ -138,7 +138,11 @@ or the Java runtime property java.library.path. The example program can be execu
 java -cp qtjambi-6.3.4.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
 ```
 
-(On macOS you additionally need to use the start parameter -XstartOnFirstThread)
+On macOS you additionally need to use the start parameter -XstartOnFirstThread and point to Qt `lib` folder and not `bin`, for example:
+
+```
+java -cp qtjambi-6.3.4.jar;. -Djava.library.path=/Users/max/Qt/6.2.3/macos/lib -XstartOnFirstThread Test
+```
 
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
 There are a couple of specifics for QtJambi that are [introduced here](/www/Characteristics-of-QtJambi.md). 
