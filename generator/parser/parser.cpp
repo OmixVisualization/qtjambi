@@ -48,6 +48,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
 #define ADVANCE(tk, descr) \
 { \
