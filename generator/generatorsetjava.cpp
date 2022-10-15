@@ -120,7 +120,7 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
         ui_file_name = args.value("convert-to-jui");
         do_ui_convert = true;
 
-        if (!QFileInfo(ui_file_name).exists()) {
+        if (!QFileInfo::exists(ui_file_name)) {
             printf(".ui file '%s' does not exist\n", qPrintable(ui_file_name));
             return false;
         }
@@ -128,7 +128,8 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
     return GeneratorSet::readParameters(args);
 }
 
-void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const QString pp_file) {
+void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const QString pp_file, const QStringList& includePathsList) {
+    builder.setIncludePathsList(includePathsList);
     builder.setQtVersion(qtVersionMajor, qtVersionMinor, qtVersionPatch, qtjambiVersionPatch);
     builder.setFileName(pp_file);
     if (!outDir.isNull())

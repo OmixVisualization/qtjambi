@@ -80,7 +80,6 @@ public class TestSQLInjectedCodeQt5 extends ApplicationInitializer {
 
         QSqlRecord record = stms.myRecord();
         assertEquals(3456, record.value("javaInt"));
-        assertEquals(3456, QVariant.toInt(record.value("javaInt")));
     }
 
     @Test
@@ -91,8 +90,7 @@ public class TestSQLInjectedCodeQt5 extends ApplicationInitializer {
 
         QSqlRecord record = new QSqlRecord();
         stms.beforeInsert.emit(record);
-
-        assertEquals(1234, QVariant.toInt(record.value("cppInt")));
+        assertEquals(1234, record.value("cppInt"));
     }
 
     @Test

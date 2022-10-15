@@ -77,10 +77,18 @@ typedef QSet<hash_type> HashSet;
 Q_GLOBAL_STATIC(HashSet, gFunctionalHash)
 typedef QMap<size_t, PtrDeleterFunction> DeleterHash;
 Q_GLOBAL_STATIC(DeleterHash, gDeleterHash)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+typedef QHash<const QtPrivate::QMetaTypeInterface *, QByteArray> MetaTypeJavaTypeHash;
+typedef QMultiHash<QByteArray,QMetaType> JavaTypeMetaTypesHash;
+typedef QSet<const QtPrivate::QMetaTypeInterface *> JObjectWrappedMetaTypeHash;
+#else
 typedef QHash<int, QByteArray> MetaTypeJavaTypeHash;
-Q_GLOBAL_STATIC(MetaTypeJavaTypeHash, gMetaTypeJavaTypeHash)
 typedef QMultiHash<QByteArray,int> JavaTypeMetaTypesHash;
+typedef QSet<int> JObjectWrappedMetaTypeHash;
+#endif
+Q_GLOBAL_STATIC(MetaTypeJavaTypeHash, gMetaTypeJavaTypeHash)
 Q_GLOBAL_STATIC(JavaTypeMetaTypesHash, gJavaTypeMetaTypesHash)
+Q_GLOBAL_STATIC(JObjectWrappedMetaTypeHash, gJObjectWrappedMetaTypes)
 
 typedef QMap<size_t, PtrOwnerFunction> OwnerFunctionHash;
 Q_GLOBAL_STATIC(OwnerFunctionHash, gOwnerFunctionHash)
@@ -747,8 +755,6 @@ void registerMetaTypeID(const std::type_info& typeId, int qtMetaType)
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
-void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass);
 
 const char* registerMetaTypeName(const QByteArray& typeName){
     QWriteLocker locker(gLock());
@@ -1807,21 +1813,27 @@ void registerMediaControlInfo(const std::type_info& typeId, const char *media_co
     gMediaControlIIDClassHash->insert(media_control_iid, &typeId);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass){
+    return registerJavaClassForCustomMetaType(metaType, javaClass, false);
+}
+
+void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass, bool isJObjectWrapped){
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     gMetaTypeJavaTypeHash->insert(metaType, javaClass);
     gJavaTypeMetaTypesHash->insert(javaClass, metaType);
+    if(isJObjectWrapped)
+        gJObjectWrappedMetaTypes->insert(metaType);
 }
 
-void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass){
-    registerJavaClassForCustomMetaType(metaType.id(), javaClass);
+void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass, bool isJObjectWrapped){
+    registerJavaClassForCustomMetaType(metaType.id(), javaClass, isJObjectWrapped);
 }
 
-QList<int> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
+bool isJObjectWrappedMetaType(const QMetaType& metaType){
     QReadLocker locker(gLock());
-    Q_UNUSED(locker)
-    return gJavaTypeMetaTypesHash->values(javaClass);
+    return gJObjectWrappedMetaTypes->contains(metaType.id());
 }
 
 QByteArray registeredJavaClassForCustomMetaType(int metaType){
@@ -1833,6 +1845,68 @@ QByteArray registeredJavaClassForCustomMetaType(int metaType){
 QByteArray registeredJavaClassForCustomMetaType(const QMetaType& metaType){
     return registeredJavaClassForCustomMetaType(metaType.id());
 }
+
+QList<int> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gJavaTypeMetaTypesHash->values(javaClass);
+}
+#else
+void registerJavaClassForCustomMetaType(QMetaType metaType, const QByteArray& javaClass, bool isJObjectWrapped){
+    const QtPrivate::QMetaTypeInterface * iface = metaType.iface();
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    gMetaTypeJavaTypeHash->insert(iface, javaClass);
+    gJavaTypeMetaTypesHash->insert(javaClass, metaType);
+    if(isJObjectWrapped)
+        gJObjectWrappedMetaTypes->insert(iface);
+}
+
+bool isJObjectWrappedMetaType(QMetaType metaType){
+    QReadLocker locker(gLock());
+    return gJObjectWrappedMetaTypes->contains(metaType.iface());
+}
+
+QByteArray registeredJavaClassForCustomMetaType(const QtPrivate::QMetaTypeInterface * metaType){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gMetaTypeJavaTypeHash->value(metaType);
+}
+
+QByteArray registeredJavaClassForCustomMetaType(QMetaType metaType){
+    return registeredJavaClassForCustomMetaType(metaType.iface());
+}
+
+const QMetaObject *findWrappersMetaObject(const QtPrivate::QMetaTypeInterface *iface){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        try {
+            QByteArray className;
+            {
+                QReadLocker locker(gLock());
+                className = (*gMetaTypeJavaTypeHash)[iface];
+            }
+            if(!className.isEmpty()){
+                jclass clazz = resolveClass(env, className);
+                const QMetaObject* meta_object = qtjambi_metaobject_for_class(env, clazz);
+                if(!meta_object){
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags = QtPrivate::QMetaTypeTypeFlags<void*>::Flags | QMetaType::PointerToGadget;
+                    registerMetaObjectByMetaTypeInterface(iface, meta_object);
+                }
+                const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = &metaobjectByMetaTypeInterface;
+            }
+        }catch(const JavaException&){
+        }
+    }
+    return nullptr;
+}
+
+QList<QMetaType> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gJavaTypeMetaTypesHash->values(javaClass);
+}
+#endif
 
 QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType){
     QList<const char*> iids;
@@ -2094,14 +2168,17 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
                 }
                 if (returned == nullptr && exception)
 #endif
+                {
 #ifdef QTJAMBI_STACKTRACE
-                if(qtClassName=="io.qt.internal.QtJambiInternal")
-                    JavaException(env, exception).raise();
-                else
-                    JavaException(env, exception).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                    if(qtClassName=="io.qt.internal.QtJambiInternal"){
+                        JavaException(env, exception).raise();
+                    }else{
+                        JavaException(env, exception).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                    }
 #else
                     JavaException(env, exception).raise();
 #endif
+                }
             }
         }
     }
@@ -2558,3 +2635,1412 @@ bool JObjectWrapperConverter::convert(const AbstractConverterFunction *converter
     return true;
 }
 #endif
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+struct JObjectValueWrapperPrivate{
+    jclass clazz = nullptr;
+    jmethodID constructor = 0;
+    jmethodID clone = 0;
+    jmethodID writeTo = 0;
+    jmethodID readFrom = 0;
+    bool isSerializable = false;
+    QByteArray name;
+    const QMetaObject * metaObject = reinterpret_cast<const QMetaObject *>(quintptr(std::numeric_limits<quintptr>::max()));
+    static constexpr auto metaObjectFn = &JObjectValueWrapper::metaObject;
+    static constexpr auto defaultCtr = &JObjectValueWrapper::defaultCtr;
+    static constexpr auto copyCtr = &JObjectValueWrapper::copyCtr;
+    static constexpr auto moveCtr = &JObjectValueWrapper::moveCtr;
+    static constexpr auto dtor = &JObjectValueWrapper::dtor;
+    static constexpr auto equals = &JObjectValueWrapper::equals;
+    static constexpr auto lessThan = &JObjectValueWrapper::lessThan;
+    static constexpr auto debugStream = &JObjectValueWrapper::debugStream;
+    static constexpr auto dataStreamOut = &JObjectValueWrapper::dataStreamOut;
+    static constexpr auto dataStreamIn = &JObjectValueWrapper::dataStreamIn;
+    static constexpr auto serializableDataStreamOut = &JObjectValueWrapper::serializableDataStreamOut;
+    static constexpr auto serializableDataStreamIn = &JObjectValueWrapper::serializableDataStreamIn;
+};
+
+JObjectWrapper qtjambiCreateObject(const JObjectValueWrapperPrivate* methods){
+    if(methods){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            try{
+                return JObjectWrapper(env, env->NewObject(methods->clazz, methods->constructor));
+            }catch(const JavaException& exn){
+                exn.report(env);
+            }
+        }
+    }
+    return JObjectWrapper();
+}
+
+JObjectWrapper qtjambiCopyObject(JNIEnv* env, const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
+    if(methods && env){
+        try{
+            return JObjectWrapper(env, env->CallObjectMethod(other.object(), methods->clone));
+        }catch(const JavaException& exn){
+            exn.report(env);
+        }
+    }
+    return JObjectWrapper(other);
+}
+
+JObjectWrapper qtjambiCopyObject(const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        return qtjambiCopyObject(env, methods, other);
+    }
+    return JObjectWrapper(other);
+}
+
+typedef QMap<size_t, const QtPrivate::QMetaTypeInterface *> ClassMetaTypeInterfaceHash;
+Q_GLOBAL_STATIC(ClassMetaTypeInterfaceHash, gClassMetaTypeInterfaces)
+typedef QMap<const QtPrivate::QMetaTypeInterface *,JObjectValueWrapperPrivate> MetaTypeInterfacesHash;
+Q_GLOBAL_STATIC(MetaTypeInterfacesHash, gMetaTypeInterfaces)
+typedef QMap<const QtPrivate::QMetaTypeInterface *,jclass> MetaTypeEnumClassesHash;
+Q_GLOBAL_STATIC(MetaTypeEnumClassesHash, gMetaTypeEnumClasses)
+
+bool JObjectValueWrapper::isValueType(QMetaType metaType){
+    const JObjectValueWrapperPrivate* methods{nullptr};
+    {
+        QReadLocker locker(gLock());
+        if(gMetaTypeInterfaces->contains(metaType.iface()))
+            methods = &(*gMetaTypeInterfaces)[metaType.iface()];
+    }
+    return methods;
+}
+
+bool JObjectValueWrapper::hasCustomDebugStreamOperator(QMetaType metaType){
+    return metaType.iface()->debugStream!=JObjectValueWrapper::debugStream;
+}
+
+JObjectValueWrapper JObjectValueWrapper::create(JNIEnv* env, jobject object, QMetaType metaType){
+    const JObjectValueWrapperPrivate* methods{nullptr};
+    {
+        QReadLocker locker(gLock());
+        if(gMetaTypeInterfaces->contains(metaType.iface()))
+            methods = &(*gMetaTypeInterfaces)[metaType.iface()];
+    }
+    if(methods){
+        return JObjectValueWrapper(env, env->IsSameObject(object, nullptr) ? nullptr : env->CallObjectMethod(object, methods->clone), methods);
+    }
+    return {};
+}
+
+JObjectValueWrapper::JObjectValueWrapper() : JObjectWrapper(), p(nullptr) {}
+JObjectValueWrapper::JObjectValueWrapper(const JObjectValueWrapperPrivate* _p)
+    : JObjectWrapper(qtjambiCreateObject(_p)),
+      p(_p){}
+
+JObjectValueWrapper::JObjectValueWrapper(JNIEnv* env, jobject object, const JObjectValueWrapperPrivate* _p)
+    : JObjectWrapper(env, object),
+      p(_p){}
+
+JObjectValueWrapper::JObjectValueWrapper(JObjectWrapper&& object, const JObjectValueWrapperPrivate* _p)
+    : JObjectWrapper(std::move(object)),
+      p(_p){}
+
+
+JObjectValueWrapper::JObjectValueWrapper(const JObjectValueWrapper& other)
+    : JObjectWrapper(qtjambiCopyObject(other.p, other)),
+      p(other.p){}
+
+JObjectValueWrapper::JObjectValueWrapper(JObjectValueWrapper&& other)
+    : JObjectWrapper(std::move(other)),
+      p(other.p){}
+
+JObjectValueWrapper::~JObjectValueWrapper() {}
+
+jobject JObjectValueWrapper::value(JNIEnv* env) const{
+    return env->CallObjectMethod(object(), p->clone);
+}
+
+JObjectValueWrapper& JObjectValueWrapper::operator=(const JObjectValueWrapper &wrapper){
+    JObjectWrapper::operator=(qtjambiCopyObject(wrapper.p, wrapper));
+    p = wrapper.p;
+    return *this;
+}
+
+JObjectValueWrapper& JObjectValueWrapper::operator=(JObjectValueWrapper &&wrapper){
+    JObjectWrapper::operator=(std::move(wrapper));
+    p = wrapper.p;
+    return *this;
+}
+
+JObjectValueWrapper& JObjectValueWrapper::operator=(const JObjectWrapper &wrapper){
+    if(const JObjectValueWrapper* _wrapper = dynamic_cast<const JObjectValueWrapper*>(&wrapper)){
+        return operator=(*_wrapper);
+    }else if(p){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(env->IsInstanceOf(wrapper.object(), p->clazz)){
+                return operator=(JObjectValueWrapper(qtjambiCopyObject(env, p, wrapper.object()), p));
+            }
+        }
+    }
+    return *this;
+}
+
+JObjectValueWrapper& JObjectValueWrapper::operator=(JObjectWrapper &&wrapper){
+    if(JObjectValueWrapper* _wrapper = dynamic_cast<JObjectValueWrapper*>(&wrapper)){
+        return operator=(std::move(*_wrapper));
+    }else{
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(env->IsInstanceOf(wrapper.object(), p->clazz)){
+                return operator=(JObjectValueWrapper(std::move(wrapper), p));
+            }
+        }
+    }
+    return *this;
+}
+
+JObjectValueWrapper& JObjectValueWrapper::operator=(jobject obj){
+    if(p){
+        if(JNIEnv* env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(env->IsInstanceOf(obj, p->clazz)){
+                JObjectWrapper::operator=(obj);
+            }
+        }
+    }
+    return *this;
+}
+
+bool JObjectValueWrapper::operator==(const JObjectValueWrapper &other) const{
+    return p==other.p && JObjectWrapper::operator==(other);
+}
+
+bool JObjectValueWrapper::operator<(const JObjectValueWrapper &other) const{
+    return p==other.p && JObjectWrapper::operator<(other);
+
+}
+
+bool JObjectValueWrapper::isNull()const{return !p;}
+
+void JObjectValueWrapper::writeTo(QDataStream &d)const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        try{
+            jobject _d = qtjambi_from_object(env, &d, false);
+            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
+            env->CallVoidMethod(object(), p->writeTo, _d);
+        }catch(const JavaException& exn){
+            exn.report(env);
+        }
+    }
+}
+void JObjectValueWrapper::readFrom(QDataStream &d){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        try{
+            jobject _d = qtjambi_from_object(env, &d, false);
+            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
+            env->CallVoidMethod(object(), p->readFrom, _d);
+        }catch(const JavaException& exn){
+            exn.report(env);
+        }
+    }
+}
+
+void JObjectValueWrapper::serializeTo(QDataStream &d)const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        try{
+            jobject _d = qtjambi_from_object(env, &d, false);
+            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
+            Java::QtJambi::QtJambiInternal::writeSerializableJavaObject(env, _d, object());
+        }catch(const JavaException& exn){
+            exn.report(env);
+        }
+    }
+}
+void JObjectValueWrapper::serializeFrom(QDataStream &d){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        try{
+            jobject _d = qtjambi_from_object(env, &d, false);
+            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
+            jobject newValue = Java::QtJambi::QtJambiInternal::readSerializableJavaObject(env, _d);
+            *this = JObjectValueWrapper(env, newValue, p);
+        }catch(const JavaException& exn){
+            exn.report(env);
+        }
+    }
+}
+
+const QMetaObject *JObjectValueWrapper::metaObject(const QtPrivate::QMetaTypeInterface *iface){
+    const JObjectValueWrapperPrivate* methods{nullptr};
+    {
+        QReadLocker locker(gLock());
+        if(gMetaTypeInterfaces->contains(iface))
+            methods = &(*gMetaTypeInterfaces)[iface];
+    }
+    if(methods){
+        if(quintptr(methods->metaObject) == std::numeric_limits<quintptr>::max()){
+            if(JNIEnv* env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                const_cast<JObjectValueWrapperPrivate*>(methods)->metaObject = qtjambi_metaobject_for_class(env, methods->clazz);
+                if(!methods->metaObject){
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::IsGadget;
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::PointerToGadget;
+                }
+            }else return nullptr;
+        }
+        return methods->metaObject;
+    }
+    return nullptr;
+}
+
+void JObjectValueWrapper::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *target){
+    const JObjectValueWrapperPrivate* methods{nullptr};
+    {
+        QReadLocker locker(gLock());
+        if(gMetaTypeInterfaces->contains(iface))
+            methods = &(*gMetaTypeInterfaces)[iface];
+    }
+    new (target) JObjectValueWrapper(qtjambiCreateObject(methods), methods);
+}
+
+void JObjectValueWrapper::copyCtr(const QtPrivate::QMetaTypeInterface *, void *target, const void *other){
+    const JObjectValueWrapper* _other = reinterpret_cast<const JObjectValueWrapper*>(other);
+    new (target) JObjectValueWrapper(*_other);
+}
+
+void JObjectValueWrapper::moveCtr(const QtPrivate::QMetaTypeInterface *, void *target, void *other){
+    JObjectValueWrapper* _other = reinterpret_cast<JObjectValueWrapper*>(other);
+    new (target) JObjectValueWrapper(std::move(*_other));
+}
+
+void JObjectValueWrapper::dtor(const QtPrivate::QMetaTypeInterface *, void *target){
+    reinterpret_cast<JObjectValueWrapper*>(target)->~JObjectValueWrapper();
+}
+
+bool JObjectValueWrapper::equals(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2){
+    const JObjectValueWrapper* _value1 = reinterpret_cast<const JObjectValueWrapper*>(value1);
+    const JObjectValueWrapper* _value2 = reinterpret_cast<const JObjectValueWrapper*>(value2);
+    if(_value1->isNull() || _value2->isNull()){
+        const JObjectValueWrapperPrivate* methods{nullptr};
+        {
+            QReadLocker locker(gLock());
+            if(gMetaTypeInterfaces->contains(iface))
+                methods = &(*gMetaTypeInterfaces)[iface];
+        }
+        if(methods){
+            if(_value1->isNull())
+                *const_cast<JObjectValueWrapper*>(_value1) = JObjectValueWrapper(methods);
+            if(_value2->isNull())
+                *const_cast<JObjectValueWrapper*>(_value2) = JObjectValueWrapper(methods);
+        }else return false;
+    }
+    try{
+        return *_value1 == *_value2;
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+        return false;
+    }
+}
+
+bool JObjectValueWrapper::lessThan(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2){
+    const JObjectValueWrapper* _value1 = reinterpret_cast<const JObjectValueWrapper*>(value1);
+    const JObjectValueWrapper* _value2 = reinterpret_cast<const JObjectValueWrapper*>(value2);
+    if(_value1->isNull() || _value2->isNull()){
+        const JObjectValueWrapperPrivate* methods{nullptr};
+        {
+            QReadLocker locker(gLock());
+            if(gMetaTypeInterfaces->contains(iface))
+                methods = &(*gMetaTypeInterfaces)[iface];
+        }
+        if(methods){
+            if(_value1->isNull())
+                *const_cast<JObjectValueWrapper*>(_value1) = JObjectValueWrapper(methods);
+            if(_value2->isNull())
+                *const_cast<JObjectValueWrapper*>(_value2) = JObjectValueWrapper(methods);
+        }else return false;
+    }
+    try{
+        return *_value1 < *_value2;
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+        return false;
+    }
+}
+
+void JObjectValueWrapper::debugStream(const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
+    const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
+    if(_value->isNull()){
+        const JObjectValueWrapperPrivate* methods{nullptr};
+        {
+            QReadLocker locker(gLock());
+            if(gMetaTypeInterfaces->contains(iface))
+                methods = &(*gMetaTypeInterfaces)[iface];
+        }
+        if(methods)
+            *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
+        else return;
+    }
+    try{
+        bool ok = false;
+        QString strg = _value->toString(&ok);
+        if(ok)
+            d << strg;
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+    }
+}
+
+void JObjectValueWrapper::dataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
+    try{
+        const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
+        if(_value->isNull()){
+            const JObjectValueWrapperPrivate* methods{nullptr};
+            {
+                QReadLocker locker(gLock());
+                if(gMetaTypeInterfaces->contains(iface))
+                    methods = &(*gMetaTypeInterfaces)[iface];
+            }
+            if(methods)
+                *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
+            else return;
+        }
+        _value->writeTo(d);
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+    }
+}
+
+void JObjectValueWrapper::dataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
+    try{
+        JObjectValueWrapper* _value = reinterpret_cast<JObjectValueWrapper*>(value);
+        if(_value->isNull()){
+            const JObjectValueWrapperPrivate* methods{nullptr};
+            {
+                QReadLocker locker(gLock());
+                if(gMetaTypeInterfaces->contains(iface))
+                    methods = &(*gMetaTypeInterfaces)[iface];
+            }
+            if(methods)
+                *_value = JObjectValueWrapper(methods);
+            else return;
+        }
+        _value->readFrom(d);
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+    }
+}
+
+void JObjectValueWrapper::serializableDataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
+    try{
+        const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
+        if(_value->isNull()){
+            const JObjectValueWrapperPrivate* methods{nullptr};
+            {
+                QReadLocker locker(gLock());
+                if(gMetaTypeInterfaces->contains(iface))
+                    methods = &(*gMetaTypeInterfaces)[iface];
+            }
+            if(methods)
+                *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
+            else return;
+        }
+        _value->serializeTo(d);
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+    }
+}
+
+void JObjectValueWrapper::serializableDataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
+    try{
+        JObjectValueWrapper* _value = reinterpret_cast<JObjectValueWrapper*>(value);
+        if(_value->isNull()){
+            const JObjectValueWrapperPrivate* methods{nullptr};
+            {
+                QReadLocker locker(gLock());
+                if(gMetaTypeInterfaces->contains(iface))
+                    methods = &(*gMetaTypeInterfaces)[iface];
+            }
+            if(methods)
+                *_value = JObjectValueWrapper(methods);
+            else return;
+        }
+        _value->serializeFrom(d);
+    }catch(const JavaException& exn){
+        exn.report(qtjambi_current_environment());
+    }
+}
+
+void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, const QString& qtName, const QString& fullJavaName, jclass clazz);
+
+int qtjambi_register_list_metatype(JNIEnv *env, const QMetaType& elementType){
+    int result = 0;
+    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(qtjambi_create_container_access(env, ContainerType::QList, elementType));
+    if(!listAccess){
+        QHashFunction hashFunction;
+        InternalToExternalConverter internalToExternalConverter;
+        ExternalToInternalConverter externalToInternalConverter;
+        const JObjectValueWrapperPrivate* methods{nullptr};
+        {
+            const QtPrivate::QMetaTypeInterface *iface = QMetaType(elementType).iface();
+            QReadLocker locker(gLock());
+            if(gMetaTypeInterfaces->contains(iface))
+                methods = &(*gMetaTypeInterfaces)[iface];
+        }
+        if(methods){
+            hashFunction = [](const void* ptr, hash_type seed)->hash_type{
+                if(JNIEnv* env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    try{
+                        seed = qHash(Java::Runtime::Object::hashCode(env, reinterpret_cast<const JObjectValueWrapper*>(ptr)->object()), seed);
+                    }catch(const JavaException& exn){
+                        exn.report(env);
+                    }
+                }
+                return seed;
+            };
+            internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(env, QLatin1String(elementType.name()), elementType, methods->clazz);
+            externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(env, methods->clazz, QLatin1String(elementType.name()), elementType);
+        }else{
+            const std::type_info* typeId;
+            {
+                QReadLocker locker(gLock());
+                typeId = gMetaTypeIDHash->value(elementType.id());
+            }
+            if(typeId)
+                hashFunction = registeredHashFunction(*typeId);
+            if(jclass clazz = qtjambi_class_for_metatype(env, elementType)){
+                internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(env, QLatin1String(elementType.name()), elementType, clazz);
+                externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(env, clazz, QLatin1String(elementType.name()), elementType);
+            }
+        }
+        listAccess = dynamic_cast<AbstractListAccess*>(qtjambi_create_container_access(
+                                                                           env,
+                                                                           ContainerType::QList,
+                                                                           elementType,
+                                                                           elementType.alignOf(),
+                                                                           elementType.sizeOf(),
+                                                                           false,
+                                                                           hashFunction,
+                                                                           internalToExternalConverter,
+                                                                           externalToInternalConverter
+                                                                           ));
+    }
+    if(listAccess){
+        result = listAccess->registerContainer(QStringLiteral("QList<%1>").arg(QLatin1String(elementType.name())).toUtf8());
+        listAccess->dispose();
+    }
+    return result;
+}
+
+template<typename INT, int isQtEnum0OrFlag1 = 0>
+int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& javaClassName, const QByteArray& javaTypeName){
+    enum E:INT{};
+    typedef typename std::conditional<isQtEnum0OrFlag1==1,QFlags<E>,E>::type EnumOrFlags;
+    typedef typename std::conditional<isQtEnum0OrFlag1==1,JObjectWrapper,JEnumWrapper>::type Wrapper;
+    QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
+            /*.revision=*/ 0,
+            /*.alignment=*/ alignof(EnumOrFlags),
+            /*.size=*/ sizeof(EnumOrFlags),
+            /*.flags=*/ uint(QtPrivate::QMetaTypeTypeFlags<EnumOrFlags>::Flags),
+            /*.typeId=*/ QMetaType::UnknownType,
+            /*.metaObject=*/ nullptr,
+            /*.name=*/ registerMetaTypeName(javaTypeName),
+            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::defaultCtr,
+            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::copyCtr,
+            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::moveCtr,
+            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::dtor,
+            /*.equals=*/ QtPrivate::QEqualityOperatorForType<EnumOrFlags>::equals,
+            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<EnumOrFlags>::lessThan,
+            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<EnumOrFlags>::debugStream,
+            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<EnumOrFlags>::dataStreamOut,
+            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<EnumOrFlags>::dataStreamIn,
+            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::legacyRegisterOp
+    };
+    {
+        QWriteLocker locker(gLock());
+        if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(qHash(javaClassName))){
+            delete metaTypeInterface;
+            return iface->typeId;
+        }
+        gClassMetaTypeInterfaces->insert(qHash(javaClassName), metaTypeInterface);
+        (*gMetaTypeEnumClasses)[metaTypeInterface] = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
+    }
+    QMetaType metaType(metaTypeInterface);
+    int result = metaType.id();
+    auto conv = [metaTypeInterface](const void *src, void *target) -> bool {
+        if(src){
+            jclass clazz;
+            {
+                QReadLocker locker(gLock());
+                clazz = (*gMetaTypeEnumClasses)[metaTypeInterface];
+            }
+            if(clazz){
+                if(JNIEnv* env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    try{
+                        if constexpr(isQtEnum0OrFlag1==0){
+                            new (target)Wrapper(qtjambi_from_enum(env, *reinterpret_cast<const INT*>(src), clazz));
+                        }else if constexpr(isQtEnum0OrFlag1==1){
+                            new (target)Wrapper(qtjambi_from_flags(env, *reinterpret_cast<const INT*>(src), clazz));
+                        }else{
+                            jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, clazz);
+                            jobject e = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const INT*>(src));
+                            new (target)Wrapper(e);
+                        }
+                    }catch(const JavaException& exn){
+                        exn.report(env);
+                        return false;
+                    }
+                }else{
+                    return false;
+                }
+            }
+        }else{
+            new (target)Wrapper();
+        }
+        return true;
+    };
+    QMetaType::registerConverterFunction(conv, metaType, QMetaType::fromType<JObjectWrapper>());
+    if constexpr(isQtEnum0OrFlag1!=1){
+        QMetaType::registerConverterFunction(conv, metaType, QMetaType::fromType<JEnumWrapper>());
+    }
+    auto iconv = [](const void *src, void *target) -> bool {
+        if(src){
+            new (target)typename QIntegerForSizeof<EnumOrFlags>::Signed(*reinterpret_cast<const E*>(src));
+        }else{
+            new (target)typename QIntegerForSizeof<EnumOrFlags>::Signed();
+        }
+        return true;
+    };
+    QMetaType::registerConverterFunction(iconv, metaType, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Signed>());
+    QMetaType::registerConverterFunction(iconv, metaType, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>());
+    QMetaType::registerConverterFunction(iconv, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Signed>(), metaType);
+    QMetaType::registerConverterFunction(iconv, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>(), metaType);
+    registerJavaClassForCustomMetaType(metaType, javaClassName.toUtf8());
+    return result;
+}
+#else
+void * pointerConstructHelper(void * where, const void *pointer);
+void destructHelper(void *);
+
+template<size_t SIZE>
+void * constructHelper(void * where, const void *pointer)
+{
+    memcpy(where, pointer, SIZE);
+    return where;
+}
+
+typedef void*(*ConstructorFn)(void*, const void*);
+ConstructorFn findEnumConstructor(int size){
+    switch(size){
+    case 1: return &constructHelper<1>;
+    case 2: return &constructHelper<2>;
+    case 4: return &constructHelper<4>;
+    case 8: return &constructHelper<8>;
+    default:
+        return nullptr;
+    }
+}
+#endif
+
+int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations);
+
+int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QString* javaClassNamePtr)
+{
+    try{
+        int id = qtjambiMetaTypeId(env, clazz, nullptr);
+        if(id!=QMetaType::UnknownType)
+            return id;
+        if(Java::Runtime::Class::isArray(env, clazz) && !isPointer){
+            jclass componentType = Java::Runtime::Class::getComponentType(env, clazz);
+            if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
+                return registerMetaType<JIntArrayWrapper>("JIntArrayWrapper");
+            }else if(Java::Runtime::Short::isPrimitiveType(env, componentType)){
+                return registerMetaType<JShortArrayWrapper>("JShortArrayWrapper");
+            }else if(Java::Runtime::Byte::isPrimitiveType(env, componentType)){
+                return registerMetaType<JByteArrayWrapper>("JByteArrayWrapper");
+            }else if(Java::Runtime::Long::isPrimitiveType(env, componentType)){
+                return registerMetaType<JLongArrayWrapper>("JLongArrayWrapper");
+            }else if(Java::Runtime::Character::isPrimitiveType(env, componentType)){
+                return registerMetaType<JCharArrayWrapper>("JCharArrayWrapper");
+            }else if(Java::Runtime::Boolean::isPrimitiveType(env, componentType)){
+                return registerMetaType<JBooleanArrayWrapper>("JBooleanArrayWrapper");
+            }else if(Java::Runtime::Double::isPrimitiveType(env, componentType)){
+                return registerMetaType<JDoubleArrayWrapper>("JDoubleArrayWrapper");
+            }else if(Java::Runtime::Float::isPrimitiveType(env, componentType)){
+                return registerMetaType<JFloatArrayWrapper>("JFloatArrayWrapper");
+            }else{
+                return registerMetaType<JObjectArrayWrapper>("JObjectArrayWrapper");
+            }
+        }else if((Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Int;
+        }else if((Java::Runtime::Long::isSameClass(env, clazz) || Java::Runtime::Long::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::LongLong;
+        }else if((Java::Runtime::Short::isSameClass(env, clazz) || Java::Runtime::Short::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Short;
+        }else if((Java::Runtime::Byte::isSameClass(env, clazz) || Java::Runtime::Byte::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::SChar;
+        }else if((Java::Runtime::Boolean::isSameClass(env, clazz) || Java::Runtime::Boolean::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Bool;
+        }else if((Java::Runtime::Character::isSameClass(env, clazz) || Java::Runtime::Character::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::QChar;
+        }else if((Java::Runtime::Float::isSameClass(env, clazz) || Java::Runtime::Float::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Float;
+        }else if((Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Double;
+        }else if((Java::Runtime::Void::isPrimitiveType(env, clazz)) && !isPointer){
+            return QMetaType::Void;
+        }else{
+            QString javaClassName = javaClassNamePtr ? *javaClassNamePtr : qtjambi_class_name(env, clazz).replace('.', '/');
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            {
+                QReadLocker locker(gLock());
+                if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(qHash(javaClassName))){
+                    return iface->typeId;
+                }
+            }
+#endif
+            if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                QByteArray qtType = getQtName(*typeId);
+                if((!isPointer || qtType.endsWith("*")) && (!isReference || !qtType.endsWith("*"))){
+                    int id = registeredMetaTypeID(*typeId);
+                    if(id!=QMetaType::UnknownType)
+                        return id;
+                }
+                const QMetaObject *const original_meta_object = registeredOriginalMetaObject(*typeId);
+                QMetaType::TypeFlags flags = QMetaType::MovableType | QMetaType::NeedsDestruction | QMetaType::NeedsConstruction;
+                QByteArray typeName = QMetaObject::normalizedType(qtType);
+                EntryTypes entryType = getEntryType(*typeId);
+                if(isReference){
+                    switch(entryType){
+                    case EntryTypes::ObjectTypeInfo:
+                    case EntryTypes::QObjectTypeInfo:
+                        if(typeName.endsWith("*")){
+                            typeName.chop(1);
+                        }
+                        entryType = EntryTypes::ValueTypeInfo; break;
+                    case EntryTypes::InterfaceTypeInfo:
+                        if(typeName.endsWith("*")){
+                            typeName.chop(1);
+                        }
+                        entryType = EntryTypes::InterfaceValueTypeInfo; break;
+                    default: break;
+                    }
+                }else if(isPointer){
+                    switch(entryType){
+                    case EntryTypes::ValueTypeInfo:
+                        entryType = EntryTypes::ObjectTypeInfo; break;
+                    case EntryTypes::InterfaceValueTypeInfo:
+                        entryType = EntryTypes::InterfaceTypeInfo; break;
+                    default: break;
+                    }
+                }
+                switch(entryType){
+                case EntryTypes::ObjectTypeInfo:
+                case EntryTypes::QObjectTypeInfo:
+                case EntryTypes::InterfaceTypeInfo:
+                case EntryTypes::FunctionalTypeInfo: {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                    flags |= QMetaType::IsPointer;
+#endif
+                    if(entryType!=EntryTypes::FunctionalTypeInfo && !typeName.endsWith("*")){
+                        typeName = QMetaObject::normalizedType(typeName + "*");
+                    }
+                    if(Java::QtCore::QObject::isAssignableFrom(env, clazz)){
+                        flags |= QMetaType::PointerToQObject;
+                    }else if(original_meta_object){
+                        flags |= QMetaType::PointerToGadget;
+                    }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    QMetaType::Destructor destructor = &destructHelper;
+                    QMetaType::Constructor constructor = &pointerConstructHelper;
+                    int typeId = QMetaType::registerNormalizedType(
+                            typeName,
+                            destructor,
+                            constructor,
+                            sizeof(void*),
+                            flags,
+                            original_meta_object
+                        );
+                    qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
+                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    return typeId;
+#else
+                    QMetaType metaType = createMetaType(typeName,
+                                                        true,
+                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
+                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
+                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::moveCtr,
+                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::dtor,
+                                                        /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
+                                                        /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
+                                                        /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
+                                                        /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
+                                                        /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
+                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::legacyRegisterOp,
+                                                        /*.size=*/ sizeof(void*),
+                                                        /*.alignment=*/ alignof(void*),
+                                                        /*.typeId=*/ QMetaType::UnknownType,
+                                                        /*.flags=*/ QMetaType::TypeFlags(flags),
+                                                        original_meta_object,
+                                                        nullptr);
+                    metaType.id();
+                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                    registerConverterVariant(env, metaType, typeName, javaClassName, clazz);
+                    return metaType.id();
+#endif
+                }
+                case EntryTypes::EnumTypeInfo:{
+                    flags |= QMetaType::IsEnumeration;
+                    if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        int typeId = QMetaType::registerNormalizedType(
+                                typeName,
+                                &destructHelper,
+                                findEnumConstructor(sizeof(qint16)),
+                                sizeof(sizeof(qint16)),
+                                flags,
+                                original_meta_object
+                            );
+                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint16>(), typeId);
+                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        return typeId;
+#else
+                        QMetaType metaType = createMetaType(typeName,
+                                                            true,
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::dtor,
+                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint16>::equals,
+                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint16>::lessThan,
+                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint16>::debugStream,
+                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamOut,
+                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamIn,
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::legacyRegisterOp,
+                                                            /*.size=*/ sizeof(qint16),
+                                                            /*.alignment=*/ alignof(qint16),
+                                                            /*.typeId=*/ QMetaType::UnknownType,
+                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
+                                                            original_meta_object,
+                                                            nullptr);
+                        int _id = metaType.id();
+                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        return _id;
+#endif
+                    }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        int typeId = QMetaType::registerNormalizedType(
+                                typeName,
+                                &destructHelper,
+                                findEnumConstructor(sizeof(qint64)),
+                                sizeof(sizeof(qint64)),
+                                flags,
+                                original_meta_object
+                            );
+                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint64>(), typeId);
+                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        return typeId;
+#else
+                        QMetaType metaType = createMetaType(typeName,
+                                                            true,
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::dtor,
+                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint64>::equals,
+                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint64>::lessThan,
+                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint64>::debugStream,
+                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamOut,
+                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamIn,
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::legacyRegisterOp,
+                                                            /*.size=*/ sizeof(qint64),
+                                                            /*.alignment=*/ alignof(qint64),
+                                                            /*.typeId=*/ QMetaType::UnknownType,
+                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
+                                                            original_meta_object,
+                                                            nullptr);
+                        int _id = metaType.id();
+                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        return _id;
+#endif
+                    }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        int typeId = QMetaType::registerNormalizedType(
+                                typeName,
+                                &destructHelper,
+                                findEnumConstructor(sizeof(qint8)),
+                                sizeof(sizeof(qint8)),
+                                flags,
+                                original_meta_object
+                            );
+                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint8>(), typeId);
+                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        return typeId;
+#else
+                        QMetaType metaType = createMetaType(typeName,
+                                                            true,
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::dtor,
+                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint8>::equals,
+                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint8>::lessThan,
+                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint8>::debugStream,
+                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamOut,
+                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamIn,
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::legacyRegisterOp,
+                                                            /*.size=*/ sizeof(qint8),
+                                                            /*.alignment=*/ alignof(qint8),
+                                                            /*.typeId=*/ QMetaType::UnknownType,
+                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
+                                                            original_meta_object,
+                                                            nullptr);
+                        int _id = metaType.id();
+                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        return _id;
+#endif
+                    }else /*if(Java::Runtime::Enum::isAssignableFrom(env, clazz)
+                         || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz))*/ {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                         int typeId = QMetaType::registerNormalizedType(
+                                 typeName,
+                                 &destructHelper,
+                                 findEnumConstructor(sizeof(qint32)),
+                                 sizeof(sizeof(qint32)),
+                                 flags,
+                                 original_meta_object
+                             );
+                         qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
+                         registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                         return typeId;
+#else
+                         enum E:qint32{};
+                         QMetaType metaType = createMetaType(typeName,
+                                                             true,
+                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<E>::defaultCtr,
+                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<E>::copyCtr,
+                                                             /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<E>::moveCtr,
+                                                             /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<E>::dtor,
+                                                             /*.equals=*/ QtPrivate::QEqualityOperatorForType<E>::equals,
+                                                             /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<E>::lessThan,
+                                                             /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<E>::debugStream,
+                                                             /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<E>::dataStreamOut,
+                                                             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<E>::dataStreamIn,
+                                                             /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<E>::legacyRegisterOp,
+                                                             /*.size=*/ sizeof(E),
+                                                             /*.alignment=*/ alignof(E),
+                                                             /*.typeId=*/ QMetaType::UnknownType,
+                                                             /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<E>::Flags),
+                                                             original_meta_object,
+                                                             nullptr);
+                         int _id = metaType.id();
+                         registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                         return _id;
+#endif
+                    }
+                }
+                case EntryTypes::FlagsTypeInfo:{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    int typeId = QMetaType::registerNormalizedType(
+                            typeName,
+                            &destructHelper,
+                            findEnumConstructor(sizeof(qint32)),
+                            sizeof(sizeof(qint32)),
+                            flags,
+                            original_meta_object
+                        );
+                    qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
+                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    return typeId;
+#else
+                    enum E:qint32{};
+                    QMetaType metaType = createMetaType(typeName,
+                                                        true,
+                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<E>>::defaultCtr,
+                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<E>>::copyCtr,
+                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<E>>::moveCtr,
+                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<E>>::dtor,
+                                                        /*.equals=*/ QtPrivate::QEqualityOperatorForType<QFlags<E>>::equals,
+                                                        /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QFlags<E>>::lessThan,
+                                                        /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QFlags<E>>::debugStream,
+                                                        /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<QFlags<E>>::dataStreamOut,
+                                                        /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<QFlags<E>>::dataStreamIn,
+                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<E>>::legacyRegisterOp,
+                                                        /*.size=*/ sizeof(QFlags<E>),
+                                                        /*.alignment=*/ alignof(QFlags<E>),
+                                                        /*.typeId=*/ QMetaType::UnknownType,
+                                                        /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QFlags<E>>::Flags),
+                                                        original_meta_object,
+                                                        nullptr);
+                    int _id = metaType.id();
+                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                    return _id;
+#endif
+                }
+                case EntryTypes::InterfaceValueTypeInfo:
+                case EntryTypes::ValueTypeInfo:{
+                    int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
+                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
+                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    return typeId;
+#else
+                    QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
+                    return id;
+#endif
+                }
+                default: break;
+                }
+            }else{
+                const SuperTypeInfos& superTypes = getSuperTypeInfos(env, clazz);
+                QByteArray metaTypeName = javaClassName.toUtf8().replace("/", "::").replace("$", "::");
+                if(superTypes.isEmpty()){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    int id;
+                    if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)
+                            || Java::Runtime::Enum::isAssignableFrom(env, clazz)){
+                        id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
+                    }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
+                         id = qRegisterMetaType<JMapWrapper>("JMapWrapper");
+                    }else if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
+                         id = qRegisterMetaType<JCollectionWrapper>("JCollectionWrapper");
+                    }else if(Java::Runtime::Iterator::isAssignableFrom(env, clazz)){
+                         id = qRegisterMetaType<JIteratorWrapper>("JIteratorWrapper");
+                    }else{
+                        id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
+                    }
+                    int typeId = QMetaType::registerNormalizedTypedef(metaTypeName, id);
+                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
+                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    return typeId;
+#else
+                    if(Java::Runtime::Enum::isAssignableFrom(env, clazz)){
+                        if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
+                            return qtjambi_register_enum_meta_type<qint16>(env, clazz, javaClassName, metaTypeName);
+                        }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)){
+                            return qtjambi_register_enum_meta_type<qint64>(env, clazz, javaClassName, metaTypeName);
+                        }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
+                            return qtjambi_register_enum_meta_type<qint8>(env, clazz, javaClassName, metaTypeName);
+                        }else if(Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)){
+                            return qtjambi_register_enum_meta_type<qint32>(env, clazz, javaClassName, metaTypeName);
+                        }else{
+                            return qtjambi_register_enum_meta_type<qint32,-1>(env, clazz, javaClassName, metaTypeName);
+                        }
+                    }else if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz) && !Java::QtJambi::QFlags::isSameClass(env, clazz)){
+                        return qtjambi_register_enum_meta_type<qint32,1>(env, clazz, javaClassName, metaTypeName);
+                    }else{
+                        JObjectValueWrapperPrivate p;
+                        p.constructor = env->GetMethodID(clazz, "<init>", "()V");
+                        if(env->ExceptionCheck())
+                            env->ExceptionClear();
+                        p.clone = env->GetMethodID(clazz, "clone", qPrintable(QString("()L%1;").arg(javaClassName)));
+                        if(env->ExceptionCheck())
+                            env->ExceptionClear();
+                        if(!p.clone && p.constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
+                            jobject newObject = env->NewObject(clazz, p.constructor);
+                            if(env->ExceptionCheck())
+                                env->ExceptionClear();
+                            if(!newObject){
+                                p.constructor = nullptr;
+                            }else{
+                                p.clone = Java::Runtime::Object::clone_ID(env);
+                                jobject clonedObject = env->CallObjectMethod(newObject, p.clone);
+                                if(env->ExceptionCheck())
+                                    env->ExceptionClear();
+                                if(!env->IsInstanceOf(clonedObject, clazz))
+                                    p.clone = nullptr;
+                            }
+                        }
+                        if(p.constructor && p.clone){
+                            p.writeTo = env->GetMethodID(clazz, "writeTo", "(Lio/qt/core/QDataStream;)V");
+                            if(env->ExceptionCheck())
+                                env->ExceptionClear();
+                            p.readFrom = env->GetMethodID(clazz, "readFrom", "(Lio/qt/core/QDataStream;)V");
+                            if(env->ExceptionCheck())
+                                env->ExceptionClear();
+                            if(!p.writeTo && !p.readFrom){
+                                p.isSerializable = Java::Runtime::Serializable::isAssignableFrom(env, clazz);
+                            }
+                            p.clazz = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
+                            p.name = metaTypeName;
+                            uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
+                            flags |= QMetaType::IsGadget;
+                            QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
+                                    /*.revision=*/ 0,
+                                    /*.alignment=*/ alignof(JObjectValueWrapper),
+                                    /*.size=*/ sizeof(JObjectValueWrapper),
+                                    /*.flags=*/ flags,
+                                    /*.typeId=*/ QMetaType::UnknownType,
+                                    /*.metaObject=*/ JObjectValueWrapperPrivate::metaObjectFn,
+                                    /*.name=*/ p.name.constData(),
+                                    /*.defaultCtr=*/ JObjectValueWrapperPrivate::defaultCtr,
+                                    /*.copyCtr=*/ JObjectValueWrapperPrivate::copyCtr,
+                                    /*.moveCtr=*/ JObjectValueWrapperPrivate::moveCtr,
+                                    /*.dtor=*/ JObjectValueWrapperPrivate::dtor,
+                                    /*.equals=*/ JObjectValueWrapperPrivate::equals,
+                                    /*.lessThan=*/ Java::Runtime::Comparable::isInstanceOf(env, clazz) ? JObjectValueWrapperPrivate::lessThan : nullptr,
+                                    /*.debugStream=*/ JObjectValueWrapperPrivate::debugStream,
+                                    /*.dataStreamOutFn=*/ p.writeTo ? JObjectValueWrapperPrivate::dataStreamOut : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamOut : nullptr),
+                                    /*.dataStreamInFn=*/ p.readFrom ? JObjectValueWrapperPrivate::dataStreamIn : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamIn : nullptr),
+                                    /*.legacyRegisterOp=*/ nullptr
+                            };
+                            {
+                                QWriteLocker locker(gLock());
+                                if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(qHash(javaClassName))){
+                                    delete metaTypeInterface;
+                                    return iface->typeId;
+                                }
+                                gClassMetaTypeInterfaces->insert(qHash(javaClassName), metaTypeInterface);
+                                (*gMetaTypeInterfaces)[metaTypeInterface] = std::move(p);
+                            }
+                            QMetaType metaType(metaTypeInterface);
+                            int result = metaType.id();
+                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                if(src){
+                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectValueWrapper*>(src));
+                                }else{
+                                    new (target)JObjectWrapper();
+                                }
+                                return true;
+                            }, metaType, QMetaType::fromType<JObjectWrapper>());
+                            QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
+                                if(src){
+                                    jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                                    if(value!=nullptr){
+                                        if(JNIEnv* env = qtjambi_current_environment()){
+                                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                            const JObjectValueWrapperPrivate* methods{nullptr};
+                                            {
+                                                QReadLocker locker(gLock());
+                                                if(gMetaTypeInterfaces->contains(QMetaType(metaType).iface()))
+                                                    methods = &(*gMetaTypeInterfaces)[QMetaType(metaType).iface()];
+                                            }
+                                            if(!methods || !env->IsInstanceOf(value, methods->clazz))
+                                                return false;
+                                            new (target)JObjectValueWrapper(JObjectValueWrapper::create(env, *reinterpret_cast<const JObjectWrapper*>(src), metaType));
+                                            return true;
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                                }
+                                new (target)JObjectValueWrapper();
+                                return true;
+                            }, QMetaType::fromType<JObjectWrapper>(), metaType);
+                            registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
+                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                            return result;
+                        }
+                        if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
+                            return QMetaType::fromType<JCollectionWrapper>().id();
+                        }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
+                            return QMetaType::fromType<JMapWrapper>().id();
+                        }
+                        QMetaType metaType = createMetaType(metaTypeName+"*",
+                                                            true,
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::dtor,
+                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<JObjectWrapper>::equals,
+                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<JObjectWrapper>::lessThan,
+                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<JObjectWrapper>::debugStream,
+                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamOut,
+                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamIn,
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::legacyRegisterOp,
+                                                            /*.size=*/ sizeof(JObjectWrapper),
+                                                            /*.alignment=*/ alignof(JObjectWrapper),
+                                                            /*.typeId=*/ QMetaType::UnknownType,
+                                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                            nullptr, &findWrappersMetaObject);
+                        int result = metaType.id();
+                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                        QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                            if(src){
+                                new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                            }else{
+                                new (target)JObjectWrapper();
+                            }
+                            return true;
+                        }, metaType, QMetaType::fromType<JObjectWrapper>());
+                        JObjectWrapper classWrapper(env, clazz);
+                        QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
+                            if(src){
+                                jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                                if(value!=nullptr){
+                                    if(JNIEnv* env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
+                                            return false;
+                                    }
+                                }
+                                new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                            }else{
+                                new (target)JObjectWrapper();
+                            }
+                            return true;
+                        }, QMetaType::fromType<JObjectWrapper>(), metaType);
+                        return result;
+                    }
+#endif
+                }else{
+                    int id = qtjambi_register_metatype(env, superTypes[0].javaClass(), isPointer, isReference, &superTypes[0].className());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    int typeId = QMetaType::registerNormalizedTypedef(metaTypeName, id);
+                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
+                    return typeId;
+#else
+                    if(id!=QMetaType::UnknownType){
+                        QMetaType superMetaType(id);
+                        if(superMetaType.flags() & QMetaType::IsPointer){
+                            metaTypeName += "*";
+                            QMetaType metaType = createMetaType(metaTypeName,
+                                                                true,
+                                                                /*.defaultCtr=*/ superMetaType.iface()->defaultCtr,
+                                                                /*.copyCtr=*/ superMetaType.iface()->copyCtr,
+                                                                /*.moveCtr=*/ superMetaType.iface()->moveCtr,
+                                                                /*.dtor=*/ superMetaType.iface()->dtor,
+                                                                /*.equals=*/ superMetaType.iface()->equals,
+                                                                /*.lessThan=*/ superMetaType.iface()->lessThan,
+                                                                /*.debugStream=*/ superMetaType.iface()->debugStream,
+                                                                /*.dataStreamOut=*/ superMetaType.iface()->dataStreamOut,
+                                                                /*.dataStreamIn=*/ superMetaType.iface()->dataStreamIn,
+                                                                /*.legacyRegisterOp=*/ superMetaType.iface()->legacyRegisterOp,
+                                                                /*.size=*/ superMetaType.iface()->size,
+                                                                /*.alignment=*/ superMetaType.iface()->alignment,
+                                                                /*.typeId=*/ QMetaType::UnknownType,
+                                                                /*.flags=*/ QMetaType::TypeFlags(superMetaType.iface()->flags),
+                                                                nullptr, &findWrappersMetaObject);
+                            id = metaType.id();
+                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                            registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
+                            return id;
+                        }else{
+                            JObjectValueWrapperPrivate p;
+                            p.constructor = env->GetMethodID(clazz, "<init>", "()V");
+                            if(env->ExceptionCheck())
+                                env->ExceptionClear();
+                            p.clone = env->GetMethodID(clazz, "clone", qPrintable(QString("()L%1;").arg(javaClassName)));
+                            if(env->ExceptionCheck())
+                                env->ExceptionClear();
+                            if(!p.clone && p.constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
+                                jobject newObject = env->NewObject(clazz, p.constructor);
+                                if(env->ExceptionCheck())
+                                    env->ExceptionClear();
+                                if(!newObject){
+                                    p.constructor = nullptr;
+                                }else{
+                                    p.clone = Java::Runtime::Object::clone_ID(env);
+                                    jobject clonedObject = env->CallObjectMethod(newObject, p.clone);
+                                    if(env->ExceptionCheck())
+                                        env->ExceptionClear();
+                                    if(!env->IsInstanceOf(clonedObject, clazz))
+                                        p.clone = nullptr;
+                                }
+                            }
+                            if(p.constructor && p.clone){
+                                p.writeTo = env->GetMethodID(clazz, "writeTo", "(Lio/qt/core/QDataStream;)V");
+                                if(env->ExceptionCheck())
+                                    env->ExceptionClear();
+                                p.readFrom = env->GetMethodID(clazz, "readFrom", "(Lio/qt/core/QDataStream;)V");
+                                if(env->ExceptionCheck())
+                                    env->ExceptionClear();
+                                if(!p.writeTo && !p.readFrom){
+                                    p.isSerializable = Java::Runtime::Serializable::isAssignableFrom(env, clazz);
+                                }
+                                p.clazz = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
+                                p.name = metaTypeName;
+                                uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
+                                flags |= QMetaType::IsGadget;
+                                QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
+                                        /*.revision=*/ 0,
+                                        /*.alignment=*/ alignof(JObjectValueWrapper),
+                                        /*.size=*/ sizeof(JObjectValueWrapper),
+                                        /*.flags=*/ flags,
+                                        /*.typeId=*/ QMetaType::UnknownType,
+                                        /*.metaObject=*/ JObjectValueWrapperPrivate::metaObjectFn,
+                                        /*.name=*/ p.name.constData(),
+                                        /*.defaultCtr=*/ JObjectValueWrapperPrivate::defaultCtr,
+                                        /*.copyCtr=*/ JObjectValueWrapperPrivate::copyCtr,
+                                        /*.moveCtr=*/ JObjectValueWrapperPrivate::moveCtr,
+                                        /*.dtor=*/ JObjectValueWrapperPrivate::dtor,
+                                        /*.equals=*/ JObjectValueWrapperPrivate::equals,
+                                        /*.lessThan=*/ Java::Runtime::Comparable::isInstanceOf(env, clazz) ? JObjectValueWrapperPrivate::lessThan : nullptr,
+                                        /*.debugStream=*/ JObjectValueWrapperPrivate::debugStream,
+                                        /*.dataStreamOutFn=*/ p.writeTo ? JObjectValueWrapperPrivate::dataStreamOut : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamOut : nullptr),
+                                        /*.dataStreamInFn=*/ p.readFrom ? JObjectValueWrapperPrivate::dataStreamIn : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamIn : nullptr),
+                                        /*.legacyRegisterOp=*/ nullptr
+                                };
+                                {
+                                    QWriteLocker locker(gLock());
+                                    if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(qHash(javaClassName))){
+                                        delete metaTypeInterface;
+                                        return iface->typeId;
+                                    }
+                                    gClassMetaTypeInterfaces->insert(qHash(javaClassName), metaTypeInterface);
+                                    (*gMetaTypeInterfaces)[metaTypeInterface] = std::move(p);
+                                }
+                                QMetaType metaType(metaTypeInterface);
+                                int result = metaType.id();
+                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                    if(src){
+                                        new (target)JObjectWrapper(*reinterpret_cast<const JObjectValueWrapper*>(src));
+                                    }else{
+                                        new (target)JObjectWrapper();
+                                    }
+                                    return true;
+                                }, metaType, QMetaType::fromType<JObjectWrapper>());
+                                QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
+                                    if(src){
+                                        jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                                        if(value!=nullptr){
+                                            if(JNIEnv* env = qtjambi_current_environment()){
+                                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                                const JObjectValueWrapperPrivate* methods{nullptr};
+                                                {
+                                                    QReadLocker locker(gLock());
+                                                    if(gMetaTypeInterfaces->contains(QMetaType(metaType).iface()))
+                                                        methods = &(*gMetaTypeInterfaces)[QMetaType(metaType).iface()];
+                                                }
+                                                if(!methods || !env->IsInstanceOf(value, methods->clazz))
+                                                    return false;
+                                                new (target)JObjectValueWrapper(JObjectValueWrapper::create(env, *reinterpret_cast<const JObjectWrapper*>(src), metaType));
+                                                return true;
+                                            }else{
+                                                return false;
+                                            }
+                                        }
+                                    }
+                                    new (target)JObjectValueWrapper();
+                                    return true;
+                                }, QMetaType::fromType<JObjectWrapper>(), metaType);
+                                registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
+                                registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                                return result;
+                            }
+                            if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
+                                return QMetaType::fromType<JCollectionWrapper>().id();
+                            }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
+                                return QMetaType::fromType<JMapWrapper>().id();
+                            }
+                            QMetaType metaType = createMetaType(metaTypeName+"*",
+                                                                true,
+                                                                /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
+                                                                /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
+                                                                /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::moveCtr,
+                                                                /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::dtor,
+                                                                /*.equals=*/ QtPrivate::QEqualityOperatorForType<JObjectWrapper>::equals,
+                                                                /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<JObjectWrapper>::lessThan,
+                                                                /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<JObjectWrapper>::debugStream,
+                                                                /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamOut,
+                                                                /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamIn,
+                                                                /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::legacyRegisterOp,
+                                                                /*.size=*/ sizeof(JObjectWrapper),
+                                                                /*.alignment=*/ alignof(JObjectWrapper),
+                                                                /*.typeId=*/ QMetaType::UnknownType,
+                                                                /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                                nullptr, &findWrappersMetaObject);
+                            int result = metaType.id();
+                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                if(src){
+                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                                }else{
+                                    new (target)JObjectWrapper();
+                                }
+                                return true;
+                            }, metaType, QMetaType::fromType<JObjectWrapper>());
+                            JObjectWrapper classWrapper(env, clazz);
+                            QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
+                                if(src){
+                                    jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                                    if(value!=nullptr){
+                                        if(JNIEnv* env = qtjambi_current_environment()){
+                                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                            if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
+                                                return false;
+                                        }
+                                    }
+                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                                }else{
+                                    new (target)JObjectWrapper();
+                                }
+                                return true;
+                            }, QMetaType::fromType<JObjectWrapper>(), metaType);
+                            return result;
+                        }
+                    }else{
+                        if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
+                            return QMetaType::fromType<JCollectionWrapper>().id();
+                        }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
+                            return QMetaType::fromType<JMapWrapper>().id();
+                        }
+                        QMetaType metaType = createMetaType(metaTypeName+"*",
+                                                            true,
+                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
+                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
+                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::moveCtr,
+                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::dtor,
+                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<JObjectWrapper>::equals,
+                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<JObjectWrapper>::lessThan,
+                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<JObjectWrapper>::debugStream,
+                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamOut,
+                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamIn,
+                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::legacyRegisterOp,
+                                                            /*.size=*/ sizeof(JObjectWrapper),
+                                                            /*.alignment=*/ alignof(JObjectWrapper),
+                                                            /*.typeId=*/ QMetaType::UnknownType,
+                                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                            nullptr, &findWrappersMetaObject);
+                        int result = metaType.id();
+                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                        QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                            if(src){
+                                new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                            }else{
+                                new (target)JObjectWrapper();
+                            }
+                            return true;
+                        }, metaType, QMetaType::fromType<JObjectWrapper>());
+                        JObjectWrapper classWrapper(env, clazz);
+                        QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
+                            if(src){
+                                jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                                if(value!=nullptr){
+                                    if(JNIEnv* env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
+                                            return false;
+                                    }
+                                }
+                                new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                            }else{
+                                new (target)JObjectWrapper();
+                            }
+                            return true;
+                        }, QMetaType::fromType<JObjectWrapper>(), metaType);
+                        return result;
+                    }
+#endif
+                }
+            }
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return QMetaType::UnknownType;
+}
+
+int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference){
+    return qtjambi_register_metatype(env, clazz, isPointer, isReference, nullptr);
+}
+
+int qtjambi_register_metatype(JNIEnv *env, jclass clazz, const QString& javaClassName){
+    return qtjambi_register_metatype(env, clazz, false, false, &javaClassName);
+}

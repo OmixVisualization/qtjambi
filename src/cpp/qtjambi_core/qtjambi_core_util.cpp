@@ -42,37 +42,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
     }QTJAMBI_TRY_END
 }
 
-extern "C" JNIEXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QAbstractItemModel_setData)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID _this_nativeId, jint row, jint col, jobject value, jint role)
-{
-    jboolean _result{false};
-    QTJAMBI_TRY{
-        QAbstractItemModel *__qt_this = qtjambi_object_from_nativeId<QAbstractItemModel>(_this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QVariant qt_value = qtjambi_to_qvariant(__jni_env, value);
-        QModelIndex index = __qt_this->index(row, col, QModelIndex());
-        _result = __qt_this->setData(index, qt_value, role);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QAbstractItemModel_data)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID _this_nativeId, jint row, jint col, jint role)
-{
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        QAbstractItemModel *__qt_this = qtjambi_object_from_nativeId<QAbstractItemModel>(_this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QModelIndex index = __qt_this->index(row, col, QModelIndex());
-        _result = qtjambi_from_qvariant(__jni_env, __qt_this->data(index, role));
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCalendar_unspecified__)
 (JNIEnv *, jclass)
 {
@@ -806,7 +775,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qInstallMessageHandler)
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessageFromSupplier)
-(JNIEnv *env, jclass, jint messageType, QtJambiNativeID categoryId, jobject messageSupplier)
+(JNIEnv *env, jclass loggingClass, jint messageType, QtJambiNativeID categoryId, jobject messageSupplier)
 {
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
@@ -821,13 +790,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessageFromSupplier)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         _className = env->GetStringUTFChars(className, nullptr);
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method, category.categoryName());
@@ -868,7 +844,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessageFromSupplier)
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getDebug)
-(JNIEnv *env, jclass, jint messageType)
+(JNIEnv *env, jclass loggingClass, jint messageType)
 {
     jobject result = nullptr;
 #if !defined(QT_NO_DEBUG_OUTPUT)
@@ -878,8 +854,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getDebug)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         jobject _data = qtjambi_cast<jobject>(env, QByteArray());
@@ -895,6 +876,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getDebug)
         env->ReleaseStringUTFChars(className, _className);
         _method = data->constData();
         _className = data->constData()+size;
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QMessageLogger logger(_className, line, _method);
         switch(messageType){
@@ -930,7 +913,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getDebug)
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getCDebug)
-(JNIEnv *env, jclass, jint messageType, QtJambiNativeID categoryId)
+(JNIEnv *env, jclass loggingClass, jint messageType, QtJambiNativeID categoryId)
 {
     jobject result = nullptr;
 #if !defined(QT_NO_DEBUG_OUTPUT)
@@ -941,8 +924,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getCDebug)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         jobject _data = qtjambi_cast<jobject>(env, QByteArray());
@@ -958,6 +946,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getCDebug)
         env->ReleaseStringUTFChars(className, _className);
         _method = data->constData();
         _className = data->constData()+size;
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QMessageLogger logger(_className, line, _method, category.categoryName());
         switch(messageType){
@@ -993,7 +983,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getCDebug)
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessage)
-(JNIEnv *env, jclass, jint messageType, QtJambiNativeID categoryId, jstring message)
+(JNIEnv *env, jclass loggingClass, jint messageType, QtJambiNativeID categoryId, jstring message)
 {
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
@@ -1004,13 +994,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessage)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         _className = env->GetStringUTFChars(className, nullptr);
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method, category.categoryName());
@@ -1051,7 +1048,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showCMessage)
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessageFromSupplier)
-(JNIEnv *env, jclass, jint messageType, jobject messageSupplier)
+(JNIEnv *env, jclass loggingClass, jint messageType, jobject messageSupplier)
 {
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
@@ -1068,13 +1065,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessageFromSupplier)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         _className = env->GetStringUTFChars(className, nullptr);
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method);
@@ -1115,7 +1119,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessageFromSupplier)
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessage)
-(JNIEnv *env, jclass, jint messageType, jstring message)
+(JNIEnv *env, jclass loggingClass, jint messageType, jstring message)
 {
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
@@ -1125,13 +1129,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessage)
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::QtJambiInternal::invocationInfoProvider(env);
-        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, 2);
+        jint offset = 2;
+        jobject invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, offset);
         jclass declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        while(env->IsSameObject(declaringClass, loggingClass)){
+            invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
+            declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
+        }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         _className = env->GetStringUTFChars(className, nullptr);
+#else
+        Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method);
@@ -1168,6 +1179,45 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_showMessage)
     Q_UNUSED(message)
     Q_UNUSED(category)
 #endif
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qErrnoWarning)
+(JNIEnv *env, jclass, jint code, jstring message)
+{
+    QTJAMBI_TRY{
+        const char* _message = env->GetStringUTFChars(message, nullptr);
+        qErrnoWarning(code, _message);
+        env->ReleaseStringUTFChars(message, _message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qSetMessagePattern)
+(JNIEnv *env, jclass, jstring _pattern)
+{
+    QTJAMBI_TRY{
+        QString pattern = qtjambi_to_qstring(env, _pattern);
+        qSetMessagePattern(pattern);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qFormatLogMessage)
+(JNIEnv *env, jclass, jint type, QtJambiNativeID context, jstring str)
+{
+    QTJAMBI_TRY{
+        QString _str = qtjambi_to_qstring(env, str);
+        const QMessageLogContext& _context = qtjambi_object_from_nativeId_deref<QMessageLogContext>(env, context);
+        qFormatLogMessage(QtMsgType(type), _context, _str);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
 }
 
 // QByteArrayList::join()
@@ -1230,6 +1280,29 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return _result;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
+// QByteArrayList::join(const QByteArrayView & sep)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArray_join__Ljava_util_Collection_2Lio_qt_core_QByteArrayView_2)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject list0,
+ jobject sep1)
+{
+    jobject _result{nullptr};
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QByteArrayList::join(const QByteArray & sep)")
+    QTJAMBI_TRY{
+        QtJambiScope __qtjambi_scope;
+        const QByteArrayList&  __qt_list0 = qtjambi_cast<const QByteArrayList& >(__jni_env, __qtjambi_scope, list0);
+        QByteArrayView  __qt_sep1 = qtjambi_cast<QByteArrayView>(__jni_env, sep1);
+        QByteArray __qt_return_value = __qt_list0.join(__qt_sep1);
+        _result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return _result;
+}
+#endif
+
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIODevice_fromDirectBuffer)
 (JNIEnv *env,
@@ -1254,172 +1327,6 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return _result;
 }
 
-// QCborValue::operator[](const QString & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborValue_setValue__Ljava_lang_String_2Lio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jobject _this,
- jstring key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborValue::operator[](const QString & key)")
-    QTJAMBI_TRY{
-        QCborValue *__qt_this = qtjambi_to_object<QCborValue>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QString&  __qt_key0 = qtjambi_cast<QString >(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborValue::operator[](long long key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborValue_setValue__JLio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborValue::operator[](long long key)")
-    QTJAMBI_TRY{
-        QCborValue *__qt_this = qtjambi_to_object<QCborValue>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[static_cast<qlonglong>(key0)] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborArray::operator[](qsizetype i)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborArray_setValue)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong i0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborArray::operator[](qsizetype i)")
-    QTJAMBI_TRY{
-        QCborArray *__qt_this = qtjambi_to_object<QCborArray>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[static_cast<qsizetype>(i0)] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborMap::operator[](const QCborValue & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap_setValue__Lio_qt_core_QCborValue_2Lio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](const QCborValue & key)")
-    QTJAMBI_TRY{
-        QCborMap *__qt_this = qtjambi_to_object<QCborMap>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QCborValue&  __qt_key0 = qtjambi_cast<const QCborValue&>(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborMap::operator[](const QString & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap_setValue__Ljava_lang_String_2Lio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jobject _this,
- jstring key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](const QString & key)")
-    QTJAMBI_TRY{
-        QCborMap *__qt_this = qtjambi_to_object<QCborMap>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QString&  __qt_key0 = qtjambi_cast<QString >(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborMap::operator[](long long key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap_setValue__JLio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](long long key)")
-    QTJAMBI_TRY{
-        QCborMap *__qt_this = qtjambi_to_object<QCborMap>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[key0] = __qt_value1;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QCborStreamReader::readByteArray()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader_readByteArray)
-(JNIEnv *__jni_env,
- jobject _this)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readByteArray()")
-    QTJAMBI_TRY{
-        QCborStreamReader *__qt_this = qtjambi_to_object<QCborStreamReader>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborStreamReader::StringResult<QByteArray> __qt_return_value = __qt_this->readByteArray();
-        _result = Java::QtCore::QCborStreamReader$StringResult::newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
-// QCborStreamReader::readString()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader_readString)
-(JNIEnv *__jni_env,
- jobject _this)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readString()")
-    QTJAMBI_TRY{
-        QCborStreamReader *__qt_this = qtjambi_to_object<QCborStreamReader>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborStreamReader::StringResult<QString> __qt_return_value = __qt_this->readString();
-        _result = Java::QtCore::QCborStreamReader$StringResult::newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
-// QCborStreamReader::readChunk()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader_readChunk)
-(JNIEnv *__jni_env,
- jobject _this, jobject buffer)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readChunk()")
-    QTJAMBI_TRY{
-        QCborStreamReader *__qt_this = qtjambi_to_object<QCborStreamReader>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        JBufferData __qt_buffer(__jni_env, buffer);
-        QCborStreamReader::StringResult<qsizetype> __qt_return_value = __qt_this->readStringChunk(__qt_buffer, __qt_buffer.size());
-        _result = Java::QtCore::QCborStreamReader$StringResult::newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
 // QObject::metaObject() const
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_metaObject)
@@ -1436,104 +1343,75 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_metaObject)
     return _result;
 }
 
-// QObject::findChild(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChild__Ljava_lang_Class_2JLjava_lang_String_2I)
-(JNIEnv *__jni_env,
- jobject _this,
- jclass cl0,
- jlong metaObjectPointer1,
- jobject name2,
- jint options3)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChild(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    QTJAMBI_TRY{
-        QObject *__qt_this = qtjambi_to_QObject<QObject>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        QString __qt_name2(qtjambi_to_qstring(__jni_env, jstring(name2)));
-        QObject * __qt_return = qt_qFindChild_helper(__qt_this, __qt_name2, *__qt_metaObjectPointer1, Qt::FindChildOptions(options3));
-        _result = qtjambi_from_qobject(__jni_env, __qt_return, cl0);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
+QObject* qtjambi_findChild(JNIEnv *, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options){
+    return qt_qFindChild_helper(__qt_this, aName, QObject::staticMetaObject, options);
 }
 
-// QObject::findChildren(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenString__JLjava_lang_String_2I)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong metaObjectPointer1,
- jobject name2,
- jint options3)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    QTJAMBI_TRY{
-        QObject *__qt_this = qtjambi_to_QObject<QObject>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        QString __qt_name2(qtjambi_to_qstring(__jni_env, jstring(name2)));
-        QList<QObject *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_name2, *__qt_metaObjectPointer1, reinterpret_cast<QList<void*>*>(&list), Qt::FindChildOptions(options3));
-        _result = qtjambi_cast<jobject>(__jni_env, list);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
+    qtjambi_check_resource(env, metaObject);
+    return qt_qFindChild_helper(__qt_this, aName, *metaObject, options);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-// QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenQRegExp__JLio_qt_core_QRegExp_2I)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong metaObjectPointer1,
- jobject regExp2,
- jint options3)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    QTJAMBI_TRY{
-        //JavaException::raiseQNoImplementationException(__jni_env, "Deprecated method removed." QTJAMBI_STACKTRACEINFO );
-        QObject *__qt_this = qtjambi_to_QObject<QObject>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        const QRegExp& __qt_regExp2 = qtjambi_cast<const QRegExp&>(__jni_env, regExp2);
-        QList<QObject *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_regExp2, *__qt_metaObjectPointer1, reinterpret_cast<QList<void*>*>(&list), Qt::FindChildOptions(options3));
-        _result = qtjambi_cast<jobject>(__jni_env, list);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, Qt::FindChildOptions options){
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
+    qtjambi_check_resource(env, metaObject);
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
 }
 #endif
 
-// QObject::findChildren(const QRegularExpression &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenQRegularExpression__JLio_qt_core_QRegularExpression_2I)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong metaObjectPointer1,
- jobject regExp2,
- jint options3)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QRegularExpression &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    QTJAMBI_TRY{
-        QObject *__qt_this = qtjambi_to_QObject<QObject>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        const QRegularExpression& __qt_regExp2 = qtjambi_cast<const QRegularExpression&>(__jni_env, regExp2);
-        QList<QObject *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_regExp2, *__qt_metaObjectPointer1, reinterpret_cast<QList<void*>*>(&list), Qt::FindChildOptions(options3));
-        _result = qtjambi_cast<jobject>(__jni_env, list);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
+QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options){
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, aName, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
 }
+
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
+    qtjambi_check_resource(env, metaObject);
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, aName, *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+
+QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, const QRegularExpression& regexp, Qt::FindChildOptions options){
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, regexp, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegularExpression& regexp, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
+    qtjambi_check_resource(env, metaObject);
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, regexp, *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, const QRegExp& regexp, Qt::FindChildOptions options){
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, regexp, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegExp& regexp, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = qtjambi_metaobject_for_class(env, type);
+    qtjambi_check_resource(env, metaObject);
+    QList<QObject *> list;
+    qt_qFindChildren_helper(__qt_this, regexp, *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    return list;
+}
+#endif
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread__1_1qt_1javaThread)
@@ -1720,6 +1598,32 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
     return _result;
+}
+
+extern "C" Q_DECL_EXPORT jclass JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_javaType__I)
+(JNIEnv *env, jclass, jint id)
+{
+    try{
+        return qtjambi_class_for_metatype(env, QMetaType(id));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+        return nullptr;
+    }
+}
+
+extern "C" Q_DECL_EXPORT jclass JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_javaType__J)
+(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId)
+{
+    try{
+        QMetaType *__qt_this = qtjambi_object_from_nativeId<QMetaType>(__this_nativeId);
+        qtjambi_check_resource(env, __qt_this);
+        return qtjambi_class_for_metatype(env, *__qt_this);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+        return nullptr;
+    }
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_00024GenericValue_buffer)
@@ -2021,25 +1925,24 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_property)
     return _result;
 }
 
-static const QSet<QMetaMethod> forbidddenMethods = []() -> QSet<QMetaMethod> {
-        QSet<QMetaMethod> methods;
-        int idx;
-        //idx = QObject::staticMetaObject.indexOfMethod("destroyed(QObject*)");
-        //if(idx>=0)
-        //    methods.insert(QObject::staticMetaObject.method(idx));
-        //idx = QObject::staticMetaObject.indexOfMethod("destroyed()");
-        //if(idx>=0)
-        //    methods.insert(QObject::staticMetaObject.method(idx));
-        //idx = QObject::staticMetaObject.indexOfMethod("deleteLater()");
-        //if(idx>=0)
-        //    methods.insert(QObject::staticMetaObject.method(idx));
-        idx = QObject::staticMetaObject.indexOfMethod("_q_reregisterTimers(void*)");
-        if(idx>=0)
-            methods.insert(QObject::staticMetaObject.method(idx));
-        return methods;
-    }();
-
 bool method_is_valid(const QMetaMethod& method){
+    static const QSet<QMetaMethod> forbidddenMethods = []() -> QSet<QMetaMethod> {
+            QSet<QMetaMethod> methods;
+            int idx;
+            //idx = QObject::staticMetaObject.indexOfMethod("destroyed(QObject*)");
+            //if(idx>=0)
+            //    methods.insert(QObject::staticMetaObject.method(idx));
+            //idx = QObject::staticMetaObject.indexOfMethod("destroyed()");
+            //if(idx>=0)
+            //    methods.insert(QObject::staticMetaObject.method(idx));
+            //idx = QObject::staticMetaObject.indexOfMethod("deleteLater()");
+            //if(idx>=0)
+            //    methods.insert(QObject::staticMetaObject.method(idx));
+            idx = QObject::staticMetaObject.indexOfMethod("_q_reregisterTimers(void*)");
+            if(idx>=0)
+                methods.insert(QObject::staticMetaObject.method(idx));
+            return methods;
+        }();
     return method.isValid() && !forbidddenMethods.contains(method);
 }
 
@@ -2624,7 +2527,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_checkConnectArgsMethods)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject__1_1qt_1forType)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_forType)
     (JNIEnv * env, jclass, jclass type)
 {
     jobject result = nullptr;
@@ -4774,9 +4677,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
             bool compare = true;
             if(val){
                 QVariant variant = qtjambi_to_qvariant(__jni_env, val);
-                if(variant.metaType()!=metaType && !variant.convert(metaType))
+                if(variant.metaType()!=metaType && !variant.convert(metaType)){
+                    Java::Runtime::ClassCastException::throwNew(__jni_env, QStringLiteral("Cannot cast value to %1").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
                     compare = false;
-                else
+                }else
                     _val = *reinterpret_cast<void*const*>(variant.constData());
             }else{
                 _val = nullptr;
@@ -4835,6 +4739,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
             default: {
                    QVariant variant = val ? qtjambi_to_qvariant(__jni_env, val) : QVariant(metaType);
                    if(variant.metaType()!=metaType && !variant.convert(metaType)){
+                       Java::Runtime::ClassCastException::throwNew(__jni_env, QStringLiteral("Cannot cast value to %1").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
                         _result = false;
                    }else if(metaType.isEqualityComparable() && metaType.equals(__qt_this, variant.constData())){
                         _result = false;

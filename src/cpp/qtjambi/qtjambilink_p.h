@@ -183,7 +183,6 @@ public:
     jobject getExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link, const QMetaMethod& method) const override;
 private:
     mutable QHash<int,JObjectWrapper> m_extraSignals;
-    mutable const QMetaObject* m_metaObject;
 };
 
 class QtJambiLink{
@@ -271,7 +270,8 @@ public:
         IsListed = 0x010000,   // Weak ref to java object, deleteNativeObject deletes c++ object
 #endif
         HasDisposedSignal = 0x020000,
-        IsPendingObjectResolved = 0x040000
+        IsPendingObjectResolved = 0x040000,
+        IsPendingValueOwner = 0x080000
     };
     typedef QFlags<Flag> Flags;
 
@@ -644,7 +644,6 @@ public:
     void init(JNIEnv* env) override;
 private:
     mutable QHash<int,JObjectWrapper> m_extraSignals;
-    mutable const QMetaObject* m_metaObject;
     friend QtJambiLink;
 };
 
@@ -767,7 +766,6 @@ public:
     void init(JNIEnv* env) override;
 private:
     mutable QHash<int,JObjectWrapper> m_extraSignals;
-    mutable const QMetaObject* m_metaObject;
     friend QtJambiLink;
 };
 
@@ -856,6 +854,8 @@ class QtJambiLinkScope : public QtJambiScope{
 public:
     QtJambiLinkScope(const QSharedPointer<QtJambiLink>& _link);
     Q_DISABLE_COPY_MOVE(QtJambiLinkScope)
+
+    QtJambiLink * link() const;
 };
 
 #endif // QTJAMBILINK_P_H

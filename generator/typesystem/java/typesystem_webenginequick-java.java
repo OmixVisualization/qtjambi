@@ -41,7 +41,7 @@ class QtWebEngineQuick___{
      * @return QWebEngineSettings
      */
     @SuppressWarnings("exports")
-	public static native io.qt.webengine.core.QWebEngineSettings toWebEngineSettings(io.qt.core.QObject quickWebEngineSettings);
+    public static native io.qt.webengine.core.QWebEngineSettings toWebEngineSettings(io.qt.core.QObject quickWebEngineSettings);
     
     /**
      * Allows accessing the QWebEngineScriptCollection inside of a QQuickWebEngineScriptCollection (internal type).
@@ -49,7 +49,7 @@ class QtWebEngineQuick___{
      * @return QWebEngineScriptCollection
      */
     @SuppressWarnings("exports")
-	public static native io.qt.webengine.core.QWebEngineScriptCollection toWebEngineScriptCollection(io.qt.core.QObject quickWebEngineScriptCollection);
+    public static native io.qt.webengine.core.QWebEngineScriptCollection toWebEngineScriptCollection(io.qt.core.QObject quickWebEngineScriptCollection);
 }// class
 
 

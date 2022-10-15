@@ -45,7 +45,7 @@
 <typesystem qt-library="Qt3DCore" description="The Qt 3D module contains functionality to support near-realtime simulation systems.">
     <required-library name="QtConcurrent"/>
     <namespace-type name="Qt3DCore">
-        <modify-function signature="functorTypeId()" remove="all"/>
+        <modify-function signature="functorTypeId&lt;T>()" remove="all"/>
         <modify-function signature="elementType(GLint)" remove="all"/>
         <modify-function signature="tupleSizeFromType(GLint)" remove="all"/>
         <modify-function signature="byteSizeFromType(GLint)" remove="all"/>
@@ -61,7 +61,6 @@
         <modify-function signature="operator|(Qt3DCore::QSceneChange::DeliveryFlags::enum_type,Qt3DCore::QFlags&lt;QSceneChange::DeliveryFlags::enum_type>)" remove="all"/-->
     </namespace-type>
     <rejection class="Qt3DCore::QNodeCreatedChange"/>
-    <rejection class="Qt3DCore::QEntity" function-name="componentsOfType" since="6.0.0"/>
     <rejection class="Qt3DCore" function-name="functor_cast" since="6.0.0"/>
     <rejection class="Qt3DCore" function-name="operator|"/>
     <rejection class="Qt3DCore::QGeometryView" function-name="setGeometryFactory"/>
@@ -74,6 +73,7 @@
     <rejection class="QHandleManager"/>
     <rejection class="Qt3DCore::FunctorType"/>
     <rejection class="Qt3DCore::QGeometry" function-name="boundingVolumeSpecifier"/>
+    <rejection class="Qt3DCore::QAbstractFunctor" function-name="functor_cast" since="6.0.0"/>
     <object-type name="Qt3DCore::QGeometry" java-name="QGeometry" since="6.0.0">
         <modify-function signature="addAttribute(Qt3DCore::QAttribute*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
@@ -106,7 +106,6 @@
     <enum-type name="Qt3DCore::QBuffer::UsageType" since="6.0.0"/>
     <enum-type name="Qt3DCore::QBuffer::AccessType" since="6.0.0"/>
     <interface-type name="Qt3DCore::QAbstractFunctor" java-name="QAbstractFunctor" since="6.0.0">
-        <modify-function signature="functor_cast(const Qt3DCore::QAbstractFunctor *)const" remove="all" />
         <modify-function signature="id()const" remove="java">
             <inject-code class="shell">
                 if(JNIEnv *%env = qtjambi_current_environment()) {
@@ -242,6 +241,7 @@
         </modify-function>
     </object-type>
     <object-type name="Qt3DCore::QEntity" java-name="QEntity">
+        <modify-function signature="componentsOfType&lt;T>()const" remove="all"/>
         <modify-function signature="addComponent(Qt3DCore::QComponent*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -350,9 +350,10 @@
         <extra-includes>
         <include file-name="Qt3DCore/QBackendNodeMapper" location="global"/>
         </extra-includes>
-        <modify-function signature="registerBackendType(const QSharedPointer&lt;Qt3DCore::QBackendNodeFunctor&gt; &amp;)" remove="all" until="5.6"/>
-        <modify-function signature="registerBackendType(const QSharedPointer&lt;Qt3DCore::QBackendNodeMapper&gt; &amp;)" remove="all" since="5.7.0"/>
-        <modify-function signature="unregisterBackendType()" remove="all" since="5.9.0"/>
+        <modify-function signature="registerBackendType&lt;Frontend,supportsSyncing>(const QSharedPointer&lt;Qt3DCore::QBackendNodeFunctor&gt; &amp;)" remove="all" until="5.6"/>
+        <modify-function signature="registerBackendType&lt;Frontend,supportsSyncing>(const QSharedPointer&lt;Qt3DCore::QBackendNodeMapper&gt; &amp;)" remove="all" since="5.7.0" until="5.*"/>
+        <modify-function signature="registerBackendType&lt;Frontend>(const QSharedPointer&lt;Qt3DCore::QBackendNodeMapper&gt; &amp;)" remove="all" since="5.7.0"/>
+        <modify-function signature="unregisterBackendType&lt;Frontend>()" remove="all" since="5.9.0"/>
     </object-type>
     <value-type name="Qt3DCore::QAxisAlignedBoundingBox" java-name="QAxisAlignedBoundingBox">
     </value-type>

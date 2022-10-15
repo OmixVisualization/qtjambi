@@ -247,14 +247,13 @@
 							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
 						<echo>create empty ${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar</echo>
 						<delete file="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar"/>
-						<jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
+						<jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar" whenmanifestonly="create">
 							<manifest>
 								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 								<attribute name="Bundle-Name"      value="QtJambi ${module} plugin javadoc"/>
 								<attribute name="Bundle-Description"      value="QtJambi ${module} plugin javadoc"/>
 								<attribute name="Bundle-ManifestVersion" value="2"/>
 							</manifest>
-							<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
 						</jar>
 					</else>
 				</if>

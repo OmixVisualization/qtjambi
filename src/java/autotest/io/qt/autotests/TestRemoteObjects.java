@@ -53,27 +53,28 @@ import io.qt.core.QMetaObject.AbstractPublicSignal0;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
+import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QColorConstants;
+import io.qt.internal.QtJambiInternal;
 import io.qt.remoteobjects.QRemoteObjectDynamicReplica;
 import io.qt.remoteobjects.QRemoteObjectNode;
 import io.qt.remoteobjects.QRemoteObjectPendingCall;
 import io.qt.remoteobjects.QRemoteObjectPendingReply;
 import io.qt.remoteobjects.QtRemoteObjects;
-import io.qt.internal.QtJambiInternal;
 
 public class TestRemoteObjects extends UnitTestInitializer {
 	
 	private static Throwable exception = null;
-	private static Thread pongThread;
+	private static QThread pongThread;
 	
 	@BeforeClass
 	public static void testInitialize() throws Throwable {
 		ApplicationInitializer.testInitialize();
-		pongThread = new Thread(() -> {
+		pongThread = QThread.create(() -> {
 			QEventLoop loop = new QEventLoop();
 			try {
 				System.out.println("Deploying QtRemoteObjectsPong...");
@@ -88,8 +89,11 @@ public class TestRemoteObjects extends UnitTestInitializer {
 		pongThread.start();
 		pongThread.join(2000);
 		long t1 = System.currentTimeMillis();
-    	String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-		File testFile = new File(new File(new File(new File(new File(System.getProperty("user.dir"), version), "build"), "tests"), "tmp"), "touch.test");
+    	final String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+    	final String jambidir = System.getProperty("user.dir");
+    	final File testsDir = new File(new File(new File(new File(jambidir, version), "build"), QtJambiInternal.osArchName()), "tests");
+    	final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+    	final File testFile = new File(targetDir, "QtRemoteObjectsPong.touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
 			pongThread.join(2000);
 			if(System.currentTimeMillis()-t1>25000) {
@@ -110,16 +114,17 @@ public class TestRemoteObjects extends UnitTestInitializer {
 			if(pongThread!=null) {
 				pongThread.interrupt();
 				pongThread.join();
+				pongThread.dispose();
 				pongThread = null;
 			}
 			if (exception != null)
 				throw exception;
 		} finally {
 			{
-				String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-				String jambidir = System.getProperty("user.dir");
-				final File testsDir = new File(new File(new File(jambidir, version), "build"), "tests");
-				final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+		    	final String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		    	final String jambidir = System.getProperty("user.dir");
+		    	final File testsDir = new File(new File(new File(new File(jambidir, version), "build"), QtJambiInternal.osArchName()), "tests");
+		    	final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
 				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 				if(new File(targetDir, "pid").isFile()) {
 					String processName = new String(Files.readAllBytes(new File(targetDir, "pid").toPath())).trim();;
@@ -131,7 +136,7 @@ public class TestRemoteObjects extends UnitTestInitializer {
 					}
 				}
 				if(targetDir.isDirectory() && !Boolean.getBoolean("qtjambi.deployer.skip.deletion")) {
-	    			Logger.getLogger("io.qt.autotests").log(Level.FINEST, ()->"Cleaning deployer directory "+targetDir);
+	    			Logger.getLogger("io.qt.autotests").log(Level.FINEST, "Cleaning deployer directory {0}", targetDir);
 	    			ApplicationInitializer.clearAndDelete(targetDir);
 	    		}
 			}
@@ -142,7 +147,7 @@ public class TestRemoteObjects extends UnitTestInitializer {
 	@Test
     public void testPingPong() throws Throwable
     {
-		QMetaType.registerMetaType(NonQtType.class);
+		QMetaType.qRegisterMetaType(NonQtType.class);
 		QRemoteObjectNode node = new QRemoteObjectNode(new QUrl("local:ropong"));
 		QRemoteObjectDynamicReplica pong = node.acquireDynamic("pong");
 		QTimer timer = new QTimer();
@@ -151,107 +156,113 @@ public class TestRemoteObjects extends UnitTestInitializer {
 		timer.timeout.connect(QCoreApplication::quit);
 		timer.start();
 		Throwable exception[] = {new AssertionError("Replica not initialized")};
-		pong.initialized.connect(()->{
-			exception[0] = null;
-			timer.stop();
-			timer.timeout.disconnect();
-			QObject object = new QObject();
-			object.destroyed.connect(()->{
-				try {
-					AbstractPublicSignal0 pongSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "pong");
-					AbstractPublicSignal0 pingSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "ping");
-					Assert.assertTrue(pongSignal!=null);
-					Assert.assertTrue(pingSignal!=null);
-					boolean[] received = {false,false};
-					pongSignal.connect(()->received[0] = true);
-					pingSignal.connect(()->received[1] = true);
-					QEventLoop loop = new QEventLoop();
-					timer.timeout.connect(loop::quit);
-					pingSignal.connect(loop::quit);
-					timer.start();
-					QMetaObject.invokeMethod(pong, "emitPing");
-					loop.exec();
-					timer.stop();
-					timer.timeout.disconnect();
-					Assert.assertTrue("pong not received", received[0]);
-					Assert.assertTrue("ping not received", received[1]);
-					pongSignal.disconnect();
-					pingSignal.disconnect();
-					
-					Object result;
-					result = QMetaObject.invokeMethod(pong, "getInt");
-					if(result instanceof QRemoteObjectPendingCall) {
-						QRemoteObjectPendingReply<Integer> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, int.class);
-						if(!pending.isFinished())
-							pending.waitForFinished();
-						Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
-						Assert.assertEquals(Integer.valueOf(5), pending.returnValue());
-					}else {
-						Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+		try {
+			pong.initialized.connect(()->{
+				exception[0] = null;
+				timer.stop();
+				timer.timeout.disconnect();
+				QObject object = new QObject();
+				object.destroyed.connect(()->{
+					try {
+						AbstractPublicSignal0 pongSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "pong");
+						AbstractPublicSignal0 pingSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "ping");
+						Assert.assertTrue(pongSignal!=null);
+						Assert.assertTrue(pingSignal!=null);
+						boolean[] received = {false,false};
+						pongSignal.connect(()->received[0] = true);
+						pingSignal.connect(()->received[1] = true);
+						QEventLoop loop = new QEventLoop();
+						timer.timeout.connect(loop::quit);
+						pingSignal.connect(loop::quit);
+						timer.start();
+						QMetaObject.invokeMethod(pong, "emitPing");
+						loop.exec();
+						timer.stop();
+						timer.timeout.disconnect();
+						Assert.assertTrue("pong not received", received[0]);
+						Assert.assertTrue("ping not received", received[1]);
+						pongSignal.disconnect();
+						pingSignal.disconnect();
+						
+						Object result;
+						result = QMetaObject.invokeMethod(pong, "getInt");
+						if(result instanceof QRemoteObjectPendingCall) {
+							QRemoteObjectPendingReply<Integer> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, int.class);
+							if(!pending.isFinished())
+								pending.waitForFinished();
+							Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
+							Assert.assertEquals(Integer.valueOf(5), pending.returnValue());
+						}else {
+							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+						}
+						result = QMetaObject.invokeMethod(pong, "toRect", 2,3,4,5);
+						if(result instanceof QRemoteObjectPendingCall) {
+							QRemoteObjectPendingReply<QRect> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, QRect.class);
+							if(!pending.isFinished())
+								pending.waitForFinished();
+							Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
+							Assert.assertEquals(new QRect(2,3,4,5), pending.returnValue());
+						}else {
+							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+						}
+						result = QMetaObject.invokeMethod(pong, "getIntArray");
+						if(result instanceof QRemoteObjectPendingCall) {
+							QRemoteObjectPendingReply<int[]> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, int[].class);
+							if(!pending.isFinished())
+								pending.waitForFinished();
+							Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
+							int[] array = pending.returnValue();
+							Assert.assertTrue(array!=null);
+							Assert.assertEquals(5, array.length);
+							Assert.assertEquals(1, array[0]);
+							Assert.assertEquals(2, array[1]);
+							Assert.assertEquals(3, array[2]);
+							Assert.assertEquals(4, array[3]);
+							Assert.assertEquals(5, array[4]);
+						}else {
+							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+						}
+						result = QMetaObject.invokeMethod(pong, "getNonQtType");
+						if(result instanceof QRemoteObjectPendingCall) {
+							QRemoteObjectPendingReply<NonQtType> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, NonQtType.class);
+							if(!pending.isFinished())
+								pending.waitForFinished();
+							Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
+							NonQtType value = pending.returnValue();
+							Assert.assertTrue(value!=null);
+							Assert.assertEquals(5, value.i);
+							Assert.assertEquals(2.5, value.d, 0.0000001);
+							Assert.assertEquals("TEST", value.s);
+							Assert.assertEquals(false, value.b);
+						}else {
+							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+						}
+	
+						result = QMetaObject.invokeMethod(pong, "getColor");
+						if(result instanceof QRemoteObjectPendingCall) {
+							QRemoteObjectPendingReply<QColor> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, QColor.class);
+							if(!pending.isFinished())
+								pending.waitForFinished();
+							Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
+							Assert.assertEquals(new QColor(Qt.GlobalColor.magenta), pending.returnValue());
+						}else {
+							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
+						}
+					}catch(Throwable t) {
+						exception[0] = t;
+					}finally {
+						QCoreApplication.quit();
+						QMetaObject.invokeMethod(pong, "quit");
 					}
-					result = QMetaObject.invokeMethod(pong, "toRect", 2,3,4,5);
-					if(result instanceof QRemoteObjectPendingCall) {
-						QRemoteObjectPendingReply<QRect> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, QRect.class);
-						if(!pending.isFinished())
-							pending.waitForFinished();
-						Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
-						Assert.assertEquals(new QRect(2,3,4,5), pending.returnValue());
-					}else {
-						Assert.fail("QRemoteObjectPendingCall expected but was "+result);
-					}
-					result = QMetaObject.invokeMethod(pong, "getIntArray");
-					if(result instanceof QRemoteObjectPendingCall) {
-						QRemoteObjectPendingReply<int[]> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, int[].class);
-						if(!pending.isFinished())
-							pending.waitForFinished();
-						Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
-						int[] array = pending.returnValue();
-						Assert.assertTrue(array!=null);
-						Assert.assertEquals(5, array.length);
-						Assert.assertEquals(1, array[0]);
-						Assert.assertEquals(2, array[1]);
-						Assert.assertEquals(3, array[2]);
-						Assert.assertEquals(4, array[3]);
-						Assert.assertEquals(5, array[4]);
-					}else {
-						Assert.fail("QRemoteObjectPendingCall expected but was "+result);
-					}
-					result = QMetaObject.invokeMethod(pong, "getNonQtType");
-					if(result instanceof QRemoteObjectPendingCall) {
-						QRemoteObjectPendingReply<NonQtType> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, NonQtType.class);
-						if(!pending.isFinished())
-							pending.waitForFinished();
-						Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
-						NonQtType value = pending.returnValue();
-						Assert.assertTrue(value!=null);
-						Assert.assertEquals(5, value.i);
-						Assert.assertEquals(2.5, value.d, 0.0000001);
-						Assert.assertEquals("TEST", value.s);
-						Assert.assertEquals(false, value.b);
-					}else {
-						Assert.fail("QRemoteObjectPendingCall expected but was "+result);
-					}
-
-					result = QMetaObject.invokeMethod(pong, "getColor");
-					if(result instanceof QRemoteObjectPendingCall) {
-						QRemoteObjectPendingReply<QColor> pending = new QRemoteObjectPendingReply<>((QRemoteObjectPendingCall)result, QColor.class);
-						if(!pending.isFinished())
-							pending.waitForFinished();
-						Assert.assertEquals(QRemoteObjectPendingCall.Error.NoError, pending.error());
-						Assert.assertEquals(new QColor(Qt.GlobalColor.magenta), pending.returnValue());
-					}else {
-						Assert.fail("QRemoteObjectPendingCall expected but was "+result);
-					}
-				}catch(Throwable t) {
-					exception[0] = t;
-				}finally {
-					QCoreApplication.quit();
-					QMetaObject.invokeMethod(pong, "quit");
-				}
+				});
+				object.disposeLater();
 			});
-			object.disposeLater();
-		});
-		QCoreApplication.exec();
+			QCoreApplication.exec();
+		}finally {
+			timer.dispose();
+			pong.dispose();
+			node.dispose();
+		}
 		if(exception[0]!=null)
 			throw exception[0];
     }

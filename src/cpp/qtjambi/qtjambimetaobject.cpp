@@ -84,6 +84,7 @@ struct JMemberInfo{
     jValueType type = jValueType::l;
     ParameterTypeInfo memberTypeInfo;
     bool canWrite = false;
+    jclass staticAccessContext = nullptr;
 };
 
 struct JSignalInfo{
@@ -290,7 +291,7 @@ void static_metacall_any_type(const QtJambiMetaObject* q, QObject * o, QMetaObje
         default:
             break;
         }
-        if(jobject object = reinterpret_cast<jobject>(o)){
+        if(jobject object = reinterpret_cast<JObjectWrapper*>(o)->object()){
             switch(cl){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             case QMetaObject::QueryPropertyUser:
@@ -357,10 +358,10 @@ StaticMetaCallFunction create_static_metacall(const QtJambiMetaObject* q, Static
 class QtJambiMetaObjectPrivate
 {
 public:
-    QtJambiMetaObjectPrivate(QtJambiMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject, JavaException& exceptionHandler);
+    QtJambiMetaObjectPrivate(QtJambiMetaObject *q, JNIEnv *env, jclass java_class);
     ~QtJambiMetaObjectPrivate();
 
-    void initialize(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject);
+    void initialize(JNIEnv *jni_env, const QMetaObject *original_meta_object, bool hasCustomMetaObject);
     void invokeMethod(JNIEnv *env, jobject object, const JMethodInfo& methodInfo, void **_a, bool forceObjectType = false) const;
     void invokeConstructor(JNIEnv *env, const JMethodInfo& methodInfo, void **_a) const;
 
@@ -419,7 +420,7 @@ private:
     friend const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider);
 };
 
-QtJambiMetaObjectPrivate::QtJambiMetaObjectPrivate(QtJambiMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject, JavaException& exceptionHandler)
+QtJambiMetaObjectPrivate::QtJambiMetaObjectPrivate(QtJambiMetaObject *q, JNIEnv *env, jclass java_class)
     :
       q_ptr(q), m_this_ptr(q), m_method_count(-1), m_signal_count(0), m_constructor_count(0), m_property_count(0),
       m_clazz(getGlobalClassRef(env, java_class)),
@@ -440,11 +441,6 @@ QtJambiMetaObjectPrivate::QtJambiMetaObjectPrivate(QtJambiMetaObject *q, JNIEnv 
 {
     Q_ASSERT(env);
     Q_ASSERT(java_class);
-    try{
-        initialize(env, java_class, original_meta_object, hasCustomMetaObject);
-    }catch(const JavaException& exn){
-        exceptionHandler.addSuppressed(env, exn);
-    }
 }
 
 QtJambiMetaObjectPrivate::~QtJambiMetaObjectPrivate()
@@ -569,13 +565,13 @@ void analyze_methods(JNIEnv *env, jobject classLoader, int count, jobject method
     }
 }
 
-void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject)
+void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *original_meta_object, bool hasCustomMetaObject)
 {
     Q_Q(QtJambiMetaObject);
 
     QTJAMBI_JNI_LOCAL_FRAME(env, 1000)
-    jobject classLoader = Java::Runtime::Class::getClassLoader(env, java_class);
-    jobject meta_data_struct = Java::QtJambi::MetaObjectTools::buildMetaData(env, java_class);
+    jobject classLoader = Java::Runtime::Class::getClassLoader(env, m_clazz);
+    jobject meta_data_struct = Java::QtJambi::MetaObjectTools::buildMetaData(env, m_clazz);
     if (!meta_data_struct)
         return;
     jobject meta_data = Java::QtJambi::MetaObjectTools$MetaData::metaData(env, meta_data_struct);
@@ -642,7 +638,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
     {
-        jclass java_super_class = env->GetSuperclass(java_class);
+        jclass java_super_class = env->GetSuperclass(m_clazz);
 #if QT_VERSION < QT_VERSION_CHECK(5,14,0)
         if(java_super_class)
             q->d.superdata = qtjambi_metaobject_for_class(env, java_super_class, original_meta_object, hasCustomMetaObject);
@@ -907,6 +903,10 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                 jclass fieldType = Java::Runtime::Field::getType(env, fieldObject);
                 m_propertyMembers[i].member = env->FromReflectedField(fieldObject);
                 m_propertyMembers[i].canWrite = !Java::Runtime::Modifier::isFinal(env, Java::Runtime::Field::getModifiers(env, fieldObject));
+                if(Java::Runtime::Modifier::isStatic(env, Java::Runtime::Field::getModifiers(env, fieldObject))){
+                    m_propertyMembers[i].staticAccessContext = Java::Runtime::Field::getDeclaringClass(env, fieldObject);
+                    m_propertyMembers[i].staticAccessContext = getGlobalClassRef(env, m_propertyMembers[i].staticAccessContext);
+                }
                 if(Java::Runtime::Boolean::isPrimitiveType(env, fieldType)){
                     m_propertyMembers[i].type = jValueType::z;
                 }else if(Java::Runtime::Byte::isPrimitiveType(env, fieldType)){
@@ -982,9 +982,9 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
     bool hasStaticMembers = Java::QtJambi::MetaObjectTools$MetaData::hasStaticMembers(env,meta_data_struct);
     const QMetaObjectPrivate* priv = QMetaObjectPrivate::get(q);
     if(hasStaticMembers || (priv->flags & PropertyAccessInStaticMetaCall) == PropertyAccessInStaticMetaCall){
-        if(Java::QtCore::QObject::isAssignableFrom(env, java_class)){
+        if(Java::QtCore::QObject::isAssignableFrom(env, m_clazz)){
             q->d.static_metacall = create_static_metacall(q, &static_metacall_QObject);
-        }else if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, java_class)){
+        }else if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, m_clazz)){
             q->d.static_metacall = create_static_metacall(q, &static_metacall_QtSubType);
         }else{
             q->d.static_metacall = create_static_metacall(q, &static_metacall_any_type);
@@ -1140,8 +1140,12 @@ void QtJambiMetaObjectPrivate::invokeConstructor(JNIEnv *env, const JMethodInfo&
 }
 
 
-QtJambiMetaObject::QtJambiMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject, JavaException& exceptionHandler)
-    : d_ptr(new QtJambiMetaObjectPrivate(this, jni_env, java_class, original_meta_object, hasCustomMetaObject, exceptionHandler)) {
+QtJambiMetaObject::QtJambiMetaObject(JNIEnv *jni_env, jclass java_class)
+    : d_ptr(new QtJambiMetaObjectPrivate(this, jni_env, java_class)) {
+}
+
+void QtJambiMetaObject::initialize(JNIEnv *env, const QMetaObject *original_meta_object, bool hasCustomMetaObject){
+    d_ptr->initialize(env, original_meta_object, hasCustomMetaObject);
 }
 
 QtJambiMetaObject::~QtJambiMetaObject()
@@ -2027,47 +2031,92 @@ int QtJambiMetaObject::readProperty(JNIEnv *env, jobject object, int _id, void *
         }else if (d->m_propertyMembers[_id].member){
             QtJambiExceptionHandler __exceptionHandler;
             try{
-                switch(d->m_propertyMembers[_id].type){
-                case jValueType::z:
-                    *reinterpret_cast<jboolean*>(_a[0]) = env->GetBooleanField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::b:
-                    *reinterpret_cast<jbyte*>(_a[0]) = env->GetByteField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::s:
-                    *reinterpret_cast<jshort*>(_a[0]) = env->GetShortField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::i:
-                    *reinterpret_cast<jint*>(_a[0]) = env->GetIntField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::j:
-                    *reinterpret_cast<jlong*>(_a[0]) = env->GetLongField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::f:
-                    *reinterpret_cast<float*>(_a[0]) = env->GetFloatField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::d:
-                    *reinterpret_cast<double*>(_a[0]) = env->GetDoubleField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::c:
-                    *reinterpret_cast<jchar*>(_a[0]) = env->GetCharField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::l:{
-                        jvalue value;
-                        value.l = env->GetObjectField(object, d->m_propertyMembers[_id].member);
+                if(jclass context = d->m_propertyMembers[_id].staticAccessContext){
+                    switch(d->m_propertyMembers[_id].type){
+                    case jValueType::z:
+                        *reinterpret_cast<jboolean*>(_a[0]) = env->GetStaticBooleanField(context, d->m_propertyMembers[_id].member);
                         qtjambi_throw_java_exception(env);
-                        QtJambiScope scope;
-                        d->m_propertyMembers[_id].memberTypeInfo.convertExternalToInternal(env, &scope, value, _a[0], jValueType::l);
+                        break;
+                    case jValueType::b:
+                        *reinterpret_cast<jbyte*>(_a[0]) = env->GetStaticByteField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::s:
+                        *reinterpret_cast<jshort*>(_a[0]) = env->GetStaticShortField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::i:
+                        *reinterpret_cast<jint*>(_a[0]) = env->GetStaticIntField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::j:
+                        *reinterpret_cast<jlong*>(_a[0]) = env->GetStaticLongField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::f:
+                        *reinterpret_cast<float*>(_a[0]) = env->GetStaticFloatField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::d:
+                        *reinterpret_cast<double*>(_a[0]) = env->GetStaticDoubleField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::c:
+                        *reinterpret_cast<jchar*>(_a[0]) = env->GetStaticCharField(context, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::l:{
+                            jvalue value;
+                            value.l = env->GetStaticObjectField(context, d->m_propertyMembers[_id].member);
+                            qtjambi_throw_java_exception(env);
+                            QtJambiScope scope;
+                            d->m_propertyMembers[_id].memberTypeInfo.convertExternalToInternal(env, &scope, value, _a[0], jValueType::l);
+                        }
+                        break;
                     }
-                    break;
+                }else{
+                    switch(d->m_propertyMembers[_id].type){
+                    case jValueType::z:
+                        *reinterpret_cast<jboolean*>(_a[0]) = env->GetBooleanField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::b:
+                        *reinterpret_cast<jbyte*>(_a[0]) = env->GetByteField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::s:
+                        *reinterpret_cast<jshort*>(_a[0]) = env->GetShortField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::i:
+                        *reinterpret_cast<jint*>(_a[0]) = env->GetIntField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::j:
+                        *reinterpret_cast<jlong*>(_a[0]) = env->GetLongField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::f:
+                        *reinterpret_cast<float*>(_a[0]) = env->GetFloatField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::d:
+                        *reinterpret_cast<double*>(_a[0]) = env->GetDoubleField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::c:
+                        *reinterpret_cast<jchar*>(_a[0]) = env->GetCharField(object, d->m_propertyMembers[_id].member);
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::l:{
+                            jvalue value;
+                            value.l = env->GetObjectField(object, d->m_propertyMembers[_id].member);
+                            qtjambi_throw_java_exception(env);
+                            QtJambiScope scope;
+                            d->m_propertyMembers[_id].memberTypeInfo.convertExternalToInternal(env, &scope, value, _a[0], jValueType::l);
+                        }
+                        break;
+                    }
                 }
             }catch(const JavaException& exn){
                 __exceptionHandler.handle(env, exn, nullptr);
@@ -2101,48 +2150,94 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, int _id, void 
         }else if (d->m_propertyMembers[_id].member && d->m_propertyMembers[_id].canWrite){
             QtJambiExceptionHandler __exceptionHandler;
             try{
-                switch(d->m_propertyMembers[_id].type){
-                case jValueType::z:
-                    env->SetBooleanField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jboolean*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::b:
-                    env->SetByteField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jbyte*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::s:
-                    env->SetShortField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jshort*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::i:
-                    env->SetIntField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jint*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::j:
-                    env->SetLongField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jlong*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::f:
-                    env->SetFloatField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<float*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::d:
-                    env->SetDoubleField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<double*>(_a[0]));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::c:
-                    env->SetCharField(object, d->m_propertyMembers[_id].member, jchar(*reinterpret_cast<jchar*>(_a[0])));
-                    qtjambi_throw_java_exception(env);
-                    break;
-                case jValueType::l:
-                    jvalue value;
-                    value.l = nullptr;
-                    if (d->m_propertyMembers[_id].memberTypeInfo.convertInternalToExternal(env, nullptr, _a[0], &value, true)) {
-                        env->SetObjectField(object, d->m_propertyMembers[_id].member, value.l);
+                if(jclass context = d->m_propertyMembers[_id].staticAccessContext){
+                    switch(d->m_propertyMembers[_id].type){
+                    case jValueType::z:
+                        env->SetStaticBooleanField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<jboolean*>(_a[0]));
                         qtjambi_throw_java_exception(env);
                         break;
+                    case jValueType::b:
+                        env->SetStaticByteField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<jbyte*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::s:
+                        env->SetStaticShortField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<jshort*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::i:
+                        env->SetStaticIntField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<jint*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::j:
+                        env->SetStaticLongField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<jlong*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::f:
+                        env->SetStaticFloatField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<float*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::d:
+                        env->SetStaticDoubleField(context, d->m_propertyMembers[_id].member, *reinterpret_cast<double*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::c:
+                        env->SetStaticCharField(context, d->m_propertyMembers[_id].member, jchar(*reinterpret_cast<jchar*>(_a[0])));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::l:
+                        jvalue value;
+                        value.l = nullptr;
+                        if (d->m_propertyMembers[_id].memberTypeInfo.convertInternalToExternal(env, nullptr, _a[0], &value, true)) {
+                            env->SetStaticObjectField(context, d->m_propertyMembers[_id].member, value.l);
+                            qtjambi_throw_java_exception(env);
+                            break;
+                        }
+                        break;
                     }
-                    break;
+                }else{
+                    switch(d->m_propertyMembers[_id].type){
+                    case jValueType::z:
+                        env->SetBooleanField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jboolean*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::b:
+                        env->SetByteField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jbyte*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::s:
+                        env->SetShortField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jshort*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::i:
+                        env->SetIntField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jint*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::j:
+                        env->SetLongField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jlong*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::f:
+                        env->SetFloatField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<float*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::d:
+                        env->SetDoubleField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<double*>(_a[0]));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::c:
+                        env->SetCharField(object, d->m_propertyMembers[_id].member, jchar(*reinterpret_cast<jchar*>(_a[0])));
+                        qtjambi_throw_java_exception(env);
+                        break;
+                    case jValueType::l:
+                        jvalue value;
+                        value.l = nullptr;
+                        if (d->m_propertyMembers[_id].memberTypeInfo.convertInternalToExternal(env, nullptr, _a[0], &value, true)) {
+                            env->SetObjectField(object, d->m_propertyMembers[_id].member, value.l);
+                            qtjambi_throw_java_exception(env);
+                            break;
+                        }
+                        break;
+                    }
                 }
             }catch(const JavaException& exn){
                 __exceptionHandler.handle(env, exn, nullptr);
@@ -2394,6 +2489,7 @@ QSharedPointer<const QtJambiMetaObject> QtJambiMetaObject::dispose(JNIEnv * env)
 const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider)
 {
     Q_ASSERT(object_class != nullptr);
+    Java::QtJambi::QtJambiInternal::initializePackage(env, object_class);
 
     // If original_meta_object is null then we have to look it up
 
@@ -2414,13 +2510,15 @@ const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class
                 returned = original_meta_object_provider(basedOnCustomMetaObject);
                 if(!returned && !basedOnCustomMetaObject){
                     JavaException exceptionHandler;
-                    dynamicResult = new QtJambiMetaObject(env, object_class, nullptr, false, exceptionHandler);
-                    if(exceptionHandler.object()){
-                        dynamicResult->dispose(env);
-                        exceptionHandler.raise();
-                    }else{
-                        returned = dynamicResult;
+                    dynamicResult = new QtJambiMetaObject(env, object_class);
+                    try{
+                        dynamicResult->initialize(env, nullptr, false);
+                    }catch(const JavaException& exn){
+                        (void)dynamicResult->dispose(env);
+                        exn.raise();
+                        throw;
                     }
+                    returned = dynamicResult;
                 }
             } else {
                 const QMetaObject *original_meta_object = original_meta_object_provider(basedOnCustomMetaObject);
@@ -2431,17 +2529,21 @@ const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class
 #endif
                     returned = original_meta_object;
                 }else {
-                    JavaException exceptionHandler;
-                    dynamicResult = new QtJambiMetaObject(env, object_class, original_meta_object, basedOnCustomMetaObject, exceptionHandler);
-                    if(exceptionHandler.object()){
-                        dynamicResult->dispose(env);
-                        exceptionHandler.raise();
-                    }else if(basedOnCustomMetaObject){
-                        if(dynamicResult->d_ptr->m_signal_count>0){
+                    dynamicResult = new QtJambiMetaObject(env, object_class);
+                    try{
+                        dynamicResult->initialize(env, original_meta_object, basedOnCustomMetaObject);
+                    }catch(const JavaException& exn){
+                        (void)dynamicResult->dispose(env);
+                        exn.raise();
+                        throw;
+                    }
+                    if(basedOnCustomMetaObject){
+                        int signal_count = dynamicResult->d_ptr->m_signal_count>0;
+                        (void)dynamicResult->dispose(env);
+                        if(signal_count>0){
                             QString class_name = qtjambi_class_name(env, object_class).replace("$", ".");
                             JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Cannot define signals in class %1 because it extends type with dynamic meta object.").arg(class_name)) QTJAMBI_STACKTRACEINFO );
                         }
-                        dynamicResult->dispose(env);
                         returned = original_meta_object;
                     }else{
                         returned = dynamicResult;
@@ -2452,7 +2554,7 @@ const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class
             Q_UNUSED(locker)
             // check if someone added a meta object meanwhile
             if(const QMetaObject *_returned = gMetaObjects->value(classHash, nullptr)){
-                if(dynamicResult){
+                if(dynamicResult && dynamicResult!=_returned){
                     dynamicResult->dispose(env);
                 }
                 return _returned;

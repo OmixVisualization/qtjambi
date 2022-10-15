@@ -47,6 +47,7 @@
     <required-library name="QtPrintSupport" mode="provide-only"/>
     <required-library name="QtWebEngineCore" mode="provide-only"/>
     <required-library name="QtWebEngineWidgets" mode="provide-only"/>
+    <rejection class="" function-name="qt_extension" />
     <rejection class="QAbstractFormBuilder" function-name="toString" />
     <rejection class="QAbstractFormBuilder" function-name="propertyMap" />
     <rejection class="QAbstractFormBuilder" function-name="domPixmap" />
@@ -117,6 +118,8 @@
     <rejection class="QAbstractFormBuilder::DomPropertyHash"/>
     <rejection class="QDesignerDnDItemInterface" />
     <rejection class="QDesignerExtraInfoExtension" />
+    <rejection class="QResourceBuilder" />
+    <rejection class="QDesignerDnDItemInterface" />
     <interface-type name="QDesignerLanguageExtension" />
     <interface-type name="QDesignerFormEditorPluginInterface" />
     <object-type name="QDesignerFormEditorInterface" />

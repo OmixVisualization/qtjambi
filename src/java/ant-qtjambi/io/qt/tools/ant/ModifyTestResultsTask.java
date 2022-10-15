@@ -2,6 +2,7 @@ package io.qt.tools.ant;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,12 +38,16 @@ public class ModifyTestResultsTask extends Task {
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-			for(String file : directory.list()){
+			loop: for(String file : directory.list()){
 				if(file.endsWith(".xml")) {
 					java.io.File xml = new java.io.File(directory, file);
 					Document doc;
 					try(FileInputStream fis = new FileInputStream(xml)){
 						doc = builder.parse(fis);
+					}catch(org.xml.sax.SAXParseException e) {
+						throw new org.xml.sax.SAXParseException(xml.getName()+" "+e.getMessage(), null, e);
+					}catch(IOException e) {
+						throw new IOException(xml.getName()+" "+e.getMessage(), e);
 					}
 					NodeList childNodes = doc.getChildNodes();
 					for(int i=0, length=childNodes.getLength(); i<length; ++i) {
@@ -53,6 +58,7 @@ public class ModifyTestResultsTask extends Task {
 								String name = child.getAttribute("name");
 								if(!name.endsWith(suffix))
 									child.setAttribute("name", name+suffix);
+								else continue loop;
 							}
 							
 							NodeList childNodes2 = child.getChildNodes();
@@ -64,6 +70,7 @@ public class ModifyTestResultsTask extends Task {
 										String name = child2.getAttribute("classname");
 										if(!name.endsWith(suffix))
 											child2.setAttribute("classname", name+suffix);
+										else continue loop;
 									}
 								}
 							}

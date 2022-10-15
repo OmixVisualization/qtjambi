@@ -48,6 +48,45 @@
     <namespace-type name="QQuickTest">
         <extra-includes>
             <include file-name="qquickitem.h" location="global" suppressed="yes"/>
+          <include file-name="qtjambi/qtjambi_application.h" location="global"/>
         </extra-includes>
     </namespace-type>
+	<global-function signature="quick_test_main(int, char**, const char*, const char*)" target-type="QQuickTest">
+		<modify-argument index="1">
+			<remove-argument/>
+		</modify-argument>
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String[]"/>
+			<conversion-rule class="native">
+					std::unique_ptr&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
+					char** %out = applicationData->chars();
+					int %1 = applicationData->size();
+			</conversion-rule>
+		</modify-argument>
+		<modify-argument index="3">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="4">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="quick_test_main_with_setup(int, char**, const char*, const char*, QObject*)" target-type="QQuickTest">
+		<modify-argument index="1">
+			<remove-argument/>
+		</modify-argument>
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String[]"/>
+			<conversion-rule class="native">
+					std::unique_ptr&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
+					char** %out = applicationData->chars();
+					int %1 = applicationData->size();
+			</conversion-rule>
+		</modify-argument>
+		<modify-argument index="3">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="4">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
 </typesystem>

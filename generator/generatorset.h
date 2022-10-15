@@ -59,7 +59,7 @@ class GeneratorSet : public QObject {
 
         virtual QString usage() = 0;
         virtual bool readParameters(const QMap<QString, QString> args) = 0;
-        virtual void buildModel(const QMap<QString, QString>& features, const QString pp_file) = 0;
+        virtual void buildModel(const QMap<QString, QString>& features, const QString pp_file, const QStringList& includePathsList) = 0;
         virtual void dumpObjectTree() = 0;
         virtual void generate() = 0;
 

@@ -24,7 +24,7 @@ import io.qt.widgets.QApplication;
 
 public class QtRemoteObjectsPong {
 	
-	public static final class NonQtType implements Serializable{
+	public static final class NonQtType implements Serializable, Cloneable{
 		private static final long serialVersionUID = 1L;
 		int i;
 		boolean b;
@@ -127,16 +127,21 @@ public class QtRemoteObjectsPong {
 	}
 
 	public static void main(String... args) {
+		System.out.println("initialize QtRemoteObjectsPong...");
 		QCoreApplication.initialize(args);
-		System.out.println("Writing PID "+QCoreApplication.applicationPid()+" to file "+new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
-		QFile libFile = new QFile(new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
-		if(libFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
-			QTextStream s = new QTextStream(libFile);
-			s.append(""+QCoreApplication.applicationPid());
-			s.dispose();
-			libFile.close();
+		{
+			System.out.println("Writing PID "+QCoreApplication.applicationPid()+" to file "+new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+			new QDir(System.getProperty("user.dir")).mkpath(".");
+			QFile libFile = new QFile(new QDir(System.getProperty("user.dir")).absoluteFilePath("pid"));
+			if(libFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
+				QTextStream s = new QTextStream(libFile);
+				s.append(""+QCoreApplication.applicationPid());
+				s.dispose();
+				libFile.close();
+			}
+			libFile.dispose();
 		}
-		QMetaType.registerMetaType(NonQtType.class);
+		QMetaType.qRegisterMetaType(NonQtType.class);
 		Pong pong = new Pong();
 		pong.setObjectName("pong");
 		QRemoteObjectHost host = new QRemoteObjectHost(new QUrl("local:ropong"));
@@ -147,16 +152,19 @@ public class QtRemoteObjectsPong {
 				if (file.open(QIODevice.OpenModeFlag.WriteOnly)) {
 					file.write(new QByteArray(QApplication.arguments().get(2)));
 					file.close();
+				}else {
+					System.out.println("unable to write to " + QApplication.arguments().get(1));
 				}
 				file.dispose();
 			}
-			System.out.println("QtRemoteObjectsPong waiting...");
+			System.out.println("QtRemoteObjectsPong waiting for connection...");
 			QTimer.singleShot(100000, QCoreApplication::quit);
 			Thread thread = new Thread(()->{
 				try {
 					byte[] b = new byte[1024];
 					int length = System.in.read(b);
 					if(new String(b, 0, length).startsWith("quit")) {
+						System.out.println("quit QtRemoteObjectsPong");
 						QCoreApplication.quit();
 					}
 				} catch (Exception e) {
@@ -170,7 +178,18 @@ public class QtRemoteObjectsPong {
 			}
 			System.out.println("QtRemoteObjectsPong shutting down...");
 		}else {
-			System.out.println(host.lastError());
+			if (args.length > 1) {
+				System.out.println("QtRemoteObjectsPong write hello-file...");
+				QFile file = new QFile(QApplication.arguments().get(1));
+				if (file.open(QIODevice.OpenModeFlag.WriteOnly)) {
+					file.write(new QByteArray(QApplication.arguments().get(2)));
+					file.close();
+				}else {
+					System.out.println("unable to write to " + QApplication.arguments().get(1));
+				}
+				file.dispose();
+			}
+			System.out.println("unable to start remoting: "+host.lastError());
 		}
 		host.dispose();
 		pong.dispose();

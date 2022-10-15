@@ -63,9 +63,13 @@
         <extra-includes>
             <include file-name="QTest" location="global"/>
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="qtjambi_test_util.h" location="local"/>
         </extra-includes>
 
+        <modify-function signature="qRun()" no-except="yes" block-exceptions="yes"/>
+        <modify-function signature="qExec(QObject *, QStringList)" no-except="yes" block-exceptions="yes"/>
         <modify-function signature="touchEvent(QWindow *, QTouchDevice *, bool)" remove="all" until="5.*"/>
         <modify-function signature="touchEvent(QWidget *, QTouchDevice *, bool)" remove="all" until="5.*"/>
         <modify-function signature="touchEvent(QWindow *, QPointingDevice *, bool)" remove="all" since="6.0.0"/>
@@ -89,6 +93,7 @@
         <modify-function signature="toString(QList&lt;QNetworkCookie>)" remove="all" />
         <modify-function signature="toString(QNetworkCookie)" remove="all" />
         <modify-function signature="toString(std::nullptr_t)" remove="all" />
+        <modify-function signature="toString&lt;T1,T2>(const QPair&lt;T1, T2> &amp;)" remove="all"/>
         <modify-function signature="toPrettyCString(const char *, int)" remove="all" until="6.3.*"/><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toPrettyCString(const char *, qsizetype)" remove="all" since="6.4.0"/><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toPrettyUnicode(QStringView)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
@@ -109,6 +114,7 @@
         <modify-function signature="qCompare(const char *, const char *, const char *, const char *, const char *, int)" remove="all"/>
         <modify-function signature="qCompare(qfloat16, qfloat16, const char *, const char *, const char *, int)" remove="all"/>
         <modify-function signature="qCompare(unsigned, unsigned, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare&lt;T,N>(const QList&lt;T> &amp;, std::initializer_list&lt;T>, const char *, const char *, const char *, int)" remove="all" since="6.0.0"/>
     </namespace-type>
 
     <object-type name="QTest::QBenchmarkIterationController">
@@ -210,17 +216,25 @@ namespace QtJambiPrivate{
         </inject-code>
         <modify-function signature="clear()" rename="purge" />
     </value-type>
+	<global-function signature="qt_handleTouchEventv2(QWindow*, const QPointingDevice*, const QList&lt;QEventPoint>&amp;, Qt::KeyboardModifiers)" target-type="QTest">
+	</global-function>
+	<global-function signature="qt_handleKeyEvent(QWindow*, QEvent::Type, int, Qt::KeyboardModifiers, QString, bool, ushort)" target-type="QTest">
+	</global-function>
+	<global-function signature="qt_handleMouseEvent(QWindow*, QPointF, QPointF, Qt::MouseButtons, Qt::MouseButton, QEvent::Type, Qt::KeyboardModifiers, int)" target-type="QTest">
+	</global-function>
+	<global-function signature="qt_sendShortcutOverrideEvent(QObject*, ulong, int, Qt::KeyboardModifiers, QString, bool, ushort)" target-type="QTest">
+	</global-function>
 	<functional-type name="QTest::Supplier" using="qxp::function_ref&lt;const char*()>" generate="no" since="6.4"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type '*QTestData*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type '*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::toString', unmatched parameter type '*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qTest', unmatched parameter type '*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'compare_helper(bool,const char*,const char*,int)' for function modification in 'QTest' not found. Possible candidates: compare_helper(bool,const char*,char*,char*,const char*,const char*,const char*,int) in QTest"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::compare_ptr_helper', unmatched parameter type 'void const volatile*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addRow', unmatched return type '*QTestData*'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qCompare', unmatched parameter type '*'"/>
-  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTestEventList."/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type '*QTestData*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type '*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::toString*', unmatched parameter type '*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qTest', unmatched parameter type '*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'compare_helper(bool,const char*,const char*,int)' for function modification in 'QTest' not found. Possible candidates: compare_helper(bool,const char*,char*,char*,const char*,const char*,const char*,int) in QTest"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::compare_ptr_helper', unmatched parameter type 'void const volatile*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addRow', unmatched return type '*QTestData*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qCompare*', unmatched parameter type '*'"/>
+	<suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTestEventList."/>
 </typesystem>
 

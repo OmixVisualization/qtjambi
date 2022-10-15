@@ -62,6 +62,8 @@
             <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
             <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*DataVisualization.java" unless="${qtjambi.datavisualization.any.true}"/>
+            <exclude name="io/qt/**/Test*SpatialAudio.java" unless="${qtjambi.spatialaudio.any.true}"/>
+            <exclude name="io/qt/**/Test*HttpServer.java" unless="${qtjambi.httpserver.any.true}"/>
             <exclude name="io/qt/**/Test*Nfc.java" unless="${qtjambi.nfc.any.true}"/>
             <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
             <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
@@ -118,6 +120,7 @@
             <exclude name="io/qt/**/TestSQL*.java" unless="${qtjambi.sql.any.true}"/>
             <exclude name="io/qt/**/Test3DCore*.java" unless="${qtjambi.3dcore.any.true}"/>
             <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
+            <exclude name="io/qt/**/TestSpatialAudio*.java" unless="${qtjambi.spatialaudio.any.true}"/>
             <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
             <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
@@ -130,6 +133,7 @@
             <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
             <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
+			<exclude name="io/qt/**/TestHttpServer*.java" unless="${qtjambi.httpserver.any.true}"/>
             <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
             <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
@@ -600,6 +604,18 @@
                 <condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
                     <istrue value="${qtjambi.autotests.jnicheck}"/>
                 </condition>
+                <condition property="Ddelay" value="-Dtest.delay=${test.delay}" else="-Dx">
+					<isset property="test.delay"/>
+                </condition>
+                <condition property="Dattach" value="-Dtest.attach=${test.attach}" else="-Dx">
+					<isset property="test.attach"/>
+                </condition>
+                <condition property="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=${io.qt.keep-temp-deployment}" else="-Dx">
+					<isset property="io.qt.keep-temp-deployment"/>
+                </condition>
+                <condition property="Ddeploymentdir" value="-Dio.qt.deploymentdir=${io.qt.deploymentdir}" else="-Dx">
+					<isset property="io.qt.deploymentdir"/>
+                </condition>
                 <if>
                     <not>
                         <os family="windows"/>
@@ -608,50 +624,67 @@
                         <symlink link="${outputDir}/${qtjambi.osname}/tests/${kind}/lib" resource="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib"/>
                     </then>
                 </if>
-                <trycatch>
-                    <try>
-                        <mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
-                        <junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
-                            <classpath refid="qtjambi.classpath"/>
-                            <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/${qtjambi.osname}/tests/bin${psep}${outputDir}/${qtjambi.osname}/tests/lib"/>
-                            <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
-                            <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
-                            <jvmarg value="-Dio.qt.log-messages=ALL"/>
-                            <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-                            <jvmarg value="-Dio.qt.qml-imports=${outputDir}/${qtjambi.osname}/tests/${kind}/qml"/>
-                            <jvmarg value="-Dio.qt.pluginpath=${deploymentdir}/native/${qtjambi.osname}/${kind}/plugins${psep}${outputDir}/${qtjambi.osname}/tests/${kind}/plugins"/>
-                            <jvmarg value="${XstartOnFirstThread}"/>
-                            <jvmarg value="-Dqtjambi.deployer.test.jdbc=${sqlite.jdbc}"/>
-                            <jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
-                            <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
-                            from native code (so we can see where/why it crashed) otherwise
-                            the JVM may promote SIGSEGV to NullPointerException, which is
-                            not that useful for debugging. -->
-                            <jvmarg value="${Xcheck_jni}"/>
-                            <jvmarg value="-Dqtjambi.deployer.skip.deletion=${qtjambi.deployer.skip.deletion}"/>
-                            <env key="${env.qtjambi.debug.trace}" value="1"/>
-                            <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
-                            <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
-                            <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
-                <!--            <jvmarg value="-verbose"/> -->
-                            <formatter type="xml" usefile="yes" />
-                            <batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
-                                <fileset refid="qtjambi.autotest.classes"/>
-                            </batchtest>
-                        </junit>
-                        <modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
-                    </try>
-                    <finally>
-                        <if>
-                            <not>
-                                <os family="windows"/>
-                            </not>
-                            <then>
-                                <symlink action="delete" link="${outputDir}/${qtjambi.osname}/tests/${kind}/lib"/>
-                            </then>
-                        </if>
-                    </finally>
-                </trycatch>
+				<if>
+					<not>
+						<or>
+							<equals arg1="${qtjambi.osname}" arg2="android"/>
+							<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+							<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+							<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+							<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+						</or>
+					</not>
+					<then>
+						<trycatch>
+							<try>
+								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
+								<junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
+									<classpath refid="qtjambi.classpath"/>
+									<jvmarg value="-Dio.qt.library-path-override=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/${qtjambi.osname}/tests/bin${psep}${outputDir}/${qtjambi.osname}/tests/lib"/>
+									<jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
+									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Dio.qt.no-deployment-spec=true"/>
+									<jvmarg value="-Dio.qt.qml-imports=${outputDir}/${qtjambi.osname}/tests/${kind}/qml"/>
+									<jvmarg value="-Dio.qt.pluginpath=${deploymentdir}/native/${qtjambi.osname}/${kind}/plugins${psep}${outputDir}/${qtjambi.osname}/tests/${kind}/plugins"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="-Dqtjambi.deployer.test.jdbc=${sqlite.jdbc}"/>
+									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+									<jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+									from native code (so we can see where/why it crashed) otherwise
+									the JVM may promote SIGSEGV to NullPointerException, which is
+									not that useful for debugging. -->
+									<jvmarg value="${Xcheck_jni}"/>
+									<jvmarg value="-Dqtjambi.deployer.skip.deletion=${qtjambi.deployer.skip.deletion}"/>
+									<jvmarg value="${Ddelay}"/>
+									<jvmarg value="${Dattach}"/>
+									<jvmarg value="${Dkeep-temp-deployment}"/>
+									<jvmarg value="${Ddeploymentdir}"/>
+									<env key="${env.qtjambi.debug.trace}" value="1"/>
+									<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
+									<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
+									<env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
+						<!--            <jvmarg value="-verbose"/> -->
+									<formatter type="xml" usefile="yes" />
+									<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
+										<fileset refid="qtjambi.autotest.classes"/>
+									</batchtest>
+								</junit>
+								<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
+							</try>
+							<finally>
+								<if>
+									<not>
+										<os family="windows"/>
+									</not>
+									<then>
+										<symlink action="delete" link="${outputDir}/${qtjambi.osname}/tests/${kind}/lib"/>
+									</then>
+								</if>
+							</finally>
+						</trycatch>
+					</then>
+				</if>
             </then>
         </if>
     </target>
@@ -960,7 +993,7 @@
         </trycatch>
     </target>
     
-    <target name="tests.debug.run.all-impl" depends="init.build, setenv" description="Runs tests and generates report in TestReport subdir">
+    <target name="tests.debug.run.all-impl" depends="init.build, setenv">
         <trycatch>
             <try>
                 <antcall target="debug.run"/>

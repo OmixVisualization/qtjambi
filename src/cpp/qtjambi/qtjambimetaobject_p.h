@@ -72,8 +72,6 @@ private:
 class QtJambiMetaObject final : public QMetaObject
 {
 public:
-    QtJambiMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, bool hasCustomMetaObject, JavaException& exceptionHandler);
-
     int invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
     int readProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
     int writeProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
@@ -128,6 +126,8 @@ public:
     static const QList<ParameterTypeInfo>& methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
     static jobject toReflected(JNIEnv * env, const QMetaMethod& method);
 private:
+    QtJambiMetaObject(JNIEnv *jni_env, jclass java_class);
+    void initialize(JNIEnv *env, const QMetaObject *original_meta_object, bool hasCustomMetaObject);
     void objectDestroyed(QObject *) /*override*/ {}
     ~QtJambiMetaObject() /*override*/;
     int metaCall(QObject *, QMetaObject::Call c, int _id, void **a) /*override*/;
@@ -142,6 +142,7 @@ private:
     friend class DynamicMetaObjectFunctionTable;
     friend class DynamicMetaObjectInterfaceFunctionTable;
     friend QtSharedPointer::CustomDeleter<QtJambiMetaObject,QtSharedPointer::NormalDeleter>;
+    friend const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider);
 };
 
 #endif // QTDYNAMICMETAOBJECT_P_H

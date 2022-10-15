@@ -181,13 +181,7 @@ QStringList PreprocessHandler::setIncludes() {
     if (!Wrapper::include_directory.isNull()) {
         includedir = Wrapper::include_directory;
     } else {
-#if defined(Q_OS_MAC)
-        includedir = "/Library/Frameworks";
-#else
-        includedir = "/usr/include/qt4";
-#endif
-        if(!includedir.isNull())
-            std::fprintf(stdout, "Appending built-in --qt-include-directory: %s\n", qPrintable(includedir));
+        std::fprintf(stdout, "Appending built-in --qt-include-directory: %s\n", qPrintable(includedir));
     }
     if (!includedir.isNull())
         includes << includedir;

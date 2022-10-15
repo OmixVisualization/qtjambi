@@ -24,6 +24,8 @@ public class ForeachVersionTask extends Task {
 		
 		String dirs = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdirs");
 		String ndk = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.ndk");
+		if(ndk==null || ndk.isEmpty())
+			ndk = System.getenv("ANDROID_NDK");
 		String createAndroid = AntUtil.getPropertyAsString(propertyHelper, "android");
 		boolean maybeAndroid = ndk!=null 
 				&& !ndk.isEmpty() 

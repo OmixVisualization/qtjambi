@@ -14,59 +14,6 @@
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #endif
 
-#define GETMETHOD_TEST(Type, Method)\
-    bool result = false;\
-    if(qobj){\
-    Type arg;\
-    const QMetaMethod qmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("get"#Method"()"));\
-    const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("test"#Method"("#Type")"));\
-    qmethod.invoke(qobj, Q_RETURN_ARG(Type, arg));\
-    if(testmethod.isValid())\
-    testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
-    }\
-    return result;
-
-#define PROPERTY_TEST(Type, Property)\
-    bool result = false;\
-    if(qobj && qobj->metaObject()){\
-    QString name(#Property);\
-    name[0] = name[0].toLower();\
-    Type arg = qobj->property(name.toLatin1()).value<Type>();\
-    const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("test"#Property"("#Type")"));\
-    if(testmethod.isValid())\
-    testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
-    }\
-    return result;
-
-#define PROPERTY_TEST2(Type, Property)\
-    bool result = false;\
-    if(qobj && qobj->metaObject()){\
-    QString name(#Property);\
-    name[0] = name[0].toLower();\
-    Type arg = qobj->property(name.toLatin1()).value<Type>();\
-    const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("test"#Property"("#Type")"));\
-    if(testmethod.isValid())\
-    testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
-    }\
-    return result;
-
-#define PROPERTY_TEST3(Type, Property)\
-    bool result = false;\
-    const QMetaObject* metaobject = qobj->metaObject();\
-    if(qobj && metaobject){\
-        QString name(#Property);\
-        name[0] = name[0].toLower();\
-        QVariant variant = qobj->property(name.toLatin1());\
-        void** data = reinterpret_cast<void**>(variant.data());\
-        if(data){\
-            Type arg = reinterpret_cast<Type>(*data);\
-            const QMetaMethod testmethod = metaobject->method(metaobject->indexOfMethod("test"#Property"("#Type")"));\
-            if(testmethod.isValid())\
-            testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
-        }\
-    }\
-    return result;
-
 class PropertyAndMethodCallTest : public QObject
 {
     Q_OBJECT
@@ -87,6 +34,7 @@ public:
     QGraphicsItem* receivedCustomQtInterfaceValue();
     JObjectWrapper receivedCustomJavaType();
     QObject* receivedDerivedQObject();
+    JObjectWrapper receivedExtendedColor();
 
     static bool testMethodCallNumber(QObject* qobj);
     static bool testMethodCallEnum(QObject* qobj);
@@ -100,6 +48,7 @@ public:
     static bool testMethodCallCustomQtInterfaceValue(QObject* qobj);
     static bool testMethodCallCustomJavaType(QObject* qobj);
     static bool testMethodCallCustomQtEnum2(QObject* qobj);
+    static bool testMethodCallExtendedColor(QObject* qobj);
 
     static bool testFetchPropertyNumber(QObject* qobj);
     static bool testFetchPropertyEnum(QObject* qobj);
@@ -113,6 +62,7 @@ public:
     static bool testFetchPropertyCustomQtInterfaceValue(QObject* qobj);
     static bool testFetchPropertyCustomJavaType(QObject* qobj);
     static bool testFetchPropertyCustomQtEnum2(QObject* qobj);
+    static bool testFetchPropertyExtendedColor(QObject* qobj);
 
 signals:
     
@@ -130,6 +80,7 @@ private slots:
     void receiveCustomQtInterfaceValue(QGraphicsItem* value);
     void receiveCustomJavaType(JObjectWrapper value);
     void receiveDerivedQObject(QObject* value);
+    void receiveExtendedColor(JObjectWrapper value);
 
 private:
     JEnumWrapper m_receivedEnum;
@@ -142,6 +93,7 @@ private:
     QGraphicsItem* m_receivedCustomQtValue;
     QGraphicsItem* m_receivedCustomQtInterfaceValue;
     JObjectWrapper m_receivedCustomJavaType;
+    JObjectWrapper m_receivedExtendedColor;
     QObject* m_receivedDerivedQObject;
 };
 Q_DECLARE_METATYPE(QColor*)

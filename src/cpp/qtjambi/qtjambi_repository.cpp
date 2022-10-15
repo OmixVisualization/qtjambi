@@ -321,6 +321,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Double,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Long,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(valueOf,(J)Ljava/lang/Long;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(hashCode,(J)I)
     DEFINE_CLASS_REF(TYPE)
 )
 
@@ -756,9 +757,7 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(peer,J))
 
      QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant,
-         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ILjava/lang/Object;Z)
-         QTJAMBI_REPOSITORY_DEFINE_METHOD(userType,()I)
-         QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Object;)
+         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
      )
 }
 
@@ -846,6 +845,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,RuntimeException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ArithmeticException,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,UnsupportedOperationException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )
@@ -918,12 +921,14 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Object,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(equals,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(toString,()Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(hashCode,()I)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(clone,()Ljava/lang/Object;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(cast,(Ljava/lang/Object;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredMethods,()[Ljava/lang/reflect/Method;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredMethod,(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredField,(Ljava/lang/String;)Ljava/lang/reflect/Field;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getEnumConstants,()[Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getClassLoader,()Ljava/lang/ClassLoader;)
@@ -943,6 +948,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Optional,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(empty,()Ljava/util/Optional;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isPresent,()Z)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(of,(Ljava/lang/Object;)Ljava/util/Optional;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(ofNullable,(Ljava/lang/Object;)Ljava/util/Optional;)
 )
 
@@ -1003,6 +1009,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URLClassLoader,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ClassLoader,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(loadClass,(Ljava/lang/String;)Ljava/lang/Class;)
 )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Cloneable,)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,Serializable,)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,NumberFormatException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
@@ -1105,6 +1115,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(objectToString,(Ljava/lang/Object;)Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(initializePackage,(Ljava/lang/Class;)Z)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeExpectedTemplateName,(Ljava/lang/Class;[Lio/qt/core/QMetaType;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(internalAccess,Lio/qt/InternalAccess;)
 )
 

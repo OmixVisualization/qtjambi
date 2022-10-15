@@ -284,6 +284,37 @@ public final class QLogging {
     }
     
     /**
+     * Changes the output of the default message handler.
+     * @see https://doc.qt.io/qt/qtglobal.html#qSetMessagePattern
+     */
+    @QtUninvokable
+    public static native void qSetMessagePattern(String pattern);
+    
+    /**
+     * @see https://doc.qt.io/qt/qtglobal.html#qFormatLogMessage
+     */
+    @QtUninvokable
+    public static String qFormatLogMessage(QtMsgType type, QMessageLogContext context, String str) {
+    	return qFormatLogMessage(type==null ? 0 : type.value(), QtJambi_LibraryUtilities.internal.nativeId(context), str);
+    }
+    
+    @QtUninvokable
+    private static native String qFormatLogMessage(int type, long context, String str);
+    
+    @QtUninvokable
+    public static void qErrnoWarning(String message, Object...args) {
+    	qErrnoWarning(-1, message, args);
+    }
+    
+    @QtUninvokable
+    public static void qErrnoWarning(int code, String message, Object...args) {
+    	qErrnoWarning(code, args==null || args.length==0 ? message : format(message, args).get());
+    }
+    
+    @QtUninvokable
+    private native static void qErrnoWarning(int code, String message);
+    
+    /**
      * Calls the message handler with the debug message.
      * @see https://doc.qt.io/qt/qtglobal.html#qDebug
      * @param message

@@ -208,6 +208,9 @@ QString TypeInfo::toString() const {
         tmp += QLatin1String("volatile ");
 
     tmp += m_qualifiedName.join("::");
+    if(isVariadic()){
+        tmp += "...";
+    }
 
     for (int i=0; i<indirections().size(); i++){
         if(indirections()[i]){
@@ -826,12 +829,12 @@ void _EnumeratorModelItem::setDeprecatedComment(const QString& value){
 }
 
 // ---------------------------------------------------------------------------
-const TypeInfo& _TemplateParameterModelItem::type() const {
-    return _M_type;
+bool _TemplateParameterModelItem::isVaradic() const {
+    return _M_isVaradic;
 }
 
-void _TemplateParameterModelItem::setType(const TypeInfo &type) {
-    _M_type = type;
+void _TemplateParameterModelItem::setIsVaradic(bool isVaradic) {
+    _M_isVaradic = isVaradic;
 }
 
 ClassModelItem _TemplateParameterModelItem::ownerClass() const {

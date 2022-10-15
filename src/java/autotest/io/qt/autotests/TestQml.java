@@ -832,7 +832,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(MessageBody.class, "io.qt.test", 1, 0, "MessageBody");
 		QtQml.qmlRegisterType(Message.class, "io.qt.test", 1, 0, "Message");
 		Singleton s = new Singleton();
-		QtQml.qmlRegisterSingletonInstance(s, "io.qt.test", 1, 0, "TextSource");
+		QtQml.qmlRegisterSingletonInstance("io.qt.test", 1, 0, "TextSource", s);
 		QtQml.ValueCallback valueCallback;
 		QtQml.qmlRegisterSingletonType("io.qt.test", 1, 0, "AuthorSource", valueCallback = (QQmlEngine qmlEngine, QJSEngine jsEngine)->{
 			QJSValue example = jsEngine.newObject();
@@ -886,7 +886,7 @@ public class TestQml extends ApplicationInitializer{
 			disposed[0] = true;
 		});
 		WeakReference<QObject> weakSingleton = new WeakReference<>(singleton);
-		QtQml.qmlRegisterSingletonInstance(singleton, "signal.test", 1, 0, "Singleton");
+		QtQml.qmlRegisterSingletonInstance("signal.test", 1, 0, "Singleton", singleton);
 		QByteArray data = new QByteArray("import QtQuick 2.0\n" + 
 				"import signal.test 1.0\n" + 
 				"Item {\n" + 
@@ -1010,7 +1010,7 @@ public class TestQml extends ApplicationInitializer{
     public void run_testRegisterUncreatableClass() {
 		class Uncreatable extends QObject{}
 		QtQml.qmlClearTypeRegistrations();
-		QtQml.qmlRegisterUncreatableClass(Uncreatable.class, "io.qt.test", 1, 0, "Uncreatable", "not creatable");
+		QtQml.qmlRegisterUncreatableType(Uncreatable.class, "io.qt.test", 1, 0, "Uncreatable", "not creatable");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"Uncreatable {\n" + 
 				"}");

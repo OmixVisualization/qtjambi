@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtHelp" description="Classes for integrating documentation into applications, similar to Qt Assistant.">
+	<required-library name="QtNetwork" mode="provide-only" platforms="linux,macos"/>
   <!--<enum-type name="QGraphicsSvgItem::enum_1"/>-->
 
 <!--   <object-type name="QHelpContentItem"> -->

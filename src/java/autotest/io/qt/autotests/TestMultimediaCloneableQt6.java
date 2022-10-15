@@ -36,7 +36,6 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

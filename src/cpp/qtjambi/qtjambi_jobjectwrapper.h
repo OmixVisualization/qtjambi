@@ -47,6 +47,14 @@ inline bool operator < (const QVariant& v1, const QVariant& v2){
     }
     return false;
 }
+
+namespace QtJambi{
+    QTJAMBI_EXPORT QMetaObject::Connection connect(const QObject *sender, const char *signal,
+                                    const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
+    QTJAMBI_EXPORT QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal,
+                            const QObject *receiver, const QMetaMethod &method,
+                            Qt::ConnectionType type = Qt::AutoConnection);
+}
 #endif
 
 class JObjectWrapperData : public QSharedData{

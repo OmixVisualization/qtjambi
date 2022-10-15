@@ -58,13 +58,13 @@ class QJdbcSqlVariantUtil
         javaToVariant.put("java.lang.Integer", QVariant.Type.Int);      // Int
         javaToVariant.put("java.lang.Short", QVariant.Type.Int);        // Int
         javaToVariant.put("java.lang.Byte", QVariant.Type.Int);         // Int
-        javaToVariant.put("java.lang.Boolean", QVariant.Type.Boolean);      // Bool
+        javaToVariant.put("java.lang.Boolean", QVariant.Type.Bool);      // Bool
         javaToVariant.put("java.lang.Byte[]", QVariant.Type.ByteArray);      // ByteArray
         javaToVariant.put("java.util.Date", QVariant.Type.Date);        // Date
         javaToVariant.put("java.sql.Date", QVariant.Type.Date);         // Date
         javaToVariant.put("java.lang.Float", QVariant.Type.Double);        // Double
         javaToVariant.put("java.lang.Double", QVariant.Type.Double);       // Double
-        javaToVariant.put("java.lang.Long", QVariant.Type.Long);         // LongLong
+        javaToVariant.put("java.lang.Long", QVariant.Type.LongLong);         // LongLong
         javaToVariant.put("java.sql.Time", QVariant.Type.Time);         // Time
         javaToVariant.put("java.sql.TimeStamp", QVariant.Type.DateTime);    // DateTime
         javaToVariant.put("java.net.Url", QVariant.Type.Url);          // Url
@@ -91,10 +91,10 @@ class QJdbcSqlVariantUtil
             return QVariant.Type.Int; // Int
         case Types.BOOLEAN:
         case Types.BIT:
-            return QVariant.Type.Boolean; // Bool
+            return QVariant.Type.Bool; // Bool
         case Types.BIGINT:
         case Types.DECIMAL:
-            return QVariant.Type.Long; // LongLong
+            return QVariant.Type.LongLong; // LongLong
         case Types.DATE:
             return QVariant.Type.Date; // Date
         case Types.DOUBLE:

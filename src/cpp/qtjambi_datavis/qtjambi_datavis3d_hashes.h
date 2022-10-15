@@ -11,11 +11,13 @@
 #include <QtDataVisualization/QSurfaceDataArray>
 #include <qtjambi/qtjambi_registry.h>
 
+#ifndef QT_JAMBI_RUN
 void registerHashFunction_QBarDataArray();
 void registerHashFunction_QBarDataRow();
 void registerHashFunction_QSurfaceDataArray();
 void registerHashFunction_QSurfaceDataRow();
 void registerHashFunction_QScatterDataArray();
+#endif
 
 namespace QtJambiPrivate {
 

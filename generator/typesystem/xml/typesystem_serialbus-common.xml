@@ -117,16 +117,12 @@
     <enum-type name="QModbusPdu::FunctionCode"/>
     <value-type name="QModbusPdu">
         <custom-constructor>
-            QModbusPdu* clone = new(placement) QModbusPdu();
-            if(copy){
-                struct ModbusPdu{
-                    QModbusPdu::FunctionCode m_code;
-                    QByteArray m_data;
-                };
-                clone->setData(copy->data());
-                reinterpret_cast&lt;ModbusPdu*>(clone)->m_code = reinterpret_cast&lt;const ModbusPdu*>(copy)->m_code;
-            }
-            return clone;
+			void* create_QModbusPdu(void* placement, const void * copy);
+            return create_QModbusPdu(placement, copy);
+        </custom-constructor>
+        <custom-constructor type="copy">
+			void* create_QModbusPdu(void* placement, const void * copy);
+            create_QModbusPdu(placement, copy);
         </custom-constructor>
         <modify-function signature="operator=(const QModbusPdu &amp;)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QDataStream &amp;,QModbusPdu)" access="non-final"/>
@@ -188,5 +184,6 @@
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusDeviceIdentification." />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusPdu." />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QCanBus*." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode*', unmatched parameter type 'const QList*'" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QCanBusDeviceInfo' is missing a default constructor. The resulting C++ code will not compile.*" />
 </typesystem>

@@ -63,7 +63,6 @@ import io.qt.QtObjectInterface;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtThreadAffineInterface;
 import io.qt.QtUninvokable;
-import io.qt.QtUtilities;
 import io.qt.internal.QtJambiInternal;
 import io.qt.internal.QtJambiPropertyInfo;
 import io.qt.internal.QtJambiSignals;
@@ -822,12 +821,7 @@ public final class QMetaObject {
     private static native Class<?> type(long metaObjectPointer);
 
     @QtUninvokable
-    public static QMetaObject forType(Class<?> clazz) {
-        QtUtilities.initializePackage(clazz);
-        return __qt_forType(clazz);
-    }
-    @QtUninvokable
-    private static native QMetaObject __qt_forType(Class<?> clazz);
+    public static native QMetaObject forType(Class<?> clazz);
         
     @QtUninvokable
     private static native Class<?> exactType(long metaObjectPointer);

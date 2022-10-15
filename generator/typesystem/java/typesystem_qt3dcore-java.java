@@ -40,6 +40,9 @@ import io.qt.qt3d.*;
 
 class QAbstractAspect___java extends QAbstractAspect {
     
+    /**
+     * <p>See <a href="@docRoot/qt3dcore-qabstractaspect.html#registerBackendType">Qt3DCore::QAbstractAspect::registerBackendType(Qt3DCore::QBackendNodeMapperPtr)</a></p>
+     */
     @io.qt.QtUninvokable
     protected final void registerBackendType(Class<? extends io.qt.core.QObject> type, io.qt.qt3d.core.QBackendNodeMapper functor)    {
         registerBackendType(io.qt.core.QMetaObject.forType(type), functor);
@@ -52,12 +55,33 @@ class QAbstractAspect___java extends QAbstractAspect {
     
 }// class
 
-class QEntity__ {
+class QEntity_6_ {
 
+    /**
+     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
+     */
     @io.qt.QtUninvokable
     public final <T extends io.qt.qt3d.core.QComponent> io.qt.core.QList<T> componentsOfType(Class<T> type)
     {
         io.qt.core.QList<T> matchComponents = new io.qt.core.QList<T>(type);
+        for (io.qt.qt3d.core.QComponent component : components()) {
+            if (type.isInstance(component))
+                matchComponents.append(type.cast(component));
+        }
+        return matchComponents;
+    }
+    
+}// class
+
+class QEntity_5_ {
+
+    /**
+     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.qt3d.core.QComponent> io.qt.core.QVector<T> componentsOfType(Class<T> type)
+    {
+        io.qt.core.QVector<T> matchComponents = new io.qt.core.QVector<T>(type);
         for (io.qt.qt3d.core.QComponent component : components()) {
             if (type.isInstance(component))
                 matchComponents.append(type.cast(component));

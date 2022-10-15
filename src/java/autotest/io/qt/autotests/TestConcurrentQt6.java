@@ -3,8 +3,10 @@ package io.qt.autotests;
 import static io.qt.autotests.TestConcurrent.COUNT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -21,8 +23,10 @@ import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPromise;
+import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
+import io.qt.core.QtFuture;
 
 public class TestConcurrentQt6 extends ApplicationInitializer {
 	
@@ -512,5 +516,39 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
     	});
     	FutureHandler.resumeInTheFuture(FutureHandler.forward(promise.future()));
     	Assert.assertFalse(isSuspended[0]);
+    }
+    
+    @Test
+    public void testStartFilteredReduced() {
+        List<Integer> ints = new ArrayList<Integer>();
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
+
+        QtConcurrent.ThreadEngineStarter<Integer> starter = QtConcurrent.startFilteredReduced(
+        		QThreadPool.globalInstance(),
+        		ints,
+        		i->i >= COUNT,
+        		(r, intermediate)->r + intermediate
+        );
+
+        QFuture<Integer> future = starter.startAsynchronously();
+        future.waitForFinished();
+        assertEquals(COUNT*2, ints.size());
+        assertEquals(1, future.resultCount());
+
+        int n=0;
+        for (int i=COUNT; i<COUNT*2; ++i)
+            n += i;
+
+        assertTrue(future.result()!=null);
+        assertEquals(n, future.result().intValue());
+    }
+    
+    @Test
+    public void testFutureUnwrap() {
+    	QStringList list = new QStringList("A", "B", "C");
+    	QFuture<QFuture<QFuture<String>>> results = QtConcurrent.mapped(list, s->QtFuture.makeReadyFuture(Arrays.asList(QtFuture.makeReadyFuture(s), QtFuture.makeReadyFuture(s))));
+    	QFuture<String> unwrapped = results.unwrap(String.class);
+    	assertEquals(6, unwrapped.results().size());
     }
 }

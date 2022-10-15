@@ -88,10 +88,14 @@ namespace TypeSystem {
         Signal              = 0x0100,
         MetaInfo            = 0x0200,
         ModuleInfo          = 0x0400,
+        Getter              = 0x1000,
+        Setter              = 0x2000,
 
         // masks
         All                 = TargetLangCode
         | NativeCode
+        | Getter
+        | Setter
         | ShellCode
         | ShellDeclaration
         | PackageInitializer

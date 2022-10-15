@@ -4154,10 +4154,5 @@
         <import template="QOpenGLFunctions_1_1_template_full2"/>
         <import template="QOpenGLFunctions_4_5"/>
     </object-type>
-    <object-type name="QOpenGLVersionFunctionsFactory">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_opengl-java.java" quote-after-line="class QOpenGLVersionFunctionsFactory___" quote-before-line="}// class"/>
-        </inject-code>
-    </object-type>
 </typesystem>
 

@@ -27,6 +27,21 @@
 **
 ****************************************************************************/
 
+#include <QtGui/qtguiglobal.h>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_CONFIG(vulkan)
+#if !__has_include(<vulkan/vulkan.h>)
+#define QVULKANINSTANCE_H
+typedef typename std::conditional<sizeof(void*)==sizeof(qint64), struct VkImage_T *, uint64_t>::type VkImage;
+//typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkPhysicalDevice_T *, uint64_t>::type VkPhysicalDevice;
+//typedef struct VkDevice_T *VkDevice;
+typedef enum VkImageLayout{}VkImageLayout;
+typedef enum VkFormat{}VkFormat;
+#endif
+
+#include <QtQuick/QQuickRenderTarget>
+#include <qsgtexture_platform.h>
+#endif
+
 #include <QtQuick/QQuickItem>
 #include <QtQml/QQmlPropertyValueSource>
 #include <QtQuick/QSGGeometry>
@@ -239,3 +254,29 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
     }QTJAMBI_TRY_END
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_CONFIG(vulkan)
+
+template<typename T, bool = std::is_pointer<T>::value>
+struct CastHelper{
+    static constexpr T cast(jlong image) {return reinterpret_cast<T>(image);}
+};
+
+template<typename T>
+struct CastHelper<T,false>{
+    static constexpr T cast(jlong image) {return static_cast<T>(image);}
+};
+
+QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *, jlong image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options){
+    return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(image), VkImageLayout(layout), window, size, options);
+}
+
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, const QSize& pixelSize, int sampleCount){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), pixelSize, sampleCount);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
+}
+#endif
+#endif

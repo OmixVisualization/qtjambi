@@ -91,9 +91,7 @@ class QRemoteObjectNode___ {
         }
         java.lang.reflect.Constructor<T> constructor = type.getConstructor(QRemoteObjectNode.class, String.class);
         try {
-            return constructor.newInstance(this, name);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-            return acquire(type, constructor, name);
+			return QtJambi_LibraryUtilities.internal.invokeContructor(constructor, this, name);
         } catch (java.lang.reflect.InvocationTargetException e) {
             if(e.getTargetException() instanceof RuntimeException) {
                 throw (RuntimeException)e.getTargetException();
@@ -101,10 +99,12 @@ class QRemoteObjectNode___ {
                 throw (Error)e.getTargetException();
             }
             throw new RuntimeException(e.getTargetException());
+        }catch(RuntimeException | Error e) {
+			throw e;
+        }catch(Throwable e) {
+            throw new RuntimeException(e);
         }
-    }
-    private native final <T extends QRemoteObjectReplica> T acquire(Class<T> type, java.lang.reflect.Constructor<T> constructor, java.lang.String name);
-    
+    }    
 }// class
 
 class QtRemoteObjects___ {
@@ -137,114 +137,22 @@ class QtRemoteObjects___ {
     }
     
     @io.qt.QtUninvokable
-    public static void qRegisterRemoteObjectsServer(java.lang.String id, Class<? extends QConnectionAbstractServer> type){
-        try {
-            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
-            qRegisterRemoteObjectsServer(id, type, constructor);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @io.qt.QtUninvokable
-    private static native void qRegisterRemoteObjectsServer(java.lang.String id, Class<? extends QConnectionAbstractServer> type, java.lang.reflect.Constructor<?> constructor);
-    
-    
-    @SuppressWarnings("unchecked")
-    @io.qt.QtUninvokable
     public static <T> void copyStoredProperties(T src, T dst)
     {
-        if(src!=null)copyStoredProperties((Class<T>)src.getClass(), src, dst);
+        if(src!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(src), src, dst);
     }
     
-    @SuppressWarnings("unchecked")
     @io.qt.QtUninvokable
     public static <T> void copyStoredProperties(T src, io.qt.core.QDataStream dst)
     {
-        if(src!=null)copyStoredProperties((Class<T>)src.getClass(), src, dst);
+        if(src!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(src), src, dst);
     }
     
-    @SuppressWarnings("unchecked")
     @io.qt.QtUninvokable
     public static <T> void copyStoredProperties(io.qt.core.QDataStream src, T dst)
     {
-        if(dst!=null)copyStoredProperties((Class<T>)dst.getClass(), src, dst);
+        if(dst!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(dst), src, dst);
     }
-    
-    @io.qt.QtUninvokable
-    public static <T> void copyStoredProperties(Class<T> type, T src, T dst)
-    {
-        if(io.qt.core.QObject.class.isAssignableFrom(type))
-            throw new IllegalArgumentException("Only gadget types allowed.");
-        if(src instanceof io.qt.QtObjectInterface)
-            copyStoredProperties(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)src), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)dst));
-        else
-            copyStoredProperties(io.qt.core.QMetaObject.forType(type), src, dst);
-    }
-    
-    @io.qt.QtUninvokable
-    public static <T> void copyStoredProperties(Class<T> type, T src, io.qt.core.QDataStream dst)
-    {
-        java.util.Objects.requireNonNull(dst);
-        if(io.qt.core.QObject.class.isAssignableFrom(type))
-            throw new IllegalArgumentException("Only gadget types allowed.");
-        if(src instanceof io.qt.QtObjectInterface)
-            copyStoredPropertiesStreamOut(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)src), QtJambi_LibraryUtilities.internal.checkedNativeId(dst));
-        else
-            copyStoredPropertiesStreamOut(io.qt.core.QMetaObject.forType(type), src, QtJambi_LibraryUtilities.internal.checkedNativeId(dst));
-    }
-    
-    @io.qt.QtUninvokable
-    public static <T> void copyStoredProperties(Class<T> type, io.qt.core.QDataStream src, T dst)
-    {
-        java.util.Objects.requireNonNull(src);
-        if(io.qt.core.QObject.class.isAssignableFrom(type))
-            throw new IllegalArgumentException("Only gadget types allowed.");
-        if(dst instanceof io.qt.QtObjectInterface)
-            copyStoredPropertiesStreamIn(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId(src), QtJambi_LibraryUtilities.internal.checkedNativeId((io.qt.QtObjectInterface)dst));
-        else
-            copyStoredPropertiesStreamIn(io.qt.core.QMetaObject.forType(type), QtJambi_LibraryUtilities.internal.checkedNativeId(src), dst);
-    }
-    
-    @io.qt.QtUninvokable
-    private native static void copyStoredProperties(io.qt.core.QMetaObject type, long src, long dst);
-    @io.qt.QtUninvokable
-    private native static void copyStoredProperties(io.qt.core.QMetaObject type, Object src, Object dst);
-    @io.qt.QtUninvokable
-    private native static void copyStoredPropertiesStreamIn(io.qt.core.QMetaObject type, long src, Object dst);
-    @io.qt.QtUninvokable
-    private native static void copyStoredPropertiesStreamIn(io.qt.core.QMetaObject type, long src, long dst);
-    @io.qt.QtUninvokable
-    private native static void copyStoredPropertiesStreamOut(io.qt.core.QMetaObject type, Object src, long dst);
-    @io.qt.QtUninvokable
-    private native static void copyStoredPropertiesStreamOut(io.qt.core.QMetaObject type, long src, long dst);
-}// class
-
-class QtRemoteObjects_5__ {
-    @io.qt.QtUninvokable
-    public static void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type){
-        try {
-            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
-            qRegisterRemoteObjectsClient(id, type, constructor);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @io.qt.QtUninvokable
-    private static native void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type, java.lang.reflect.Constructor<?> constructor);
-}// class
-
-class QtRemoteObjects_6__ {
-    @io.qt.QtUninvokable
-    public static void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends QtROClientIoDevice> type){
-        try {
-            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
-            qRegisterRemoteObjectsClient(id, type, constructor);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @io.qt.QtUninvokable
-    private static native void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends QtROClientIoDevice> type, java.lang.reflect.Constructor<?> constructor);
 }// class
 
 class IoDevice___ {

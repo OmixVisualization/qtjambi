@@ -55,7 +55,7 @@ This saves compilation time.
 
 `> set PATH=...\apache-ant-1.10.3\bin;%PATH%`
 
-`> set QTDIR=C:\Qt\6.3.0\msvc2019_64`
+`> set QTDIR=C:\Qt\6.4.0\msvc2019_64`
 
 #### Pre-Build Steps On Linux and macOS
 
@@ -65,9 +65,9 @@ This saves compilation time.
 
 `> export JAVA_HOME_TARGET=path to your java jdk`
 
-`> export QTDIR=/opt/Qt/6.3.0/gcc_64` on Linux
+`> export QTDIR=/opt/Qt/6.4.0/gcc_64` on Linux
 
-`> export QTDIR=/opt/Qt/6.3.0/macos` on macOS
+`> export QTDIR=/opt/Qt/6.4.0/macos` on macOS
 
 #### Building Bindings
 
@@ -100,7 +100,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.9`, `6.2.7` or by `6.3.4`).
+(exchange `$VERSION` either by `5.15.10`, `6.2.8`, `6.3.5` or by `6.4.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,7 +120,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.4.jar Test.java
+javac -cp qtjambi-6.4.0.jar Test.java
 ```
 
 ### Execute Example
@@ -132,16 +132,26 @@ Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-q
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
 Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on macOS) 
-or the Java runtime property java.library.path. The example program can be executed this way:
+or the Java runtime property java.library.path. 
+By default, on Windows Qt libraries are located in `bin` directory and on Linux and macOS in `lib` directory.
+In case your Linux distribution provides Qt (of correct version) as system library you don't need to specify library path.
 
-```
-java -cp qtjambi-6.3.4.jar;. -Djava.library.path=C:\Qt\6.3.1\msvc2019_64\bin Test
+The example program can be executed this way on Windows:
+
+``` powershell
+java -cp qtjambi-6.4.0.jar;. -Djava.library.path=C:\Qt\6.4.0\msvc2019_64\bin Test
 ```
 
-On macOS you additionally need to use the start parameter -XstartOnFirstThread and point to Qt `lib` folder and not `bin`, for example:
+On Linux it looks this way:
 
+``` bash
+java -cp qtjambi-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/gcc_64/lib Test
 ```
-java -cp qtjambi-6.3.4.jar;. -Djava.library.path=/Users/max/Qt/6.2.3/macos/lib -XstartOnFirstThread Test
+
+On macOS you additionally need to use the start parameter -XstartOnFirstThread:
+
+``` bash
+java -cp qtjambi-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/macos/lib -XstartOnFirstThread Test
 ```
 
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 

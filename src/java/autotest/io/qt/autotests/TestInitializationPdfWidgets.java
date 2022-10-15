@@ -32,9 +32,20 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.pdf.widgets.QPdfView;
+import io.qt.widgets.QApplication;
+
 public class TestInitializationPdfWidgets extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.pdf.widgets"));
+    	QApplication.initialize(new String[0]);
+    	QPdfView window = new QPdfView();
+    	window.show();
+    	QApplication.processEvents();
+    	window.hide();
+    	QApplication.processEvents();
+    	window.dispose();
+    	QApplication.shutdown();
     }
 }

@@ -12,9 +12,13 @@ DEPENDPATH += $$PWD
 QT += core gui qml quick quick-private
 
 SOURCES += \
-    qtjambi_qquick.cpp\
+    qtjambi_quick.cpp \
     qtjambi_quick_repository.cpp
 
 HEADERS += \
-    qtjambi_quick_hashes.h\
+    qtjambi_quick_hashes.h \
     qtjambi_quick_repository.h
+
+greaterThan(QT_MAJOR_VERSION, 5):{
+    OBJECTIVE_SOURCES += QSGMetalTexture.mm
+}

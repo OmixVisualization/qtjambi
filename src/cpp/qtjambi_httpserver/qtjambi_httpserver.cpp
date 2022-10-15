@@ -29,6 +29,9 @@ struct HttpServer : QAbstractHttpServer{
     bool superhandleRequest(const QHttpServerRequest& request0, QTcpSocket* socket1){
         return handleRequest(request0, socket1);
     }
+    void superMissingHandler(const QHttpServerRequest& request0, QTcpSocket* socket1){
+        missingHandler(request0, socket1);
+    }
 };
 
 struct HttpServerRouterRule : QHttpServerRouterRule{
@@ -138,6 +141,27 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
     return result;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_missingHandler)
+(JNIEnv *__jni_env,
+ jobject __this,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID __request,
+ QtJambiNativeID __socket)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::missingHandler()")
+    Q_UNUSED(__this)
+    QTJAMBI_TRY {
+        QHttpServer *__qt_this = qtjambi_object_from_nativeId<QHttpServer>(__this_nativeId);
+        qtjambi_check_resource(__jni_env, __qt_this);
+        const QHttpServerRequest *request = qtjambi_object_from_nativeId<QHttpServerRequest>(__request);
+        qtjambi_check_resource(__jni_env, request);
+        QTcpSocket *socket = qtjambi_object_from_nativeId<QTcpSocket>(__socket);
+        reinterpret_cast<HttpServer*>(__qt_this)->superMissingHandler(*request, socket);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_afterRequest)

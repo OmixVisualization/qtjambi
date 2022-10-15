@@ -1773,9 +1773,9 @@ public class TestConnections extends ApplicationInitializer
     @Test public void className() {
         SignalsAndSlotsWithMoreProperties sas = new SignalsAndSlotsWithMoreProperties();
 
-        assertEquals("io::qt::autotests::TestConnections$SignalsAndSlotsWithMoreProperties",
+        assertEquals("io::qt::autotests::TestConnections::SignalsAndSlotsWithMoreProperties",
                      sas.metaObject().className());
-        assertEquals("io::qt::autotests::TestConnections$SignalsAndSlotsWithProperties",
+        assertEquals("io::qt::autotests::TestConnections::SignalsAndSlotsWithProperties",
                 sas.metaObject().superClass().className());
     }
 

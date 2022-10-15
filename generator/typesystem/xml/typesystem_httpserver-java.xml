@@ -135,6 +135,10 @@
 		<inject-code class="java">
 			<import-file name="typesystem/java/typesystem_httpserver-java.java" quote-after-line="class QAbstractHttpServer___" quote-before-line="}// class"/>
 		</inject-code>
+        <modify-function signature="missingHandler(QHttpServerRequest,QTcpSocket*)">
+            <modify-argument index="1" invalidate-after-use="yes"/>
+            <modify-argument index="2" invalidate-after-use="yes"/>
+        </modify-function>
         <modify-function signature="handleRequest(QHttpServerRequest,QTcpSocket*)">
             <modify-argument index="1" invalidate-after-use="yes"/>
             <modify-argument index="2" invalidate-after-use="yes"/>
@@ -182,7 +186,34 @@
             </modify-argument>
         </modify-function-->
     </object-type>
+    <functional-type name="QHttpServer::MissingHandler">
+            <modify-argument index="1" invalidate-after-use="yes">
+			</modify-argument>
+            <modify-argument index="2" invalidate-after-use="yes">
+			</modify-argument>
+    </functional-type>
     <object-type name="QHttpServer">
+        <!--modify-function signature="setMissingHandler(QHttpServer::MissingHandler)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.BiConsumer&lt;QHttpServerRequest,QHttpServerResponder>"/>
+                <conversion-rule class="native">
+                    std::function&lt;void(const QHttpServerRequest&amp;,QHttpServerResponder&amp;&amp;)> %out;
+                    if(%in){
+                        JObjectWrapper wrapper(%env, %in);
+                        %out = [wrapper](const QHttpServerRequest&amp; value1,QHttpServerResponder&amp;&amp; value2){
+                                    if(JNIEnv *env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        jobject _value1 = qtjambi_cast&lt;jobject>(env, &amp;value1);
+                                        jobject _value2 = qtjambi_cast&lt;jobject>(env, &amp;value2);
+                                        Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);
+										qtjambi_invalidate_object(env, _value1);
+										qtjambi_invalidate_object(env, _value2);
+                                    }
+                                };
+                    }
+                </conversion-rule>
+			</modify-argument>
+        </modify-function-->
         <modify-function signature="router()">
 			<inject-code class="java" position="beginning">
 				if(__rcRouter!=null &amp;&amp; !__rcRouter.isDisposed())

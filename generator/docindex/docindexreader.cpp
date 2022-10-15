@@ -70,18 +70,36 @@ void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, const
             ns->setFullName(element.attribute("fullname"));
             model->addNamespace(ns);
         }
-        QDomNodeList childNodes = element.childNodes();
-        for(int i=0; i<childNodes.size(); ++i){
-            QDomNode child = childNodes.item(i);
-            if(child.isElement()){
-                if(child.nodeName()=="class" || child.nodeName()=="struct" || child.nodeName()=="union"){
-                    analyzeClass(subdir, model, url, child.toElement());
-                }else if(child.nodeName()=="function"){
-                    analyzeFunction(subdir, ns, url, child.toElement());
-                }else if(child.nodeName()=="enum"){
-                    analyzeEnum(subdir, model, url, child.toElement());
-                }else if(child.nodeName()=="namespace"){
-                    analyzeNamespace(subdir, model, url, child.toElement());
+        QList<QDomNodeList> childNodeList{element.childNodes()};
+        while(!childNodeList.isEmpty()){
+            QDomNodeList childNodes = childNodeList.takeFirst();
+            for(int i=0; i<childNodes.size(); ++i){
+                QDomNode child = childNodes.item(i);
+                if(child.isElement()){
+                    if(child.nodeName()=="class" || child.nodeName()=="struct" || child.nodeName()=="union"){
+                        analyzeClass(subdir, model, url, child.toElement());
+                    }else if(child.nodeName()=="function"){
+                        analyzeFunction(subdir, ns, url, child.toElement());
+                    }else if(child.nodeName()=="enum"){
+                        analyzeEnum(subdir, model, url, child.toElement());
+                    }else if(child.nodeName()=="namespace"){
+                        analyzeNamespace(subdir, model, url, child.toElement());
+                    }else if(child.nodeName()=="header"){
+                        QDomElement element = child.toElement();
+                        //ReportHandler::warning("header " +element.attribute("name")+ " in namespace '"+ns->name()+"'");
+                        DocNamespace* hns = new DocNamespace(model);
+                        hns->setSubdir(subdir);
+                        hns->setUrl(url);
+                        if(fullName.isEmpty())
+                            hns->setName(element.attribute("name").mid(1).chopped(1).trimmed());
+                        else
+                            hns->setName(fullName+"::"+element.attribute("name").mid(1).chopped(1).trimmed());
+                        hns->setHref(element.attribute("href"));
+                        hns->setBrief(element.attribute("brief"));
+                        hns->setFullName(hns->name());
+                        model->addNamespace(hns);
+                        childNodeList << element.childNodes();
+                    }
                 }
             }
         }
@@ -175,9 +193,8 @@ void DocIndexReader::analyzeFunction(const QDir& subdir, DocFunctionOwner* owner
 
 const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory, QThread* targetThread){
     ReportHandler::setContext("DocIndexReader");
-    QScopedPointer<DocModel> model(new DocModel());
+    std::unique_ptr<DocModel> model(new DocModel());
     if(docDirectory.exists()){
-        //QList<QDomDocument*> domDocuments;
         for(const QString& subdirp : docDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)){
             QDir subdir(docDirectory.absoluteFilePath(subdirp));
             for(const QString& idxfilep : subdir.entryList({"*.index"}, QDir::Files)){
@@ -210,17 +227,21 @@ const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory, QThread
                 }
             }
         }
-//        QThread* thread = QThread::create([](QList<QDomDocument*> list){
-//            while(!list.isEmpty()){
-//                delete list.takeFirst();
-//            }
-//        }, domDocuments);
-//        thread->start();
+        /*
+        for(auto _ns : model->namespaces()){
+            auto ns = model->getNamespace(_ns);
+            ReportHandler::warning("namespace '"+ns->name()+"'{");
+            ReportHandler::warning("    "+ns->functions().keys().join(", "));
+            for(auto s : ns->functions().values()){
+                ReportHandler::warning("  --> "+s->name());
+            }
+            ReportHandler::warning("}");
+        }*/
     }
     if(model->isEmpty()){
         model.reset();
     }else{
         model->moveToThread(targetThread);
     }
-    return model.take();
+    return model.release();
 }

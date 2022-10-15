@@ -109,6 +109,7 @@ void LocationManager::addRequiredFeature(std::size_t offset, QString feature){
     QString filename;
     positionAt(offset, &line, &column, &filename);
     _M_requiredFeatures[filename] << feature;
+    //printf("requiredFeatures: %s  = %s\n", qPrintable(filename), qPrintable(feature));
 }
 
 void LocationManager::positionAt(std::size_t offset, int *line, int *column,

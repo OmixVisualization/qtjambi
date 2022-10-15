@@ -100,7 +100,7 @@
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="qExec(QObject *, int, char **)">
+        <modify-function signature="qExec(QObject *, int, char **)" no-except="yes" block-exceptions="yes">
            <modify-argument index="2">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -284,6 +284,74 @@
             <modify-argument index="5">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
+        </modify-function>
+        <modify-function signature="qWaitFor&lt;Functor>(Functor,int)">
+			<instantiation>
+				<argument type="QVariant" implicit="true"/>
+				<modify-argument index="1">
+					<replace-type modified-type="java.util.function.BooleanSupplier"/>
+					<conversion-rule class="native">
+						JObjectWrapper functor(%env, %in);
+						auto %out = [functor]() -> bool {
+							if(JNIEnv *env = qtjambi_current_environment()){
+								QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+								return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object());
+							}
+							else return false;
+						};
+					</conversion-rule>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="addColumn&lt;T>(const char *, T *)">
+			<instantiation>
+				<argument type="int" implicit="yes"/>
+				<add-type-parameter name="T"/>
+				<add-argument type="java.lang.Class&lt;T>" name="type"/>
+				<add-argument type="io.qt.core.QMetaType..." name="instantiations"/>
+				<modify-argument index="1">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+				<modify-argument index="2">
+					<remove-argument/>
+					<conversion-rule class="native">
+					int %out = qtjambiMetaTypeId(%env, type, instantiations);
+					</conversion-rule>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="qCompare&lt;T>(const QList&lt;T> &amp;, const QList&lt;T> &amp;, const char *, const char *, const char *, int)">
+			<instantiation>
+				<argument type="QString" implicit="true"/>
+				<modify-argument index="3">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+				<modify-argument index="4">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+				<modify-argument index="5">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+			</instantiation>
+			<instantiation>
+				<argument type="QVariant" implicit="true"/>
+				<add-type-parameter name="T"/>
+				<modify-argument index="1">
+					<replace-type modified-type="io.qt.core.QList&lt;T>"/>
+				</modify-argument>
+				<modify-argument index="2">
+					<replace-type modified-type="io.qt.core.QList&lt;T>"/>
+				</modify-argument>
+				<modify-argument index="3">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+				<modify-argument index="4">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+				<modify-argument index="5">
+					<replace-type modified-type="java.lang.String"/>
+				</modify-argument>
+			</instantiation>
         </modify-function>
         <modify-function signature="compare_helper(bool,const char *,char *,char *,const char *,const char *,const char *,int)">
             <modify-argument index="2">
@@ -607,6 +675,9 @@
         </inject-code>
         <inject-code class="java" since="6.0.0">
             <import-file name="typesystem/java/typesystem_test-java.java" quote-after-line="class QTest_6__" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="java" since="6.4.0">
+            <import-file name="typesystem/java/typesystem_test-java.java" quote-after-line="class QTest_64__" quote-before-line="}// class"/>
         </inject-code>
     </namespace-type>
     <object-type name="QTest::QTouchEventSequence">

@@ -53,6 +53,12 @@
     <rejection class="QAudioFrame"/>
     <rejection class="QAudioBuffer::StereoFrame"/>
     <rejection class="QAudioBuffer::StereoFrameDefault"/>
+    <rejection class="QAudioDevicePrivate" />
+    <rejection class="QPlatformVideoSink" />
+    <rejection class="QRhi" />
+    <rejection class="QPlatformMediaCaptureSession" />
+    <rejection class="QPlatformMediaRecorder" />
+    <rejection class="" function-name="qmediacontrol_iid" until="5.15"/>
     <namespace-type name="QAudio">
         <include file-name="qaudio.h" location="global"/>
     </namespace-type>

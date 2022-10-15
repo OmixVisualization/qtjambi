@@ -30,15 +30,17 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.*;
 import io.qt.core.*;
 import io.qt.test.*;
+import static io.qt.test.QTest.*;
 
-public class TestTestlib extends ApplicationInitializer {
+public class TestTestlib extends UnitTestInitializer {
     @Test
-    public void test() {
+    public void testSignalSpy() {
     	class Object extends QObject{
     		final Signal2<@QtPrimitiveType Integer, String> sig = new Signal2<>();
     	}
@@ -55,5 +57,85 @@ public class TestTestlib extends ApplicationInitializer {
     	signalSpy.dispose();
     	assertTrue(signalSpy.isDisposed());
 //    	assertTrue(list.isDisposed());
-    }    
+    }
+    
+    @Test
+    public void testMain() {
+    	TestObject.initMainCalled = false;
+    	TestObject.test1Called = false;
+    	TestObject.test2Called = false;
+    	TestObject.test3Called = false;
+    	TestObject.test4Called = false;
+    	TestObject.main();
+    	Assert.assertTrue("initMain not called", TestObject.initMainCalled);
+    	Assert.assertTrue("initTestCase not called", TestObject.initTestCaseCalled);
+    	Assert.assertTrue("test1 not called", TestObject.test1Called);
+    	Assert.assertTrue("test2 not called", TestObject.test2Called);
+    	Assert.assertTrue("test3 not called", TestObject.test3Called);
+    	Assert.assertTrue("test4 not called", TestObject.test4Called);
+    }
+    
+    @Test
+    public void testTest() {
+    	tst_QTimer.main();
+    }
+    
+	@SuppressWarnings("unused")
+    public static class TestObject extends QObject{
+    	static boolean initMainCalled;
+    	static boolean initTestCaseCalled;
+    	static boolean test1Called;
+    	static boolean test2Called;
+    	static boolean test3Called;
+    	static boolean test4Called;
+    	public static void initMain() {
+    		initMainCalled = true;
+    	}
+    	public void initTestCase() {
+    		initTestCaseCalled = true;
+    	}
+    	public static void main(String... args) {
+    		QTEST_MAIN(args);
+    	}
+    	
+		private void test1() {
+    		test1Called = true;
+    	}
+    	private void test2() {
+    		test2Called = true;
+    		
+    	}
+    	private void test3() {
+    		test3Called = true;
+			
+		}
+    	private void test4() {
+    		test4Called = true;
+			
+		}
+    }
+	
+	@SuppressWarnings("unused")
+    public static class tst_QTimer extends QObject{
+		public static void initMain() {
+//			QLogging.qInstallLoggingMessageHandler();
+		}
+		private static final int TIMEOUT_TIMEOUT = 200;
+		private void timeout()
+		{
+		    QTimer timer = new QTimer();
+		    QSignalSpy timeoutSpy = new QSignalSpy(timer.timeout);
+		    timer.start(100);
+
+		    QCOMPARE(timeoutSpy.count(), 0);
+
+		    QTRY_VERIFY_WITH_TIMEOUT(()->timeoutSpy.count() > 0, TIMEOUT_TIMEOUT);
+		    int oldCount = timeoutSpy.count();
+
+		    QTRY_VERIFY_WITH_TIMEOUT(()->timeoutSpy.count() > oldCount, TIMEOUT_TIMEOUT);
+		}
+		public static void main(String... args) {
+    		QTEST_MAIN(args);
+    	}
+	}
 }

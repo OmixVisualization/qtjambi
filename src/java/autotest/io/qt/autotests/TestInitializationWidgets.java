@@ -32,9 +32,20 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.widgets.QApplication;
+import io.qt.widgets.QWidget;
+
 public class TestInitializationWidgets extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.widgets"));
+    	QApplication.initialize(new String[0]);
+    	QWidget window = new QWidget();
+    	window.show();
+    	QApplication.processEvents();
+    	window.hide();
+    	QApplication.processEvents();
+    	window.dispose();
+    	QApplication.shutdown();
     }
 }

@@ -37,7 +37,6 @@ import org.junit.Test;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
-import io.qt.core.QDir;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;

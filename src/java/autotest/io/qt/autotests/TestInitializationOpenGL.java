@@ -32,9 +32,20 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.gui.QGuiApplication;
+import io.qt.opengl.QOpenGLWindow;
+
 public class TestInitializationOpenGL extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.opengl"));
+    	QGuiApplication.initialize(new String[0]);
+    	QOpenGLWindow window = new QOpenGLWindow();
+    	window.show();
+    	QGuiApplication.processEvents();
+    	window.hide();
+    	QGuiApplication.processEvents();
+    	window.dispose();
+    	QGuiApplication.shutdown();
     }
 }

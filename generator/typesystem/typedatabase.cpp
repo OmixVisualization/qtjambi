@@ -87,6 +87,7 @@ TypeDatabase::TypeDatabase() :
     m_pixmapType(nullptr),
     m_bitmapType(nullptr),
     m_qstringType(nullptr),
+    m_qvariantType(nullptr),
     m_qcharType(nullptr){
 }
 
@@ -208,7 +209,10 @@ NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) {
 }
 
 void TypeDatabase::addType(TypeEntry *e) {
-    if(e->qualifiedCppName()=="QString" && !e->isQString()){
+    if(e->qualifiedCppName()=="QVariant" && !e->isVariant()){
+        m_entries["QtJambiVariant"].append(e);
+        m_qvariantType = dynamic_cast<ComplexTypeEntry*>(e);
+    }else if(e->qualifiedCppName()=="QString" && !e->isQString()){
         m_entries["QtJambiString"].append(e);
         m_qstringType = dynamic_cast<ComplexTypeEntry*>(e);
     }else if(e->qualifiedCppName()=="QChar" && !e->isChar()){
@@ -247,6 +251,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
     ContainerTypeEntry* stringListEntry(nullptr);
     {
         ReportHandler::setContext("Typesystem");
+        addType(new AutoTypeEntry());
         {
             StringTypeEntry *e = new StringTypeEntry("QString");
             e->setCodeGeneration(TypeEntry::GenerateAll);
@@ -314,12 +319,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             qvariant->setTargetLangPackage("io.qt.core");
             qvariant->setCodeGeneration(TypeEntry::GenerateNothing);
             addType(qvariant);
-            EnumTypeEntry* etype = new EnumTypeEntry("QVariant", "Type");
-            etype->setTargetTypeSystem("QtCore");
-            etype->setTargetLangPackage("io.qt.core");
-            etype->setExtensible(true);
-            etype->setCodeGeneration(TypeEntry::GenerateNothing);
-            addType(etype);
         }
 
         {

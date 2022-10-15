@@ -624,6 +624,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
 
         QString defaultType;
         NameAST *name;
+        bool isVariadic = false;
         if (!type_parameter) {
             // A hacky hack to work around missing support for parameter declarations in
             // templates. We just need the to get the name of the variable, since we
@@ -637,7 +638,11 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
 
             }
 
+            isVariadic = parameter->parameter_declaration->declarator->ellipsis!=0 && parameter->parameter_declaration->declarator->ellipsis!=std::numeric_limits<std::size_t>::max();
             name = parameter->parameter_declaration->declarator->id;
+            if(parameter->parameter_declaration->expression){
+                defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream());
+            }
         } else {
             int tk = decode_token(type_parameter->type);
             if (tk != Token_typename && tk != Token_class) {
@@ -646,8 +651,11 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             }
             assert(tk == Token_typename || tk == Token_class);
 
+            isVariadic = type_parameter->ellipsis!=0 && type_parameter->ellipsis!=std::numeric_limits<std::size_t>::max();
             name = type_parameter->name;
-            if(type_parameter->type_expression){
+            if(type_parameter->type_id){
+                defaultType = type_parameter->type_id->toString(this->tokenStream());
+            }else if(type_parameter->type_expression){
                 defaultType = type_parameter->type_expression->toString(this->tokenStream());
             }
         }
@@ -655,6 +663,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
         TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
         name_cc.run(name);
         p->setName(name_cc.name());
+        p->setIsVaradic(isVariadic);
         p->setDefaultValue(defaultType);
 
         _M_current_template_parameters.append(p);

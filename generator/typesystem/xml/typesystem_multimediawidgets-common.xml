@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtMultimediaWidgets" description="Widget classes for audio, video, radio and camera functionality.">
+    <required-library name="QtOpenGL" mode="provide-only" until="5.*"/>
     <object-type name="QGraphicsVideoItem">
         <modify-function signature="setMediaObject(QMediaObject *)" until="5.*">
         <modify-argument index="1">

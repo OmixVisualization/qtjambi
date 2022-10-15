@@ -84,6 +84,7 @@ final class BundleGenerator {
 		_pluginsModules.put("sqldrivers", "sql");
 		_pluginsModules.put("styles", "widgets");
 		_pluginsModules.put("qmltooling", "qml");
+		_pluginsModules.put("qmllint", "qml");
 		_pluginsModules.put("scenegraph", "quick");
 		_pluginsModules.put("opcua", "opcua");
 		_pluginsModules.put("position", "positioning");
@@ -110,6 +111,7 @@ final class BundleGenerator {
 		_pluginsModules.put("mediaservice", "multimedia");
 		_pluginsModules.put("resourcepolicy", "multimedia");
 		_pluginsModules.put("playlistformats", "multimedia");
+		_pluginsModules.put("multimedia", "multimedia");
 		_pluginsModules.put("bearer", "network");
 		_pluginsModules.put("qtwebengine", "webenginecore");
 		Map<String,Set<String>> _pluginsByModules = new TreeMap<>();
@@ -458,6 +460,10 @@ final class BundleGenerator {
 			return "gui";
 		}else if(name.equals("designercomponents")) {
 			return "designer";
+		}else if(name.equals("waylandeglclienthwintegration") || name.equals("wlshellintegration")) {
+			return "waylandclient";
+		}else if(name.equals("waylandeglcompositorhwintegration")) {
+			return "waylandcompositor";
 		}else if(name.startsWith("quickcontrols2")
 				|| name.startsWith("quickdialogs2")
 				|| name.startsWith("quicklayout")
@@ -782,6 +788,9 @@ final class BundleGenerator {
 			for(File qmlsubDir : qmlDir.listFiles()) {
 				if(qmlsubDir.isDirectory())
 					switch(qmlsubDir.getName()) {
+					case "QtAudioEngine":
+						qmllibs.put("QtMultimedia", qmlsubDir);
+						break;
 					case "QtQuick":
 						qmllibs.put(qmlsubDir.getName(), qmlsubDir);
 						for(File quicklib : qmlsubDir.listFiles()) {
@@ -941,10 +950,18 @@ final class BundleGenerator {
 									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current");
 									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libFilePath);
 									doc.getDocumentElement().appendChild(symlinkElement);
-									symlinkElement = doc.createElement("symlink");
-									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Resources");
-									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Resources");
-									doc.getDocumentElement().appendChild(symlinkElement);
+									if(resourcesDir.isDirectory()) {
+										symlinkElement = doc.createElement("symlink");
+										symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Resources");
+										symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Resources");
+										doc.getDocumentElement().appendChild(symlinkElement);
+									}
+									if(helpersDir.isDirectory()) {
+										symlinkElement = doc.createElement("symlink");
+										symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Helpers");
+										symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Helpers");
+										doc.getDocumentElement().appendChild(symlinkElement);										
+									}
 									symlinkElement = doc.createElement("symlink");
 									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/"+libName);
 									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/"+libName);

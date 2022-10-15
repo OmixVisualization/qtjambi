@@ -284,7 +284,7 @@
             <inject-code>
                 @io.qt.QtUninvokable
                 public void encodeData(Number...data) {
-                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray();
+                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());
                     io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);
                     for (Number s : data) {
                         if(s instanceof Byte) {
@@ -295,26 +295,29 @@
                             throw new IllegalArgumentException("Only byte and short supported.");
                         }
                     }
+					stream.dispose();
                     setData(byteArray);
                 }
                 
                 @io.qt.QtUninvokable
                 public void encodeData(short...data) {
-                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray();
+                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());
                     io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);
                     for (short s : data) {
                         stream.writeShort(s);
                     }
+					stream.dispose();
                     setData(byteArray);
                 }
                 
                 @io.qt.QtUninvokable
                 public void encodeData(byte...data) {
-                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray();
+                    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());
                     io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);
                     for (byte s : data) {
                         stream.writeByte(s);
                     }
+					stream.dispose();
                     setData(byteArray);
                 }
                 
@@ -324,6 +327,7 @@
                     for (int i = 0; i &lt; data.length; ++i) {
                         data[i] = stream.readByte();
                     }
+					stream.dispose();
                 }
                 
                 @io.qt.QtUninvokable
@@ -332,6 +336,7 @@
                     for (int i = 0; i &lt; data.length; ++i) {
                         data[i] = stream.readShort();
                     }
+					stream.dispose();
                 }
     
                 @io.qt.QtUninvokable
@@ -343,9 +348,11 @@
                         }else if(data[i] instanceof Short[]) {
                             ((Short[])data[i])[0] = stream.readShort();
                         }else {
+							stream.dispose();
                             throw new IllegalArgumentException("Only byte and short supported.");
                         }
                     }
+					stream.dispose();
                 }
             </inject-code>
     </value-type>

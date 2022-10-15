@@ -134,27 +134,23 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<COUNT; ++i)
             ints.add(i);
 
-        QFuture<MutableString> future = QtConcurrent.mappedReduced(ints, i->((Integer)(i*i)).toString(),
-                new QtConcurrent.ReducedFunctor<MutableString, String>() {
-                    public MutableString defaultResult() {
-                        return new MutableString("5");
-                    }
-
-                    public void reduce(MutableString result, String n) {
-                        int i = Integer.parseInt(result.value) + Integer.parseInt(n);
-                        result.value = Integer.valueOf(i).toString();
-                    }
-                }
+        QFuture<String> future = QtConcurrent.mappedReduced(
+        		ints, 
+        		i->i*i,
+        		(String r, Integer n) -> {
+        			Integer i = (r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
+		            return i.toString();
+		        }
         );
         assertEquals(COUNT, ints.size());
 
-        int n=5;
+        int n=0;
         for (int i=0; i<COUNT;++i)
             n += i*i;
 
         future.waitForFinished();
         assertEquals(1, future.resultCount());
-        assertEquals(n, Integer.parseInt(future.result().value));
+        assertEquals(n, Integer.parseInt(future.result()));
     }
 
     @Test
@@ -163,26 +159,20 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<COUNT; ++i)
             ints.add(i);
 
-        MutableString result = QtConcurrent.blockingMappedReduced(ints,
-        		i->((Integer)(i*i)).toString(),
-                new QtConcurrent.ReducedFunctor<MutableString, String>() {
-                    public MutableString defaultResult() {
-                        return new MutableString("5");
-                    }
-
-                    public void reduce(MutableString result, String n) {
-                        int i = Integer.parseInt(result.value) + Integer.parseInt(n);
-                        result.value = Integer.valueOf(i).toString();
-                    }
+        String result = QtConcurrent.blockingMappedReduced(ints,
+        		i->i*i,
+        		(String r, Integer n) -> {
+                    Integer i = (r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
+                    return i.toString();
                 }
         );
         assertEquals(COUNT, ints.size());
 
-        int n=5;
+        int n=0;
         for (int i=0; i<COUNT;++i)
             n += i*i;
 
-        assertEquals(n, Integer.parseInt(result.value));
+        assertEquals(n, Integer.parseInt(result));
     }
 
     @Test
@@ -256,29 +246,23 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        QFuture<MutableInteger> future = QtConcurrent.filteredReduced(ints,
+        QFuture<Integer> future = QtConcurrent.filteredReduced(ints,
         		i->i >= COUNT,
-                new QtConcurrent.ReducedFunctor<MutableInteger, Integer>() {
-                    public MutableInteger defaultResult() {
-                        return new MutableInteger(3);
-                    }
-
-                    public void reduce(MutableInteger result, Integer intermediate) {
-                        result.value += intermediate;
-                    }
-                }
+        		(r, intermediate)->{
+        			return r + intermediate;
+        		}
         );
 
         future.waitForFinished();
         assertEquals(COUNT*2, ints.size());
         assertEquals(1, future.resultCount());
 
-        int n=3;
+        int n=0;
         for (int i=COUNT; i<COUNT*2; ++i)
             n += i;
 
         assertTrue(future.result()!=null);
-        assertEquals(n, future.result().value);
+        assertEquals(n, future.result().intValue());
 
     }
 
@@ -288,27 +272,18 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        MutableInteger result = QtConcurrent.blockingFilteredReduced(ints,
+        Integer result = QtConcurrent.blockingFilteredReduced(ints,
         		i->i >= COUNT,
-                new QtConcurrent.ReducedFunctor<MutableInteger, Integer>() {
-                    public MutableInteger defaultResult() {
-                        return new MutableInteger(3);
-                    }
-
-                    public void reduce(MutableInteger result, Integer intermediate) {
-                        result.value += intermediate;
-                    }
-                }
-
+        		(r, intermediate)->r + intermediate
         );
         assertEquals(COUNT*2, ints.size());
 
-        int n=3;
+        int n=0;
         for (int i=COUNT; i<COUNT*2; ++i)
             n += i;
 
         assertTrue(result!=null);
-        assertEquals(n, result.value);
+        assertEquals(n, result.intValue());
     }
 
     private void method(MutableInteger i) {

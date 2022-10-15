@@ -73,7 +73,7 @@ class CppImplGenerator : public CppGenerator {
 
         void writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
                              const AbstractMetaType *java_type);
-        static void writeCustomStructors(QTextStream &s, const TypeEntry *entry);
+        static void writeCustomStructors(QTextStream &s, const ComplexTypeEntry *entry);
         void writeCodeInjections(QTextStream &s,
                                  const TypeEntry *typeEntry,
                                  CodeSnip::Position position,

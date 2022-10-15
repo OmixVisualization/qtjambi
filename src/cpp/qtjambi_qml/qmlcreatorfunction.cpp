@@ -149,17 +149,12 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
 typedef QHash<hash_type,QSharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
 Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
 
-void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast){
-    hash_type hash = 1;
-    hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
-    hash = 31 * hash + qHash(qint64(constructor));
-    hash = 31 * hash + qHash(psCast);
-    hash = 31 * hash + qHash(vsCast);
-    hash = 31 * hash + qHash(viCast);
+void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
+    hash_type hash = qHashMulti(0, qtjambi_java_object_hashcode(env, clazz), qint64(constructor), psCast, vsCast, viCast, fhCast);
     if(gMetaDataHash->contains(hash)){
         return (*gMetaDataHash)[hash];
     }else{
-        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), {env, clazz}, meta_object, constructor, objectSize, psCast, vsCast, viCast});
+        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), {env, clazz}, meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast});
         return (*gMetaDataHash)[hash];
     }
 }

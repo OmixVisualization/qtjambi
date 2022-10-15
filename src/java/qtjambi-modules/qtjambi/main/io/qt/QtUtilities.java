@@ -39,6 +39,7 @@ package io.qt;
 import java.io.File;
 import java.util.Collections;
 
+import io.qt.InternalAccess.CallerContext;
 import io.qt.core.QMetaObject;
 import io.qt.core.QVersionNumber;
 import io.qt.internal.QtJambiInternal;
@@ -107,6 +108,24 @@ public final class QtUtilities {
     public static void loadLibrary(String lib) {
         QtJambiInternal.loadLibrary(lib);
     }
+    
+    /**
+     * Use a class (e.g. from third party library) as gadget.
+     * @see io.qt.QtAsGadget
+     * @see io.qt.core.QMetaObject#forType(Class)
+     */
+    public static void useAsGadget(Class<?> clazz) {
+        QtJambiInternal.useAsGadget(clazz);
+    }
+    
+    /**
+     * Define a package (e.g. from third party library) to let all its classes considered to be gadgets.
+     * @see io.qt.QtAsGadget
+     * @see io.qt.core.QMetaObject#forType(Class)
+     */
+    public static void usePackageContentAsGadgets(String _package) {
+        QtJambiInternal.usePackageContentAsGadgets(_package);
+    }
 
     public static File jambiDeploymentDir() {
         return QtJambiInternal.jambiDeploymentDir();
@@ -140,11 +159,31 @@ public final class QtUtilities {
     }
     
     public static void initializeNativeObject(QtObjectInterface object) {
-    	QtJambiInternal.initializeNativeObject(object, Collections.emptyMap());
+    	Class<?> cls = QtJambi_LibraryUtilities.internal.getClass(object);
+    	CallerContext callerInfo = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
+    	if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
+				|| !"<init>".equals(callerInfo.methodName)) {
+			throw new RuntimeException(new IllegalAccessException(
+					"QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor. Expected: "
+							+ cls.getName() + ".<init>, found: "
+							+ (callerInfo.declaringClass == null ? "null" : callerInfo.declaringClass.getName()) + "."
+							+ callerInfo.methodName));
+		}
+    	QtJambiInternal.initializeNativeObject(callerInfo.declaringClass, object, Collections.emptyMap());
     }
     
     public static void initializeNativeObject(QtObjectInterface object, QtArgument.Stream arguments) {
-    	QtJambiInternal.initializeNativeObject(object, arguments.arguments());
+    	Class<?> cls = QtJambi_LibraryUtilities.internal.getClass(object);
+    	CallerContext callerInfo = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
+    	if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
+				|| !"<init>".equals(callerInfo.methodName)) {
+			throw new RuntimeException(new IllegalAccessException(
+					"QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor. Expected: "
+							+ cls.getName() + ".<init>, found: "
+							+ (callerInfo.declaringClass == null ? "null" : callerInfo.declaringClass.getName()) + "."
+							+ callerInfo.methodName));
+		}
+    	QtJambiInternal.initializeNativeObject(callerInfo.declaringClass, object, arguments.arguments());
     }
     
     @FunctionalInterface

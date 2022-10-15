@@ -70,4 +70,5 @@
   <load-typesystem name="typesystem_pdf.xml"                 generate="yes"	            unless="QTJAMBI_NO_PDF"/>
   <load-typesystem name="typesystem_pdfwidgets.xml"          generate="yes"	            unless="QTJAMBI_NO_PDFWIDGETS"/>
   <load-typesystem name="typesystem_httpserver.xml"          generate="yes"	            unless="QTJAMBI_NO_HTTPSERVER"/>
+  <load-typesystem name="typesystem_spatialaudio.xml"          generate="yes"	            unless="QTJAMBI_NO_SPATIALAUDIO"/>
 </typesystem>

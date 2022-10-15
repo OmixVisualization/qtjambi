@@ -29,11 +29,16 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
 public interface InternalAccess {
@@ -141,15 +146,19 @@ public interface InternalAccess {
     Class<?> findGeneratedSuperclass(Class<?> clazz);
     
     public final class CallerContext{
-        public CallerContext(Class<?> declaringClass, String methodName, int lineNumber) {
+        public CallerContext(Class<?> declaringClass, String methodName, String methodDescriptor, MethodType methodType, int lineNumber) {
             super();
             this.declaringClass = declaringClass;
             this.methodName = methodName;
+            this.methodDescriptor = methodDescriptor;
+            this.methodType = methodType;
             this.lineNumber = lineNumber;
         }
 
         public final Class<?> declaringClass;
         public final String methodName;
+        public final String methodDescriptor;
+        public final MethodType methodType;
         public final int lineNumber;
     }
 
@@ -164,6 +173,20 @@ public interface InternalAccess {
     <Q extends QtObjectInterface,M> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass);
     
     <T> Supplier<T> getFactory0(Constructor<T> constructor);
+    
+    <A,T> Function<A,T> getFactory1(Constructor<T> constructor);
+    
+    <A,B,T> BiFunction<A,B,T> getFactory2(Constructor<T> constructor);
+    
+    <A,B,C,T> QMetaObject.Method3<A,B,C,T> getFactory3(Constructor<T> constructor);
+    
+    <A,B,C,D,T> QMetaObject.Method4<A,B,C,D,T> getFactory4(Constructor<T> constructor);
+    
+    <A,B,C,D,E,T> QMetaObject.Method5<A,B,C,D,E,T> getFactory5(Constructor<T> constructor);
+    
+    <T> T invokeContructor(Constructor<T> constructor, Object... args) throws Throwable;
+    
+    Object invokeMethod(Method method, Object object, Object... args) throws Throwable;
     
     Package getDefinedPackage(ClassLoader cl, String pkg);
 }

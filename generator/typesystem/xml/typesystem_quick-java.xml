@@ -354,11 +354,8 @@
         </modify-function>
         <modify-field name="attributes" write="false">
             <replace-type modified-type="io.qt.quick.QSGGeometry$Attribute[]"/>
-            <conversion-rule class="native">
-                %out = qtjambi_to_jobjectArray&lt;QSGGeometry::Attribute>(%env, %in, __qt_this->count, 
-                                                                        [](JNIEnv * env, const QSGGeometry::Attribute&amp; item)->jobject{ 
-                                                                                return qtjambi_cast&lt;jobject>(env, item);
-                                                                        });
+            <conversion-rule class="native-getter">
+                %out = qtjambi_array_cast&lt;jobjectArray>(%env, %scope, %in, __qt_this->count);
             </conversion-rule>
         </modify-field>
         <modify-field name="count" write="false"/>
@@ -652,7 +649,7 @@
         </modify-function>
     </object-type>
     <object-type name="QQuickCloseEvent" package="io.qt.quick.internal" target-type="final class" generate="no-shell">
-		<modify-function signature="QQuickCloseEvent()" remove="all"/>
+        <modify-function signature="QQuickCloseEvent()" remove="all"/>
     </object-type>
     <object-type name="QQuickWindow">
         <modify-function signature="scheduleRenderJob(QRunnable *, QQuickWindow::RenderStage)">
@@ -739,29 +736,65 @@
     <interface-type name="QNativeInterface::QSGD3D11Texture" java-name="QSGD3D11Texture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
     </interface-type>
     <interface-type name="QNativeInterface::QSGMetalTexture" java-name="QSGMetalTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
-        <modify-function signature="nativeTexture() const">
-            <modify-argument index="0">
-                <replace-type modified-type="long" />
+		<inject-code class="native" position="beginning">
+#if defined(Q_OS_MACOS)
+namespace QNativeInterface {
+struct QSGMetalTexture{
+    QT_DECLARE_NATIVE_INTERFACE(QSGMetalTexture, 1, QSGTexture)
+};
+}
+
+void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);
+QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize&amp; size, QQuickWindow::CreateTextureOptions options);
+#endif // defined(Q_OS_MACOS)
+		</inject-code>
+        <modify-function signature="nativeTexture() const" proxy-call="qtjambi_QSGMetalTexture_nativeTexture">
+        </modify-function>
+        <modify-function signature="fromNative(id&lt;MTLTexture>, QQuickWindow *, QSize, QFlags&lt;QQuickWindow::CreateTextureOption>)" proxy-call="qtjambi_QSGMetalTexture_fromNative">
+            <modify-argument index="1">
                 <conversion-rule class="native">
-                    %out = jlong(quint64(%in));
+                    void* %out = qtjambi_to_cpointer(%env, %in, 0);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </interface-type>
     <interface-type name="QNativeInterface::QSGVulkanTexture" java-name="QSGVulkanTexture" package="io.qt.quick.nativeinterface" is-native-interface="yes">
-        <modify-function signature="nativeImage() const">
-            <modify-argument index="0">
-                <replace-type modified-type="long" />
+		<inject-code class="native" position="beginning">
+QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jlong image, jint layout, QQuickWindow* window, const QSize&amp; size, QQuickWindow::CreateTextureOptions options);
+		</inject-code>
+        <modify-function signature="fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QFlags&lt;QQuickWindow::CreateTextureOption>)" proxy-call="qtjambi_QSGVulkanTexture_fromNative">
+            <modify-argument index="1">
+				<replace-type modified-type="long"/>
                 <conversion-rule class="native">
-                    %out = jlong(%in);
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+				<replace-type modified-type="int"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="nativeImageLayout() const">
+		<modify-function signature="nativeImage() const">
             <modify-argument index="0">
-                <replace-type modified-type="int" />
+				<replace-type modified-type="long"/>
                 <conversion-rule class="native">
-                    %out = jint(%in);
+				%out = jlong(%in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+		<modify-function signature="nativeImageLayout() const">
+            <modify-argument index="0">
+				<replace-type modified-type="int"/>
+                <conversion-rule class="native">
+				%out = jint(%in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -795,4 +828,69 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <value-type name="QQuickRenderTarget">
+		<inject-code class="native" position="beginning" since="6.2.0">
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, const QSize&amp; pixelSize, int sampleCount);
+		</inject-code>
+		<inject-code class="native" position="beginning" since="6.4.0">
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, const QSize&amp; pixelSize, int sampleCount);
+		</inject-code>
+		<modify-function signature="fromD3D11Texture(void *, QSize, int)" pp-condition="defined(Q_OS_WIN)" since="6.2.0">
+        </modify-function>	
+		<modify-function signature="fromD3D11Texture(void *, unsigned int, QSize, int)" pp-condition="defined(Q_OS_WIN)" since="6.4.0">
+        </modify-function>	
+		<modify-function signature="fromMetalTexture(MTLTexture *, QSize, int)" pp-condition="defined(Q_OS_MACOS) || defined(Q_OS_IOS)" since="6.2.0">
+        </modify-function>
+		<modify-function signature="fromMetalTexture(MTLTexture *, unsigned int, QSize, int)" pp-condition="defined(Q_OS_MACOS) || defined(Q_OS_IOS)" since="6.4.0">
+        </modify-function>
+		<modify-function signature="fromVulkanImage(VkImage, VkImageLayout, QSize, int)" pp-condition="QT_CONFIG(vulkan)" proxy-call="qtjambi_QQuickRenderTarget_fromVulkanImage" since="6.2.0">
+            <modify-argument index="1">
+				<replace-type modified-type="long"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+				<replace-type modified-type="int"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+		<modify-function signature="fromVulkanImage(VkImage, VkImageLayout, VkFormat, QSize, int)" pp-condition="QT_CONFIG(vulkan)" proxy-call="qtjambi_QQuickRenderTarget_fromVulkanImage" since="6.4.0">
+            <modify-argument index="1">
+				<replace-type modified-type="long"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+				<replace-type modified-type="int"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+				<replace-type modified-type="int"/>
+                <conversion-rule class="native">
+#ifdef %out
+#undef %out
+#endif
+#define %out %in
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </value-type>
 </typesystem>

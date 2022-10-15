@@ -160,14 +160,14 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
     }
     writeInjectedCode(s, java_class, {CodeSnip::Position1});
-    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
+    /*if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
         if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                 || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
             writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
             s << "#undef QT_FEATURE_vulkan" << Qt::endl
               << "#define QT_FEATURE_vulkan -1" << Qt::endl;
         }
-    }
+    }*/
     if(java_class->enclosingClass()){
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
@@ -307,14 +307,14 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
     }
     writeInjectedCode(s, java_class, {CodeSnip::Position1});
-    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
+    /*if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6,0,0)){
         if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                 || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
             writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
             s << "#undef QT_FEATURE_vulkan" << Qt::endl
               << "#define QT_FEATURE_vulkan -1" << Qt::endl;
         }
-    }
+    }*/
 
     if(java_class->enclosingClass()){
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);

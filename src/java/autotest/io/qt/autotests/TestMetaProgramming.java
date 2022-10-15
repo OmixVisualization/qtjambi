@@ -1092,8 +1092,8 @@ public class TestMetaProgramming extends ApplicationInitializer {
     @Test
     public void testQMetaMethod_invoke_IllegalArguments() {
 		InvocationTest b = new InvocationTest();
-//		b.metaObject().methods().forEach(m->{if("test".equals(m.name().toString()) || m.methodType()==MethodType.Signal)System.out.println(m.methodSignature()+" - "+m.cppMethodSignature());});
-//		b.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+" ==> "+p.notifySignal().cppMethodSignature()));
+		b.metaObject().methods().forEach(m->{if("test".equals(m.name().toString()) || m.methodType()==QMetaMethod.MethodType.Signal)System.out.println(m.methodSignature()+" - "+m.cppMethodSignature());});
+		b.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+" ==> "+p.notifySignal().cppMethodSignature()));
 		QMetaMethod invokableMethod;
 		
 		{
@@ -2118,6 +2118,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     public void testPropertiesReadWriteOnGadget() {
     	JavaProperties javaProperties = new JavaProperties();
     	QMetaObject metaObject = QMetaObject.forType(JavaProperties.class);
+//    	metaObject.properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
     	QMetaProperty objectProperty = metaObject.property("object");
     	QMetaProperty otherProperty = metaObject.property("other");
     	QMetaProperty stringProperty = metaObject.property("string");

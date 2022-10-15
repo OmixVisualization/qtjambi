@@ -810,6 +810,11 @@ public class TestInterfaces extends ApplicationInitializer {
 	    	ft = null;
 		}
     	ApplicationInitializer.runGC();
+    	Thread.sleep(20);
+    	ApplicationInitializer.runGC();
+    	Thread.sleep(20);
+    	ApplicationInitializer.runGC();
+    	Thread.sleep(20);
     	assertEquals(1, ai.get());
     	QApplication.processEvents();
     	QApplication.processEvents();

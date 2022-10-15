@@ -50,7 +50,16 @@
     <rejection class="QtConcurrent" function-name="runWithPromise" />
     <rejection class="QtConcurrent" function-name="task" />
     <rejection class="QtConcurrent" function-name="startFiltered" />
+    <rejection class="QtConcurrent" function-name="selectIteration" />
+    <rejection class="QtConcurrent" function-name="blockingFiltered" />
+    <rejection class="QtConcurrent" function-name="startMap" />
+    <rejection class="QtConcurrent" function-name="startMappedReduced" />
+    <rejection class="QtConcurrent" function-name="startMapped" />
+    <rejection class="QtConcurrent" function-name="startThreadEngine" />
+    <rejection class="QtConcurrent" function-name="startFilteredReduced" />
+    <rejection class="QtConcurrent" function-name="filterInternal" />
     <rejection class="QtConcurrent::BlockSizeManager" />
+    <rejection class="QtConcurrent::BlockSizeManagerV2" />
     <rejection class="QtConcurrent::BlockSizeManagerV2" />
     <rejection class="QtConcurrent::ConstMemberFunctionWrapper" />
     <rejection class="QtConcurrent::Exception"/>
@@ -155,7 +164,6 @@
     <rejection class="QtConcurrent::StoredMemberFunctionPointerCall4"/>
     <rejection class="QtConcurrent::StoredMemberFunctionPointerCall5"/>
     <rejection class="QtConcurrent::ThreadEngine"/>
-    <rejection class="QtConcurrent::ThreadEngineBase"/>
     <rejection class="QtConcurrent::ThreadEngineSemaphore"/>
     <rejection class="QtConcurrent::ThreadEngineStarter"/>
     <rejection class="QtConcurrent::ThreadEngineStarterBase"/>
@@ -196,7 +204,6 @@
     <rejection class="QtConcurrent::VoidStoredMemberFunctionPointerCall3"/>
     <rejection class="QtConcurrent::VoidStoredMemberFunctionPointerCall4"/>
     <rejection class="QtConcurrent::VoidStoredMemberFunctionPointerCall5"/>
-    <rejection class="QtConcurrent::ThreadEngineBarrier" />
     <rejection class="QtConcurrent::internal" />
     <rejection class="QtConcurrent::StoredFunctorCall" />
     <rejection class="QtConcurrent::FunctionResolver" />
@@ -212,6 +219,9 @@
     <rejection class="QtConcurrent::TaskResolver" />
     <rejection class="QtConcurrent::TaskResolverHelper" />
     <rejection class="QtConcurrent::TaskStartParameters" />
+    <rejection class="QtConcurrent::ThreadEngineBarrier" />
+    <rejection class="QtConcurrent::ThreadEngineBase" />
+    <rejection class="QtPrivate::ExceptionStore" />
 
     <namespace-type name="QtConcurrent" target-type="class">
         <extra-includes>
@@ -222,7 +232,6 @@
     <enum-type name="QtConcurrent::ThreadFunctionResult" />
     <enum-type name="QtConcurrent::FutureResult" />
     <object-type name="QtConcurrent::MedianDouble" />
-
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::selectIteration', unmatched parameter type 'T'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::advance', unmatched parameter type 'It&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingMapped', unmatched return type 'Sequence'" />
@@ -241,27 +250,27 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingMappedReduced', unmatched return type 'U'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFiltered', unmatched return type 'OutputSequence'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFiltered', unmatched return type 'Sequence'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMappedReduced', unmatched return type 'ThreadEngineStarter&lt;ResultType&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMappedReduced*', unmatched return type 'ThreadEngineStarter&lt;ResultType&gt;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFilteredReduced', unmatched return type 'U'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFilteredReduced', unmatched return type 'V'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFilteredReduced', unmatched return type 'ResultType'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMap', unmatched return type 'ThreadEngineStarter&lt;void&gt;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startThreadEngine', unmatched return type 'ThreadEngineStarter&lt;ThreadEngine::ResultType&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMap*', unmatched return type 'ThreadEngineStarter&lt;void&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startThreadEngine*', unmatched return type 'ThreadEngineStarter&lt;ThreadEngine::ResultType&gt;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::mappedReduced', unmatched parameter type 'Iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::mappedReduced', unmatched parameter type 'const Sequence&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::filteredReduced', unmatched parameter type 'Iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::filteredReduced', unmatched parameter type 'const Sequence&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::map', unmatched parameter type 'Iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::map', unmatched parameter type 'Sequence&amp;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::filterInternal', unmatched return type 'ThreadEngineStarter&lt;void&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::filterInternal*', unmatched return type 'ThreadEngineStarter&lt;void&gt;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::createFunctor', unmatched return type 'QtConcurrent::SelectMemberFunctor0lt;T,Class&gt;::type'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::createFunctor', unmatched return type 'SelectFunctor0&lt;T,T&gt;::type'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::mapped', unmatched parameter type 'Iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::mapped', unmatched parameter type 'const Sequence&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingMap', unmatched parameter type 'Iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingMap', unmatched parameter type 'Sequence&amp;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMapped', unmatched return type 'QtConcurrent::ThreadEngineStarter&lt;T&gt;'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startFilteredReduced', unmatched return type 'ThreadEngineStarter&lt;ResultType&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startMapped*', unmatched return type 'QtConcurrent::ThreadEngineStarter&lt;T&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::startFilteredReduced*', unmatched return type 'ThreadEngineStarter&lt;ResultType&gt;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::run', unmatched parameter type 'Class const*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::run', unmatched parameter type 'Class*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::run', unmatched parameter type 'const Class&amp;'" />
@@ -272,4 +281,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::createFunctor', unmatched return type 'QtConcurrent::SelectMemberFunctor0&lt;T,Class&gt;::type'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::start', unmatched return type ''" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::*', unmatched return type 'QFuture*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * type 'QtPrivate::ExceptionStore'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * type 'QtConcurrent::ThreadEngineBarrier'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'run()' in 'QtConcurrent$ThreadEngineBase'" />
 </typesystem>

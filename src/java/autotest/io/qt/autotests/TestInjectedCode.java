@@ -554,8 +554,8 @@ public class TestInjectedCode extends ApplicationInitializer {
     	assertTrue(reader.isString());
     	QCborStreamReader.StringResult<String> result = reader.readString();
     	assertTrue(result!=null);
-    	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status);
-    	assertEquals("TEST", result.data);
+    	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status());
+    	assertEquals("TEST", result.data());
     	assertEquals(QCborError.Code.NoError, reader.lastError().code());
     	assertTrue(reader.hasNext());
     	assertTrue(reader.next());
@@ -640,8 +640,8 @@ public class TestInjectedCode extends ApplicationInitializer {
     	assertTrue(reader.isByteArray());
     	QCborStreamReader.StringResult<QByteArray> result = reader.readByteArray();
     	assertTrue(result!=null);
-    	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status);
-    	assertEquals(test, result.data);
+    	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status());
+    	assertEquals(test, result.data());
     	assertEquals(QCborError.Code.NoError, reader.lastError().code());
     	assertTrue(reader.hasNext());
     	assertTrue(reader.next());
@@ -1455,6 +1455,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals(23, iodss.inputBufferSize);
         assertEquals("Evil draws men together", new QByteArray(iodss.buffer).toString());
         java.nio.ByteBuffer np = iodss.buffer();
+        assertTrue(np.capacity()>=23);
         byte data[] = new byte[23];
         for (int i=0; i<data.length; ++i)
             data[i] = np.get(i);
@@ -1471,6 +1472,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("Confucius say: Don't go outside with wet hair", new QByteArray(iodss.buffer).toString());
 
         java.nio.ByteBuffer np = iodss.buffer();
+        assertTrue(np.capacity()>=45);
         byte data[] = new byte[45];
         for (int i=0; i<data.length; ++i)
             data[i] = np.get(i);
@@ -1487,6 +1489,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals("I am a boy", new QByteArray(iodss.buffer).toString());
 
         java.nio.ByteBuffer np = iodss.buffer();
+        assertTrue(np.capacity()>=10);
         byte data[] = new byte[10];
         for (int i=0; i<data.length; ++i)
             data[i] = np.get(i);

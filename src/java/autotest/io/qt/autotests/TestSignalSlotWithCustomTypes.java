@@ -46,7 +46,7 @@ import io.qt.core.QRectF;
 import io.qt.gui.QIcon;
 import io.qt.gui.QPainter;
 import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QSpinBox;
+import io.qt.widgets.QSlider;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
@@ -256,11 +256,11 @@ public class TestSignalSlotWithCustomTypes extends ApplicationInitializer {
     	class Foobar extends QObject {
             void onChanged(Object arg) { result[0] = arg; }
         }
-        QSpinBox spinner = new QSpinBox();
+        QSlider slider = new QSlider();
         Foobar foo = new Foobar();
-        QMetaObject.Connection connection = spinner.valueChanged.connect(foo::onChanged);
+        QMetaObject.Connection connection = slider.valueChanged.connect(foo::onChanged);
         Assert.assertTrue(connection!=null && connection.isConnected());
-        spinner.setValue(5);
+        slider.setValue(5);
         Assert.assertEquals(5, result[0]);
     }
 }

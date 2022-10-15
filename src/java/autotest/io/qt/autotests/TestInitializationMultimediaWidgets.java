@@ -32,9 +32,20 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.multimedia.widgets.QVideoWidget;
+import io.qt.widgets.QApplication;
+
 public class TestInitializationMultimediaWidgets extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.multimedia.widgets"));
+    	QApplication.initialize(new String[0]);
+    	QVideoWidget window = new QVideoWidget();
+    	window.show();
+    	QApplication.processEvents();
+    	window.hide();
+    	QApplication.processEvents();
+    	window.dispose();
+    	QApplication.shutdown();
     }
 }

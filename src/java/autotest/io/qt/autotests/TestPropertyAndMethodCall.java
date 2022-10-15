@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -54,6 +55,8 @@ import io.qt.QtPropertyWriter;
 import io.qt.QtUninvokable;
 import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.PropertyAndMethodCallTest;
+import io.qt.core.QDataStream;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QRectF;
@@ -62,6 +65,7 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QDrag;
 import io.qt.gui.QPainter;
+import io.qt.gui.QRgba64;
 import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
@@ -76,23 +80,24 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitialize();
-		QMetaType.registerMetaType(TestQObject.DerivedQObject.class);
-		QMetaType.registerMetaType(TestQObject.CustomQtValue.class);
-		QMetaType.registerMetaType(TestQObject.CustomQtInterfaceValue.class);
-		QMetaType.registerMetaType(TestQObject.CustomJavaType.class);
-		QMetaType.registerMetaType(TestQObject.CustomJavaType.class);
-		QMetaType.registerMetaType(TestQObject.CustomQtEnum.class);
-		QMetaType.registerMetaType(TestQObject.CustomEnum.class);
-		QMetaType.registerMetaType(TestQObject.CustomQtFlags.class);
-		QMetaType.registerMetaType(QGraphicsItem.class);
-		QMetaType.registerMetaType(QStringListModel.class);
-		QMetaType.registerMetaType(QDrag.class);
-		QMetaType.registerMetaType(Qt.AspectRatioMode.class);
-		QMetaType.registerMetaType(Qt.Orientations.class);
+		QMetaType.qRegisterMetaType(TestQObject.ExtendedColor.class);
+		QMetaType.qRegisterMetaType(TestQObject.DerivedQObject.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomQtValue.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomQtInterfaceValue.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomJavaType.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomJavaType.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomQtEnum.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomEnum.class);
+		QMetaType.qRegisterMetaType(TestQObject.CustomQtFlags.class);
+		QMetaType.qRegisterMetaType(QGraphicsItem.class);
+		QMetaType.qRegisterMetaType(QStringListModel.class);
+		QMetaType.qRegisterMetaType(QDrag.class);
+		QMetaType.qRegisterMetaType(Qt.AspectRatioMode.class);
+		QMetaType.qRegisterMetaType(Qt.Orientations.class);
 		object = new PropertyAndMethodCallTest();
 		javaObject = new TestQObject(null);
-//		javaObject.metaObject().methods().forEach(m->System.out.println(m.typeName() + " " + m.cppMethodSignature()));
-//		javaObject.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
+		javaObject.metaObject().methods().forEach(m->System.out.println(m.typeName() + " " + m.cppMethodSignature()));
+		javaObject.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 	}
 	
 	@AfterClass
@@ -125,12 +130,19 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testMethodCallCustomQtEnum2() {
+		Assume.assumeTrue("Checking enum null in Qt6 makes no sense", QLibraryInfo.version().majorVersion()==5);
 		assertTrue(PropertyAndMethodCallTest.testMethodCallCustomQtEnum2(javaObject));
 	}
 
 	@Test
 	public void testMethodCallCustomQtValue() {
 		assertTrue(PropertyAndMethodCallTest.testMethodCallCustomQtValue(javaObject));
+	}
+	
+	@Test
+	public void testMethodCallExtendedColor() {
+		Assume.assumeTrue("Extended value types are available since Qt6", QLibraryInfo.version().majorVersion()>5);
+		assertTrue(PropertyAndMethodCallTest.testMethodCallExtendedColor(javaObject));
 	}
 	
 	@Test
@@ -186,12 +198,19 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testFetchPropertyCustomQtEnum2CPP() {
+		Assume.assumeTrue("Checking enum null in Qt6 makes no sense", QLibraryInfo.version().majorVersion()==5);
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyCustomQtEnum2(javaObject));
 	}
 
 	@Test
 	public void testFetchPropertyCustomQtValueCPP() {
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyCustomQtValue(javaObject));
+	}
+	
+	@Test
+	public void testFetchPropertyExtendedColorCPP() {
+		Assume.assumeTrue("Extended value types are available since Qt6", QLibraryInfo.version().majorVersion()>5);
+		assertTrue(PropertyAndMethodCallTest.testFetchPropertyExtendedColor(javaObject));
 	}
 	
 	@Test
@@ -262,6 +281,12 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	}
 	
 	@Test
+	public void testFetchPropertyExtendedColorJAVA() {
+		Assume.assumeTrue("Extended value types are available since Qt6", QLibraryInfo.version().majorVersion()>5);
+		assertEquals(javaObject.getExtendedColor(), javaObject.property("extendedColor"));
+	}
+	
+	@Test
 	public void testFetchPropertyCustomQtInterfaceValueJAVA() {
 		assertEquals(javaObject.getCustomQtInterfaceValue(), javaObject.property("customQtInterfaceValue"));
 	}
@@ -290,6 +315,20 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 		assertEquals(Qt.AspectRatioMode.class, prop.getClass());
 		assertEquals(javaObject.getQtEnum(), prop);
 	}
+	
+	@Test
+	public void testFetchPropertyIntConstJAVA() {
+		Object prop = javaObject.property("intConst");
+		assertNotNull(prop);
+		assertEquals(42, prop);
+	}
+	
+	@Test
+	public void testFetchPropertyStaticIntConstJAVA() {
+		Object prop = javaObject.property("staticIntConst");
+		assertNotNull(prop);
+		assertEquals(142, prop);
+	}
 
 	@Test
 	public void testFetchPropertyQtFlagsJAVA() {
@@ -306,6 +345,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalCustomEnumNULL() {
+		Assume.assumeTrue("Checking enum null in Qt6 makes no sense", QLibraryInfo.version().majorVersion()==5);
 		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
 		javaObject.customEnumChanged.emit(null);
 		assertEquals(null, object.receivedCustomEnum());
@@ -371,6 +411,15 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 		TestQObject.DerivedQObject derivedObject = new TestQObject.DerivedQObject();
 		javaObject.derivedQObjectChanged.emit(derivedObject);
 		assertEquals(derivedObject, object.receivedDerivedQObject());
+	}
+	
+	@Test
+	public void testSignalExtendedColor() {
+		Assume.assumeTrue("Extended value types are available since Qt6", QLibraryInfo.version().majorVersion()>5);
+		object.connectSignals(javaObject, QtJambiInternal.useAnnotatedType);
+		TestQObject.ExtendedColor extendedColor = new TestQObject.ExtendedColor(QRgba64.fromRgba64(0x014691ab6));
+		javaObject.extendedColorChanged.emit(extendedColor);
+		assertEquals(extendedColor, object.receivedExtendedColor());
 	}
 
 	public static class TestQObject extends QObject {
@@ -484,6 +533,71 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 		public static class CustomJavaType {
 
 		}
+		
+		public static class ExtendedColor extends QColor{
+			
+			ExtendedColor(int rgb) {
+				super(rgb);
+				text = this.name();
+			}
+
+			ExtendedColor(String name) {
+				super(name);
+				text = this.name();
+			}
+
+			ExtendedColor(QRgba64 rgba64) {
+				super(rgba64);
+				text = this.name();
+			}
+
+			ExtendedColor() {
+				super();
+				text = this.name();
+			}
+
+			private String text;
+
+			@QtPropertyReader
+			public String text() {
+				return text;
+			}
+
+			@Override
+			public void writeTo(QDataStream s) {
+				super.writeTo(s);
+				s.append(text);
+			}
+
+			@Override
+			public void readFrom(QDataStream s) {
+				super.readFrom(s);
+				text = s.readString();
+			}
+
+			@Override
+			public boolean equals(Object other) {
+				return super.equals(other) && other instanceof ExtendedColor && Objects.equals(text, ((ExtendedColor)other).text);
+			}
+
+			@Override
+			public int hashCode() {
+				int result = 1;
+	            result = 31 * result + super.hashCode();
+	            result = 31 * result + (text == null ? 0 : text.hashCode());
+				return result;
+			}
+
+			@Override
+			public String toString() {
+				return super.toString();
+			}
+
+			@Override
+			public ExtendedColor clone() {
+				return new ExtendedColor(this.rgba64());
+			}
+		}
 
 		public TestQObject(QObject obj) {
 			super(obj);
@@ -500,6 +614,9 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 		private Qt.AspectRatioMode qtEnum = Qt.AspectRatioMode.KeepAspectRatio;
 		private Qt.Orientations qtFlags = new Qt.Orientations(Qt.Orientation.Horizontal);
 		private final QColor colorPtr = new QColor(0x01abcdef);
+		private ExtendedColor extendedColor = new ExtendedColor(QRgba64.fromRgba64(0x01abcdef));
+		public final int intConst = 42;
+		public static final int staticIntConst = 142;
 		
 		@QtPropertyMember(name="member")
 		private String memberProperty = "QtPropertyMember";
@@ -616,7 +733,10 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 		public final Signal1<int[]> customIntArrayChanged = new Signal1<>();
 
 		@QtPropertyNotify(name = "derivedQObject")
-		public final Signal1<DerivedQObject> derivedQObjectChanged = new Signal1<DerivedQObject>();
+		public final Signal1<DerivedQObject> derivedQObjectChanged = new Signal1<>();
+
+		@QtPropertyNotify(name = "extendedColor")
+		public final Signal1<ExtendedColor> extendedColorChanged = new Signal1<>();
 
 		@QtPropertyReader(name = "list")
 		public List<String> getList() {
@@ -711,6 +831,18 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 		public boolean testQtFlags(Qt.Orientations customQtFlags) {
 			return this.qtFlags.equals(customQtFlags);
+		}
+
+		public ExtendedColor getExtendedColor() {
+			return extendedColor;
+		}
+
+		public void setExtendedColor(ExtendedColor extendedColor) {
+			this.extendedColor = extendedColor;
+		}
+		
+		public boolean testExtendedColor(ExtendedColor extendedColor) {
+			return this.extendedColor.equals(extendedColor);
 		}
 	}
 	

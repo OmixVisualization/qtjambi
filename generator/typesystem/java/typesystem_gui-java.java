@@ -224,13 +224,12 @@ class QShortcut__{
         this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
     }
     
+    /**
+     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
+     */
     @io.qt.QtUninvokable
     public final <T> T parent(Class<T> type) {
         return type.cast(parent());
-    }
-    
-    public final io.qt.widgets.QWidget parentWidget() { 
-        return parent(io.qt.widgets.QWidget.class); 
     }
 }// class
 
@@ -736,15 +735,6 @@ class QGradient_java__{
     private native static QGradient create(int preset);
 }// class
 
-
-class QOpenGLContext___{
-
-    @io.qt.QtUninvokable
-    public native final <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(Class<T> type);
-
-}// class
-
-
 class QWindow___ extends QWindow {
     /**
      * <p>Overloaded function for {@link #parent(io.qt.gui.QWindow.AncestorMode)}
@@ -759,96 +749,60 @@ class QWindow___ extends QWindow {
 
 class QAction___ extends QAction {
 
-        private QActionGroup __rcActionGroup = null;
+    private QActionGroup __rcActionGroup = null;
 
-        /**
-         * Sets the shortcut to the key sequence for the given key string. For
-         * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
-         * "Meta" are recognized, as well as their translated equivalents in the
-         * "QShortcut" context (using QObject::tr()). Up to four key codes may be
-         * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
-         *
-         * @param key
-         *            The description of the key sequence. Typically used with tr()
-         *            so key sequences can be locale aware.
-         */
-        public final void setShortcut(String key) {
-            setShortcut(new QKeySequence(key));
-        }
+    /**
+     * Sets the shortcut to the key sequence for the given key string. For
+     * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
+     * "Meta" are recognized, as well as their translated equivalents in the
+     * "QShortcut" context (using QObject::tr()). Up to four key codes may be
+     * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
+     *
+     * @param key
+     *        The description of the key sequence. Typically used with tr()
+     *        so key sequences can be locale aware.
+     */
+    public final void setShortcut(String key) {
+        setShortcut(new QKeySequence(key));
+    }
 
-        /**
-         * Sets the shortcut to the key sequence for the given key. The result will
-         * depend on the currently running platform. The key sequence will be based
-         * on the first element in the list of key bindings for the key.
-         *
-         * @param key
-         *            The key for which to select a key sequence
-         */
-        public final void setShortcut(QKeySequence.StandardKey key) {
-            setShortcut(new QKeySequence(key));
-        }
+    /**
+     * Sets the shortcut to the key sequence for the given key. The result will
+     * depend on the currently running platform. The key sequence will be based
+     * on the first element in the list of key bindings for the key.
+     *
+     * @param key
+     *        The key for which to select a key sequence
+     */
+    public final void setShortcut(QKeySequence.StandardKey key) {
+        setShortcut(new QKeySequence(key));
+    }
 
-        public final void setIcon(QPixmap pm) {
-            setIcon(new QIcon(pm));
-        }
-
-        @io.qt.QtUninvokable
-        public final io.qt.widgets.QMenu menu(){
-            return menu(io.qt.widgets.QMenu.class);
-        }
-        
-        @io.qt.QtUninvokable
-        public final <T> T menu(Class<T> type) {
-            io.qt.core.QObject result = menuObject();
-            if(!type.isInstance(result))
-                return type.cast(result);
-            return null;
-        }
-        
-        private Object __rcMenu;
+    public final void setIcon(QPixmap pm) {
+        setIcon(new QIcon(pm));
+    }
     
-        @io.qt.QtUninvokable
-        public final void setMenu(io.qt.core.QObject menu){
-            setMenuObject(menu);
-            __rcMenu = menuObject();
-        }
-        
-        @io.qt.QtUninvokable
-        private native io.qt.core.QObject menuObject();
-        
-        @io.qt.QtUninvokable
-        private native void setMenuObject(io.qt.core.QObject menu);
-        
-        @io.qt.QtUninvokable
-        public final <T> T parent(Class<T> type) {
-            io.qt.core.QObject result = parent();
-            while (result!=null && !type.isInstance(result))
-                result = result.parent();
-            return type.cast(result);
-        }
-        
-        @io.qt.QtUninvokable
-        public final <T> java.util.List<T> associatedObjects(Class<T> type) {
-            java.util.List<T> result = new java.util.ArrayList<>();
-            for (io.qt.core.QObject object : associatedObjects())
-                if (type.isInstance(object))
-                    result.add(type.cast(object));
-            return result;
-        }
-        
-        @io.qt.QtUninvokable
-        public final io.qt.widgets.QWidget parentWidget(){
-            return parent(io.qt.widgets.QWidget.class);
-        }
-        
-        @io.qt.QtUninvokable
-        public final java.util.List<io.qt.widgets.QWidget> associatedWidgets() {
-            return associatedObjects(io.qt.widgets.QWidget.class);
-        }
-        
-        @io.qt.QtUninvokable
-        public final java.util.List<io.qt.widgets.QGraphicsWidget> associatedGraphicsWidgets() {
-            return associatedObjects(io.qt.widgets.QGraphicsWidget.class);
-        }
+    /**
+     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T> T parent(Class<T> type) {
+        io.qt.core.QObject result = parent();
+        while (result!=null && !type.isInstance(result))
+            result = result.parent();
+        return type.cast(result);
+    }
+    
+    /**
+     * <p>Type-casting overload of <a href="@docRoot/qaction.html#associatedObjects">QAction::associatedObjects()const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T> io.qt.core.QList<T> associatedObjects(Class<T> type) {
+        io.qt.core.QList<T> result = new io.qt.core.QList<>(type);
+        for (io.qt.core.QObject object : associatedObjects())
+            if (type.isInstance(object))
+                result.add(type.cast(object));
+        return result;
+    }
 }// class
 

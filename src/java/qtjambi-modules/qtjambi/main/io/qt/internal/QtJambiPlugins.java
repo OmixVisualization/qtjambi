@@ -160,6 +160,22 @@ public final class QtJambiPlugins {
 		try {
 			foundClass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
+			List<String> classNameSplit = new ArrayList<>();
+			classNameSplit.addAll(Arrays.asList(className.split("\\.")));
+			StringBuilder name = new StringBuilder();
+			while(!classNameSplit.isEmpty()) {
+				if(name.length()!=0)
+					name.append('.');
+				name.append(classNameSplit.remove(0));
+				try {
+					Class.forName(name.toString());
+					while(!classNameSplit.isEmpty()) {
+						name.append('$');
+						name.append(classNameSplit.remove(0));
+					}
+					foundClass = Class.forName(name.toString());
+				} catch (ClassNotFoundException e2) {}
+			}
 		}
 		if(foundClass==null) {
 			QFileInfo libFile = new QFileInfo(QDir.fromNativeSeparators(libPath));

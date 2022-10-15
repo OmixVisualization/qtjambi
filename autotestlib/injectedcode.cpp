@@ -191,3 +191,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QGraphicsItem$BlockedByModalPanelI
 }
 #endif
 }
+
+bool ImageIOHandlerSubclass::callRead(QImage *image) {
+    return read(image);
+}
+
+bool ImageIOHandlerSubclass::read(QImage *image) {
+    return image != nullptr ? image->load(":io/qt/autotests/svgcards-example.png") : true;
+}

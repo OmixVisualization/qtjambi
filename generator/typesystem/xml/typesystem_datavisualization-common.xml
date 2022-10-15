@@ -53,6 +53,8 @@
             <include file-name="QtDataVisualization/qutils.h" location="global"/>
         </extra-includes>
     </namespace-type>
+	<global-function signature="qDefaultSurfaceFormat(bool)" target-type="QtDataVisualization" since="6.0">
+	</global-function>
     <object-type name="QtDataVisualization::QAbstract3DAxisPrivate" generate="no"/>
     <object-type name="QtDataVisualization::QAbstractDataProxyPrivate" generate="no"/>
     <object-type name="QtDataVisualization::QAbstract3DSeriesPrivate" generate="no"/>

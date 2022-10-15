@@ -32,9 +32,17 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
+import io.qt.core.QObject;
+
 public class TestInitializationCore extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.core"));
+    	QCoreApplication.initialize(new String[0]);
+    	QObject obj = new QObject();
+    	obj.disposeLater();
+    	QCoreApplication.processEvents();
+    	QCoreApplication.shutdown();
     }
 }

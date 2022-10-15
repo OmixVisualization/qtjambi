@@ -60,6 +60,7 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
 
     TypeInfo typeInfo;
     typeInfo.setQualifiedName(type_cc.qualifiedName());
+    typeInfo.setVariadic(type_cc.isVariadic());
     typeInfo.setConstant(type_cc.isConstant());
     typeInfo.setVolatile(type_cc.isVolatile());
     typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));

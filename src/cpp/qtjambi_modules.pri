@@ -39,6 +39,7 @@ contains(QT_CONFIG, qtjambi-script):              SUBDIRS += qtjambi_script
 contains(QT_CONFIG, qtjambi-scripttools):         SUBDIRS += qtjambi_scripttools
 contains(QT_CONFIG, qtjambi-multimedia):          SUBDIRS += qtjambi_multimedia
 contains(QT_CONFIG, qtjambi-multimediawidgets):   SUBDIRS += qtjambi_multimedia_widgets
+contains(QT_CONFIG, qtjambi-spatialaudio):        SUBDIRS += qtjambi_spatialaudio
 contains(QT_CONFIG, qtjambi-webengine):           SUBDIRS += qtjambi_webengine
 contains(QT_CONFIG, qtjambi-webenginequick):      SUBDIRS += qtjambi_webenginequick
 contains(QT_CONFIG, qtjambi-webenginecore):       SUBDIRS += qtjambi_webenginecore

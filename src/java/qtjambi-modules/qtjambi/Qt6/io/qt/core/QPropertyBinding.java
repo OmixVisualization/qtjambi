@@ -181,15 +181,15 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 					QtUtilities.Supplier<?> supplier = (QtUtilities.Supplier<?>)functor;
 					Object value = supplier.get();
 					if(value!=null && !QtJambiInternal.getClass(value).isArray()) {
-						int t = QVariant.type(value);
+						QMetaType t = QMetaType.fromObject(value);
 						String typeName;
-						if(t!=QMetaType.Type.UnknownType.value()
-								&& t!=QMetaType.Type.Void.value()
-								&& !(typeName = new QMetaType(t).name()).equals("JObjectWrapper")
+						if(t.id()!=QMetaType.Type.UnknownType.value()
+								&& t.id()!=QMetaType.Type.Void.value()
+								&& !(typeName = t.name()).equals("JObjectWrapper")
 								&& !typeName.equals("JEnumWrapper")
 								&& !typeName.equals("JMapWrapper")
 								&& !typeName.equals("JCollectionWrapper")) {
-							return new QMetaType(t);
+							return t;
 						}
 					}
 				}

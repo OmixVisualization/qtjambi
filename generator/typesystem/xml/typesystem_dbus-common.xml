@@ -3,7 +3,14 @@
     <rejection class="QDBusPendingReply" />
     <rejection class="QDBusPendingReply::Select"/>
     <rejection class="QtJambiDBusPendingReply"/>
+    <rejection class="QDBusAbstractInterfacePrivate"/>
+    <rejection class="DBusError"/>
     <rejection class="QDBusConnection" function-name="registerVirtualObject"/>
+    <rejection class="" function-name="qDBusReplyFill"/>
+    <rejection class="" function-name="qDBusRegisterMetaType"/>
+    <rejection class="" function-name="qdbus_cast"/>
+    <rejection class="" function-name="qDBusDemarshallHelper"/>
+    <rejection class="" function-name="qDBusMarshallHelper"/>
 
     <namespace-type name="QDBus">
         <extra-includes>

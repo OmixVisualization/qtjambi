@@ -45,11 +45,11 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import io.qt.autotests.generated.SqlTableModelSubclass;
 import io.qt.core.QMetaType;
-import io.qt.core.QVariant;
 import io.qt.sql.QSqlDatabase;
 import io.qt.sql.QSqlField;
 import io.qt.sql.QSqlRecord;
@@ -77,7 +77,6 @@ public class TestSqlInjectedCodeQt6 extends ApplicationInitializer {
 
         QSqlRecord record = stms.myRecord();
         assertEquals(3456, record.value("javaInt"));
-        assertEquals(3456, QVariant.toInt(record.value("javaInt")));
     }
 
     @Test
@@ -88,8 +87,7 @@ public class TestSqlInjectedCodeQt6 extends ApplicationInitializer {
 
         QSqlRecord record = new QSqlRecord();
         stms.beforeInsert.emit(record);
-
-        assertEquals(1234, QVariant.toInt(record.value("cppInt")));
+        assertEquals(1234, record.value("cppInt"));
     }
 
     @Test

@@ -23,8 +23,7 @@ SOURCES +=\
     qtjambi_biginteger.cpp \
     qtjambi_core_future.cpp \
     qtjambi_core_repository.cpp \
-    qtjambi_core_util.cpp \
-    qtjambi_core_variant.cpp
+    qtjambi_core_util.cpp
 
 QT = core core-private
 

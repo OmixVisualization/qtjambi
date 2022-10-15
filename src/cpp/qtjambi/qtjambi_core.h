@@ -136,14 +136,6 @@ Q_UNUSED(__qt_qtjambi_debug_method_print)
 
 #endif
 
-#ifndef QT_JAMBI_RUN
-// during qtjambi generator execution qreal is typedef'ed to
-// qtjambireal. this avoids platform dependent typedefs to
-// float (arm) or double (x86).
-// here during compilation, the wrapper's qtjambireal type is mapped back to qreal.
-typedef qreal qtjambireal;
-#endif
-
 class QVariant;
 class QRect;
 class QtJambiFunctionTable;
@@ -662,6 +654,12 @@ jobject qtjambi_to_stringobject(JNIEnv *env, const QString &strg);
 
 QTJAMBI_EXPORT
 jobject qtjambi_to_stringobject(JNIEnv *env, QString *strg);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_variantobject(JNIEnv *env, const QVariant &variant);
+
+QTJAMBI_EXPORT
+jobject qtjambi_to_variantobject(JNIEnv *env, QVariant *variant);
 
 QTJAMBI_EXPORT
 jobject qtjambi_to_charobject(JNIEnv *env, const QChar &strg);

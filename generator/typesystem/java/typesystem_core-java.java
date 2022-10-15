@@ -50,54 +50,54 @@ class QtJambi_LibraryUtilities_2_{
     java.io.File coreLib = NativeLibraryManager.loadQtCore();
     try{
         java.io.File qtjambiLib = NativeLibraryManager.loadQtJambiLibrary();
-		if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.Android) {
-			java.util.List<String> paths = new java.util.ArrayList<>();
-			String path;
-			switch(NativeLibraryManager.operatingSystem) {
-			case MacOSX:
-				path = io.qt.QtUtilities.getenv("DYLD_LIBRARY_PATH");
-				String path2 = io.qt.QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
-				java.util.List<String> paths2 = new java.util.ArrayList<>();
-				paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
-				if(path2!=null && !path2.isEmpty()) {
-					for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
-						if(!paths2.contains(p))
-							paths2.add(p);
-					}
-				}
-				path2 = String.join(java.io.File.pathSeparator, paths2);
-				io.qt.QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
-				break;
-			case Windows:
-				path = io.qt.QtUtilities.getenv("PATH");
-				break;
-			default:
-				path = io.qt.QtUtilities.getenv("LD_LIBRARY_PATH");
-				break;
-			}
-			if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.MacOSX)
-				paths.add(coreLib.getParentFile().getAbsolutePath());
-			if(!paths.contains(qtjambiLib.getParentFile().getAbsolutePath()))
-				paths.add(qtjambiLib.getParentFile().getAbsolutePath());
-			if(path!=null && !path.isEmpty()) {
-				for(String p : path.split("\\"+java.io.File.pathSeparator)) {
-					if(!paths.contains(p))
-						paths.add(p);
-				}
-			}
-			path = String.join(java.io.File.pathSeparator, paths);
-			switch(NativeLibraryManager.operatingSystem) {
-			case MacOSX:
-				io.qt.QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
-				break;
-			case Windows:
-				io.qt.QtUtilities.putenv("PATH", path);
-				break;
-			default:
-				io.qt.QtUtilities.putenv("LD_LIBRARY_PATH", path);
-				break;
-			}
-		}
+        if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.Android) {
+            java.util.List<String> paths = new java.util.ArrayList<>();
+            String path;
+            switch(NativeLibraryManager.operatingSystem) {
+            case MacOSX:
+                path = io.qt.QtUtilities.getenv("DYLD_LIBRARY_PATH");
+                String path2 = io.qt.QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
+                java.util.List<String> paths2 = new java.util.ArrayList<>();
+                paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
+                if(path2!=null && !path2.isEmpty()) {
+                    for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
+                        if(!paths2.contains(p))
+                            paths2.add(p);
+                    }
+                }
+                path2 = String.join(java.io.File.pathSeparator, paths2);
+                io.qt.QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
+                break;
+            case Windows:
+                path = io.qt.QtUtilities.getenv("PATH");
+                break;
+            default:
+                path = io.qt.QtUtilities.getenv("LD_LIBRARY_PATH");
+                break;
+            }
+            if(NativeLibraryManager.operatingSystem!=NativeLibraryManager.OperatingSystem.MacOSX)
+                paths.add(coreLib.getParentFile().getAbsolutePath());
+            if(!paths.contains(qtjambiLib.getParentFile().getAbsolutePath()))
+                paths.add(qtjambiLib.getParentFile().getAbsolutePath());
+            if(path!=null && !path.isEmpty()) {
+                for(String p : path.split("\\"+java.io.File.pathSeparator)) {
+                    if(!paths.contains(p))
+                        paths.add(p);
+                }
+            }
+            path = String.join(java.io.File.pathSeparator, paths);
+            switch(NativeLibraryManager.operatingSystem) {
+            case MacOSX:
+                io.qt.QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
+                break;
+            case Windows:
+                io.qt.QtUtilities.putenv("PATH", path);
+                break;
+            default:
+                io.qt.QtUtilities.putenv("LD_LIBRARY_PATH", path);
+                break;
+            }
+        }
     } catch(UnsatisfiedLinkError t) {
         switch(NativeLibraryManager.operatingSystem) {
         case MacOSX:
@@ -202,6 +202,7 @@ class QObject___ extends QObject {
      *
      * @param source the source text to translate.
      * @return translated version of the source text.
+     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
     public static String tr(String source) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
@@ -217,6 +218,7 @@ class QObject___ extends QObject {
      * @param source the source text to translate.
      * @param comment helps the translator translate the source text.
      * @return translated version of the source text.
+     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
     public static String tr(String source, String comment) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
@@ -234,302 +236,12 @@ class QObject___ extends QObject {
      * @param comment helps the translator translate the source text.
      * @param count in source %n will be substituted by count.
      * @return translated version of the source text.
+     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
     public static String tr(String source, String comment, int count) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment, count);
     }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final QObject findChild() {
-        return findChild(QObject.class);
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final QObject findChild(String name) {
-        return findChild(QObject.class, name);
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String,Qt.FindChildOptions)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final QObject findChild(String name, Qt.FindChildOption... options) {
-        return findChild(QObject.class, name, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String,Qt.FindChildOptions)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final QObject findChild(String name, Qt.FindChildOptions options) {
-        return findChild(QObject.class, name, options);
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String,Qt.FindChildOptions)}</p>
-     * <p>with: <ul>
-     * <li><code>name = null</code></li>
-     * <li><code>options = FindChildrenRecursively</code></li>
-     * </ul>
-     * @param <T> type of child
-     * @param cl type of child
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> T findChild(Class < T > cl) {
-        return findChild(cl, (String)null, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String,Qt.FindChildOptions)}
-     * with: <code>options = FindChildrenRecursively</code>.</p>
-     * @param <T> type of child
-     * @param cl type of child
-     * @param name name of child
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> T findChild(Class < T > cl, String name) {
-        return findChild(cl, name, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChild(Class,String,Qt.FindChildOptions)}.</p>
-     * @param <T> type of child
-     * @param cl type of child
-     * @param name name of child
-     * @param options search options
-     * @return found child
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> T findChild(Class < T > cl, String name, Qt.FindChildOption... options) {
-        return findChild(cl, name, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>Returns the child of this object that instane of <i>cl</i> and
-     * that is called <i>name</i>, or <code>null</code> if there is no such object.
-     * Omitting the <i>name</i> argument causes all object names to be matched.
-     * The search is performed recursively, unless <i>options</i> specifies the
-     * option <code>FindDirectChildrenOnly</code>.</p>
-     * 
-     * <p>If there is more than one child matching the search, the most
-     * direct ancestor is returned. If there are several direct
-     * ancestors, it is undefined which one will be returned. In that
-     * case, {@link #findChildren()} should be used.</p>
-     * 
-     * <p>This example returns a child <code>QPushButton</code> of <code>parentWidget</code>
-     * named <code>"button1"</code>, even if the button isn't a direct child of
-     * the parent:</p>
-     * <p>
-     * <code>QPushButton button = parentWidget.findChild(QPushButton.class, "button1");</code>
-     * </p>
-     * <p>This example returns a <code>QListWidget</code> child of <code>parentWidget</code>:</p>
-     * <p>
-     * <code>QListWidget list = parentWidget.findChild(QListWidget.class);</code>
-     * </p>
-     * <p>This example returns a child <code>QPushButton</code> of <code>parentWidget</code>
-     * (its direct parent) named <code>"button1"</code>:</p>
-     * <p>
-     * <code>QPushButton button = parentWidget.findChild(QPushButton.class, "button1", Qt.FindChildOption.FindDirectChildrenOnly);</code>
-     * </p>
-     * <p>This example returns a <code>QListWidget</code> child of <code>parentWidget</code>,
-     * its direct parent:</p>
-     * <p>
-     * <code>QListWidget list = parentWidget.findChild(QListWidget.class, null, Qt.FindChildOption.FindDirectChildrenOnly);</code>
-     * </p>
-     * @param <T> type of child
-     * @param cl type of child
-     * @param name name of child
-     * @param options search options
-     * @return found child
-     * @see #findChildren()
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> T findChild(Class < T > cl, String name, Qt.FindChildOptions options) {
-        return findChild(java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, name, options.value());
-    }
-    
-    @io.qt.QtUninvokable
-    private native final <T extends QObject> T findChild(Class < T > cl, long metaObjectPointer, String name, int options);
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final QList<QObject> findChildren() {
-        return findChildren(QObject.class, (String)null, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final QList<QObject> findChildren(String name) {
-        return findChildren(QObject.class, name, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String,Qt.FindChildOptions)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final QList<QObject> findChildren(String name, Qt.FindChildOption... options) {
-        return findChildren(QObject.class, name, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String,Qt.FindChildOptions)}
-     *  with <code>cl = QObject.class</code>.</p>
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final QList<QObject> findChildren(String name, Qt.FindChildOptions options) {
-        return findChildren(QObject.class, name, options);
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String,Qt.FindChildOptions)}</p>
-     * <p>with: <ul>
-     * <li><code>name = null</code></li>
-     * <li><code>options = FindChildrenRecursively</code></li>
-     * </ul>
-     * @param <T> type of children
-     * @param cl type of children
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl) {
-        return findChildren(cl, (String)null, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String,Qt.FindChildOptions)}
-     * with: <code>options = FindChildrenRecursively</code>.</p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param name name of children
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name) {
-        return findChildren(cl, name, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,String,Qt.FindChildOptions)}.</p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param name name of children
-     * @param options search options
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name, Qt.FindChildOption... options) {
-        return findChildren(cl, name, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>Returns all children of this object with the given <i>name</i> that are
-     * instance of <i>cl</i>, or an empty list if there are no such objects.
-     * Omitting the <i>name</i> argument causes all object names to be matched.
-     * The search is performed recursively, unless <i>options</i> specifies the
-     * option <i>FindDirectChildrenOnly</i>.</p>
-     * 
-     * <p>The following example shows how to find a list of child <code>QWidget</code>s of
-     * the specified <code>parentWidget</code> named <code>widgetname</code>:</p>
-     * <p>
-     * <code>List&lt;QWidget> widgets = parentWidget.findChildren(QWidget.class, "widgetname");</code>
-     * </p>
-     * <p>This example returns all <code>QPushButton</code>s that are children of <code>parentWidget</code>:</p>
-     * <p>
-     * <code>List&lt;QPushButton> allPButtons = parentWidget.findChildren(QPushButton.class);</code>
-     * </p>
-     * <p>This example returns all <code>QPushButton</code>s that are immediate children of <code>parentWidget</code>:</p>
-     * <p>
-     * <code>List&lt;QPushButton> childButtons = parentWidget.findChildren(QPushButton.class, null, Qt.FindChildOption.FindDirectChildrenOnly);</code>
-     * </p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param name name of children
-     * @param options search options
-     * @return found children
-     * @see #findChild()
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name, Qt.FindChildOptions options){
-        return findChildrenString(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, name, options.value());
-    }
-    
-    @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenString(long metaObjectPointer, String name, int options);
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegularExpression,Qt.FindChildOptions)}
-     * with: <code>options = FindChildrenRecursively</code>.</p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param re regular expression
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re) {
-        return findChildren(cl, re, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegularExpression,Qt.FindChildOptions)}.</p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param re regular expression
-     * @param options search options
-     * @return found children
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOption... options) {
-        return findChildren(cl, re, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>This function overloads {@link #findChildren()}.</p>
-     * <p>Returns the children of this object that are instance of <i>cl</i> 
-     * and that have names matching the regular expression <i>re</i>, 
-     * or an empty list if there are no such objects. 
-     * The search is performed recursively, unless <i>options</i> specifies the option <i>FindDirectChildrenOnly</i>.</p>
-     * @param <T> type of children
-     * @param cl type of children
-     * @param re regular expression
-     * @param options search options
-     * @return found children
-     * @see #findChildren()
-     */
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOptions options){
-        return findChildrenQRegularExpression(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, re, options.value());
-    }
-    
-    @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenQRegularExpression(long metaObjectPointer, QRegularExpression re, int options);
     
     /**
      * Declare and instantiate a field of this class in your
@@ -6183,6 +5895,7 @@ class QObject___ extends QObject {
 
 class QObject_6__ extends QObject {
 
+    private static Runnable MIGHT_HAVE_SIGNAL = ()->{};
     private static Runnable NO_SIGNAL = ()->{};
     
     private static QMetaMethod findNotifySignalByBindables(QObject object, java.lang.reflect.Field reflectedField, QUntypedPropertyData property) {
@@ -6279,8 +5992,8 @@ class QObject_6__ extends QObject {
         private final QMetaType metaType;
     }
     
-    private final static class SignalPropertyCore<T> extends PropertyCore<T>{
-        public SignalPropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
+    private final static class Signal0PropertyCore<T> extends PropertyCore<T>{
+        public Signal0PropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
             super(metaType);
             this.methodIndex = methodIndex;
             this.metaObjectId = metaObjectId;
@@ -6288,6 +6001,22 @@ class QObject_6__ extends QObject {
         void emitSignal(QProperty<T> property) {
             try {
                 QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId); 
+            }catch(QNoNativeResourcesException e){}
+        }
+        boolean hasSignal(QProperty<T> property) { return true; }
+        private final int methodIndex;
+        private final long metaObjectId;
+    }
+    
+    private final static class Signal1PropertyCore<T> extends PropertyCore<T>{
+        public Signal1PropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
+            super(metaType);
+            this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
+        }
+        void emitSignal(QProperty<T> property) {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId, property.getValueBypassingBindings()); 
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
@@ -6310,8 +6039,8 @@ class QObject_6__ extends QObject {
         }
     }
     
-    private final static class RCSignalPropertyCore<T> extends RCPropertyCore<T>{
-        public RCSignalPropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
+    private final static class RCSignal0PropertyCore<T> extends RCPropertyCore<T>{
+        public RCSignal0PropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
             super(metaType);
             this.methodIndex = methodIndex;
             this.metaObjectId = metaObjectId;
@@ -6319,6 +6048,22 @@ class QObject_6__ extends QObject {
         void emitSignal(QProperty<T> property) {
             try {
                 QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId);
+            }catch(QNoNativeResourcesException e){}
+        }
+        boolean hasSignal(QProperty<T> property) { return true; }
+        private final int methodIndex;
+        private final long metaObjectId;
+    }
+    
+    private final static class RCSignal1PropertyCore<T> extends RCPropertyCore<T>{
+        public RCSignal1PropertyCore(QMetaType metaType, int methodIndex, long metaObjectId) {
+            super(metaType);
+            this.methodIndex = methodIndex;
+            this.metaObjectId = metaObjectId;
+        }
+        void emitSignal(QProperty<T> property) {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex, metaObjectId, property.getValueBypassingBindings());
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
@@ -6344,10 +6089,18 @@ class QObject_6__ extends QObject {
                         property.core = new PropertyCore<>(result.metaType);
                     }
                 }else {
-                    if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
-                        property.core = new RCSignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                    if(result.notifySignal.parameterCount()==0) {
+                        if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                            property.core = new RCSignal0PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }else {
+                            property.core = new Signal0PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }                                                
                     }else {
-                        property.core = new SignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                            property.core = new RCSignal1PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }else {
+                            property.core = new Signal1PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }                        
                     }
                 }
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
@@ -6356,10 +6109,18 @@ class QObject_6__ extends QObject {
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
                 QMetaMethod notifySignal = findNotifySignalByBindables(property.owner(), result.reflectedField, property);
                 if(notifySignal!=null) {
-                    if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
-                        property.core = new RCSignalPropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                    if(notifySignal.parameterCount()==0) {
+                        if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                            property.core = new RCSignal0PropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }else {
+                            property.core = new Signal0PropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }
                     }else {
-                        property.core = new SignalPropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                            property.core = new RCSignal1PropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }else {
+                            property.core = new Signal1PropertyCore<>(result.metaType, notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
+                        }
                     }
                 }
             }
@@ -6415,7 +6176,7 @@ class QObject_6__ extends QObject {
     
     /**
      * <p>The <code>QProperty</code> class enables automatic property bindings.
-     * The Java type <code>QProperty</code> corresponds to the C++ type <code><a href="https://doc.qt.io/qt/qobjectbindableproperty.html">QObjectBindableProperty</a></code>.</p>
+     * The Java type <code>QProperty</code> corresponds to the C++ type <code><a href="@docRoot/qobjectbindableproperty.html">QObjectBindableProperty</a></code>.</p>
      * <p>It is only allowed to use <code>QProperty</code> as <code>final</code>-declared member variable of a <code>QObject</code> subtype.</p>
      * <p>Example:</p>
      * <code>
@@ -6558,9 +6319,6 @@ class QObject_6__ extends QObject {
         public void setValue(T newValue)
         {
             QMetaType valueMetaType = core.valueMetaType(this);
-            if(newValue!=null && !QVariant.canConvert(newValue, valueMetaType))
-                throw new ClassCastException("Cannot cast value to "+valueMetaType.name());
-            
             if(newValue==null && !valueMetaType.flags().isSet(QMetaType.TypeFlag.IsPointer))
                 newValue = (T)valueMetaType.create();
             QPropertyBindingData bd = bindingStorage().bindingData(this);
@@ -6625,24 +6383,24 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         public QPropertyBinding<T> setBinding(QtUtilities.Supplier<? extends T> functor)
         {
-    		try {
-    			QPropertyBinding.setPendingMetaType(this::valueMetaType);
-    			return setBinding(new QPropertyBinding<>(functor));
-    		}finally {
-    			QPropertyBinding.setPendingMetaType(null);
-    		}
+            try {
+                QPropertyBinding.setPendingMetaType(this::valueMetaType);
+                return setBinding(new QPropertyBinding<>(functor));
+            }finally {
+                QPropertyBinding.setPendingMetaType(null);
+            }
         }
         
         @QtUninvokable
         private QPropertyBinding<T> makeBinding()
         {
             core.initialize(this);
-    		try {
-    			QPropertyBinding.setPendingMetaType(this::valueMetaType);
-				return new QPropertyBinding<>(this::value);
-    		}finally {
-    			QPropertyBinding.setPendingMetaType(null);
-    		}
+            try {
+                QPropertyBinding.setPendingMetaType(this::valueMetaType);
+                return new QPropertyBinding<>(this::value);
+            }finally {
+                QPropertyBinding.setPendingMetaType(null);
+            }
         }
         
         /**
@@ -6801,7 +6559,10 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty(QBooleanPropertyBinding binding) {
             super();
+            Runnable signal = this.signal;
+            this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
+            this.signal = signal;
         }
         
         /**
@@ -6810,8 +6571,12 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty(QPropertyBinding<@QtPrimitiveType Boolean> binding) {
             super();
-            if(io.qt.core.QBooleanProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QBooleanProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -7082,7 +6847,10 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty(QBytePropertyBinding binding) {
             super();
+            Runnable signal = this.signal;
+            this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
+            this.signal = signal;
         }
         
         /**
@@ -7091,8 +6859,12 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty(QPropertyBinding<@QtPrimitiveType Byte> binding) {
             super();
-            if(io.qt.core.QByteProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QByteProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -7363,7 +7135,10 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty(QShortPropertyBinding binding) {
             super();
+            Runnable signal = this.signal;
+            this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
+            this.signal = signal;
         }
         
         /**
@@ -7372,8 +7147,12 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty(QPropertyBinding<@QtPrimitiveType Short> binding) {
             super();
-            if(io.qt.core.QShortProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QShortProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -7646,7 +7425,10 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty(QIntPropertyBinding binding) {
             super();
-            bindingData().setBinding(binding, this);
+			Runnable signal = this.signal;
+			this.signal = MIGHT_HAVE_SIGNAL;
+			bindingData().setBinding(binding, this);
+			this.signal = signal;
         }
         
         /**
@@ -7655,8 +7437,12 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty(QPropertyBinding<@QtPrimitiveType Integer> binding) {
             super();
-            if(io.qt.core.QIntProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QIntProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -7927,7 +7713,10 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty(QLongPropertyBinding binding) {
             super();
-            bindingData().setBinding(binding, this);
+			Runnable signal = this.signal;
+			this.signal = MIGHT_HAVE_SIGNAL;
+			bindingData().setBinding(binding, this);
+			this.signal = signal;
         }
         
         /**
@@ -7936,8 +7725,12 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty(QPropertyBinding<@QtPrimitiveType Long> binding) {
             super();
-            if(io.qt.core.QLongProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QLongProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -8208,7 +8001,10 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty(QFloatPropertyBinding binding) {
             super();
-            bindingData().setBinding(binding, this);
+			Runnable signal = this.signal;
+			this.signal = MIGHT_HAVE_SIGNAL;
+			bindingData().setBinding(binding, this);
+			this.signal = signal;
         }
         
         /**
@@ -8217,8 +8013,12 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty(QPropertyBinding<@QtPrimitiveType Float> binding) {
             super();
-            if(io.qt.core.QFloatProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QFloatProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -8489,7 +8289,10 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty(QDoublePropertyBinding binding) {
             super();
-            bindingData().setBinding(binding, this);
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
         }
         
         /**
@@ -8498,8 +8301,12 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty(QPropertyBinding<@QtPrimitiveType Double> binding) {
             super();
-            if(io.qt.core.QDoubleProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QDoubleProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -8770,7 +8577,10 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty(QCharPropertyBinding binding) {
             super();
-            bindingData().setBinding(binding, this);
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
         }
         
         /**
@@ -8779,8 +8589,12 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty(QPropertyBinding<@QtPrimitiveType Character> binding) {
             super();
-            if(io.qt.core.QCharProperty.checkType(binding.valueMetaType()))
-                bindingData().setBinding(binding, this);
+            if(io.qt.core.QCharProperty.checkType(binding.valueMetaType())){
+				Runnable signal = this.signal;
+				this.signal = MIGHT_HAVE_SIGNAL;
+				bindingData().setBinding(binding, this);
+				this.signal = signal;
+			}
         }
         
         /**
@@ -9456,62 +9270,6 @@ class QObject_6__ extends QObject {
     }
 
 }// class
-    
-class QObject_5__ extends QObject {
-    /**
-     * <p>This function overloads {@link #findChildren()}.</p>
-     * <p>Returns the children of this object that are instance of <i>cl</i> 
-     * and that have names matching the regular expression <i>regExp</i>, 
-     * or an empty list if there are no such objects. 
-     * The search is performed recursively, unless <i>options</i> specifies the option <i>FindDirectChildrenOnly</i>.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @param options search options
-     * @return found children
-     * @see #findChildren()
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOptions options){
-        return findChildrenQRegExp(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, regExp, options.value());
-    }
-    
-    @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenQRegExp(long metaObjectPointer, QRegExp regExp, int options);
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @return found children
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp) {
-        return findChildren(cl, regExp, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}
-     * with: <code>options = FindChildrenRecursively</code>.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @param options search options
-     * @return found children
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOption... options) {
-        return findChildren(cl, regExp, new Qt.FindChildOptions(options));
-    }
-    
-}// class
 
 class QSignalTransition___{
     
@@ -9667,76 +9425,51 @@ abstract class QUrl___ extends QUrl{
         }
     }
 
-    @io.qt.QtUninvokable
-    public final java.lang.String toDisplayString()    {
-        return toDisplayString(ComponentFormattingOption.PrettyDecoded.value());
-    }
-
+    /**
+     * <p>See <a href="@docRoot/qurl.html#toDisplayString">QUrl::toDisplayString(QUrl::FormattingOptions)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final java.lang.String toDisplayString(FormattingOption... options)    {
-        return toDisplayString(new FormattingOptions(options).value());
+        return toDisplayString(new FormattingOptions(options));
     }
 
-    @io.qt.QtUninvokable
-    public final java.lang.String toDisplayString(FormattingOptions options)    {
-        return toDisplayString(options.value());
-    }
-
-    @io.qt.QtUninvokable
-    public final java.lang.String toString(FormattingOptions options)    {
-        return toString(options.value());
-    }
-    
+    /**
+     * <p>See <a href="@docRoot/qurl.html#toString">QUrl::toString(QUrl::FormattingOptions)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final java.lang.String toString(FormattingOption... options)    {
-        return toString(new FormattingOptions(options).value());
+        return toString(new FormattingOptions(options));
     }
     
-    @io.qt.QtUninvokable
-    public final java.lang.String toString()    {
-        return toString(ComponentFormattingOption.PrettyDecoded.value());
-    }
-
-    @io.qt.QtUninvokable
-    public final java.lang.String url()    {
-        return url(ComponentFormattingOption.PrettyDecoded.value());
-    }
-
-    @io.qt.QtUninvokable
-    public final java.lang.String url(FormattingOptions options)    {
-        return url(options.value());
-    }
-
+    /**
+     * <p>See <a href="@docRoot/qurl.html#url">QUrl::url(QUrl::FormattingOptions)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final java.lang.String url(FormattingOption... options)    {
-        return url(new FormattingOptions(options).value());
+        return url(new FormattingOptions(options));
     }
 
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray toEncoded()    {
-        return toEncoded(ComponentFormattingOption.PrettyDecoded.value());
-    }
-    
+    /**
+     * <p>See <a href="@docRoot/qurl.html#toEncoded">QUrl::toEncoded(QUrl::FormattingOptions)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final io.qt.core.QByteArray toEncoded(FormattingOption... options)    {
-        return toEncoded(new FormattingOptions(options).value());
+        return toEncoded(new FormattingOptions(options));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qurl.html#toStringList">QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</a></p>
+     */
+    public static QStringList toStringList(java.util.Collection<? extends io.qt.core.QUrl> uris, FormattingOption... options){
+        return toStringList(uris, new FormattingOptions(options));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qurl.html#adjusted">QUrl::adjusted(QUrl::FormattingOptions)const</a></p>
+     */
     @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray toEncoded(FormattingOptions options)    {
-        return toEncoded(options.value());
-    }
-
-    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris, FormattingOptions options){
-        return toStringList(uris, options.value());
-    }
-    
-    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris, FormattingOption... options){
-        return toStringList(uris, new FormattingOptions(options).value());
-    }
-    
-    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris){
-        return toStringList(uris, ComponentFormattingOption.PrettyDecoded.value());
+    public final io.qt.core.QUrl adjusted(io.qt.core.QUrl.FormattingOption... options){
+        return adjusted(new FormattingOptions(options));
     }
     
     /**
@@ -9749,37 +9482,46 @@ abstract class QUrl___ extends QUrl{
 }// class
 
 abstract class QAbstractItemModel___ extends QAbstractItemModel {
+
+    /**
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean setData(int row, int col, Object value) {
+        return setData(this.index(row, col), value, io.qt.core.Qt.ItemDataRole.DisplayRole);
+    }
     
-        @io.qt.QtUninvokable
-        public final boolean setData(int row, int col, Object value) {
-            return setData(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, value, io.qt.core.Qt.ItemDataRole.DisplayRole);
-        }
-        
-        @io.qt.QtUninvokable
-        public final boolean setData(int row, int col, Object value, int role) {
-            return setData(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, value, role);
-        }
+    /**
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean setData(int row, int col, Object value, int role) {
+        return setData(this.index(row, col), value, role);
+    }
 
-        @io.qt.QtUninvokable
-        private native final boolean setData(long nativeId, int row, int col, Object value, int role);
+    /**
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object data(int row, int col) {
+        return data(this.index(row, col), Qt.ItemDataRole.DisplayRole);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object data(int row, int col, int role) {
+        return data(this.index(row, col), role);
+    }
 
-        @io.qt.QtUninvokable
-        public final Object data(int row, int col) {
-            return data(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, Qt.ItemDataRole.DisplayRole);
-        }
-        
-        @io.qt.QtUninvokable
-        public final Object data(int row, int col, int role) {
-            return data(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, role);
-        }
-        
-        @io.qt.QtUninvokable
-        private native final Object data(long nativeId, int row, int col, int role);
-
-        @io.qt.QtUninvokable
-        protected final io.qt.core.QModelIndex createIndex(int row, int column){
-            return createIndex(row, column, 0);
-        }
+    /**
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#createIndex-1">QAbstractItemModel::createIndex(int,int,quintptr)</a></p>
+     */
+    @io.qt.QtUninvokable
+    protected final io.qt.core.QModelIndex createIndex(int row, int column){
+        return createIndex(row, column, 0);
+    }
 }// class
 
 class QTimer___ extends QTimer {
@@ -9853,6 +9595,7 @@ class QTimer___ extends QTimer {
      * time interval is msec milliseconds.
      * 
      * @see #start()
+     * @see <a href="@docRoot/qtimer.html#singleShot">QTimer::singleShot(int,const QObject*,const char *)</a>
      */
      public static void singleShot(int msec, QObject obj, String method) {
         singleShot(msec, defaultTypeFor(msec), obj, method);
@@ -9872,6 +9615,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-6">QTimer::singleShot(int,const QObject*,Functor)</a>
      */    
     public static void singleShot(int msec, QObject context, QMetaObject.Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), context, slot);
@@ -9888,6 +9632,7 @@ class QTimer___ extends QTimer {
      * accuracy of the timer.
      * 
      * @see #start()
+     * @see <a href="@docRoot/qtimer.html#singleShot-1">QTimer::singleShot(int,Qt::TimerType,const QObject*,const char *)</a>
      */
     public static void singleShot(int msec, Qt.TimerType timeType, QObject obj, String method) {
         new QSingleShotTimer(msec, timeType, obj, method);
@@ -9904,6 +9649,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-2">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
      */
     public static void singleShot(int msec, QMetaObject.Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), null, slot);
@@ -9921,6 +9667,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-3">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
      */
     public static void singleShot(int msec, Qt.TimerType timeType, QMetaObject.Slot0 slot) {
         singleShot(msec, timeType, null, slot);
@@ -9942,6 +9689,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-7">QTimer::singleShot(int,Qt::TimerType,const QObject*,Functor)</a>
      */
     public static void singleShot(int msec, Qt.TimerType timeType, QObject context, QMetaObject.Slot0 slot) {
         new QSingleShotTimer(msec, timeType, context, slot);
@@ -10045,6 +9793,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Destroys the QCoreApplication instance and purges Qt.
+     * @see <a href="@docRoot/qcoreapplication.html#dtor.QCoreApplication">~QCoreApplication()</a>
      */
     @io.qt.QtUninvokable
     public static void shutdown() {
@@ -10131,6 +9880,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Adds a post-routine to be executed when deleting QCoreApplication.
+     * @see <a href="@docRoot/qcoreapplication.html#qAddPostRoutine">qAddPostRoutine(QtCleanUpFunction)</a>
      * @see shutdown()
      */
     @io.qt.QtUninvokable
@@ -10140,6 +9890,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Removes a previously added post-routine.
+     * @see <a href="@docRoot/qcoreapplication.html#qRemovePostRoutine">qRemovePostRoutine(QtCleanUpFunction)</a>
      * @see addPostRoutine(Runnable)
      * @see shutdown()
      */
@@ -10208,6 +9959,9 @@ class QXmlStreamAttributes___ extends QXmlStreamAttributes {
 }// class
 
 class autoclosedelete {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close(){
         dispose();
@@ -10215,14 +9969,14 @@ class autoclosedelete {
 }// class
 
 class QDebug___ extends QDebug {
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public QDebug append(CharSequence csq, int start, int end) {
-		return append(csq==null ? "null" : csq.subSequence(start, end));
-	}
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public QDebug append(CharSequence csq, int start, int end) {
+        return append(csq==null ? "null" : csq.subSequence(start, end));
+    }
 
     /**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
@@ -10568,6 +10322,9 @@ class QDebug___ extends QDebug {
 }// class
 
 class QTextStream___ extends QTextStream {
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#string">QTextStream::string() const</a></p>
+     */
     public final CharSequence string() {
         QIODevice device = device_private();
         if(device instanceof StringDevice) {
@@ -10576,17 +10333,17 @@ class QTextStream___ extends QTextStream {
         }
         return null;
     }
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public QTextStream append(CharSequence csq, int start, int end) {
-		return append(csq==null ? "null" : csq.subSequence(start, end));
-	}
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qtextstream.html#device">QTextStream::device()const</a></p>
+     * {@inheritDoc}
+     */
+    @Override
+    public QTextStream append(CharSequence csq, int start, int end) {
+        return append(csq==null ? "null" : csq.subSequence(start, end));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#device">QTextStream::device()const</a></p>
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QIODevice device(){
@@ -10596,53 +10353,89 @@ class QTextStream___ extends QTextStream {
         return __qt_return_value;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> void setString(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
         setString(string, new io.qt.core.QIODevice.OpenMode(openMode));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> void setString(String string) {
         setString(string, new io.qt.core.QIODevice.OpenMode(4));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> void setString(String string, io.qt.core.QIODevice.OpenMode openMode) {
         flush();
         setDevice(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public void setString(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
         setString(string, new io.qt.core.QIODevice.OpenMode(openMode));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public void setString(String string) {
         setString(string, new io.qt.core.QIODevice.OpenMode(4));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public void setString(String string, io.qt.core.QIODevice.OpenMode openMode) {
         setString(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> QTextStream(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
         this(string, new io.qt.core.QIODevice.OpenMode(openMode));
     }
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> QTextStream(String string) {
         this(string, new io.qt.core.QIODevice.OpenMode(3));
     }
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> QTextStream(String string, io.qt.core.QIODevice.OpenMode openMode){
         this(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public QTextStream(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
         this(string, new io.qt.core.QIODevice.OpenMode(openMode));
     }
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public QTextStream(String string) {
         this(string, new io.qt.core.QIODevice.OpenMode(3));
     }
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     */
     public QTextStream(String string, io.qt.core.QIODevice.OpenMode openMode){
         this(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
@@ -10712,51 +10505,81 @@ class QTextStream___ extends QTextStream {
         }
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(java.lang.String s){
         return writeString(s);
     }
-	
-	@io.qt.QtUninvokable
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
+    @io.qt.QtUninvokable
     public final QTextStream append(java.lang.CharSequence s){
         return writeString(s);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(double v){
         return writeDouble(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(byte v){
         return writeByte(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(io.qt.core.QByteArray v){
         return writeBytes(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(char v){
         return writeChar(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(float v){
         return writeFloat(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(int v){
         return writeInt(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(long v){
         return writeLong(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QTextStream append(short v){
         return writeShort(v);
@@ -11136,21 +10959,35 @@ class QDate___ extends QDate {
 
 class QByteArray_5_12__ extends QByteArray {
 
+    /**
+     * <p>Overloaded function for {@link #compare(byte[], io.qt.core.Qt.CaseSensitivity)}
+     *  with <code>cs = io.qt.core.Qt.CaseSensitivity.CaseSensitive</code>.</p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] b) {
         return compare(new QByteArray(b));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArray(b), cs);
     }
     
+    /**
+     * <p>Overloaded function for {@link #compare(String, io.qt.core.Qt.CaseSensitivity)}
+     *  with <code>cs = io.qt.core.Qt.CaseSensitivity.CaseSensitive</code>.</p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String str) {
         return compare(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArray(str), cs);
@@ -11174,22 +11011,60 @@ class QByteArray_5_15__ extends QByteArray {
 
 class QByteArray___ extends QByteArray {
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray(const char *)</a></p>
+     */
     public QByteArray(byte data[]) {
         this(java.nio.ByteBuffer.wrap(data), data.length);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray prepend(byte[] data) {
-        this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
+        return this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray append(byte[] a){
+        return append(java.nio.ByteBuffer.wrap(a), a.length);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray set(byte[] data){
+        return set(java.nio.ByteBuffer.wrap(data));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray set(String data){
+        return set(new QByteArray(data));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join()</a></p>
+     */
     @io.qt.QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList);
     
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(char)</a></p>
+     */
     @io.qt.QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
     
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArray)</a></p>
+     */
     @io.qt.QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep);
     
@@ -11197,79 +11072,157 @@ class QByteArray___ extends QByteArray {
 
 class QByteArray_5__ extends QByteArray {
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1">QByteArray::QByteArray(const char*)</a></p>
+     */
     public QByteArray(String s) {
         this();
         append(s);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1">QByteArray::QByteArray(const char*,int)</a></p>
+     */
     public QByteArray(byte data[], int size) {
         this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,int)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray prepend(byte[] data, int size) {
+        return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
+    }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,int)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray append(byte[] a, int size){
+        return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#count-2">QByteArray::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int count(byte data[]) {
         return count(java.nio.ByteBuffer.wrap(data));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(byte data[]) {
         return contains(java.nio.ByteBuffer.wrap(data));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2">QByteArray::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(String str) {
         return startsWith(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(String str) {
         return contains(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int count(String str) {
         return count(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2">QByteArray::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(String str) {
         return endsWith(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#prepend-3">QByteArray::prepend(const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray prepend(String str) {
         return prepend(new QByteArray(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-1">QByteArray::replace(int,int,const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(int index, int len, byte[] data) {
         this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#insert-3">QByteArray::insert(int,const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray insert(int i, byte[] data) {
         this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
         return replace(before, new QByteArray(after));
     }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(const char*,QByteArray)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(byte[] before, QByteArray after) {
+        return replace(new QByteArray(before), after);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(QByteArray before, byte[] after) {
+        return replace(before, new QByteArray(after));
+    }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(String before, String after) {
         return replace(new QByteArray(before), new QByteArray(after));
     }
-
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(byte[] before, byte[] after) {
+        return replace(new QByteArray(before), new QByteArray(after));
+    }
 }// class
 
 class QByteArray_6__ extends QByteArray {
 
     private static byte[] getBytes(String s) {
-		if(s==null)
-			return new byte[0];
+        if(s==null)
+            return new byte[0];
         try {
             return s.getBytes("UTF-8");
         } catch (java.io.UnsupportedEncodingException e) {
@@ -11277,225 +11230,412 @@ class QByteArray_6__ extends QByteArray {
         }
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray::QByteArray(const char*)</a></p>
+     */
     public QByteArray(String s) {
         this(getBytes(s));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray::QByteArray(const char*,qsizetype)</a></p>
+     */
     public QByteArray(byte data[], long size) {
         this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,qsizetype)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray prepend(byte[] data, long size) {
+        return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,qsizetype)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray append(byte[] a, long size){
+        return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(String str) {
         return contains(new QByteArrayView(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(String str) {
         return count(new QByteArrayView(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(String str) {
         return endsWith(new QByteArrayView(str));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(byte[] str) {
         return endsWith(new QByteArrayView(str));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer str) {
         return endsWith(new QByteArrayView(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray prepend(String str) {
         return prepend(getBytes(str));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(String str) {
         return startsWith(new QByteArrayView(str));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(byte[] str) {
         return startsWith(new QByteArrayView(str));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer str) {
         return startsWith(new QByteArrayView(str));
     }
     
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray append(byte[] a){
-        return append(java.nio.ByteBuffer.wrap(a), a.length);
-    }
-    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final io.qt.core.QByteArray append(String a){
         return append(getBytes(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String str) {
         return compare(str, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(str), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(byte data[]) {
         return count(new QByteArrayView(data));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(byte data[]) {
         return contains(new QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] b) {
         return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(b), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(java.nio.ByteBuffer data) {
         return count(new QByteArrayView(data));
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(java.nio.ByteBuffer data) {
         return contains(new QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(java.nio.ByteBuffer b) {
         return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(java.nio.ByteBuffer b, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(b), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(String strg) {
         return indexOf(strg, (int)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(String strg, long from){
         return indexOf(new io.qt.core.QByteArrayView(strg), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(byte[] other) {
         return indexOf(other, (int)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(byte[] other, long from){
         return indexOf(new io.qt.core.QByteArrayView(other), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other) {
         return indexOf(other, (int)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other, long from){
         return indexOf(new io.qt.core.QByteArrayView(other), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(QByteArray other) {
         return indexOf(other, (long)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(QByteArray other, long from){
         return indexOf(new io.qt.core.QByteArrayView(other), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(String strg) {
         return lastIndexOf(strg, (long)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(String strg, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(strg), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(byte[] other) {
         return lastIndexOf(other, (long)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(byte[] other, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other) {
         return lastIndexOf(other, (long)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(QByteArray other) {
         return lastIndexOf(other, (long)0);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(QByteArray other, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace">QByteArray::replace(qsizetype,qsizetype,QByteArrayView)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(long index, long len, byte[] data) {
         this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#insert">QByteArray::insert(qsizetype,QByteArrayView)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray insert(long i, byte[] data) {
         this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(QByteArray before, byte[] after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(byte[] before, String after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
 
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(byte[] before, QByteArray after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(String before, QByteArray after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteArray replace(String before, byte[] after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     */
     @io.qt.QtUninvokable
     public final QByteArray replace(String before, String after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
+}// class
 
+class QByteArray_63__ extends QByteArray {
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArrayView)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArrayView sep);
 }// class
 
 class QByteArrayView___ extends QByteArray {
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     */
     public QByteArrayView(byte[] data){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
@@ -11503,12 +11643,15 @@ class QByteArrayView___ extends QByteArray {
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeBytes(pointer);
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);        		
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
     private native static void initialize_native(QByteArrayView instance, byte[] data, Long[] pointerOut);
     private native static void purgeBytes(long pointer);
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     */
     public QByteArrayView(String data){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
@@ -11516,12 +11659,15 @@ class QByteArrayView___ extends QByteArray {
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeString(pointer);
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);        		
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
     private native static void purgeString(long pointer);
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     */
     public QByteArrayView(java.nio.ByteBuffer data){
         super((QPrivateConstructor)null);
         if(data.isDirect()) {
@@ -11542,6 +11688,9 @@ class QByteArrayView___ extends QByteArray {
     private native static void initialize_native(QByteArrayView instance, java.nio.Buffer data, Long[] pointerOut);
     private native static void purgeBuffer(long pointer);
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(QByteArray)</a></p>
+     */
     public QByteArrayView(QByteArray data){
         super((QPrivateConstructor)null);
         if(data!=null) {
@@ -11556,201 +11705,321 @@ class QByteArrayView___ extends QByteArray {
     
     private Runnable purgeTask;
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(io.qt.core.QByteArray a){
-    	return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(io.qt.core.QByteArray a, io.qt.core.Qt.CaseSensitivity cs){
-    	return compare(new io.qt.core.QByteArrayView(a), cs);
+        return compare(new io.qt.core.QByteArrayView(a), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] a){
-    	return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(byte[] a, io.qt.core.Qt.CaseSensitivity cs){
-    	return compare(new io.qt.core.QByteArrayView(a), cs);
+        return compare(new io.qt.core.QByteArrayView(a), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(java.nio.ByteBuffer a){
-    	return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(java.nio.ByteBuffer a, io.qt.core.Qt.CaseSensitivity cs){
-    	return compare(new io.qt.core.QByteArrayView(a), cs);
+        return compare(new io.qt.core.QByteArrayView(a), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String a){
-    	return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final int compare(String a, io.qt.core.Qt.CaseSensitivity cs){
-    	return compare(new io.qt.core.QByteArrayView(a), cs);
+        return compare(new io.qt.core.QByteArrayView(a), cs);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(io.qt.core.QByteArray a){
         return contains(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(byte[] a){
         return contains(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(String a){
         return contains(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean contains(java.nio.ByteBuffer a){
         return contains(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable">QByteArrayView::QtUninvokable(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(io.qt.core.QByteArray a){
         return endsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(byte[] a){
         return endsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(String a){
         return endsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer a){
         return endsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(io.qt.core.QByteArray a){
         return startsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(byte[] a){
         return startsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(String a){
         return startsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer a){
         return startsWith(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(io.qt.core.QByteArray a){
         return count(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(byte[] a){
         return count(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(String a){
         return count(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long count(java.nio.ByteBuffer a){
         return count(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(io.qt.core.QByteArray a){
         return indexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(byte[] a){
         return indexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(String a){
         return indexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a){
         return indexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(io.qt.core.QByteArray a, long from){
         return indexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(byte[] a, long from){
         return indexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(String a, long from){
         return indexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a, long from){
         return indexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(io.qt.core.QByteArray a){
         return lastIndexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(byte[] a){
         return lastIndexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(String a){
         return lastIndexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a){
         return lastIndexOf(new io.qt.core.QByteArrayView(a));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(io.qt.core.QByteArray a, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(byte[] a, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(String a, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     */
     @io.qt.QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a, long from){
         return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
@@ -11759,50 +12028,86 @@ class QByteArrayView___ extends QByteArray {
 
 class QStringConverter___{
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(io.qt.core.QByteArray data){
         return encodingForHtml(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data){
         return encodingForData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data, char expectedFirstCharacter){
         return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(byte[] data){
         return encodingForHtml(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data){
         return encodingForData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
         return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(String data){
         return encodingForHtml(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data){
         return encodingForData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
         return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
         return encodingForHtml(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
         return encodingForData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     */
     public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
         return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
     }
@@ -11811,18 +12116,30 @@ class QStringConverter___{
 
 class QUuid_63__{
     
+    /**
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     */
     public static io.qt.core.QUuid fromRfc4122(io.qt.core.QByteArray data){
         return fromRfc4122(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     */
     public static io.qt.core.QUuid fromRfc4122(byte[] data){
         return fromRfc4122(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     */
     public static io.qt.core.QUuid fromRfc4122(String data){
         return fromRfc4122(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     */
     public static io.qt.core.QUuid fromRfc4122(java.nio.ByteBuffer data){
         return fromRfc4122(new io.qt.core.QByteArrayView(data));
     }
@@ -11830,8 +12147,18 @@ class QUuid_63__{
 }// class
 
 class QIODevice_prefix__ extends QIODevice {
+        /**
+         * Creates QIODevice from direct buffer. The new I/O device is not open.
+         * @param buffer
+         * @return new new QIODevice or null if no direct buffer
+         */
         public native static QIODevice fromDirectBuffer(java.nio.Buffer buffer);
         
+        /**
+         * Creates a new open QIODevice for reading from given InputStream
+         * @param stream
+         * @return new open read-only QIODevice
+         */
         public static QIODevice fromInputStream(java.io.InputStream stream) {
             return new QIODevice() {
                 {
@@ -11945,6 +12272,11 @@ class QIODevice_infix__ {
             };
         }
         
+        /**
+         * Creates a new open QIODevice for writing to given InputStream
+         * @param stream
+         * @return new open write-only QIODevice
+         */
         public static QIODevice fromOutputStream(java.io.OutputStream stream) {
             return new QIODevice() {
                 {
@@ -12046,15 +12378,6 @@ class QIODevice_suffix__ {
         }
 }// class
 
-class QIODevice_cpp__{
-}// class
-
-class QTextCodec___ extends QTextCodec {
-}// class
-
-class QBuffer___ extends QBuffer {
-}// class
-
 class QCalendar___ extends QCalendar {
     public static final int Unspecified = unspecified();
     private static native int unspecified();
@@ -12099,6 +12422,9 @@ class QFutureInterfaceBase___ {
 
 class QtFuture___ {
 
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<Void> connect(QMetaObject.AbstractPrivateSignal0 signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12122,6 +12448,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A> QFuture<A> connect(QMetaObject.AbstractPrivateSignal1<A> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12146,6 +12475,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B> QFuture<QPair<A,B>> connect(QMetaObject.AbstractPrivateSignal2<A,B> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12170,6 +12502,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12194,6 +12529,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12218,6 +12556,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D,E> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12242,6 +12583,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D,E,F> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12266,6 +12610,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D,E,F,G> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12290,6 +12637,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D,E,F,G,H> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12314,6 +12664,9 @@ class QtFuture___ {
         return null;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
         if(signal.containingObject() instanceof QObject) {
@@ -12341,6 +12694,22 @@ class QtFuture___ {
 }// class
 
 class QtFuture_6_1__ {
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture">QtFuture::makeReadyFuture(T)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public static <T> QFuture<T> makeReadyFuture(T value)
+    {
+        QFutureInterface<T> promise = new QFutureInterface<>();
+        promise.reportStarted();
+        promise.reportResult(value);
+        promise.reportFinished();
+        return promise.future();
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-2">QtFuture::makeReadyFuture(QList&lt;T>)</a></p>
+     */
     @io.qt.QtUninvokable
     public static <T> QFuture<T> makeReadyFuture(java.util.Collection<T> values)
     {
@@ -12351,6 +12720,9 @@ class QtFuture_6_1__ {
         return promise.future();
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-1">QtFuture::makeReadyFuture()</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<Void> makeReadyFuture()
     {
@@ -12360,6 +12732,9 @@ class QtFuture_6_1__ {
         return promise.future();
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeExceptionalFuture">QtFuture::makeExceptionalFuture(QException)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<Void> makeExceptionalFuture(Throwable exception)
     {
@@ -12372,6 +12747,9 @@ class QtFuture_6_1__ {
 }// class
 
 class QtFuture_6_3__ {
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
         if(futures==null || futures.length==0)
@@ -12390,6 +12768,9 @@ class QtFuture_6_3__ {
         return promise.future();
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
@@ -12408,6 +12789,9 @@ class QtFuture_6_3__ {
         return promise.future();
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
         if(futures==null || futures.length==0)
@@ -12431,6 +12815,9 @@ class QtFuture_6_3__ {
         return promise.future();
     }
     
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
+     */
     @io.qt.QtUninvokable
     public static QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
@@ -12454,10 +12841,6 @@ class QtFuture_6_3__ {
         return promise.future();
     }
 }// class
-
-class QXmlStreamWriter___ extends QXmlStreamWriter {
-}// class
-
 
 class QJsonDocument___{
     
@@ -12554,16 +12937,82 @@ class QPropertyAnimation___ extends QPropertyAnimation {
     
 }// class
 
-class QMetaType_6__ extends QMetaType {
+class QMetaType_5__ extends QMetaType {
+    private static int metaTypeIdByName(java.lang.String typeName) {return type(typeName);}
     
+    public static QMetaType fromObject(Object obj) {
+        if(obj==null)
+            return new QMetaType(QMetaType.Type.Nullptr);
+        Class<?> objClass = io.qt.internal.QtJambiInternal.getClass(obj);
+        if(objClass==QList.class) {
+            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
+        }else if(objClass==QLinkedList.class) {
+            return QMetaType.fromType(QLinkedList.class, ((QLinkedList<?>)obj).elementMetaType());
+        }else if(objClass==QVector.class) {
+            return QMetaType.fromType(QVector.class, ((QVector<?>)obj).elementMetaType());
+        }else if(objClass==QQueue.class) {
+            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
+        }else if(objClass==QStack.class) {
+            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
+        }else if(objClass==QSet.class) {
+            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
+        }else if(objClass==QMultiMap.class) {
+            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
+        }else if(objClass==QMap.class) {
+            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
+        }else if(objClass==QMultiHash.class) {
+            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
+        }else if(objClass==QHash.class) {
+            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
+        }
+        return QMetaType.fromType(objClass);
+    }
+}// class
+
+class QMetaType_6__ extends QMetaType {
+    private static int metaTypeIdByName(java.lang.String typeName) {return fromName(typeName).id();}
+    
+    public static QMetaType fromObject(Object obj) {
+        if(obj==null)
+            return new QMetaType(QMetaType.Type.Nullptr);
+        Class<?> objClass = io.qt.internal.QtJambiInternal.getClass(obj);
+        if(objClass==QList.class) {
+            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
+        }else if(objClass==QQueue.class) {
+            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
+        }else if(objClass==QStack.class) {
+            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
+        }else if(objClass==QSet.class) {
+            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
+        }else if(objClass==QMultiMap.class) {
+            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
+        }else if(objClass==QMap.class) {
+            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
+        }else if(objClass==QMultiHash.class) {
+            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
+        }else if(objClass==QHash.class) {
+            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
+        }
+        return QMetaType.fromType(objClass);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
+     */
     public static io.qt.core.QMetaType fromName(String name){
         return fromName(new io.qt.core.QByteArrayView(name));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(QByteArray)</a></p>
+     */
     public static io.qt.core.QMetaType fromName(QByteArray name){
         return fromName(new io.qt.core.QByteArrayView(name));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
+     */
     public static io.qt.core.QMetaType fromName(byte[] name){
         return fromName(new io.qt.core.QByteArrayView(name));
     }
@@ -12581,26 +13030,6 @@ class QMetaType___ extends QMetaType {
     }
     
     /**
-     * <p>Overloaded function for {@link #create(Object)}
-     * with <code>copy = null</code>.</p>
-     * @return new instance
-     */
-    public final Object create() {
-        return io.qt.internal.QtJambiInternal.createMetaType(id(), javaType(), null);
-    }
-    
-    /**
-     * <p>Returns a copy of <i>copy</i>, assuming it is of the type that this <code>QMetaType</code> instance was created for.</p>
-     * <p>If copy is <code>null</code>, creates a default constructed instance.</p>
-     * <p>See <a href="@docRoot/qmetatype.html#create">QMetaType::create(int, const void *)</a></p>
-     * @param copy
-     * @return new instance
-     */
-    public final Object create(Object copy) {
-        return io.qt.internal.QtJambiInternal.createMetaType(id(), javaType(), copy);
-    }
-    
-    /**
      * Returns the type name associated with this <code>QMetaType</code> as {@link String}.
      * @return type name
      */
@@ -12611,75 +13040,19 @@ class QMetaType___ extends QMetaType {
     }
     
     /**
-     * <p>Returns the <code>QMetaType</code> corresponding to the given class.</p>
-     * <p>If the class has never been registered as meta type <code>UnknownType</code> is returned.</p>
-     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
-     * specify the template instantiations to be used in the registered template type.</p>
-     * <p>See <a href="@docRoot/qmetatype.html#fromType">QMetaMethod::fromType&lt;T&gt;()</a></p>
-     * @param clazz the class to be registered
-     * @param instantiations optional instantiations for generics (templates)
-     * @return meta type ID
+     * @deprecated Use {@link #qRegisterMetaType(Class, QMetaType...)} instead.
      */
-    public static QMetaType fromType(Class<?> clazz, QMetaType... instantiations){
-        return new QMetaType(registerMetaType(clazz, instantiations));
+    @Deprecated
+    public static int registerMetaType(Class<?> clazz, QMetaType... instantiations){
+        return qRegisterMetaType(clazz, instantiations);
     }
     
     /**
-     * <p>Registers the given class as meta type. Returns the internal ID used by <code>QMetaType</code>.</p>
-     * <p>After a type has been registered, you can create and destroy objects of that type dynamically at run-time.</p>
-     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
-     * specify the template instantiations to be used in the registered template type.</p>
-     * <p>See <a href="@docRoot/qmetatype.html#qRegisterMetaType">qRegisterMetaType&lt;T&gt;()</a></p>
-     * @param clazz the class to be registered
-     * @param instantiations optional instantiations for generics (templates)
-     * @return meta type ID
+     * @deprecated Use {@link #qMetaTypeId(Class, QMetaType...)} instead.
      */
-    public static int registerMetaType(Class<?> clazz, QMetaType... instantiations){
-        int registeredId = metaTypeId(clazz, instantiations);
-        if(registeredId!=0)
-            return registeredId;
-        Object[] typeParameters = clazz.getTypeParameters();
-        if(typeParameters.length>0) {
-            if(typeParameters.length!=instantiations.length) {
-                throw new IllegalArgumentException("Number of instantiations does not correspond to number of type parameters.");
-            }
-            if(QList.class.isAssignableFrom(clazz)) {
-                if(instantiations[0].id()==Type.QString.value()) {
-                    return Type.QStringList.value();
-                }else if(instantiations[0].id()==Type.QByteArray.value()) {
-                    return Type.QByteArrayList.value();
-                }else{
-                    if(instantiations[0].id()==Type.QVariant.value()) {
-                        return Type.QVariantList.value();
-                    }
-                }
-            }else if(QMap.class.isAssignableFrom(clazz)) {
-                if(instantiations[0].id()==Type.QString.value()) {
-                    if(instantiations[1].id()==Type.QVariant.value()) {
-                        return Type.QVariantMap.value();
-                    }
-                }
-            }
-            else if(QHash.class.isAssignableFrom(clazz)) {
-                if(instantiations[0].id()==Type.QString.value()) {
-                    if(instantiations[1].id()==Type.QVariant.value()) {
-                        return Type.QVariantHash.value();
-                    }
-                }
-            }
-            int[] _instantiations = new int[instantiations.length];
-            for (int i = 0; i < _instantiations.length; i++) {
-                _instantiations[i] = instantiations[i].id();
-                if(_instantiations[i]==0)
-                    throw new IllegalArgumentException("Invalid instantiation.");
-            }
-            return io.qt.internal.QtJambiInternal.registerMetaType(clazz, _instantiations);
-        }else {
-            if(instantiations.length>0) {
-                throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
-            }
-            return io.qt.internal.QtJambiInternal.registerMetaType(clazz);
-        }
+    @Deprecated
+    public static int metaTypeId(Class<?> clazz, QMetaType... instantiations){
+        return qMetaTypeId(clazz, instantiations);
     }
     
     /**
@@ -12745,93 +13118,24 @@ class QMetaType___ extends QMetaType {
         return debugstreamTypes[2];
     }
     
-    /**
-     * <p>Returns the meta type id of goven class at compile time.</p>
-     * <p>If the class has never been registered as meta type <code>UnknownType</code> is returned.</p>
-     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
-     * specify the template instantiations to be used in the registered template type.</p>
-     * <p>See <a href="@docRoot/qmetatype.html#qMetaTypeId">qMetaTypeId&lt;T&gt;()</a></p>
-     * @param clazz the class to be registered
-     * @param instantiations optional instantiations for generics (templates)
-     * @return meta type ID
-     */
-    public static int metaTypeId(Class<?> clazz, QMetaType... instantiations){
-        if(clazz==null)
-            return QMetaType.Type.Nullptr.value();
-        io.qt.QtUtilities.initializePackage(clazz);
-        Object[] typeParameters = clazz.getTypeParameters();
-        if(typeParameters.length>0) {
-            if(typeParameters.length!=instantiations.length) {
-                if(instantiations.length==0) {
-                    int result = io.qt.internal.QtJambiInternal.metaTypeId(clazz);
-                    if(result!=0)
-                        return result;
-                }
-                throw new IllegalArgumentException("Number of instantiations does not correspond to number of type parameters.");
-            }
-            for (QMetaType instantiation : instantiations) {
-                if(instantiation.id()==0)
-                    throw new IllegalArgumentException("Invalid instantiation.");
-            }
-            switch(typeParameters.length) {
-            case 1:
-                if(instantiations[0].id()!=Type.Void.value()) {
-                    if(clazz==java.util.Set.class) {
-                        return type(String.format("QSet<%1$s>", instantiations[0].name()));
-                    }else if(clazz==java.util.Queue.class) {
-                        return type(String.format("QQueue<%1$s>", instantiations[0].name()));
-                    }else if(clazz==java.util.Deque.class) {
-                        return type(String.format("QStack<%1$s>", instantiations[0].name()));
-                    }else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
-                        return type(String.format("QList<%1$s>", instantiations[0].name()));
-                    }
-                }
-                break;
-            case 2:
-                if(instantiations[0].id()!=QMetaType.Type.Void.value() && instantiations[1].id()!=QMetaType.Type.Void.value()) {
-                    if(clazz==java.util.Map.class) {
-                        return type(String.format("QHash<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
-                    }else if(clazz==java.util.TreeMap.class) {
-                        return type(String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
-                    }else if(clazz==java.util.HashMap.class) {
-                        return type(String.format("QHash<%1$s>", instantiations[0].name(), instantiations[1].name()));
-                    }else if(clazz.isInterface() && java.util.NavigableMap.class.isAssignableFrom(clazz)) {
-                        return type(String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
-                    }
-                }
-                break;
-            }
-            if(io.qt.QtObjectInterface.class.isAssignableFrom(clazz)) {
-                String name = clazz.getSimpleName();
-                QStringList _instantiations = new QStringList();
-                for (QMetaType instantiation : instantiations) {
-                    _instantiations.add(instantiation.name().toString());
-                }
-                return type(String.format("%1$s<%2$s>", name, _instantiations.join(',')));
-            }
-        }else {
-            if(instantiations.length>0) {
-                throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
-            }
-        }
-        return io.qt.internal.QtJambiInternal.metaTypeId(clazz);
-    }
+    @io.qt.QtUninvokable
+    private static native Class<?> javaType(long __this__nativeId);
     
     /**
      * Returns the Java class for this meta type.
      * @return java class
      */
+    @io.qt.QtUninvokable
     public final Class<?> javaType(){
-        return io.qt.internal.QtJambiInternal.javaTypeForMetaTypeId(id());
+        return javaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
     /**
      * Returns the Java class for the given meta type ID.
      * @return java class
      */
-    public static Class<?> javaType(int metaTypeId){
-        return io.qt.internal.QtJambiInternal.javaTypeForMetaTypeId(metaTypeId);
-    }
+    @io.qt.QtUninvokable
+    public static native Class<?> javaType(int metaTypeId);
 
     /**
      * Interface super type for all generic classes representing a QMetaType-registered but Java-unknown value type.
@@ -13226,6 +13530,1371 @@ class QMetaType___ extends QMetaType {
             return new QMetaType(type);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    static <T> T cast(Class<T> javaType, Object object) {
+        if (object != null && javaType != null) {
+            if (javaType.isPrimitive()) {
+                if (javaType == boolean.class)
+                    return (T)(object==null ? Boolean.FALSE : Boolean.class.cast(object));
+                else if (javaType == char.class)
+                    return (T)(object==null ? Character.valueOf('\0') : Character.class.cast(object));
+                else {
+                    if (javaType == int.class)
+                        return (T)(Integer.valueOf(object==null ? 0 : Number.class.cast(object).intValue()));
+                    else if (javaType == double.class)
+                        return (T)(Double.valueOf(object==null ? 0.0 : Number.class.cast(object).doubleValue()));
+                    else if (javaType == long.class)
+                        return (T)(Long.valueOf(object==null ? 0L : Number.class.cast(object).longValue()));
+                    else if (javaType == float.class)
+                        return (T)(Float.valueOf(object==null ? 0.f : Number.class.cast(object).floatValue()));
+                    else if (javaType == short.class)
+                        return (T)(Short.valueOf(object==null ? (short)0 : Number.class.cast(object).shortValue()));
+                    else if (javaType == byte.class)
+                        return (T)(Byte.valueOf(object==null ? (byte)0 : Number.class.cast(object).byteValue()));
+                    else
+                        return null;
+                }
+            } else {
+                if (java.util.Collection.class.isAssignableFrom(javaType)) {
+                    return (T)java.util.Collection.class.cast(object);
+                } else if (java.util.Map.class.isAssignableFrom(javaType)) {
+                    return (T)java.util.Map.class.cast(object);
+                } else {
+                    return javaType.cast(object);
+                }
+            }
+        }
+        return (T)object;
+    }
+}// class
+
+class QVariant_5__ {    
+    /**
+     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
+     */
+    @Deprecated
+    public static void saveObject(QDataStream stream, Object object){
+        saveObject(stream, object, null);
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
+     */
+    @Deprecated
+    public static void saveObject(QDataStream stream, Object object, Boolean[] ok){
+        QVariant variant = new QVariant(object);
+        int metaType = variant.userType();
+        stream.append(metaType);
+        boolean isOk = QMetaType.save(stream, metaType, object);
+        if(ok!=null && ok.length>0)
+            ok[0] = isOk;
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
+     */
+    @Deprecated
+    public static Object loadObject(QDataStream stream){
+        return loadObject(stream, null);
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
+     */
+    @Deprecated
+    public static Object loadObject(QDataStream stream, Boolean ok[]){
+        java.util.Optional<Object> optional = QMetaType.load(stream, stream.readInt());
+        if(ok!=null && ok.length>0)
+            ok[0] = optional.isPresent();
+        return optional.orElse(null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, int metaType) {
+        return convert(obj, metaType, null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, int metaType, boolean ok[]) {
+        if(obj==null){
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return QMetaType.create(metaType);
+        }
+        QVariant variant = new QVariant(obj);
+        if(obj!=null && variant.userType()==metaType) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return obj;
+        }else if(variant.userType()==metaType || variant.convert(metaType)) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return variant.value();
+        }else {
+            if(ok!=null && ok.length>0)
+                ok[0] = false;
+            return null;
+        }
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, QMetaType metaType) {
+        return convert(obj, metaType.id(), null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, QMetaType metaType, boolean ok[]) {
+        return convert(obj, metaType.id(), ok);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, QMetaType.Type metaType) {
+        return convert(obj, metaType.value(), null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, QMetaType.Type metaType, boolean ok[]) {
+        return convert(obj, metaType.value(), ok);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, Type metaType) {
+        return convert(obj, metaType.value(), null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, Type metaType, boolean ok[]) {
+        return convert(obj, metaType.value(), ok);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean canConvert(io.qt.core.QMetaType.Type targetType){
+        return canConvert(targetType.value());
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean canConvert(Type targetType){
+        return canConvert(targetType.value());
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(int)</a></p>
+     */
+    public final boolean convert(Class<?> cl, QMetaType...instantiations) {
+        return convert(QMetaType.fromType(cl, instantiations).id());
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(int,const void*)</a></p>
+     */
+    public QVariant(QMetaType.Type metaType){
+        this(metaType.value(), null); 
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(int)}
+     */
+    @Deprecated
+    public static boolean canConvert(Object obj, int targetType) {
+        QMetaType objectType = QMetaType.fromObject(obj);
+        if(objectType.id()==targetType)
+            return true;
+        QVariant variant = new QVariant(objectType.id(), obj);
+        return variant.canConvert(targetType);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(int)}
+     */
+    public static boolean canConvert(Object obj, QMetaType.Type type) {
+        return canConvert(obj, type.value());
+    }
+}// class
+
+class QVariant_6__ {
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
+     */
+    public QVariant(io.qt.core.QMetaType.Type type, java.lang.Object copy){
+        this(new QMetaType(type), copy);
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
+     */
+    @Deprecated
+    public static void saveObject(QDataStream stream, Object object){
+        saveObject(stream, object, null);
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
+     */
+    @Deprecated
+    public static void saveObject(QDataStream stream, Object object, Boolean[] ok){
+        QVariant variant = new QVariant(object);
+        QMetaType metaType = variant.metaType();
+        stream.append(metaType.id());
+        boolean isOk = metaType.save(stream, object);
+        if(ok!=null && ok.length>0)
+            ok[0] = isOk;
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
+     */
+    @Deprecated
+    public static Object loadObject(QDataStream stream){
+        return loadObject(stream, null);
+    }
+    
+    /**
+     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
+     */
+    @Deprecated
+    public static Object loadObject(QDataStream stream, Boolean ok[]){
+        QMetaType metaType = new QMetaType(stream.readInt());
+        java.util.Optional<Object> optional = metaType.load(stream);
+        if(ok!=null && ok.length>0)
+            ok[0] = optional.isPresent();
+        return optional.orElse(null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static Object convert(Object obj, QMetaType metaType) {
+        return convert(obj, metaType, null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static Object convert(Object obj, QMetaType metaType, boolean ok[]) {
+        java.util.Objects.requireNonNull(metaType);
+        if(obj==null){
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return metaType.create();
+        }
+        QVariant variant = new QVariant(obj);
+        if(obj!=null && variant.metaType().equals(metaType)) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return obj;
+        }else if(variant.metaType().equals(metaType) || variant.convert(metaType)) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return variant.value();
+        }else {
+            if(ok!=null && ok.length>0)
+                ok[0] = false;
+            return null;
+        }
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(int)}
+     */
+    public static Object convert(Object obj, int metaType) {
+        return convert(obj, metaType, null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static Object convert(Object obj, int metaType, boolean ok[]) {
+        return convert(obj, new QMetaType(metaType), ok);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean canConvert(io.qt.core.QMetaType.Type targetType){
+        return canConvert(new QMetaType(targetType));
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static Object convert(Object obj, QMetaType.Type type) {
+        return convert(obj, new QMetaType(type));
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static Object convert(Object obj, QMetaType.Type type, boolean ok[]) {
+        return convert(obj, new QMetaType(type), ok);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
+     */
+    @Deprecated
+    @io.qt.QtUninvokable
+    public final boolean canConvert(Type targetType){
+        return canConvert(new QMetaType(targetType.value()));
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvert(Object obj, QMetaType type) {
+        QMetaType objectType = QMetaType.fromObject(obj);
+        if(objectType.equals(type))
+            return true;
+        QVariant variant = new QVariant(objectType, obj);
+        return variant.canConvert(type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(QMetaType)</a></p>
+     */
+    public final boolean convert(Class<?> cl, QMetaType...instantiations) {
+        return convert(QMetaType.fromType(cl, instantiations));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
+     */
+    public QVariant(QMetaType.Type metaType){
+        this(new QMetaType(metaType), null); 
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvert(Object obj, QMetaType.Type type) {
+        return canConvert(obj, new QMetaType(type));
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    @Deprecated
+    public static boolean canConvert(Object obj, int targetType) {
+        return canConvert(obj, new QMetaType(targetType));
+    }
+}// class
+
+class QVariant___ {
+    
+    static Class<?> getComplexType(Class<?> primitiveType) {
+        if (primitiveType == int.class)
+            return Integer.class;
+        else if (primitiveType == double.class)
+            return Double.class;
+        else if (primitiveType == long.class)
+            return Long.class;
+        else if (primitiveType == float.class)
+            return Float.class;
+        else if (primitiveType == short.class)
+            return Short.class;
+        else if (primitiveType == boolean.class)
+            return Boolean.class;
+        else if (primitiveType == char.class)
+            return Character.class;
+        else if (primitiveType == byte.class)
+            return Byte.class;
+        else
+            return primitiveType;
+    }
+    
+    /**
+     * Use {@link QMetaType#fromObject(Object)} instead.
+     */
+    @Deprecated
+    public static int type(Object obj) {
+        return QMetaType.fromObject(obj).id();
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T convert(Object obj, Class<T> cl, QMetaType...instantiations) {
+        boolean[] ok = {false};
+        Object result = convert(obj, QMetaType.fromType(cl, instantiations), ok);
+        Class<?> _cl = cl.isPrimitive() ? getComplexType(cl) : cl;
+        return (ok[0] || _cl.isInstance(result)) ? (T)result : null;
+    }
+    
+    /**
+     * Use {@link #isValid()} instead.
+     */
+    @Deprecated
+    public static boolean isValid(Object variant) {
+        return new QVariant(variant).isValid();
+    }
+        
+    private static Class<?> dbusVariant;
+    private static boolean dbusVariantResolved;
+    
+    private static boolean isDBusVariant(Object value, Class <?> cl) {
+        if(!dbusVariantResolved) {
+            dbusVariantResolved = true;
+            Class<?> _dbusVariant = null;
+            try {
+                _dbusVariant = Class.forName("io.qt.dbus.QDBusVariant");
+            } catch (Exception e) {
+            }
+            dbusVariant = _dbusVariant;
+        }
+        return dbusVariant!=null && cl!=dbusVariant && dbusVariant.isInstance(value);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static <E extends Enum<?>> boolean canConvertToEnum(Class<E> enumClass, Object obj)
+    {
+        if(enumClass.isInstance(obj)) {
+            return true;
+        }else {
+            QVariant variant = new QVariant(obj);
+            if(io.qt.QtEnumerator.class.isAssignableFrom(enumClass) 
+                    || io.qt.QtByteEnumerator.class.isAssignableFrom(enumClass) 
+                    || io.qt.QtShortEnumerator.class.isAssignableFrom(enumClass)) {
+                return variant.canConvert(QMetaType.Type.Int);
+            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(enumClass)) {
+                return variant.canConvert(QMetaType.Type.Long);
+            }else if (variant.canConvert(QMetaType.Type.Int)) {
+                boolean[] ok = {false};
+                int value = variant.toInt(ok);
+                E[] constants = enumClass.getEnumConstants();
+                return constants!=null && ok[0] && value<constants.length;
+            }else return false;
+        }
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToFlags(Object obj)
+    {
+        return obj instanceof io.qt.QFlags || new QVariant(obj).canConvert(QMetaType.Type.Int);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj) {
+        return toEnum(enumClass, obj, (boolean[])null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj, boolean ok[]) {
+        if(enumClass.isInstance(obj)) {
+            try {
+                if(ok!=null && ok.length>0)
+                    ok[0] = true;
+                return enumClass.cast(obj);
+            } catch (Exception e) {
+            }
+        }else {
+            QVariant variant = new QVariant(obj);
+            if(io.qt.QtEnumerator.class.isAssignableFrom(enumClass)) {
+                try {
+                    java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", int.class);
+                    int value = variant.toInt(ok);
+                    if(ok==null || ok[0])
+                        return enumClass.cast(resolveMethod.invoke(null, value));
+                } catch (Exception e) {
+                }
+            }else if(io.qt.QtByteEnumerator.class.isAssignableFrom(enumClass)) {
+                try {
+                    java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", byte.class);
+                    int value = variant.toInt(ok);
+                    if(ok==null || ok[0])
+                        return enumClass.cast(resolveMethod.invoke(null, (byte)value));
+                } catch (Exception e) {
+                }
+            }else if(io.qt.QtShortEnumerator.class.isAssignableFrom(enumClass)) {
+                try {
+                    java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", short.class);
+                    int value = variant.toInt(ok);
+                    if(ok==null || ok[0])
+                        return enumClass.cast(resolveMethod.invoke(null, value));
+                } catch (Exception e) {
+                }
+            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(enumClass)) {
+                try {
+                    java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", long.class);
+                    long value = variant.toLong(ok);
+                    if(ok==null || ok[0])
+                        return enumClass.cast(resolveMethod.invoke(null, value));
+                } catch (Exception e) {
+                }
+            }else{
+                int value = variant.toInt(ok);
+                E[] constants = enumClass.getEnumConstants();
+                if(constants!=null && (ok==null || value<constants.length)) {
+                    return constants[value];
+                }
+            }
+        }
+        if(ok!=null && ok.length>0)
+            ok[0] = false;
+        return null;
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static <F extends io.qt.QFlags<?>> F toFlags(Class<F> flagsClass, Object obj) {
+        return toFlags(flagsClass, obj, null);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #convert(QMetaType)}
+     */
+    public static <F extends io.qt.QFlags<?>> F toFlags(Class<F> flagsClass, Object obj, boolean ok[]) {
+        if(flagsClass.isInstance(obj)) {
+            try{
+                if(ok!=null && ok.length>0)
+                    ok[0] = true;
+                return flagsClass.cast(obj);
+            } catch (Exception e) {
+            }
+        }else {
+            QVariant variant = new QVariant(obj);
+            int value = variant.toInt(ok);
+            if(ok==null || ok[0]){
+                try{
+                    return flagsClass.getConstructor(int.class).newInstance(value);
+                } catch (Exception e) {
+                }
+            }
+        }
+        if(ok!=null && ok.length>0)
+            ok[0] = false;
+        return null;
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToDouble(Object obj){
+        return obj instanceof Number || canConvert(obj, QMetaType.Type.Double);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toDouble()}
+     */
+    public static double toDouble(Object obj) { return toDouble(obj, null); }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toDouble()}
+     */
+    public static double toDouble(Object obj, boolean ok[]){
+        if (obj==null) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return 0.0;
+        } else if (obj instanceof Number) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return ((Number) obj).doubleValue();
+        } else {
+            QVariant variant = new QVariant(obj);
+            return variant.toDouble(ok);
+        }
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToFloat(Object obj){
+        return obj instanceof Number || canConvert(obj, QMetaType.Type.Float);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toFloat()}
+     */
+    public static float toFloat(Object obj) { return toFloat(obj, null); }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toFloat()}
+     */
+    public static float toFloat(Object obj, boolean ok[]){
+        if (obj==null) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return 0.f;
+        } else if (obj instanceof Float) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return (Float)obj;
+        } else if (obj instanceof Number) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return ((Number) obj).floatValue();
+        } else {
+            QVariant variant = new QVariant(obj);
+            return variant.toFloat(ok);
+        }
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToString(Object obj){
+        return true;
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toString()}
+     */
+    public static String toString(Object obj){
+        return obj==null ? new String() : obj.toString();
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToBoolean(Object obj){
+        return obj instanceof Boolean || obj instanceof Number || canConvert(obj, QMetaType.Type.Bool);
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toBoolean()}
+     */
+    public static boolean toBoolean(Object obj){
+        if (obj==null) {
+            return false;
+        } else if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        } else if (obj instanceof Number) {
+            return ((Number) obj).intValue() != 0;
+        } else {
+            return new QVariant(obj).toBoolean();
+        }
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToByteArray(Object obj){
+        return obj instanceof QByteArray || canConvert(obj, QMetaType.Type.QByteArray);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toByteArray()}
+     */
+    public static QByteArray toByteArray(Object obj)
+    {
+        if(obj instanceof QByteArray) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QByteArray)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QByteArray);
+            if(returned instanceof QByteArray) {
+                return (QByteArray)returned;
+            }
+        }
+        return new QByteArray();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToBitArray(Object obj)
+    {
+        return obj instanceof QBitArray || canConvert(obj, QMetaType.Type.QBitArray);
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toBitArray()}
+     */
+    public static QBitArray toBitArray(Object obj)
+    {
+        if(obj instanceof QBitArray) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QBitArray)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QBitArray);
+            if(returned instanceof QBitArray) {
+                return (QBitArray)returned;
+            }            
+        }
+        return new QBitArray();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToChar(Object obj)
+    {
+        return obj instanceof Character || canConvert(obj, QMetaType.Type.QChar);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toChar()}
+     */
+    public static char toChar(Object obj)
+    {
+        if(obj==null)
+            return 0;
+        else if (obj instanceof Character)
+            return (Character) obj;
+        else
+            return new QVariant(obj).toChar();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToDate(Object obj)
+    {
+        return obj instanceof QDate || canConvert(obj, QMetaType.Type.QDate);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toDate()}
+     */
+    public static QDate toDate(Object obj)
+    {
+        if(obj instanceof QDate) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QDate)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QDate);
+            if(returned instanceof QDate) {
+                return (QDate)returned;
+            }
+        }
+        return new QDate();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToDateTime(Object obj)
+    {
+        return obj instanceof QDateTime || canConvert(obj, QMetaType.Type.QDateTime);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toDateTime()}
+     */
+    public static QDateTime toDateTime(Object obj)
+    {
+        if(obj instanceof QDateTime) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QDateTime)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QDateTime);
+            if(returned instanceof QDateTime) {
+                return (QDateTime)returned;
+            }
+        }
+        return new QDateTime();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToInt(Object obj)
+    {
+        return obj instanceof Number || canConvert(obj, QMetaType.Type.Int);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toInt()}
+     */
+    public static int toInt(Object obj) { return toInt(obj, null); }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toFloat()}
+     */
+    public static int toInt(Object obj, boolean ok[]){
+        if(obj==null) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return 0;
+        }else if (obj instanceof Number) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return ((Number) obj).intValue();
+        } else {
+            QVariant variant = new QVariant(obj);
+            return variant.toInt(ok);
+        }
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToLine(Object obj)
+    {
+        return obj instanceof QLine || canConvert(obj, QMetaType.Type.QLine);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toLine()}
+     */
+    public static QLine toLine(Object obj)
+    {
+        if(obj instanceof QLine) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QLine)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QLine);
+            if(returned instanceof QLine) {
+                return (QLine)returned;
+            }
+        }
+        return new QLine();
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToLineF(Object obj)
+    {
+        return obj instanceof QLineF || canConvert(obj, QMetaType.Type.QLineF);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toLineF()}
+     */
+    public static QLineF toLineF(Object obj)
+    {
+        if(obj instanceof QLineF) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QLineF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QLineF);
+            if(returned instanceof QLineF) {
+                return (QLineF)returned;
+            }
+        }
+        return new QLineF();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToLocale(Object obj)
+    {
+        return obj instanceof QLocale || canConvert(obj, QMetaType.Type.QLocale);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toLocale()}
+     */
+    public static QLocale toLocale(Object obj)
+    {
+        if(obj instanceof QLocale) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QLocale)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QLocale);
+            if(returned instanceof QLocale) {
+                return (QLocale)returned;
+            }
+        }
+        return new QLocale();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToPoint(Object obj)
+    {
+        return obj instanceof QPoint || canConvert(obj, QMetaType.Type.QPoint);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toPoint()}
+     */
+    public static QPoint toPoint(Object obj)
+    {
+        if(obj instanceof QPoint) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QPoint)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QPoint);
+            if(returned instanceof QPoint) {
+                return (QPoint)returned;
+            }
+        }
+        return new QPoint();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToPointF(Object obj)
+    {
+        return obj instanceof QPointF || canConvert(obj, QMetaType.Type.QPointF);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toPointF()}
+     */
+    public static QPointF toPointF(Object obj)
+    {
+        if(obj instanceof QPointF) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QPointF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QPointF);
+            if(returned instanceof QPointF) {
+                return (QPointF)returned;
+            }
+        }
+        return new QPointF();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToRect(Object obj)
+    {
+        return obj instanceof QRect || canConvert(obj, QMetaType.Type.QRect);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toRect()}
+     */
+    public static QRect toRect(Object obj)
+    {
+        if(obj instanceof QRect) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QRect)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QRect);
+            if(returned instanceof QRect) {
+                return (QRect)returned;
+            }
+        }
+        return new QRect();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToRectF(Object obj)
+    {
+        return obj instanceof QRectF || canConvert(obj, QMetaType.Type.QRectF);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toRectF()}
+     */
+    public static QRectF toRectF(Object obj)
+    {
+        if(obj instanceof QRectF) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QRectF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QRectF);
+            if(returned instanceof QRectF) {
+                return (QRectF)returned;
+            }
+        }
+        return new QRectF();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToRegularExpression(Object obj)
+    {
+        return obj instanceof QRegularExpression || canConvert(obj, QMetaType.Type.QRegularExpression);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toRegularExpression()}
+     */
+    public static QRegularExpression toRegularExpression(Object obj)
+    {
+        if(obj instanceof QRegularExpression) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QRegularExpression)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QRegularExpression);
+            if(returned instanceof QRegularExpression) {
+                return (QRegularExpression)returned;
+            }
+        }
+        return new QRegularExpression();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToSize(Object obj)
+    {
+        return obj instanceof QSize || canConvert(obj, QMetaType.Type.QSize);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toSize()}
+     */
+    public static QSize toSize(Object obj)
+    {
+        if(obj instanceof QSize) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QSize)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QSize);
+            if(returned instanceof QSize) {
+                return (QSize)returned;
+            }
+        }
+        return new QSize();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToSizeF(Object obj)
+    {
+        return obj instanceof QSizeF || canConvert(obj, QMetaType.Type.QSizeF);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toSizeF()}
+     */
+    public static QSizeF toSizeF(Object obj)
+    {
+        if(obj instanceof QSizeF) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QSizeF)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QSizeF);
+            if(returned instanceof QSizeF) {
+                return (QSizeF)returned;
+            }
+        }
+        return new QSizeF();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToTime(Object obj)
+    {
+        return obj instanceof QTime || canConvert(obj, QMetaType.Type.QTime);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toTime()}
+     */
+    public static QTime toTime(Object obj)
+    {
+        if(obj instanceof QTime) {
+            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+                return (QTime)obj;
+        }else if(obj!=null){
+            Object returned = convert(obj, QMetaType.Type.QTime);
+            if(returned instanceof QTime) {
+                return (QTime)returned;
+            }
+        }
+        return new QTime();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToLong(Object obj)
+    {
+        return obj instanceof Number || canConvert(obj, QMetaType.Type.LongLong);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toLong()}
+     */
+    public static long toLong(Object obj, boolean ok[]){
+        if(obj==null) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return 0L;
+        }else if (obj instanceof Number) {
+            if(ok!=null && ok.length>0)
+                ok[0] = true;
+            return ((Number) obj).longValue();
+        } else {
+            QVariant variant = new QVariant(obj);
+            return variant.toLong(ok);
+        }
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToList(Object obj)
+    {
+        return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QVariantList);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toList()}
+     */
+    @SuppressWarnings("unchecked")
+    public static QList<Object> toList(Object obj)
+    {
+        if (obj instanceof java.util.Collection){
+            if (obj instanceof QList && ((QList<?>)obj).elementMetaType().javaType()==Object.class)
+                return (QList<Object>)obj;
+            QList<Object> list = QList.createVariantList();
+                list.addAll((java.util.Collection<?>) obj);
+            return list;
+        }else if(obj!=null) {
+            Object returned = convert(obj, QMetaType.Type.QVariantList);
+            if(returned instanceof QList) {
+                return (QList<Object>)returned;
+            }
+        }
+        return QList.createVariantList();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToStringList(Object obj)
+    {
+        return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QStringList);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toStringList()}
+     */
+    public static QStringList toStringList(Object obj)
+    {
+        if (obj instanceof java.util.Collection){
+            if (obj instanceof QStringList) {
+                return (QStringList)obj;
+            }
+            QStringList list = new QStringList();
+            for(Object entry : (java.util.Collection<?>)obj) {
+                list.add(entry==null ? null : entry.toString());
+            }
+            return list;
+        }else if(obj!=null) {
+            Object returned = convert(obj, QMetaType.Type.QStringList);
+            if(returned instanceof QStringList) {
+                return (QStringList)returned;
+            }
+        }
+        return new QStringList();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToCollection(Object obj)
+    {
+        return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QVariantList);
+    }
+    
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toList()}
+     */
+    public static java.util.Collection<?> toCollection(Object obj)
+    {
+        if (obj instanceof java.util.Collection){
+            return (java.util.Collection<?>)obj;
+        }else if(obj!=null) {
+            Object returned = convert(obj, QMetaType.Type.QVariantList);
+            if(returned instanceof java.util.Collection) {
+                return (java.util.Collection<?>)returned;
+            }
+        }
+        return QList.createVariantList();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #canConvert(QMetaType)}
+     */
+    public static boolean canConvertToMap(Object obj)
+    {
+        return obj instanceof java.util.Map || canConvert(obj, QMetaType.Type.QVariantHash);
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toHash()}
+     */
+    @SuppressWarnings("unchecked")
+    public static QHash<String,Object> toHash(Object obj)
+    {
+        if (obj instanceof java.util.Map) {
+            if(obj instanceof QHash 
+                    && ((QHash<?,?>)obj).keyMetaType().javaType()==String.class
+                    && ((QHash<?,?>)obj).valueMetaType().javaType()==Object.class) {
+                return (QHash<String,Object>) obj;
+            }
+            java.util.Map<?, ?> otherMap = (java.util.Map<?, ?>) obj;
+            QHash<String,Object> map = QHash.createVariantHash();
+            for (java.util.Map.Entry<?, ?> e : otherMap.entrySet())
+                map.put(e.getKey().toString(), e.getValue());
+            return map;
+        }else if(obj!=null) {
+            Object returned = convert(obj, QMetaType.Type.QVariantHash);
+            if(returned instanceof QHash) {
+                return (QHash<String,Object>)returned;
+            }
+        }
+        return QHash.createVariantHash();
+    }
+
+    /**
+     * Convenient static function for type conversion.
+     * @see {@link #toMap()}
+     */
+    @SuppressWarnings("unchecked")
+    public static QMap<String,Object> toMap(Object obj)
+    {
+        if (obj instanceof java.util.Map) {
+            if(obj instanceof QMap 
+                    && ((QMap<?,?>)obj).keyMetaType().javaType()==String.class
+                    && ((QMap<?,?>)obj).valueMetaType().javaType()==Object.class) {
+                return (QMap<String,Object>) obj;
+            }
+            java.util.Map<?, ?> otherMap = (java.util.Map<?, ?>) obj;
+            QMap<String,Object> map = QMap.createVariantMap();
+            for (java.util.Map.Entry<?, ?> e : otherMap.entrySet())
+                map.put(e.getKey().toString(), e.getValue());
+            return map;
+        }else if(obj!=null) {
+            Object returned = convert(obj, QMetaType.Type.QVariantHash);
+            if(returned instanceof QMap) {
+                return (QMap<String,Object>)returned;
+            }
+        }
+        return QMap.createVariantMap();
+    }
+}// class
+
+class QPartialOrdering___ {
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var">QPartialOrdering::Equivalent</a></p>
+     */
+    public static final int Equivalent = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var">QPartialOrdering::Less</a></p>
+     */
+    public static final int Greater = 1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var">QPartialOrdering::Greater</a></p>
+     */
+    public static final int Less = -1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Unordered-var">QPartialOrdering::Unordered</a></p>
+     */
+    public static final int Unordered = -127;
 }// class
 
 class QMetaMethod___ {
@@ -13392,6 +15061,9 @@ class QMetaMethod___ {
     @io.qt.QtUninvokable
     private native Object invoke_native(Object object, Class<?>[] argClassTypes, Object[] args);
     
+    /**
+     * Returns this meta method as Java reflection method.
+     */
     @io.qt.QtUninvokable
     public final java.lang.reflect.Method toReflectedMethod() {
         if(isValid()) {
@@ -13418,6 +15090,9 @@ class QMetaMethod___ {
     @io.qt.QtUninvokable
     private native java.lang.reflect.AccessibleObject toReflected();
     
+    /**
+     * Returns this meta method as Java reflection constructor.
+     */
     @io.qt.QtUninvokable
     public final java.lang.reflect.Constructor<?> toReflectedConstructor() {
         if(isValid()) {
@@ -13438,11 +15113,14 @@ class QMetaMethod___ {
         return null;
     }
     
+    /**
+     * Returns this meta method as signal object.
+     */
     @io.qt.QtUninvokable
     public final QMetaObject.AbstractSignal toSignal(QObject sender) {
         if(isValid()) {
             if(methodType()==MethodType.Signal) {
-            	QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(sender));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(sender));
                 return io.qt.internal.QtJambiInternal.findSignal(sender, this);
             }else {
                 throw new IllegalArgumentException("Method " + this + " is not a signal.");
@@ -13451,6 +15129,9 @@ class QMetaMethod___ {
         return null;
     }
     
+    /**
+     * Returns corresponding meta method for given signal object.
+     */
     @io.qt.QtUninvokable
     public static QMetaMethod fromSignal(QMetaObject.Signal signal) {
         QMetaMethod method = null;
@@ -13466,6 +15147,9 @@ class QMetaMethod___ {
         return method;
     }
     
+    /**
+     * Returns corresponding meta method for given reflection constructor.
+     */
     public static QMetaMethod fromReflectedConstructor(java.lang.reflect.Constructor<?> constructor) {
         QMetaObject mo = QMetaObject.forType(constructor.getDeclaringClass());
         if(mo!=null) {
@@ -13474,6 +15158,9 @@ class QMetaMethod___ {
         return null;
     }
     
+    /**
+     * Returns corresponding meta method for given reflection method.
+     */
     public static QMetaMethod fromReflectedMethod(java.lang.reflect.Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
         QMetaMethod qmethod = null;
@@ -13483,8 +15170,8 @@ class QMetaMethod___ {
             qmethod = methodFromMethod(mo.metaObjectPointer, ok);
             if(qmethod==null && ok[0]==null) {
                 qmethod = mo.method(method.getName(), method.getParameterTypes());
-				if(qmethod!=null && qmethod.methodType()==MethodType.Signal) {
-                	qmethod = null;
+                if(qmethod!=null && qmethod.methodType()==MethodType.Signal) {
+                    qmethod = null;
                 }
             }
         }
@@ -13506,82 +15193,142 @@ class QMetaMethod___ {
         return null;
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <R> QMetaMethod fromMethod(QMetaObject.Method0<R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,R> QMetaMethod fromMethod(QMetaObject.Method1<A,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,R> QMetaMethod fromMethod(QMetaObject.Method2<A,B,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,R> QMetaMethod fromMethod(QMetaObject.Method3<A,B,C,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,R> QMetaMethod fromMethod(QMetaObject.Method4<A,B,C,D,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,R> QMetaMethod fromMethod(QMetaObject.Method5<A,B,C,D,E,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,R> QMetaMethod fromMethod(QMetaObject.Method6<A,B,C,D,E,F,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G,R> QMetaMethod fromMethod(QMetaObject.Method7<A,B,C,D,E,F,G,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G,H,R> QMetaMethod fromMethod(QMetaObject.Method8<A,B,C,D,E,F,G,H,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G,H,I,R> QMetaMethod fromMethod(QMetaObject.Method9<A,B,C,D,E,F,G,H,I,R> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static QMetaMethod fromMethod(QMetaObject.Slot0 method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A> QMetaMethod fromMethod(QMetaObject.Slot1<A> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B> QMetaMethod fromMethod(QMetaObject.Slot2<A,B> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C> QMetaMethod fromMethod(QMetaObject.Slot3<A,B,C> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D> QMetaMethod fromMethod(QMetaObject.Slot4<A,B,C,D> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E> QMetaMethod fromMethod(QMetaObject.Slot5<A,B,C,D,E> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F> QMetaMethod fromMethod(QMetaObject.Slot6<A,B,C,D,E,F> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G> QMetaMethod fromMethod(QMetaObject.Slot7<A,B,C,D,E,F,G> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G,H> QMetaMethod fromMethod(QMetaObject.Slot8<A,B,C,D,E,F,G,H> method) {
         return fromMethodImpl(method);
     }
     
+    /**
+     * Returns corresponding meta method for given method handle.
+     */
     public static <A,B,C,D,E,F,G,H,I> QMetaMethod fromMethod(QMetaObject.Slot9<A,B,C,D,E,F,G,H,I> method) {
         return fromMethodImpl(method);
     }
@@ -13589,6 +15336,9 @@ class QMetaMethod___ {
 
 class QMetaProperty___{
     
+    /**
+     * Returns the property notifier as signal object.
+     */
     @io.qt.QtUninvokable
     public final QMetaObject.AbstractSignal notifySignal(QObject object) {
         QMetaMethod notifySignal = notifySignal();
@@ -13645,31 +15395,49 @@ class QMetaEnum___{
         return name();
     }
 
+    /**
+     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
+     */
     @io.qt.QtUninvokable
     public Integer keysToValue(String... keys) {
         return keysToValue(new QStringList(keys).join('|'));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
+     */
     @io.qt.QtUninvokable
     public Integer keysToValue(java.util.Collection<String> keys) {
         return keysToValue((keys instanceof QStringList ? (QStringList)keys : new QStringList(keys)).join('|'));
     }
 
+    /**
+     * Returns all enum entries of this enum type.
+     */
     @io.qt.QtUninvokable
     public io.qt.QtAbstractEnumerator[] entries() {
         return enclosingMetaObject().enumEntries(this);
     }
     
+    /**
+     * Returns the enum entry of the given value.
+     */
     @io.qt.QtUninvokable
     public io.qt.QtAbstractEnumerator entry(int index) {
         return enclosingMetaObject().enumEntry(this, index);
     }
     
+    /**
+     * Returns the enum entry of the given name.
+     */
     @io.qt.QtUninvokable
     public io.qt.QtAbstractEnumerator entry(String name) {
         return enclosingMetaObject().enumEntry(this, name);
     }
     
+    /**
+     * Returns the java class of this enum type.
+     */
     @io.qt.QtUninvokable
     public Class<?> type() {
         return enclosingMetaObject().enumType(this);
@@ -13700,6 +15468,9 @@ class QMetaEnum___{
         }
     }
     
+    /**
+     * Returns flags for the given value.
+     */
     @io.qt.QtUninvokable
     public io.qt.QFlags<?> flags(int value) {
         Class<?> enumType = type();
@@ -13713,6 +15484,9 @@ class QMetaEnum___{
         return null;
     }
     
+    /**
+     * Returns flags for the given enum names.
+     */
     @io.qt.QtUninvokable
     public io.qt.QFlags<?> flags(String... names) {
         @SuppressWarnings("unchecked")
@@ -13731,6 +15505,9 @@ class QMetaEnum___{
     @io.qt.QtUninvokable
     private static native io.qt.QFlags<? extends io.qt.QtFlagEnumerator> flags(Class<?> cls, int value);
     
+    /**
+     * Returns the enum entry of the given value.
+     */
     @io.qt.QtUninvokable
     public io.qt.QtAbstractEnumerator resolve(int value) {
         Class<?> type = type();
@@ -13760,20 +15537,6 @@ class Qt___ extends Qt {
     
 }// class
 
-class Qt_56__ extends Qt {
-    
-    public native static void qSetGlobalQHashSeed(int newSeed);
-    public native static int qGlobalQHashSeed();
-    
-}// class
-
-class Qt_66__ extends Qt {
-    @Deprecated
-    public native static void qSetGlobalQHashSeed(int newSeed);
-    @Deprecated
-    public native static int qGlobalQHashSeed();
-}// class
-
 class QCollatorSortKey___{
     
     @io.qt.QtUninvokable
@@ -13798,67 +15561,24 @@ class QCborValue_java__{
         public final io.qt.core.QCborValue value;
         public final io.qt.core.QCborParserError error;
     }
-    
-    @io.qt.QtUninvokable
-    public native final void setValue(java.lang.String key, io.qt.core.QCborValue value);
-    
-    @io.qt.QtUninvokable
-    public native final void setValue(long key, io.qt.core.QCborValue value);
-    
-}// class
-
-class QCborArray_java__{
-
-    @io.qt.QtUninvokable
-    public native final void setValue(long i, io.qt.core.QCborValue value);
-}// class
-
-class QCborMap_java__{
-    
-    @io.qt.QtUninvokable
-    public native final void setValue(io.qt.core.QCborValue key, io.qt.core.QCborValue value);
-
-    @io.qt.QtUninvokable
-    public native final void setValue(java.lang.String key, io.qt.core.QCborValue value);
-
-    @io.qt.QtUninvokable
-    public native final void setValue(long key, io.qt.core.QCborValue value);
-    
 }// class
 
 class QCborStreamReader_java__{
     
+    /**
+     * <p>See <a href="@docRoot/qcborstreamreader.html#QCborStreamReader-1">QCborStreamReader::QCborStreamReader(const char*,qsizetype)</a></p>
+     */
     public QCborStreamReader(byte[] data){
         this(new io.qt.core.QByteArray(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qcborstreamreader.html#addData">QCborStreamReader::addData(QByteArray)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void addData(byte[] data){
         addData(new io.qt.core.QByteArray(data));
     }
-    
-    /**
-     * Result class for {@link #readByteArray()} and {@link #readString()}
-     */
-    public static final class StringResult<Container> {
-        private StringResult(Container data, StringResultCode status) {
-            super();
-            this.data = data;
-            this.status = status;
-        }
-        public final Container data;
-        public final StringResultCode status;
-    };
-    
-    @io.qt.QtUninvokable
-    public native final io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> readByteArray();
-
-    @io.qt.QtUninvokable
-    public native final io.qt.core.QCborStreamReader.StringResult<String> readString();
-
-    @io.qt.QtUninvokable
-    public native final io.qt.core.QCborStreamReader.StringResult<Long> readChunk(java.nio.ByteBuffer buffer);
-    
 }// class
 
 class QFactoryLoader_62_{
@@ -13911,14 +15631,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -13947,14 +15667,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -13983,14 +15703,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14019,14 +15739,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b, c);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14055,14 +15775,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b, c, d);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14091,14 +15811,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b, c, d, e);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14127,14 +15847,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b, c, d, e, f);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14163,14 +15883,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, key, a, b, c, d, e, f, g);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14197,14 +15917,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14233,14 +15953,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14269,14 +15989,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14305,14 +16025,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14341,14 +16061,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c, d);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14377,14 +16097,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c, d, e);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14413,14 +16133,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c, d, e, f);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14449,14 +16169,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c, d, e, f, g);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14485,14 +16205,14 @@ class QFactoryLoader__{
                         }
                     }
                 }else if(factoryClass==null && io.qt.core.QOperatingSystemVersion.current().isAnyOfType(io.qt.core.QOperatingSystemVersion.OSType.Android)) {
-                	QObject factoryObject = instance(index);
+                    QObject factoryObject = instance(index);
                     @SuppressWarnings("unchecked")
-					P factory = (P)factoryObject;
-                	if(factory!=null){
+                    P factory = (P)factoryObject;
+                    if(factory!=null){
                         try {
                             return create.invoke(factory, a, b, c, d, e, f, g, h);
                         } catch (Throwable ex) {
-                        	return null;
+                            return null;
                         }
                     }
                 }
@@ -14611,34 +16331,58 @@ class QFactoryLoader__{
 
 class QPluginLoader_java__{
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(QObject instance){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, (QJsonObject)null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(QObject instance, QJsonObject metaData){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, metaData);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, metaData);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
         io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     */
     public static void registerPluginInterface(Class<? extends io.qt.QtObjectInterface> factoryClass){
         io.qt.internal.QtJambiPlugins.qRegisterPluginInterface(factoryClass);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qpluginloader.html#instance">QPluginLoader::instance()</a></p>
+     */
     @io.qt.QtUninvokable
     public final <T extends io.qt.core.QObject> T instance(Class<T> type){
         return QMetaObject.cast(type, instance());
@@ -14646,6 +16390,9 @@ class QPluginLoader_java__{
 }// class
 
 class QStaticPlugin_java__{
+    /**
+     * <p>See <a href="@docRoot/qstaticplugin.html#instance-var">QStaticPlugin::instance</a></p>
+     */
     @io.qt.QtUninvokable
     public final native io.qt.core.QObject instance();
 }// class
@@ -14655,6 +16402,9 @@ class QThread___{
     @io.qt.QtUninvokable
     static native void initialize();
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, String name, long stackSize, io.qt.core.QObject parent) {
         super((QPrivateConstructor)null);        
         initialize_native(this, parent);
@@ -14665,62 +16415,122 @@ class QThread___{
             setStackSize( (int)(stackSize & 0x0ffffffffL) );
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable)
+     */
     public static QThread create(Runnable runnable) {
         return create(null, runnable, null, -1, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable)
+     */
     public static QThread create(Runnable runnable, io.qt.core.QObject parent) {
         return create(null, runnable, null, -1, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(Runnable runnable, long stackSize) {
         return create(null, runnable, null, stackSize, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(Runnable runnable, long stackSize, io.qt.core.QObject parent) {
         return create(null, runnable, null, stackSize, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, long stackSize) {
         return create(group, runnable, null, stackSize, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, long stackSize, io.qt.core.QObject parent) {
         return create(group, runnable, null, stackSize, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, String name) {
         return create(group, runnable, name, -1, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, String name, io.qt.core.QObject parent) {
         return create(group, runnable, name, -1, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, String name, long stackSize) {
         return create(group, runnable, name, stackSize, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable, String, long)
+     */
     public static QThread create(Runnable runnable, String name, long stackSize, io.qt.core.QObject parent) {
         return create(null, runnable, name, stackSize, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable, String, long)
+     */
     public static QThread create(Runnable runnable, String name, long stackSize) {
         return create(null, runnable, name, stackSize, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable, String)
+     */
     public static QThread create(Runnable runnable, String name, io.qt.core.QObject parent) {
         return create(null, runnable, name, -1, parent);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(Runnable, String)
+     */
     public static QThread create(Runnable runnable, String name) {
         return create(null, runnable, name, -1, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable) {
         return create(group, runnable, null, -1, null);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public static QThread create(ThreadGroup group, Runnable runnable, String name, long stackSize, io.qt.core.QObject parent) {
         return new Runner(group, runnable, name, stackSize, parent);
     }
@@ -14740,46 +16550,79 @@ class QThread___{
         }
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(String name) {
         this(null, name, -1, null);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group) {
         this(group, null, -1, null);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(String name, io.qt.core.QObject parent) {
         this(null, name, -1, parent);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, io.qt.core.QObject parent) {
         this(group, null, -1, parent);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(String name, long stackSize) {
         this(null, name, stackSize, null);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, long stackSize) {
         this(group, null, stackSize, null);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(String name, long stackSize, io.qt.core.QObject parent) {
         this(null, name, stackSize, parent);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, long stackSize, io.qt.core.QObject parent) {
         this(group, null, stackSize, parent);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, String name, long stackSize) {
         this(group, name, stackSize, null);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, String name, io.qt.core.QObject parent) {
         this(group, name, -1, parent);
     }
     
+    /**
+     * @see Thread#Thread(ThreadGroup, Runnable, String, long)
+     */
     public QThread(ThreadGroup group, String name) {
         this(group, name, -1, null);
     }
@@ -14790,6 +16633,9 @@ class QThread___{
         __qt_initialize(group);
     }
     
+    /**
+     * @see Thread#getThreadGroup()
+     */
     public final ThreadGroup getThreadGroup() {
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
@@ -14799,6 +16645,9 @@ class QThread___{
     
     private native ThreadGroup __qt_getThreadGroup();
     
+    /**
+     * @see Thread#setName(String)
+     */
     public void setName(String name) {
         if(!isRunning() && javaThread==null)
             __qt_setName(name);
@@ -14806,6 +16655,9 @@ class QThread___{
     
     private native void __qt_setName(String name);
     
+    /**
+     * @see Thread#getName()
+     */
     public final String getName() {
         if(javaThread!=null) {
             return javaThread.getName();
@@ -14815,6 +16667,9 @@ class QThread___{
     
     private native String __qt_getName();
     
+    /**
+     * @see Thread#setDaemon(boolean)
+     */
     public void setDaemon(boolean daemon) {
         if(!isRunning() && javaThread==null)
             __qt_setDaemon(daemon);
@@ -14822,6 +16677,9 @@ class QThread___{
     
     private native void __qt_setDaemon(boolean daemon);
     
+    /**
+     * @see Thread#isDaemon()
+     */
     public final boolean isDaemon() {
         if(javaThread!=null) {
             return javaThread.isDaemon();
@@ -14831,6 +16689,9 @@ class QThread___{
     
     private native boolean __qt_isDaemon();
     
+    /**
+     * @see Thread#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
+     */
     public void setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
@@ -14841,6 +16702,9 @@ class QThread___{
     
     private native void __qt_setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler);
     
+    /**
+     * @see Thread#getUncaughtExceptionHandler()
+     */
     public final Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
@@ -14850,6 +16714,9 @@ class QThread___{
     
     private native Thread.UncaughtExceptionHandler __qt_getUncaughtExceptionHandler();
     
+    /**
+     * @see Thread#setContextClassLoader(ClassLoader)
+     */
     public void setContextClassLoader(ClassLoader cl) {
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
@@ -14860,6 +16727,9 @@ class QThread___{
     
     private native void __qt_setContextClassLoader(ClassLoader cl);
     
+    /**
+     * @see Thread#getContextClassLoader()
+     */
     public final ClassLoader getContextClassLoader() {
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
@@ -14877,20 +16747,32 @@ class QThread___{
     private native Thread __qt_javaThread();
     public static native QThread thread(Thread thread);
     
+    /**
+     * @see Thread#isAlive()
+     */
     public final boolean isAlive() {
         return isRunning();
     }
     
+    /**
+     * @see Thread#isInterrupted()
+     */
     public final boolean isInterrupted() {
         if(javaThread!=null && javaThread.isInterrupted())
             return true;
         return isInterruptionRequested();
     }
     
+    /**
+     * @see Thread#interrupted()
+     */
     public static boolean interrupted() {
         return Thread.interrupted();
     }
     
+    /**
+     * @see Thread#interrupt()
+     */
     public final void interrupt() {
         requestInterruption();
     }
@@ -15178,7 +17060,7 @@ class QLoggingCategory__{
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qloggingcategory.html#QLoggingCategory-1">QLoggingCategory::QLoggingCategory(const char*,QtMsgType)</a></p>
+     * <p>See <a href="@docRoot/qloggingcategory.html#QLoggingCategory-1">QLoggingCategory::QLoggingCategory(const char*,QtMsgType)</a></p>
      */
     public QLoggingCategory(java.lang.String category, io.qt.core.QtMsgType severityLevel){
         this(category==null ? null : new QByteArray(category), severityLevel);
@@ -15270,68 +17152,171 @@ class QResource__{
 }// class
 
 class QCryptographicHash___{
+    /**
+     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(const char*)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void addData(java.nio.ByteBuffer data){
         addData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(const char*,QCryptographicHash::Algorithm)</a></p>
+     */
     public static io.qt.core.QByteArray hash(java.nio.ByteBuffer data, io.qt.core.QCryptographicHash.Algorithm method){
         return hash(new io.qt.core.QByteArrayView(data), method);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(QByteArray)</a></p>
+     */
     @io.qt.QtUninvokable
     public final void addData(io.qt.core.QByteArray data){
         addData(new io.qt.core.QByteArrayView(data));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(QByteArray,QCryptographicHash::Algorithm)</a></p>
+     */
     public static io.qt.core.QByteArray hash(io.qt.core.QByteArray data, io.qt.core.QCryptographicHash.Algorithm method){
         return hash(new io.qt.core.QByteArrayView(data), method);
     }
 }// class
 
+class QDataStream_5__{
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
+    public final <T> QDataStream writeObject(T object){
+        int metaType = QMetaType.fromObject(object).id();
+        if(!QMetaType.save(this, metaType, object)){
+            this.setStatus(Status.WriteFailed);
+            QLogging.qWarning("Unable to write object of type %1$s", object==null ? "null" : object.getClass().getTypeName());
+        }
+        return this;
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> T readObject(Class<T> cl, QMetaType...instantiations){
+        int metaType = QMetaType.fromType(cl, instantiations).id();
+        java.util.Optional<Object> optional = QMetaType.load(this, metaType);
+        if(!optional.isPresent()){
+            setStatus(Status.ReadCorruptData);
+            QLogging.qWarning("Unable to read object of type %1$s", QMetaType.typeName(metaType));
+        }
+        return (T)optional.orElse(null);
+    }
+}// class
+
+class QDataStream_6__{
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
+    public final <T> QDataStream writeObject(T object){
+        QMetaType metaType = QMetaType.fromObject(object);
+        if(!metaType.save(this, object)){
+            this.setStatus(Status.WriteFailed);
+            QLogging.qWarning("Unable to write object of type %1$s", object==null ? "null" : object.getClass().getTypeName());
+        }
+        return this;
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> T readObject(Class<T> cl, QMetaType...instantiations){
+        QMetaType metaType = QMetaType.fromType(cl, instantiations);
+        java.util.Optional<Object> optional = metaType.load(this);
+        if(!optional.isPresent()){
+            setStatus(Status.ReadCorruptData);
+            QLogging.qWarning("Unable to read object of type %1$s", metaType.name());
+        }
+        return (T)optional.orElse(null);
+    }
+}// class
+
 class QDataStream___{
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T> QDataStream append(T t){
+        return writeObject(t);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(java.lang.String s){
         return writeString(s);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(double v){
         return writeDouble(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(byte v){
         return writeByte(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(byte[] v){
         writeBytes(v);
         return this;
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(char v){
         return writeChar(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(float v){
         return writeFloat(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(int v){
         return writeInt(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(long v){
         return writeLong(v);
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
     @io.qt.QtUninvokable
     public final QDataStream append(short v){
         return writeShort(v);
@@ -15339,87 +17324,87 @@ class QDataStream___{
 }// class
 
 class QString__{
-	/**
+    /**
      * {@inheritDoc}
      */
-	@Override
-	@io.qt.QtUninvokable
-	public final char charAt(int index) {
-		return at(index);
-	}
-
-	/**
-     * {@inheritDoc}
-     */
-	@Override
-	@io.qt.QtUninvokable
-	public final QString subSequence(int start, int end) {
-		return mid(start, end-start);
-	}
-
-	/**
-     * {@inheritDoc}
-     */
-	@Override
-	@io.qt.QtUninvokable
-	public final QString append(CharSequence csq, int start, int end) throws java.io.IOException {
-		return append(csq==null ? "null" : csq.subSequence(start, end));
-	}
-	
-	/**
-     * <p>See <a href="https://doc.qt.io/qt/qstring.html#arg">QString::arg(Args &amp;&amp;... args) const</a></p>
-     */
-	@io.qt.QtUninvokable
-    public final io.qt.core.QString arg(Object... args){
-    	QString _this = this.clone();
-    	for(Object arg : args) {
-    		if(arg instanceof Integer)
-    			_this = _this.arg((int)arg);
-    		else if(arg instanceof Character)
-    			_this = _this.arg((char)arg);
-    		else if(arg instanceof Double)
-    			_this = _this.arg((double)arg);
-    		else if(arg instanceof Byte)
-    			_this = _this.arg((byte)arg);
-    		else if(arg instanceof Short)
-    			_this = _this.arg((short)arg);
-    		else if(arg instanceof Long)
-    			_this = _this.arg((long)arg);
-    		else if(arg instanceof Float)
-    			_this = _this.arg((float)arg);
-    		else if(arg instanceof CharSequence)
-    			_this = _this.arg((CharSequence)arg);
-    		else if(arg!=null)
-    			_this = _this.arg(arg.toString());
-    		else
-    			_this = _this.arg("null");
-    	}
-    	return _this;
+    @Override
+    @io.qt.QtUninvokable
+    public final char charAt(int index) {
+        return at(index);
     }
-	
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @io.qt.QtUninvokable
+    public final QString subSequence(int start, int end) {
+        return mid(start, end-start);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @io.qt.QtUninvokable
+    public final QString append(CharSequence csq, int start, int end) throws java.io.IOException {
+        return append(csq==null ? "null" : csq.subSequence(start, end));
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qstring.html#arg">QString::arg(Args &amp;&amp;... args) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QString arg(Object... args){
+        QString _this = this.clone();
+        for(Object arg : args) {
+            if(arg instanceof Integer)
+                _this = _this.arg((int)arg);
+            else if(arg instanceof Character)
+                _this = _this.arg((char)arg);
+            else if(arg instanceof Double)
+                _this = _this.arg((double)arg);
+            else if(arg instanceof Byte)
+                _this = _this.arg((byte)arg);
+            else if(arg instanceof Short)
+                _this = _this.arg((short)arg);
+            else if(arg instanceof Long)
+                _this = _this.arg((long)arg);
+            else if(arg instanceof Float)
+                _this = _this.arg((float)arg);
+            else if(arg instanceof CharSequence)
+                _this = _this.arg((CharSequence)arg);
+            else if(arg!=null)
+                _this = _this.arg(arg.toString());
+            else
+                _this = _this.arg("null");
+        }
+        return _this;
+    }
+    
     /**
      * Similar to {@link java.lang.String#format(String, Object...)} but using {@link QString#arg(Object...)}.
      * @param format format string
      * @param args arguments
      * @return formatted string
      */
-	@io.qt.QtUninvokable
+    @io.qt.QtUninvokable
     public static io.qt.core.QString format(CharSequence format, Object... args){
-		io.qt.core.QString strg;
-		if(format instanceof io.qt.core.QString){
-			strg = (io.qt.core.QString)format;
-		}else{
-			strg = new io.qt.core.QString(format);
-		}
-		return strg.arg(args);
-	}
-	
+        io.qt.core.QString strg;
+        if(format instanceof io.qt.core.QString){
+            strg = (io.qt.core.QString)format;
+        }else{
+            strg = new io.qt.core.QString(format);
+        }
+        return strg.arg(args);
+    }
+    
     /**
      * Static version of {@link QString#toUtf8()}
      * @param string
      * @return utf8
      */
-	@io.qt.QtUninvokable
+    @io.qt.QtUninvokable
     public static native io.qt.core.QByteArray toUtf8(CharSequence string);
 
     /**

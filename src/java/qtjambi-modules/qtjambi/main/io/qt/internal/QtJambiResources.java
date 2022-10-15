@@ -386,7 +386,7 @@ public final class QtJambiResources {
 			try {
 				URLAlias urlAlias = checkNeedWorkaround(result);
 				if (urlAlias.file != null) { // Due to workaround
-					if (!urlAlias.file.isFile())
+					if (!urlAlias.file.exists())
 						result = null;
 				} else if(!urlAlias.url.toString().endsWith("/")){
 					URLConnection urlConn = urlAlias.url.openConnection();

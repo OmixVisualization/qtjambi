@@ -156,6 +156,10 @@ class TypeDatabase {
 
         inline uint qtVersion() const {return m_qtVersion;}
 
+        ComplexTypeEntry * qvariantType() const{
+            return m_qvariantType;
+        }
+
         ComplexTypeEntry * qstringType() const{
             return m_qstringType;
         }
@@ -189,6 +193,7 @@ class TypeDatabase {
         ComplexTypeEntry * m_pixmapType;
         ComplexTypeEntry * m_bitmapType;
         ComplexTypeEntry * m_qstringType;
+        ComplexTypeEntry * m_qvariantType;
         ComplexTypeEntry * m_qcharType;
 };
 

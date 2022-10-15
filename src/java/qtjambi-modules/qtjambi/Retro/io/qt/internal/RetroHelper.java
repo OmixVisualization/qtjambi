@@ -29,7 +29,11 @@
 
 package io.qt.internal;
 
+import java.io.File;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -38,6 +42,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import io.qt.InternalAccess.CallerContext;
 
@@ -48,6 +53,7 @@ final class RetroHelper {
 		Supplier<Class<?>> callerClassProvider();
 		IntFunction<io.qt.InternalAccess.CallerContext> classAccessChecker();
 		String processName();
+		boolean isProcessAlive(String pid);
 		<T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType);
 	}
 	
@@ -61,15 +67,25 @@ final class RetroHelper {
 		        	stackFrame = stackWalker.walk(stream->stream.limit(number+3).skip(number+2).findFirst());
 		        }
 		        if(stackFrame.isPresent()) {
+		        	String methodDescriptor = null;
+		        	MethodType methodType = null;
+		        	try {
+						methodDescriptor = stackFrame.get().getDescriptor();
+					} catch (UnsupportedOperationException e) {}
+		        	try{
+		        		methodType = stackFrame.get().getMethodType();
+		        	} catch (UnsupportedOperationException e) {}
 		            return new io.qt.InternalAccess.CallerContext(
 		                stackFrame.get().getDeclaringClass(),
-		                stackFrame.get().getMethodName(), 
+		                stackFrame.get().getMethodName(),
+		                methodDescriptor,
+		                methodType,
 		                stackFrame.get().getLineNumber());
 		        }
 	        }
 	        return null;
 	    };
-	    private String processName = ""+ProcessHandle.current().pid();
+	    private String processName = Long.toUnsignedString(ProcessHandle.current().pid());
 	    
 	    @Override
 	    public Supplier<Class<?>> callerClassProvider(){
@@ -96,17 +112,40 @@ final class RetroHelper {
 			}
 			return null;
 	    }
+
+		@Override
+		public boolean isProcessAlive(String pid) {
+			ProcessHandle process = ProcessHandle.of(Long.parseUnsignedLong(pid)).orElse(null);
+			return process!=null && process.isAlive();
+		}
 	}
 	
 	private static class Java8Implementor implements Implementor{
 	    Java8Implementor() {
 			super();
-			Method getAnnotatedOwnerType = null;
+			Function<AnnotatedElement, AnnotatedElement> getAnnotatedOwnerTypeSupplier = null;
 	        try {
-	            getAnnotatedOwnerType = java.lang.reflect.AnnotatedType.class.getMethod("getAnnotatedOwnerType");
+	        	Method getAnnotatedOwnerType = java.lang.reflect.AnnotatedType.class.getMethod("getAnnotatedOwnerType");
+	        	getAnnotatedOwnerTypeSupplier = a->{
+					try {
+						return (AnnotatedElement)getAnnotatedOwnerType.invoke(a);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (InvocationTargetException e) {
+						try {
+							throw e.getTargetException();
+						} catch (RuntimeException | Error e2) {
+							throw e2;
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
 	        } catch (Throwable e2) {
 	        }
-	        this.getAnnotatedOwnerTypeSupplier = getAnnotatedOwnerType==null ? null : QtJambiInternal.functionFromMethod(getAnnotatedOwnerType);
+	        this.getAnnotatedOwnerTypeSupplier = getAnnotatedOwnerTypeSupplier;
 	        
 	        this.classAccessChecker = number->{
                 StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -116,6 +155,7 @@ final class RetroHelper {
                 		if(element.getClassName().equals(Thread.class.getName())
                 				&& element.getMethodName().equals("getStackTrace")) {
                 			postStackTrace = true;
+                			--number;
                 		}
                 	}else {
 	                    if(!element.getClassName().startsWith("jdk.internal.reflect")
@@ -123,7 +163,7 @@ final class RetroHelper {
 	                            && !element.getClassName().startsWith("io.qt.internal.RetroHelper")) {
 		                    if(number==0){
 		                        try {
-		                            return new io.qt.InternalAccess.CallerContext(Class.forName(element.getClassName()), element.getMethodName(), element.getLineNumber());
+		                            return new io.qt.InternalAccess.CallerContext(Class.forName(element.getClassName()), element.getMethodName(), null, null, element.getLineNumber());
 		                        } catch (ClassNotFoundException e) {
 		                            ++number;
 		                        }
@@ -138,14 +178,27 @@ final class RetroHelper {
 			try {
 				Class<?> reflectionClass = Class.forName("sun.reflect.Reflection");
 				Method getCallerClass = reflectionClass.getMethod("getCallerClass", int.class);
-				Function<Integer,Class<?>> getCallerClassFun = QtJambiInternal.functionFromMethod(getCallerClass);
 				_callerClassProvider = ()->{
-			        return getCallerClassFun.apply(4);
+					try {
+						return (Class<?>)getCallerClass.invoke(null, 4);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (InvocationTargetException e) {
+						try {
+							throw e.getTargetException();
+						} catch (RuntimeException | Error e2) {
+							throw e2;
+						}catch(Throwable t) {
+							throw new RuntimeException(t);
+						}
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
 				};
 			} catch (Throwable e) {
 				_callerClassProvider = ()->{
 	                Class<?> result = Object.class;
-	                io.qt.InternalAccess.CallerContext info = classAccessChecker().apply(1);
+	                io.qt.InternalAccess.CallerContext info = classAccessChecker().apply(2);
 	                if(info!=null && info.declaringClass!=null) {
 	                    result = info.declaringClass;
 	                }
@@ -160,13 +213,24 @@ final class RetroHelper {
 				Class<?> factoryClass = Class.forName("java.lang.management.ManagementFactory");
 				Method getRuntimeMXBean = factoryClass.getMethod("getRuntimeMXBean");
 				Object runtimeMXBean = getRuntimeMXBean.invoke(null);
-				Method getName = runtimeMXBean.getClass().getMethod("getName");
-				pid = (String)getName.invoke(runtimeMXBean);
+				try {
+					Field jvm = runtimeMXBean.getClass().getDeclaredField("jvm");
+					jvm.setAccessible(true);
+					Object management = jvm.get(runtimeMXBean);
+					Method method = management.getClass().getDeclaredMethod("getProcessId");
+					method.setAccessible(true);
+					pid = ""+method.invoke(management);
+				} catch (Throwable e) {
+					Method getName = runtimeMXBean.getClass().getMethod("getName");
+					getName.setAccessible(true);
+					pid = (String)getName.invoke(runtimeMXBean);
+			        int index = pid.indexOf('@');
+			        if(index>0)
+			            pid = pid.substring(0, index);
+				}
 			} catch (Throwable e) {
+				Logger.getLogger("io.qt.internal").throwing("Java8Implementor", "<init>", e);
 			}
-	        int index = pid.indexOf('@');
-	        if(index>0)
-	            pid = pid.substring(0, index);
 	        this.processName = pid;
 		}
 
@@ -205,6 +269,31 @@ final class RetroHelper {
 	        }
 	        return null;
 		}
+
+		@Override
+		public boolean isProcessAlive(String pid) {
+			switch (NativeLibraryManager.operatingSystem) {
+			case Linux:
+				return new File("/proc/"+pid+"/exe").exists();
+			case MacOSX:
+				try {
+					Process process = Runtime.getRuntime().exec(new String[]{"ps", "-p", pid});
+					return process.waitFor()==0;
+				} catch (Throwable e) {
+				}
+				break;
+			case Windows:
+				try {
+					Process process = Runtime.getRuntime().exec(new String[]{"tasklist", "/FI", "PID eq "+pid});
+					return process.waitFor()==0;
+				} catch (Throwable e) {
+				}
+				break;
+			default:
+				break;
+			}
+			return true; //...because unknown
+		}
 	}
 	
     private static final Implementor implementor;
@@ -227,7 +316,7 @@ final class RetroHelper {
     }
     
     static Supplier<CallerContext> callerContextProvider() {
-    	return ()->implementor.classAccessChecker().apply(0);
+    	return ()->implementor.classAccessChecker().apply(2);
     }
     
     static <T extends AnnotatedElement> T getAnnotatedOwnerType(T actualType) {
@@ -283,4 +372,8 @@ final class RetroHelper {
 		} catch (Throwable e) {}
 		return null;
     }
+
+	static boolean isProcessAlive(String pid) {
+		return implementor.isProcessAlive(pid);
+	}
 }

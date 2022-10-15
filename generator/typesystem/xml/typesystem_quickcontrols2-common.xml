@@ -45,4 +45,5 @@
 <typesystem qt-library="QtQuickControls2" description="Provides lightweight QML types for creating performant user interfaces for desktop, embedded, and mobile devices. These types employ a simple styling architecture and are very efficient.">
     <namespace-type name="QQuickStyle">
     </namespace-type>
+    <rejection class="" function-name="qml_register_types_QtQuick_Controls"/>
 </typesystem>

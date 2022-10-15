@@ -13,10 +13,12 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.9`, `6.2.7` or by `6.3.4`).
+(exchange `$VERSION` either by `5.15.10`, `6.2.8`, `6.3.5` or by `6.4.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
+
+## Example Program
 
 Create a file **Test.java** containing the following code
 
@@ -34,32 +36,51 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.3.4.jar Test.java
+javac -cp qtjambi-6.4.0.jar Test.java
 ```
 
+## Executing Example
+
 For execution you need the platform dependent binaries of *QtJambi*. For
-instance, if you are working on Windows download and unpack the win64
-binaries. The required DLLs are to be found in the `bin` folder (`lib`
-folder on Linux and macOS). Additionally, you need *Qt*. Use the [Qt
+instance, if you are working on Windows download the *windows-x64*
+binaries. Additionally, you need *Qt*. Use the [Qt
 installer](https://www.qt.io/download-qt-installer) to install Qt on
 your system. Make sure you are using the same Qt version and QtJambi
-version (e.g. 5.15 or 6.3).
+version (e.g. 5.15 or 6.3). On Linux, you can alternatively use Qt system libraries (correct version provided).
+The required DLLs are to be found in the `bin` folder on Windows and `lib` folder on Linux and macOS, respectively. 
 
 When running a QtJambi application you have to make the locations of Qt
 and QtJambi libraries known to Java. Therefore, use the **PATH**
 environment (**LD\_LIBRARY\_PATH** on Linux, **DYLD\_FRAMEWORK\_PATH** on
-macOS) or the Java runtime property **java.library.path**. The example
-program can be executed this way:
+macOS) or the Java runtime property **java.library.path**.
+
+The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.3.4.jar;qtjambi-native-windows-x64-6.3.4.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.4.0.jar;qtjambi-native-windows-x64-6.4.0.jar;. -Djava.library.path=C:\Qt\6.4.0\msvc2019_64\bin Test
 ```
 
-On *macOS* you need to use the start parameter `-XstartOnFirstThread`:
+On Linux it looks this way:
 
 ``` bash
-java -XstartOnFirstThread -cp qtjambi-6.3.4.jar:qtjambi-native-windows-x64-6.3.4.jar:. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.4.0.jar:qtjambi-native-linux-x64-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/gcc_64/lib Test
 ```
+
+On macOS you additionally need to use the start parameter -XstartOnFirstThread:
+
+``` bash
+java -cp qtjambi-6.4.0.jar:qtjambi-native-macos-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/macos/lib -XstartOnFirstThread Test
+```
+
+### Native Components
+
+QtJambi automatically detects the required native component jars if they are located next to their Java counterparts.
+You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`). Nevertheless, `qtjambi-native-OS-VERSION.jar` bundles are
+extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
+Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 
+application data path or common directory ([see below](#library-management)).
+
+## Further Reading
 
 In general, you can start learning how to use Qt in Java [as it is
 introduced for
@@ -73,11 +94,13 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.9/),
+Documentation](https://doc.qtjambi.io/5.15.10/),
 [QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.7/)
-and [QtJambi 6.3 API Reference
-Documentation](https://doc.qtjambi.io/6.3.4/)
+Documentation](https://doc.qtjambi.io/6.2.8/)
+[QtJambi 6.3 API Reference
+Documentation](https://doc.qtjambi.io/6.3.5/)
+and [QtJambi 6.4 API Reference
+Documentation](https://doc.qtjambi.io/6.4.0/)
 
 ## Useful Java System Properties for QtJambi
 
