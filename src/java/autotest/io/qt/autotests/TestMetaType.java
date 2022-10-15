@@ -45,12 +45,27 @@ import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
+import io.qt.core.QString;
 import io.qt.core.QVariant;
-import io.qt.gui.QColor;
 import io.qt.gui.QWindow;
+import io.qt.internal.QtJambiInternal;
 
 public class TestMetaType extends ApplicationInitializer {
-    @SuppressWarnings("serial")
+	
+	@Test
+    public void testOwnership() {
+		QByteArray ba = (QByteArray)new QMetaType(QMetaType.Type.QByteArray).create();
+		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(ba));
+	}
+	
+	@Test
+    public void testWellTyped() {
+		assertEquals(new QMetaType(QMetaType.Type.QString), QMetaType.fromType(QString.class));
+		assertEquals(new QMetaType(QMetaType.Type.QVariant), QMetaType.fromType(QVariant.class));
+		assertEquals(new QMetaType(QMetaType.Type.QString), QMetaType.fromObject(new QString()));
+		assertEquals(new QMetaType(QMetaType.Type.QVariant), QMetaType.fromObject(new QVariant()));
+	}
+	
 	@Test
     public void testRegisterStreams() {
     	try {
@@ -73,6 +88,7 @@ public class TestMetaType extends ApplicationInitializer {
 		} catch (IllegalArgumentException e1) {
 			if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 				QMetaType.registerDataStreamOperators(new QMetaType.DataStreamInFn<MetaValue>(){
+					private static final long serialVersionUID = 1L;
 					@Override
 					public void accept(QDataStream s, MetaValue value) {
 						s.writeInt(value.i);
@@ -81,6 +97,7 @@ public class TestMetaType extends ApplicationInitializer {
 					}
 				},
 				new QMetaType.DataStreamOutFn<MetaValue>(){
+					private static final long serialVersionUID = 1L;
 					@Override
 					public MetaValue apply(QDataStream s) {
 						MetaValue value = new MetaValue();
@@ -95,6 +112,7 @@ public class TestMetaType extends ApplicationInitializer {
 			}
 		}
 		QMetaType.registerDataStreamOperators(new QMetaType.DataStreamInFn<MetaValue2>(){
+													private static final long serialVersionUID = 1L;
 													@Override
 													public void accept(QDataStream s, MetaValue2 value) {
 														s.writeInt(value.i);
@@ -104,6 +122,7 @@ public class TestMetaType extends ApplicationInitializer {
 													}
 												},
 												new QMetaType.DataStreamOutFn<MetaValue2>(){
+													private static final long serialVersionUID = 1L;
 													@Override
 													public MetaValue2 apply(QDataStream s) {
 														MetaValue2 value = new MetaValue2();
@@ -126,6 +145,7 @@ public class TestMetaType extends ApplicationInitializer {
 		} catch (IllegalArgumentException e1) {
 			if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 				QMetaType.registerDebugStreamOperator(new QMetaType.DebugStreamFn<MetaValue>(){
+					private static final long serialVersionUID = 1L;
 					@Override
 					public void accept(QDebug d, MetaValue value) {
 						d.append("MetaValue [i=" + value.i + ", d=" + value.d + ", s=" + value.s + "]");
@@ -136,23 +156,28 @@ public class TestMetaType extends ApplicationInitializer {
 			}
 		}
     	QMetaType.registerDebugStreamOperator(new QMetaType.DebugStreamFn<MetaValue2>(){
+			private static final long serialVersionUID = 1L;
 			@Override
 			public void accept(QDebug d, MetaValue2 value) {
 				d.append("MetaValue2 [i=" + value.i + ", d=" + value.d + ", s=" + value.s + ", f=" + value.f + "]");
 			}
 		});
-    	QMetaType.registerMetaType(SerializableMetaValue.class);
+    	QMetaType.qRegisterMetaType(SerializableMetaValue.class);
     	MetaValue mvalue = new MetaValue();
     	mvalue.i = 5;
     	mvalue.d = 9.246;
     	mvalue.s = "TEST";
     	QByteArray buffer = new QByteArray();
-    	QVariant.saveObject(new QDataStream(buffer, QIODevice.OpenModeFlag.WriteOnly), mvalue);
-    	Object restored = QVariant.loadObject(new QDataStream(buffer, QIODevice.OpenModeFlag.ReadOnly));
-    	assertTrue(restored instanceof MetaValue);
-    	assertEquals(mvalue.i, ((MetaValue)restored).i);
-    	assertEquals(mvalue.d, ((MetaValue)restored).d, 0.01);
-    	assertEquals(mvalue.s, ((MetaValue)restored).s);
+    	QDataStream stream = new QDataStream(buffer, QIODevice.OpenModeFlag.WriteOnly);
+    	stream.writeObject(mvalue);
+    	stream.dispose();
+    	stream = new QDataStream(buffer, QIODevice.OpenModeFlag.ReadOnly);
+    	MetaValue restored = stream.readObject(MetaValue.class);
+    	stream.dispose();
+    	assertTrue(restored!=null);
+    	assertEquals(mvalue.i, restored.i);
+    	assertEquals(mvalue.d, restored.d, 0.01);
+    	assertEquals(mvalue.s, restored.s);
     	StringBuilder string = new StringBuilder();
     	try(QDebug debug = new QDebug(string)){
     		debug.nospace().append(restored);
@@ -164,15 +189,19 @@ public class TestMetaType extends ApplicationInitializer {
     	svalue.d = 9.246;
     	svalue.s = "TEST";
     	buffer.clear();
-    	QVariant.saveObject(new QDataStream(buffer, QIODevice.OpenModeFlag.WriteOnly), svalue);
-    	restored = QVariant.loadObject(new QDataStream(buffer, QIODevice.OpenModeFlag.ReadOnly));
-    	assertTrue(restored instanceof SerializableMetaValue);
-    	assertEquals(svalue.i, ((SerializableMetaValue)restored).i);
-    	assertEquals(svalue.d, ((SerializableMetaValue)restored).d, 0.01);
-    	assertEquals(svalue.s, ((SerializableMetaValue)restored).s);
+    	stream = new QDataStream(buffer, QIODevice.OpenModeFlag.WriteOnly);
+    	stream.writeObject(svalue);
+    	stream.dispose();
+    	stream = new QDataStream(buffer, QIODevice.OpenModeFlag.ReadOnly);
+    	SerializableMetaValue srestored = stream.readObject(SerializableMetaValue.class);
+    	stream.dispose();
+    	assertTrue(srestored!=null);
+    	assertEquals(svalue.i, srestored.i);
+    	assertEquals(svalue.d, srestored.d, 0.01);
+    	assertEquals(svalue.s, srestored.s);
     	string = new StringBuilder();
     	try(QDebug debug = new QDebug(string)){
-    		debug.nospace().append(restored);
+    		debug.nospace().append(srestored);
     	}
     	assertEquals("SerializableMetaValue [i=" + svalue.i + ", d=" + svalue.d + ", s=" + svalue.s + "]", string.toString());
     	
@@ -188,11 +217,6 @@ public class TestMetaType extends ApplicationInitializer {
 		}
     	try {
 			QMetaType.registerDataStreamOperators((QDataStream s, QCoreApplication value)->{}, s->(QCoreApplication)null);
-			fail("IllegalArgumentException expected to be thrown.");
-		} catch (IllegalArgumentException e) {
-		}
-    	try {
-			QMetaType.registerDataStreamOperators((QDataStream s, MyColor value)->{}, s->(MyColor)null);
 			fail("IllegalArgumentException expected to be thrown.");
 		} catch (IllegalArgumentException e) {
 		}
@@ -220,9 +244,6 @@ public class TestMetaType extends ApplicationInitializer {
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaType.class.getName());
     }
-}
-
-class MyColor extends QColor{
 }
 
 class MyObject extends QObject{

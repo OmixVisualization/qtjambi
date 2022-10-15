@@ -252,8 +252,6 @@ public final class QProperty<T> extends QPropertyData<T> {
 	@QtUninvokable
 	public void setValue(T newValue)
     {
-		if(newValue!=null && !QVariant.canConvert(newValue, d.metaType))
-			throw new ClassCastException("Cannot cast value to "+d.metaType.name());
         d.removeBinding();
         if (d.setValueBypassingBindings(this, newValue))
         	d.notifyObservers(this);

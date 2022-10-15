@@ -124,6 +124,7 @@ import io.qt.core.QPair;
 import io.qt.core.QQueue;
 import io.qt.core.QSet;
 import io.qt.core.QStack;
+import io.qt.core.QStringList;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
 import io.qt.internal.QtJambiSignals.AbstractSignal;
@@ -940,27 +941,6 @@ public final class QtJambiInternal {
 	public static final char SlotPrefix = '1';
 	public static final char SignalPrefix = '2';
 
-	static Class<?> getComplexType(Class<?> primitiveType) {
-		if (primitiveType == int.class)
-			return Integer.class;
-		else if (primitiveType == double.class)
-			return Double.class;
-		else if (primitiveType == long.class)
-			return Long.class;
-		else if (primitiveType == float.class)
-			return Float.class;
-		else if (primitiveType == short.class)
-			return Short.class;
-		else if (primitiveType == boolean.class)
-			return Boolean.class;
-		else if (primitiveType == char.class)
-			return Character.class;
-		else if (primitiveType == byte.class)
-			return Byte.class;
-		else
-			return primitiveType;
-	}
-	
 	static QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
 		return methodInvocationHandler.getSlotInvoker(slot, slotHandle);
 	}
@@ -1332,6 +1312,7 @@ public final class QtJambiInternal {
 	private static final int BOOLEAN_ARRAY_MAGIC = 0x04040406;
 	private static final int CHAR_ARRAY_MAGIC = 0x04040407;
 	private static final int OBJECT_ARRAY_MAGIC = 0x04040408;
+	private static final int OBJECT_ARRAY_MAGIC_V2 = 0x04040409;
 
 	private static ReadWriteHandles getReadWriteHandles(Class<?> _cls) {
 		return readWriteHandles.computeIfAbsent(_cls, cls ->{
@@ -1358,6 +1339,7 @@ public final class QtJambiInternal {
 		});
 	}
 
+	@SuppressWarnings("deprecation")
 	@NativeAccess
 	private static Object readSerializableJavaObject(final QDataStream s) throws ClassNotFoundException, IOException {
 		Object res = null;
@@ -1481,6 +1463,19 @@ public final class QtJambiInternal {
 					}
 				}
 				break;
+			case OBJECT_ARRAY_MAGIC_V2:
+				length = s.readInt();
+				{
+					cls = Class.forName(s.readString());
+					res = Array.newInstance(cls, length);
+					for (int i = 0; i < length; i++) {
+						QVariant variant = new QVariant();
+						variant.load(s);
+						Array.set(res, i, variant.value());
+						variant.dispose();
+					}
+				}
+				break;
 			case RWH_MAGIC:
 				cls = Class.forName(s.readString());
 				ReadWriteHandles readWriteHandles = getReadWriteHandles(cls);
@@ -1583,11 +1578,13 @@ public final class QtJambiInternal {
 				}
 			}else {
 				Object[] array = (Object[])o;
-				s.writeInt(OBJECT_ARRAY_MAGIC);
+				s.writeInt(OBJECT_ARRAY_MAGIC_V2);
 				s.writeString(objectClass.getComponentType().getName());
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					QVariant.saveObject(s, array[i]);
+					QVariant variant = new QVariant(array[i]);
+					variant.save(s);
+					variant.dispose();
 				}
 			}
 		}else {
@@ -1680,8 +1677,13 @@ public final class QtJambiInternal {
 	static native String libraryFilePath();
 	
 	public static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn) {
+		boolean isCustomValueType = isCustomValueType(metaType);
 		if(!isObjectWrapperType(metaType)) {
-			if(classType.isArray())
+			if(isCustomValueType) {
+				if(metaTypeHasDataStreamOperators(metaType)) {
+					throw new RuntimeException(String.format("Datastream operators already exist for type %1$s.", classType.getTypeName()));
+				}
+			}else if(classType.isArray())
 				throw new IllegalArgumentException(String.format("Unable to register datastream operators for type %1$s.", classType.getTypeName()));
 			else
 				throw new IllegalArgumentException(String.format("Unable to register datastream operators for type %1$s (%2$s).", classType.getTypeName(), new QMetaType(metaType).name()));
@@ -1689,12 +1691,19 @@ public final class QtJambiInternal {
 		DataStreamFunctions functions = dataStreamFunctions.computeIfAbsent(classType, cls->new DataStreamFunctions(datastreamInFn, datastreamOutFn));
 		if(functions.datastreamInFn!=datastreamInFn || functions.datastreamOutFn!=datastreamOutFn)
 			throw new RuntimeException(String.format("Datastream operators already exist for type %1$s.", classType.getTypeName()));
+		if(isCustomValueType)
+			registerCustomDataStreamOperators(metaType);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static <T> void registerDebugStreamOperator(int metaType, Class<?> classType, java.util.function.BiConsumer<QDebug, T> debugstreamFn) {
+		boolean isCustomValueType = isCustomValueType(metaType);
 		if(!isObjectWrapperType(metaType)) {
-			if(classType.isArray())
+			if(isCustomValueType) {
+				if(metaTypeHasDebugStreamOperator(metaType)) {
+					throw new RuntimeException(String.format("Debug stream operator already exists for type %1$s.", classType.getTypeName()));
+				}
+			}else if(classType.isArray())
 				throw new IllegalArgumentException(String.format("Unable to register debug stream operator for type %1$s.", classType.getTypeName()));
 			else
 				throw new IllegalArgumentException(String.format("Unable to register debug stream operator for type %1$s (%2$s).", classType.getTypeName(), classType.getTypeName()));
@@ -1702,9 +1711,18 @@ public final class QtJambiInternal {
 		java.util.function.BiConsumer<QDebug,Object> fun = debugStreamFunctions.computeIfAbsent(classType, c->(java.util.function.BiConsumer<QDebug,Object>)debugstreamFn);
 		if(fun!=debugstreamFn)
 			throw new RuntimeException(String.format("Debug stream operator already exists for type %1$s.", classType.getTypeName()));
+		if(isCustomValueType)
+			registerCustomDebugStreamOperator(metaType);
 	}
 	
 	private static native boolean isObjectWrapperType(int metaType);
+	
+	//Qt6 only!
+	private static native boolean isCustomValueType(int metaType);
+	private static native boolean metaTypeHasDataStreamOperators(int metaType);
+	private static native boolean metaTypeHasDebugStreamOperator(int metaType);
+	private static native void registerCustomDataStreamOperators(int metaType);
+	private static native void registerCustomDebugStreamOperator(int metaType);
 
 	@NativeAccess
 	static boolean isGeneratedClass(Class<?> clazz) {
@@ -2219,11 +2237,89 @@ public final class QtJambiInternal {
 		}
 		return null;
 	}
+	
+	@NativeAccess
+	private static Object analyzeExpectedTemplateName(java.lang.Class<?> clazz, io.qt.core.QMetaType... instantiations) {
+		initializePackage(clazz);
+		Object[] typeParameters = clazz.getTypeParameters();
+        if(typeParameters.length>0) {
+        	if(typeParameters.length!=(instantiations!=null ? instantiations.length : 0)) {
+        		if(instantiations==null || instantiations.length==0) {
+    				return null;
+        		}
+        		throw new IllegalArgumentException("Number of instantiations does not correspond to number of type parameters.");
+        	}
+        	for (QMetaType instantiation : instantiations) {
+        		if(instantiation.id()==0)
+        			throw new IllegalArgumentException("Invalid instantiation.");
+        	}
+        	switch(typeParameters.length) {
+        	case 1:
+        		if(instantiations[0].id()!=QMetaType.Type.Void.value()) {
+        			if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QString.value()) {
+        				return QMetaType.Type.QStringList;
+        			}else if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QByteArray.value()) {
+        				return QMetaType.Type.QByteArrayList;
+        			}else if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QVariant.value()) {
+        				return QMetaType.Type.QVariantList;
+        			}else if(clazz.getName().startsWith("io.qt.core.Q") && QtJambiCollectionObject.class.isAssignableFrom(clazz)) {
+        				return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
+        			}else if(clazz==java.util.Set.class) {
+        				return String.format("QSet<%1$s>", instantiations[0].name());
+        			}else if(clazz==java.util.Queue.class) {
+        				return String.format("QQueue<%1$s>", instantiations[0].name());
+        			}else if(clazz==java.util.Deque.class) {
+        				return String.format("QStack<%1$s>", instantiations[0].name());
+        			}else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
+        				return String.format("QList<%1$s>", instantiations[0].name());
+        			}
+        		}
+        		break;
+        	case 2:
+        		if(instantiations[0].id()!=QMetaType.Type.Void.value() && instantiations[1].id()!=QMetaType.Type.Void.value()) {
+        			if(clazz==QMap.class
+    					&& instantiations[0].id()==QMetaType.Type.QString.value()
+    					&& instantiations[1].id()==QMetaType.Type.QVariant.value()) {
+        				return QMetaType.Type.QVariantMap;
+        			}else if(clazz==QHash.class
+						&& instantiations[0].id()==QMetaType.Type.QString.value()
+						&& instantiations[1].id()==QMetaType.Type.QVariant.value()) {
+	    				return QMetaType.Type.QVariantHash;
+	    			}else if(clazz.getName().startsWith("io.qt.core.Q") && (QtJambiAbstractMapObject.class.isAssignableFrom(clazz) || QtJambiAbstractMultiMapObject.class.isAssignableFrom(clazz))) {
+        				return String.format("%1$s<%2$s,%3$s>", clazz.getSimpleName(), instantiations[0].name(), instantiations[1].name());
+        			}else if(clazz==java.util.Map.class) {
+        				return String.format("QHash<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name());
+        			}else if(clazz==java.util.TreeMap.class) {
+        				return String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name());
+        			}else if(clazz==java.util.HashMap.class) {
+        				return String.format("QHash<%1$s>", instantiations[0].name(), instantiations[1].name());
+        			}else if(clazz.isInterface() && java.util.NavigableMap.class.isAssignableFrom(clazz)) {
+        				return String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name());
+        			}
+        		}
+        		break;
+        	}
+        	if(io.qt.QtObjectInterface.class.isAssignableFrom(clazz)) {
+        		String name = clazz.getSimpleName();
+        		QStringList _instantiations = new QStringList();
+        		for (QMetaType instantiation : instantiations) {
+        			_instantiations.add(instantiation.name().toString());
+        		}
+        		return String.format("%1$s<%2$s>", name, _instantiations.join(','));
+        	}
+        }else {
+        	if(instantiations!=null && instantiations.length>0) {
+        		throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
+        	}
+        }
+        return null;
+	}
 
 	public static boolean initializePackage(ClassLoader classLoader, java.lang.Package pkg) {
 		return pkg != null && initializePackage(classLoader, pkg.getName());
 	}
 
+	@NativeAccess
 	public static boolean initializePackage(java.lang.Class<?> cls) {
 		return cls != null && cls.getPackage() != null && initializePackage(cls.getClassLoader(), cls.getPackage().getName());
 	}
@@ -2511,9 +2607,9 @@ public final class QtJambiInternal {
 						String keyName = internalTypeNameOfClass((Class<?>) keyType, actualTypes[0]);
 						String valueName = internalTypeNameOfClass((Class<?>) valueType, actualTypes[1]);
 						if(keyType==actualTypes[0])
-							QMetaType.registerMetaType((Class<?>) keyType);
+							QMetaType.qRegisterMetaType((Class<?>) keyType);
 						if(valueType==actualTypes[1])
-							QMetaType.registerMetaType((Class<?>) valueType);
+							QMetaType.qRegisterMetaType((Class<?>) valueType);
 						if(cls==NavigableMap.class) {
 							return String.format("QMap<%1$s,%2$s>", keyName, valueName);
 						}else if(cls==Map.class) {
@@ -2549,7 +2645,7 @@ public final class QtJambiInternal {
 					if(elementType instanceof Class) {
 						String elementName = internalTypeNameOfClass((Class<?>) elementType, actualTypes[0]);
 						if(elementType==actualTypes[0])
-							QMetaType.registerMetaType((Class<?>) elementType);
+							QMetaType.qRegisterMetaType((Class<?>) elementType);
 						if(cls==Collection.class
 								|| cls==Queue.class
 								|| cls==Deque.class
@@ -2589,27 +2685,8 @@ public final class QtJambiInternal {
 	
 	native static String internalTypeNameByClass(Class<?> cls);
 
-	private static native int __qt_registerMetaType(Class<?> clazz, boolean isPointer, boolean isReference);
-	
-	private static native int __qt_registerMetaType2(int id, boolean isPointer, boolean isReference);
+	static native int registerRefMetaType(int id, boolean isPointer, boolean isReference);
 
-	private static native int __qt_registerContainerMetaType(Class<?> containerType, int... instantiations);
-	
-	static int registerRefMetaType(int id, boolean isPointer, boolean isReference) {
-		if(!isPointer && !isReference)
-			return id;
-		return __qt_registerMetaType2(id, isPointer, isReference);
-	}
-	
-
-	public static int registerMetaType(Class<?> clazz) {
-		return registerMetaType(clazz, clazz, null, false, false);
-	}
-
-	public static int registerMetaType(Class<?> clazz, int[] instantiations) {
-		return __qt_registerContainerMetaType(clazz, instantiations);
-	}
-	
 	public static native int findMetaType(String name);
 	
 	static int registerMetaType(Parameter parameter) {
@@ -2647,9 +2724,9 @@ public final class QtJambiInternal {
 					}
 				}
 				if(isPointer) {
-					id = __qt_registerMetaType2(id, true, false);
+					id = registerRefMetaType(id, true, false);
 				}else if(isReference){
-					id = __qt_registerMetaType2(id, false, true);
+					id = registerRefMetaType(id, false, true);
 				}
 				return id;
 			}
@@ -2685,7 +2762,7 @@ public final class QtJambiInternal {
 						} else if (actualTypeArguments[0] == QByteArray.class) {
 							return QMetaType.Type.QByteArrayList.value();
 						} else if (actualTypeArguments[0] instanceof Class<?>) {
-							if (metaTypeId((Class<?>) actualTypeArguments[0]) == QMetaType.Type.QVariant.value()) {
+							if (QMetaType.qMetaTypeId((Class<?>) actualTypeArguments[0]) == QMetaType.Type.QVariant.value()) {
 								return QMetaType.Type.QVariantList.value();
 							}
 						}
@@ -2706,18 +2783,17 @@ public final class QtJambiInternal {
 					if(elementType!=0) {
 						int cotainerMetaType;
 						if(AbstractMetaObjectTools.isListType(clazz)) {
-							cotainerMetaType = __qt_registerContainerMetaType(clazz, elementType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(clazz, new QMetaType(elementType));
 						}else if(Deque.class==parameterizedType.getRawType()) {
-							cotainerMetaType = __qt_registerContainerMetaType(QStack.class, elementType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QStack.class, new QMetaType(elementType));
 						}else if(Queue.class==parameterizedType.getRawType()) {
-							cotainerMetaType = __qt_registerContainerMetaType(QQueue.class, elementType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QQueue.class, new QMetaType(elementType));
 						}else if(Set.class==parameterizedType.getRawType()) {
-							cotainerMetaType = __qt_registerContainerMetaType(QSet.class, elementType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QSet.class, new QMetaType(elementType));
 						}else {
-							cotainerMetaType = __qt_registerContainerMetaType(QList.class, elementType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QList.class, new QMetaType(elementType));
 						}
-						if(isPointer || isReference)
-							cotainerMetaType = __qt_registerMetaType2(cotainerMetaType, isPointer, isReference);
+						cotainerMetaType = registerRefMetaType(cotainerMetaType, isPointer, isReference);
 						return cotainerMetaType;
 					}
 				} else if ((
@@ -2732,12 +2808,12 @@ public final class QtJambiInternal {
 					if (actualTypeArguments[0] == String.class
 							&& actualTypeArguments[1] instanceof Class<?>) {
 						if(NavigableMap.class==parameterizedType.getRawType()) {
-							if (metaTypeId((Class<?>) actualTypeArguments[1]) == QMetaType.Type.QVariant.value()) {
+							if (QMetaType.qMetaTypeId((Class<?>) actualTypeArguments[1]) == QMetaType.Type.QVariant.value()) {
 								return QMetaType.Type.QVariantMap.value();
 							}
 						}
 						if(Map.class==parameterizedType.getRawType()) {
-							if (metaTypeId((Class<?>) actualTypeArguments[1]) == QMetaType.Type.QVariant.value()) {
+							if (QMetaType.qMetaTypeId((Class<?>) actualTypeArguments[1]) == QMetaType.Type.QVariant.value()) {
 								return QMetaType.Type.QVariantHash.value();
 							}
 						}
@@ -2771,36 +2847,26 @@ public final class QtJambiInternal {
 					if(keyType!=0 && valueType!=0) {
 						int cotainerMetaType;
 						if(NavigableMap.class==parameterizedType.getRawType()) {
-							cotainerMetaType = __qt_registerContainerMetaType(QMap.class, keyType, valueType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QMap.class, new QMetaType(keyType), new QMetaType(valueType));
 						}else if(Map.class==parameterizedType.getRawType()) {
-							cotainerMetaType = __qt_registerContainerMetaType(QHash.class, keyType, valueType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(QHash.class, new QMetaType(keyType), new QMetaType(valueType));
 						}else {
-							cotainerMetaType = __qt_registerContainerMetaType(clazz, keyType, valueType);
+							cotainerMetaType = QMetaType.qRegisterMetaType(clazz, new QMetaType(keyType), new QMetaType(valueType));
 						}
-						if(isPointer || isReference)
-							cotainerMetaType = __qt_registerMetaType2(cotainerMetaType, isPointer, isReference);
+						cotainerMetaType = registerRefMetaType(cotainerMetaType, isPointer, isReference);
 						return cotainerMetaType;
 					}
 				}
 			}
 		}
-		return __qt_registerMetaType(clazz, isPointer, isReference);
+		return registerRefMetaType(QMetaType.qRegisterMetaType(clazz), isPointer, isReference);
 	}
-
-	private static native int __qt_metaTypeId(Class<?> clazz);
-
-	public static int metaTypeId(Class<?> clazz) {
-		initializePackage(clazz);
-		return __qt_metaTypeId(clazz);
-	}
-
-	public static native Class<?> javaTypeForMetaTypeId(int metaTypeId);
 
 	public static int objectMetaTypeId(Object o) {
 		if (o == null) {
 			return QMetaType.Type.Nullptr.value();
 		} else {
-			return metaTypeId(QtJambiInternal.getClass(o));
+			return QMetaType.qMetaTypeId(QtJambiInternal.getClass(o));
 		}
 	}
 
@@ -2808,7 +2874,7 @@ public final class QtJambiInternal {
 		int id = QMetaType.Type.UnknownType.value();
 		if (QtObjectInterface.class.isAssignableFrom(clazz)) {
 			initializePackage(clazz);
-			id = __qt_metaTypeId(clazz);
+			id = QMetaType.qMetaTypeId(clazz);
 			if (QMetaType.Type.UnknownType.value() == id) {
 				if (!clazz.isInterface())
 					id = nextMetaTypeId(clazz.getSuperclass());
@@ -2822,7 +2888,7 @@ public final class QtJambiInternal {
 				}
 			}
 		} else {
-			id = __qt_metaTypeId(clazz);
+			id = QMetaType.qMetaTypeId(clazz);
 		}
 		return id;
 	}
@@ -2923,19 +2989,9 @@ public final class QtJambiInternal {
 		}
 	}
 
-	public static void initializeNativeObject(QtObjectInterface object, Map<Class<?>, List<?>> arguments)
+	public static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<?>> arguments)
 			throws IllegalArgumentException {
-		Class<?> cls = getClass(object);
-		io.qt.InternalAccess.CallerContext callerInfo = RetroHelper.classAccessChecker().apply(2);
-		if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
-				|| !"<init>".equals(callerInfo.methodName)) {
-			throw new RuntimeException(new IllegalAccessException(
-					"QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor. Expected: "
-							+ cls.getName() + ".<init>, found: "
-							+ (callerInfo.declaringClass == null ? "null" : callerInfo.declaringClass.getName()) + "."
-							+ callerInfo.methodName));
-		}
-		__qt_initializeNativeObject(callerInfo.declaringClass, object, findInterfaceLink(object, true, false), arguments);
+		__qt_initializeNativeObject(declaringClass, object, findInterfaceLink(object, true, false), arguments);
 	}
 
 	static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
@@ -3576,6 +3632,14 @@ public final class QtJambiInternal {
 	public static void loadLibrary(String lib) {
 		NativeLibraryManager.loadLibrary(lib);
 	}
+	
+	public static void useAsGadget(Class<?> clazz) {
+		MetaObjectTools.useAsGadget(clazz);
+    }
+    
+    public static void usePackageContentAsGadgets(String _package) {
+    	MetaObjectTools.usePackageContentAsGadgets(_package);
+    }
 
 	public static File jambiDeploymentDir() {
 		return NativeLibraryManager.jambiDeploymentDir();
@@ -3616,25 +3680,6 @@ public final class QtJambiInternal {
 	public static String osArchName() {
 		return NativeLibraryManager.osArchName();
 	}
-
-	public static Object createMetaType(int id, Class<?> javaType, Object copy) {
-		if (copy != null && javaType != null) {
-			if (javaType.isPrimitive()) {
-				copy = getComplexType(javaType).cast(copy);
-			} else {
-				if (Collection.class.isAssignableFrom(javaType)) {
-					copy = Collection.class.cast(copy);
-				} else if (Map.class.isAssignableFrom(javaType)) {
-					copy = Map.class.cast(copy);
-				} else {
-					copy = javaType.cast(copy);
-				}
-			}
-		}
-		return __qt_createMetaType(id, copy);
-	}
-
-	private native static Object __qt_createMetaType(int id, Object copy);
 	
 	@NativeAccess
 	private static IntFunction<io.qt.InternalAccess.CallerContext> invocationInfoProvider(){
@@ -4579,6 +4624,41 @@ public final class QtJambiInternal {
 		@Override
 		public <T> Supplier<T> getFactory0(Constructor<T> constructor) {
 			return QtJambiInternal.getFactory0(constructor);
+		}
+
+		@Override
+		public <A, T> Function<A, T> getFactory1(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory1(constructor);
+		}
+
+		@Override
+		public <A, B, T> BiFunction<A, B, T> getFactory2(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory2(constructor);
+		}
+
+		@Override
+		public <A, B, C, T> Method3<A, B, C, T> getFactory3(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory3(constructor);
+		}
+
+		@Override
+		public <A, B, C, D, T> Method4<A, B, C, D, T> getFactory4(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory4(constructor);
+		}
+
+		@Override
+		public <A, B, C, D, E, T> Method5<A, B, C, D, E, T> getFactory5(Constructor<T> constructor) {
+			return QtJambiInternal.getFactory5(constructor);
+		}
+
+		@Override
+		public <T> T invokeContructor(Constructor<T> constructor, Object... args) throws Throwable {
+			return QtJambiInternal.invokeContructor(constructor, args);
+		}
+
+		@Override
+		public Object invokeMethod(Method method, Object object, Object... args) throws Throwable {
+			return QtJambiInternal.invokeMethod(method, object, args);
 		}
 
 		@Override

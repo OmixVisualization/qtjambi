@@ -286,9 +286,87 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isObjectWrapperType)
  jint metaTypeId)
 {
     return metaTypeId == registeredMetaTypeID(typeid(JObjectWrapper))
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            || isJObjectWrappedMetaType(QMetaType(metaTypeId))
+#endif
             || metaTypeId == registeredMetaTypeID(typeid(JCollectionWrapper))
             || metaTypeId == registeredMetaTypeID(typeid(JMapWrapper))
             || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_isCustomValueType)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return JObjectValueWrapper::isValueType(QMetaType(metaTypeId));
+#else
+    Q_UNUSED(metaTypeId)
+    return false;
+#endif
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_metaTypeHasDataStreamOperators)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QMetaType metaType(metaTypeId);
+    return metaType.iface()->dataStreamIn || metaType.iface()->dataStreamOut;
+#else
+    Q_UNUSED(metaTypeId)
+    return false;
+#endif
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_metaTypeHasDebugStreamOperator)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return JObjectValueWrapper::hasCustomDebugStreamOperator(QMetaType(metaTypeId));
+#else
+    Q_UNUSED(metaTypeId)
+    return false;
+#endif
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_registerCustomDataStreamOperators)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QMetaType metaType(metaTypeId);
+    if(!metaType.iface()->dataStreamIn && !metaType.iface()->dataStreamOut){
+        const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->dataStreamIn = QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamIn;
+        const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->dataStreamOut = QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamOut;
+    }
+#else
+    Q_UNUSED(metaTypeId)
+#endif
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_registerCustomDebugStreamOperator)
+(JNIEnv *,
+ jclass,
+ jint metaTypeId)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QMetaType metaType(metaTypeId);
+    if(!JObjectValueWrapper::hasCustomDebugStreamOperator(metaType))
+        const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->debugStream = QtPrivate::QDebugStreamOperatorForType<JObjectWrapper>::debugStream;
+#else
+    Q_UNUSED(metaTypeId)
+#endif
 }
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
@@ -1077,47 +1155,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_internalTypeNameByCl
     return nullptr;
 }
 
-void __savePointer(QDataStream &stream, const void * pointer){
-#if QT_POINTER_SIZE==8
-    qint64 value = qint64(pointer);
-#else
-    qint32 value = qint32(pointer);
-#endif
-    stream << value;
-    qWarning() << "write pointer: " << value;
-}
-
-void __loadPointer(QDataStream & stream, void * pointer){
-    Q_UNUSED(pointer)
-#if QT_POINTER_SIZE==8
-    qint64 value;
-#else
-    qint32 value;
-#endif
-    stream >> value;
-    pointer = reinterpret_cast<void*>(value);
-    qWarning() << "read pointer: " << value;
-}
-
-template<size_t SIZE>
-void * constructHelper(void * where, const void *pointer)
-{
-    memcpy(where, pointer, SIZE);
-    return where;
-}
-
-typedef void*(*ConstructorFn)(void*, const void*);
-ConstructorFn findConstructor(int size){
-    switch(size){
-    case 1: return &constructHelper<1>;
-    case 2: return &constructHelper<2>;
-    case 4: return &constructHelper<4>;
-    case 8: return &constructHelper<8>;
-    default:
-        return nullptr;
-    }
-}
-
 typedef void(*DestructorFn)(void*);
 void destructHelper(void *){}
 
@@ -1129,417 +1166,37 @@ void * pointerConstructHelper(void * where, const void *pointer)
     return where;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass);
-#else
-void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass);
 void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, const QString& qtName, const QString& fullJavaName, jclass clazz);
+int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference);
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#define qtjambiMetaType QMetaType::fromType
+//qMetaTypeId
+#else
+#define qtjambiMetaType QMetaType::fromType
 #endif
 
-int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference)
-{
-    try{
-        if(Java::Runtime::Class::isArray(env, clazz) && !isPointer){
-            jclass componentType = Java::Runtime::Class::getComponentType(env, clazz);
-            if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
-                return registerMetaType<JIntArrayWrapper>("JIntArrayWrapper");
-            }else if(Java::Runtime::Short::isPrimitiveType(env, componentType)){
-                return registerMetaType<JShortArrayWrapper>("JShortArrayWrapper");
-            }else if(Java::Runtime::Byte::isPrimitiveType(env, componentType)){
-                return registerMetaType<JByteArrayWrapper>("JByteArrayWrapper");
-            }else if(Java::Runtime::Long::isPrimitiveType(env, componentType)){
-                return registerMetaType<JLongArrayWrapper>("JLongArrayWrapper");
-            }else if(Java::Runtime::Character::isPrimitiveType(env, componentType)){
-                return registerMetaType<JCharArrayWrapper>("JCharArrayWrapper");
-            }else if(Java::Runtime::Boolean::isPrimitiveType(env, componentType)){
-                return registerMetaType<JBooleanArrayWrapper>("JBooleanArrayWrapper");
-            }else if(Java::Runtime::Double::isPrimitiveType(env, componentType)){
-                return registerMetaType<JDoubleArrayWrapper>("JDoubleArrayWrapper");
-            }else if(Java::Runtime::Float::isPrimitiveType(env, componentType)){
-                return registerMetaType<JFloatArrayWrapper>("JFloatArrayWrapper");
-            }else{
-                return registerMetaType<JObjectWrapper>("JObjectWrapper");
-            }
-        }else if((Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Int;
-        }else if((Java::Runtime::Long::isSameClass(env, clazz) || Java::Runtime::Long::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::LongLong;
-        }else if((Java::Runtime::Short::isSameClass(env, clazz) || Java::Runtime::Short::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Short;
-        }else if((Java::Runtime::Byte::isSameClass(env, clazz) || Java::Runtime::Byte::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::SChar;
-        }else if((Java::Runtime::Boolean::isSameClass(env, clazz) || Java::Runtime::Boolean::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Bool;
-        }else if((Java::Runtime::Character::isSameClass(env, clazz) || Java::Runtime::Character::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::QChar;
-        }else if((Java::Runtime::Float::isSameClass(env, clazz) || Java::Runtime::Float::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Float;
-        }else if((Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Double;
-        }else if((Java::Runtime::Void::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Void;
-        }else{
-            QString javaClassName = qtjambi_class_name(env, clazz).replace('.', '/');
-            if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
-                QByteArray qtType = getQtName(*typeId);
-                if((!isPointer || qtType.endsWith("*")) && (!isReference || !qtType.endsWith("*"))){
-                    int id = registeredMetaTypeID(*typeId);
-                    if(id!=QMetaType::UnknownType)
-                        return id;
-                }
-                const QMetaObject *meta_object = registeredOriginalMetaObject(*typeId);
-                QMetaType::TypeFlags flags = QMetaType::MovableType | QMetaType::NeedsDestruction | QMetaType::NeedsConstruction;
-                QByteArray typeName = QMetaObject::normalizedType(qtType);
-                EntryTypes entryType = getEntryType(*typeId);
-                if(isReference){
-                    switch(entryType){
-                    case EntryTypes::ObjectTypeInfo:
-                    case EntryTypes::QObjectTypeInfo:
-                        if(typeName.endsWith("*")){
-                            typeName.chop(1);
-                        }
-                        entryType = EntryTypes::ValueTypeInfo; break;
-                    case EntryTypes::InterfaceTypeInfo:
-                        if(typeName.endsWith("*")){
-                            typeName.chop(1);
-                        }
-                        entryType = EntryTypes::InterfaceValueTypeInfo; break;
-                    default: break;
-                    }
-                }else if(isPointer){
-                    switch(entryType){
-                    case EntryTypes::ValueTypeInfo:
-                        entryType = EntryTypes::ObjectTypeInfo; break;
-                    case EntryTypes::InterfaceValueTypeInfo:
-                        entryType = EntryTypes::InterfaceTypeInfo; break;
-                    default: break;
-                    }
-                }
-                switch(entryType){
-                case EntryTypes::ObjectTypeInfo:
-                case EntryTypes::QObjectTypeInfo:
-                case EntryTypes::InterfaceTypeInfo:
-                case EntryTypes::FunctionalTypeInfo: {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                    flags |= QMetaType::IsPointer;
-#endif
-                    if(entryType!=EntryTypes::FunctionalTypeInfo && !typeName.endsWith("*")){
-                        typeName = QMetaObject::normalizedType(typeName + "*");
-                    }
-                    if(Java::QtCore::QObject::isAssignableFrom(env, clazz)){
-                        flags |= QMetaType::PointerToQObject;
-                    }else if(meta_object){
-                        flags |= QMetaType::PointerToGadget;
-                    }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    QMetaType::Destructor destructor = &destructHelper;
-                    QMetaType::Constructor constructor = &pointerConstructHelper;
-                    int typeId = QMetaType::registerNormalizedType(
-                            typeName,
-                            destructor,
-                            constructor,
-                            sizeof(void*),
-                            flags,
-                            meta_object
-                        );
-                    qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                    return typeId;
-#else
-                    QMetaType metaType = createMetaType(typeName,
-                                                        true,
-                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
-                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
-                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::moveCtr,
-                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::dtor,
-                                                        /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
-                                                        /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
-                                                        /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
-                                                        /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
-                                                        /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
-                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::legacyRegisterOp,
-                                                        /*.size=*/ sizeof(void*),
-                                                        /*.alignment=*/ alignof(void*),
-                                                        /*.typeId=*/ QMetaType::UnknownType,
-                                                        /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                        meta_object,
-                                                        nullptr);
-                    metaType.id();
-                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                    registerConverterVariant(env, metaType, typeName, javaClassName, clazz);
-                    return metaType.id();
-#endif
-                }
-                case EntryTypes::EnumTypeInfo:{
-                    flags |= QMetaType::IsEnumeration;
-                    if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findConstructor(sizeof(qint16)),
-                                sizeof(sizeof(qint16)),
-                                flags,
-                                meta_object
-                            );
-                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint16>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                        return typeId;
-#else
-                        QMetaType metaType = createMetaType(typeName,
-                                                            true,
-                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::defaultCtr,
-                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::copyCtr,
-                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::moveCtr,
-                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::dtor,
-                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint16>::equals,
-                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint16>::lessThan,
-                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint16>::debugStream,
-                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamOut,
-                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint16>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::legacyRegisterOp,
-                                                            /*.size=*/ sizeof(qint16),
-                                                            /*.alignment=*/ alignof(qint16),
-                                                            /*.typeId=*/ QMetaType::UnknownType,
-                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                            meta_object,
-                                                            nullptr);
-                        int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                        return _id;
-#endif
-                    }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findConstructor(sizeof(qint64)),
-                                sizeof(sizeof(qint64)),
-                                flags,
-                                meta_object
-                            );
-                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint64>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                        return typeId;
-#else
-                        QMetaType metaType = createMetaType(typeName,
-                                                            true,
-                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::defaultCtr,
-                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::copyCtr,
-                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::moveCtr,
-                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::dtor,
-                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint64>::equals,
-                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint64>::lessThan,
-                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint64>::debugStream,
-                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamOut,
-                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint64>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::legacyRegisterOp,
-                                                            /*.size=*/ sizeof(qint64),
-                                                            /*.alignment=*/ alignof(qint64),
-                                                            /*.typeId=*/ QMetaType::UnknownType,
-                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                            meta_object,
-                                                            nullptr);
-                        int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                        return _id;
-#endif
-                    }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findConstructor(sizeof(qint8)),
-                                sizeof(sizeof(qint8)),
-                                flags,
-                                meta_object
-                            );
-                        qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint8>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                        return typeId;
-#else
-                        QMetaType metaType = createMetaType(typeName,
-                                                            true,
-                                                            /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::defaultCtr,
-                                                            /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::copyCtr,
-                                                            /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::moveCtr,
-                                                            /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::dtor,
-                                                            /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint8>::equals,
-                                                            /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint8>::lessThan,
-                                                            /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint8>::debugStream,
-                                                            /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamOut,
-                                                            /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint8>::dataStreamIn,
-                                                            /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::legacyRegisterOp,
-                                                            /*.size=*/ sizeof(qint8),
-                                                            /*.alignment=*/ alignof(qint8),
-                                                            /*.typeId=*/ QMetaType::UnknownType,
-                                                            /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                            meta_object,
-                                                            nullptr);
-                        int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                        return _id;
-#endif
-                    }else /*if(Java::Runtime::Enum::isAssignableFrom(env, clazz)
-                         || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz))*/ {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                         int typeId = QMetaType::registerNormalizedType(
-                                 typeName,
-                                 &destructHelper,
-                                 findConstructor(sizeof(qint32)),
-                                 sizeof(sizeof(qint32)),
-                                 flags,
-                                 meta_object
-                             );
-                         qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                         registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                         return typeId;
-#else
-                         QMetaType metaType = createMetaType(typeName,
-                                                             true,
-                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::defaultCtr,
-                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::copyCtr,
-                                                             /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::moveCtr,
-                                                             /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::dtor,
-                                                             /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint32>::equals,
-                                                             /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint32>::lessThan,
-                                                             /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint32>::debugStream,
-                                                             /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamOut,
-                                                             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamIn,
-                                                             /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::legacyRegisterOp,
-                                                             /*.size=*/ sizeof(qint32),
-                                                             /*.alignment=*/ alignof(qint32),
-                                                             /*.typeId=*/ QMetaType::UnknownType,
-                                                             /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                             meta_object,
-                                                             nullptr);
-                         int _id = metaType.id();
-                         registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                         return _id;
-#endif
-                    }
-                }
-                case EntryTypes::FlagsTypeInfo:{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedType(
-                            typeName,
-                            &destructHelper,
-                            findConstructor(sizeof(qint32)),
-                            sizeof(sizeof(qint32)),
-                            flags,
-                            meta_object
-                        );
-                    qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                    return typeId;
-#else
-                    QMetaType metaType = createMetaType(typeName,
-                                                        true,
-                                                        /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::defaultCtr,
-                                                        /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::copyCtr,
-                                                        /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::moveCtr,
-                                                        /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::dtor,
-                                                        /*.equals=*/ QtPrivate::QEqualityOperatorForType<qint32>::equals,
-                                                        /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<qint32>::lessThan,
-                                                        /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<qint32>::debugStream,
-                                                        /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamOut,
-                                                        /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<qint32>::dataStreamIn,
-                                                        /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint32>::legacyRegisterOp,
-                                                        /*.size=*/ sizeof(qint32),
-                                                        /*.alignment=*/ alignof(qint32),
-                                                        /*.typeId=*/ QMetaType::UnknownType,
-                                                        /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                        meta_object,
-                                                        nullptr);
-                    int _id = metaType.id();
-                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
-                    return _id;
-#endif
-                }
-                case EntryTypes::InterfaceValueTypeInfo:
-                case EntryTypes::ValueTypeInfo:{
-                    int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
-                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                    return typeId;
-#else
-                    QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
-                    return id;
-#endif
-                }
-                default: break;
-                }
-            }else{
-                const SuperTypeInfos& superTypes = getSuperTypeInfos(env, clazz);
-                QByteArray javaName = javaClassName.replace("/", "::").toUtf8();
-                if(superTypes.isEmpty()){
-                    int id;
-                    if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)
-                            || Java::Runtime::Enum::isAssignableFrom(env, clazz)){
-                        id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
-                    }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JMapWrapper>("JMapWrapper");
-                    }else if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JCollectionWrapper>("JCollectionWrapper");
-                    }else if(Java::Runtime::Iterator::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JIteratorWrapper>("JIteratorWrapper");
-                    }else{
-                        id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-                    }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedTypedef(javaName, id);
-                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
-                    return typeId;
-#else
-                        QMetaType::registerNormalizedTypedef(javaName, QMetaType(id));
-                        return id;
-#endif
-                }else{
-                    int id = qtjambi_register_metatype(env, superTypes[0].javaClass(), isPointer, isReference);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedTypedef(javaName, id);
-                    qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    return typeId;
-#else
-                    QMetaType::registerNormalizedTypedef(javaName, QMetaType(id));
-                    return id;
-#endif
-                }
-            }
-        }
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-    }
-    return QMetaType::UnknownType;
-}
-
-/**
- * new implementation according to Qt5's meta object API
- */
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMetaType)
-(JNIEnv *env, jclass, jclass clazz, jboolean isPointer, jboolean isReference)
-{
-    try{
-        return qtjambi_register_metatype(env, clazz, isPointer, isReference);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-        return 0;
-    }
-}
-
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMetaType2)
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_registerRefMetaType)
 (JNIEnv *env, jclass, jint id, jboolean isPointer, jboolean isReference)
 {
     try{
         QMetaType metaType(id);
+        if(metaType==qtjambiMetaType<JObjectWrapper>()
+                || metaType==qtjambiMetaType<JMapWrapper>()
+                || metaType==qtjambiMetaType<JCollectionWrapper>()
+                || metaType==qtjambiMetaType<JObjectArrayWrapper>()
+                || metaType==qtjambiMetaType<JIntArrayWrapper>()
+                || metaType==qtjambiMetaType<JLongArrayWrapper>()
+                || metaType==qtjambiMetaType<JByteArrayWrapper>()
+                || metaType==qtjambiMetaType<JShortArrayWrapper>()
+                || metaType==qtjambiMetaType<JDoubleArrayWrapper>()
+                || metaType==qtjambiMetaType<JFloatArrayWrapper>()
+                || metaType==qtjambiMetaType<JCharArrayWrapper>()
+                || metaType==qtjambiMetaType<JBooleanArrayWrapper>()
+                || metaType==qtjambiMetaType<JIteratorWrapper>()
+                || metaType==qtjambiMetaType<JEnumWrapper>())
+            return id;
         QByteArray typeName(metaType.name());
         if(isPointer){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -1592,9 +1249,12 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMeta
                                                     /*.alignment=*/ alignof(void*),
                                                     /*.typeId=*/ QMetaType::UnknownType,
                                                     /*.flags=*/ QMetaType::TypeFlags(flags),
-                                                    metaType.metaObject(),
-                                                    nullptr);
+                                                    nullptr,
+                                                    QMetaType(metaType).iface()->metaObjectFn);
                 _metaType.id();
+                if(jclass clazz = qtjambi_class_for_metatype(env, metaType)){
+                    registerConverterVariant(env, _metaType, typeName, qtjambi_class_name(env, clazz).replace('.', '/'), clazz);
+                }
                 return _metaType.id();
 #endif
             }
@@ -1622,18 +1282,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerMeta
     }
 }
 
-QByteArray registeredJavaClassForCustomMetaType(int metaType);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QByteArray registeredJavaClassForCustomMetaType(QMetaType metaType);
+#else
+QByteArray registeredJavaClassForCustomMetaType(const QMetaType& metaType);
+#endif
 
-jclass qtjambi_class_for_metatype(JNIEnv *env, int id)
+jclass qtjambi_class_for_metatype(JNIEnv *env, const QMetaType& metaType)
 {
-    QMetaType metaType(id);
     QByteArray typeName(metaType.name());
     const char* name(nullptr);
-    if(const std::type_info* typeId = getTypeByMetaType(id)){
+    if(const std::type_info* typeId = getTypeByMetaType(metaType.id())){
         name = getJavaName(*typeId);
     }
     if(!name){
-        QByteArray name = registeredJavaClassForCustomMetaType(id);
+        QByteArray name = registeredJavaClassForCustomMetaType(metaType);
         if(!name.isEmpty()){
             return resolveClass(env, name);
         }
@@ -1651,69 +1314,71 @@ jclass qtjambi_class_for_metatype(JNIEnv *env, int id)
             typeName.chop(1);
         }
         return resolveClass(env, typeName.replace("::", "."));
-    }catch(const JavaException&){}
+    }catch(const JavaException&){
+        QStringList typeNameSplit = QString(QLatin1String(typeName)).split(QStringLiteral("::"));
+        QString name;
+        while(!typeNameSplit.isEmpty()){
+            if(!name.isEmpty())
+                name += QStringLiteral("::");
+            name += typeNameSplit.takeFirst();
+            try {
+                resolveClass(env, qPrintable(name));
+                name += QStringLiteral("$")+typeNameSplit.join(QStringLiteral("$"));
+                return resolveClass(env, qPrintable(name));
+            }catch(const JavaException&){}
+        }
+    }
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1createMetaType)
-(JNIEnv *env, jclass, jint id, jobject copy)
-{
-    try{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define QTJAMBI_METATYPE(id) id
+QVariant qtjambi_convert_checked_object_to_qvariant(JNIEnv *env, jobject object, const QMetaType& metaType){
+    if(env->IsSameObject(object, nullptr)){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        return QVariant(metaType, nullptr);
 #else
-#define QTJAMBI_METATYPE(id) QMetaType(id)
+        return QVariant(metaType.id(), nullptr);
 #endif
-        if(QByteArray(QMetaType::typeName(id)).endsWith("*")){
-            return nullptr;
-        }
-        if(copy){
-            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, copy)){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-                if(!QMetaType(id).iface()->copyCtr){
-                    JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Unable to create value of meta type %1 due to missing copy constructor.").arg(QLatin1String(QMetaType::typeName(id)))) QTJAMBI_STACKTRACEINFO );
-                }
-#endif
-                QVariant variant(QTJAMBI_METATYPE(id), link->pointer());
-                return qtjambi_from_qvariant(env, variant);
-            }else{
-                if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, copy))
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, copy).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                QVariant variant = qtjambi_to_qvariant(env, copy);
-                if(variant.userType()!=id){
-                    if(variant.convert(id)){
-                        variant = QVariant(QTJAMBI_METATYPE(id), variant.data());
-                        return qtjambi_from_qvariant(env, variant);
-                    }
-                }else{
-                    variant = QVariant(QTJAMBI_METATYPE(id), variant.data());
-                    return qtjambi_from_qvariant(env, variant);
-                }
-            }
-        }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-        if(!QMetaType(id).iface()->defaultCtr){
-            JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Unable to create value of meta type %1 due to missing default constructor.").arg(QLatin1String(QMetaType::typeName(id)))) QTJAMBI_STACKTRACEINFO );
-        }
-#endif
-        QVariant variant(QTJAMBI_METATYPE(id), nullptr);
-        return qtjambi_from_qvariant(env, variant);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-        return nullptr;
     }
-}
-
-extern "C" Q_DECL_EXPORT jclass JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_javaTypeForMetaTypeId)
-(JNIEnv *env, jclass, jint id)
-{
-    try{
-        return qtjambi_class_for_metatype(env, id);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-        return nullptr;
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        jclass typeClass = qtjambi_class_for_metatype(env, metaType);
+        if(typeClass && env->IsInstanceOf(object, typeClass)){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+            if(!QMetaType(metaType).iface()->copyCtr){
+                JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Unable to create value of meta type %1 due to missing copy constructor.").arg(QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+            }
+#endif
+            if(metaType.flags() & QMetaType::IsPointer){
+                void* ptr = link->pointer();
+                return QVariant(metaType, &ptr);
+            }else{
+                return QVariant(metaType, link->pointer());
+            }
+#else
+            if(metaType.name().endsWith("*")){
+                void* ptr = link->pointer();
+                return QVariant(metaType.id(), &ptr);
+            }else{
+                return QVariant(metaType.id(), link->pointer());
+            }
+#endif
+        }
+    }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+    QVariant variant = qtjambi_to_qvariant(env, object);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(variant.metaType()!=metaType){
+        if(variant.convert(metaType)){
+#else
+    if(variant.userType()!=metaType.id()){
+        if(variant.convert(metaType.id())){
+#endif
+            return variant;
+        }
+        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Object of type %1 incompatible with meta type %2.").arg(qtjambi_object_class_name(env, object).replace("$", "."), QLatin1String(metaType.name()))) QTJAMBI_STACKTRACEINFO );
+        return QVariant();
+    }else{
+        return variant;
     }
 }
 
@@ -1731,51 +1396,82 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getRegisteredTypeSiz
     }
 }
 
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerContainerMetaType)
-(JNIEnv *env, jclass, jclass containerType, jintArray instantiations)
+int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations, QString* templateName);
+
+int qtjambiRegisterMetaType(JNIEnv *env, jclass containerType, jobjectArray instantiations)
 {
+    QString templateName;
+    int registeredId = qtjambiMetaTypeId(env, containerType, instantiations, &templateName);
+    if(registeredId==registerMetaType<JEnumWrapper>("JEnumWrapper")
+            || registeredId==registerMetaType<JObjectWrapper>("JObjectWrapper")
+            || registeredId==registerMetaType<JCollectionWrapper>("JCollectionWrapper")
+            || registeredId==registerMetaType<JMapWrapper>("JMapWrapper")
+            || registeredId==registerMetaType<JIteratorWrapper>("JIteratorWrapper")){
+        registeredId = QMetaType::UnknownType;
+    }
+    if(registeredId!=QMetaType::UnknownType)
+        return registeredId;
     try{
-        const JIntArrayWrapper _instantiations(env, instantiations);
+        const JObjectArrayWrapper _instantiations(env, instantiations);
         QStringList names;
         AbstractContainerAccess* containerAccess = nullptr;
         switch(_instantiations.length()){
         case 1: {
             ContainerType type;
-            if(Java::QtCore::QQueue::isAssignableFrom(env, containerType)){
+            if(templateName.startsWith(QStringLiteral("QQueue<"))){
                 type = ContainerType::QQueue;
-                names << "QQueue<%1>";
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QStack<"))){
+                type = ContainerType::QStack;
+                names << templateName;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            }else if(templateName.startsWith(QStringLiteral("QLinkedList<"))){
+                type = ContainerType::QLinkedList;
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QVector<"))){
+                type = ContainerType::QVector;
+                names << templateName;
+#endif
+            }else if(templateName.startsWith(QStringLiteral("QList<"))){
+                type = ContainerType::QList;
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QSet<"))){
+                type = ContainerType::QSet;
+                names << templateName;
+            }else if(Java::QtCore::QQueue::isAssignableFrom(env, containerType)){
+                type = ContainerType::QQueue;
+                names << QStringLiteral("QQueue<%1>");
             }else if(Java::QtCore::QStack::isAssignableFrom(env, containerType)
                      || Java::Runtime::Deque::isAssignableFrom(env, containerType)){
                 type = ContainerType::QStack;
-                names << "QStack<%1>";
-        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                names << QStringLiteral("QStack<%1>");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             }else if(Java::QtCore::QLinkedList::isAssignableFrom(env, containerType)){
                 type = ContainerType::QLinkedList;
-                names << "QLinkedList<%1>";
+                names << QStringLiteral("QLinkedList<%1>");
             }else if(Java::QtCore::QVector::isAssignableFrom(env, containerType)){
                 type = ContainerType::QVector;
-                names << "QVector<%1>";
-        #endif
+                names << QStringLiteral("QVector<%1>");
+#endif
             }else if(Java::QtCore::QList::isAssignableFrom(env, containerType)
                      || Java::Runtime::List::isAssignableFrom(env, containerType)){
                 type = ContainerType::QList;
-                names << "QList<%1>";
+                names << QStringLiteral("QList<%1>");
             }else if(Java::QtCore::QSet::isAssignableFrom(env, containerType)
                      || Java::Runtime::Set::isAssignableFrom(env, containerType)){
                 type = ContainerType::QSet;
-                names << "QSet<%1>";
+                names << QStringLiteral("QSet<%1>");
             }else{
                 return qtjambi_register_metatype(env, containerType, false, false);
             }
-            QMetaType metaType1(_instantiations[0]);
+            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0].object());
             QString elementType = QLatin1String(metaType1.name());
             for(QString& name : names){
                 name = name.arg(EXCLUDE_GT_END(elementType));
             }
             containerAccess = qtjambi_create_container_access(env, type, metaType1);
             if(!containerAccess){
-                jclass elementClass = qtjambi_class_for_metatype(env, _instantiations[0]);
+                jclass elementClass = qtjambi_class_for_metatype(env, metaType1);
                 bool isPointer = qtjambi_is_pointer_type(metaType1);
                 size_t size = 0;
                 size_t align = 0;
@@ -1795,8 +1491,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         isStaticType = QtJambiTypeManager::isStaticType(elementType);
     #endif
-                        if(_instantiations[0] != QMetaType::UnknownType){
-                            int sz = QMetaType::sizeOf(_instantiations[0]);
+                        if(metaType1.id() != QMetaType::UnknownType){
+                            int sz = metaType1.sizeOf();
                             size = sz<0 ? 0 : size_t(sz);
                         }
                     }
@@ -1814,9 +1510,9 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
                                                                 env,
                                                                 elementClass,
                                                                 elementType, metaType1);
-                QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, _instantiations[0]);
+                QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType1.id());
                 containerAccess = qtjambi_create_container_access(env, type,
-                                                                  QMetaType(_instantiations[0]),
+                                                                  metaType1,
                                                                   align, size,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                                                                   isStaticType,
@@ -1852,43 +1548,57 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
             return id;
         }
         case 2: {
+            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0].object());
+            const QMetaType& metaType2 = qtjambi_cast<const QMetaType&>(env, _instantiations[1].object());
             MapType type;
-            if(Java::QtCore::QPair::isAssignableFrom(env, containerType)){
+            if(templateName.startsWith(QStringLiteral("QMultiMap<"))){
+                type = MapType::QMultiMap;
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QMap<"))){
+                type = MapType::QMap;
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QMultiHash<"))){
+                type = MapType::QMultiHash;
+                names << templateName;
+            }else if(templateName.startsWith(QStringLiteral("QHash<"))){
+                type = MapType::QHash;
+                names << templateName;
+            }else if(Java::QtCore::QPair::isAssignableFrom(env, containerType)){
                 type = MapType::QPair;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                names << "QPair<%1,%2>";
+                names << QStringLiteral("QPair<%1,%2>");
 #else
-                names << "std::pair<%1,%2>";
+                names << QStringLiteral("std::pair<%1,%2>");
 #endif
             }else if(Java::QtCore::QMultiMap::isAssignableFrom(env, containerType)){
                 type = MapType::QMultiMap;
-                names << "QMultiMap<%1,%2>";
+                names << QStringLiteral("QMultiMap<%1,%2>");
             }else if(Java::QtCore::QMap::isAssignableFrom(env, containerType)
                      || Java::Runtime::NavigableMap::isAssignableFrom(env, containerType)){
                 type = MapType::QMap;
-                names << "QMap<%1,%2>";
+                names << QStringLiteral("QMap<%1,%2>");
             }else if(Java::QtCore::QMultiHash::isAssignableFrom(env, containerType)){
                 type = MapType::QMultiHash;
-                names << "QMultiHash<%1,%2>";
+                names << QStringLiteral("QMultiHash<%1,%2>");
             }else if(Java::QtCore::QHash::isAssignableFrom(env, containerType)
                      || Java::Runtime::Map::isAssignableFrom(env, containerType)){
                 type = MapType::QHash;
-                names << "QHash<%1,%2>";
+                names << QStringLiteral("QHash<%1,%2>");
             }else{
                 return qtjambi_register_metatype(env, containerType, false, false);
             }
-            QString keyType = QLatin1String(QMetaType::typeName(_instantiations[0]));
-            QString valueType = QLatin1String(QMetaType::typeName(_instantiations[1]));
+            QString keyType = QLatin1String(metaType1.name());
+            QString valueType = QLatin1String(metaType2.name());
             for(QString& name : names){
                 name = name.arg(keyType, EXCLUDE_GT_END(valueType));
             }
 
-            jclass keyClass = qtjambi_class_for_metatype(env, _instantiations[0]);
-            jclass valueClass = qtjambi_class_for_metatype(env, _instantiations[1]);
-            bool isPointer1 = qtjambi_is_pointer_type(QMetaType(_instantiations[0]));
+            jclass keyClass = qtjambi_class_for_metatype(env, metaType1);
+            jclass valueClass = qtjambi_class_for_metatype(env, metaType2);
+            bool isPointer1 = qtjambi_is_pointer_type(metaType1);
             size_t size1 = 0;
             size_t align1 = 0;
-            bool isPointer2 = qtjambi_is_pointer_type(QMetaType(_instantiations[1]));
+            bool isPointer2 = qtjambi_is_pointer_type(metaType2);
             size_t size2 = 0;
             size_t align2 = 0;
             if(!isPointer1){
@@ -1896,8 +1606,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
                     size1 = getValueSize(*t);
                     align1 = getValueAlignment(*t);
                 }else{
-                    if(_instantiations[0] != QMetaType::UnknownType){
-                        int sz = QMetaType::sizeOf(_instantiations[0]);
+                    if(metaType1.id() != QMetaType::UnknownType){
+                        int sz = metaType1.sizeOf();
                         size1 = sz<0 ? 0 : size_t(sz);
                     }
                 }
@@ -1911,8 +1621,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
                     size2 = getValueSize(*t);
                     align2 = getValueAlignment(*t);
                 }else{
-                    if(_instantiations[1] != QMetaType::UnknownType){
-                        int sz = QMetaType::sizeOf(_instantiations[1]);
+                    if(metaType2.id() != QMetaType::UnknownType){
+                        int sz = metaType2.sizeOf();
                         size2 = sz<0 ? 0 : size_t(sz);
                     }
                 }
@@ -1922,12 +1632,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
                     align2 = QtJambiTypeManager::getInternalAlignment(valueType);
             }
 
-            QMetaType metaType1(_instantiations[0]);
-            QMetaType metaType2(_instantiations[1]);
             containerAccess = qtjambi_create_container_access(env, type, metaType1, metaType2);
             if(!containerAccess){
-                QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, _instantiations[0]);
-                QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, _instantiations[1]);
+                QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
+                QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
                 InternalToExternalConverter memberConverter1 = QtJambiTypeManager::getInternalToExternalConverter(
                                                                 env,
                                                                 keyType,
@@ -1996,11 +1704,30 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1registerCont
     }
 }
 
-int qtjambi_metaTypeId(JNIEnv *env, jclass clazz)
+int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations){
+    return qtjambiMetaTypeId(env, clazz, instantiations, nullptr);
+}
+
+int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations, QString* templateName)
 {
     int id = QMetaType::UnknownType;
     if(clazz){
-        if(Java::Runtime::Class::isArray(env, clazz)){
+        if(jobject result = Java::QtJambi::QtJambiInternal::analyzeExpectedTemplateName(env, clazz, instantiations)){
+            if(Java::Runtime::String::isInstanceOf(env, result)){
+                QString templName = qtjambi_to_qstring(env, jstring(result));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                id = QMetaType::type(qPrintable(templName));
+#else
+                id = QMetaType::fromName(templName.toUtf8()).id();
+#endif
+                if(templateName)
+                    *templateName = templName;
+            }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, result)){
+                id = Java::QtJambi::QtEnumerator::value(env, result);
+            }
+        }
+        if(id!=QMetaType::UnknownType){// ok so far
+        }else if(Java::Runtime::Class::isArray(env, clazz)){
             jclass componentType = Java::Runtime::Class::getComponentType(env, clazz);
             if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
                 return registerMetaType<JIntArrayWrapper>("JIntArrayWrapper");
@@ -2019,7 +1746,7 @@ int qtjambi_metaTypeId(JNIEnv *env, jclass clazz)
             }else if(Java::Runtime::Float::isPrimitiveType(env, componentType)){
                 return registerMetaType<JFloatArrayWrapper>("JFloatArrayWrapper");
             }else{
-                return registerMetaType<JObjectWrapper>("JObjectWrapper");
+                return registerMetaType<JObjectArrayWrapper>("JObjectArrayWrapper");
             }
         }else if(Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)){
             return QMetaType::Int;
@@ -2054,24 +1781,30 @@ int qtjambi_metaTypeId(JNIEnv *env, jclass clazz)
                         break;
                         default: break;
                     }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     id = QMetaType::type(qtType);
+#else
+                    id = QMetaType::fromName(qtType).id();
+#endif
                 }
             }
             if(id==QMetaType::UnknownType){
-                id = QMetaType::type(qPrintable(javaClassName.replace("/", "::")));
-            }
-            if(id==QMetaType::UnknownType){
-                if(Java::Runtime::Enum::isAssignableFrom(env, clazz)){
-                    return registerMetaType<JEnumWrapper>("JEnumWrapper");
-                }else if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz)){
-                    return registerMetaType<JObjectWrapper>("JObjectWrapper");
-                }else if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                    return registerMetaType<JCollectionWrapper>("JCollectionWrapper");
-                }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                    return registerMetaType<JMapWrapper>("JMapWrapper");
-                }else if(Java::Runtime::Iterator::isAssignableFrom(env, clazz)){
-                    return registerMetaType<JIteratorWrapper>("JIteratorWrapper");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                id = QMetaType::type(qPrintable(javaClassName.replace("/", "::").replace("$", "::")));
+#else
+                id = QMetaType::fromName(javaClassName.toUtf8().replace("/", "::").replace("$", "::")).id();
+#endif
+                if(id==QMetaType::UnknownType
+                         && !Java::Runtime::Cloneable::isAssignableFrom(env, clazz)
+                         && !Java::Runtime::Enum::isAssignableFrom(env, clazz)
+                         && !Java::QtJambi::QFlags::isAssignableFrom(env, clazz)){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                id = QMetaType::type(qPrintable(javaClassName.replace("/", "::").replace("$", "::").append("*")));
+#else
+                id = QMetaType::fromName(javaClassName.toUtf8().replace("/", "::").replace("$", "::").append("*")).id();
+#endif
                 }
+
             }
         }
     }else{
@@ -2093,18 +1826,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_findMetaType)
 #endif
         env->ReleaseStringUTFChars(name, _name);
         return result;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-        return 0;
-    }
-}
-
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal__1_1qt_1metaTypeId)
-(JNIEnv *env, jclass, jclass clazz)
-{
-    try{
-        return qtjambi_metaTypeId(env, clazz);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
         return 0;
@@ -3953,7 +3674,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_interna
                         return pointer->data();
                     }
                 , qHash(className) * 31 + qHash(json.value("Keys")));
-        registerPlugin(instanceFunction, className.replace(".", "::"), json, iids);
+        registerPlugin(instanceFunction, className.replace(".", "::").replace("$", "::"), json, iids);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -3993,7 +3714,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_interna
                             return nullptr;
                         }
                     , qHash(className) * 31 + qHash(json.value("Keys")));
-            registerPlugin(instanceFunction, className.replace(".", "::"), json, iids);
+            registerPlugin(instanceFunction, className.replace(".", "::").replace("$", "::"), json, iids);
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -4052,7 +3773,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_interna
 
         QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
                     Functor(__jni_env, classSupplier), qHash(className) * 31 + qHash(metaData.value("Keys")));
-        registerPlugin(instanceFunction, className.replace(".", "::"), metaData, {iid}, pluginInfo);
+        registerPlugin(instanceFunction, className.replace(".", "::").replace("$", "::"), metaData, {iid}, pluginInfo);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -4369,7 +4090,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                     if(!argMetaType->isValid()){
                         argMetaType = nullptr;
                     }else
-                        argClassType = qtjambi_class_for_metatype(__jni_env, argMetaType->id());
+                        argClassType = qtjambi_class_for_metatype(__jni_env, *argMetaType);
                 }
             }else{
                 arg = Java::JNA::Pointer::newInstance(__jni_env, 0);
@@ -4574,7 +4295,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                             argClassType = __jni_env->GetObjectClass(entry);
                             argMetaType = nullptr;
                         }else{
-                            argClassType = qtjambi_class_for_metatype(__jni_env, argMetaType->id());
+                            argClassType = qtjambi_class_for_metatype(__jni_env, *argMetaType);
                             break;
                         }
                     }
@@ -4690,7 +4411,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                         argMetaType->construct(ptr, nullptr);
                                         if(!qtjambi_convert_to_native(__jni_env, *typeId, entry, ptr)){
                                             if(Java::Runtime::Map::isInstanceOf(__jni_env, entry) || Java::Runtime::Collection::isInstanceOf(__jni_env, entry)){
-                                                QVariant variant = qtjambi_to_qvariant(__jni_env, entry);
+                                                QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, entry, *argMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                                 if(variant.metaType()==*argMetaType || variant.convert(*argMetaType)){
 #else
@@ -4801,7 +4522,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                             argMetaType->construct(ptr, nullptr);
                                             if(!typeId || !qtjambi_convert_to_native(__jni_env, *typeId, entry, ptr)){
                                                 if(Java::Runtime::Map::isInstanceOf(__jni_env, entry) || Java::Runtime::Collection::isInstanceOf(__jni_env, entry)){
-                                                    QVariant variant = qtjambi_to_qvariant(__jni_env, entry);
+                                                    QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, entry, *argMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                                     if(variant.metaType()==*argMetaType || variant.convert(*argMetaType)){
 #else
@@ -4954,7 +4675,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     ptr = argMetaType->create(nullptr);
                                     if(!qtjambi_convert_to_native(__jni_env, *typeId, val, ptr)){
                                         if(Java::Runtime::Map::isInstanceOf(__jni_env, val) || Java::Runtime::Collection::isInstanceOf(__jni_env, val)){
-                                            QVariant variant = qtjambi_to_qvariant(__jni_env, val);
+                                            QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, val, *argMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                             if(variant.metaType()==*argMetaType || variant.convert(*argMetaType)){
 #else
@@ -5092,7 +4813,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     ptr = argMetaType->create(nullptr);
                                     if(!typeId || !qtjambi_convert_to_native(__jni_env, *typeId, val, ptr)){
                                         if(Java::Runtime::Map::isInstanceOf(__jni_env, val) || Java::Runtime::Collection::isInstanceOf(__jni_env, val)){
-                                            QVariant variant = qtjambi_to_qvariant(__jni_env, val);
+                                            QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, val, *argMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                             if(variant.metaType()==*argMetaType || variant.convert(*argMetaType)){
 #else
@@ -5998,7 +5719,7 @@ jobject qtjambi_function_pointer_convert_return(JNIEnv * __jni_env, jobject retu
                     ptr = returnMetaType->create(nullptr);
                     if(!qtjambi_convert_to_native(__jni_env, *returnTypeId, result, ptr)){
                         if(Java::Runtime::Map::isInstanceOf(__jni_env, result) || Java::Runtime::Collection::isInstanceOf(__jni_env, result)){
-                            QVariant variant = qtjambi_to_qvariant(__jni_env, result);
+                            QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, result, *returnMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                             if(variant.metaType()==*returnMetaType || variant.convert(*returnMetaType)){
 #else
@@ -6101,7 +5822,7 @@ jobject qtjambi_function_pointer_convert_return(JNIEnv * __jni_env, jobject retu
             ptr = returnMetaType->create(nullptr);
             if(!returnTypeId || !qtjambi_convert_to_native(__jni_env, *returnTypeId, result, ptr)){
                 if(Java::Runtime::Map::isInstanceOf(__jni_env, result) || Java::Runtime::Collection::isInstanceOf(__jni_env, result)){
-                    QVariant variant = qtjambi_to_qvariant(__jni_env, result);
+                    QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, result, *returnMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                     if(variant.metaType()==*returnMetaType || variant.convert(*returnMetaType)){
 #else
@@ -6728,7 +6449,7 @@ void qtjambi_function_pointer_convert_parameters(JNIEnv * __jni_env, jobjectArra
                             Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(qtjambi_object_class_name(__jni_env, oldValue).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
-                        QVariant variant = qtjambi_to_qvariant(__jni_env, oldValue);
+                        QVariant variant = qtjambi_convert_checked_object_to_qvariant(__jni_env, oldValue, *argMetaType);
     #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                         if(variant.metaType()==*argMetaType || variant.convert(*argMetaType)){
     #else

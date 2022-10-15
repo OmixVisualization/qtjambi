@@ -66,6 +66,7 @@ class TypeCompiler: protected DefaultVisitor {
 
         bool isConstant() const;
         bool isVolatile() const;
+        bool isVariadic() const;
 
         QStringList cvString() const;
 
@@ -91,6 +92,7 @@ class TypeCompiler: protected DefaultVisitor {
         QList<TypeInfo> _M_functionalArgumentTypes;
         QList<QString> _M_functionalArgumentNames;
         QList<int> _M_cv;
+        bool _m_isVariadic;
 };
 
 #endif // TYPE_COMPILER_H

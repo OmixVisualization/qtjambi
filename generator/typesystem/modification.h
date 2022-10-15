@@ -56,11 +56,33 @@ enum class ThreadAffinity : uint{
 };
 
 struct ArgumentModification {
-    ArgumentModification(int idx) :
+    enum Type{
+        Default,
+        AdditionalArgument,
+        TypeParameter,
+    };
+
+    ArgumentModification(Type _type = Type::AdditionalArgument) :
             removed_default_expression(false),
             removed(false),
             no_null_pointers(false),
             reset_after_use(false),
+            value_as_pointer(false),
+            type(_type),
+            thread_affine(ThreadAffinity::None),
+            index(std::numeric_limits<int>::max()),
+            useAsArrayType(AsArrayType::No),
+            arrayLengthParameter(-1),
+            minArrayLength(-1),
+            maxArrayLength(-1)
+    {}
+    ArgumentModification(int idx, Type _type = Type::Default) :
+            removed_default_expression(false),
+            removed(false),
+            no_null_pointers(false),
+            reset_after_use(false),
+            value_as_pointer(false),
+            type(_type),
             thread_affine(ThreadAffinity::None),
             index(idx),
             useAsArrayType(AsArrayType::No),
@@ -74,6 +96,8 @@ struct ArgumentModification {
     uint removed : 1;
     uint no_null_pointers : 1;
     uint reset_after_use : 1;
+    uint value_as_pointer : 1;
+    Type type;
     ThreadAffinity thread_affine;
 
     //! The index of this argument
@@ -108,8 +132,6 @@ struct ArgumentModification {
     int arrayLengthParameter;
     int minArrayLength;
     int maxArrayLength;
-
-    static int ADDED_ARGUMENT;
 };
 
 struct Modification {
@@ -144,6 +166,7 @@ struct Modification {
     };
 
     Modification() : modifiers(0) { }
+    Modification(const Modification&) = default;
 
     bool isAccessModifier() const { return modifiers & AccessModifierMask; }
     Modifiers accessModifier() const { return Modifiers(modifiers & AccessModifierMask); }
@@ -175,28 +198,41 @@ struct Modification {
     QString renamedToName;
 };
 
-struct TemplateInstantiation: public Modification {
-    QList<QString> arguments;
-};
-
-typedef QList<TemplateInstantiation> TemplateInstantiationList;
-
-struct FunctionModification: public Modification {
-    FunctionModification() : removal(TypeSystem::NoLanguage) { }
-
+struct AbstractFunctionModification: public Modification {
+    AbstractFunctionModification() = default;
+    AbstractFunctionModification(const AbstractFunctionModification&) = default;
     bool isCodeInjection() const { return modifiers & CodeInjection; }
-    bool isRemoveModifier() const { return removal != TypeSystem::NoLanguage; }
-
-    QString toString() const;
-
-    QString signature;
     QString ppCondition;
     QString throws;
     QString association;
     CodeSnipList snips;
-    TypeSystem::Language removal;
-
+    QString targetType;
+    QString proxyCall;
     QList<ArgumentModification> argument_mods;
+};
+
+struct Parameter{
+    QString type;
+    QString name;
+    QString extends;
+    bool implicit;
+};
+
+struct TemplateInstantiation: public AbstractFunctionModification {
+    TemplateInstantiation() = default;
+    TemplateInstantiation(const TemplateInstantiation&) = default;
+    QList<Parameter> arguments;
+};
+
+typedef QList<TemplateInstantiation> TemplateInstantiationList;
+
+struct FunctionModification: public AbstractFunctionModification {
+    FunctionModification() : AbstractFunctionModification(), removal(TypeSystem::NoLanguage) { }
+    FunctionModification(const FunctionModification&) = default;
+    bool isRemoveModifier() const { return removal != TypeSystem::NoLanguage; }
+    QString toString() const;
+    TypeSystem::Language removal;
+    QString signature;
     QList<TemplateInstantiation> template_instantiations;
 };
 typedef QList<FunctionModification> FunctionModificationList;

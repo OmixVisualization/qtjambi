@@ -171,6 +171,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		modules.put("pdfwidgets", new ModuleInfo("QTJAMBI_NO_PDFWIDGETS", "QtPdfWidgets"));
 		modules.put("activex", new ModuleInfo("QTJAMBI_NO_ACTIVEX", "QtAxBase"));
 		modules.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer"));
+		modules.put("spatialaudio", new ModuleInfo("QTJAMBI_NO_SPATIALAUDIO", "QtSpatialAudio"));
 	}
 
 	// did somebody mention something about methods never being longer than 10

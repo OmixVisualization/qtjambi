@@ -149,7 +149,11 @@ class AbstractMetaBuilder {
         }
         const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage() const { return m_typeSystemByPackage; }
         const QMap<TypeSystemTypeEntry *,QSet<QString>>& containerBaseClasses() const { return m_containerBaseClasses; }
-    protected:
+        const QStringList &getIncludePathsList() const;
+        void setIncludePathsList(const QStringList &newIncludePathsList);
+
+protected:
+        AbstractMetaType* exchangeTemplateTypes(const AbstractMetaType* type, bool isReturn, const QHash<QString,AbstractMetaType*>& templateTypes);
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
         virtual AbstractMetaClass *createMetaClass() = 0;
@@ -203,6 +207,7 @@ class AbstractMetaBuilder {
         QHash<QString, AbstractMetaEnumValue *> m_enum_values;
 
         AbstractMetaClass *m_current_class;
+        AbstractMetaFunction *m_current_function;
         QList<ScopeModelItem> m_scopes;
         QString m_namespace_prefix;
 
@@ -225,6 +230,7 @@ class AbstractMetaBuilder {
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
         QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
         QList<AbstractMetaEnum *> m_scopeChangedEnums;
+        QStringList m_includePathsList;
         uint m_qtVersionMajor;
         uint m_qtVersionMinor;
         uint m_qtVersionPatch;

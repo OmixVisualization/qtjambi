@@ -29,6 +29,7 @@
 
 #ifndef QTJAMBI_REMOTEOBJECTS_H
 #define QTJAMBI_REMOTEOBJECTS_H
+#include <qtjambi/qtjambi_global.h>
 #include <QtRemoteObjects/qtremoteobjectglobal.h>
 
 inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info){
@@ -36,5 +37,13 @@ inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info){
     hashCode = hashCode * 31 + qHash(info.hostUrl);
     return hashCode;
 }
+
+#ifndef QT_JAMBI_RUN
+void qtjambi_qRegisterRemoteObjectsClient(JNIEnv *env, jclass type, const QString& id);
+void qtjambi_qRegisterRemoteObjectsServer(JNIEnv *env, jclass type, const QString& id);
+void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, jobject dst);
+void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, QDataStream& src, jobject dst);
+void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, QDataStream& dst);
+#endif
 
 #endif // QTJAMBI_REMOTEOBJECTS_H

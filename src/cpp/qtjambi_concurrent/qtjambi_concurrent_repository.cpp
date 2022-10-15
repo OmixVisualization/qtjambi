@@ -3,6 +3,10 @@
 
 namespace Java{
 namespace QtConcurrent{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(computeDefaultResult,(Lio/qt/concurrent/QtConcurrent$ReduceFunctor;)Ljava/lang/Object;)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$MapFunctor,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(map,(Ljava/lang/Object;)V)
 )
@@ -11,9 +15,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$MappedFunctor,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(map,(Ljava/lang/Object;)Ljava/lang/Object;)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$ReducedFunctor,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(reduce,(Ljava/lang/Object;Ljava/lang/Object;)V)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(defaultResult,()Ljava/lang/Object;)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$ReduceFunctor,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(reduce,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$FilteredFunctor,

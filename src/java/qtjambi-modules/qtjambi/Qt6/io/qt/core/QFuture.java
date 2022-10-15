@@ -420,4 +420,28 @@ public final class QFuture<T>
     }
     @io.qt.QtUninvokable
     private native static <T> QFuture<T> onCanceledContext(long __this_nativeId, long contextId, java.lang.Object function);
+    
+    public <U> QFuture<U> unwrap(Class<U> flatType){
+		QFutureInterface<U> promise = new QFutureInterface<>(QFutureInterfaceBase.State.Pending);
+		this.then(nested->{
+			promise.reportStarted();
+			try {
+            	for(T result : nested.results()) {
+            		if(result instanceof QFuture) {
+            			QFuture<U> future = ((QFuture<?>) result).unwrap(flatType);
+            			promise.reportResults(future.results());
+            		}else if(result==null || flatType.isInstance(result)){
+            			promise.reportResult(flatType.cast(result));
+            		}
+            	}
+			}catch(Throwable e) {
+				promise.reportException(e);
+            }
+			promise.reportFinished();
+		}).onCanceled(() -> {
+            promise.reportCanceled();
+            promise.reportFinished();
+        });
+        return promise.future();
+    }
 }

@@ -24,7 +24,7 @@ import io.qt.widgets.QApplication;
 
 public class QtDBusPong {
 	
-	public static final class NonQtType implements Serializable{
+	public static final class NonQtType implements Serializable, Cloneable{
 		private static final long serialVersionUID = 1L;
 		int i;
 		boolean b;
@@ -64,6 +64,7 @@ public class QtDBusPong {
 	
 	public static void registerTypes() {
 		QDBusMetaType.registerDBusMetaType(QColor.class);
+		QDBusMetaType.registerDBusMetaType(NonQtType.class);
 	}
 
 	public static void main(String... args) {

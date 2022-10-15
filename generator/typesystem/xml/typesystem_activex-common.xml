@@ -45,6 +45,7 @@
 <typesystem qt-library="QtActiveX" description="Classes for applications which use ActiveX and COM">
     <required-library name="QtGui"/>
     <required-library name="QtWidgets"/>
+    <rejection class="IUnknown"/>
     <rejection class="QAxClass"/>
     <rejection class="QAxFactory"/>
     <rejection class="QAxAggregated"/>
@@ -60,6 +61,20 @@
     <rejection class="QAxWidget" function-name="queryInterface"/>
     <rejection class="QAxObject" function-name="queryInterface"/>
     <rejection class="QAxScriptEngine" function-name="queryInterface"/>
+    <rejection class="" function-name="qAxFactory"/>
+    <rejection class="" function-name="qax_create_object_wrapper"/>
+    <rejection class="" function-name="qax_generateDocumentation"/>
+    <rejection class="" function-name="qax_startServer"/>
+    <rejection class="" function-name="qax_stopServer"/>
+    <rejection class="" function-name="QVariantToVARIANT"/>
+    <rejection class="" function-name="QVariantToVARIANT_container"/>
+    <rejection class="" function-name="QVariantToVoidStar"/>
+    <rejection class="" function-name="VARIANTToQVariant"/>
+    <rejection class="" function-name="VARIANTToQVariant_container"/>
+    <rejection class="" function-name="clearVARIANT"/>
+    <rejection class="" function-name="OLEColorToQColor"/>
+    <rejection class="" function-name="QColorToOLEColor"/>
+    <rejection class="" function-name="QStringToBSTR"/>
     <object-type name="QAxBaseObject" since="6.0.0">
         <modify-function signature="signal(QString, int, void *)" access="private"/>
     </object-type>

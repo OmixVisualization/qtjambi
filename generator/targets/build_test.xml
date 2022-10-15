@@ -1,4 +1,6 @@
 <typesystem>
    <load-typesystem name="typesystem_core.xml" generate="no" />
+   <load-typesystem name="typesystem_gui.xml" generate="no" />
+   <load-typesystem name="typesystem_widgets.xml" generate="no" />
    <load-typesystem name="typesystem_test.xml" generate="yes" />
 </typesystem>

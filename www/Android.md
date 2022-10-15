@@ -68,8 +68,8 @@ Therefore, open the file `app/build.gradle`.
 Add the following lines to the `dependencies` section (for ABI arm64-v8a):
 
 ```gradle
-    implementation 'io.qtjambi:qtjambi:6.3.4'
-    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.3.4'
+    implementation 'io.qtjambi:qtjambi:6.3.5'
+    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.3.5'
     implementation files('qt-lib-core-native-android-arm64-6.3.1.jar',
                          'qt-lib-core-native-android-common-6.3.1.jar',
                          'qt-lib-gui-native-android-arm64-6.3.1.jar',

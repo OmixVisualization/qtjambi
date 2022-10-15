@@ -170,8 +170,9 @@
             <include file-name="QtCore/QByteArray" location="global"/>
         </extra-includes>
         <modify-function signature="requestControl(const char *)">
+			<add-type-parameter name="T" extends="io.qt.multimedia.QMediaControl"/>
             <modify-argument index="0">
-                <replace-type modified-type="&lt;T extends io.qt.multimedia.QMediaControl> T" modified-jni-type="io.qt.multimedia.QMediaControl" />
+                <replace-type modified-type="T"/>
                 <conversion-rule class="native">
                     jobject %out = qtjambi_from_qobject(%env, %in, jclass(%1));
                 </conversion-rule>
@@ -766,7 +767,7 @@
                 <replace-type modified-type="io.qt.multimedia.QAbstractVideoBuffer$MapResult[]" />
                 <conversion-rule class="native">
                 jobjectArray %out = nullptr;
-				if(%in>0){
+                if(%in>0){
                     if(%in>4)
                         %in = 4;
                     %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));

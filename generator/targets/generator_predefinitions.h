@@ -1149,10 +1149,6 @@ inline const char *qt_getEnumName(ENUM,bool)
 #undef qt_getEnumName
 #define QT_CONFIG(a) 1
 #undef QT_REQUIRE_CONFIG
-//#define QT_REQUIRE_CONFIG(a) QT_REQUIRE_CONFIG(a)
-// then override the previous typedef with qtjambireal.
-// the qtjambireal type is referred in the typesystem.
-typedef qtjambireal qreal;
 
 #include <QtCore/qcompilerdetection.h>
 

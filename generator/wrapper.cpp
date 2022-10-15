@@ -359,7 +359,7 @@ int Wrapper::runJambiGenerator() {
 
     analyzeDependencies(typeDatabase);
 
-    gs->buildModel(features, pp_file);
+    gs->buildModel(features, pp_file, QStringList() << includePathsList << include_directory);
 
     if (args.contains("dump-object-tree")) {
         gs->dumpObjectTree();
@@ -405,7 +405,7 @@ void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
                 if(entry.endsWith(".framework")){
                     QString dependsFile(entry+"/Headers/"+entry.chopped(10)+"Depends");
                     if(dir.exists(dependsFile)){
-                        dependenciesByLib[entry] = readDependencies(dir.absoluteFilePath(dependsFile));
+                        dependenciesByLib[entry.chopped(10)] = readDependencies(dir.absoluteFilePath(dependsFile));
                     }
                 }else{
                     QString dependsFile(entry+"/"+entry+"Depends");
@@ -420,7 +420,7 @@ void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
                     if(entry.endsWith(".framework")){
                         QString dependsFile(entry+"/Headers/"+entry.chopped(10)+"Depends");
                         if(dir.exists(dependsFile)){
-                            dependenciesByLib[entry] = readDependencies(dir.absoluteFilePath(dependsFile));
+                            dependenciesByLib[entry.chopped(10)] = readDependencies(dir.absoluteFilePath(dependsFile));
                         }
                     }
                 }

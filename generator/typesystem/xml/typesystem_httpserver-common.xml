@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtHttpServer" description="">
+<typesystem qt-library="QtHttpServer" description="Qt HTTP Server supports building an HTTP server into an application.">
     <rejection class="QHttpServer::AfterRequestHandler"/>
     <rejection class="QHttpServerAfterRequestViewTraits"/>
     <rejection class="QHttpServerRouterViewTraits"/>
@@ -55,9 +55,14 @@
 		<modify-function signature="nextPendingWebSocketConnection()" pp-condition="defined(QT_WEBSOCKETS_LIB)"/>
     </object-type>
     <object-type name="QHttpServer">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
     </object-type>
     <object-type name="QHttpServerResponder">
     </object-type>
+    <functional-type name="QHttpServer::MissingHandler">
+    </functional-type>
     <enum-type name="QHttpServerResponder::StatusCode">
     </enum-type>
     <object-type name="QHttpServerRequest">
@@ -80,8 +85,8 @@
 		<modify-function signature="QHttpServerResponse(const char*,QHttpServerResponder::StatusCode)" remove="all"/>
     </object-type>
     <object-type name="QHttpServerRouter">
-		<modify-function signature="addConverter(QAnyStringView)" remove="all"/>
-		<modify-function signature="addRule(std::unique_ptr&lt;QHttpServerRouterRule>)" remove="all"/>
+		<modify-function signature="addConverter&lt;Type>(QAnyStringView)" remove="all"/>
+		<modify-function signature="addRule&lt;ViewHandler,ViewTraits>(std::unique_ptr&lt;QHttpServerRouterRule>)" remove="all"/>
     </object-type>
     <object-type name="QHttpServerRouterRule">
         <extra-includes>

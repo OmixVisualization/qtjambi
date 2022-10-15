@@ -84,7 +84,7 @@ class Handler {
 
         uint parseQtVersion(QString strg, uint defaultValue);
         bool checkQtVersion(QDomNamedNodeMap& attributes);
-        void parseTypeSystem(const QDomElement &typeSystemElement);
+        void parseTypeSystem(const QDomElement &typeSystemElement, const QString& fileName);
         void parseLoadTypeSystem(const QDomElement &element);
         void parseSuppressedWarning(const QDomElement &element);
         void parseInjectCode(const QDomElement &element, ComplexTypeEntry* entry);
@@ -92,7 +92,7 @@ class Handler {
         void parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
                              const QHash<QString, CodeSnip::Position>& positionNames,
                              const std::function<void(const QString&,const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed = false, bool allowPackage = false);
-        void parseConversionRule(const QDomElement &element, const std::function<void(const CodeSnip&)>& appendCodeSnip);
+        void parseConversionRule(const QHash<QString, TypeSystem::Language>& languageNames, const QDomElement &element, const std::function<void(const CodeSnip&)>& appendCodeSnip);
         void parseImportFile(const QDomElement &element, const std::function<void(const QString&)>& consumeCode);
         void parseInsertTemplate(const QDomElement &element, const std::function<void(TemplateInstance*)>& consumeTemplateInstance);
         void parseExtraIncludes(const QDomElement &element, TypeEntry* entry);
@@ -112,8 +112,9 @@ class Handler {
         void parseTypeAliasType(const QDomElement &element);
         void parseInterfaceType(const QDomElement &element);
         void parseNamespaceType(const QDomElement &element);
-        void parseModifyArgument(const QDomElement &element, FunctionModification& mod);
-        void parseModifyFunction(const QDomElement &element, ComplexTypeEntry* entry);
+        void parseModifyArgument(const QDomElement &element, AbstractFunctionModification& mod);
+        void parseModifyFunction(const QDomElement &element, TypeEntry* entry);
+        TemplateInstantiation parseInstantiation(const QDomElement &element);
         void parseModifyField(const QDomElement &element, ComplexTypeEntry* entry);
         void parseEnumType(const QDomElement &element);
         CustomFunction parseCustomStructor(const QDomElement &element);

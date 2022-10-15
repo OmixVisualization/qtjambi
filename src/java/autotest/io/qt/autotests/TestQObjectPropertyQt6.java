@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -599,5 +600,42 @@ public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     	assertEquals(5, received[0]);
     	owner.setProperty("x", 8);
     	assertEquals(8, received[0]);
+    }
+    
+    @Test
+    public void testComputedProperty() {
+    	AtomicInteger iValue = new AtomicInteger(3);
+    	AtomicReference<String> sValue = new AtomicReference<>("");
+    	class PropertyOwner extends QObject{
+    		@QtPropertyMember
+    		private final QComputedIntProperty iComputed = new QComputedIntProperty(this::computeInt);
+    		@QtPropertyMember
+    		private final QIntProperty iProp = new QIntProperty(()->iComputed.value());
+    		public final Signal1<Integer> iChanged = new Signal1<>();
+    		private int computeInt() {
+    			return iValue.get();
+    		}
+    		
+    		@QtPropertyMember
+    		private final QComputedProperty<String> sComputed = new QComputedProperty<>(this::computeString);
+    		@QtPropertyMember
+    		private final QProperty<String> sProp = new QProperty<String>(()->sComputed.value());
+    		public final Signal1<String> sChanged = new Signal1<>();
+    		private String computeString() {
+    			return sValue.get();
+    		}
+    	}
+    	PropertyOwner owner = new PropertyOwner();
+    	int[] iReceived = {owner.iProp.value()};
+    	owner.iChanged.connect(i->iReceived[0] = i);
+    	iValue.set(5);
+    	owner.iComputed.notifyProperty();
+    	assertEquals(iValue.get(), iReceived[0]);
+    	
+    	String[] sReceived = {owner.sProp.value()};
+    	owner.sChanged.connect(s->sReceived[0] = s);
+    	sValue.set("TEST");
+    	owner.sComputed.notifyProperty();
+    	assertEquals(sValue.get(), sReceived[0]);
     }
 }

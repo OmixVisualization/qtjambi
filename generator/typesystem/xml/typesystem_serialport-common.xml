@@ -43,7 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSerialPort" description="Provides access to hardware and virtual serial ports.">
-  <rejection class="QSerialPort" enum-name="DataErrorPolicy"/>
+  <enum-type name="QSerialPort::DataErrorPolicy"/>
   <enum-type name="QSerialPort::BaudRate"/>
   <enum-type name="QSerialPort::DataBits"/>
   <enum-type name="QSerialPort::Direction" flags="QSerialPort::Directions"/>

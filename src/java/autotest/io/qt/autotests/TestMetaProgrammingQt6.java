@@ -66,7 +66,8 @@ public class TestMetaProgrammingQt6 extends ApplicationInitializer {
 			super();
 		}
     	
-    	public final QProperty<String> bindableProperty = new QProperty<>();
+    	@SuppressWarnings("unused")
+		public final QProperty<String> bindableProperty = new QProperty<>();
     	public final Signal0 bindableChanged = new Signal0();
     	
 		@QtPropertyNotify(name="ordinaryProperty")

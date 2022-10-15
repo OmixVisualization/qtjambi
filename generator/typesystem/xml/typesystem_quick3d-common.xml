@@ -47,6 +47,8 @@
     <required-library name="QtQuick3DAssetImport" mode="optional" until="6.2.*"/>
     <required-library name="QtQuick3DRender" mode="optional" until="5.*"/>
     <required-library name="QtShaderTools" mode="optional" since="6.0.0" until="6.2.*"/>
+    <rejection class="QSSGRenderGraphObject"/>
+    <rejection class="" function-name="qml_register_types_QtQuick3D"/>
     <object-type name="QQuick3D" target-type="final class">
         <modify-function signature="QQuick3D()" remove="all" />
     </object-type>

@@ -47,6 +47,7 @@
     <required-library name="QtDBus" mode="provide-only" platforms="macos,linux"/>
     <rejection class="QSslKey" function-name="backendImplementation"/>
     <rejection class="QSslCertificate" function-name="backendImplementation"/>
+    <rejection class="sockaddr"/>
     <namespace-type name="QSsl">
         <include file-name="qssl.h" location="global" />
     </namespace-type>
@@ -390,11 +391,17 @@
     <value-type name="QOcspResponse" since="5.13.0">
         <modify-function signature="operator=(const QOcspResponse&amp;)" remove="all"/>
     </value-type>
-    <enum-type name="QDtlsError" since="5.12.0"/>
+    <enum-type name="QDtlsError" since="5.12.0">
+	</enum-type>
     <enum-type name="QOcspCertificateStatus" since="5.12.0"/>
     <enum-type name="QOcspRevocationReason" since="5.12.0"/>
     <enum-type name="QDtls::HandshakeState" since="5.12.0"/>
     <object-type name="QDtls" since="5.12.0">
+		<!--extra-includes>
+		<include file-name="qdtls.h" location="global" suppressed="yes"/>
+			<include file-name="QtNetwork/qtnetworkglobal.h" location="global"/>
+			<include file-name="QtNetwork/qdtls.h" location="global"/>
+		</extra-includes-->
         <modify-function signature="handleTimeout(QUdpSocket *)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -423,7 +430,7 @@
     </object-type>
     <value-type name="QDtlsClientVerifier::GeneratorParameters" since="5.12.0">
     </value-type>
-    <value-type name="QDtls::GeneratorParameters" since="5.12.0" generate="false" java-name="QDtlsClientVerifier.GeneratorParameters">
+    <value-type name="QDtls::GeneratorParameters" generate="false" java-name="QDtlsClientVerifier.GeneratorParameters" since="5.12.0">
     </value-type>
     <object-type name="QDtlsClientVerifier" since="5.12.0">
         <modify-function signature="verifyClient(QUdpSocket *, const QByteArray &amp;, const QHostAddress &amp;, unsigned short)">

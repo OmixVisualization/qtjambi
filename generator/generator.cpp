@@ -116,13 +116,13 @@ void Generator::writeInclude(QTextStream &s, const Include &inc, QSet<QString> &
         if (inc.type == Include::TargetLangImport)
             s << "import " << incString << ";" << Qt::endl;
         else{
-            if(incString==QLatin1String("qquickgraphicsdevice.h")
+            /*if(incString==QLatin1String("qquickgraphicsdevice.h")
                     || incString==QLatin1String("QtQuick/QQuickGraphicsDevice")){
                 s << "#ifdef QT_FEATURE_vulkan" << Qt::endl
                   << "#undef QT_FEATURE_vulkan" << Qt::endl
                   << "#define QT_FEATURE_vulkan -1" << Qt::endl
                   << "#endif" << Qt::endl;
-            }
+            }*/
             for(const QString& feature : inc.requiredFeatures.keys()){
                 QString configFile = inc.requiredFeatures[feature];
                 if(!configFile.isEmpty()){

@@ -43,7 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtPdfWidgets" description="Classes and functions for rendering PDF documents in a widget.">
-	<rejection class="QPdfView" function-name="pageNavigator"/>
+    <rejection class="QPdfView" function-name="pageNavigator"/>
     <enum-type name="QPdfView::PageMode" />
     <enum-type name="QPdfView::ZoomMode" />
     <object-type name="QPdfView">

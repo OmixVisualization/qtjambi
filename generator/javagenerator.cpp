@@ -705,7 +705,16 @@ QString JavaGenerator::translateType(const AbstractMetaType *java_type, const Ab
             }else if(type->isComplex()){
                 const ComplexTypeEntry *ctype = reinterpret_cast<const ComplexTypeEntry *>(type);
                 if(ctype->isGenericClass()){
-                    if(context && !context->templateArguments().isEmpty()){
+                    if(java_type->hasInstantiations()){
+                        s += '<';
+                        const QList<const AbstractMetaType *>& args = java_type->instantiations();
+                        for (int i=0; i<args.size(); ++i) {
+                            if (i != 0)
+                                s += ", ";
+                            s += translateType(args[i], context, option);
+                        }
+                        s += '>';
+                    }else if(context && !context->templateArguments().isEmpty()){
                         s += '<';
                         const QList<TypeEntry *>& args = context->templateArguments();
                         for (int i=0; i<args.size(); ++i) {
@@ -1975,9 +1984,10 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
                                || java_function->isNormal()
                                || java_function->isSignal() ) ? NoOption : SkipReturnType)));
     if (java_function->isConstructor()){
-        if(java_function->declaringClass()->typeEntry()->isGenericClass()
+        const QList<Parameter> addedParameterTypes = java_function->addedParameterTypes();
+        if((java_function->declaringClass()->typeEntry()->isGenericClass()
                 && java_function->declaringClass()->templateBaseClass()
-                && java_function->declaringClass()->templateBaseClass()->templateArguments().size()>0){
+                && java_function->declaringClass()->templateBaseClass()->templateArguments().size()>0) || !addedParameterTypes.isEmpty()){
             s << "<";
             bool first = true;
             for(TypeEntry * t : java_function->declaringClass()->templateBaseClass()->templateArguments()){
@@ -1987,6 +1997,17 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
                     s << ",";
                 }
                 s << t->name();
+            }
+            for(const Parameter& p : addedParameterTypes){
+                if(first){
+                    first = false;
+                }else{
+                    s << ",";
+                }
+                s << p.name;
+                if(!p.extends.isEmpty()){
+                    s << " extends " << p.extends;
+                }
             }
             s << "> ";
         }
@@ -2031,6 +2052,16 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
             needsComma = true;
         }
     }
+    const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
+    int argumentCounter = 1;
+    while(addedArguments.first.contains(argumentCounter)){
+        const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+        if(needsComma)
+            s << ", ";
+        needsComma = true;
+        s << QString(argumentMod.modified_type).replace('$', '.') << " " << argumentMod.modified_name;
+        ++argumentCounter;
+    }
     for (int i = 0; i < arguments.count(); ++i) {
         const AbstractMetaArgument *arg = arguments.at(i);
 
@@ -2046,14 +2077,22 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const AbstractMet
             else
                 s << "long " << arg->modifiedArgumentName();
         }
+        ++argumentCounter;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+            if(needsComma)
+                s << ", ";
+            needsComma = true;
+            s << QString(argumentMod.modified_type).replace('$', '.') << " " << argumentMod.modified_name;
+            ++argumentCounter;
+        }
     }
-    QList<const ArgumentModification*> addedArguments = java_function->addedArguments();
-    for(const ArgumentModification* argumentMod : addedArguments){
+    for(const ArgumentModification& argumentMod : addedArguments.second){
         if(needsComma)
             s << ", ";
         needsComma = true;
-        registerPackage(argumentMod->modified_type);
-        s << QString(argumentMod->modified_type).replace('$', '.') << " " << argumentMod->modified_name;
+        registerPackage(argumentMod.modified_type);
+        s << QString(argumentMod.modified_type).replace('$', '.') << " " << argumentMod.modified_name;
     }
     s << ")";
 
@@ -2172,11 +2211,13 @@ void JavaGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaFunction
 }
 
 void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractMetaFunction *java_function, uint attributes) {
-    if((java_function->isAbstract() || !(java_function->originalAttributes() & AbstractMetaAttributes::Public)) && !java_function->implementingClass()->generateShellClass()){
-        s << INDENT << "throw new io.qt.QNoImplementationException();" << Qt::endl;
-    }else if(java_function->isAbstract() && java_function->implementingClass()->hasUnimplmentablePureVirtualFunction()){
-        s << INDENT << "throw new io.qt.QNoImplementationException();" << Qt::endl;
-    }else{
+//    if((java_function->isAbstract() || !(java_function->originalAttributes() & AbstractMetaAttributes::Public)) && !java_function->implementingClass()->generateShellClass()){
+//        s << INDENT << "throw new io.qt.QNoImplementationException();" << Qt::endl;
+//    }else
+//    if(java_function->isAbstract() && java_function->implementingClass()->hasUnimplmentablePureVirtualFunction()){
+//        s << INDENT << "throw new io.qt.QNoImplementationException();" << Qt::endl;
+//    }else
+    {
         const AbstractMetaArgumentList& arguments = java_function->arguments();
 
         QString lines;
@@ -2447,7 +2488,16 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractM
             }
         }
 
-
+        const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
+        int argumentCounter = 1;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+            if(needsComma)
+                s << ", ";
+            needsComma = true;
+            s << argumentMod.modified_name;
+            ++argumentCounter;
+        }
         for (int i = 0; i < arguments.count(); ++i) {
             const AbstractMetaArgument *arg = arguments.at(i);
             const AbstractMetaType *type = arg->type();
@@ -2469,13 +2519,21 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const AbstractM
                     s << arg->modifiedArgumentName();
                 }
             }
+            ++argumentCounter;
+            while(addedArguments.first.contains(argumentCounter)){
+                const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+                if(needsComma)
+                    s << ", ";
+                needsComma = true;
+                s << argumentMod.modified_name;
+                ++argumentCounter;
+            }
         }
-        QList<const ArgumentModification*> addedArguments = java_function->addedArguments();
-        for(const ArgumentModification* argumentMod : addedArguments){
+        for(const ArgumentModification& argumentMod : addedArguments.second){
             if(needsComma)
                 s << ", ";
             needsComma = true;
-            s << argumentMod->modified_name;
+            s << argumentMod.modified_name;
         }
 
         if (useJumpTable) {
@@ -3685,7 +3743,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *ja
         if(!java_function->href().isEmpty()){
             QString url = docsUrl+java_function->href();
             commentStream << "<p>See <a href=\"" << url << "\">";
-            if(java_function->declaringClass()){
+            if(java_function->declaringClass() && java_function->functionType()!=AbstractMetaFunction::GlobalScopeFunction){
                 commentStream << java_function->declaringClass()->qualifiedCppName()
                                  .replace("<JObjectWrapper>", "")
                                  .replace("QtJambi", "Q")
@@ -4801,6 +4859,7 @@ void JavaGenerator::writeEnumOverload(QTextStream &s, const AbstractMetaFunction
         generate_enum_overload = arguments.at(i)->type()->isTargetLangFlags() ? i : -1;
 
     if (generate_enum_overload >= 0) {
+        const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
         QString comment;
         QTextStream commentStream(&comment);
         if (m_doc_parser) {
@@ -4836,7 +4895,7 @@ void JavaGenerator::writeEnumOverload(QTextStream &s, const AbstractMetaFunction
 
         writeFunctionAttributes(s, java_function, generate_enum_overload >= 0 ? generate_enum_overload : -1, include_attributes, exclude_attributes, option);
         s << java_function->name() << "(";
-        if (generate_enum_overload > 0) {
+        if (generate_enum_overload > 0 || addedArguments.first.size() + addedArguments.second.size()>0) {
             writeFunctionArguments(s, java_function, generate_enum_overload);
             s << ", ";
         }
@@ -4872,10 +4931,25 @@ void JavaGenerator::writeEnumOverload(QTextStream &s, const AbstractMetaFunction
         }
 
         s << "(";
+        int argumentCounter = 1;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& mod = addedArguments.first[argumentCounter];
+            s << mod.modified_name << ", ";
+            ++argumentCounter;
+        }
         for (int i = 0; i < generate_enum_overload; ++i) {
             AbstractMetaArgument *arg = arguments.at(i);
             if(java_function->argumentRemoved(arg->argumentIndex()+1)==ArgumentRemove_No)
                 s << arg->modifiedArgumentName() << ", ";
+            ++argumentCounter;
+            while(addedArguments.first.contains(argumentCounter)){
+                const ArgumentModification& mod = addedArguments.first[argumentCounter];
+                s << mod.modified_name << ", ";
+                ++argumentCounter;
+            }
+        }
+        for(const ArgumentModification& mod : addedArguments.second){
+            s << mod.modified_name << ", ";
         }
         registerPackage(affected_arg->type()->fullName());
         s << "new " << affected_arg->type()->fullName().replace('$', '.') << "(" << affected_arg->modifiedArgumentName() << "));" << Qt::endl
@@ -5097,6 +5171,16 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFun
             s << "(";
 
             int written_arguments = 0;
+            const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
+            int argumentCounter = 1;
+            while(addedArguments.first.contains(argumentCounter)){
+                const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+                if(written_arguments > 0)
+                    s << ", ";
+                s << argumentMod.modified_name;
+                ++argumentCounter;
+                ++written_arguments;
+            }
             for (int j = 0; j < arguments.size(); ++j) {
                 const AbstractMetaArgument* arg = arguments.at(j);
                 if (java_function->argumentRemoved(arg->argumentIndex() + 1)==ArgumentRemove_No) {
@@ -5160,6 +5244,21 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFun
                     }
                     ++written_arguments;
                 }
+                ++argumentCounter;
+                while(addedArguments.first.contains(argumentCounter)){
+                    const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+                    if(written_arguments > 0)
+                        s << ", ";
+                    s << argumentMod.modified_name;
+                    ++argumentCounter;
+                    ++written_arguments;
+                }
+            }
+            for(const ArgumentModification& argumentMod : addedArguments.second){
+                if(written_arguments > 0)
+                    s << ", ";
+                ++written_arguments;
+                s << argumentMod.modified_name;
             }
             s << ");" << Qt::endl;
         }
@@ -5264,7 +5363,16 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                                   << "</p>" << Qt::endl;
                 }
                 if(java_class->href().isEmpty()){
-                    commentStream << "<p>Java wrapper for Qt class " << (java_class->templateBaseClass() ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>") : java_class->qualifiedCppName() )
+                    commentStream << "<p>Java wrapper for Qt ";
+                    if(java_class->typeEntry()->isNamespace()){
+                        if(reinterpret_cast<const NamespaceTypeEntry*>(java_class->typeEntry())->isHeader())
+                            commentStream << "namespace ";
+                        else
+                            commentStream << "header file ";
+                    }else{
+                        commentStream << "class ";
+                    }
+                    commentStream << (java_class->templateBaseClass() ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>") : java_class->qualifiedCppName() )
                                      .replace("&", "&amp;")
                                      .replace("<", "&lt;")
                                      .replace(">", "&gt;")
@@ -5274,7 +5382,9 @@ void JavaGenerator::write(QTextStream &s, const AbstractMetaClass *java_class, i
                                      .replace("*/", "*&sol;") << "</p>" << Qt::endl;
                 }else{
                     QString url = docsUrl+java_class->href();
-                    commentStream << "<p>Java wrapper for Qt class <a href=\"" << url << "\">"
+                    commentStream << "<p>Java wrapper for Qt's "
+                                  << (java_class->typeEntry()->isNamespace() ? "namespace" : "class")
+                                  << " <a href=\"" << url << "\">"
                                   << (java_class->templateBaseClass() ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>") : java_class->qualifiedCppName() )
                                      .replace("&", "&amp;")
                                      .replace("<", "&lt;")
@@ -7026,7 +7136,9 @@ void JavaGenerator::generate() {
         QFile file(fileName);
         if (!logOutputDirectory().isNull())
             file.setFileName(QDir(logOutputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QFile::WriteOnly)) {
+        if(m_nativepointer_functions.isEmpty()){
+            file.remove();
+        }else if (file.open(QFile::WriteOnly)) {
             QTextStream s(&file);
 
             s << "Number of public or protected functions with QNativePointer API: "
@@ -7049,7 +7161,9 @@ void JavaGenerator::generate() {
         QFile file(fileName);
         if (!logOutputDirectory().isNull())
             file.setFileName(QDir(logOutputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QFile::WriteOnly)) {
+        if(m_resettable_object_functions.isEmpty()){
+            file.remove();
+        }else if (file.open(QFile::WriteOnly)) {
             QTextStream s(&file);
 
             AbstractMetaFunctionList resettable_object_functions;
@@ -7082,7 +7196,9 @@ void JavaGenerator::generate() {
         QFile file(fileName);
         if (!logOutputDirectory().isNull())
             file.setFileName(QDir(logOutputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QFile::WriteOnly)) {
+        if(m_reference_count_candidate_functions.isEmpty()){
+            file.remove();
+        }else if (file.open(QFile::WriteOnly)) {
             QTextStream s(&file);
 
             s << "The following functions have a signature pattern which may imply that" << Qt::endl
@@ -7106,7 +7222,9 @@ void JavaGenerator::generate() {
         QFile file(fileName);
         if (!logOutputDirectory().isNull())
             file.setFileName(QDir(logOutputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QFile::WriteOnly)) {
+        if(m_factory_functions.isEmpty()){
+            file.remove();
+        }else if (file.open(QFile::WriteOnly)) {
             QTextStream s(&file);
 
             s << "The following functions have a signature pattern which may imply that" << Qt::endl
@@ -7136,7 +7254,9 @@ void JavaGenerator::generate() {
         QFile file(fileName);
         if (!logOutputDirectory().isNull())
             file.setFileName(QDir(logOutputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QFile::WriteOnly)) {
+        if(m_inconsistent_functions.isEmpty()){
+            file.remove();
+        }else if (file.open(QFile::WriteOnly)) {
             QTextStream s(&file);
 
             s << "The following functions are inconsistent (virtual but declared final in java) ("
@@ -7410,8 +7530,8 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
 
         if (isDefault) s << "default ";
 
+        QList<QString> templateArguments;
         if(isStatic){
-            QList<QString> templateArguments;
             if(java_function->type() && java_function->type()->typeEntry()->isTemplateArgument()
                     && !templateArguments.contains(java_function->type()->typeEntry()->qualifiedCppName())){
                 templateArguments << java_function->type()->typeEntry()->qualifiedCppName();
@@ -7422,10 +7542,18 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const AbstractMetaFu
                     templateArguments << arg->type()->typeEntry()->qualifiedCppName();
                 }
             }
-            if(!templateArguments.isEmpty()){
-                s << "<" << templateArguments.join(",") << "> ";
+        }
+        if(!java_function->isConstructor()){
+            const QList<Parameter> addedParameterTypes = java_function->addedParameterTypes();
+            for(const Parameter& p : addedParameterTypes){
+                if(p.extends.isEmpty())
+                    templateArguments << p.name;
+                else
+                    templateArguments << p.name + " extends " + p.extends;
             }
         }
+        if(!templateArguments.isEmpty())
+            s << "<" << templateArguments.join(",") << "> ";
     }
 
     if ((options & SkipReturnType) == 0) {
@@ -7481,6 +7609,16 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const AbstractMetaFun
         argument_count = int(arguments.size());
 
     bool commaRequired = false;
+    const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
+    int argumentCounter = 1;
+    while(addedArguments.first.contains(argumentCounter)){
+        const ArgumentModification& mod = addedArguments.first[argumentCounter];
+        if(commaRequired)
+            s << ", ";
+        commaRequired = true;
+        s << QString(mod.modified_type).replace('$', '.') << " " << mod.modified_name;
+        ++argumentCounter;
+    }
     for (int i = 0; i < argument_count; ++i) {
         const AbstractMetaArgument *arg = arguments.at(i);
         if (java_function->argumentRemoved(arg->argumentIndex() + 1)==ArgumentRemove_No) {
@@ -7489,13 +7627,21 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const AbstractMetaFun
             writeArgument(s, java_function, arg, Option(options | CollectionAsCollection));
             commaRequired = true;
         }
+        ++argumentCounter;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& mod = addedArguments.first[argumentCounter];
+            if(commaRequired)
+                s << ", ";
+            commaRequired = true;
+            s << QString(mod.modified_type).replace('$', '.') << " " << mod.modified_name;
+            ++argumentCounter;
+        }
     }
-    QList<const ArgumentModification*> addedArguments = java_function->addedArguments();
-    for(const ArgumentModification* argumentMod : addedArguments){
+    for(const ArgumentModification& argumentMod : addedArguments.second){
         if(commaRequired)
             s << ", ";
         commaRequired = true;
-        s << QString(argumentMod->modified_type).replace('$', '.') << " " << argumentMod->modified_name;
+        s << QString(argumentMod.modified_type).replace('$', '.') << " " << argumentMod.modified_name;
     }
 }
 

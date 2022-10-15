@@ -7,15 +7,17 @@
 namespace Java{
 
 namespace QtConcurrent{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent,
+              QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(computeDefaultResult))
+
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$MapFunctor,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(map))
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$MappedFunctor,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(map))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$ReducedFunctor,
-                  QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(reduce)
-                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(defaultResult))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$ReduceFunctor,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(reduce))
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$FilteredFunctor,
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(filter))

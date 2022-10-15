@@ -49,11 +49,27 @@
     <required-library name="QtWebChannel"/>
     <required-library name="QtPositioning"/>
     <required-library name="QtDBus" mode="optional"/>
+	<rejection class="QtWebEngineCore::WebContentsAdapter" />
     <namespace-type name="QtWebEngineCore">
         <extra-includes since="6.2.0">
             <include file-name="qwebenginecontextmenurequest.h" location="global"/>
         </extra-includes>
     </namespace-type>
+	<global-function signature="qWebEngineChromiumSecurityPatchVersion()" target-type="QtWebEngineCore">
+		<modify-argument index="0">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qWebEngineChromiumVersion()" target-type="QtWebEngineCore">
+		<modify-argument index="0">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qWebEngineVersion()" target-type="QtWebEngineCore">
+		<modify-argument index="0">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
     <rejection class="QWebEngineNavigationRequest" function-name="action"/>
     <rejection class="QWebEngineNavigationRequest" function-name="setAction"/>
     <rejection class="QWebEngineNavigationRequest" enum-name="NavigationRequestAction"/>
@@ -139,7 +155,7 @@
     </functional-type>
     <object-type name="QWebEnginePage" since="6.2.0">
         <extra-includes>
-            <include file-name="QtWebEngineCore/QWebEngineFileSystemAccessRequest" location="global"/>
+            <include file-name="QtWebEngineCore/QWebEngineFileSystemAccessRequest" location="global" since="6.4"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>

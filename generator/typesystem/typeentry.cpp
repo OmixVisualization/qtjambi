@@ -62,18 +62,8 @@ ComplexTypeEntry::ComplexTypeEntry(const QString &name, Type t)
     : TypeEntry(QString(name).replace("::", "$"), t), // the A$B notation is the java binary name of an embedded class
         m_pp_condition(),
         m_qualified_cpp_name(name),
-        m_is_qobject(false),
-        m_is_qwidget(false),
-        m_is_qwindow(false),
-        m_is_qaction(false),
-        m_is_qapplication(false),
-        m_polymorphic_base(false),
-        m_generic_class(false),
-        m_isTemplate(false),
-        m_isNativeInterface(false),
-        m_inhibitMetaobject(false),
-        m_isNativeIdBased(useNativeIds),
         m_type_flags() {
+    m_attributes.setFlag(IsNativeIdBased, useNativeIds);
     Include inc;
     inc.name = "QtCore/QVariant";
     inc.type = Include::IncludePath;
@@ -88,16 +78,11 @@ ComplexTypeEntry *ComplexTypeEntry::copy() const {
     centry->setExtraIncludes(extraIncludes());
     centry->setFunctionModifications(functionModifications());
     centry->setFieldModifications(fieldModifications());
-    centry->setQObject(isQObject());
-    centry->setQWidget(isQWidget());
-    centry->setQWindow(isQWindow());
-    centry->setQAction(isQAction());
-    centry->setQCoreApplication(isQCoreApplication());
     centry->setDefaultSuperclass(defaultSuperclass());
     centry->setCodeSnips(codeSnips());
     centry->setTargetLangPackage(javaPackage());
     centry->setTargetTypeSystem(targetTypeSystem());
-    centry->m_isNativeIdBased = m_isNativeIdBased;
+    centry->m_attributes = m_attributes;
     return centry;
 }
 
@@ -203,7 +188,9 @@ QString EnumTypeEntry::javaPackage() const {
         }else{
             m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
         }
-        if(m_qualifier_type && m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
+        if(m_qualifier_type && m_qualifier_type->isVariant() && TypeDatabase::instance()->qvariantType())
+            m_qualifier_type = TypeDatabase::instance()->qvariantType();
+        else if(m_qualifier_type && m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
             m_qualifier_type = TypeDatabase::instance()->qstringType();
         else if(m_qualifier_type && m_qualifier_type->isChar() && TypeDatabase::instance()->qcharType())
             m_qualifier_type = TypeDatabase::instance()->qcharType();
@@ -226,7 +213,9 @@ QString EnumTypeEntry::javaQualifier() const {
         }else{
             m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
         }
-        if(m_qualifier_type && m_qualifier_type->isQString())
+        if(m_qualifier_type && m_qualifier_type->isVariant())
+            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiVariant");
+        else if(m_qualifier_type && m_qualifier_type->isQString())
             m_qualifier_type = TypeDatabase::instance()->findType("QtJambiString");
         else if(m_qualifier_type && m_qualifier_type->isChar())
             m_qualifier_type = TypeDatabase::instance()->findType("QtJambiChar");
@@ -388,7 +377,37 @@ bool ComplexTypeEntry::hasFunctionCodeInjections(const QString &methodSignature,
     return false;
 }
 
+bool TypeSystemTypeEntry::hasFunctionCodeInjections(const QString &methodSignature, TypeSystem::Language language, const QSet<CodeSnip::Position>& positions) const{
+    for (const FunctionModification& mod : m_function_mods) {
+        if (mod.signature == methodSignature) {
+            if (mod.snips.count() <= 0)
+                continue ;
+            for(const CodeSnip& snip : mod.snips) {
+                if (!positions.contains(snip.position))
+                    continue;
+
+                if (!(snip.language & language))
+                    continue;
+
+                if(!snip.code().isEmpty())
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 FunctionModificationList ComplexTypeEntry::functionModifications(const QString &signature) const {
+    FunctionModificationList lst;
+    for (const FunctionModification& mod : m_function_mods) {
+        if (mod.signature == signature) {
+            lst << mod;
+        }
+    }
+    return lst;
+}
+
+FunctionModificationList TypeSystemTypeEntry::functionModifications(const QString &signature) const {
     FunctionModificationList lst;
     for (const FunctionModification& mod : m_function_mods) {
         if (mod.signature == signature) {
@@ -420,10 +439,10 @@ QString ComplexTypeEntry::qualifiedCppName() const {
 
 bool ObjectTypeEntry::isValueOwner() const
 {
-    return m_is_value_owner;
+    return m_attributes.testFlag(IsValueOwner);
 }
 
 void ObjectTypeEntry::setIsValueOwner(bool is_value_owner)
 {
-    m_is_value_owner = is_value_owner;
+    m_attributes.setFlag(IsValueOwner, is_value_owner);
 }

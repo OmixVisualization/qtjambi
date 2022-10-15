@@ -146,6 +146,9 @@ class TypeInfo {
         bool isFunctionPointer() const { return m_flags.testFlag(IsFunctionPointer); }
         void setFunctionPointer(bool is) { m_flags.setFlag(IsFunctionPointer, is); }
 
+        bool isVariadic() const { return m_flags.testFlag(IsVariadic); }
+        void setVariadic(bool is) { m_flags.setFlag(IsVariadic, is); }
+
         const QStringList& arrayElements() const { return m_arrayElements; }
         void setArrayElements(const QStringList &arrayElements) { m_arrayElements = arrayElements; }
 
@@ -179,6 +182,7 @@ class TypeInfo {
             IsConst = 0x01,
             IsVolatile = 0x02,
             IsFunctionPointer = 0x04,
+            IsVariadic = 0x08,
         };
         QFlags<Flag> m_flags;
 
@@ -762,22 +766,20 @@ class _TemplateParameterModelItem: public _CodeModelItem {
         static TemplateParameterModelItem create(CodeModel *model);
 
     public:
-        const TypeInfo &type() const;
-        void setType(const TypeInfo &type);
-
         const QString& defaultValue() const;
         void setDefaultValue(const QString& defaultValue);
-
+        void setIsVaradic(bool isVaradic);
+        bool isVaradic() const;
         void setOwnerClass(const ClassModelItem& ownerClass);
         ClassModelItem ownerClass() const;
 
     protected:
         _TemplateParameterModelItem(CodeModel *model, int kind = __node_kind)
-                : _CodeModelItem(model, kind), _M_defaultValue() {}
+                : _CodeModelItem(model, kind), _M_defaultValue(), _M_isVaradic(false), _M_ownerClass(nullptr) {}
 
     private:
-        TypeInfo _M_type;
         QString _M_defaultValue;
+        bool _M_isVaradic;
         ClassModelItem _M_ownerClass;
 
     private:

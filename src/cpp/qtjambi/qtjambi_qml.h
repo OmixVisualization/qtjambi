@@ -23,6 +23,8 @@ QTJAMBI_EXPORT jmethodID resolveMethod(JNIEnv *env, const char *methodName, cons
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass);
 #else
+QTJAMBI_EXPORT int qtjambi_register_metatype(JNIEnv *env, jclass clazz, const QString& javaClassName);
+QTJAMBI_EXPORT int qtjambi_register_list_metatype(JNIEnv *env, const QMetaType& elementType);
 QTJAMBI_EXPORT int registerQmlMetaType(const QByteArray& javaClass,
                                              const QByteArray& typeName,
                                              QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,

@@ -181,7 +181,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-					jstring %out = nullptr;
+                    jstring %out = nullptr;
                     if(%in){
                         %out = qtjambi_cast&lt;jstring>(%env, %4);
                     }

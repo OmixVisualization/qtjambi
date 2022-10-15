@@ -53,6 +53,8 @@
     <rejection class="QStringConverterBase::State" function-name="reset"/>
     <rejection class="" enum-name="QtJambiNativeID"/>
     <rejection class="QNativeInterface::QAndroidApplication" function-name="runOnAndroidMainThread"/>
+    <rejection class="std::string"/>
+    <rejection class="std::seed_seq"/>
     <rejection class="function_ref"/>
     <rejection class="QtPrivate::Deprecated_t"/>
     <rejection class="QFutureSynchronizer"/>
@@ -113,12 +115,17 @@
     <rejection class="QPalette::Data"/>
     <rejection class="QStringConverter::Interface"/>
     <rejection class="QList::MemoryLayout"/>
+    <rejection class="QString::DataPointer"/>
+    <rejection class="QtPrivate::BindingEvaluationState"/>
     <rejection class="QList" enum-name="MemoryLayout"/>
     <rejection class="QPropertyObserverBase" enum-name="ObserverTag" since="6.0.0"/>
     <rejection class="QReadWriteLock" function-name="stateForWaitCondition"/>
     <rejection class="QFactoryLoader" function-name="library"/>
     <rejection class="QByteArrayView" function-name="m_data"/>
     <rejection class="QBindingStorage" function-name="status"/>
+    <rejection class="QtPrivate" function-name="fulfillPromise"/>
+    <rejection class="QtPrivate" function-name="warnIfContainerIsNotShared"/>
+    <rejection class="QNativeInterface::Private" function-name="hasTypeInfo"/>
     <rejection class="QString" function-name="rightRef"/>
     <rejection class="QString" function-name="leftRef"/>
     <rejection class="QString" function-name="midRef"/>
@@ -145,6 +152,8 @@
     <rejection class="QString" function-name="toLong"/>
     <rejection class="QString" function-name="push_back"/>
     <rejection class="QString" function-name="push_front"/>
+    <rejection class="QString" enum-name="SplitBehavior" until="5.15"/>
+    <rejection class="QString::Null" until="5.15"/>
     <rejection class="QList" function-name="empty"/>
     <rejection class="QList" function-name="front"/>
     <rejection class="QList" function-name="pop_back"/>
@@ -172,16 +181,24 @@
     <rejection class="QCborArray" function-name="pop_front"/>
     <rejection class="QCborArray" function-name="push_back"/>
     <rejection class="QCborArray" function-name="push_front"/>
+    <rejection class="QCborArray" function-name="erase"/>
+    <rejection class="QCborArray::iterator"/>
+    <rejection class="QCborNegativeInteger"/>
     <rejection class="QChar::SpecialCharacter"/>
     <rejection class="QSet::const_iterator"/>
     <rejection class="QSet" function-name="empty"/>
+    <rejection class="QCborArray::iterator"/>
     <rejection class="QCborArray::Iterator"/>
     <rejection class="QCborMap::Iterator"/>
-    <rejection class="QCborStreamReader::StringResult"/>
     <rejection class="QHash::iterator"/>
     <rejection class="QHash::key_iterator"/>
     <rejection class="QHash" function-name="empty"/>
     <rejection class="QLinkedList::iterator"/>
+    <rejection class="QObjectPrivate"/>
+    <rejection class="QAbstractItemModelPrivate"/>
+    <rejection class="QByteArray::DataPointer"/>
+    <rejection class="Qt::Initialization"/>
+    <rejection class="FILE"/>
     <rejection class="QLinkedList" function-name="empty"/>
     <rejection class="QLinkedList" function-name="back"/>
     <rejection class="QLinkedList" function-name="front"/>
@@ -198,6 +215,8 @@
     <rejection class="QMap" function-name="empty"/>
     <rejection class="QSpecialInteger"/>
     <rejection class="QScopeGuard"/>
+    <rejection class="" enum-name="QCborNegativeInteger"/>
+    <rejection class="QString" enum-name="NormalizationForm"/>
     <rejection class="QSysInfo" enum-name="Sizes"/>
     <rejection class="QSysInfo" enum-name="MacVersion"/>
     <rejection class="QSysInfo" enum-name="WinVersion"/>
@@ -285,6 +304,10 @@
     <rejection class="QMultiHash" function-name="max_bucket_count"/>
     <rejection class="QMultiHash" function-name="equal_range"/>
     <rejection class="QDeadlineTimer" function-name="_q_data"/>
+    <rejection class="QtPrivate" function-name="qTryMetaTypeInterfaceForType"/>
+    <rejection class="QtPrivate" function-name="qMetaTypeInterfaceForType"/>
+    <rejection class="QtPrivate" function-name="qMakeStringPrivate"/>
+    <rejection class="QtPrivate" function-name="qMakeForeachContainer"/>
 
     <rejection class="Qt::QtMsgType"/>
     <rejection class="Qt::Disambiguated_t"/>
@@ -318,6 +341,29 @@
     <rejection class="" enum-name="QtValidLicenseForMultimediaModule" />
     <rejection class="" enum-name="QtValidLicenseForOpenVGModule" />
     <rejection class="" enum-name="QtValidLicenseForDeclarativeModule" />
+    <rejection class="" function-name="qJsonFromRawLibraryMetaData" />
+    <rejection class="" function-name="qt_getQtMetaObject" until="5.15"/>
+    <rejection class="" function-name="qMapLessThanKey" until="5.15"/>
+    <rejection class="" function-name="qRegisterMetaTypeStreamOperators" until="5.15"/>
+    <rejection class="" function-name="qLowerBound" until="5.15"/>
+    <rejection class="" function-name="qIsTrivial" until="5.15"/>
+    <rejection class="" function-name="qIsRelocatable" until="5.15"/>
+    <rejection class="" function-name="qFind" until="5.15"/>
+    <rejection class="" function-name="qFill" until="5.15"/>
+    <rejection class="" function-name="qBinaryFind" until="5.15"/>
+    <rejection class="" function-name="qCopyBackward" until="5.15"/>
+    <rejection class="" function-name="qCopy" until="5.15"/>
+    <rejection class="" function-name="qCount" until="5.15"/>
+    <rejection class="" function-name="qSort" until="5.15"/>
+    <rejection class="" function-name="qStableSort" until="5.15"/>
+    <rejection class="" function-name="qToVoidFuture" until="5.15"/>
+    <rejection class="" function-name="qUpperBound" until="5.15"/>
+    <rejection class="" function-name="qVariantFromValue" until="5.15"/>
+    <rejection class="" function-name="qVariantSetValue" until="5.15"/>
+    <rejection class="QtFuture" function-name="makeExceptionalFuture" />
+    <rejection class="QtFuture" function-name="makeReadyFuture" />
+    <rejection class="QVariant::Private"/>
+    <rejection class="QVariant::PrivateShared"/>
     <rejection class="QVariantAnimation::Interpolator"/>
     <rejection class="QVariantAnimation" function-name="qRegisterAnimationInterpolator"/>
     <rejection class="*" function-name="qRegisterAnimationInterpolator"/>
@@ -364,12 +410,17 @@
     <rejection class="QScopedValueRollback" />
     <rejection class="QCustomScopedPointer" />
     <rejection class="QStringBuilder" />
-    <rejection class="" enum-name="QCborNegativeInteger" />
     <rejection class="QProcess::CreateProcessArguments" />
     <rejection class="QOverload" />
     <rejection class="QNonConstOverload" />
     <rejection class="QConstOverload" />
     <rejection class="Null" />
+    <rejection class="std::chrono::milliseconds" />
+    <rejection class="std::filesystem::path" />
+    <rejection class="std::u16string" />
+    <rejection class="std::u32string" />
+    <rejection class="std::wstring" />
+    <rejection class="QPropertyBindingPrivate" />
 
     <rejection class="QAbstractConcatenable"/>
     <rejection class="QBitRef"/>
@@ -520,8 +571,6 @@
     <rejection class="QRandomGenerator" function-name="bounded"/>
     <rejection class="QFile" function-name="setDecodingFunction"/>
     <rejection class="QFile" function-name="setEncodingFunction"/>
-    <rejection class="QObject" function-name="findChild"/>
-    <rejection class="QObject" function-name="findChildren"/>
     <rejection class="QObject" function-name="setUserData"/>
     <rejection class="QObject" function-name="userData"/>
     <rejection class="QObject" function-name="connect"/>
@@ -587,7 +636,6 @@
     <rejection class="QUnhandledException"/>
     <rejection class="QMessageLogger"/>
     <rejection class="QAbstractNativeEventFilter"/>
-    <rejection class="QJsonArray" function-name="operator[]"/>
     <rejection class="Qt" function-name="codecForHtml"/>
     <rejection class="Qt" function-name="mightBeRichText"/>
     <rejection class="Qt" function-name="escape"/>
@@ -1300,7 +1348,7 @@
     </value-type>
     <value-type name="QMetaEnum">
         <modify-function signature="QMetaEnum()" remove="all"/>
-        <modify-function signature="fromType()" remove="all"/>
+        <modify-function signature="fromType&lt;T>()" remove="all"/>
     </value-type>
     <enum-type name="QMetaMethod::MethodType">
     </enum-type>
@@ -1411,8 +1459,6 @@
         <modify-function signature="operator[](QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QLatin1String)const" remove="all" until="6.3.*"/>
         <modify-function signature="operator[](QLatin1StringView)const" remove="all" since="6.4.0"/>
-        <modify-function signature="operator[](QString)" remove="all"/>
-        <modify-function signature="operator[](long long)" remove="all"/>
         <modify-function signature="operator[](QString)const" rename="value"/>
         <modify-function signature="operator[](long long)const" rename="value"/>
         <modify-function signature="fromCbor(const char *, qsizetype, QCborParserError *)" remove="all"/>
@@ -1433,7 +1479,6 @@
         <modify-function signature="cbegin()const" remove="all"/>
         <modify-function signature="constEnd()const" remove="all"/>
         <modify-function signature="constBegin()const" remove="all"/>
-        <modify-function signature="operator[](qsizetype)" remove="all"/>
         <modify-function signature="operator[](qsizetype)const" rename="value"/>
         <modify-function signature="operator=(const QCborArray &amp;)" rename="set">
             <modify-argument index="0">
@@ -1479,9 +1524,6 @@
         <modify-function signature="insert(QLatin1String,QCborValue)" remove="all" until="6.3.*"/>
         <modify-function signature="operator[](QLatin1StringView)" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QLatin1String)" remove="all" until="6.3.*"/>
-        <modify-function signature="operator[](QString)" remove="all"/>
-        <modify-function signature="operator[](long long)" remove="all"/>
-        <modify-function signature="operator[](QCborValue)" remove="all"/>
         <modify-function signature="operator[](QLatin1String)const" remove="all" until="6.3.*"/>
         <modify-function signature="operator[](QLatin1StringView)const" remove="all" since="6.4.0"/>
         <modify-function signature="operator[](QString)const" remove="all"/>
@@ -1501,12 +1543,22 @@
     </value-type>
     <iterator-type name="QCborMap::ConstIterator" since="5.12.0"/>
     <iterator-type name="QCborMap::Iterator" since="5.12.0"/>
+	<object-type name="QCborStreamReader::StringResult" template="yes" disable-native-id-usage="yes" since="5.12.0">
+        <modify-function signature="StringResult()" remove="all"/>
+        <modify-function signature="StringResult(StringResult)" remove="all"/>
+        <instantiation arguments="QVariant"/>
+    </object-type>
+    <object-type name="QCborStreamReader::StringResult&lt;QVariant>" generic-class="yes" generate="no-shell" since="5.12.0">
+        <modify-function signature="StringResult&lt;QVariant>()" remove="all"/>
+        <modify-function signature="StringResult&lt;QVariant>(StringResult&lt;QVariant>)" remove="all"/>
+		<modify-field name="data" read="true" write="false"/>
+		<modify-field name="status" read="true" write="false"/>
+    </object-type>
     <object-type name="QCborStreamReader">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="QCborStreamReader(const unsigned char *, qsizetype)" remove="all"/>
-        <modify-function signature="readStringChunk(char *, qsizetype)" remove="all"/>
         <modify-function signature="isNegativeInteger()const" remove="all"/>
     </object-type>
     <object-type name="QCborStreamWriter">
@@ -1537,8 +1589,10 @@
         <modify-function signature="operator=(const QJsonArray&amp;)" remove="all"/>
         <modify-function signature="operator+=(const QJsonValue &amp;)" remove="all"/>
         <modify-function signature="operator+(const QJsonValue &amp;) const" rename="plus"/>
-        <!--<modify-function signature="operator[](int) const" remove="all"/>
-        <modify-function signature="operator[](int)" remove="all"/>-->
+        <modify-function signature="operator[](int) const" remove="all" until="5.*"/>
+        <modify-function signature="operator[](int)" remove="all" until="5.*"/>
+        <modify-function signature="operator[](qsizetype) const" remove="all" since="6.0.0"/>
+        <modify-function signature="operator[](qsizetype)" remove="all" since="6.0.0"/>
         <modify-function signature="operator&lt;&lt;(const QJsonValue &amp;)" remove="all"/>
         <modify-function signature="toVariantList()const" rename="toList"/>
         <modify-function signature="constBegin() const" remove="all" since="5.7.0"/>
@@ -1709,6 +1763,7 @@
 
     <object-type name="QStringListModel"/>
 
+    <value-type name="QUrl::FormattingOptions" generate="no" disable-native-id-usage="yes"/>
     <value-type name="QUrl">
         <extra-includes>
         <include file-name="QStringList" location="global"/>
@@ -2464,7 +2519,6 @@
         </modify-function>
         <modify-function signature="setProperty(const char *, QVariant)" thread-affine="yes">
         </modify-function>
-
         <modify-function signature="thread()const" thread-affine="no"/>
         <modify-function signature="deleteLater()" thread-affine="no">
         <rename to="disposeLater"/>
@@ -2774,8 +2828,8 @@
         <extra-includes>
             <include file-name="QtCore/QFuture" location="global"/>
             <include file-name="qfuture_impl.h" location="global" suppressed="yes"/>
+            <include file-name="QtCore/qfuture_impl.h" location="global" suppressed="yes"/>
         </extra-includes>
-        <modify-function signature="makeReadyFuture()" remove="all" since="6.1.0"/>
     </namespace-type>
     <enum-type name="QtFuture::Launch" since="6.0.0"/>
     <enum-type name="QFutureInterfaceBase::State" extensible="true"/>
@@ -3275,25 +3329,14 @@
     </value-type>
     <rejection class="QMetaType" function-name="destroy"/>
     <rejection class="QMetaType" function-name="construct"/>
-    <rejection class="QMetaType" function-name="create"/>
     <rejection class="QMetaType" function-name="destruct"/>
-    <rejection class="QMetaType" function-name="compare"/>
-    <rejection class="QMetaType" function-name="convert"/>
-    <rejection class="QMetaType" function-name="equals"/>
-    <rejection class="QMetaType" function-name="load"/>
-    <rejection class="QMetaType" function-name="save"/>
-    <rejection class="QMetaType" function-name="hasRegisteredComparators"/>
     <rejection class="QMetaType" function-name="registerDebugStreamOperator"/>
     <rejection class="QMetaType" function-name="registerConverter"/>
     <rejection class="QMetaType" function-name="registerComparators"/>
     <rejection class="QMetaType" function-name="registerEqualsComparator"/>
     <rejection class="QMetaType" function-name="registerNormalizedTypedef"/>
     <rejection class="QMetaType" function-name="registerTypedef"/>
-    <rejection class="QMetaType" function-name="hasRegisteredConverterFunction"/>
-    <rejection class="QMetaType" function-name="hasRegisteredMutableViewFunction"/>
-    <rejection class="QMetaType" function-name="unregisterConverterFunction"/>
     <rejection class="QtPrivate::QMetaTypeInterface"/>
-    <rejection class="QMetaType" function-name="fromType" since="5.15.0"/>
     <value-type name="QMetaType">
         <custom-constructor>
         if(copy){
@@ -3302,13 +3345,53 @@
             return new(placement) QMetaType();
         }
         </custom-constructor>
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="hasRegisteredConverterFunction&lt;From,To>()" remove="all"/>
+        <modify-function signature="hasRegisteredMutableViewFunction&lt;From,To>()" remove="all"/>
         <modify-function signature="operator=(const QMetaType &amp;)" remove="all" until="5.*"/>
     </value-type>
     <enum-type name="QMetaType::TypeFlag" flags="QMetaType::TypeFlags">
         <reject-enum-value name="MovableType" since="6.0.0"/>
     </enum-type>
-    <value-type name="QPartialOrdering" generate="no" since="6.0.0">
-    </value-type>
+	<rejection class="QVariant" function-name="view"/>
+	<rejection class="QVariant" function-name="view&lt;T>"/>
+	<rejection class="QVariant" function-name="canView"/>
+	<rejection class="QVariant" function-name="canView&lt;T>"/>
+	<value-type name="QVariant">
+        <extra-includes>
+            <include file-name="QtCore/QScopeGuard" location="global"/>
+            <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="QVariant(QHash&lt;QString,QVariant&gt;)" remove="all"/>
+        <modify-function signature="QVariant(unsigned long long)" remove="all"/>
+        <modify-function signature="QVariant(unsigned int)" remove="all"/>
+        <modify-function signature="QVariant(QStringList)" remove="all"/>
+        <modify-function signature="QVariant(const char*)" remove="all"/>
+        <modify-function signature="QVariant(QLatin1String)" remove="all" until="6.3"/>
+        <modify-function signature="QVariant(QLatin1StringView)" remove="all" since="6.4"/>
+        <modify-function signature="data()" remove="all"/>
+        <modify-function signature="constData()const" remove="all"/>
+        <modify-function signature="operator=(QVariant)" remove="all"/>
+        <modify-function signature="toReal(bool*)const" remove="all"/>
+        <modify-function signature="toUInt(bool*)const" remove="all"/>
+        <modify-function signature="toULongLong(bool*)const" remove="all"/>
+        <modify-function signature="canConvert&lt;T>()const" remove="all"/>
+	</value-type>
+    <enum-type name="QVariant::Type" extensible="yes"/>
+    <object-type name="QPartialOrdering" generate="no-shell" since="6.0.0">
+        <modify-function signature="QPartialOrdering()" remove="all"/>
+        <modify-function signature="qHash(QPartialOrdering)" remove="all"/>
+        <modify-function signature="operator==(QPartialOrdering)" remove="all"/>
+        <modify-function signature="operator!=(QPartialOrdering)" remove="all"/>
+		<modify-field name="Equivalent" read="no" write="no"/>
+		<modify-field name="Greater" read="no" write="no"/>
+		<modify-field name="Less" read="no" write="no"/>
+		<modify-field name="Unordered" read="no" write="no"/>
+    </object-type>
     <enum-type name="QResource::Compression"/>
     <object-type name="QResource">
     </object-type>
@@ -3475,6 +3558,462 @@
     <value-type name="QHashSeed" since="6.2.0">
         <modify-function signature="operator size_t() const" rename="seed"/>
     </value-type>
+    <rejection class="" function-name="JNI_CreateJavaVM"/>
+    <rejection class="" function-name="JNI_GetCreatedJavaVMs"/>
+    <rejection class="" function-name="JNI_GetDefaultJavaVMInitArgs"/>
+    <rejection class="" function-name="JNI_OnLoad"/>
+    <rejection class="" function-name="JNI_OnUnload"/>
+    <rejection class="" function-name="qAddPostRoutine"/>
+    <rejection class="" function-name="qAddPreRoutine"/>
+    <rejection class="" function-name="qAppName"/>
+    <rejection class="" function-name="decodeVersion0ArchRequirements"/>
+    <rejection class="" function-name="decodeVersion1ArchRequirements"/>
+    <rejection class="" function-name="is_ident_char"/>
+    <rejection class="" function-name="is_space"/>
+    <rejection class="" function-name="processOpenModeFlags"/>
+    <rejection class="" function-name="qAbort"/>
+    <rejection class="" function-name="qBadAlloc"/>
+    <rejection class="" function-name="static_assert"/>
+    <rejection class="" function-name="qvsnprintf"/>
+    <rejection class="" function-name="qunsetenv"/>
+    <rejection class="" function-name="qtjambi_current_environment"/>
+    <rejection class="" function-name="qt_qnan"/>
+    <rejection class="" function-name="qt_qFindChildren_helper"/>
+    <rejection class="" function-name="qt_qFindChild_helper"/>
+    <rejection class="" function-name="qt_noop"/>
+    <rejection class="" function-name="qt_message_output"/>
+    <rejection class="" function-name="qt_is_nan"/>
+    <rejection class="" function-name="qt_is_inf"/>
+    <rejection class="" function-name="qt_is_finite"/>
+    <rejection class="" function-name="qt_inf"/>
+    <rejection class="" function-name="qt_hash"/>
+    <rejection class="" function-name="qt_fpclassify"/>
+    <rejection class="" function-name="qt_error_string"/>
+    <rejection class="" function-name="qt_custom_file_engine_handler_create"/>
+    <rejection class="" function-name="qt_clang_builtin_available"/>
+    <rejection class="" function-name="qt_check_pointer"/>
+    <rejection class="" function-name="qt_assert"/>
+    <rejection class="" function-name="qt_assert_x"/>
+    <rejection class="" function-name="qt_QMetaEnum_flagDebugOperator"/>
+    <rejection class="" function-name="qt_QMetaEnum_debugOperator"/>
+    <rejection class="" function-name="qtTrId"/>
+    <rejection class="" function-name="qstrnlen"/>
+    <rejection class="" function-name="qstrnicmp"/>
+    <rejection class="" function-name="qstrncpy"/>
+    <rejection class="" function-name="qstrncmp"/>
+    <rejection class="" function-name="qstrlen"/>
+    <rejection class="" function-name="qstricmp"/>
+    <rejection class="" function-name="qstrdup"/>
+    <rejection class="" function-name="qstrcpy"/>
+    <rejection class="" function-name="qstrcmp"/>
+    <rejection class="" function-name="qsnprintf"/>
+    <rejection class="" function-name="qputenv"/>
+    <rejection class="" function-name="qbswap"/>
+    <rejection class="" function-name="qbswap_helper"/>
+    <rejection class="" function-name="qgetenv"/>
+    <rejection class="" function-name="qVersion"/>
+    <rejection class="" function-name="qTzSet"/>
+    <rejection class="" function-name="qTerminate"/>
+    <rejection class="" function-name="qSharedBuild"/>
+    <rejection class="" function-name="qSetRealNumberPrecision"/>
+    <rejection class="" function-name="qSetPadChar"/>
+    <rejection class="" function-name="qSetFieldWidth"/>
+    <rejection class="" function-name="qEnvironmentVariable"/>
+    <rejection class="" function-name="qEnvironmentVariableIntValue"/>
+    <rejection class="" function-name="qEnvironmentVariableIsEmpty"/>
+    <rejection class="" function-name="qEnvironmentVariableIsSet"/>
+    <rejection class="" function-name="qobject_cast"/>
+    <rejection class="" function-name="qobject_iid_cast"/>
+    <rejection class="" function-name="qobject_interface_iid"/>
+    <rejection class="" function-name="qobject_pointer_cast"/>
+    <rejection class="" function-name="qvariant_cast"/>
+    <rejection class="" function-name="qSubOverflow"/>
+    <rejection class="" function-name="qt_ptr_swap"/>
+    <rejection class="" function-name="qt_QMetaEnum_flagDebugOperator_helper"/>
+    <rejection class="" function-name="qbswapFloatHelper"/>
+    <rejection class="" function-name="q_check_ptr"/>
+    <rejection class="" function-name="qWeakPointerFromVariant"/>
+    <rejection class="" function-name="qWeakPointerCast"/>
+    <rejection class="" function-name="qTokenize"/>
+    <rejection class="" function-name="qToUnderlying"/>
+    <rejection class="" function-name="qToUnaligned"/>
+    <rejection class="" function-name="qToStringViewIgnoringNull"/>
+    <rejection class="" function-name="qToLittleEndian"/>
+    <rejection class="" function-name="qToBigEndian"/>
+    <rejection class="" function-name="qThreadStorage_setLocalData"/>
+    <rejection class="" function-name="qThreadStorage_localData_const"/>
+    <rejection class="" function-name="qThreadStorage_localData"/>
+    <rejection class="" function-name="qThreadStorage_deleteData"/>
+    <rejection class="" function-name="qSharedPointerObjectCast"/>
+    <rejection class="" function-name="qSharedPointerFromVariant"/>
+    <rejection class="" function-name="qSharedPointerDynamicCast"/>
+    <rejection class="" function-name="qSharedPointerConstCast"/>
+    <rejection class="" function-name="qSharedPointerCast"/>
+    <rejection class="" function-name="qScopeGuard"/>
+    <rejection class="" function-name="qMulOverflow"/>
+    <rejection class="" function-name="qPointerFromVariant"/>
+    <rejection class="" function-name="qMakeStaticByteArrayMatcher"/>
+    <rejection class="" function-name="qMakePair"/>
+    <rejection class="" function-name="qLoadPlugin"/>
+    <rejection class="" function-name="qLoadPlugin1"/>
+    <rejection class="" function-name="qHashRangeCommutative"/>
+    <rejection class="" function-name="qHashRange"/>
+    <rejection class="" function-name="qHashMultiCommutative"/>
+    <rejection class="" function-name="qHashMulti"/>
+    <rejection class="" function-name="qHashEquals"/>
+    <rejection class="" function-name="qGetPtrHelper"/>
+    <rejection class="" function-name="qFromUnaligned"/>
+    <rejection class="" function-name="qFromLittleEndian"/>
+    <rejection class="" function-name="qFromBigEndian"/>
+    <rejection class="" function-name="qBound"/>
+    <rejection class="" function-name="qAddOverflow"/>
+    <rejection class="" function-name="qAsConst"/>
+    <rejection class="" function-name="genericHash"/>
+    <rejection class="" function-name="erase_if"/>
+    <rejection class="" function-name="erase"/>
+    <rejection class="" function-name="qDeleteInEventHandler"/>
+    <rejection class="" function-name="qFloatFromFloat16"/>
+    <rejection class="" function-name="qFloatToFloat16"/>
+    <rejection class="" function-name="qGetBindingStorage"/>
+    <rejection class="" function-name="qHashBits"/>
+    <rejection class="" function-name="qInstallMessageHandler"/>
+    <rejection class="" function-name="qMallocAligned"/>
+    <rejection class="" function-name="qMetaTypeTypeInternal"/>
+    <rejection class="" function-name="qMkTime"/>
+    <rejection class="" function-name="qReallocAligned"/>
+    <rejection class="" function-name="qRemovePostRoutine"/>
+    <rejection class="" function-name="qRegisterStaticPluginFunction"/>
+    <rejection class="" function-name="qAtomicAssign"/>
+    <rejection class="" function-name="qAtomicDetach"/>
+    <rejection class="" function-name="qDeleteAll"/>
+    <rejection class="" function-name="qExchange"/>
+    <rejection class="" function-name="qPluginArchRequirements"/>
+    <rejection class="" function-name="qFreeAligned"/>
+    <rejection class="" function-name="qt_register_signal_spy_callbacks"/>
+    <rejection class="" function-name="qSwap"/>
+    <rejection class="" function-name="qErrnoWarning"/>
+    <rejection class="" function-name="qSetMessagePattern"/>
+    <rejection class="" function-name="qFormatLogMessage"/>
+	<global-function signature="qCompress(QByteArray, int)" target-type="QByteArray"/>
+	<global-function signature="qUncompress(QByteArray)" target-type="QByteArray"/>
+	<global-function signature="qChecksum(QByteArrayView, Qt::ChecksumType)" target-type="QByteArrayView"/>
+	<global-function signature="qChecksum(const char*, qsizetype, Qt::ChecksumType)" remove="all"/>
+	<global-function signature="qUncompress(const uchar*, qsizetype)" remove="all"/>
+	<global-function signature="qCompress(const uchar*, qsizetype, int)" remove="all"/>
+	<global-function signature="qHash(QPointF, QHashDummyValue, hash_type)" remove="all"/>
+	<global-function signature="qFuzzyIsNull(qfloat16)" remove="all"/>
+	<global-function signature="qFuzzyCompare(qfloat16, qfloat16)" remove="all"/>
+	<global-function signature="qFpClassify(qfloat16)" remove="all"/>
+	<global-function signature="qIntCast(qfloat16)" remove="all"/>
+	<global-function signature="qIsFinite(qfloat16)" remove="all"/>
+	<global-function signature="qIsInf(qfloat16)" remove="all"/>
+	<global-function signature="qIsNaN(qfloat16)" remove="all"/>
+	<global-function signature="qIsNull(qfloat16)" remove="all"/>
+	<global-function signature="qRound(qfloat16)" remove="all"/>
+	<global-function signature="qRound64(qfloat16)" remove="all"/>
+	<global-function signature="qPopulationCount(long unsigned int)" remove="all"/>
+	<global-function signature="qPopulationCount(quint8)" target-type="QtAlgorithms"/>
+	<global-function signature="qPopulationCount(quint16)" target-type="QtAlgorithms"/>
+	<global-function signature="qPopulationCount(quint32)" target-type="QtAlgorithms"/>
+	<global-function signature="qPopulationCount(quint64)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountLeadingZeroBits(unsigned long)" remove="all"/>
+	<global-function signature="qCountLeadingZeroBits(quint16)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountLeadingZeroBits(quint32)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountLeadingZeroBits(quint8)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountLeadingZeroBits(quint64)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountTrailingZeroBits(unsigned long)" remove="all"/>
+	<global-function signature="qCountTrailingZeroBits(quint16)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountTrailingZeroBits(quint32)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountTrailingZeroBits(quint8)" target-type="QtAlgorithms"/>
+	<global-function signature="qCountTrailingZeroBits(quint64)" target-type="QtAlgorithms"/>
+	<global-function signature="qFastCos(qreal)" target-type="QtMath"/>
+	<global-function signature="qFastSin(qreal)" target-type="QtMath"/>
+	<global-function signature="qNextPowerOfTwo(qint32)" target-type="QtMath"/>
+	<global-function signature="qNextPowerOfTwo(qint64)" target-type="QtMath"/>
+	<global-function signature="qDegreesToRadians(double)" target-type="QtMath"/>
+	<global-function signature="qDegreesToRadians(float)" target-type="QtMath"/>
+	<global-function signature="qRadiansToDegrees(double)" target-type="QtMath"/>
+	<global-function signature="qRadiansToDegrees(float)" target-type="QtMath"/>
+	<global-function signature="qIsNaN(double)" target-type="QtNumeric"/>
+	<global-function signature="qIsInf(double)" target-type="QtNumeric"/>
+	<global-function signature="qIsFinite(double)" target-type="QtNumeric"/>
+	<global-function signature="qFpClassify(double)" target-type="QtNumeric"/>
+	<global-function signature="qFloatDistance(double,double)" target-type="QtNumeric"/>
+	<global-function signature="qIsNaN(float)" target-type="QtNumeric"/>
+	<global-function signature="qIsInf(float)" target-type="QtNumeric"/>
+	<global-function signature="qIsFinite(float)" target-type="QtNumeric"/>
+	<global-function signature="qFpClassify(float)" target-type="QtNumeric"/>
+	<global-function signature="qFloatDistance(float,float)" target-type="QtNumeric"/>
+	<global-function signature="qInf()" target-type="QtNumeric"/>
+	<global-function signature="qQNaN()" target-type="QtNumeric"/>
+	<global-function signature="qIsFinite&lt;T>(T)" remove="all"/>
+	<global-function signature="qIsInf&lt;T>(T)" remove="all"/>
+	<global-function signature="qIsNaN&lt;T>(T)" remove="all"/>
+	<global-function signature="qFuzzyCompare(double, double)" target-type="QtGlobal"/>
+	<global-function signature="qFuzzyIsNull(double)" target-type="QtGlobal"/>
+	<global-function signature="qFuzzyCompare(float, float)" target-type="QtGlobal"/>
+	<global-function signature="qFuzzyIsNull(float)" target-type="QtGlobal"/>
+	<global-function signature="qIntCast(float)" target-type="QtGlobal"/>
+	<global-function signature="qIsNull(float)" target-type="QtGlobal"/>
+	<global-function signature="qIntCast(double)" target-type="QtGlobal"/>
+	<global-function signature="qIsNull(double)" target-type="QtGlobal"/>
+	<global-function signature="qRound64(float)" target-type="QtGlobal"/>
+	<global-function signature="qRound(float)" target-type="QtGlobal"/>
+	<global-function signature="qRound(double)" target-type="QtGlobal"/>
+	<global-function signature="qRound64(double)" target-type="QtGlobal"/>
+	<global-function signature="qMin&lt;T,U>(T, U)" remove="all"/>
+	<global-function signature="qMax&lt;T,U>(T, U)" remove="all"/>
+	<global-function signature="qMin&lt;T>(T, T)" target-type="QtGlobal">
+		<instantiation>
+			<argument type="qint8"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint16"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint32"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint64"/>
+		</instantiation>
+		<instantiation>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qMax&lt;T>(T, T)" target-type="QtGlobal">
+		<instantiation>
+			<argument type="qint8"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint16"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint32"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint64"/>
+		</instantiation>
+		<instantiation>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qAbs&lt;T>(T)" target-type="QtGlobal">
+		<instantiation>
+			<argument type="qint8"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint16"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint32"/>
+		</instantiation>
+		<instantiation>
+			<argument type="qint64"/>
+		</instantiation>
+		<instantiation>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qAcos&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qAsin&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qAtan2&lt;T1,T2>(T1,T2)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qPow&lt;T1,T2>(T1,T2)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qAtan&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qCos&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qSin&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qTan&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qSqrt&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qExp&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qFabs&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qCeil&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qFloor&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qLn&lt;T>(T)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qHypot&lt;F,Fs...>(F, Fs...)" remove="all"/>
+	<global-function signature="qHypot&lt;Tx,Ty,Tz>(Tx, Ty, Tz)" remove="all"/>
+	<global-function signature="qHypot&lt;Tx,Ty>(Tx, Ty)" target-type="QtMath">
+		<instantiation>
+			<argument type="double"/>
+			<argument type="double"/>
+			<argument type="double"/>
+		</instantiation>
+		<instantiation>
+			<argument type="float"/>
+			<argument type="float"/>
+			<argument type="float"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qGlobalQHashSeed()" target-type="Qt"/>
+	<global-function signature="qSetGlobalQHashSeed(int)" target-type="Qt"/>
+	<global-function signature="qDegreesToRadians(long double)" remove="all"/>
+	<global-function signature="qRadiansToDegrees(long double)" remove="all"/>
+	<global-function signature="qNextPowerOfTwo(quint32)" remove="all"/>
+	<global-function signature="qNextPowerOfTwo(quint64)" remove="all"/>
+	<global-function signature="qAcos(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qAsin(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qAtan(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qAtan2(qreal, qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qPow(qreal, qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qCeil(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qCos(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qExp(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qFabs(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qFloor(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qLn(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qSin(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qSqrt(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qTan(qreal)" target-type="QtMath" until="5.15"/>
+	<global-function signature="qrand()" target-type="QtGlobal" until="5.15"/>
+	<global-function signature="qsrand(uint)" target-type="QtGlobal" until="5.15"/>
+	<global-function signature="qChecksum(const char*, unsigned int)" remove="all" until="5.15"/>
+	<global-function signature="qChecksum(const char*, unsigned int, Qt::ChecksumType)" remove="all" until="5.15"/>
+	<global-function signature="qCompress(const uchar*, int, int)" remove="all" until="5.15"/>
+	<global-function signature="qUncompress(const uchar*, int)" remove="all" until="5.15"/>
+	<header-type name="QtAlgorithms"/>
+	<header-type name="QtGlobal">
+	</header-type>
+	<header-type name="QtNumeric">
+	</header-type>
+	<header-type name="QtMath">
+	</header-type>
     
     <suppress-warning text="WARNING(Preprocessor) :: No such file or directory: *"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator&lt;&lt;(char16_t)' for function modification in 'QDebug' not found.*"/>
@@ -3533,11 +4072,11 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcher::futureInterface', unmatched return type 'QFutureInterfaceBase&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFutureWatcher::futureInterface', unmatched return type 'const QFutureInterfaceBase&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'T'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::constBegin', unmatched return type 'const_iterator'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::end', unmatched return type 'const_iterator'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::constEnd', unmatched return type 'const_iterator'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::constBegin*', unmatched return type 'const_iterator'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::end*', unmatched return type 'const_iterator'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::constEnd*', unmatched return type 'const_iterator'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::QFuture', unmatched parameter type 'QFutureInterface&lt;T&gt;*'" />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::begin', unmatched return type 'const_iterator'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::begin*', unmatched return type 'const_iterator'" />
     <suppress-warning text="WARNING(Parser) :: ** WARNING scope not found for function definition: 'QtPrivate::IsMetaTypePair&lt;T,true>::registerConverter' - definition *ignored*" />
     <suppress-warning text="WARNING(Parser) :: ** WARNING scope not found for function definition: 'QFuture&lt;void&gt;::operator=' - definition *ignored*" />
     <suppress-warning text="WARNING(Parser) :: ** WARNING scope not found for function definition: 'QFutureInterface&lt;void&gt;::future' - definition *ignored*" />
@@ -3629,7 +4168,6 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborMap::*', unmatched parameter type 'const char[N]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Something has happened when trying to read array initialization: N" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'java.util.Collection' for enum 'AllocationOption' is not declared" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCborStreamReader::*', unmatched return type 'StringResult&lt;*>'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: sizeof(qreal)==sizeof(double)?Double:Float in QMetaType::Type" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: possible compilation error in enum value sizeof(qreal)==sizeof(double)?Double:Float" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Cannot find enum constant for value 'QCborTag(-1)' in 'QCborValue' or any of its super classes" />
@@ -3659,7 +4197,7 @@
   <suppress-warning text="WARNING(CppImplGenerator) :: AbstractMeta::findEnum(), unknown class 'QVariant' in 'QVariant::Type'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QListSpecialMethods&lt;T>' of 'QList' is not known" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Something has happened when trying to read array initialization: Size" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArrayView::QByteArrayView', unmatched parameter type 'const char[Size]'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QByteArrayView::QByteArrayView*', unmatched parameter type 'const char[Size]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QIODeviceBase()' for function modification in 'QIODeviceBase' not found. Possible candidates: " />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QEvent::*EventTag'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*QtPrivate::*', *" />
@@ -3695,10 +4233,10 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyNotifier*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyObserverBase::ChangeHandler*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: function 'QtMessageHandler' is specified in typesystem, but not declared" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator', unmatched parameter type 'const quint32[N]'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator*', unmatched parameter type 'const quint32[N]'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type const quint32 (&amp;)[N] (is_busted)" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::_fillRange', unmatched parameter type 'qptrdiff'" />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture'*" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture*'*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'reportFinished(const JObjectWrapper*)' for function modification in 'QtJambiFutureInterface' not found.*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::*', unmatched parameter type '*QFuture*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCalendar::QCalendar', unmatched parameter type 'QCalendar::SystemId'" />
@@ -3713,7 +4251,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;bool(const void*,void*)> (is_busted)" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;bool(void*,void*)> (is_busted)" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QStringConverterBase()' for function modification in 'QStringConverterBase' not found. Possible candidates: " since="6.4.0"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QVersionNumber::QVersionNumber', unmatched parameter type '*QVarLengthArray*'" since="6.4.0"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QVersionNumber::QVersionNumber*', unmatched parameter type '*QVarLengthArray*'" since="6.4.0"/>
   <suppress-warning text="WARNING(Parser) :: scope not found for function definition: 'QLatin1StringView::*' - definition *ignored*" since="6.4.0"/>
   <suppress-warning text="WARNING(Parser) :: scope not found for symbol: q23::invoke_r*" since="6.4.0"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '*char32_t*' for *modification in '*' not found. Possible candidates:"/>
@@ -3728,4 +4266,11 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QString::SplitBehavior'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QString::SplitBehavior' does not have a type entry or is not an enum"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type To (From::*)() (is_busted)"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: missing instantiations for template method QPromise*"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: missing instantiations for template method QFuture*"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QUrlTwoFlags&lt;QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>' of 'QUrl$FormattingOptions' is not known"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*std::variant*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVariant' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering()' for function modification in 'QPartialOrdering' not found. Possible candidates: "/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qHash(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "/>
 </typesystem>

@@ -38,28 +38,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <qtjambi/qtjambi_application.h>
 #include <qtjambi/qtjambi_cast.h>
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Qt_qSetGlobalQHashSeed)
-(JNIEnv* env,jclass, jint newSeed)
-{
-    QTJAMBI_TRY{
-        qSetGlobalQHashSeed(newSeed);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-}
-
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Qt_qGlobalQHashSeed)
-(JNIEnv* env,jclass)
-{
-    jint result{0};
-    QTJAMBI_TRY{
-        result = qGlobalQHashSeed();
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_initialize)
 (JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
 {

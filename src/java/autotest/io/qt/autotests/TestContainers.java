@@ -645,7 +645,7 @@ public class TestContainers extends ApplicationInitializer {
     
     @Test
     public void test_create_SetList() {
-    	int setId = QMetaType.registerMetaType(QSet.class, QMetaType.fromType(String.class));
+    	int setId = QMetaType.qRegisterMetaType(QSet.class, QMetaType.fromType(String.class));
     	QList<QSet<String>> setList = new QList<>(new QMetaType(setId));
     	QSet<String> set0 = new QSet<>(String.class);
     	set0.insert("A");

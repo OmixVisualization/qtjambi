@@ -103,8 +103,11 @@ private:
         </inject-code>
     </object-type>
     <object-type name="Qt3DCore::QEntity">
+        <inject-code class="java" until="5.*">
+            <import-file name="typesystem/java/typesystem_qt3dcore-java.java" quote-after-line="class QEntity_5_" quote-before-line="}// class"/>
+        </inject-code>
         <inject-code class="java" since="6.0.0">
-            <import-file name="typesystem/java/typesystem_qt3dcore-java.java" quote-after-line="class QEntity__" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_qt3dcore-java.java" quote-after-line="class QEntity_6_" quote-before-line="}// class"/>
         </inject-code>
     </object-type>
 </typesystem>

@@ -223,7 +223,7 @@
     <modify-field name="buffer_length" read="no" write="no"/>
     <modify-field name="buffer" read="yes" write="no">
         <replace-type modified-type="java.nio.ByteBuffer"/>
-        <conversion-rule class="native">
+        <conversion-rule class="native-getter">
             %out = %in ? %env->NewDirectByteBuffer(%in, jlong(__qt_this->buffer_length)) : nullptr;
             JavaException::check(%env QTJAMBI_STACKTRACEINFO );
         </conversion-rule>

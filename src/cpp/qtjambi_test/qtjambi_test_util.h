@@ -2,6 +2,7 @@
 #define QTJAMBI_TEST_UTIL_H
 
 #include <QtCore/qglobal.h>
+#include <QtTest/qtestcase.h>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #include <QtWidgets/QtWidgets>
@@ -221,4 +222,9 @@ class QMetaAssociationForContainer<QMap<int,QEventPoint>> : public QMetaContaine
 
 #endif
 
+#ifndef QT_JAMBI_RUN
+namespace QTest{
+void addColumn(const char* name, int id);
+}
+#endif
 #endif // QTJAMBI_TEST_UTIL_H

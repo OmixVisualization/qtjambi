@@ -29,12 +29,34 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.Qt;
+import io.qt.quick.QQuickWindow;
+import io.qt.quick.QSGRendererInterface;
+import io.qt.quick.widgets.QQuickWidget;
+import io.qt.widgets.QApplication;
+
 public class TestInitializationQuickWidgets extends UnitTestInitializer {
     @Test
-    public void initialize() {
+    public void initialize() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.quick.widgets"));
+    	QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
+		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGL);
+    	QApplication.initialize(new String[0]);
+    	QQuickWidget window = new QQuickWidget();
+    	window.show();
+    	QApplication.processEvents();
+    	window.hide();
+    	QApplication.processEvents();
+    	window.dispose();
+    	QApplication.shutdown();
     }
 }

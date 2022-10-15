@@ -44,6 +44,7 @@
 ****************************************************************************-->
 <typesystem qt-library="QtQuick" description="A declarative framework for building highly dynamic applications with custom user interfaces.">
     <required-library name="QtDBus" mode="optional" since="6.0.0"/>
+    <rejection class="QSGTexturePrivate"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_mipmap_filtering"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_filtering"/>
@@ -64,22 +65,16 @@
     <rejection class="QSGTexture" function-name="rhiTexture"/>
     <rejection class="QSGTexture" function-name="removedFromAtlas"/>
     <rejection class="QSGTexture" function-name="commitTextureOperations"/>
-    <rejection class="QQuickRenderTarget" function-name="fromNativeTexture"/>
-    <rejection class="QQuickRenderTarget" function-name="fromRhiRenderTarget"/>
-    <rejection class="QQuickRenderTarget" function-name="fromD3D11Texture"/>
-    <rejection class="QQuickRenderTarget" function-name="fromMetalTexture"/>
-    <rejection class="QQuickRenderTarget" function-name="fromVulkanImage"/>
     <rejection class="PtrShaderCreateFunc"/>
     <rejection class="QSGTexture::NativeTexture"/>
     <rejection class="QSGTexture" function-name="nativeTexture"/>
-    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceObjects"/>
-    <rejection class="QQuickGraphicsDevice" function-name="fromPhysicalDevice"/>
-    <rejection class="QQuickGraphicsDevice" function-name="fromAdapter"/>
-    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndContext"/>
-    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndCommandQueue"/>
     <rejection class="QQuickWheelEvent"/>
     <rejection class="QQuickMouseEvent"/>
     <rejection class="QQuickKeyEvent"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceObjects"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromPhysicalDevice"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndContext"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndCommandQueue"/>
 
     <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
     <enum-type name="QQuickItem::ItemChange"/>
@@ -306,6 +301,8 @@
         <modify-function signature="QSGNode(QSGNode::NodeType)" remove="all"/>
         <modify-function signature="type()const" remove="all"/>
     </object-type>
+	<global-function signature="qsgnode_set_description(QSGNode*, QString)" target-type="QSGNode" rename="setDescription">
+	</global-function>
     <object-type name="QSGBasicGeometryNode" force-abstract="yes">
         <modify-function signature="QSGBasicGeometryNode(QSGNode::NodeType)" remove="all"/>
         <modify-function signature="geometry() const" remove="all"/>
@@ -463,18 +460,18 @@
         </modify-function>
     </object-type>
     <object-type name="QSGGeometry">
-    <modify-function signature="indexData() const" remove="all"/>
-    <modify-function signature="indexDataAsUInt() const" remove="all"/>
-    <modify-function signature="indexDataAsUShort() const" remove="all"/>
-    <modify-function signature="indexDataAsUInt()" remove="all"/>
-    <modify-function signature="indexDataAsUShort()" remove="all"/>
-    <modify-function signature="vertexData() const" remove="all"/>
-    <modify-function signature="vertexDataAsPoint2D()" remove="all"/>
-    <modify-function signature="vertexDataAsPoint2D() const" remove="all"/>
-    <modify-function signature="vertexDataAsColoredPoint2D()" remove="all"/>
-    <modify-function signature="vertexDataAsColoredPoint2D() const" remove="all"/>
-    <modify-function signature="vertexDataAsTexturedPoint2D()" remove="all"/>
-    <modify-function signature="vertexDataAsTexturedPoint2D() const" remove="all"/>
+		<modify-function signature="indexData() const" remove="all"/>
+		<modify-function signature="indexDataAsUInt() const" remove="all"/>
+		<modify-function signature="indexDataAsUShort() const" remove="all"/>
+		<modify-function signature="indexDataAsUInt()" remove="all"/>
+		<modify-function signature="indexDataAsUShort()" remove="all"/>
+		<modify-function signature="vertexData() const" remove="all"/>
+		<modify-function signature="vertexDataAsPoint2D()" remove="all"/>
+		<modify-function signature="vertexDataAsPoint2D() const" remove="all"/>
+		<modify-function signature="vertexDataAsColoredPoint2D()" remove="all"/>
+		<modify-function signature="vertexDataAsColoredPoint2D() const" remove="all"/>
+		<modify-function signature="vertexDataAsTexturedPoint2D()" remove="all"/>
+		<modify-function signature="vertexDataAsTexturedPoint2D() const" remove="all"/>
     </object-type>
     <object-type name="QSGMaterial">
         <modify-function signature="compare(const QSGMaterial*)const">
@@ -694,6 +691,7 @@
     </object-type>
     <value-type name="QQuickGraphicsDevice" since="6.0.0">
         <modify-function signature="operator=(QQuickGraphicsDevice)" remove="all"/>
+        <modify-function signature="fromAdapter(unsigned int, int, int)" pp-condition="defined(Q_OS_WIN)"/>
     </value-type>
     <value-type name="QQuickRenderTarget" since="6.0.0">
         <modify-function signature="operator=(QQuickRenderTarget)" remove="all"/>
@@ -733,24 +731,23 @@
     <interface-type name="QNativeInterface::QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" generate="no-shell" since="6.2.0">
         <modify-function signature="QSGD3D11Texture()" remove="all"/>
     </interface-type>
+	<value-type name="VkImage" generate="no" since="6.2.0"/>
+	<value-type name="VkImageLayout" generate="no" since="6.2.0"/>
+	<value-type name="VkFormat" generate="no" since="6.4.0"/>
     <value-type name="MTLTexture" generate="no" since="6.2.0"/>
+    <value-type name="MTLDevice" generate="no" since="6.2.0"/>
+    <value-type name="MTLCommandQueue" generate="no" since="6.2.0"/>
     <object-type name="id" template="yes" since="6.2.0">
         <instantiation arguments="MTLTexture"/>
     </object-type>
     <object-type name="id&lt;MTLTexture>" generate="no" since="6.2.0"/>
     <rejection class="QNativeInterface::QSGMetalTexture::TypeInfo"/>
-    <interface-type name="QNativeInterface::QSGMetalTexture" pp-condition="defined(__OBJC__)" generate="no-shell" since="6.2.0">
+    <interface-type name="QNativeInterface::QSGMetalTexture" pp-condition="defined(Q_OS_MACOS)" generate="no-shell" since="6.2.0">
         <modify-function signature="QSGMetalTexture()" remove="all"/>
     </interface-type>
-    <object-type name="VkImage" generate="no"/>
-    <object-type name="VkImageLayout" generate="no"/>
     <rejection class="QNativeInterface::QSGVulkanTexture::TypeInfo"/>
     <interface-type name="QNativeInterface::QSGVulkanTexture" pp-condition="QT_CONFIG(vulkan)" generate="no-shell" since="6.2.0">
         <modify-function signature="QSGVulkanTexture()" remove="all"/>
-    </interface-type>
-    <rejection class="QNativeInterface::QSGVulkanTexture" function-name="fromNative"/>
-    <rejection class="QNativeInterface::QSGMetalTexture" function-name="fromNative"/>
-    <rejection class="QNativeInterface::QSGD3D11Texture" function-name="fromNative"/>
-    
+    </interface-type>    
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'Vk*'" />
 </typesystem>

@@ -51,6 +51,7 @@
 #define QGENERICMATRIX_H
 #define QTJAMBI_UTILS_H
 #define QTJAMBI_REGISTRY_H
+#define QT_KEYPAD_NAVIGATION
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
@@ -178,6 +179,28 @@
 #       include <QtQuick/QtQuick>
 #		define Q_QUICK_PRIVATE_EXPORT
 #   else
+#		include <QtQuick/qtquickglobal.h>
+#       ifndef Q_OS_WIN
+#       	define Q_OS_WIN
+#       	ifndef Q_OS_MACOS
+#       		define Q_OS_MACOS
+#       		include <QtQuick/QQuickRenderTarget>
+#       		include <QtQuick/QQuickGraphicsDevice>
+#       		undef Q_OS_MACOS
+#			else
+#       		include <QtQuick/QQuickRenderTarget>
+#       		include <QtQuick/QQuickGraphicsDevice>
+#			endif
+#       	undef Q_OS_WIN
+#       elif !defined(Q_OS_MACOS)
+#       	define Q_OS_MACOS
+#       		include <QtQuick/QQuickRenderTarget>
+#       		include <QtQuick/QQuickGraphicsDevice>
+#       	undef Q_OS_MACOS
+#		else
+#       	include <QtQuick/QQuickRenderTarget>
+#       	include <QtQuick/QQuickGraphicsDevice>
+#		endif
 #       define QSGTEXTURE_PLATFORM_H
 #       include <QtQuick/QtQuick>
 #       undef QSGTEXTURE_PLATFORM_H
@@ -506,6 +529,9 @@
 #ifndef QTJAMBI_NO_HTTPSERVER
 #define QT_WEBSOCKETS_LIB
 #include <QtHttpServer/QtHttpServer>
+#endif
+#ifndef QTJAMBI_NO_SPATIALAUDIO
+#include <QtSpatialAudio/QtSpatialAudio>
 #endif
 
 #ifndef QTJAMBI_NO_OPENGL

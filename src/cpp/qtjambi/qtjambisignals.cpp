@@ -744,39 +744,38 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
         break;
     case Call:{
             NativeSlotObject* _this = static_cast<NativeSlotObject*>(this_);
-            if(QSharedPointer<QtJambiLink> link = _this->m_link.toStrongRef()){
+            QSharedPointer<QtJambiLink> link = _this->m_link.toStrongRef();
+            if(link && link->isQObject()){
                 if(JNIEnv* env = qtjambi_current_environment()){
                     QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                    QtJambiLinkScope scope(link);
                     QtJambiExceptionHandler __qt_exnhandler;
                     try{
-                        if(link->isQObject()){
-                            const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, _this->m_signal);
-                            if(parameterTypeInfos.size()){
-                                QVector<jvalue> converted_arguments(_this->m_argumentCount<0 ? parameterTypeInfos.size()-1 : qMin(_this->m_argumentCount, parameterTypeInfos.size()-1));
+                        QtJambiLinkScope scope(link);
+                        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, _this->m_signal);
+                        if(parameterTypeInfos.size()){
+                            QVector<jvalue> converted_arguments(_this->m_argumentCount<0 ? parameterTypeInfos.size()-1 : qMin(_this->m_argumentCount, parameterTypeInfos.size()-1));
 
-                                bool success = true;
-                                for (int i = 0; i < converted_arguments.size(); ++i) {
-                                    const ParameterTypeInfo& parameterTypeInfo = parameterTypeInfos[i+1];
-                                    converted_arguments[i].l = nullptr;
-                                    if(!parameterTypeInfo.convertInternalToExternal(env, &scope, a[i+1], &converted_arguments[i], true)){
-                                        success = false;
-                                        break;
-                                    }
+                            bool success = true;
+                            for (int i = 0; i < converted_arguments.size(); ++i) {
+                                const ParameterTypeInfo& parameterTypeInfo = parameterTypeInfos[i+1];
+                                converted_arguments[i].l = nullptr;
+                                if(!parameterTypeInfo.convertInternalToExternal(env, &scope, a[i+1], &converted_arguments[i], true)){
+                                    success = false;
+                                    break;
                                 }
-                                if (success) {
-                                    jobjectArray args = Java::Runtime::Object::newArray(env, jsize(converted_arguments.size()));
-                                    for (int i=0; i<converted_arguments.size();++i) {
-                                        env->SetObjectArrayElement(args, i, converted_arguments[i].l);
-                                        qtjambi_throw_java_exception(env);
-                                    }
-                                    Java::QtJambi::QtJambiSignals$AbstractConnection::invoke(env,_this->m_connection.object(), args);
-                                } else {
-                                    qWarning("SlotObject::CallSignal: Failed to convert arguments");
-                                }
-                            }else{
-                                qWarning()<< "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
                             }
+                            if (success) {
+                                jobjectArray args = Java::Runtime::Object::newArray(env, jsize(converted_arguments.size()));
+                                for (int i=0; i<converted_arguments.size();++i) {
+                                    env->SetObjectArrayElement(args, i, converted_arguments[i].l);
+                                    qtjambi_throw_java_exception(env);
+                                }
+                                Java::QtJambi::QtJambiSignals$AbstractConnection::invoke(env,_this->m_connection.object(), args);
+                            } else {
+                                qWarning("SlotObject::CallSignal: Failed to convert arguments");
+                            }
+                        }else{
+                            qWarning()<< "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
                         }
                     } catch (const JavaException& exn) {
                         if(_this->m_nothrow){
@@ -797,3 +796,279 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
     case NumOperations: ;
     }
 }
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
+
+namespace QtJambi{
+
+    class ConvertingSlotObject : public QtPrivate::QSlotObjectBase
+    {
+    public:
+        ConvertingSlotObject(const QMetaMethod& signal, const QMetaMethod& method, Qt::ConnectionType type, QSet<int>&& converter);
+        ~ConvertingSlotObject();
+        int* types();
+    private:
+        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret);
+        QMetaMethod m_signal;
+        QMetaMethod m_method;
+        QSet<int> m_converter;
+        int* const m_types;
+    };
+
+    ConvertingSlotObject::ConvertingSlotObject(const QMetaMethod& _signal, const QMetaMethod& method, Qt::ConnectionType type, QSet<int>&& converter)
+        : QSlotObjectBase(&ConvertingSlotObject::impl),
+          m_signal(_signal),
+          m_method(method),
+          m_converter(std::move(converter)),
+          m_types(
+              [](const QMetaMethod& signal, jint connectionType)->int*{
+              if (connectionType == Qt::QueuedConnection || connectionType == Qt::BlockingQueuedConnection){
+                      int *types = new int[size_t(signal.parameterCount())];
+                      for (int i = 0; i < signal.parameterCount(); ++i) {
+                          if(i == signal.parameterCount()-1){
+                              types[i] = 0;
+                          }else{
+                              types[i] = signal.parameterType(i);
+                          }
+                      }
+                      return types;
+                }
+                return nullptr;
+              }(_signal, type)
+          )
+    {
+    }
+
+    ConvertingSlotObject::~ConvertingSlotObject()
+    {
+        if(m_types)
+            delete[] m_types;
+    }
+
+    int* ConvertingSlotObject::types() { return m_types; }
+
+    void ConvertingSlotObject::impl(int which, QSlotObjectBase *this_, QObject *receiver, void **a, bool *ret){
+        switch (which) {
+        case Destroy:
+            delete static_cast<ConvertingSlotObject*>(this_);
+            break;
+        case Call:{
+                ConvertingSlotObject* _this = static_cast<ConvertingSlotObject*>(this_);
+                QList<QVariant> variants;
+                QList<void*> newArgs;
+                if(!_this->m_converter.isEmpty()){
+                    newArgs.resize(_this->m_method.parameterCount()+1);
+                    variants.resize(_this->m_method.parameterCount());
+                    newArgs[0] = a[0];
+                    for(int i=0; i<_this->m_method.parameterCount(); ++i){
+                        if(_this->m_converter.contains(i)){
+                            QMetaType sourceType = _this->m_signal.parameterMetaType(i);
+                            QMetaType targetType = _this->m_method.parameterMetaType(i);
+                            variants[i] = QVariant(sourceType, a[i+1]);
+                            variants[i].convert(targetType);
+                            newArgs[i+1] = variants[i].data();
+                        }else{
+                            newArgs[i+1] = a[i+1];
+                        }
+                    }
+                    a = newArgs.data();
+                }
+                QObjectPrivate::StaticMetaCallFunction callFunction = _this->m_method.enclosingMetaObject()->d.static_metacall;
+                if (callFunction) {
+                    callFunction(receiver, QMetaObject::InvokeMetaMethod, _this->m_method.methodIndex() - _this->m_method.enclosingMetaObject()->methodOffset(), a);
+                } else {
+                    QMetaObject::metacall(receiver, QMetaObject::InvokeMetaMethod, _this->m_method.methodIndex(), a);
+                }
+            }
+            break;
+        case Compare:{
+            ConvertingSlotObject* _this = static_cast<ConvertingSlotObject*>(this_);
+            ConvertingSlotObject* other = static_cast<ConvertingSlotObject*>(a[0]);
+            *ret = other->m_method==_this->m_method && other->m_signal==_this->m_signal;
+        }
+            break;
+        case NumOperations: ;
+        }
+    }
+
+    inline int extract_code(const char *member)
+    {
+        // extract code, ensure QMETHOD_CODE <= code <= QSIGNAL_CODE
+        return (((int)(*member) - '0') & 0x3);
+    }
+
+    bool check_signal_macro(const char *signal)
+    {
+        int sigcode = extract_code(signal);
+        if (sigcode != QSIGNAL_CODE) {
+            return false;
+        }
+        return true;
+    }
+
+    int *queuedConnectionTypes(const QMetaMethod &method)
+    {
+        const auto parameterCount = method.parameterCount();
+        int *typeIds = new int[parameterCount + 1];
+        Q_CHECK_PTR(typeIds);
+        for (int i = 0; i < parameterCount; ++i) {
+            const QMetaType metaType = method.parameterMetaType(i);
+            if (metaType.flags() & QMetaType::IsPointer)
+                typeIds[i] = QMetaType::VoidStar;
+            else
+                typeIds[i] = metaType.id();
+            if (!typeIds[i]) {
+                delete[] typeIds;
+                return nullptr;
+            }
+        }
+        typeIds[parameterCount] = 0;
+
+        return typeIds;
+    }
+
+    int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
+    {
+        auto types = std::make_unique<int[]>(argc + 1);
+        for (int i = 0; i < argc; ++i) {
+            const QArgumentType &type = argumentTypes[i];
+            if (type.type())
+                types[i] = type.type();
+            else if (type.name().endsWith('*'))
+                types[i] = QMetaType::VoidStar;
+            else
+                types[i] = QMetaType::fromName(type.name()).id();
+
+            if (!types[i]) {
+                return nullptr;
+            }
+        }
+        types[argc] = 0;
+
+        return types.release();
+    }
+
+    bool checkConnectArgs(const QMetaMethod &signal,
+                          const QMetaMethod &method, QSet<int>& converter){
+        if(method.parameterCount()<=signal.parameterCount()){
+            for(int i=0; i<method.parameterCount(); ++i){
+                QMetaType sourceType = signal.parameterMetaType(i);
+                QMetaType targetType = method.parameterMetaType(i);
+                if(targetType==QMetaType::fromType<JObjectWrapper>()){
+                    if(JNIEnv* env = qtjambi_current_environment()){
+                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                        jclass clazz = qtjambi_class_for_metatype(env, sourceType);
+                        if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz)){
+                            converter.insert(i);
+                            continue;
+                        }
+                    }
+                    if(!isJObjectWrappedMetaType(sourceType) && !JObjectValueWrapper::isValueType(sourceType)){
+                        return false;
+                    }
+                }else if(targetType==QMetaType::fromType<JCollectionWrapper>()
+                         || targetType==QMetaType::fromType<JMapWrapper>()
+                         || targetType==QMetaType::fromType<JIteratorWrapper>()){
+                    if(!isJObjectWrappedMetaType(sourceType) && !JObjectValueWrapper::isValueType(sourceType)){
+                        return false;
+                    }
+                }else if(targetType==QMetaType::fromType<JEnumWrapper>()){
+                    converter.insert(i);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    QMetaObject::Connection connect(const QObject *sender, const char *signal,
+                                                   const QObject *receiver, const char *method,
+                                                   Qt::ConnectionType type){
+        if (sender == nullptr || receiver == nullptr || signal == nullptr || method == nullptr) {
+            return QObject::connect(sender, signal, receiver, method, type);
+        }
+        QByteArray tmp_signal_name;
+
+        if (!check_signal_macro(signal))
+            return QObject::connect(sender, signal, receiver, method, type);
+        const QMetaObject *smeta = sender->metaObject();
+        ++signal; // skip code
+        QArgumentTypeArray signalTypes;
+        Q_ASSERT(QMetaObjectPrivate::get(smeta)->revision >= 7);
+        int signal_index = smeta->indexOfMethod(signal);
+        if (signal_index < 0) {
+            // check for normalized signatures
+            tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
+            signal = tmp_signal_name.constData() + 1;
+            signalTypes.clear();
+            smeta = sender->metaObject();
+            signal_index = smeta->indexOfMethod(signal);
+        }
+        if (signal_index < 0) {
+            return QObject::connect(sender, signal, receiver, method, type);
+        }
+        QMetaMethod msignal = smeta->method(signal_index);
+
+        QByteArray tmp_method_name;
+        int membcode = extract_code(method);
+
+        if (membcode != QSLOT_CODE && membcode != QSIGNAL_CODE)
+            return QObject::connect(sender, signal, receiver, method, type);
+        ++method; // skip code
+
+        const QMetaObject *rmeta = receiver->metaObject();
+        int method_index = rmeta->indexOfMethod(method);
+        if (method_index < 0) {
+            // check for normalized methods
+            tmp_method_name = QMetaObject::normalizedSignature(method);
+            method = tmp_method_name.constData();
+            method_index = rmeta->indexOfMethod(method);
+        }
+
+        if (method_index < 0) {
+            return QObject::connect(sender, signal, receiver, method, type);
+        }
+        QMetaMethod mmethod = rmeta->method(method_index);
+        return connect(sender, msignal, receiver, mmethod, type);
+    }
+
+    QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal,
+                                                   const QObject *receiver, const QMetaMethod &method,
+                                                   Qt::ConnectionType type){
+        if (sender == nullptr
+                || receiver == nullptr
+                || signal.methodType() != QMetaMethod::Signal
+                || method.methodType() == QMetaMethod::Constructor) {
+            return QObject::connect(sender, signal, receiver, method, type);
+        }
+
+        int signal_index = QMetaObjectPrivate::signalIndex(signal);
+        int method_index = method.methodIndex();
+
+        if (signal_index == -1 || method_index == -1) {
+            return QObject::connect(sender, signal, receiver, method, type);
+        }
+
+        if (!QMetaObject::checkConnectArgs(signal.methodSignature().constData(),
+                                           method.methodSignature().constData())) {
+            QSet<int> converter;
+            if(checkConnectArgs(signal, method, converter)){
+                ConvertingSlotObject *slotObj = new ConvertingSlotObject(signal, method, type, std::move(converter));
+                return QObjectPrivate::connectImpl(sender,
+                                                    signal_index,
+                                                    receiver,
+                                                    nullptr,
+                                                    slotObj,
+                                                    type,
+                                                    slotObj->types(),
+                                                    signal.enclosingMetaObject());
+            }
+        }
+        return QObject::connect(sender, signal, receiver, method, type);
+    }
+}
+
+#endif

@@ -46,16 +46,20 @@
     <rejection class="QQmlTriviallyDestructibleDebuggingEnabler"/>
     <rejection class="QJSEngine::FunctionWithArgSignature"/>
     <rejection class="QJSEngine::FunctionSignature"/>
+    <rejection class="" function-name="qmlCreateCustomParser"/>
+    <rejection class="" function-name="qjsvalue_cast_helper"/>
     <rejection class="QJSEngine" function-name="fromScriptValue"/>
     <rejection class="QJSEngine" function-name="toScriptValue"/>
     <rejection class="QJSEngine" function-name="registerCustomType"/>
     <rejection class="QJSEngine" function-name="scriptValueFromQMetaObject"/>
     <rejection class="QJSEngine" function-name="newFunction"/>
     <!-- objectById is marked as internal API and would expose memory pointer in QtJambi API -->
+    <rejection class="QQmlInfo" function-name="operator&lt;&lt;"/>
     <rejection class="QJSEngine" function-name="objectById"/>
+    <rejection class="" function-name="qjsvalue_cast"/>
+    <rejection class="" function-name="qmlRegisterTypesAndRevisions"/>
     <rejection class="QJSValueList"/>
     <rejection class="QJSValue::QJSValueList"/>
-    <rejection class="QQmlInfo"/>
     <rejection class="QQmlTypeInfo"/>
     <rejection class="QQmlListProperty"/>
     <rejection class="QtQml" function-name="qmlInfo"/>
@@ -66,6 +70,8 @@
     <rejection class="QQmlModuleRegistration"/>
     <rejection class="" enum-name="QQmlModuleImportSpecialVersions"/>
     <rejection class="QmlTypeAndRevisionsRegistration"/>
+    <rejection class="QV4::ExecutionEngine"/>
+    <rejection class="QQmlComponentAttached"/>
 
     <enum-type name="QJSEngine::ObjectOwnership" since="6.0.0"/>
     <enum-type name="QJSManagedValue::Type" since="6.1.0"/>
@@ -154,6 +160,7 @@
     </object-type>
     <value-type name="QJSPrimitiveValue" since="6.1.0">
         <modify-function signature="QJSPrimitiveValue(QJSPrimitiveNull)" remove="all"/>
+        <modify-function signature="QJSPrimitiveValue(const QMetaType, const void *)" remove="all" since="6.4.0"/>
         <modify-function signature="QJSPrimitiveValue(QJSPrimitiveUndefined)" remove="all"/>
         <modify-function signature="operator+()" rename="unaryPlus" since="6.2.0"/>
         <modify-function signature="operator++()" rename="inc" since="6.2.0">
@@ -170,6 +177,8 @@
         <modify-function signature="operator-(QJSPrimitiveValue)" rename="minus"/>
         <modify-function signature="operator--(int)" remove="all" since="6.2.0"/>
         <modify-function signature="operator++(int)" remove="all" since="6.2.0"/>
+        <modify-function signature="operate&lt;Operators>(QJSPrimitiveValue,QJSPrimitiveValue)" remove="all"/>
+        <modify-function signature="operateOnIntegers&lt;Operators,Lhs,Rhs>(QJSPrimitiveValue,QJSPrimitiveValue)" remove="all"/>
     </value-type>
     <value-type name="QJSPrimitiveNull" generate="no" since="6.1.0">
     </value-type>
@@ -189,6 +198,18 @@
         <modify-function signature="toNumber () const" rename="toDouble"/>
         <modify-function signature="toVariant () const" rename="toObject"/>
     </value-type>
+    <value-type name="QQmlInfo">
+        <custom-constructor>
+        if(copy){
+            return new(placement) QQmlInfo(*copy);
+        }else{
+            return new(placement) QQmlInfo(qmlDebug(nullptr));
+        }
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QQmlInfo(qmlDebug(nullptr));
+        </custom-constructor>
+    </value-type>
     <value-type name="QQmlError">
         <modify-function signature="operator=(const QQmlError &amp;)" remove="all"/>
         <modify-function signature="setObject(QObject*)">
@@ -203,6 +224,7 @@
     <namespace-type name="QtQml">
         <extra-includes>
             <include file-name="qqmllistproperty.h" location="local"/>
+            <include file-name="qtjambi_qml.h" location="local"/>
         </extra-includes>
         <modify-function signature="qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)" remove="all" until="5.*"/>
     </namespace-type>
@@ -226,7 +248,7 @@
         </extra-includes>
     </functional-type>
     <object-type name="QJSEngine">
-        <modify-function signature="newQMetaObject()" remove="all"/>
+        <modify-function signature="newQMetaObject&lt;T>()" remove="all"/>
         <modify-function signature="setObjectOwnership(QObject*,QJSEngine::ObjectOwnership)" since="6.0.0">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -370,6 +392,360 @@
     </object-type>-->
 
     <interface-type name="QQmlPropertyValueSource"/>
+	<global-function signature="qmlRegisterCustomExtendedType&lt;T,E>(const char*, int, int, const char*, QQmlCustomParser*)" remove="all"/>
+	<global-function signature="qmlRegisterCustomType&lt;T>(const char*, int, int, const char*, QQmlCustomParser*)" remove="all"/>
+	<global-function signature="qmlRegisterSingletonInstance&lt;T>(const char*, int, int, const char*, T*)" remove="all"/>
+	<global-function signature="qjsEngine(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlAttachedPropertiesFunction(QObject*, const QMetaObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlAttachedPropertiesObject(QObject*, QQmlAttachedPropertiesFunc, bool)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlClearTypeRegistrations()" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlContext(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlWarning(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlWarning(const QObject*, const QList&lt;QQmlError>&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlWarning(const QObject*, const QQmlError&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlDebug(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlDebug(const QObject*, const QList&lt;QQmlError>&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlDebug(const QObject*, const QQmlError&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlEngine(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlExecuteDeferred(QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlExtendedObject(QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlInfo(const QObject*)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlInfo(const QObject*, const QList&lt;QQmlError>&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlInfo(const QObject*, const QQmlError&amp;)" target-type="QtQml">
+	</global-function>
+	<global-function signature="qmlProtectModule(const char*, int)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterModule(const char*, int, int)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterModuleImport(const char*, int, const char*, int, int)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="3">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int, QList&lt;int>*, const QMetaObject*)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int, QList&lt;int>*, const QMetaObject*, const QMetaObject*)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterSingletonType(QUrl, const char*, int, int, const char*)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="5">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterType(QUrl, const char*, int, int, const char*)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="5">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterTypeNotAvailable(const char*, int, int, const char*, QString)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="4">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterUncreatableMetaObject(const QMetaObject&amp;, const char*, int, int, const char*, QString)" target-type="QtQml">
+		<modify-argument index="2">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="5">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlTypeId(const char*, int, int, const char*)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="4">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlUnregisterModuleImport(const char*, int, const char*, int, int)" target-type="QtQml">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="3">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlAttachedPropertiesObject&lt;T>(const QObject*, bool)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlAttachedPropertiesObject">
+			<argument type="QObject"/>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterAnonymousSequentialContainer&lt;Container>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterAnonymousSequentialContainer">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="io.qt.core.QMetaType" name="containerType"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterAnonymousType&lt;T>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterAnonymousType">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+		</instantiation>
+		<instantiation proxy-call="qtjambi_qmlRegisterAnonymousType" since="6.3.0">
+			<argument type="QString"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="int" name="metaObjectRevisionMinor"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterType&lt;T>()" target-type="QtQml" until="5.15.*">
+		<instantiation proxy-call="qtjambi_qmlRegisterType">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterExtendedType&lt;T,E>()" target-type="QtQml" until="5.15.*">
+		<instantiation proxy-call="qtjambi_qmlRegisterExtendedType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type"/>
+			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterAnonymousTypesAndRevisions&lt;T>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterAnonymousTypesAndRevisions">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterInterface&lt;T>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterInterface">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.QtObjectInterface>" name="type"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterInterface&lt;T>(const char*)" target-type="QtQml" until="5.15.*">
+		<instantiation proxy-call="qtjambi_qmlRegisterInterface">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.QtObjectInterface>" name="type"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterRevision&lt;T,metaObjectRevision>(const char*, int, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterRevision">
+			<argument type="QObject"/>
+			<argument type="int"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="int" name="metaObjectRevision"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterExtendedType&lt;T,E>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterExtendedType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterExtendedType&lt;T,E>(const char*, int, int, const char*)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterExtendedType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterExtendedUncreatableType&lt;T,E>(const char*, int, int, const char*, QString)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterExtendedUncreatableType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+		</instantiation>
+		<instantiation proxy-call="qtjambi_qmlRegisterExtendedUncreatableType">
+			<argument type="QObject"/>
+			<argument type="QString"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+			<add-argument index="3" type="int" name="metaObjectRevision"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterSingletonType&lt;T>(const char*, int, int, const char*, QObject*)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterSingletonType">
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="5">
+				<replace-type modified-type="io.qt.qml.QtQml$ObjectCallback"/>
+				<conversion-rule class="native">
+					QtQml::ObjectCallback %out = qtjambi_cast&lt;QtQml::ObjectCallback>(%env, %in);
+				</conversion-rule>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterSingletonType(const char*, int, int, const char*, QJSValue)" target-type="QtQml" proxy-call="qtjambi_qmlRegisterSingletonType">
+		<modify-argument index="1">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="4">
+			<replace-type modified-type="java.lang.String"/>
+		</modify-argument>
+		<modify-argument index="5">
+			<replace-type modified-type="io.qt.qml.QtQml$ValueCallback"/>
+			<conversion-rule class="native">
+				QtQml::ValueCallback %out = qtjambi_cast&lt;QtQml::ValueCallback>(%env, %in);
+			</conversion-rule>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qmlRegisterType&lt;T>(const char*, int, int, const char*)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+		</instantiation>
+		<instantiation proxy-call="qtjambi_qmlRegisterType">
+			<argument type="QString"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="int" name="metaObjectRevision"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterUncreatableType&lt;T>(const char*, int, int, const char*, QString)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterUncreatableType">
+			<argument type="QString"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+		</instantiation>
+		<instantiation proxy-call="qtjambi_qmlRegisterUncreatableType">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<modify-argument index="4">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="2" type="int" name="metaObjectRevision"/>
+		</instantiation>
+	</global-function>
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
@@ -397,4 +773,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QQmlModuleImportSpecialVersions' does not have a type entry or is not an enum" />
   <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QJSValue." />
   <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQmlContext::PropertyPair." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;QObject *(QQmlEngine *, QJSEngine *)> (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type QObject *(*)(QQmlEngine *, QJSEngine *) (is_busted)" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type QJSValue (*)(QQmlEngine *, QJSEngine *) (is_busted)" />
 </typesystem>

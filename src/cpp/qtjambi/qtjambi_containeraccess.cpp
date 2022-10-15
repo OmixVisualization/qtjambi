@@ -2224,7 +2224,11 @@ TypeAnalysisResult analyzeType(JNIEnv* env, const QMetaType& metaType, const QBy
                 }
             }
         }else{
-            hasPointer = typeName.endsWith("*");
+            if(metaType.isValid()){
+                hasPointer = qtjambi_is_pointer_type(metaType);
+            }else{
+                hasPointer = typeName.endsWith("*");
+            }
         }
     }
     return TypeAnalysisResult(hasPointer);

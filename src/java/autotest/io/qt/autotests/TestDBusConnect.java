@@ -47,6 +47,7 @@ import io.qt.core.QDataStream;
 import io.qt.core.QEventLoop;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
+import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.dbus.QDBusConnection;
 import io.qt.dbus.QDBusInterface;
@@ -61,7 +62,7 @@ public class TestDBusConnect {
 	
 	private static QDBusConnection sb;
 	private static Throwable exception = null;
-	private static Thread pongThread;
+	private static QThread pongThread;
 	private static QDBusInterface iface;
 	
 	@BeforeClass
@@ -71,7 +72,7 @@ public class TestDBusConnect {
 		Assume.assumeTrue("QDBus session bus is not connected: "+sb.lastError().message(), sb.isConnected());
 		ApplicationInitializer.testInitialize();
 		QtDBusPong.registerTypes();
-		pongThread = new Thread(() -> {
+		pongThread = QThread.create(() -> {
 			QEventLoop loop = new QEventLoop();
 			try {
 				System.out.println("TestDBusConnect: Deploying QtDBusPong...");
@@ -87,8 +88,11 @@ public class TestDBusConnect {
 		pongThread.start();
 		pongThread.join(2000);
 		long t1 = System.currentTimeMillis();
-		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-		File testFile = new File(new File(new File(new File(new File(System.getProperty("user.dir"), version), "build"), "tests"), "tmp"), "touch.test");
+    	final String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+    	final String jambidir = System.getProperty("user.dir");
+    	final File testsDir = new File(new File(new File(new File(jambidir, version), "build"), QtJambiInternal.osArchName()), "tests");
+    	final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+    	final File testFile = new File(targetDir, "QtDBusPong.touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
 			pongThread.join(2000);
 			if(System.currentTimeMillis()-t1>25000) {
@@ -119,16 +123,17 @@ public class TestDBusConnect {
 			if(pongThread!=null) {
 				pongThread.interrupt();
 				pongThread.join();
+				pongThread.dispose();
 				pongThread = null;
 			}
 			if (exception != null)
 				throw exception;
 		} finally {
 			{
-				String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
-				String jambidir = System.getProperty("user.dir");
-				final File testsDir = new File(new File(new File(jambidir, version), "build"), "tests");
-				final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
+		    	final String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
+		    	final String jambidir = System.getProperty("user.dir");
+		    	final File testsDir = new File(new File(new File(new File(jambidir, version), "build"), QtJambiInternal.osArchName()), "tests");
+		    	final File targetDir = new File(testsDir, "tmp_"+QtJambiInternal.processName());
 				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 				if(new File(targetDir, "pid").isFile()) {
 					String processName = new String(Files.readAllBytes(new File(targetDir, "pid").toPath())).trim();;

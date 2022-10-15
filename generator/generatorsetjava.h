@@ -48,7 +48,7 @@ class GeneratorSetJava : public GeneratorSet {
         QString usage() override;
         bool readParameters(const QMap<QString, QString> args) override;
 
-        void buildModel(const QMap<QString, QString>& features, const QString pp_file) override;
+        void buildModel(const QMap<QString, QString>& features, const QString pp_file, const QStringList& includePathsList) override;
         void dumpObjectTree() override;
 
         void generate() override;

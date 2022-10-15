@@ -276,8 +276,6 @@ void MetaInfoGenerator::writeContainerAccess(){
 }
 
 void MetaInfoGenerator::writeCppFile() {
-    const TypeEntryHash& entries = TypeDatabase::instance()->allEntries();
-
     QHash<QString, FileOut *> fileHash;
     QHash<QString, QSet<QString>> writtenClasses;
 
@@ -348,13 +346,6 @@ void MetaInfoGenerator::writeCppFile() {
         const QString& package = iter->first;
         FileOut *f = iter->second;
         if (f != nullptr) {
-            for (const QList<TypeEntry *>& _entries : entries) {
-                for(TypeEntry *entry : _entries) {
-                    if (shouldGenerate(entry) && entry->isPrimitive()) {
-                        CppImplGenerator::writeCustomStructors(f->stream, entry);
-                    }
-                }
-            }
             TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
             if(typeSystemEntry)
                 generateInitializer(f->stream, typeSystemEntry, {}, TypeSystem::MetaInfo, CodeSnip::Position2, INDENT);
@@ -586,98 +577,157 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             QSet<QString> alreadyInitializedPackages;
 
                             struct Analyzer{
-                                static void analyzeRequiredQtLibraries(TypeDatabase* typeDatabase, QSet<QString>& alreadyInitializedPackages, QList<Dependency>& requiredQtLibraries, const TypeSystemTypeEntry* ts, Dependency::Mode mode, const QStringList& platforms = {}){
+                                static void analyzeRequiredQtLibraries(TypeDatabase* typeDatabase, QSet<QString>& alreadyInitializedPackages, QMap<QString,QStringList>& expandedQtLibraries, QList<Dependency>& requiredQtLibraries, const TypeSystemTypeEntry* ts, Dependency::Mode mode = Dependency::Mandatory, const QStringList& platforms = {}){
                                     if(ts && !alreadyInitializedPackages.contains(ts->name())){
+                                        alreadyInitializedPackages.insert(ts->name());
                                         for(const TypeSystemTypeEntry* entry : ts->requiredTypeSystems()){
-                                            analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, entry, mode, platforms);
+                                            analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, entry, mode, platforms);
                                         }
                                         for(const Dependency& dep : ts->requiredQtLibraries()){
-                                            Dependency::Mode newMode;
-                                            if(dep.mode==Dependency::ProvideOnly){
-                                                requiredQtLibraries.append(dep);
-                                                continue;
+                                            if(!platforms.isEmpty() && !dep.platforms.isEmpty()){
+                                                if(!QSet<QString>(platforms.begin(), platforms.end()).intersects(QSet<QString>(dep.platforms.begin(), dep.platforms.end()))){
+                                                    continue;
+                                                }
                                             }
-                                            if(dep.mode==Dependency::Mandatory && mode==Dependency::Mandatory){
+                                            Dependency::Mode newMode;
+                                            if(mode==Dependency::ProvideOnly){
+                                                newMode = Dependency::ProvideOnly;
+                                            }else if(dep.mode==Dependency::Mandatory && mode==Dependency::Mandatory){
                                                 newMode = Dependency::Mandatory;
                                             }else{
-                                                newMode = Dependency::Optional;
+                                                newMode = dep.mode;
                                             }
                                             QStringList _platforms;
                                             _platforms << platforms << dep.platforms;
                                             if(!_platforms.isEmpty())
                                                 _platforms.removeDuplicates();
-                                            analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, dep.entry, newMode, _platforms);
+                                            QSet<QString> _alreadyInitializedPackages = alreadyInitializedPackages;
+                                            analyzeRequiredQtLibraries(typeDatabase, _alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, dep.entry, newMode, _platforms);
                                         }
-                                        bool found = false;
-                                        for(Dependency& dep : requiredQtLibraries){
-                                            if(dep.entry==ts->qtLibrary()){
-                                                if(mode==Dependency::Mandatory){
-                                                    dep.mode = Dependency::Mandatory;
-                                                }else if(mode==Dependency::Optional){
-                                                    if(dep.mode==Dependency::ProvideOnly){
-                                                        dep.mode = Dependency::Optional;
+                                        if(mode==Dependency::ProvideOnly){
+                                            if(!expandedQtLibraries.contains(ts->qtLibrary())){
+                                                expandedQtLibraries[ts->qtLibrary()] = platforms;
+                                            }else{
+                                                QStringList& _platforms = expandedQtLibraries[ts->qtLibrary()];
+                                                if(!_platforms.isEmpty()){
+                                                    if(platforms.isEmpty()){
+                                                        _platforms.clear();
+                                                    }else{
+                                                        _platforms << platforms;
+                                                        _platforms.removeDuplicates();
                                                     }
-                                                }
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-                                        if(!found)
-                                            requiredQtLibraries.append(Dependency(QString(ts->qtLibrary()), mode, QStringList(platforms)));
-                                    }
-                                }
-
-                                static void analyzeRequiredQtLibraries(TypeDatabase* typeDatabase, QSet<QString>& alreadyInitializedPackages, QList<Dependency>& requiredQtLibraries, const QString& lib, Dependency::Mode mode, const QStringList& platforms = {}){
-                                    if(TypeSystemTypeEntry* ts = typeDatabase->typeSystemsByQtLibrary()[lib]){
-                                        if(ts && !alreadyInitializedPackages.contains(ts->name())){
-                                            for(const TypeSystemTypeEntry* entry : ts->requiredTypeSystems()){
-                                                analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, entry, mode, platforms);
-                                            }
-                                            for(const Dependency& dep : ts->requiredQtLibraries()){
-                                                Dependency::Mode newMode;
-                                                if(dep.mode==Dependency::ProvideOnly){
-                                                    requiredQtLibraries.append(dep);
-                                                    continue;
-                                                }
-                                                if(dep.mode==Dependency::Mandatory && mode==Dependency::Mandatory){
-                                                    newMode = Dependency::Mandatory;
                                                 }else{
-                                                    newMode = Dependency::Optional;
+                                                    if(platforms.isEmpty())
+                                                        _platforms.clear();
+                                                    else
+                                                        _platforms << platforms;
                                                 }
-                                                QStringList _platforms;
-                                                _platforms << platforms << dep.platforms;
-                                                if(!_platforms.isEmpty())
-                                                    _platforms.removeDuplicates();
-                                                analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, dep.entry, newMode, _platforms);
                                             }
+                                        }else{
                                             bool found = false;
                                             for(Dependency& dep : requiredQtLibraries){
                                                 if(dep.entry==ts->qtLibrary()){
-                                                    found = true;
                                                     if(mode==Dependency::Mandatory){
                                                         dep.mode = Dependency::Mandatory;
-                                                    }else if(mode==Dependency::Optional){
-                                                        if(dep.mode==Dependency::ProvideOnly){
-                                                            dep.mode = Dependency::Optional;
-                                                        }
                                                     }
+                                                    found = true;
                                                     break;
                                                 }
                                             }
                                             if(!found)
                                                 requiredQtLibraries.append(Dependency(QString(ts->qtLibrary()), mode, QStringList(platforms)));
                                         }
+                                    }
+                                }
+
+                                static void analyzeRequiredQtLibraries(TypeDatabase* typeDatabase, QSet<QString>& alreadyInitializedPackages, QMap<QString,QStringList>& expandedQtLibraries, QList<Dependency>& requiredQtLibraries, const QString& lib, Dependency::Mode mode, const QStringList& platforms = {}){
+                                    if(TypeSystemTypeEntry* ts = typeDatabase->typeSystemsByQtLibrary()[lib]){
+                                        if(ts && !alreadyInitializedPackages.contains(ts->name())){
+                                            alreadyInitializedPackages.insert(ts->name());
+                                            for(const TypeSystemTypeEntry* entry : ts->requiredTypeSystems()){
+                                                analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, entry, mode, platforms);
+                                            }
+                                            for(const Dependency& dep : ts->requiredQtLibraries()){
+                                                if(!platforms.isEmpty() && !dep.platforms.isEmpty()){
+                                                    if(!QSet<QString>(platforms.begin(), platforms.end()).intersects(QSet<QString>(dep.platforms.begin(), dep.platforms.end()))){
+                                                        continue;
+                                                    }
+                                                }
+                                                Dependency::Mode newMode;
+                                                if(mode==Dependency::ProvideOnly){
+                                                    newMode = Dependency::ProvideOnly;
+                                                }else if(dep.mode==Dependency::Mandatory && mode==Dependency::Mandatory){
+                                                    newMode = Dependency::Mandatory;
+                                                }else{
+                                                    newMode = dep.mode;
+                                                }
+                                                QStringList _platforms;
+                                                _platforms << platforms << dep.platforms;
+                                                if(!_platforms.isEmpty())
+                                                    _platforms.removeDuplicates();
+                                                QSet<QString> _alreadyInitializedPackages = alreadyInitializedPackages;
+                                                analyzeRequiredQtLibraries(typeDatabase, _alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, dep.entry, newMode, _platforms);
+                                            }
+                                            if(mode==Dependency::ProvideOnly){
+                                                if(!expandedQtLibraries.contains(ts->qtLibrary())){
+                                                    expandedQtLibraries[ts->qtLibrary()] = platforms;
+                                                }else{
+                                                    QStringList& _platforms = expandedQtLibraries[ts->qtLibrary()];
+                                                    if(!_platforms.isEmpty()){
+                                                        if(platforms.isEmpty()){
+                                                            _platforms.clear();
+                                                        }else{
+                                                            _platforms << platforms;
+                                                            _platforms.removeDuplicates();
+                                                        }
+                                                    }else{
+                                                        if(platforms.isEmpty())
+                                                            _platforms.clear();
+                                                        else
+                                                            _platforms << platforms;
+                                                    }
+                                                }
+                                            }else{
+                                                bool found = false;
+                                                for(Dependency& dep : requiredQtLibraries){
+                                                    if(dep.entry==ts->qtLibrary() && dep.platforms==platforms){
+                                                        found = true;
+                                                        if(mode==Dependency::Mandatory){
+                                                            dep.mode = Dependency::Mandatory;
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                                if(!found)
+                                                    requiredQtLibraries.append(Dependency(QString(ts->qtLibrary()), mode, QStringList(platforms)));
+                                            }
+                                        }
+                                    }else if(mode==Dependency::ProvideOnly){
+                                        if(!expandedQtLibraries.contains(lib)){
+                                            expandedQtLibraries[lib] = platforms;
+                                        }else{
+                                            QStringList& _platforms = expandedQtLibraries[lib];
+                                            if(!_platforms.isEmpty()){
+                                                if(platforms.isEmpty()){
+                                                    _platforms.clear();
+                                                }else{
+                                                    _platforms << platforms;
+                                                    _platforms.removeDuplicates();
+                                                }
+                                            }else{
+                                                if(platforms.isEmpty())
+                                                    _platforms.clear();
+                                                else
+                                                    _platforms << platforms;
+                                            }
+                                        }
                                     }else{
                                         bool found = false;
                                         for(Dependency& dep : requiredQtLibraries){
-                                            if(dep.entry==lib){
+                                            if(dep.entry==lib && dep.platforms==platforms){
                                                 found = true;
                                                 if(mode==Dependency::Mandatory){
                                                     dep.mode = Dependency::Mandatory;
-                                                }else if(mode==Dependency::Optional){
-                                                    if(dep.mode==Dependency::ProvideOnly){
-                                                        dep.mode = Dependency::Optional;
-                                                    }
                                                 }
                                                 break;
                                             }
@@ -700,14 +750,31 @@ void MetaInfoGenerator::writeLibraryInitializers() {
 
                             generateInitializer(s, typeSystemEntry, {}, TypeSystem::TargetLangCode, CodeSnip::Position2, INDENT);
                             QList<Dependency> requiredQtLibraries;
-                            for(const Dependency& pair : typeSystemEntry->requiredQtLibraries()){
-                                Analyzer::analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, requiredQtLibraries, pair.entry, pair.mode, pair.platforms);
+                            QMap<QString,QStringList> expandedQtLibraries;
+                            Analyzer::analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, typeSystemEntry);
+                            expandedQtLibraries.take(typeSystemEntry->qtLibrary());
+                            expandedQtLibraries.take("QtCore");
+                            expandedQtLibraries.take("QtUiPlugin");
+                            expandedQtLibraries.take("QtQmlIntegration");
+                            for(const QString& key : expandedQtLibraries.keys()){
+                                if(key.startsWith("Qt")){
+                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << key.mid(2);
+                                }else{
+                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << key;
+                                }
+                                s << "\", io.qt.QtUtilities.LibraryRequirementMode.ProvideOnly";
+                                for(const QString& pl : expandedQtLibraries[key]){
+                                    if(!pl.isEmpty()){
+                                        s << ", \"" << pl << "\"";
+                                    }
+                                }
+                                s << ");" << Qt::endl;
                             }
+
                             QSet<QString> loaded{"QtCore", typeSystemEntry->qtLibrary(), "QtUiPlugin", "QtQmlIntegration"};
-                            for(const Dependency& dep : requiredQtLibraries){
+                            for(const Dependency& dep : qAsConst(requiredQtLibraries)){
                                 if(loaded.contains(dep.entry) || m_staticLibraries.contains(dep.entry))
                                     continue;
-                                loaded.insert(dep.entry);
                                 QString append;
                                 switch(dep.mode){
                                 case Dependency::Mandatory:
@@ -720,9 +787,15 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 case Dependency::Optional: append = ", io.qt.QtUtilities.LibraryRequirementMode.Optional"; break;
                                 case Dependency::ProvideOnly: append = ", io.qt.QtUtilities.LibraryRequirementMode.ProvideOnly"; break;
                                 }
+                                bool isPlatformDependent = false;
                                 for(const QString& pl : dep.platforms){
-                                    if(!pl.isEmpty())
+                                    if(!pl.isEmpty()){
+                                        isPlatformDependent = true;
                                         append += ", \"" + pl + "\"";
+                                    }
+                                }
+                                if(!isPlatformDependent && dep.mode==Dependency::Mandatory){
+                                    loaded.insert(dep.entry);
                                 }
                                 if(dep.entry.startsWith("Qt")){
                                     s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << dep.entry.mid(2) << "\"" << append << ");" << Qt::endl;

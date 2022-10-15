@@ -47,19 +47,37 @@
     <required-library name="libGLESv2" mode="optional" platforms="windows" until="5.*"/>
     <required-library name="libEGL" mode="optional" platforms="windows" until="5.*"/>
     <required-library name="QtANGLE" mode="optional" platforms="windows" until="5.14.*"/>
-    <required-library name="QtWidgets" mode="provide-only" platforms="macos" until="5.*"/>
     <required-library name="QtPrintSupport" mode="provide-only" platforms="macos" until="5.*"/>
     <required-library name="QtSvg" mode="provide-only"/>
     <required-library name="QtVirtualKeyboard" mode="provide-only"/>
     <required-library name="QtDBus" mode="provide-only" platforms="macos,linux"/>
     <required-library name="QtNetwork" mode="provide-only" platforms="linux"/>
+    <required-library name="QtWaylandClient" mode="provide-only" platforms="linux"/>
+    <required-library name="QtWaylandEglClientHwIntegration" mode="provide-only" platforms="linux"/>
+    <required-library name="QtWlShellIntegration" mode="provide-only" platforms="linux"/>
+    <required-library name="QtOpenGL" mode="provide-only" platforms="linux"/>
+    <required-library name="QtWidgets" mode="provide-only" platforms="macos,linux" until="5.*"/>
     <rejection class="*" function-name="d_func"/>
+    <rejection class="*" function-name="d_ptr"/>
     <rejection class="*" field-name="d_ptr"/>
     <rejection class="*" field-name="d"/>
+    <rejection class="QPlatformBackingStore" />
+    <rejection class="QPlatformNativeInterface" />
+    <rejection class="QPlatformMenu" />
+    <rejection class="QPlatformMenuBar" />
+    <rejection class="QPlatformOffscreenSurface" />
+    <rejection class="QPlatformOpenGLContext" />
+    <rejection class="QPagedPaintDevicePrivate" />
+    <rejection class="QPlatformPixmap" />
+    <rejection class="QPlatformScreen" />
+    <rejection class="QPlatformWindow" />
+    <rejection class="QTextDocumentPrivate" />
+    <rejection class="QPostEventList" />
     <rejection class="QRgbaF"/>
     <rejection class="QRgbaFloat"/>
     <rejection class="QRgbaFloat16"/>
     <rejection class="QRgbaFloat32"/>
+    <rejection class="QTextEngine"/>
     <rejection class="QGuiApplication" function-name="nativeInterface" since="6.2.0"/>
     <rejection class="QBrushDataPointerDeleter" since="6.2.0"/>
     <rejection class="QColor::CT"/>
@@ -152,11 +170,6 @@
     <rejection class="QGradient" enum-name="Type"/><!--this enum is covered by actual java class types-->
     <rejection class="QGradient" function-name="type"/>
     <rejection class="QActionGroup" function-name="selected" since="6.0.0"/>
-    <rejection class="QAction" function-name="associatedGraphicsWidgets" since="6.0.0"/>
-    <rejection class="QAction" function-name="associatedWidgets" since="6.0.0"/>
-    <rejection class="QAction" function-name="parentWidget" since="6.0.0"/>
-    <rejection class="QAction" function-name="menu" since="6.0.0"/>
-    <rejection class="QAction" function-name="setMenu" since="6.0.0"/>
     <rejection class="QImage" function-name="convertToFormat_helper" since="6.0.0"/>
     <rejection class="QImage" function-name="convertToFormat_inplace" since="6.0.0"/>
     <rejection class="QImage" function-name="rgbSwapped_inplace" since="6.0.0"/>
@@ -3087,6 +3100,50 @@
     <interface-type name="QNativeInterface::Private::QWebOSScreen" pp-condition="defined(Q_OS_WEBOS)" generate="no" since="6.2.0">
         <modify-function signature="QWebOSScreen()" remove="all"/>
     </interface-type>
+    <rejection class="" function-name="qAccessibleEventString"/>
+    <rejection class="" function-name="qAccessibleLocalizedActionDescription"/>
+    <rejection class="" function-name="qAccessibleRoleString"/>
+    <rejection class="" function-name="qAlpha"/>
+    <rejection class="" function-name="qBlue"/>
+    <rejection class="" function-name="qGray"/>
+    <rejection class="" function-name="qGreen"/>
+    <rejection class="" function-name="qRgb"/>
+    <rejection class="" function-name="qRgba"/>
+    <rejection class="" function-name="qRgba64"/>
+    <rejection class="" function-name="qRed"/>
+    <rejection class="" function-name="qUnpremultiply"/>
+    <rejection class="" function-name="qt_findAtNxFile"/>
+    <rejection class="" function-name="qt_handleTouchEvent"/>
+    <rejection class="" function-name="qtjambi_finalize_paint_device"/>
+	<global-function signature="qFuzzyCompare(QQuaternion, QQuaternion)" target-type="QQuaternion">
+	</global-function>
+	<global-function signature="qFuzzyCompare(QTransform, QTransform)" target-type="QTransform">
+	</global-function>
+	<global-function signature="qIsGray(QRgb)" target-type="QColor">
+	</global-function>
+	<global-function signature="qPremultiply(QRgb)" target-type="QColor">
+	</global-function>
+	<global-function signature="qPremultiply(QRgba64)" target-type="QRgba64">
+	</global-function>
+	<global-function signature="qPixelFormatAlpha(uchar, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatCmyk(uchar, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatGrayscale(uchar, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatHsl(uchar, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatHsv(uchar, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatRgba(uchar, uchar, uchar, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::AlphaPremultiplied, QPixelFormat::TypeInterpretation)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qPixelFormatYuv(QPixelFormat::YUVLayout, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::AlphaPremultiplied, QPixelFormat::TypeInterpretation, QPixelFormat::ByteOrder)" target-type="QPixelFormat">
+	</global-function>
+	<global-function signature="qFuzzyCompare(const QMatrix&amp;, const QMatrix&amp;)" remove="all" until="5.15"/>
+	<global-function signature="qFuzzyCompare(const QMatrix4x4&amp;, const QMatrix4x4&amp;)" target-type="QMatrix4x4" until="5.15"/>
+	<global-function signature="qFuzzyCompare(const QVector2D&amp;, const QVector2D&amp;)" target-type="QVector2D" until="5.15"/>
+	<global-function signature="qFuzzyCompare(const QVector3D&amp;, const QVector3D&amp;)" target-type="QVector3D" until="5.15"/>
+	<global-function signature="qFuzzyCompare(const QVector4D&amp;, const QVector4D&amp;)" target-type="QVector4D" until="5.15"/>
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QImageTextKeyLang*'"/>

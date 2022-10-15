@@ -157,8 +157,19 @@ AbstractMetaBuilder::RenamedOperator AbstractMetaBuilder::rename_operator(const 
     return {QString("operator_%1").arg(operator_names.value(op)),nullptr,false};
 }
 
+const QStringList &AbstractMetaBuilder::getIncludePathsList() const
+{
+    return m_includePathsList;
+}
+
+void AbstractMetaBuilder::setIncludePathsList(const QStringList &newIncludePathsList)
+{
+    m_includePathsList = newIncludePathsList;
+}
+
 AbstractMetaBuilder::AbstractMetaBuilder()
         : m_current_class(nullptr),
+          m_current_function(nullptr),
           m_features(nullptr),
           m_qtVersionMajor(QT_VERSION_MAJOR),
           m_qtVersionMinor(QT_VERSION_MINOR),
@@ -214,12 +225,10 @@ void AbstractMetaBuilder::checkFunctionModifications() {
                         possibleSignatures.append(function->minimalSignature() + " in " + function->implementingClass()->name());
                 }
 
-                if (!found && clazz->typeEntry()->codeGeneration()!=TypeEntry::GenerateNothing) {
+                if (!found && clazz->typeEntry()->codeGeneration()!=TypeEntry::GenerateNothing && modification.template_instantiations.isEmpty()) {
                     QString warning
                     = QString("signature '%1' for function modification in '%2' not found. Possible candidates: %3")
-                      .arg(signature)
-                      .arg(clazz->qualifiedCppName())
-                      .arg(possibleSignatures.join(",\n    "));
+                      .arg(signature, clazz->qualifiedCppName(), possibleSignatures.join(",\n    "));
 
                     ReportHandler::warning(warning);
                 }
@@ -269,6 +278,11 @@ void AbstractMetaBuilder::registerHashFunction(FunctionModelItem function_item) 
     }
     if (arguments.size() == 1 || hasDefaultArgs) {
         if (AbstractMetaClass *cls = argumentToClass(arguments.at(0), "AbstractMetaBuilder::registerHashFunction")) {
+            for(auto& mod : cls->typeEntry()->functionModifications(QString("qHash(%1)").arg(cls->typeEntry()->qualifiedCppName()))){
+                if(mod.isRemoveModifier()){
+                    return;
+                }
+            }
             QFileInfo info(function_item->fileName());
             cls->typeEntry()->addExtraInclude(Include(Include::IncludePath, info.fileName()));
 
@@ -290,6 +304,11 @@ void AbstractMetaBuilder::registerToStringCapability(FunctionModelItem function_
             ArgumentModelItem arg = arguments.at(1);
             if (AbstractMetaClass *cls = argumentToClass(arg, "AbstractMetaBuilder::registerToStringCapability")) {
                 if (arg->type().indirections().size() < 2) {
+                    for(auto& mod : cls->typeEntry()->functionModifications(QString("operator<<(QDebug&,%1)").arg(arg->type().toString()))){
+                        if(mod.isRemoveModifier()){
+                            return;
+                        }
+                    }
                     cls->setToStringCapability(function_item);
                 }
             }
@@ -531,8 +550,6 @@ void writeContent(QTextStream &stream,
     }
 }
 
-void add_extra_includes_for_function(AbstractMetaClass *meta_class, const AbstractMetaFunction *meta_function);
-
 bool AbstractMetaBuilder::build() {
     Q_ASSERT(!m_file_name.isEmpty());
     ReportHandler::setContext("Parser");
@@ -702,7 +719,7 @@ bool AbstractMetaBuilder::build() {
     }
 
     // Start the generation...
-    for(ClassModelItem cls : m_dom->classes()){
+    for(const ClassModelItem& cls : m_dom->classes()){
         addAbstractMetaClass(traverseClass(cls));
     }
 
@@ -762,17 +779,62 @@ bool AbstractMetaBuilder::build() {
         }
     }
 
-    for(auto function_item : m_dom->functions()){
-        QString _function_name = function_item->name();
-        QStringList tparams;
-        for(TemplateParameterModelItem t : function_item->templateParameters()){
-            tparams << t->name();
+    for(auto& function_item : m_dom->functions()){
+        if(function_item->name()==QStringLiteral("swap")
+                && function_item->arguments().size()==2){
+            continue;
         }
-        if(!tparams.isEmpty())
+        if(function_item->name()==QStringLiteral("qHash")
+                && function_item->arguments().size()<=2){
+            continue;
+        }
+        if(function_item->name().startsWith(QStringLiteral("qRegisterNormalizedMetaType"))
+                || function_item->name()==QStringLiteral("operator!")
+                || function_item->name()==QStringLiteral("operator&")
+                || function_item->name()==QStringLiteral("operator*")
+                || function_item->name()==QStringLiteral("operator+")
+                || function_item->name()==QStringLiteral("operator-")
+                || function_item->name()==QStringLiteral("operator/")
+                || function_item->name()==QStringLiteral("operator<")
+                || function_item->name()==QStringLiteral("operator>")
+                || function_item->name()==QStringLiteral("operator|")
+                || function_item->name()==QStringLiteral("operator~")
+                || function_item->name()==QStringLiteral("operator^")
+                || function_item->name()==QStringLiteral("operator%")
+                || function_item->name()==QStringLiteral("operator!=")
+                || function_item->name()==QStringLiteral("operator&=")
+                || function_item->name()==QStringLiteral("operator*=")
+                || function_item->name()==QStringLiteral("operator+=")
+                || function_item->name()==QStringLiteral("operator-=")
+                || function_item->name()==QStringLiteral("operator/=")
+                || function_item->name()==QStringLiteral("operator|=")
+                || function_item->name()==QStringLiteral("operator<=")
+                || function_item->name()==QStringLiteral("operator>=")
+                || function_item->name()==QStringLiteral("operator%=")
+                || function_item->name()==QStringLiteral("operator<<")
+                || function_item->name()==QStringLiteral("operator>>")
+                || function_item->name()==QStringLiteral("operator<>")
+                || function_item->name()==QStringLiteral("operator==")
+                ){
+            continue;
+        }
+        QString _function_name = function_item->name();
+        QString originalSignature = function_item->name();
+        QStringList tparams;
+        for(const TemplateParameterModelItem& t : function_item->templateParameters()){
+            if(t->isVaradic())
+                tparams << t->name()+"...";
+            else
+                tparams << t->name();
+        }
+        if(!tparams.isEmpty()){
             _function_name += "<" + tparams.join(", ") + ">";
+            originalSignature += "<" + tparams.join(",") + ">";
+        }
         _function_name += "(";
+        originalSignature += "(";
         int counter = 0;
-        for(ArgumentModelItem arg : function_item->arguments()){
+        for(const ArgumentModelItem& arg : function_item->arguments()){
             if(arg->type().getReferenceType()==TypeInfo::NoReference
                 && arg->type().indirections().isEmpty()
                 && function_item->arguments().size()==1
@@ -781,31 +843,24 @@ bool AbstractMetaBuilder::build() {
             }
             if(counter!=0){
                 _function_name += ", ";
+                originalSignature += ",";
             }
-            if(arg->type().isConstant())
-                _function_name += "const ";
-            _function_name += arg->type().qualifiedName().join("::");
-            for(bool i : arg->type().indirections()){
-                if(i)
-                    _function_name += " const";
-                _function_name += "*";
-            }
-            switch(arg->type().getReferenceType()){
-            case TypeInfo::Reference:
-                _function_name += "&";
-                break;
-            case TypeInfo::RReference:
-                _function_name += "&&";
-                break;
-            default: break;
-            }
+            _function_name += arg->type().toString();
+            originalSignature += arg->type().toString();
             ++counter;
         }
+        if(function_item->isVariadics())
+            _function_name += "...";
         _function_name += ") ";
-        if(function_item->isConstant())
+        originalSignature += ")";
+        if(function_item->isConstant()){
             _function_name += "const ";
-        if(function_item->referenceType()==TypeInfo::Reference)
+            originalSignature += "const";
+        }
+        if(function_item->referenceType()==TypeInfo::Reference){
             _function_name += "& ";
+            originalSignature += "&";
+        }
         _function_name += "-> ";
         if(function_item->type().isConstant())
             _function_name += "const ";
@@ -824,10 +879,114 @@ bool AbstractMetaBuilder::build() {
             break;
         default: break;
         }
-        if(!function_item->templateParameters().isEmpty()){
-            m_rejected_template_functions.insert({_function_name, function_item->fileName()}, IsGlobal);
+        bool remove = TypeDatabase::instance()->isFunctionRejected("", function_item->name());
+        AbstractMetaClass *targetClass = nullptr;
+        FunctionModificationList functionModificationList;
+        if (!remove) {
+            QString _originalSignature = QString::fromUtf8(QMetaObject::normalizedSignature(qPrintable(originalSignature)));
+            for(const TypeSystemTypeEntry* ts : TypeDatabase::instance()->typeSystemsByQtLibrary().values()){
+                FunctionModificationList list = ts->functionModifications(originalSignature);
+                if(_originalSignature!=originalSignature)
+                    list << ts->functionModifications(_originalSignature);
+                for(const FunctionModification& mod : qAsConst(list)){
+                    if(mod.isRemoveModifier()){
+                        remove = true;
+                        break;
+                    }else if(!mod.targetType.isEmpty()){
+                        targetClass = m_meta_classes.findClass(ts->name() + "." + mod.targetType);
+                        if(!targetClass){
+                            ComplexTypeEntry *gte = TypeDatabase::instance()->findComplexType(mod.targetType);
+                            if(!gte){
+                                gte = new NamespaceTypeEntry(mod.targetType, true);
+                                gte->setTargetTypeSystem(ts->name());
+                                gte->setTargetLangPackage(ts->name());
+                                gte->setCodeGeneration(TypeEntry::GenerateAll);
+                            }
+                            targetClass = createMetaClass();
+                            targetClass->setTypeEntry(gte);
+                            *targetClass += AbstractMetaAttributes::Final;
+                            *targetClass += AbstractMetaAttributes::Public;
+                            m_meta_classes << targetClass;
+                        }
+                        functionModificationList << list;
+                        break;
+                    }
+                }
+                if(targetClass)
+                    break;
+            }
+        }
+        if(targetClass){
+            AbstractMetaClass *old_current_class = m_current_class;
+            m_current_class = targetClass;
+            AbstractMetaFunction *meta_function = traverseFunction(function_item);
+            if(meta_function){
+                meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
+                meta_function->setOriginalAttributes(meta_function->originalAttributes() | AbstractMetaAttributes::Public | AbstractMetaAttributes::Static);
+                *meta_function += AbstractMetaAttributes::Static;
+                *meta_function += AbstractMetaAttributes::Public;
+                meta_function->setDeclaringClass(targetClass);
+                meta_function->setOwnerClass(targetClass);
+                meta_function->setImplementingClass(targetClass);
+                if(meta_function->isInvalid()){
+                    targetClass->addInvalidFunction(meta_function);
+                }else{
+                    QString fileName = function_item->fileName();
+                    QFileInfo file(QDir::fromNativeSeparators(fileName));
+                    if(file.exists()){
+                        fileName = file.canonicalFilePath();
+#ifdef Q_OS_MAC
+                        QDir dir = file.dir();
+                        if(QFileInfo(dir.absolutePath()).fileName()==QStringLiteral("Headers") && dir.cdUp()){
+                            if(!QFileInfo(dir.absolutePath()).fileName().endsWith(".framework")){
+                                if(dir.cdUp() && QFileInfo(dir.absolutePath()).fileName()==QStringLiteral("Versions") && dir.cdUp()){
+                                }
+                            }
+                            QString moduleName = QFileInfo(dir.absolutePath()).fileName();
+                            if(moduleName.endsWith(".framework")){
+                                moduleName = moduleName.mid(0, moduleName.length()-10);
+                                targetClass->typeEntry()->addExtraInclude(Include(Include::IncludePath, QString("%1/%2").arg(moduleName, file.fileName())));
+                                fileName.clear();
+                            }
+                        }
+#endif
+                    }
+                    if(!fileName.isEmpty()){
+                        for(const QString& includePath : m_includePathsList){
+                            QFileInfo f(includePath);
+                            if(f.isDir()){
+                                QString path = f.canonicalFilePath();
+                                if(!path.endsWith("/"))
+                                    path += "/";
+                                if(fileName.startsWith(path)){
+                                    path = fileName.mid(path.size());
+                                    targetClass->typeEntry()->addExtraInclude(Include(Include::IncludePath, path));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    targetClass->addFunction(meta_function);
+                    for(FunctionModification mod : functionModificationList){
+                        if(!mod.argument_mods.isEmpty()
+                                || !mod.template_instantiations.isEmpty()
+                                || !mod.association.isEmpty()
+                                || !mod.ppCondition.isEmpty()
+                                || mod.isCodeInjection()
+                                || !mod.throws.isEmpty()){
+                            mod.signature = meta_function->minimalSignature();
+                            targetClass->typeEntry()->addFunctionModification(mod);
+                        }
+                    }
+                }
+            }
+            m_current_class = old_current_class;
         }else{
-            m_rejected_functions.insert({_function_name, function_item->fileName()}, IsGlobal);
+            if(!function_item->templateParameters().isEmpty()){
+                m_rejected_template_functions.insert({_function_name, function_item->fileName()}, remove ? GenerationDisabled : IsGlobal);
+            }else{
+                m_rejected_functions.insert({_function_name, function_item->fileName()}, remove ? GenerationDisabled : IsGlobal);
+            }
         }
     }
 
@@ -957,7 +1116,7 @@ bool AbstractMetaBuilder::build() {
             if(entry->codeGeneration()==TypeEntry::GenerateAll){
                 if (!cls) {
                     ReportHandler::warning(QString("namespace '%1' for enum '%2' is not declared")
-                                           .arg(name).arg(entry->targetLangName()));
+                                           .arg(name, entry->targetLangName()));
                 } else {
                     AbstractMetaEnum *e = cls->findEnum(entry->targetLangName());
                     if (!e)
@@ -1068,9 +1227,10 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
     if(docModel){
         QHash<QString, QSharedPointer<AbstractMetaType>> analyzedTypes;
         AbstractMetaFunctionalList meta_functionals = m_meta_functionals;
+        const DocNamespace* globalNamespace = docModel->getNamespace("");
         for(AbstractMetaClass *meta_class : m_meta_classes) {
             if(meta_class->isNamespace() || meta_class->isFake()){
-                const DocNamespace* ns = docModel->getNamespace(meta_class->isFake() ? "" : meta_class->qualifiedCppName());
+                const DocNamespace* ns = meta_class->isFake() ? globalNamespace : docModel->getNamespace(meta_class->qualifiedCppName());
                 if(!ns && !meta_class->isFake()){
                     QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
                     if(!qualifiedCppName.isEmpty()){
@@ -1087,23 +1247,110 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                 if(ns){
                     meta_class->setHref(ns->href());
                     meta_class->setBrief(ns->brief());
-                    for(AbstractMetaFunction * meta_function : meta_class->functions()){
-                        QList<const DocFunction*> functions = ns->getFunctions(meta_function->originalName());
-                        if(functions.size()==1){
-                            meta_function->setHref(functions[0]->href());
-                            meta_function->setBrief(functions[0]->brief());
-                        }else for(const DocFunction* function : functions){
+                }
+                for(AbstractMetaFunction * meta_function : meta_class->functions()){
+                    QList<const DocFunction*> functions;
+                    if(meta_function->functionType()==AbstractMetaFunction::GlobalScopeFunction){
+                        if(meta_function->functionTemplate()){
+                            if(ns){
+                                functions = ns->getFunctions(meta_function->functionTemplate()->originalName());
+                            }
+                            if(functions.isEmpty() && globalNamespace){
+                                functions = globalNamespace->getFunctions(meta_function->functionTemplate()->originalName());
+                            }
+                        }else{
+                            if(ns){
+                                functions = ns->getFunctions(meta_function->originalName());
+                            }
+                            if(functions.isEmpty() && globalNamespace){
+                                functions = globalNamespace->getFunctions(meta_function->originalName());
+                            }
+                        }
+                    }else if(!ns){
+                        continue;
+                    }else{
+                        if(meta_function->functionTemplate()){
+                            functions = ns->getFunctions(meta_function->functionTemplate()->originalName());
+                        }else{
+                            functions = ns->getFunctions(meta_function->originalName());
+                        }
+                    }
+                    if(functions.size()==1){
+                        meta_function->setHref(functions[0]->href());
+                        meta_function->setBrief(functions[0]->brief());
+                    }else{
+                        for(const DocFunction* function : functions){
                             if(meta_function->isConstant()==function->isConst()
-                                    && meta_function->isStatic()==function->isStatic()
+                                    && (meta_function->isStatic()==function->isStatic() || meta_function->functionType()==AbstractMetaFunction::GlobalScopeFunction)
                                     && meta_function->arguments().size()==function->parameters().size()){
                                 bool ok = true;
-                                if(functions.size()>1){
-                                    for(int i=0; i<meta_function->arguments().size(); ++i){
-                                        AbstractMetaArgument *argument = meta_function->arguments()[i];
+                                for(int i=0; i<meta_function->arguments().size(); ++i){
+                                    AbstractMetaArgument *argument = meta_function->arguments()[i];
+                                    QString arg = function->parameters()[i];
+                                    if(arg.endsWith("...")){
+                                        arg.chop(3);
+                                        if(!meta_function->isVariadics()){
+                                            ok = false;
+                                            break;
+                                        }
+                                    }
+                                    QSharedPointer<AbstractMetaType> type = analyzedTypes[arg];
+                                    if(!type){
+                                        TypeInfo typeInfo = analyzeTypeInfo(meta_class, arg);
+                                        type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                        if(!ok || !type){
+                                            QString qualifiedName = typeInfo.qualifiedName().join("::");
+                                            if(qualifiedName=="ushort"){
+                                                typeInfo.setQualifiedName({"unsigned short"});
+                                                type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            }else if(qualifiedName=="uint"){
+                                                typeInfo.setQualifiedName({"unsigned int"});
+                                                type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            }else if(qualifiedName=="uchar"){
+                                                typeInfo.setQualifiedName({"unsigned char"});
+                                                type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            }else if(qualifiedName=="ulonglong"){
+                                                typeInfo.setQualifiedName({"unsigned long long"});
+                                                type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            }
+                                        }
+                                        analyzedTypes[arg] = type;
+                                    }
+                                    if(ok && type){
+                                        if(type->isConstant()!=argument->type()->isConstant()
+                                                || type->getReferenceType()!=argument->type()->getReferenceType()
+                                                || type->indirections()!=argument->type()->indirections()){
+                                            ok = false;
+                                            break;
+                                        }else{
+                                            if(type->typeEntry()->isTemplateArgument()
+                                                    && argument->type()->typeEntry()->isTemplateArgument()){
+                                                if(type->typeEntry()->qualifiedCppName()!=argument->type()->typeEntry()->qualifiedCppName()){
+                                                    ok = false;
+                                                    break;
+                                                }
+                                            }else if(type->typeEntry()!=argument->type()->typeEntry()
+                                                    && !(type->typeEntry()->isQString() && argument->type()->typeEntry()==TypeDatabase::instance()->qstringType())
+                                                    && !(type->typeEntry()->isVariant() && argument->type()->typeEntry()==TypeDatabase::instance()->qvariantType())
+                                                    && !(type->typeEntry()->isChar() && argument->type()->typeEntry()==TypeDatabase::instance()->qcharType())){
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if(ok){
+                                    meta_function->setHref(function->href());
+                                    meta_function->setBrief(function->brief());
+                                    break;
+                                }else if(meta_function->functionTemplate()){
+                                    ok = true;
+                                    for(int i=0; i<meta_function->functionTemplate()->arguments().size(); ++i){
+                                        AbstractMetaArgument *argument = meta_function->functionTemplate()->arguments()[i];
                                         QString arg = function->parameters()[i];
                                         if(arg.endsWith("...")){
                                             arg.chop(3);
-                                            if(!meta_function->isVariadics()){
+                                            if(!meta_function->functionTemplate()->isVariadics()){
                                                 ok = false;
                                                 break;
                                             }
@@ -1139,6 +1386,7 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                             }else{
                                                 if(type->typeEntry()!=argument->type()->typeEntry()
                                                         && !(type->typeEntry()->isQString() && argument->type()->typeEntry()==TypeDatabase::instance()->qstringType())
+                                                        && !(type->typeEntry()->isVariant() && argument->type()->typeEntry()==TypeDatabase::instance()->qvariantType())
                                                         && !(type->typeEntry()->isChar() && argument->type()->typeEntry()==TypeDatabase::instance()->qcharType())){
                                                     ok = false;
                                                     break;
@@ -1146,11 +1394,11 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                             }
                                         }
                                     }
-                                }
-                                if(ok){
-                                    meta_function->setHref(function->href());
-                                    meta_function->setBrief(function->brief());
-                                    break;
+                                    if(ok){
+                                        meta_function->setHref(function->href());
+                                        meta_function->setBrief(function->brief());
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -1219,7 +1467,11 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                 _cls = __cls;
                             }
                         }
-                        QList<const DocFunction*> functions = _cls->getFunctions(meta_function->originalName());
+                        QList<const DocFunction*> functions;
+                        functions = _cls->getFunctions(meta_function->originalName());
+                        if(functions.isEmpty() && meta_function->functionType()==AbstractMetaFunction::GlobalScopeFunction && globalNamespace){
+                            functions = globalNamespace->getFunctions(meta_function->originalName());
+                        }
                         if(functions.size()==1){
                             meta_function->setHref(functions[0]->href());
                             meta_function->setBrief(functions[0]->brief());
@@ -1270,6 +1522,7 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
                                             }else{
                                                 if(type->typeEntry()!=argument->type()->typeEntry()
                                                         && !(type->typeEntry()->isQString() && argument->type()->typeEntry()==TypeDatabase::instance()->qstringType())
+                                                        && !(type->typeEntry()->isVariant() && argument->type()->typeEntry()==TypeDatabase::instance()->qvariantType())
                                                         && !(type->typeEntry()->isChar() && argument->type()->typeEntry()==TypeDatabase::instance()->qcharType())){
                                                     ok = false;
                                                     break;
@@ -3837,7 +4090,6 @@ AbstractMetaClass *AbstractMetaBuilder::traverseTypeAlias(TypeAliasModelItem typ
 AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item) {
     QString class_name = strip_template_args(class_item->name());
     QString full_class_name = class_name;
-
     // we have an inner class
     if (m_current_class) {
         full_class_name = strip_template_args(m_current_class->typeEntry()->qualifiedCppName())
@@ -3848,6 +4100,8 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     if(type){
         if(type->isQString() && TypeDatabase::instance()->qstringType()){
             type = TypeDatabase::instance()->qstringType();
+        }else if(type->isVariant() && TypeDatabase::instance()->qvariantType()){
+            type = TypeDatabase::instance()->qvariantType();
         }else if(type->isChar() && TypeDatabase::instance()->qcharType()){
             type = TypeDatabase::instance()->qcharType();
         }
@@ -3957,20 +4211,8 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
                 AbstractMetaClass *cl = traverseClass(ci);
                 if (cl) {
                     bool isEnclosedClass = cl->typeEntry()->targetLangName().startsWith(meta_class->typeEntry()->targetLangName()+"$");
-                    if(isEnclosedClass){
+                    if(isEnclosedClass)
                         meta_class->addEnclosedClass(cl);
-                        if(cl->isInterface()){
-                            AbstractMetaClass *interfaceImpl = cl->extractInterfaceImpl();
-                            //m_meta_classes << interfaceImpl;
-                            ReportHandler::debugSparse(QString(" -> interface implementation class '%1'").arg(interfaceImpl->name()));
-                        }
-                        /*
-                        if (cl->typeEntry()->designatedInterface()) {
-                            AbstractMetaClass *interface = cl->extractInterface();
-                            meta_class->addEnclosedClass(interface);
-                        }
-                        */
-                    }
                     addAbstractMetaClass(cl);
 
                 }
@@ -4128,6 +4370,10 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
                 instantiation_meta_class->setTemplateBaseClass(meta_class);
                 instantiation_meta_class->setAttributes(meta_class->attributes());
                 instantiation_meta_class->setOriginalAttributes(meta_class->originalAttributes());
+//                if(class_name=="StringResult")
+//                    class_name.back();
+                if(m_current_class)
+                    m_current_class->addEnclosedClass(instantiation_meta_class);
                 addAbstractMetaClass(instantiation_meta_class);
             }
         }
@@ -4220,6 +4466,7 @@ void AbstractMetaBuilder::setupFunctionDefaults(AbstractMetaFunction *meta_funct
 
 void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractMetaClass *meta_class) {
     // if there are just private constructors avoid generating the shell class
+    bool hasPrivateConstructors = false;
     bool hasJustPrivateConstructors = false;
     // detect virtual destructor
     bool hasVirtualDestructor = false;
@@ -4231,7 +4478,6 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
     QSet<QString> unimplementablePureVirtualFunctions;
 
     QList<AbstractMetaFunction *> rValueFunctions;
-
     for(const FunctionModelItem& function : scope_item->functions()) {
         AbstractMetaFunction *meta_function = traverseFunction(function);
 
@@ -4292,15 +4538,7 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
                 hasPrivateDestructor = meta_function->isPrivate();
                 hasPublicDestructor = meta_function->isPublic();
             }else if(meta_function->isConstructor()){
-                if(meta_function->isPrivate() || meta_function->isInvalid()){
-                    AbstractMetaFunctionList functions = meta_class->queryFunctions(AbstractMetaClass::Constructors);
-                    // do not generate derived class when only copy constructor is available
-                    if(functions.isEmpty() || (functions.size()==1 && functions.at(0)->isCopyConstructor())){
-                        hasJustPrivateConstructors = true;
-                    }
-                }else{
-                    hasJustPrivateConstructors = false;
-                }
+                hasPrivateConstructors |= meta_function->isInvalid() || meta_function->isPrivate();
             }else if((/*meta_function->isPrivate() ||*/ meta_function->isInvalid()) && meta_function->isAbstract()){
                 unimplementablePureVirtualFunctions << meta_function->signature();
             }
@@ -4329,7 +4567,7 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
 
                 if (meta_function->isSignal() && !meta_class->isQObject()) {
                     QString warn = QString("signal '%1' in non-QObject class '%2'")
-                                   .arg(meta_function->name()).arg(meta_class->name());
+                                   .arg(meta_function->name(), meta_class->name());
                     ReportHandler::warning(warn);
                 }
                 if(meta_function->hasRReferences()
@@ -4337,12 +4575,35 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
                         && !meta_function->isRemovedFrom(meta_class, TypeSystem::TargetLangCode)){
                     rValueFunctions << meta_function;
                 }
+                if(meta_class->typeEntry()->isNamespace()){
+                    QString fileName = function->fileName();
+                    for(const QString& includePath : m_includePathsList){
+                        QFileInfo f(includePath);
+                        if(f.isDir()){
+                            QString path = f.canonicalFilePath();
+                            if(!path.endsWith("/"))
+                                path += "/";
+                            if(fileName.startsWith(path)){
+                                path = fileName.mid(path.size());
+                                meta_class->typeEntry()->addExtraInclude(Include(Include::IncludePath, path));
+                                break;
+                            }
+                        }
+                    }
+                }
                 meta_class->addFunction(meta_function);
             }else if(!meta_function->isDestructor() &&
                      !meta_function->isConstructor() &&
                      meta_function->isInvalid()){
                 meta_class->addInvalidFunction(meta_function);
             }
+        }
+    }
+    if(hasPrivateConstructors){
+        AbstractMetaFunctionList functions = meta_class->queryFunctions(AbstractMetaClass::Constructors);
+        // do not generate derived class when only copy constructor is available
+        if(functions.isEmpty() || (functions.size()==1 && functions.at(0)->isCopyConstructor())){
+            hasJustPrivateConstructors = true;
         }
     }
     // remove duplicates by rvalue
@@ -4377,16 +4638,55 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
     meta_class->setUnimplmentablePureVirtualFunctions(unimplementablePureVirtualFunctions);
 }
 
-bool AbstractMetaBuilder::setupTemplateInstantiations(AbstractMetaClass *meta_class){
+AbstractMetaType* AbstractMetaBuilder::exchangeTemplateTypes(const AbstractMetaType* type, bool isReturn, const QHash<QString,AbstractMetaType*>& templateTypes){
+    if(type->typeEntry()->isTemplateArgument()){
+        if(AbstractMetaType* ttype = templateTypes[type->typeEntry()->name()]){
+            AbstractMetaType*rtype = type->copy();
+            rtype->setConstant(ttype->isConstant() || type->isConstant());
+            rtype->setIndirections(QList<bool>() << ttype->indirections() << type->indirections());
+            rtype->setReferenceType(ttype->getReferenceType());
+            rtype->setTypeEntry(ttype->typeEntry());
+            decideUsagePattern(rtype);
+            if(!rtype->indirections().isEmpty() && isReturn){
+                rtype->setTypeUsagePattern(AbstractMetaType::ObjectPattern);
+            }
+            QList<const AbstractMetaType *> instantiations;
+            for(auto instantiation : rtype->instantiations()){
+                instantiations << exchangeTemplateTypes(instantiation, false, templateTypes);
+            }
+            rtype->setInstantiations(instantiations);
+            return rtype;
+        }
+    }else{
+        QList<const AbstractMetaType *> instantiations;
+        for(auto instantiation : type->instantiations()){
+            instantiations << exchangeTemplateTypes(instantiation, false, templateTypes);
+        }
+        if(type->instantiations()!=instantiations){
+            AbstractMetaType*rtype = type->copy();
+            rtype->setInstantiations(instantiations);
+            return rtype;
+        }
+    }
+    return const_cast<AbstractMetaType*>(type);
+}
 
-    const AbstractMetaFunctionList& funcs = meta_class->functions();
-    for(AbstractMetaFunction *func : funcs) {
-        if(func->hasTemplateArgumentTypes()){
+bool AbstractMetaBuilder::setupTemplateInstantiations(AbstractMetaClass *meta_class){
+    AbstractMetaFunctionList functions;
+    for(AbstractMetaFunction *func : meta_class->functions()) {
+        AbstractMetaTemplateParameterList templateParameters;
+        for(AbstractMetaTemplateParameter* tparam : func->templateParameters()){
+            if(tparam->type()->typeEntry()->isTemplateArgument()){
+                templateParameters << tparam;
+            }
+        }
+        if(!templateParameters.isEmpty() || (func->type() && func->type()->typeUsagePattern()==AbstractMetaType::AutoPattern)){
             QList<TemplateInstantiation> templateInstantiations = func->templateInstantiations(meta_class);
             if(!templateInstantiations.isEmpty()){
                 for(const TemplateInstantiation& template_instantiation : templateInstantiations){
                     // duplicate
-                    AbstractMetaFunction *func2 = func->copy();
+                    std::unique_ptr<AbstractMetaFunction> func2;
+                    func2.reset(func->copy());
                     // rename function
                     if(!template_instantiation.renamedTo().isEmpty()){
                         func2->setOriginalName(func2->name());
@@ -4394,67 +4694,145 @@ bool AbstractMetaBuilder::setupTemplateInstantiations(AbstractMetaClass *meta_cl
                     }
 
                     // find types of the template instantiations
-                    AbstractMetaTemplateParameterList templateParameters;
+                    AbstractMetaTemplateParameterList untreatedTemplateParameters = func2->templateParameters();
                     QHash<QString,AbstractMetaType*> templateTypes;
-                    for(int k=0; k<template_instantiation.arguments.size() && k<func->templateParameters().size(); k++){
-                        TypeInfo info;
-                        info.setQualifiedName(template_instantiation.arguments[k].split("::"));
-                        bool ok = false;
-                        AbstractMetaClass * tmp_current_class = m_current_class;
-                        m_current_class = meta_class;
-                        AbstractMetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(template_instantiation.arguments[k]), true, true, false);
-                        m_current_class = tmp_current_class;
-                        templateTypes[func->templateParameters()[k]->name()] = ttype;
-                        AbstractMetaTemplateParameter* tparam = new AbstractMetaTemplateParameter();
-                        tparam->setName(func->templateParameters()[k]->name());
-                        tparam->setType(ttype);
-                        tparam->setInstantiation(template_instantiation.arguments[k]);
-                        templateParameters += tparam;
+                    for(int k=0; k<template_instantiation.arguments.size() && k<func2->templateParameters().size(); k++){
+                        AbstractMetaTemplateParameter* tparam = func2->templateParameters()[k];
+                        if(tparam->type()->typeUsagePattern()==AbstractMetaType::TemplateArgumentPattern){
+                            if(template_instantiation.arguments[k].name.isEmpty()){
+                                TypeInfo info;
+                                info.setQualifiedName(template_instantiation.arguments[k].type.split("::"));
+                                bool ok = false;
+                                AbstractMetaClass * tmp_current_class = m_current_class;
+                                m_current_class = meta_class;
+                                AbstractMetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(template_instantiation.arguments[k].type), true, true, false);
+                                m_current_class = tmp_current_class;
+                                if(ok && ttype){
+                                    templateTypes[tparam->name()] = ttype;
+                                    tparam->setName("");
+                                    tparam->setType(ttype);
+                                    tparam->setImplicit(template_instantiation.arguments[k].implicit);
+                                    tparam->setInstantiation(template_instantiation.arguments[k].type);
+                                    tparam->setDefaultType({});
+                                    untreatedTemplateParameters.removeOne(tparam);
+                                }
+                            }else if(template_instantiation.arguments[k].name==tparam->name()){
+                                untreatedTemplateParameters.removeOne(tparam);
+                            }
+                        }else{
+                            untreatedTemplateParameters.removeOne(tparam);
+                        }
                     }
 
-                    // set instantiations
-                    func2->setTemplateParameters(templateParameters);
-
                     // exchange template types
-                    if(func2->type()->typeUsagePattern()==AbstractMetaType::TemplateArgumentPattern){
-                        AbstractMetaType* rtype = templateTypes[func2->type()->typeEntry()->name()];
-                        if(rtype){
-                            rtype = rtype->copy();
-                            rtype->setConstant(func2->type()->isConstant());
-                            rtype->setIndirections(QList<bool>() << rtype->indirections() << func2->type()->indirections());
-                            rtype->setReferenceType(func2->type()->getReferenceType());
-                            decideUsagePattern(rtype);
-                            if(!rtype->indirections().isEmpty()){
-                                rtype->setTypeUsagePattern(AbstractMetaType::ObjectPattern);
+                    if(func2->type()){
+                        if(func2->type()->typeUsagePattern()==AbstractMetaType::AutoPattern){
+                            if(template_instantiation.arguments.size() > func2->templateParameters().size()){
+                                QString arg = template_instantiation.arguments[func2->templateParameters().size()].type;
+                                TypeInfo info;
+                                info.setQualifiedName(arg.split("::"));
+                                bool ok = false;
+                                AbstractMetaClass * tmp_current_class = m_current_class;
+                                m_current_class = meta_class;
+                                AbstractMetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(arg), true, true, false);
+                                m_current_class = tmp_current_class;
+                                if(ok && ttype){
+                                    func2->setType(ttype);
+                                }
                             }
-                            func2->setType(rtype);
+                        }else{
+                            AbstractMetaType* rtype = exchangeTemplateTypes(func2->type(), true, templateTypes);
+                            if(rtype!=func2->type())
+                                func2->setType(rtype);
                         }
                     }
 
                     for(AbstractMetaArgument* arg : func2->arguments()){
-                        if(arg->type()->typeUsagePattern()==AbstractMetaType::TemplateArgumentPattern){
-                            AbstractMetaType* rtype = templateTypes[arg->type()->typeEntry()->name()];
-                            if(rtype){
-                                rtype = rtype->copy();
-                                rtype->setConstant(arg->type()->isConstant());
-                                rtype->setIndirections(QList<bool>() << rtype->indirections() << arg->type()->indirections());
-                                rtype->setReferenceType(arg->type()->getReferenceType());
-                                decideUsagePattern(rtype);
-                                arg->setType(rtype);
-                            }
-                        }
+                        AbstractMetaType* rtype = exchangeTemplateTypes(arg->type(), false, templateTypes);
+                        if(rtype!=arg->type())
+                            arg->setType(rtype);
                     }
 
-                    if(!func2->hasTemplateArgumentTypes()){
-                        meta_class->addFunction(func2);
+                    if(!untreatedTemplateParameters.isEmpty()){
+                        QStringList templ;
+                        for(AbstractMetaTemplateParameter* tparam : untreatedTemplateParameters){
+                            templ << tparam->name();
+                        }
+                        ReportHandler::warning(QString("template method %1::%2 has uninstantiated parameters <%3>").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature(), templ.join(", ")));
+                    }else if(func2->type() && func2->type()->typeUsagePattern()==AbstractMetaType::AutoPattern){
+                        ReportHandler::warning(QString("method %1::%2 returns auto").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature()));
                     }else{
-                        ReportHandler::warning(QString("template method has uninstantiated arguments %1 in class %2").arg(func->signature()).arg(func->implementingClass()->qualifiedCppName()));
+                        func2->setFunctionTemplate(func);
+                        if(template_instantiation.isCodeInjection()
+                                || !template_instantiation.ppCondition.isEmpty()
+                                || !template_instantiation.throws.isEmpty()
+                                || !template_instantiation.association.isEmpty()
+                                || !template_instantiation.snips.isEmpty()
+                                || !template_instantiation.targetType.isEmpty()
+                                || !template_instantiation.argument_mods.isEmpty()){
+                            FunctionModification mod;
+                            AbstractFunctionModification& amod = mod;
+                            amod = template_instantiation;
+                            mod.signature = func2->minimalSignature();
+                            mod.removal = TypeSystem::NoLanguage;
+                            meta_class->typeEntry()->addFunctionModification(mod);
+                        }
+                        func2->setDeclaringClass(meta_class);
+                        func2->setOwnerClass(meta_class);
+                        func2->setImplementingClass(meta_class);
+                        functions << func2.release();
                     }
                 }
+            }else if(!func->hasTemplateTypes() && !(func->type() && func->type()->typeUsagePattern()==AbstractMetaType::AutoPattern)){
+                std::unique_ptr<AbstractMetaFunction> func2;
+                func2.reset(func->copy());
+                func2->setFunctionTemplate(func);
+                func2->setDeclaringClass(meta_class);
+                func2->setOwnerClass(meta_class);
+                func2->setImplementingClass(meta_class);
+                QHash<QString,AbstractMetaType*> templateTypes;
+                for(int k=0; k<func2->templateParameters().size(); k++){
+                    AbstractMetaTemplateParameter* tparam = func2->templateParameters()[k];
+                    if(tparam->type()->typeUsagePattern()==AbstractMetaType::TemplateArgumentPattern){
+                        TypeInfo info;
+                        info.setQualifiedName(tparam->defaultType().split("::"));
+                        bool ok = false;
+                        AbstractMetaClass * tmp_current_class = m_current_class;
+                        m_current_class = meta_class;
+                        AbstractMetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(tparam->defaultType()), true, true, false);
+                        m_current_class = tmp_current_class;
+                        tparam->setDefaultType({});
+                        if(ok && ttype){
+                            templateTypes[tparam->name()] = ttype;
+                            tparam->setName("");
+                            tparam->setType(ttype);
+                            tparam->setImplicit(true);
+                            tparam->setInstantiation(tparam->defaultType());
+                        }
+                    }
+                }
+                if(func2->type()){
+                    AbstractMetaType* rtype = exchangeTemplateTypes(func2->type(), true, templateTypes);
+                    if(rtype!=func2->type())
+                        func2->setType(rtype);
+                }
+                for(AbstractMetaArgument* arg : func2->arguments()){
+                    AbstractMetaType* rtype = exchangeTemplateTypes(arg->type(), false, templateTypes);
+                    if(rtype!=arg->type())
+                        arg->setType(rtype);
+                }
+                functions << func2.release();
+            }else if(!func->hasTemplateArgumentTypes()){
+                if(func->isRemovedFromAllLanguages(meta_class))
+                    functions << func;
+                else if(!func->isPrivate())
+                    ReportHandler::warning(QString("missing instantiations for template method %1::%2").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature()));
             }
+        }else{
+            functions << func;
         }
     }
-
+    meta_class->setFunctions(functions);
     return true;
 }
 
@@ -4502,7 +4880,7 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
                     newTypeAliasType->setIndirections( QList<bool>() << newTypeAliasType->indirections() << typeAliasType->indirections());
                     if((!newTypeAliasType->typeEntry()->isPrimitive() || !newTypeAliasType->indirections().isEmpty()) && typeAliasType->isConstant())
                         newTypeAliasType->setConstant(true);
-                    AbstractMetaBuilder::decideUsagePattern(newTypeAliasType);
+                    decideUsagePattern(newTypeAliasType);
                     delete meta_class->typeAliasType();
                     meta_class->setTypeAliasType(newTypeAliasType);
                 }
@@ -4831,10 +5209,10 @@ void AbstractMetaBuilder::traverseEnums(ScopeModelItem scope_item, AbstractMetaC
 AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem function_item) {
     if(function_item->referenceType()==TypeInfo::RReference)
         return nullptr;
-    if(function_item->name()=="static_assert")
-        return nullptr;
     const ArgumentList& arguments = function_item->arguments();
     QString function_name = function_item->name();
+    if(function_name==QLatin1String("static_assert"))
+        return nullptr;
     QString class_name = m_current_class->typeEntry()->qualifiedCppName();
 
     QString _function_name = function_name;
@@ -4900,13 +5278,15 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
     }
 
     if (TypeDatabase::instance()->isFunctionRejected(class_name, function_name)) {
-        if(function_item->functionType() == CodeModel::Signal
-                || function_item->functionType() == CodeModel::PrivateSignal){
-            m_rejected_signals.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
-        }else if(!function_item->templateParameters().isEmpty()){
-            m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
-        }else{
-            m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+        if(function_item->accessPolicy() != CodeModel::Private && m_current_class->typeEntry()->codeGeneration()==TypeEntry::GenerateAll){
+            if(function_item->functionType() == CodeModel::Signal
+                    || function_item->functionType() == CodeModel::PrivateSignal){
+                m_rejected_signals.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+            }else if(!function_item->templateParameters().isEmpty()){
+                m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+            }else{
+                m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+            }
         }
         return nullptr;
     }
@@ -4976,15 +5356,15 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
     else
         *meta_function += AbstractMetaAttributes::Protected;
     QHash<QString,AbstractMetaTemplateParameter*> metaTemplateParameters;
-    int k=0;
+    int templateParameterCounter=0;
     for(const TemplateParameterModelItem& p : function_item->templateParameters()){
         if(!p->ownerClass()){
             TemplateArgumentEntry* tae = new TemplateArgumentEntry(p->name());
-            tae->setOrdinal(k);
+            tae->setOrdinal(templateParameterCounter);
             AbstractMetaType *type = createMetaType();
             type->setTypeUsagePattern(AbstractMetaType::TemplateArgumentPattern);
             type->setTypeEntry(tae);
-            k++;
+            templateParameterCounter++;
             AbstractMetaTemplateParameter* tp = new AbstractMetaTemplateParameter();
             tp->setName(p->name());
             tp->setType(type);
@@ -4993,6 +5373,8 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             meta_function->addTemplateParameter(tp);
         }
     }
+    m_current_function = meta_function.get();
+    auto onfinish = qScopeGuard([=]{this->m_current_function = nullptr;});
 
     QString stripped_class_name = class_name;
     auto cc_pos = stripped_class_name.lastIndexOf("::");
@@ -5028,7 +5410,9 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             }
             type = translateType(function_type, &ok, QString("traverseFunction %1.%2").arg(class_name).arg(function_name));
             if(type){
-                if(type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qstringType()){
+                if(type->typeEntry()->isVariant() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qvariantType()){
+                    type->setTypeEntry(TypeDatabase::instance()->qvariantType());
+                }else if(type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qstringType()){
                     type->setTypeEntry(TypeDatabase::instance()->qstringType());
                 }else if(type->typeEntry()->isChar() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qcharType()){
                     type->setTypeEntry(TypeDatabase::instance()->qcharType());
@@ -5037,19 +5421,23 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         }
 
         if (!ok) {
-            if(function_item->functionType() == CodeModel::Signal
-                    || function_item->functionType() == CodeModel::PrivateSignal){
-                ReportHandler::warning(QString("skipping signal '%1::%2', unmatched return type '%3'")
-                                       .arg(class_name, function_item->name(), function_item->type().toString()));
-                m_rejected_signals[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedReturnType;
-            }else if(!function_item->templateParameters().isEmpty()){
-                ReportHandler::warning(QString("skipping function '%1::%2<%3>', unmatched return type '%4'")
-                                       .arg(class_name, function_item->name(), tparams.join(", "), function_item->type().toString()));
-                m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, UnmatchedReturnType);
-            }else{
-                ReportHandler::warning(QString("skipping function '%1::%2', unmatched return type '%3'")
-                                       .arg(class_name, function_item->name(), function_item->type().toString()));
-                m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedReturnType;
+            if(function_item->accessPolicy() != CodeModel::Private
+                    && m_current_class->typeEntry()->codeGeneration()==TypeEntry::GenerateAll
+                    && !TypeDatabase::instance()->isClassRejected(function_item->type().qualifiedName().join("::"))){
+                if(function_item->functionType() == CodeModel::Signal
+                        || function_item->functionType() == CodeModel::PrivateSignal){
+                    ReportHandler::warning(QString("skipping signal '%1::%2', unmatched return type '%3'")
+                                           .arg(class_name, function_item->name(), function_item->type().toString()));
+                    m_rejected_signals[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedReturnType;
+                }else if(!function_item->templateParameters().isEmpty()){
+                    ReportHandler::warning(QString("skipping function '%1::%2<%3>', unmatched return type '%4'")
+                                           .arg(class_name, function_item->name(), tparams.join(", "), function_item->type().toString()));
+                    m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, UnmatchedReturnType);
+                }else{
+                    ReportHandler::warning(QString("skipping function '%1::%2', unmatched return type '%3'")
+                                           .arg(class_name, function_item->name(), function_item->type().toString()));
+                    m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedReturnType;
+                }
             }
             meta_function->setInvalid(true);
             return meta_function.release();
@@ -5092,23 +5480,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         }
         if(i>0)
             originalSignature += ",";
-        if(arg->type().isConstant())
-            originalSignature += "const ";
-        originalSignature += arg->type().qualifiedName().join("::");
-        for(bool ind : arg->type().indirections()){
-            if(ind)
-                originalSignature += " const";
-            originalSignature += "*";
-        }
-        switch(arg->type().getReferenceType()){
-        case TypeInfo::Reference:
-            originalSignature += "&";
-            break;
-        case TypeInfo::RReference:
-            originalSignature += "&&";
-            break;
-        default: break;
-        }
+        originalSignature += arg->type().toString();
 
         if(metaTemplateParameters.contains(arg->type().qualifiedName().join("::"))){
             meta_type = metaTemplateParameters[arg->type().qualifiedName().join("::")]->type()->copy();
@@ -5121,7 +5493,9 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         if(!ok){
             meta_type = translateType(arg->type(), &ok, QString("traverseFunction %1.%2 arg#%3").arg(class_name).arg(function_name).arg(i));
             if(meta_type){
-                if(meta_type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qstringType()){
+                if(meta_type->typeEntry()->isVariant() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qvariantType()){
+                    meta_type->setTypeEntry(TypeDatabase::instance()->qvariantType());
+                }else if(meta_type->typeEntry()->isQString() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qstringType()){
                     meta_type->setTypeEntry(TypeDatabase::instance()->qstringType());
                 }else if(meta_type->typeEntry()->isChar() && m_current_class && m_current_class->typeEntry()==TypeDatabase::instance()->qcharType()){
                     meta_type->setTypeEntry(TypeDatabase::instance()->qcharType());
@@ -5140,22 +5514,27 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         if (!meta_type || !ok) {
             if(arg->type().isVolatile())
                 meta_type = translateType(arg->type(), &ok, QString("traverseFunction %1.%2 arg#%3").arg(class_name).arg(function_name).arg(i));
-            if(function_item->functionType() == CodeModel::Signal
-                    || function_item->functionType() == CodeModel::PrivateSignal){
-                ReportHandler::warning(QString("skipping signal '%1::%2', "
-                                               "unmatched parameter type '%3'")
-                                       .arg(class_name, function_item->name(), arg->type().toString()));
-                m_rejected_signals[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedArgumentType;
-            }else if(!function_item->templateParameters().isEmpty()){
-                ReportHandler::warning(QString("skipping function '%1::%2<%3>', "
-                                               "unmatched parameter type '%4'")
-                                       .arg(class_name, function_item->name(), tparams.join(", "), arg->type().toString()));
-                m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, UnmatchedArgumentType);
-            }else{
-                ReportHandler::warning(QString("skipping function '%1::%2', "
-                                               "unmatched parameter type '%3'")
-                                       .arg(class_name, function_item->name(), arg->type().toString()));
-                m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedArgumentType;
+            if(function_item->accessPolicy() != CodeModel::Private
+                    && m_current_class->typeEntry()->codeGeneration()==TypeEntry::GenerateAll
+                    && !TypeDatabase::instance()->isClassRejected(arg->type().qualifiedName().join("::"))
+                    && arg->type().qualifiedName().join("::")!=m_current_class->typeEntry()->qualifiedCppName()+"Private"){
+                if(function_item->functionType() == CodeModel::Signal
+                        || function_item->functionType() == CodeModel::PrivateSignal){
+                    ReportHandler::warning(QString("skipping signal '%1::%2', "
+                                                   "unmatched parameter type '%3'")
+                                           .arg(class_name, function_item->name(), arg->type().toString()));
+                    m_rejected_signals[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedArgumentType;
+                }else if(!function_item->templateParameters().isEmpty()){
+                    ReportHandler::warning(QString("skipping function '%1::%2<%3>', "
+                                                   "unmatched parameter type '%4'")
+                                           .arg(class_name, function_item->name(), tparams.join(", "), arg->type().toString()));
+                    m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, UnmatchedArgumentType);
+                }else{
+                    ReportHandler::warning(QString("skipping function '%1::%2', "
+                                                   "unmatched parameter type '%3'")
+                                           .arg(class_name, function_item->name(), arg->type().toString()));
+                    m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] = UnmatchedArgumentType;
+                }
             }
             meta_function->setInvalid(true);
             return meta_function.release();
@@ -5232,11 +5611,13 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         if (mod.isRenameModifier())
             isRenamed = true;
         for(const ArgumentModification& argumentModification : mod.argument_mods){
-            if(argumentModification.index==0){
-                isReturnChanged = true;
-            }
-            if(!argumentModification.modified_name.isEmpty() && argumentModification.index>0 && argumentModification.index<=meta_arguments.size()){
-                meta_arguments[argumentModification.index-1]->setModifiedName(argumentModification.modified_name);
+            if(argumentModification.type==ArgumentModification::Default){
+                if(argumentModification.index==0){
+                    isReturnChanged = true;
+                }
+                if(!argumentModification.modified_name.isEmpty() && argumentModification.index>0 && argumentModification.index<=meta_arguments.size()){
+                    meta_arguments[argumentModification.index-1]->setModifiedName(argumentModification.modified_name);
+                }
             }
         }
     }
@@ -5617,6 +5998,13 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
 
     // 8.2. No? Check if the current class is a template and this type is one
     //    of the parameters.
+    if (!type && m_current_function) {
+        for(AbstractMetaTemplateParameter* t : m_current_function->templateParameters()){
+            if (t->type()->typeEntry()->name() == qualified_name){
+                type = t->type()->typeEntry();
+            }
+        }
+    }
     if (!type && m_current_class) {
         QList<TypeEntry *> template_args = m_current_class->templateArguments();
         for(TypeEntry *te : template_args) {
@@ -5743,7 +6131,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
             QString base = contexts.at(0);
             if(!visitedContexts.contains(base)){
                 visitedContexts.insert(base);
-                info.setQualifiedName(QStringList() << base << qualified_name.split("::"));
+                info.setQualifiedName(QStringList() << base << typei.qualifiedName());
                 //   qDebug()<< "whiling in 9. type," << info.toString();
                 if(!visitedNames.contains(info.qualifiedName().join("::"))){
                     visitedNames.insert(info.qualifiedName().join("::"));
@@ -5760,7 +6148,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
                 while (parts.size() > 1) {
                     parts.removeLast();
                     if(!qualified_name.startsWith(parts.join("::"))){
-                        info.setQualifiedName(QStringList() << parts << qualified_name.split("::"));
+                        info.setQualifiedName(QStringList() << parts << typei.qualifiedName());
                         if(!visitedNames.contains(info.qualifiedName().join("::"))){
                             visitedNames.insert(info.qualifiedName().join("::"));
                             AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
@@ -5797,39 +6185,6 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
             }
         }
     }
-
-    /*{
-        qualifier_list = typeInfo.qualified_name;
-        qualified_name = qualifier_list.join("::");
-        name = qualifier_list.takeLast();
-        TypeAliasModelItem typeAliasModel = m_dom->findTypeAlias(qualified_name);
-        if(!typeAliasModel){
-            ScopeModelItem smi = m_dom->toScope();
-            QStringList qualifierList = qualifier_list;
-            while(smi && !qualifierList.isEmpty()){
-                QString scope = qualifierList.takeFirst();
-                if(ClassModelItem cls = smi->findClass(scope)){
-                    smi = cls;
-                }else if(NamespaceModelItem nms = smi->findNamespace(scope)){
-                    smi = nms;
-                }else{
-                    smi = nullptr;
-                }
-            }
-            if(smi){
-                typeAliasModel = smi->findTypeAlias(name);
-            }
-        }
-        if(typeAliasModel){
-            bool ok;
-            typei.setQualifiedName(typeAliasModel->type().qualifiedName());
-            AbstractMetaType *t = translateType(typei, &ok, contextString, false, resolveScope, prependScope);
-            if (t && ok) {
-                //qDebug()<<"ResolveType ok (1. check)"<<t->fullName();
-                return t;
-            }
-        }
-    }*/
 
     // if error happened in type resolving
     if (!type) {
@@ -5978,17 +6333,6 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
             }
         }
 
-        /*if (container_type == ContainerTypeEntry::ListContainer
-                || container_type == ContainerTypeEntry::InitializerListContainer
-                || container_type == ContainerTypeEntry::VectorContainer
-                || container_type == ContainerTypeEntry::QDBusReplyContainer
-                || container_type == ContainerTypeEntry::StringListContainer
-                || container_type == ContainerTypeEntry::ByteArrayListContainer) {
-            if(meta_type->instantiations().size() == 0){
-//                meta_type->
-            }
-//            Q_ASSERT(meta_type->instantiations().size() == 1);
-        }*/
     }else if (meta_type->typeEntry()->isComplex() && reinterpret_cast<const ComplexTypeEntry *>(type)->isGenericClass()) {
         for(const TypeParser::Info &ta : typeInfo.template_instantiations) {
             TypeInfo info;
@@ -6130,13 +6474,21 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
     if(meta_type->getReferenceType()==AbstractMetaType::RReference){
         meta_type->setTypeUsagePattern(AbstractMetaType::RValuePattern);
 
-    } else if (type->isPrimitive() && (meta_type->actualIndirections() == 0
-                                || (meta_type->isConstant() && meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->indirections().size() == 0))) {
-        if(type->qualifiedCppName()=="std::nullptr_t")
-            meta_type->setTypeUsagePattern(AbstractMetaType::NullptrPattern);
-        else
+    } else if (type->isPrimitive()) {
+        if(meta_type->actualIndirections() == 0
+                || (meta_type->isConstant() && meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->indirections().size() == 0)){
+            if(type->qualifiedCppName()=="std::nullptr_t")
+                meta_type->setTypeUsagePattern(AbstractMetaType::NullptrPattern);
+            else
+                meta_type->setTypeUsagePattern(AbstractMetaType::PrimitivePattern);
+        }else if(meta_type->actualIndirections() == 1
+                 && type->qualifiedCppName().startsWith("_j")){
             meta_type->setTypeUsagePattern(AbstractMetaType::PrimitivePattern);
-
+        }else{
+            meta_type->setTypeUsagePattern(AbstractMetaType::NativePointerPattern);
+        }
+    } else if (type->isAuto()) {
+        meta_type->setTypeUsagePattern(AbstractMetaType::AutoPattern);
     } else if (type->isVoid()) {
         meta_type->setTypeUsagePattern(AbstractMetaType::NativePointerPattern);
 
@@ -6390,7 +6742,7 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
                     || expr == "QStringView()"
                     || expr == "QAnyStringView()"
                     || expr == "QUtf8StringView()") {
-                return "\"\"";
+                return "(String)null";
             }
             if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
                 return expr.mid(8, expr.length()-9);
@@ -6870,6 +7222,87 @@ bool AbstractMetaBuilder::inheritHiddenBaseType(AbstractMetaClass *subclass,
             te->addFunctionModification(mod);
         }
         subclass->addFunction(f);
+    }
+
+    const AbstractMetaFieldList& fields = subclass->fields();
+    for(const AbstractMetaField *field : hidden_base_class->fields()) {
+        if (field->isStatic())
+            continue;
+
+        AbstractMetaField *f = field->copy();
+
+        bool ok = true;
+        AbstractMetaType *ftype = field->type();
+        if(ftype){
+            bool exchanged = false;
+            if(ftype->typeEntry()->isComplex()
+                    && reinterpret_cast<const ComplexTypeEntry*>(ftype->typeEntry())->isTemplate()
+                    && !info.template_instantiations.isEmpty()){
+                const ComplexTypeEntry* ctype = reinterpret_cast<const ComplexTypeEntry*>(ftype->typeEntry());
+                QStringList templateArgs;
+                for(const TypeParser::Info &i : info.template_instantiations) {
+                    templateArgs << i.toString();
+                }
+                if(const ComplexTypeEntry* instantiation = ctype->instantiations()[templateArgs]){
+                    AbstractMetaType *_ftype = ftype->copy();
+                    if(!instantiation->isGenericClass()){
+                        _ftype->setInstantiations({});
+                        _ftype->setTypeEntry(instantiation);
+                    }else{
+                        _ftype->setInstantiations(template_types);
+                    }
+                    decideUsagePattern(_ftype);
+                    f->setType(_ftype);
+                    exchanged = true;
+                }
+            }
+            if(!exchanged){
+                if(ftype->typeEntry()->qualifiedCppName()==hidden_base_class->typeEntry()->qualifiedCppName()
+                        && ftype->instantiations().size()==0){
+                    ftype = ftype->copy();
+                    ftype->setInstantiations(template_types);
+                    f->setType(inheritTemplateType(template_types, ftype, &ok));
+                    delete ftype;
+                }else if(iteratorTypeEntry
+                         && newIteratorClass
+                         && ftype->typeEntry()==iteratorTypeEntry){
+                     ftype = ftype->copy();
+                     ftype->setTypeEntry(newIteratorClass->typeEntry());
+                     f->setType(inheritTemplateType(template_types, ftype, &ok));
+                     delete ftype;
+                }else{
+                    f->setType(inheritTemplateType(template_types, ftype, &ok));
+                }
+            }
+        }
+        if (!ok) {
+            delete f;
+            continue;
+        }
+
+        if (!ok) {
+            delete f;
+            continue ;
+        }
+
+        // if the instantiation has a function named the same as an existing
+        // function we have shadowing so we need to skip it.
+        bool found = false;
+        for (int i = 0; i < fields.size(); ++i) {
+            AbstractMetaField* f2 = fields.at(i);
+            if (f2->name() == f->name()) {
+                found = true;
+                if (found) {
+                    continue;
+                }
+            }
+        }
+        if (found) {
+            delete f;
+            continue;
+        }
+        f->setEnclosingClass(subclass);
+        subclass->addField(f);
     }
 
     if(hidden_base_class->typeEntry()->qualifiedCppName()=="QStack"
@@ -7397,15 +7830,17 @@ void AbstractMetaBuilder::setupClonable(AbstractMetaClass *cls) {
     }
 }
 
-static void write_reject_log_file(QFile *f,
-                                  const QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason> &rejects) {
-    if (!f->open(QIODevice::WriteOnly | QIODevice::Text)) {
+static void write_reject_log_file(QFile &f, const QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason> &rejects) {
+    if(rejects.isEmpty()){
+        f.remove();
+        return;
+    }else if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
         ReportHandler::warning(QString("failed to write log file: '%1'")
-                               .arg(f->fileName()));
+                               .arg(f.fileName()));
         return;
     }
 
-    QTextStream s(f);
+    QTextStream s(&f);
 
     decltype(QString().size()) maxSize = 0;
     for (QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason>::const_iterator it = rejects.constBegin();
@@ -7470,7 +7905,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_classes);
+        write_reject_log_file(file, m_rejected_classes);
     }
 
     {
@@ -7478,7 +7913,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_functionals);
+        write_reject_log_file(file, m_rejected_functionals);
     }
 
     {
@@ -7486,7 +7921,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_enums);
+        write_reject_log_file(file, m_rejected_enums);
     }
 
     {
@@ -7494,7 +7929,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_functions);
+        write_reject_log_file(file, m_rejected_functions);
     }
 
     {
@@ -7502,7 +7937,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_template_functions);
+        write_reject_log_file(file, m_rejected_template_functions);
     }
 
     {
@@ -7510,7 +7945,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_signals);
+        write_reject_log_file(file, m_rejected_signals);
     }
 
     {
@@ -7518,7 +7953,7 @@ void AbstractMetaBuilder::dumpLog() {
         QFile file(fileName);
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        write_reject_log_file(&file, m_rejected_fields);
+        write_reject_log_file(file, m_rejected_fields);
     }
 }
 

@@ -43,6 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtVirtualKeyboard" description="A framework for implementing different input methods as well as a QML virtual keyboard. Supports localized keyboard layouts and custom visual themes.">
+    <rejection class="QVirtualKeyboardInputContextPrivate"/>
     <object-type name="QVirtualKeyboardAbstractInputMethod">
     </object-type>
     <object-type name="QVirtualKeyboardExtensionPlugin">

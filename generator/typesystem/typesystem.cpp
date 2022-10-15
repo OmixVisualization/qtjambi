@@ -81,19 +81,15 @@ QString Include::toString() const {
  * which our typedefs unforntuatly expand to.
  */
 QString fixCppTypeName(const QString &name) {
-    if (name == "qtjambireal"){
-        return "qreal";
-    }else{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QMetaType metaType(QMetaType::type(name.toLatin1().constData()));
+    QMetaType metaType(QMetaType::type(name.toLatin1().constData()));
 #else
-        QMetaType metaType = QMetaType::fromName(name.toLatin1().constData());
+    QMetaType metaType = QMetaType::fromName(name.toLatin1().constData());
 #endif
-        if(metaType.isValid() && metaType.id()<=QMetaType::HighestInternalId){
-            return metaType.name();
-        }
-        return name;
+    if(metaType.isValid() && metaType.id()<=QMetaType::HighestInternalId){
+        return metaType.name();
     }
+    return name;
 }
 
 QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lines) {

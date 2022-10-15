@@ -173,22 +173,6 @@
   </value-type>
 
     <object-type name="QQmlEngine">
-        <!--modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
-            <modify-argument index="1">
-                <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
-                <conversion-rule class="shell">
-                    %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QList&lt;QQmlError>  %out = qtjambi_cast&lt;QList&lt;QQmlError>>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
-            <modify-argument index="3">
-                <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
-            </modify-argument>
-        </modify-function-->
         <modify-function signature="setUrlInterceptor(QQmlAbstractUrlInterceptor*)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcUrlInterceptor" since="6.0.0"/>
@@ -376,8 +360,8 @@
                     if(valueIsUndefined){
                         Java::QtQml::QQmlExpression$ValueIsUndefined::throwNew(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
                     }else{
-						%out = qtjambi_cast&lt;jobject>(%env, %in);
-					}
+                        %out = qtjambi_cast&lt;jobject>(%env, %in);
+                    }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -391,15 +375,6 @@
         </extra-includes>
         <inject-code>
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml__" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code until="5.13">
-            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_13" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code until="5.14">
-            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_14" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code since="5.15">
-            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_15" quote-before-line="}// class"/>
         </inject-code>
     </namespace-type>
     <interface-type name="QQmlTypesExtensionInterface">

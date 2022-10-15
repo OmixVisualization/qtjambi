@@ -52,8 +52,13 @@
         </extra-includes>
     </namespace-type>
     <typealias-type name="Qt3DRender::QAbstractRayCaster::Hits"/>
+    <rejection class="QCameraPrivate"/>
+    <rejection class="Qt3DRender::QLevelOfDetailPrivate"/>
+    <rejection class="Qt3DRender::QAbstractRayCasterPrivate"/>
+    <rejection class="Qt3DRender::QAbstractRayCasterPrivate"/>
     <rejection class="Qt3DRender" function-name="functorTypeId" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="functor_cast" since="5.15.0"/>
+    <rejection class="Qt3DRender::QAbstractFunctor" function-name="functor_cast" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="operator==" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="operator!=" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="swap" since="5.15.0"/>
@@ -257,7 +262,6 @@
         </modify-function>
     </interface-type>
     <interface-type name="Qt3DRender::QAbstractFunctor" java-name="QAbstractFunctor" until="5.*">
-        <modify-function signature="functor_cast(const Qt3DRender::QAbstractFunctor *)const" remove="all" />
         <modify-function signature="id()const" remove="java">
             <inject-code class="shell">
                 if(JNIEnv *%env = qtjambi_current_environment()) {
@@ -1029,7 +1033,7 @@
     <value-type name="Qt3DRender::QTextureImageData" java-name="QTextureImageData" since="5.7.0">
         <modify-function signature="operator=(const Qt3DRender::QTextureImageData &amp;)" remove="all"/>
     </value-type>
-	<functional-type name="Qt3DRender::QTextureImageData::DataConverter" using="std::function&lt;QByteArray(QByteArray,int,int,int)>" since="6.0.0"/>
+    <functional-type name="Qt3DRender::QTextureImageData::DataConverter" using="std::function&lt;QByteArray(QByteArray,int,int,int)>" since="6.0.0"/>
     <enum-type name="Qt3DRender::QAbstractRayCaster::RunMode"/>
     <enum-type name="Qt3DRender::QAbstractRayCaster::FilterMode"/>
     <object-type name="Qt3DRender::QAbstractRayCaster" java-name="QAbstractRayCaster">

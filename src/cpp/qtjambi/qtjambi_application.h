@@ -144,7 +144,7 @@ QTJAMBI_EXPORT jobject qtjambi_install_message_handler(JNIEnv *env, jobject supp
 typedef bool(*ThreadedPixmapsChecker)();
 QTJAMBI_EXPORT void qtjambi_install_threaded_pixmaps_checker(ThreadedPixmapsChecker threadedPixmapsChecker);
 
-QTJAMBI_EXPORT jclass qtjambi_class_for_metatype(JNIEnv *env, int id);
+QTJAMBI_EXPORT jclass qtjambi_class_for_metatype(JNIEnv *env, const QMetaType& metaType);
 
 QTJAMBI_EXPORT jobject qtjambi_invoke_function_pointer(JNIEnv * __jni_env, QFunctionPointer __qt_this, jobject returnType, jobjectArray arguments);
 
@@ -171,5 +171,11 @@ QTJAMBI_EXPORT const QtPrivate::AbstractDebugStreamFunction * qtjambi_registered
 QTJAMBI_EXPORT hash_type qHash(const QMetaType& metaType, const void* ptr, bool* success = nullptr);
 
 QTJAMBI_EXPORT void qtjambi_exception_handler(JNIEnv *__jni_env, void* ptr, void(*expression)(void*));
+
+QTJAMBI_EXPORT QVariant qtjambi_convert_checked_object_to_qvariant(JNIEnv *env, jobject object, const QMetaType& metaType);
+
+QTJAMBI_EXPORT int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations = nullptr);
+
+QTJAMBI_EXPORT int qtjambiRegisterMetaType(JNIEnv *env, jclass containerType, jobjectArray instantiations);
 
 #endif // QTJAMBI_APPLICATION_H

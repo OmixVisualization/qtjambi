@@ -8,10 +8,12 @@
 #include <QtQuick/QSGGeometry>
 #include <QtQuick/QSGMaterialShader>
 
+#ifndef QT_JAMBI_RUN
 struct RenderState{
     QSGMaterialShader::RenderState::DirtyStates m_dirty;
     const void *m_data;
 };
+#endif
 
 inline hash_type qHash(const QSGMaterialShader::RenderState &value, hash_type hashCode = 0)
 {

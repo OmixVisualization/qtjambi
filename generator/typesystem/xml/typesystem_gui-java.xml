@@ -3243,6 +3243,25 @@ if(!useQApplicationExec){</inject-code>
               <replace-type modified-type="java.lang.String"/>
           </modify-argument>
       </modify-function>
+		<inject-code class="native" position="beginning" until="5.*">
+		QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_env, QtJambiNativeID __this, jclass type);
+		</inject-code>
+        <modify-function signature="versionFunctions(const QOpenGLVersionProfile &amp;)const" until="5.*">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="versionFunctions&lt;TYPE>()" until="5.*">
+			<instantiation proxy-call="qtjambi_QOpenGLContext_versionFunctions">
+				<argument type="QAbstractOpenGLFunctions"/>
+				<modify-argument index="0">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<add-type-parameter name="T" extends="io.qt.gui.QAbstractOpenGLFunctions"/>
+				<add-argument index="1" type="java.lang.Class&lt;T>" name="type"/>
+			</instantiation>
+        </modify-function>
       <modify-function signature="resolveInterface(const char *, int)const" access="public" rename="nativeInterface" since="6.2.0">
             <modify-argument index="0">
                 <replace-type modified-type="&lt;QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"/>
@@ -3265,9 +3284,6 @@ if(!useQApplicationExec){</inject-code>
                 <remove-argument/>
             </modify-argument>
         </modify-function>
-        <inject-code class="java" until="5.*">
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLContext___" quote-before-line="}// class"/>
-        </inject-code>
     </object-type>
     
     <value-type name="QOpenGLDebugMessage">
@@ -5430,6 +5446,7 @@ __rcRedirections.remove(%1);
     
     <object-type name="QAction" since="6.0.0">
         <extra-includes>
+            <include file-name="QtGui/QGuiApplication" location="global"/>
             <include file-name="qtjambi_gui_repository.h" location="local"/>
         </extra-includes>
         <inject-code>
@@ -5449,6 +5466,54 @@ __rcRedirections.remove(%1);
                 QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
             }
             </inject-code>
+        </modify-function>
+        <modify-function signature="setMenu&lt;T>(T)">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="1">
+					<replace-type modified-type="io.qt.widgets.QMenu"/>
+					<reference-count action="set" variable-name="__rcMenu"/>
+					<conversion-rule class="native">
+						static bool iswidgetApplication = QGuiApplication::instance()->inherits("QApplication");
+						if(iswidgetApplication &amp;&amp; %in &amp;&amp; !Java::QtWidgets::QMenu::isInstanceOf(%env, %in)){
+							JavaException::raiseIllegalArgumentException(%env, "QAction.setMenu(menu) expects a QMenu in widget applications." QTJAMBI_STACKTRACEINFO );
+						}
+						QObject* %out = qtjambi_to_qobject(%env, %in);
+					</conversion-rule>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="menu&lt;T>()const">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="0">
+					<replace-type modified-type="io.qt.widgets.QMenu"/>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="parentWidget&lt;T>()const">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="0">
+					<replace-type modified-type="io.qt.widgets.QWidget"/>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="associatedWidgets&lt;T>()const">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="0">
+					<replace-type modified-type="io.qt.core.QList&lt;io.qt.widgets.QWidget>"/>
+				</modify-argument>
+			</instantiation>
+        </modify-function>
+        <modify-function signature="associatedGraphicsWidgets&lt;T>()const">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="0">
+					<replace-type modified-type="io.qt.core.QList&lt;io.qt.widgets.QGraphicsWidget>"/>
+				</modify-argument>
+			</instantiation>
         </modify-function>
     </object-type>
 
@@ -5502,6 +5567,14 @@ __rcRedirections.remove(%1);
                 Q_UNUSED(%in)
                 </conversion-rule>
             </modify-argument>
+        </modify-function>
+        <modify-function signature="parentWidget&lt;T>()const">
+			<instantiation thread-affine="yes">
+				<argument type="QObject*"/>
+				<modify-argument index="0">
+					<replace-type modified-type="io.qt.widgets.QWidget"/>
+				</modify-argument>
+			</instantiation>
         </modify-function>
         <inject-code>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QShortcut__" quote-before-line="}// class"/>

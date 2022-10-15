@@ -29,14 +29,33 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import org.junit.*;
-import io.qt.core.*;
-import io.qt.gui.*;
-import io.qt.*;
-import io.qt.qml.*;
-import io.qt.quick.*;
-import io.qt.autotests.TestQuickQt6.*;
-import static io.qt.autotests.TestQuickQt6.*;
+import static io.qt.autotests.TestQuickQt6.loop;
+import static io.qt.autotests.TestQuickQt6.painted;
+import static io.qt.autotests.TestQuickQt6.updatePaintNode_begone;
+import static io.qt.autotests.TestQuickQt6.updatePaintNode_ended;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import io.qt.NativeAccess;
+import io.qt.core.QEventLoop;
+import io.qt.core.QMetaObject;
+import io.qt.core.QSize;
+import io.qt.core.QSizeF;
+import io.qt.core.QTimer;
+import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QPainter;
+import io.qt.gui.QSurfaceFormat;
+import io.qt.qml.QtQml;
+import io.qt.quick.QQuickItem;
+import io.qt.quick.QQuickPaintedItem;
+import io.qt.quick.QQuickRenderTarget;
+import io.qt.quick.QQuickWindow;
+import io.qt.quick.QSGNode;
+import io.qt.quick.QSGRendererInterface;
 
 public class TestQuickPaintItemQt6 extends ApplicationInitializer {
 	

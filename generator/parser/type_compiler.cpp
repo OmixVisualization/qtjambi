@@ -56,7 +56,7 @@
 #include <QtCore/QString>
 
 TypeCompiler::TypeCompiler(Binder *binder)
-        : _M_binder(binder), _M_token_stream(binder->tokenStream()) {
+        : _M_binder(binder), _M_token_stream(binder->tokenStream()), _m_isVariadic(false) {
 }
 
 void TypeCompiler::run(TypeSpecifierAST *node) {
@@ -68,6 +68,7 @@ void TypeCompiler::run(TypeSpecifierAST *node) {
     if (node && node->cv) {
         const ListNode<std::size_t> *it = node->cv->toFront();
         const ListNode<std::size_t> *end = it;
+        _m_isVariadic = node->ellipsis!=0 && node->ellipsis!=std::numeric_limits<std::size_t>::max();
         do {
             int kind = _M_token_stream->kind(it->element);
             if (! _M_cv.contains(kind))
@@ -79,6 +80,7 @@ void TypeCompiler::run(TypeSpecifierAST *node) {
 }
 
 void TypeCompiler::visitClassSpecifier(ClassSpecifierAST *node) {
+    _m_isVariadic = node->ellipsis!=0 && node->ellipsis!=std::numeric_limits<std::size_t>::max();
     visit(node->name);
 }
 
@@ -88,10 +90,12 @@ void TypeCompiler::visitEnumSpecifier(EnumSpecifierAST *node) {
 }
 
 void TypeCompiler::visitElaboratedTypeSpecifier(ElaboratedTypeSpecifierAST *node) {
+    _m_isVariadic = node->ellipsis!=0 && node->ellipsis!=std::numeric_limits<std::size_t>::max();
     visit(node->name);
 }
 
 void TypeCompiler::visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node) {
+    _m_isVariadic = node->ellipsis!=0 && node->ellipsis!=std::numeric_limits<std::size_t>::max();
     if (const ListNode<std::size_t> *it = node->integrals) {
         it = it->toFront();
         const ListNode<std::size_t> *end = it;
@@ -147,6 +151,10 @@ bool TypeCompiler::isConstant() const {
 
 bool TypeCompiler::isVolatile() const {
     return _M_cv.contains(Token_volatile);
+}
+
+bool TypeCompiler::isVariadic() const {
+    return _m_isVariadic;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

@@ -203,9 +203,8 @@ maps to `QWidget.addActions(java.util.Collection<QAction>)`.
 
 ### QVariant
 
-The generic Qt type `QVariant` is directly mapped to `java.lang.Object`.
-However, the Java class `QVariant` provides static conversion methods
-from `Object` to primitives and typical Qt value types.
+The generic Qt type `QVariant` is directly mapped to `java.lang.Object` int Java.
+However, the Java class `ioqt.core.QVariant` makes type management functionalities available.
 
 ## Operator Overloads
 
@@ -565,8 +564,7 @@ public final void setText(String text){...}
 public final void clearText(){...}
 ```
 
-...creates a property "text" with reader, writer, resetter and notify
-signal.
+...creates a property "text" with reader, writer, resetter and notify signal.
 
 Further annotations reflect the corresponding features of Qt properties:
 
@@ -580,6 +578,16 @@ Further annotations reflect the corresponding features of Qt properties:
   - `@QtPropertyBindable` (Qt6 only)
 
 Qt6 provides `QProperty` as bindable property member.
+
+You don't need `QtPropertyReader` and `QtPropertyWriter` annotation of your getters and setters follow the Java or Qt design:
+In QObject-derived classes, `int getFoo()` and `void setFoo(int)` is auto-detected as property `foo`. 
+Likewise, signal `fooChanged` is auto-detected as corresponding notifier even without `QtPropertyNotify` annotation and
+method `bindableFoo()` returning `QBindable` is auto-detected as corresponding bindable even without `QtPropertyBindable` annotation.
+
+In QObject-derived classes, public final fields are considered to be constant (read-only) properties. 
+Additionally, a `final QProperty<...> fooProperty` field is automatically considered to be property `foo`. You don't need getter, setter and bindable.
+
+If your class declares a getter or setter but you don't intend to use it as Qt property you can annotate `@QtPropertyReader(enabled=false)`.
 
 ### Dynamic Member Access
 
@@ -612,6 +620,17 @@ if(internalObject.inherits(QPaintDevice.class)){
     // and (QPaintDevice)internalObject leads to ClassCastException
 }
 ```
+
+## Gadgets
+
+Basically, every Java class can be used as gadget, i.e. as meta-programmable type in Qt, so called gadgets.
+Gadgets are not QObject-based types with invokable methods and/or properties. In contrast to QObject a gadget class cannot declare native signals.
+
+QtJambi does not auto-detect properties and invokable methods on non-QObject classes.
+You explicitely need to specify `@QtPropertyReader/Writer` annotation for every property as well as `@QtInvokable` for every method.
+Alternatively, you can enable auto-detection by annotating the gadget class with `@QtAsGadget`.
+If you want to use other classes as gadgets, e.g. from third-party library, you may specify `QtUtilities.useAsGadget(class)` 
+or `QtUtilities.usePackageContentAsGadgets(package)` at startup.
 
 ## Threads
 
@@ -947,7 +966,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.4.jar:qtjambi-uic-6.3.4.jar
+     -p qtjambi-6.3.5.jar:qtjambi-uic-6.3.5.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -955,7 +974,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.4.jar:qtjambi-uic-6.3.4.jar
+     -cp qtjambi-6.3.5.jar:qtjambi-uic-6.3.5.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1199,7 +1218,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.4.jar:qtjambi-deployer-6.3.4.jar
+     -p qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1211,7 +1230,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.4.jar:qtjambi-deployer-6.3.4.jar
+     -cp qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1238,7 +1257,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.4.jar:qtjambi-deployer-6.3.4.jar
+     -p qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

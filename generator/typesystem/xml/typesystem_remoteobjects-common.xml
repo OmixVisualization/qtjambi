@@ -47,10 +47,15 @@
   <rejection class="ExternalIoDevice"/>
   <rejection class="QtROServerFactory"/>
   <rejection class="QtROClientFactory"/>
+  <rejection class="QRemoteObjectPendingCallData"/>
   <rejection class="QtRemoteObjects" field-name="dataStreamVersion"/>
   <rejection class="QtRemoteObjects" field-name="protocolVersion"/>
+  <rejection class="QtRemoteObjects" function-name="to_underlying"/>
   <namespace-type name="QRemoteObjectStringLiterals"/>
   <namespace-type name="QtRemoteObjects">
+        <extra-includes>
+            <include file-name="qtjambi_remoteobjects.h" location="local"/>
+        </extra-includes>
         <modify-function signature="operator&lt;&lt;(QDataStream &amp;, QFlags&lt;QItemSelectionModel::SelectionFlag&gt;)" remove="all">
         </modify-function>
         <modify-function signature="operator&lt;&lt;(QDataStream &amp;, Qt::Orientation)" remove="all">
@@ -65,6 +70,39 @@
         </modify-function>
         <modify-function signature="copyStoredProperties(const QMetaObject *, const void *, void *)" remove="all">
         </modify-function>
+		<modify-function signature="copyStoredProperties&lt;T>(const T *, T *)">
+			<instantiation proxy-call="qtjambi_copyStoredProperties">
+				<argument type="_jobject"/>
+				<add-type-parameter name="T"/>
+				<modify-argument index="1">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<modify-argument index="2">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<add-argument index="1" type="java.lang.Class&lt;T>" name="type"/>
+			</instantiation>
+		</modify-function>
+		<modify-function signature="copyStoredProperties&lt;T>(const T *, QDataStream &amp;)">
+			<instantiation proxy-call="qtjambi_copyStoredProperties">
+				<argument type="_jobject"/>
+				<add-type-parameter name="T"/>
+				<modify-argument index="1">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<add-argument index="1" type="java.lang.Class&lt;T>" name="type"/>
+			</instantiation>
+		</modify-function>
+		<modify-function signature="copyStoredProperties&lt;T>(QDataStream &amp;,T *)">
+			<instantiation proxy-call="qtjambi_copyStoredProperties">
+				<argument type="_jobject"/>
+				<add-type-parameter name="T"/>
+				<modify-argument index="2">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<add-argument index="1" type="java.lang.Class&lt;T>" name="type"/>
+			</instantiation>
+		</modify-function>
   </namespace-type>
   <enum-type name="QtRemoteObjects::QRemoteObjectPacketTypeEnum" hidden-metaobject="true"/>
   <enum-type name="QtRemoteObjects::InitialAction" hidden-metaobject="true"/>
@@ -103,46 +141,6 @@
         </modify-function>
   </object-type>
   <object-type name="QAbstractItemModelReplica">
-        <!--modify-function signature="data(const QModelIndex &amp;, int)">
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(const QModelIndex &amp;, const QVariant &amp;, int)">
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="parent(const QModelIndex &amp;) const ">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="index(int, int, const QModelIndex &amp;) const">
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="hasChildren(const QModelIndex &amp;) const">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="rowCount(const QModelIndex &amp;) const">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="columnCount(const QModelIndex &amp;) const">
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="data(const QModelIndex &amp;, int)">
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function-->
   </object-type>
   <object-type name="QRemoteObjectSettingsStore">
   </object-type>
@@ -191,6 +189,22 @@
   <object-type name="QRemoteObjectPendingCallWatcher">
         <interface-polymorphy interface="QRemoteObjectPendingCall" condition="false" />
   </object-type>
+	<global-function signature="qRegisterRemoteObjectsClient&lt;T>(QString)" target-type="QtRemoteObjects">
+		<instantiation proxy-call="qtjambi_qRegisterRemoteObjectsClient">
+			<argument type="char"/>
+			<add-argument type="java.lang.Class&lt;? extends io.qt.remoteobjects.ClientIoDevice>" name="type" until="5.15"/>
+			<add-argument type="java.lang.Class&lt;? extends io.qt.remoteobjects.QtROClientIoDevice>" name="type" since="6.0"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="QT_REMOTEOBJECT()" remove="all"/>
+	<global-function signature="QT_REMOTEOBJECT_IO()" remove="all"/>
+	<global-function signature="QT_REMOTEOBJECT_MODELS()" remove="all"/>
+	<global-function signature="qRegisterRemoteObjectsServer&lt;T>(QString)" target-type="QtRemoteObjects">
+		<instantiation proxy-call="qtjambi_qRegisterRemoteObjectsServer">
+			<argument type="char"/>
+			<add-argument type="java.lang.Class&lt;? extends io.qt.remoteobjects.QConnectionAbstractServer>" name="type"/>
+		</instantiation>
+	</global-function>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAbstractItemModelReplica::QAbstractItemModelReplica', unmatched parameter type 'QAbstractItemModelReplicaImplementation*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectHostBase::enableRemoting', unmatched parameter type 'const SourceApiMap*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QRemoteObjectReplica::d_impl' with unmatched type 'QSharedPointer&lt;QReplicaImplementationInterface&gt;'" />

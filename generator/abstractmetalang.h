@@ -130,7 +130,7 @@ class AbstractMetaAttributes {
 
             Deprecated                  = 0x01000000,
 
-            ConstExpr                   = 0x02000000,
+            ConstExpr                   = 0x04000000,
 
             Comment                     = 0x00800000,
 
@@ -233,7 +233,8 @@ class AbstractMetaType {
             ThreadPattern,
             TemplateArgumentPattern,
             RValuePattern,
-            NullptrPattern
+            NullptrPattern,
+            AutoPattern
         };
 
         AbstractMetaType() :
@@ -492,13 +493,16 @@ class AbstractMetaVariable {
 
 class AbstractMetaTemplateParameter : public AbstractMetaVariable {
 public:
-    AbstractMetaTemplateParameter(){}
+    AbstractMetaTemplateParameter():m_implicit(false){}
 
     QString instantiation() const { return m_instantiation; }
     void setInstantiation(const QString &expr) { m_instantiation = expr; }
+    void setImplicit(bool implicit){m_implicit = implicit;}
+    bool isImplicit() const{return m_implicit;}
     AbstractMetaTemplateParameter *copy() const;
 private:
     QString m_instantiation;
+    bool m_implicit;
 };
 
 class AbstractMetaArgument : public AbstractMetaVariable {
@@ -608,7 +612,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_actualMinimumArgumentCount(-1),
                 m_accessedField(nullptr),
                 m_jumptable_id(-1),
-                m_functionReferenceType(AbstractMetaType::NoReference)
+                m_functionReferenceType(AbstractMetaType::NoReference),
+                m_functionTemplate(nullptr)
         {
         }
 
@@ -687,7 +692,14 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 if (arg->type()->isTemplateArgument())
                     return true;
             }
-            return m_type && m_type->isTemplateArgument();
+            return m_type && (m_type->isTemplateArgument() || m_type->typeUsagePattern()==AbstractMetaType::AutoPattern);
+        }
+        bool hasTemplateTypes() const{
+            for(const AbstractMetaTemplateParameter *arg : m_templateParameters) {
+                if (arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
+                    return true;
+            }
+            return false;
         }
         FunctionType functionType() const { return m_function_type; }
         void setFunctionType(FunctionType type) { m_function_type = type; }
@@ -720,6 +732,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
 
         bool resetObjectAfterUse(int argument_idx) const;
 
+        bool valueAsPointer(int argument_idx) const;
+
         // Returns the ownership rules for the given argument in the given context
         OwnershipRule ownership(const AbstractMetaClass *cls, TypeSystem::Language language, int idx) const;
 
@@ -746,8 +760,9 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         ArgumentRemove argumentRemoved(int) const;
         ThreadAffinity argumentThreadAffinity(int) const;
 
-        QList<const ArgumentModification*> addedArguments() const;
+        QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments() const;
 
+        QString proxyCall() const;
         QString argumentReplaced(int key) const;
         bool needsSuppressUncheckedWarning() const;
         bool needsSuppressRawTypeWarning() const;
@@ -799,6 +814,16 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
             m_functionReferenceType = functionReferenceType;
         }
 
+        AbstractMetaFunction* functionTemplate() const{
+            return m_functionTemplate;
+        }
+
+        void setFunctionTemplate(AbstractMetaFunction* functionTemplate) {
+            m_functionTemplate = functionTemplate;
+        }
+
+        QList<Parameter> addedParameterTypes() const;
+
     private:
         QString m_name;
         QString m_original_name;
@@ -806,6 +831,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         mutable QString m_cached_full_signature;
         mutable QString m_cached_full_signature_no_name;
         mutable QString m_cached_minimal_signature;
+        mutable QString m_cached_minimal_template_signature;
         mutable QString m_cached_modified_name;
 
         FunctionType m_function_type;
@@ -826,6 +852,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         int m_jumptable_id;
         QString m_deprecatedComment;
         AbstractMetaType::ReferenceType m_functionReferenceType;
+        AbstractMetaFunction* m_functionTemplate;
 };
 
 class AbstractMetaEnum;

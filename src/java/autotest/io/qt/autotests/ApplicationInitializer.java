@@ -132,9 +132,9 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	
 	        QCoreApplication app = QCoreApplication.instance();
 	        try {
-	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  app="+app);
+	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  app={0}", app);
 	        } catch(QNoNativeResourcesException e) {
-	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  io.qt.QNoNativeResourcesException: app="+e.getMessage());
+	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  io.qt.QNoNativeResourcesException: app={0}", e.getMessage());
 	        }
 	
 	        System.err.flush();
@@ -327,7 +327,6 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"--application-name="+applicationName,
 	        			"--dir="+targetDir.getAbsolutePath(),
 	        			"--class-path="+classPath,
-	        			"--ico=C:\\",
 	        			"--main-class=io.qt.autotests."+applicationName,
 	        			"--jvm-path="+System.getProperty("java.home"),
 	        			"--executable="+new File(deploymentDir, "QtJambiLauncher"+executable).getAbsolutePath(),
@@ -356,7 +355,6 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"--dir="+targetDir.getAbsolutePath(),
 	        			"--class-path="+classPath,
 	        			"--module-path="+modulePath,
-	        			"--ico=C:\\",
 	        			"--main-class=io.qt.autotests."+applicationName,
 	        			"--jvm-path="+System.getProperty("java.home"),
 	        			"--executable="+new File(deploymentDir, "QtJambiLauncher"+executable).getAbsolutePath(),
@@ -370,7 +368,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"-Dio.qt.verbose-loading="+System.getProperty("io.qt.verbose-loading", "false")
 	            	});
 	    	}
-	    	File testFile = new File(targetDir, applicationName+"touch.test");
+	    	File testFile = new File(targetDir, applicationName+".touch.test");
 	    	testFile.delete();
 	    	Assert.assertTrue(!testFile.exists());
 	    	UUID uuid = UUID.randomUUID();
@@ -416,6 +414,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	    		processEnvironment.insert("LD_LIBRARY_PATH", qtBinariesPath);
 	    	}
 	    	process.setProcessEnvironment(processEnvironment);
+	    	processEnvironment = null;
 	    	process.start(QIODevice.OpenModeFlag.ReadWrite);
 	    	processName = ""+process.processId();
 			jambiDeploymentDir = new File(tmpDir, "QtJambi" + version + "_" + System.getProperty("user.name") + "_" + processName);
@@ -425,7 +424,10 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 			}
 			if(process.state()==QProcess.ProcessState.Running) {
 				try{
-					process.terminate();
+	    			process.write("quit".getBytes());
+	    			process.closeWriteChannel();
+	    			if(!process.waitForFinished(500) || process.state()==QProcess.ProcessState.Running)
+	    				process.terminate();
 				}catch(Throwable t) {}
 			}
 	    	Assert.assertTrue("Test file does not exist, i.e. standalone program did not run. Process returned: "+process.exitCode(), testFile.exists());
@@ -435,7 +437,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     		if(process.state()==QProcess.ProcessState.Running) {
     			process.write("quit".getBytes());
     			process.closeWriteChannel();
-    			if(process.state()==QProcess.ProcessState.Running) {
+    			if(!process.waitForFinished(500) || process.state()==QProcess.ProcessState.Running) {
     				process.kill();
     			}
     		}
@@ -456,6 +458,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					System.out.println("##### "+applicationName+".out.log begin #####");
 					System.out.println(content);
 					System.out.println("###### "+applicationName+".out.log end ######");
+					System.out.flush();
 				}
 			} catch (Throwable e) {}
 			try {
@@ -464,6 +467,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					System.err.println("##### "+applicationName+".err.log begin #####");
 					System.err.println(content);
 					System.err.println("###### "+applicationName+".err.log end ######");
+					System.err.flush();
 				}
 			} catch (Throwable e) {}
 			Preferences preferences = Preferences.userNodeForPackage(io.qt.internal.QtJambiInternal.class);

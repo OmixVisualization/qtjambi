@@ -153,7 +153,7 @@ void * QtJambiShell::qt_metacast(const char *className, bool* ok)
                 if (jobject java_object = link->getJavaObjectLocalRef(env)) {
                     QString name = qtjambi_object_class_name(env, java_object);
                     if(name==className
-                            || QString(name).replace(".", "::")==className
+                            || QString(name).replace(".", "::").replace("$", "::")==className
                             || QString(name).replace(".", "/")==className)  // string compare
                         rv = link->pointer();  // reuse the Shell
                 }

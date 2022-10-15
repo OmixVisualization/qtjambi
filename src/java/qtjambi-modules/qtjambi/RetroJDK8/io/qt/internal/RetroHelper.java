@@ -30,10 +30,8 @@
 package io.qt.internal;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Constructor;
-import java.lang.management.ManagementFactory;
+import java.lang.reflect.*;
+import java.lang.management.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.Optional;
@@ -41,6 +39,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.io.File;
 
 final class RetroHelper {
     private RetroHelper() {throw new RuntimeException();}
@@ -61,8 +60,27 @@ final class RetroHelper {
     private static IntFunction<io.qt.InternalAccess.CallerContext> classAccessChecker;
     private static Supplier<Class<?>> callerClassProvider;
     private static MethodHandle getAnnotatedOwnerTypeHandle;
+	private static final String processName;
     
     static {
+		
+		String pid = "";
+		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+		try {
+			Field jvm = runtimeMXBean.getClass().getDeclaredField("jvm");
+			jvm.setAccessible(true);
+			Object management = jvm.get(runtimeMXBean);
+			Method method = management.getClass().getDeclaredMethod("getProcessId");
+			method.setAccessible(true);
+			pid = ""+method.invoke(management);
+		} catch (Throwable e) {
+			pid = runtimeMXBean.getName();
+			int index = pid.indexOf('@');
+			if(index>0)
+				pid = pid.substring(0, index);
+		}
+        processName = pid;
+		
         MethodHandle _getAnnotatedOwnerTypeHandle = null;
         try {
             Method getAnnotatedOwnerType = AnnotatedType.class.getMethod("getAnnotatedOwnerType");
@@ -178,11 +196,7 @@ final class RetroHelper {
     }
     
     static String processName() {
-        String pid = ManagementFactory.getRuntimeMXBean().getName();
-        int index = pid.indexOf('@');
-        if(index>0)
-            pid = pid.substring(0, index);
-        return pid;
+        return processName;
     }
     
     static void onExit(Runnable runnable) {
@@ -224,4 +238,28 @@ final class RetroHelper {
 		} catch (Throwable e) {}
 		return null;
     }
+	
+	static boolean isProcessAlive(String pid) {
+		switch (NativeLibraryManager.operatingSystem) {
+		case Linux:
+			return new File("/proc/"+pid+"/exe").exists();
+		case MacOSX:
+			try {
+				Process process = Runtime.getRuntime().exec(new String[]{"ps", "-p", pid});
+				return process.waitFor()==0;
+			} catch (Throwable e) {
+			}
+			break;
+		case Windows:
+			try {
+				Process process = Runtime.getRuntime().exec(new String[]{"tasklist", "/FI", "PID eq "+pid});
+				return process.waitFor()==0;
+			} catch (Throwable e) {
+			}
+			break;
+		default:
+			break;
+		}
+		return true; //...because unknown
+	}
 }

@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtNfc" description="Provides access to Near-Field communication (NFC) hardware.">
+    <rejection class="RequestIdPrivate"/>
     <enum-type name="QNearFieldShareManager::ShareError" until="5.*"/>
     <enum-type name="QNearFieldShareManager::ShareMode" flags="QNearFieldShareManager::ShareModes" until="5.*"/>
     <object-type name="QNearFieldShareManager" until="5.*">
@@ -80,7 +81,7 @@
     </object-type>
     <value-type name="QNdefFilter">
         <modify-function signature="operator=(const QNdefFilter &amp;)" remove="all"/>
-        <modify-function signature="appendRecord(unsigned int, unsigned int)" remove="all"/>
+        <modify-function signature="appendRecord&lt;T>(unsigned int, unsigned int)" remove="all"/>
     </value-type>
     <value-type name="QNdefFilter::Record">
     </value-type>
@@ -102,7 +103,7 @@
     <enum-type name="QNdefRecord::TypeNameFormat"/>
     <value-type name="QNdefRecord" polymorphic-base="yes" polymorphic-id-expression="%1->isRecordType%lt;QNdefRecord>()">
         <modify-function signature="operator=(const QNdefRecord &amp;)" remove="all"/>
-        <modify-function signature="isRecordType() const" remove="all"/>
+        <modify-function signature="isRecordType&lt;T>() const" remove="all"/>
         <modify-function signature="setPayload(const QByteArray &amp;)" access="non-final"/>
     </value-type>
     <enum-type name="QQmlNdefRecord::TypeNameFormat" until="5.*"/>

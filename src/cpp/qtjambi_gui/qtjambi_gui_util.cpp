@@ -25,109 +25,48 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 #include <qtjambi/qtjambi_cast.h>
 
 // QOpenGLContext::versionFunctions<T>() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QOpenGLContext_versionFunctions)
-(JNIEnv *__jni_env,
- jobject _this,
- jclass type)
-{
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        const QOpenGLContext *__qt_this = qtjambi_to_object<QOpenGLContext>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QString className = qtjambi_class_name(__jni_env, type);
-        if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
+QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_env, QtJambiNativeID _this, jclass type){
+    const QOpenGLContext *__qt_this = qtjambi_object_from_nativeId<QOpenGLContext>(_this);
+    qtjambi_check_resource(__jni_env, __qt_this);
+    QString className = qtjambi_class_name(__jni_env, type);
+    if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
 #if defined(QT_OPENGL_ES_2)
-            _result = qtjambi_cast<jobject>(__jni_env, __qt_this->versionFunctions<QOpenGLFunctions_ES2>());
+        return __qt_this->versionFunctions<QOpenGLFunctions_ES2>();
 #else
-        }else if(className.startsWith("io.qt.gui.QOpenGLFunctions_")){
-            className = className.mid(27);
-            int idx = className.indexOf('_');
-            if(idx>0){
-                bool ok = false;
-                int majorVersion = className.left(idx).toInt(&ok);
+    }else if(className.startsWith("io.qt.gui.QOpenGLFunctions_")){
+        className = className.mid(27);
+        int idx = className.indexOf('_');
+        if(idx>0){
+            bool ok = false;
+            int majorVersion = className.left(idx).toInt(&ok);
+            if(ok){
+                className = className.mid(idx+1);
+                QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
+                if(className.endsWith("_Core")){
+                    className = className.chopped(5);
+                    profile = QSurfaceFormat::CoreProfile;
+                }else if(className.endsWith("_Compatibility")){
+                    className = className.chopped(14);
+                    profile = QSurfaceFormat::CompatibilityProfile;
+                }
+                ok = false;
+                int minorVersion = className.toInt(&ok);
                 if(ok){
-                    className = className.mid(idx+1);
-                    QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
-                    if(className.endsWith("_Core")){
-                        className = className.chopped(5);
-                        profile = QSurfaceFormat::CoreProfile;
-                    }else if(className.endsWith("_Compatibility")){
-                        className = className.chopped(14);
-                        profile = QSurfaceFormat::CompatibilityProfile;
-                    }
-                    ok = false;
-                    int minorVersion = className.toInt(&ok);
-                    if(ok){
-                        QOpenGLVersionProfile version;
-                        version.setProfile(profile);
-                        version.setVersion(majorVersion, minorVersion);
-                        _result = qtjambi_cast<jobject>(__jni_env, __qt_this->versionFunctions(version));
-                    }
+                    QOpenGLVersionProfile version;
+                    version.setProfile(profile);
+                    version.setVersion(majorVersion, minorVersion);
+                    return __qt_this->versionFunctions(version);
                 }
             }
-#endif
         }
-        //if(!__jni_env->IsInstanceOf(__java_return_value, type))
-        //    __java_return_value = nullptr;
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
+#endif
+    }
+    return nullptr;
 }
 #else
 #include <QtGui/QPointerEvent>
 #include <QtGui/QAction>
 #include <qtjambi/qtjambi_cast.h>
-
-// QAction::setMenu(QMenu * menu)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_setMenuObject)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject arg__1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QAction::setMenu(QMenu * menu)")
-    QTJAMBI_TRY{
-#if QT_CONFIG(action)
-        QAction *__qt_this = qtjambi_to_QObject<QAction>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        static bool iswidgetApplication = QGuiApplication::instance()->inherits("QApplication");
-        if(iswidgetApplication && arg__1 && !Java::QtWidgets::QMenu::isInstanceOf(__jni_env, arg__1)){
-            JavaException::raiseIllegalArgumentException(__jni_env, "QAction.setMenu(menu) expects a QMenu in widget applications." QTJAMBI_STACKTRACEINFO );
-        }
-        QObject* __qt_arg__1 = qtjambi_cast<QObject*>(arg__1);
-        __qt_this->setMenu(__qt_arg__1);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(arg__1)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(action)
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-// QAction::menu() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_menuObject)
-(JNIEnv *__jni_env,
- jobject _this)
-{
-    jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QAction::menu() const")
-    QTJAMBI_TRY{
-#if QT_CONFIG(action)
-        QAction *__qt_this = qtjambi_to_QObject<QAction>(__jni_env, _this);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QObject* __qt_return_value = __qt_this->menu<QObject*>();
-        _result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-#else
-        Q_UNUSED(__this_nativeId)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(action)
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPointerEvent_setPoint)
 (JNIEnv *__jni_env,

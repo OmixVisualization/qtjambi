@@ -2446,14 +2446,6 @@ void PointerToQObjectLink::init(JNIEnv* env){
         QObject* object = qobject();
         Q_ASSERT(object);
         const QMetaObject* metaObject = object->metaObject();
-        /*
-        //if we use dynamic meta object:
-        if(QMetaObjectPrivate::get(metaObject)->flags & DynamicMetaObject){
-            QObjectPrivate* p = QObjectPrivate::get(object);
-            if(p && !p->metaObject)
-                p->metaObject = const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(metaObject));
-        }
-        */
         {
             bool _isValueOwner = isValueOwner(metaObject);
             QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -3181,9 +3173,12 @@ jobject PointerToQObjectLink::getExtraSignal(JNIEnv*, const QMetaMethod&) const{
 }
 
 PointerToPendingQObjectLink::PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException),
-      m_metaObject(metaObject)
+    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException)
 {
+    m_flags.setFlag(Flag::IsPendingValueOwner, isValueOwner(metaObject));
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        m_qtTypeName = metaObject->className();
+#endif
 }
 
 void PointerToPendingQObjectLink::init(JNIEnv* env){
@@ -3191,15 +3186,11 @@ void PointerToPendingQObjectLink::init(JNIEnv* env){
         QtJambiLink::init(env);
         QObject* object = qobject();
         Q_ASSERT(object);
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = m_metaObject->className();
-#endif
         {
-            bool _isValueOwner = isValueOwner(m_metaObject);
             QWriteLocker locker(QtJambiLinkUserData::lock());
             Q_UNUSED(locker)
             QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer()));
-            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
+            if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
                 QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
             }
         }
@@ -3241,9 +3232,12 @@ jobject PointerToPendingQObjectLink::getExtraSignal(JNIEnv * env, const QMetaMet
 }
 
 PointerToPendingQObjectInterfaceLink::PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces, const QMetaObject* metaObject, QObject *ptr, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException)
-    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException),
-      m_metaObject(metaObject)
+    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsets, interfaces, inheritedInterfaces, metaObject, ptr, created_by_java, isDeclarativeCall, is_shell, ocurredException)
 {
+    m_flags.setFlag(Flag::IsPendingValueOwner, isValueOwner(metaObject));
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        m_qtTypeName = metaObject->className();
+#endif
 }
 
 void PointerToPendingQObjectInterfaceLink::init(JNIEnv* env){
@@ -3251,15 +3245,11 @@ void PointerToPendingQObjectInterfaceLink::init(JNIEnv* env){
         QtJambiLink::init(env);
         QObject* object = qobject();
         Q_ASSERT(object);
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = m_metaObject->className();
-#endif
         {
-            bool _isValueOwner = isValueOwner(m_metaObject);
             QWriteLocker locker(QtJambiLinkUserData::lock());
             Q_UNUSED(locker)
             QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(getWeakPointer()));
-            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
+            if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
                 QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
             }
         }
@@ -3457,8 +3447,7 @@ jobject PointerContainerWithExtraSignals::getExtraSignal(JNIEnv * env, const QSh
 
 PointerContainerWithPendingExtraSignals::PointerContainerWithPendingExtraSignals(JNIEnv* env, jobject jobj, const QMetaObject* metaObject, const QSharedPointer<QtJambiLink>& link, void* ptr_shared_pointer, bool isShell, PointerDeleter shared_pointer_deleter, PointerQObjectGetterFunction pointerGetter, JavaException& ocurredException)
     : PointerContainer(env, jobj, metaObject, link, ptr_shared_pointer, isShell, shared_pointer_deleter, pointerGetter, ocurredException),
-      m_extraSignals(),
-      m_metaObject(metaObject)
+      m_extraSignals()
 {
 
 }

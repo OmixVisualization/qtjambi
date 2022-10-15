@@ -44,10 +44,10 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtOpenGL" description="Classes that make it easy to use OpenGL in Qt applications."> 
-    <required-library name="libGLESv2" mode="optional"/>
-    <required-library name="libEGL" mode="optional"/>
-    <required-library name="opengl32sw" mode="optional"/>
-    <required-library name="d3dcompiler_47" mode="optional"/>
+    <required-library name="libGLESv2" mode="optional" platforms="windows"/>
+    <required-library name="libEGL" mode="optional" platforms="windows"/>
+    <required-library name="opengl32sw" mode="optional" platforms="windows"/>
+    <required-library name="d3dcompiler_47" mode="optional" platforms="windows"/>
     <rejection class="QOpenGLFunctions_*Backend"/>
     <rejection class="PFNGL*"/>
     <rejection class="GLDEBUGPROCAMD"/>
@@ -123,7 +123,19 @@
     <object-type name="QOpenGLFramebufferObject">
     </object-type>
     <object-type name="QOpenGLVersionFunctionsFactory">
-        <modify-function signature="get(QOpenGLContext *)" remove="all"/>
+		<inject-code class="native" position="beginning">
+		QAbstractOpenGLFunctions* qtjambi_QOpenGLVersionFunctionsFactory_get(JNIEnv *__jni_env, jclass type, QOpenGLContext* context);
+		</inject-code>
+        <modify-function signature="get&lt;TYPE>(QOpenGLContext *)">
+			<instantiation proxy-call="qtjambi_QOpenGLVersionFunctionsFactory_get">
+				<argument type="QAbstractOpenGLFunctions"/>
+				<modify-argument index="0">
+					<replace-type modified-type="T" modified-jni-type="jobject"/>
+				</modify-argument>
+				<add-type-parameter name="T" extends="io.qt.opengl.QAbstractOpenGLFunctions"/>
+				<add-argument index="1" type="java.lang.Class&lt;T>" name="type"/>
+			</instantiation>
+        </modify-function>
         <modify-function signature="get(const QOpenGLVersionProfile &amp;, QOpenGLContext *)">
             <modify-argument index="0">
                 <define-ownership class="shell" owner="cplusplus"/>

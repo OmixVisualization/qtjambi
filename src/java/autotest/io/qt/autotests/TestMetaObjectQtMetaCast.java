@@ -84,7 +84,7 @@ public class TestMetaObjectQtMetaCast extends ApplicationInitializer {
         MyLauncher myLauncher = new MyLauncher();  // the target of our inspection
 
         s = myLauncher.metaObject().className();
-        assertEquals(thisClass + "$MyLauncher", s);
+        assertEquals(thisClass + "::MyLauncher", s);
 
         s = MetaObjectQtMetaCast.superClassName(myLauncher, 0);
         assertEquals("QWidget", s);
@@ -110,7 +110,7 @@ public class TestMetaObjectQtMetaCast extends ApplicationInitializer {
         l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, "QPushButton");
         assertFalse(isMetacastSuccessful(l));  // NOT
 
-        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
+        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "::MyLauncher");
         assertTrue(isMetacastSuccessful(l));
     }
 
@@ -126,9 +126,9 @@ public class TestMetaObjectQtMetaCast extends ApplicationInitializer {
 
         // This is the bug being reported
         String thisClass = TestMetaObjectQtMetaCast.class.getName().replace(".", "::");
-        assertTrue(myLauncher.inherits(thisClass + "$MyLauncher"));
+        assertTrue(myLauncher.inherits(thisClass + "::MyLauncher"));
 
-        long l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
+        long l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "::MyLauncher");
         assertTrue(isMetacastSuccessful(l));
     }
 

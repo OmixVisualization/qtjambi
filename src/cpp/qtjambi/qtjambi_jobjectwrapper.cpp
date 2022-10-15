@@ -1482,4 +1482,3 @@ void jobjectwrapper_load(QDataStream &stream, void *_jObjectWrapper)
         }
     }
 }
-

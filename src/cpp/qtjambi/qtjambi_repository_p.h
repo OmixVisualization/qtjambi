@@ -61,8 +61,6 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(value)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(metaType))
 
-        QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QObject)
-
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QByteArray)
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMessageHandler,
@@ -177,8 +175,6 @@ namespace Java{
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant,
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(userType)
-                                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value)
                                          )
     }
 
@@ -197,6 +193,7 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(cast)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredMethods)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredMethod)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredField)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getEnumConstants)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getClassLoader)
@@ -210,9 +207,14 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPrimitive)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isSynthetic)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isInterface)
-                     public: static inline jstring tryGetName(JNIEnv* env,jobject object){
+                     public: static inline jstring tryGetName(JNIEnv* env,jclass object){
                          auto _this = __qt_get_this(env);
                          jobject result = env->CallObjectMethod(object,_this.__getName);
+                         return jstring(result);
+                     }
+                     public: static inline jobject tryGetDeclaredMethod(JNIEnv* env,jclass object,jstring name,jobjectArray parameters){
+                         auto _this = __qt_get_this(env);
+                         jobject result = env->CallObjectMethod(object,_this.__getDeclaredMethod, name, parameters);
                          return jstring(result);
                      }
                 )
@@ -226,29 +228,9 @@ namespace Java{
                                          }
                                         )
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(Optional,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(empty)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPresent)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofNullable))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(Cloneable,)
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(OptionalInt,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(empty)
-                      QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getAsInt)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPresent)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(of))
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(OptionalLong,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(empty)
-                      QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getAsLong)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPresent)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(of))
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(OptionalDouble,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(empty)
-                      QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(getAsDouble)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPresent)
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(of))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(Serializable,)
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(System,
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(gc)
@@ -419,32 +401,6 @@ namespace Java{
                       }
         )
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(IllegalAccessException,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(MissingResourceException,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(NumberFormatException, QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(IllegalArgumentException, QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(IllegalStateException, QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(IllegalAccessError,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(UnsupportedOperationException,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassCastException,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(RuntimeException,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(Error,
-                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Arrays,
                       QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECTARRAY_METHOD(copyOf))
 
@@ -487,7 +443,9 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(objectToString)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(terminateCleanupThread)
+            QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(initializePackage)
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(internalAccess)
+            QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(analyzeExpectedTemplateName)
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeLibraryManager,

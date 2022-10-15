@@ -138,6 +138,10 @@ QString CppGenerator::translateType(const AbstractMetaType *java_type, Option op
     }
 }
 
+void writeTypeInfo(QTextStream &s, const AbstractMetaType *type){
+    CppGenerator::writeTypeInfo(s, type, CppGenerator::NoOption);
+}
+
 void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, Option options) {
     if(type->typeEntry()->isComplex()){
         const ComplexTypeEntry *ctype = reinterpret_cast<const ComplexTypeEntry *>(type->typeEntry());
@@ -164,12 +168,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
             originalTypeDescription = QMetaObject::normalizedSignature(originalTypeDescription.toLatin1().constData());
             originalTypeDescription = fixNormalizedSignatureForQt(originalTypeDescription);
         }
-        if (originalTypeDescription.contains("qtjambireal")){ // map generator type to qreal type
-            s << originalTypeDescription.replace("qtjambireal", "qreal");
-            if (!(options & SkipName))
-                s << ' ';
-            return;
-        }else if (originalTypeDescription.contains("qreal")){ // map generator type to qreal type
+        if (originalTypeDescription.contains("qreal")){ // map generator type to qreal type
             s << originalTypeDescription;
             if (!(options & SkipName))
                 s << ' ';
@@ -313,6 +312,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
         s << ' ';
 }
 
+QByteArray jniName(const QString &name);
 
 void CppGenerator::writeFunctionArguments(QTextStream &s,
         const AbstractMetaArgumentList &arguments,
@@ -330,46 +330,8 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
         AbstractMetaArgument *arg = arguments.at(i);
         if(option & JNIProxyFunction){
             QString typeReplaced = java_function->typeReplaced(arg->argumentIndex() + 1);
-            if(typeReplaced=="int")
-                s << "jint";
-            else if(typeReplaced=="long")
-                s << "jlong";
-            else if(typeReplaced=="short")
-                s << "jshort";
-            else if(typeReplaced=="byte")
-                s << "jbyte";
-            else if(typeReplaced=="boolean")
-                s << "jboolean";
-            else if(typeReplaced=="char")
-                s << "jchar";
-            else if(typeReplaced=="float")
-                s << "jfloat";
-            else if(typeReplaced=="double")
-                s << "jdouble";
-            else if(typeReplaced=="int[]")
-                s << "jintArray";
-            else if(typeReplaced=="long[]")
-                s << "jlongArray";
-            else if(typeReplaced=="short[]")
-                s << "jshortArray";
-            else if(typeReplaced=="byte[]")
-                s << "jbyteArray";
-            else if(typeReplaced=="boolean[]")
-                s << "jbooleanArray";
-            else if(typeReplaced=="char[]")
-                s << "jcharArray";
-            else if(typeReplaced=="float[]")
-                s << "jfloatArray";
-            else if(typeReplaced=="double[]")
-                s << "jdoubleArray";
-            else if(typeReplaced.endsWith("[]"))
-                s << "jobjectArray";
-            else if(typeReplaced.startsWith("java.lang.Class"))
-                s << "jclass";
-            else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
-                s << "jstring";
-            else if(!typeReplaced.isEmpty())
-                s << "jobject";
+            if(!typeReplaced.isEmpty())
+                s << jniName(typeReplaced);
             else{
                 if(java_function->argumentTypeBuffer(arg->argumentIndex() + 1)){
                     s << "jobject";
@@ -459,7 +421,7 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 // ### remove the implementor
     AbstractMetaType *function_type = java_function->type();
 
-    if(java_function->hasTemplateArgumentTypes()){
+    if(java_function->hasTemplateTypes()){
         s << "template<";
         for(AbstractMetaTemplateParameter * templateParameter : java_function->templateParameters()){
             if(templateParameter->type()){
@@ -476,48 +438,8 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
     if ((option & SkipReturnType) == 0) {
         if((option & JNIProxyFunction)){
             QString typeReplaced = java_function->typeReplaced(0);
-            if(typeReplaced=="void")
-                s << "void ";
-            else if(typeReplaced.startsWith("java.lang.Class"))
-                s << "jclass ";
-            else if(typeReplaced=="java.lang.String" || typeReplaced=="String")
-                s << "jstring ";
-            else if(typeReplaced=="int")
-                s << "jint ";
-            else if(typeReplaced=="long")
-                s << "jlong ";
-            else if(typeReplaced=="short")
-                s << "jshort ";
-            else if(typeReplaced=="byte")
-                s << "jbyte ";
-            else if(typeReplaced=="boolean")
-                s << "jboolean ";
-            else if(typeReplaced=="char")
-                s << "jchar ";
-            else if(typeReplaced=="float")
-                s << "jfloat ";
-            else if(typeReplaced=="double")
-                s << "jdouble ";
-            else if(typeReplaced=="int[]")
-                s << "jintArray ";
-            else if(typeReplaced=="long[]")
-                s << "jlongArray ";
-            else if(typeReplaced=="short[]")
-                s << "jshortArray ";
-            else if(typeReplaced=="byte[]")
-                s << "jbyteArray ";
-            else if(typeReplaced=="boolean[]")
-                s << "jbooleanArray ";
-            else if(typeReplaced=="char[]")
-                s << "jcharArray ";
-            else if(typeReplaced=="float[]")
-                s << "jfloatArray ";
-            else if(typeReplaced=="double[]")
-                s << "jdoubleArray ";
-            else if(typeReplaced.endsWith("[]"))
-                s << "jobjectArray ";
-            else if(!typeReplaced.isEmpty())
-                s << "jobject ";
+            if(!typeReplaced.isEmpty())
+                s << jniName(typeReplaced) << " ";
             else if (function_type) {
                 s << translateType(function_type, Option(Option(option & ~JNIProxyFunction) & ~UseNativeIds));
                 s << " ";
@@ -577,6 +499,15 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
         }else{
             if(!java_function->isStatic())
                 s << ", jobject __this";
+        }
+        const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = java_function->addedArguments();
+        for(const ArgumentModification& argumentMod : addedArguments.first.values()){
+            QString jniType = argumentMod.modified_jni_type.isEmpty() ? jniName(argumentMod.modified_type) : argumentMod.modified_jni_type;
+            s << ", " << jniType << " " << argumentMod.modified_name;
+        }
+        for(const ArgumentModification& argumentMod : addedArguments.second){
+            QString jniType = argumentMod.modified_jni_type.isEmpty() ? jniName(argumentMod.modified_type) : argumentMod.modified_jni_type;
+            s << ", " << jniType << " " << argumentMod.modified_name;
         }
         needComma = true;
     }
@@ -752,7 +683,26 @@ QString CppGenerator::jni_signature(const AbstractMetaFunction *function, JNISig
     if(function->isConstructor()){
         format = JNISignatureFormat(format | NoModification);
     }
+    QMap<QString,QString> parameterTypesByName;
+    for(const Parameter& parameterType : function->addedParameterTypes()){
+        parameterTypesByName[parameterType.name] = parameterType.extends.split("&").first().trimmed();
+    }
+    const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments = function->addedArguments();
     const AbstractMetaArgumentList& arguments = function->arguments();
+    int argumentCounter = 1;
+    while(addedArguments.first.contains(argumentCounter)){
+        const ArgumentModification& mod = addedArguments.first[argumentCounter];
+        if(parameterTypesByName.contains(mod.modified_type)){
+            QString t = parameterTypesByName[mod.modified_type];
+            if(t.isEmpty())
+                t = "java.lang.Object";
+            returned += jni_signature(t, format);
+        }else if(mod.modified_jni_type.isEmpty())
+            returned += jni_signature(mod.modified_type, format);
+        else
+            returned += jni_signature(mod.modified_jni_type, format);
+        ++argumentCounter;
+    }
     for(const AbstractMetaArgument *argument : arguments) {
         if (function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_No) {
             if(function->argumentTypeArray(argument->argumentIndex() + 1)){
@@ -804,19 +754,45 @@ QString CppGenerator::jni_signature(const AbstractMetaFunction *function, JNISig
                 QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &jniType);
                 if (modified_type.isEmpty())
                     returned += jni_signature(argument->type(), format);
-                else if(jniType.isEmpty())
-                    returned += jni_signature(modified_type, format);
-                else
-                    returned += jni_signature(jniType, format);
+                else{
+                    if(parameterTypesByName.contains(modified_type)){
+                        QString t = parameterTypesByName[modified_type];
+                        if(t.isEmpty())
+                            t = "java.lang.Object";
+                        returned += jni_signature(t, format);
+                    }else if(jniType.isEmpty())
+                        returned += jni_signature(modified_type, format);
+                    else
+                        returned += jni_signature(jniType, format);
+                }
             }
+        }
+        ++argumentCounter;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& mod = addedArguments.first[argumentCounter];
+            if(parameterTypesByName.contains(mod.modified_type)){
+                QString t = parameterTypesByName[mod.modified_type];
+                if(t.isEmpty())
+                    t = "java.lang.Object";
+                returned += jni_signature(t, format);
+            }else if(mod.modified_jni_type.isEmpty())
+                returned += jni_signature(mod.modified_type, format);
+            else
+                returned += jni_signature(mod.modified_jni_type, format);
+            ++argumentCounter;
         }
     }
 
-    for(const ArgumentModification *mod : function->addedArguments()){
-        if(mod->modified_jni_type.isEmpty())
-            returned += jni_signature(mod->modified_type, format);
+    for(const ArgumentModification &mod : addedArguments.second){
+        if(parameterTypesByName.contains(mod.modified_type)){
+            QString t = parameterTypesByName[mod.modified_type];
+            if(t.isEmpty())
+                t = "java.lang.Object";
+            returned += jni_signature(t, format);
+        }else if(mod.modified_jni_type.isEmpty())
+            returned += jni_signature(mod.modified_type, format);
         else
-            returned += jni_signature(mod->modified_jni_type, format);
+            returned += jni_signature(mod.modified_jni_type, format);
     }
 
     returned += ")";
@@ -828,11 +804,17 @@ QString CppGenerator::jni_signature(const AbstractMetaFunction *function, JNISig
             returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType));
         else
             returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType | NoQContainers));
-    }else if(jniType.isEmpty())
-        returned += jni_signature(modified_type, JNISignatureFormat(format | ReturnType));
-    else
-        returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
-
+    }else{
+        if(parameterTypesByName.contains(modified_type)){
+            QString t = parameterTypesByName[modified_type];
+            if(t.isEmpty())
+                t = "java.lang.Object";
+            returned += jni_signature(t, JNISignatureFormat(format | ReturnType));
+        }else if(jniType.isEmpty())
+            returned += jni_signature(modified_type, JNISignatureFormat(format | ReturnType));
+        else
+            returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
+    }
     return returned;
 }
 

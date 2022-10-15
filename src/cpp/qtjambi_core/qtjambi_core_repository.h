@@ -8,6 +8,21 @@
 #include <QtCore/qpropertyprivate.h>
 #endif
 
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options);
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, Qt::FindChildOptions options);
+#endif
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegularExpression& regexp, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegularExpression& regexp, Qt::FindChildOptions options);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegExp& regexp, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegExp& regexp, Qt::FindChildOptions options);
+#endif
+
 namespace Java{
 namespace QtCore
 {
@@ -241,9 +256,6 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,)
 }
 
 namespace Runtime{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(ArithmeticException,
-                  QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
-
     QTJAMBI_REPOSITORY_DECLARE_CLASS(BigInteger,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(abs)
@@ -253,10 +265,6 @@ namespace Runtime{
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toByteArray))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Class,
                   QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName))
-    namespace Private{
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(Long,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(hashCode))
-    }
 }
 }
 

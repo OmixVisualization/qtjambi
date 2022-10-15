@@ -33,27 +33,22 @@ import org.junit.Test;
 
 import io.qt.InternalAccess;
 import io.qt.autotests.generated.General;
-import io.qt.internal.QtJambiInternal;
 
 public class TestRetroHelper extends ApplicationInitializer {
 	
-	private void testCallerClassImpl() {
+	private void testImpl() {
 		Assert.assertEquals(TestRetroHelper.class, General.internalAccess.callerClassProvider().get());
-	}
-	
-    @Test
-    public void testCallerClass() {
-    	testCallerClassImpl();
-    }
-    
-    @Test
-    public void testInvocationInfo() {
     	InternalAccess.CallerContext info = General.internalAccess.callerContextProvider().get();
     	Assert.assertTrue(info!=null);
     	Assert.assertEquals(TestRetroHelper.class, info.declaringClass);
-    	Assert.assertEquals("testInvocationInfo", info.methodName);
+    	Assert.assertEquals("test", info.methodName);
+	}
+	
+    @Test
+    public void test() {
+    	testImpl();
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestRetroHelper.class.getName());
     }

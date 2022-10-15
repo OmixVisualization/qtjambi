@@ -6,6 +6,12 @@
 #include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_cast.h>
 
+namespace QTest{
+void addColumn(const char* name, int id){
+    QTest::addColumnInternal(id, name);
+}
+}
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtGui/QTouchDevice>
 
@@ -16,6 +22,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test
  jobject device1,
  jboolean autoCommit2,
  jboolean isWidget){
+    Q_UNUSED(isWidget)
     struct QTouchEventSequence{
         QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice, bool autoCommit)
             : sequence(QTest::touchEvent(widget, aDevice, autoCommit))
@@ -43,6 +50,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test
  jobject device1,
  jboolean autoCommit2,
  jboolean isWidget){
+    Q_UNUSED(isWidget)
     struct QTouchEventSequence{
         QTouchEventSequence(QWindow *window, QTouchDevice *aDevice, bool autoCommit)
             : sequence(QTest::touchEvent(window, aDevice, autoCommit))

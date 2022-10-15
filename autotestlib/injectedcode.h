@@ -346,13 +346,9 @@ public:
 class ImageIOHandlerSubclass: public QImageIOHandler
 {
 public:
-    bool callRead(QImage *image) {
-        return read(image);
-    }
+    bool callRead(QImage *image);
 
-    bool read(QImage *image) {
-        return image != nullptr ? image->load("classpath:io/qt/autotests/svgcards-example.png") : true;
-    }
+    bool read(QImage *image) override;
 };
 
 #ifndef QTJAMBI_NO_SQL

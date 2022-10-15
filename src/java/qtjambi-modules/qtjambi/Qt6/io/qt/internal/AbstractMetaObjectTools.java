@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.qt.QPropertyDeclarationException;
 import io.qt.QtObject;
 import io.qt.QtPointerType;
 import io.qt.QtPrimitiveType;
@@ -269,18 +270,24 @@ class AbstractMetaObjectTools {
 					if(info.propertyIndex>=0) {
 						QMetaProperty metaProperty = containingObject.metaObject().properties().at(info.propertyIndex);
 						remainingProperties.removeOne(metaProperty);
-            			if(!Modifier.isFinal(info.field.getModifiers()))
-            				throw new RuntimeException("QProperty field "+info.field.getName()+" is not final.");
+            			if(!Modifier.isFinal(info.field.getModifiers())) {
+            				if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
+                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", info.field.getDeclaringClass().getSimpleName(), info.field.getName()));
+                    			throw new QPropertyDeclarationException(String.format("Missing modifier 'final' at property field %1$s.%2$s.", info.field.getDeclaringClass().getSimpleName(), info.field.getName()));
+                    		}
+            			}
 	    				return new QtJambiPropertyInfo(info.field, metaProperty);
 					}else {
 						foundField = info.field;
 					}
 					break;
 				}
+			} catch (QPropertyDeclarationException e) {
+				throw e;
 			} catch (Throwable e) {}
         }
 		if(foundField==null)
-			throw new RuntimeException("Cannot find member field belonging to QProperty instance.");
+			throw new QPropertyDeclarationException("Cannot find member field belonging to QProperty instance.");
 		MetaObjectTools.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(foundField);
 		int t = registerMetaType(
 				pinfo.propertyType, 

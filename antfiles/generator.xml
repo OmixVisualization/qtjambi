@@ -71,8 +71,7 @@
         </sequential>
     </macrodef>
 
-    <target name="generator.xmlmerge-impl"
-        description="Merges the XML files used by the Qt Jambi generator.">
+    <target name="generator.xmlmerge-impl">
         <xmlmerge victim="core"/>
 		<xmlmerge victim="concurrent"/>
         <xmlmerge victim="gui"/>
@@ -144,6 +143,7 @@
 		<xmlmerge victim="activex"/>
 		<xmlmerge victim="ui4"/>
 		<xmlmerge victim="httpserver"/>
+		<xmlmerge victim="spatialaudio"/>
     </target>
 
 </project>

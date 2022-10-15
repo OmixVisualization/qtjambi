@@ -43,6 +43,8 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtBluetooth" description="Provides access to Bluetooth hardware.">
+  <required-library name="QtConcurrent" mode="optional" until="5.*"/>
+  <rejection class="QBluetoothSocketBasePrivate"/>
   <namespace-type name="QBluetooth">
   </namespace-type>
   <enum-type name="QBluetooth::AttAccessConstraint" flags="QBluetooth::AttAccessConstraints"/>

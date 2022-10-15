@@ -49,8 +49,13 @@
 
     <rejection class="*" field-name="d_ptr"/>
     <rejection class="*" field-name="d"/>
+    <rejection class="" function-name="qgraphicsitem_cast"/>
+    <rejection class="" function-name="qstyleoption_cast"/>
 
     <rejection class="QApplication" function-name="nativeInterface" since="6.2.0"/>
+    <rejection class="QFileDialogArgs" />
+    <rejection class="QGraphicsItemPrivate" />
+    <rejection class="QWidgetPrivate" />
     <rejection class="QMacCocoaViewContainer" />
     <rejection class="QMacNativeWidget" />
     <rejection class="QGtkStyle" />
@@ -2607,6 +2612,8 @@
             <include file-name="QIcon" location="global"/>
             <include file-name="QMessageBox" location="global"/>
         </extra-includes>
+        <modify-function signature="hasEditFocus() const" pp-condition="defined(QT_KEYPAD_NAVIGATION)"/>
+        <modify-function signature="setEditFocus(bool)" pp-condition="defined(QT_KEYPAD_NAVIGATION)"/>
         <modify-function signature="setLayoutDirection(Qt::LayoutDirection)" thread-affine="ui"/>
         <modify-function signature="mouseGrabber()" thread-affine="ui"/>
         <modify-function signature="keyboardGrabber()" thread-affine="ui"/>
@@ -3575,13 +3582,17 @@
 
     <object-type name="QApplication">
         <extra-includes>
-        <include file-name="QBasicTimer" location="global"/>
-        <include file-name="QFont" location="global"/>
-        <include file-name="QFontMetrics" location="global"/>
-        <include file-name="QPalette" location="global"/>
-        <include file-name="QIcon" location="global"/>
-        <include file-name="QLocale" location="global"/>
+			<include file-name="QBasicTimer" location="global"/>
+			<include file-name="QFont" location="global"/>
+			<include file-name="QFontMetrics" location="global"/>
+			<include file-name="QPalette" location="global"/>
+			<include file-name="QIcon" location="global"/>
+			<include file-name="QLocale" location="global"/>
         </extra-includes>
+        <modify-function signature="navigationMode()" pp-condition="defined(QT_KEYPAD_NAVIGATION)"/>
+        <modify-function signature="setNavigationMode(Qt::NavigationMode)" pp-condition="defined(QT_KEYPAD_NAVIGATION)"/>
+        <modify-function signature="keypadNavigationEnabled()" pp-condition="defined(QT_KEYPAD_NAVIGATION)" until="5.15"/>
+        <modify-function signature="setKeypadNavigationEnabled(bool)" pp-condition="defined(QT_KEYPAD_NAVIGATION)" until="5.15"/>
         <!--modify-function signature="setInputContext(QInputContext*)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -4066,6 +4077,89 @@
             </inject-code>
         </modify-function>
     </object-type>
+	<namespace-type name="QDrawBorderPixmap" generate="no"/>
+	<namespace-type name="QtDrawUtil"/>
+	<enum-type name="QDrawBorderPixmap::DrawingHint" flags="QDrawBorderPixmap::DrawingHints" java-scope="QtDrawUtil"/>
+	<global-function signature="qDrawBorderPixmap(QPainter*, QRect, QMargins, QPixmap)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qDrawBorderPixmap(QPainter*, QRect, QMargins, QPixmap, QRect, QMargins, QTileRules, QDrawBorderPixmap::DrawingHints)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qDrawPlainRect(QPainter*, QRect, QColor, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="5" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawPlainRect(QPainter*, int, int, int, int, QColor, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="8" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawShadeLine(QPainter*, QPoint, QPoint, QPalette, bool, int, int)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qDrawShadeLine(QPainter*, int, int, int, int, QPalette, bool, int, int)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+	</global-function>
+	<global-function signature="qDrawShadePanel(QPainter*, QRect, QPalette, bool, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="6" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawShadePanel(QPainter*, int, int, int, int, QPalette, bool, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="9" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawShadeRect(QPainter*, QRect, QPalette, bool, int, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="7" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawShadeRect(QPainter*, int, int, int, int, QPalette, bool, int, int, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="10" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawWinButton(QPainter*, QRect, QPalette, bool, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="5" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawWinButton(QPainter*, int, int, int, int, QPalette, bool, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="8" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawWinPanel(QPainter*, QRect, QPalette, bool, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="5" value-as-pointer="yes"/>
+	</global-function>
+	<global-function signature="qDrawWinPanel(QPainter*, int, int, int, int, QPalette, bool, const QBrush*)" target-type="QtDrawUtil">
+		<modify-argument index="1">
+			<no-null-pointer/>
+		</modify-argument>
+		<modify-argument index="8" value-as-pointer="yes"/>
+	</global-function>
 
     <!-- Inefficient hash codes -->
         <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'eventFilter(QObject * receiver, QEvent * event)' in 'QPanGesture'" />

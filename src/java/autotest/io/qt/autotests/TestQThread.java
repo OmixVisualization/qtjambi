@@ -544,7 +544,7 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteChildRunnerThread() {
+	public void testDeleteChildRunnerThread() throws InterruptedException {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
 		{
@@ -571,12 +571,14 @@ public class TestQThread extends ApplicationInitializer {
 		Assert.assertTrue(reference.get()!=null);
 		Assert.assertEquals(parent, reference.get().parent());
 		parent = null;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 10; i++) {
 			ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
 			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 			QCoreApplication.processEvents();
 			ApplicationInitializer.runGC();
+			Thread.yield();
+			Thread.sleep(50);
 			if(reference.get()==null)
 				break;
 		}

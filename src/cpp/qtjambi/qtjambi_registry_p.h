@@ -36,6 +36,9 @@
 #include "qtjambi_containeraccess.h"
 #include "qtjambi_registry.h"
 #include "qtjambi_typeinfo_p.h"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include "qtjambi_jobjectwrapper.h"
+#endif
 #include <typeindex>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -108,6 +111,14 @@ QHashFunctionPtr registeredHashFunction(const std::type_info& typeId);
 const QtJambiTypeInfo* getQTypeInfo(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass, bool isJObjectWrapped = false);
+void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass, bool isJObjectWrapped);
+bool isJObjectWrappedMetaType(const QMetaType& metaType);
+#else
+void registerJavaClassForCustomMetaType(QMetaType metaType, const QByteArray& javaClass, bool isJObjectWrapped = false);
+bool isJObjectWrappedMetaType(QMetaType metaType);
+#endif
 
 #ifdef JOBJECT_REFCOUNT
 #  include <QtCore/QReadWriteLock>
@@ -148,6 +159,49 @@ T hashSum(std::initializer_list<T> list){
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+struct JObjectValueWrapperPrivate;
+
+class JObjectValueWrapper : public JObjectWrapper{
+public:
+    JObjectValueWrapper();
+    JObjectValueWrapper(const JObjectValueWrapper& other);
+    JObjectValueWrapper(JObjectValueWrapper&& other);
+    ~JObjectValueWrapper() override;
+    JObjectValueWrapper& operator=(const JObjectWrapper &wrapper)override;
+    JObjectValueWrapper& operator=(JObjectWrapper &&wrapper)override;
+    JObjectValueWrapper& operator=(const JObjectValueWrapper &wrapper);
+    JObjectValueWrapper& operator=(JObjectValueWrapper &&wrapper);
+    JObjectValueWrapper& operator=(jobject obj)override;
+    bool operator==(const JObjectValueWrapper &other) const;
+    bool operator<(const JObjectValueWrapper &other) const;
+    void writeTo(QDataStream &d)const;
+    void readFrom(QDataStream &d);
+    void serializeTo(QDataStream &d)const;
+    void serializeFrom(QDataStream &d);
+    bool isNull() const;
+    jobject value(JNIEnv* env) const;
+    static bool isValueType(QMetaType metaType);
+    static bool hasCustomDebugStreamOperator(QMetaType metaType);
+    static JObjectValueWrapper create(JNIEnv* env, jobject object, QMetaType metaType);
+private:
+    JObjectValueWrapper(const JObjectValueWrapperPrivate* methods);
+    JObjectValueWrapper(JNIEnv* env, jobject object, const JObjectValueWrapperPrivate* methods);
+    JObjectValueWrapper(JObjectWrapper&& object, const JObjectValueWrapperPrivate* methods);
+    static const QMetaObject *metaObject(const QtPrivate::QMetaTypeInterface *iface);
+    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *target);
+    static void copyCtr(const QtPrivate::QMetaTypeInterface *, void *target, const void *other);
+    static void moveCtr(const QtPrivate::QMetaTypeInterface *, void *target, void *other);
+    static void dtor(const QtPrivate::QMetaTypeInterface *, void *target);
+    static bool equals(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2);
+    static bool lessThan(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2);
+    static void debugStream(const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value);
+    static void dataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value);
+    static void dataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
+    static void serializableDataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value);
+    static void serializableDataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
+    friend JObjectValueWrapperPrivate;
+    const JObjectValueWrapperPrivate* p;
+};
 
 QMetaType createMetaType(QByteArrayView typeName,
                                         bool copyName,
