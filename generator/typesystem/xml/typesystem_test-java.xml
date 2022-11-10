@@ -447,7 +447,7 @@
 #if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
 					if(!QMetaType(%2).iface()->copyCtr
 							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
-						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+						Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
 					}
 #endif
                     QVariant variant_%in(QMetaType(%2), %in);
@@ -469,7 +469,7 @@
 #if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
 					if(!QMetaType(%2).iface()->copyCtr
 							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
-						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+						Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
 					}
 #endif
                     QVariant variant_%in(QMetaType(%2), %in);
@@ -491,7 +491,7 @@
 #if QT_VERSION &lt; QT_VERSION_CHECK(6, 4, 0)
 					if(!QMetaType(%2).iface()->copyCtr
 							|| (!%in &amp;&amp; !QMetaType(%2).iface()->defaultCtr)){
-						JavaException::raiseUnsupportedOperationException(%env, qPrintable(QString("Unable to create result of type %1.").arg(QLatin1String(QMetaType::typeName(%2)))) QTJAMBI_STACKTRACEINFO );
+						Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
 					}
 #endif
                     QVariant variant_%in(QMetaType(%2), %in);
@@ -510,7 +510,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -520,7 +520,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -530,7 +530,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -540,7 +540,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -550,7 +550,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -560,7 +560,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -570,7 +570,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -580,7 +580,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -590,7 +590,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -600,7 +600,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -610,7 +610,7 @@
                 <conversion-rule class="native">
                     char %out = QChar(%in).toLatin1();
                     if(%in!=%out)
-                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>

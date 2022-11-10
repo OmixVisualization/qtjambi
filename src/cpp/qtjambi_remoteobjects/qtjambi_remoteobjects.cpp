@@ -142,7 +142,7 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, jobject
         }
     }
     if(!meta_object)
-        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("No meta object available for class %1").arg(qtjambi_class_name(env, type))) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(qtjambi_class_name(env, type)) QTJAMBI_STACKTRACEINFO );
     const void *_src;
     void *_dst;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, src)){
@@ -173,7 +173,7 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, QDataStream& src, jo
         }
     }
     if(!meta_object)
-        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("No meta object available for class %1").arg(qtjambi_class_name(env, type))) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(qtjambi_class_name(env, type)) QTJAMBI_STACKTRACEINFO );
     void *_dst;
     JObjectWrapper wrapper;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, dst)){
@@ -198,7 +198,7 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, QDataSt
         }
     }
     if(!meta_object)
-        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("No meta object available for class %1").arg(qtjambi_class_name(env, type))) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(qtjambi_class_name(env, type)) QTJAMBI_STACKTRACEINFO );
     const void *_src;
     JObjectWrapper wrapper;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, src)){

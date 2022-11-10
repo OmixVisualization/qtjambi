@@ -310,10 +310,12 @@ void Handler::parseTypeSystem(const QDomElement &element, const QString& fileNam
                                 {"position2", CodeSnip::Position2},
                                 {"position3", CodeSnip::Position3},
                                 {"position4", CodeSnip::Position4},
+                                {"position5", CodeSnip::Position5},
                                 {"1", CodeSnip::Position1},
                                 {"2", CodeSnip::Position2},
                                 {"3", CodeSnip::Position3},
                                 {"4", CodeSnip::Position4},
+                                {"5", CodeSnip::Position5},
                                 {"end", CodeSnip::End}
                             };
                             parseInjectCode(childElement, languageNames, positionNames, [entry](const QString& subTypeSystem, const CodeSnip &snip){
@@ -666,10 +668,12 @@ void Handler::parseInjectCode(const QDomElement &element, ComplexTypeEntry* entr
         {"position2", CodeSnip::Position2},
         {"position3", CodeSnip::Position3},
         {"position4", CodeSnip::Position4},
+        {"position5", CodeSnip::Position5},
         {"1", CodeSnip::Position1},
         {"2", CodeSnip::Position2},
         {"3", CodeSnip::Position3},
         {"4", CodeSnip::Position4},
+        {"5", CodeSnip::Position5},
         {"equals", CodeSnip::Equals},
         {"compare", CodeSnip::Compare},
         {"hashcode", CodeSnip::HashCode},
@@ -713,10 +717,12 @@ void Handler::parseInjectCode(const QDomElement &element, FunctionalTypeEntry* e
         {"position2", CodeSnip::Position2},
         {"position3", CodeSnip::Position3},
         {"position4", CodeSnip::Position4},
+        {"position5", CodeSnip::Position5},
         {"1", CodeSnip::Position1},
         {"2", CodeSnip::Position2},
         {"3", CodeSnip::Position3},
         {"4", CodeSnip::Position4},
+        {"5", CodeSnip::Position5},
         {"equals", CodeSnip::Equals},
         {"compare", CodeSnip::Compare},
         {"hashcode", CodeSnip::HashCode},
@@ -1947,10 +1953,12 @@ TemplateInstantiation Handler::parseInstantiation(const QDomElement &element){
                         {"position2", CodeSnip::Position2},
                         {"position3", CodeSnip::Position3},
                         {"position4", CodeSnip::Position4},
+                        {"position5", CodeSnip::Position5},
                         {"1", CodeSnip::Position1},
                         {"2", CodeSnip::Position2},
                         {"3", CodeSnip::Position3},
                         {"4", CodeSnip::Position4},
+                        {"5", CodeSnip::Position5},
                         {"end", CodeSnip::End}
                     };
                     parseInjectCode(childElement,
@@ -2201,10 +2209,12 @@ void Handler::parseModifyFunction(const QDomElement &element, TypeEntry* entry){
                         {"position2", CodeSnip::Position2},
                         {"position3", CodeSnip::Position3},
                         {"position4", CodeSnip::Position4},
+                        {"position5", CodeSnip::Position5},
                         {"1", CodeSnip::Position1},
                         {"2", CodeSnip::Position2},
                         {"3", CodeSnip::Position3},
                         {"4", CodeSnip::Position4},
+                        {"5", CodeSnip::Position5},
                         {"end", CodeSnip::End}
                     };
                     parseInjectCode(childElement,
@@ -2983,10 +2993,12 @@ void Handler::parseEnumType(const QDomElement &element){
                             {"position2", CodeSnip::Position2},
                             {"position3", CodeSnip::Position3},
                             {"position4", CodeSnip::Position4},
+                            {"position5", CodeSnip::Position5},
                             {"1", CodeSnip::Position1},
                             {"2", CodeSnip::Position2},
                             {"3", CodeSnip::Position3},
                             {"4", CodeSnip::Position4},
+                            {"5", CodeSnip::Position5},
                             {"end", CodeSnip::End}
                         };
                         parseInjectCode(childElement, languageNames, positionNames, [&eentry](const QString&,const CodeSnip &snip){eentry->addCodeSnip(snip);});

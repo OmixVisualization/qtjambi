@@ -94,6 +94,8 @@ public class CreateFunctionPointerQrcTask extends Task {
 				stream.println("</file>");
 				stream.append("        <file alias=\"QMetaType()\">").append(String.format(libFormat, "MetaTypeFunction"));
 				stream.println("</file>");
+				stream.append("        <file alias=\"QVariant(QJSValue const&amp;)\">").append(String.format(libFormat, "QmlTypeCreatorFunction"));
+				stream.println("</file>");
 			}else {
 				stream.append("        <file alias=\"QtMetaTypePrivate::VariantData(const void*const*, int, unsigned int)\">").append(String.format(libFormat, "VariantDataFunction"));
 				stream.println("</file>");

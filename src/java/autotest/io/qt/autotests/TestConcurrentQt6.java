@@ -528,7 +528,13 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
         		QThreadPool.globalInstance(),
         		ints,
         		i->i >= COUNT,
-        		(r, intermediate)->r + intermediate
+        		(r, intermediate)->{
+        			if(intermediate==null)
+        				intermediate = 0;
+        			if(r==null)
+        				r = 0;
+        			return r + intermediate;
+        		}
         );
 
         QFuture<Integer> future = starter.startAsynchronously();

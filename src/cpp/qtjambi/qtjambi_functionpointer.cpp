@@ -1,5 +1,6 @@
 #include "qtjambi_functionpointer.h"
 #include "qtjambi_core.h"
+#include "qtjambi_repository.h"
 #include <QtCore/QFile>
 #include <QtCore/QTemporaryDir>
 #include <QtCore/QTemporaryFile>
@@ -9,6 +10,12 @@
 #include <memory>
 
 typedef decltype(std::declval<QVector<int>>().size()) size_type;
+
+#if Q_CC_MSVC && !defined(QT_DEBUG)
+QFunctionPointer template_keep_dummy(QFunctionPointer ptr, ushort){
+    return ptr;
+}
+#endif
 
 void qtjambi_on_null_ptr(){
     if(JNIEnv *env = qtjambi_current_environment()){
@@ -178,6 +185,7 @@ QFunctionPointer qtjambi_extract_function(
             ? QString(QLatin1String("GenericFunction"))
             : QString(QLatin1String("Generic%1Function")).arg(functionParamTypeInfos.size()-1);
     QString funTypeName = qtjambi_type_name(functionTypeId);
+    //qDebug() << "trying to find function " << funTypeName;
     if(!QFileInfo::exists(":/io/qt/qtjambi/functionpointers/"+funTypeName)){
         for(const FunctionParamTypeInfo& info : functionParamTypeInfos){
             if(!info.isPointer
@@ -208,6 +216,7 @@ QFunctionPointer qtjambi_extract_function(
         }
     }
 
+    //qDebug() << "found: " << typeName;
     QString tmpFile = gLibraries->dir->filePath("~"+QUuid::createUuid().toString(QUuid::Id128)+".tmp");
     if(QFile::copy(":/io/qt/qtjambi/functionpointers/"+typeName, tmpFile)){
         std::unique_ptr<QLibrary> library(new QLibrary(tmpFile));
@@ -265,7 +274,7 @@ bool qtjambi_dispose_function(QFunctionPointer fn){
 void qtjambi_no_function_available(const std::type_info& functionTypeId){
     if(JNIEnv *env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 100)
-        JavaException::raiseNullPointerException(env, qPrintable(QString("Function pointer %1 is null.").arg(QLatin1String(qtjambi_type_name(functionTypeId)))) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::NullPointerException::throwNew(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(qtjambi_type_name(functionTypeId))) QTJAMBI_STACKTRACEINFO );
     }
 }
 

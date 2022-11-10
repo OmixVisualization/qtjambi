@@ -447,7 +447,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         qtjambi_check_resource(__jni_env, __qt_this);
         if(const QFutureInterface<QVariant>* _this = dynamic_cast<const QFutureInterface<QVariant>*>(__qt_this)){
             if(index0<0 || index0>=_this->resultCount())
-                JavaException::raiseIndexOutOfBoundsException(__jni_env, qPrintable(QString::number(index0)) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString::number(index0) QTJAMBI_STACKTRACEINFO );
             const QVariant& __qt_return_value = _this->resultReference(static_cast<int>(index0));
             result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
         }else if(dynamic_cast<const QFutureInterface<void>*>(__qt_this)){

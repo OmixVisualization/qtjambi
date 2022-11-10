@@ -445,7 +445,7 @@ struct create_container_pointer<true, is_const, false, true, Container>{
     }
     static Container* create(JNIEnv *env, QtJambiScope* scope, const Container* t){
         if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1* without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1* without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         if(t){
             Container* result = new Container(*t);
             scope->addDeletion(result);
@@ -476,7 +476,7 @@ struct create_container_pointer<false, true, true, buffer, Container>{
     }
     static const Container& create(JNIEnv *env, QtJambiScope* scope, std::unique_ptr<Container>& ptr){
         if(ptr && !ptr->empty() && !scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         if(ptr && scope){
             Container* t = ptr.release();
             scope->addDeletion(t);
@@ -490,14 +490,14 @@ template<class Container>
 struct create_container_pointer<false, false, true, true, Container>{
     static Container& create(JNIEnv * env, QtJambiScope* scope, std::nullptr_t){
         if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         Container* result = new Container();
         scope->addDeletion(result);
         return *result;
     }
     static Container& create(JNIEnv *env, QtJambiScope* scope, Container* t){
         if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         if(t){
             scope->addDeletion(t);
             return *t;
@@ -510,7 +510,7 @@ struct create_container_pointer<false, false, true, true, Container>{
 
     static const Container& create(JNIEnv *env, QtJambiScope* scope, const Container* t){
         if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         if(t){
             scope->addDeletion(t);
             return *t;
@@ -523,7 +523,7 @@ struct create_container_pointer<false, false, true, true, Container>{
 
     static Container& create(JNIEnv *env, QtJambiScope* scope, std::unique_ptr<Container>& ptr){
         if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         Container* t = ptr.release();
         if(t){
             scope->addDeletion(t);
@@ -541,7 +541,7 @@ struct create_container_pointer<false, false, true, false, Container>{
     typedef Container Container_KT;
     static Container& create(JNIEnv *env, QtJambiScope*, Container* t){
         if(!t){
-            JavaException::raiseNullPointerException(env, qPrintable( QString("%1 is null.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseNullPointerException(env, QStringLiteral("%1 is null.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) QTJAMBI_STACKTRACEINFO );
         }
         return *t;
     }

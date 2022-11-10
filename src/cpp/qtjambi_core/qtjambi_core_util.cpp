@@ -1952,6 +1952,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_connect)
 {
     jobject result = nullptr;
     QTJAMBI_TRY{
+        QMetaObject::Connection connection;
         QObject *sender = qtjambi_to_qobject(env, _sender);
         QObject *receiver = qtjambi_to_qobject(env, _receiver);
         if(sender && receiver){
@@ -1998,13 +1999,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_connect)
                 }
             }
             if(method_is_valid(signalMethod) && method_is_valid(slotMethod)){
-                QMetaObject::Connection connection = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
-                if(connection){
-                    result = qtjambi_cast<jobject>(env, connection);
-                    qtjambi_set_java_ownership(env, result);
-                }
+                connection = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
             }
         }
+        result = qtjambi_cast<jobject>(env, connection);
+        qtjambi_set_java_ownership(env, result);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -2017,6 +2016,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_connectMethods)
 {
     jobject result = nullptr;
     QTJAMBI_TRY{
+        QMetaObject::Connection connection;
         QObject *sender = qtjambi_to_qobject(env, _sender);
         QObject *receiver = qtjambi_to_qobject(env, _receiver);
         const QMetaObject *signalEnclosingMetaObject = reinterpret_cast<const QMetaObject *>(signalEnclosingMetaObjectPointer);
@@ -2025,13 +2025,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_connectMethods)
             QMetaMethod signalMethod = signalEnclosingMetaObject->method(signalIdx);
             QMetaMethod slotMethod = receiverEnclosingMetaObject->method(slotIdx);
             if(method_is_valid(signalMethod) && method_is_valid(slotMethod)){
-                QMetaObject::Connection connection = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
-                if(connection){
-                    result = qtjambi_cast<jobject>(env, connection);
-                    qtjambi_set_java_ownership(env, result);
-                }
+                connection = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
             }
         }
+        result = qtjambi_cast<jobject>(env, connection);
+        qtjambi_set_java_ownership(env, result);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -2188,7 +2186,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_methodByIndex)
             if(method.isValid()){
                 result = qtjambi_cast<jobject>(env, method);
             }else{
-                JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("Index %1 is not a valid method of class %2").arg(index).arg(metaObject->className())) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IndexOutOfBoundsException::throwNew(env, QStringLiteral("Index %1 is not a valid method of class %2").arg(index).arg(metaObject->className()) QTJAMBI_STACKTRACEINFO );
             }
         }
     }QTJAMBI_CATCH(const JavaException& exn){

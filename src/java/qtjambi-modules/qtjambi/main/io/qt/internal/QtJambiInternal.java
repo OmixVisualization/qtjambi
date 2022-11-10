@@ -75,7 +75,6 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -125,6 +124,7 @@ import io.qt.core.QQueue;
 import io.qt.core.QSet;
 import io.qt.core.QStack;
 import io.qt.core.QStringList;
+import io.qt.core.QThread;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
 import io.qt.internal.QtJambiSignals.AbstractSignal;
@@ -538,6 +538,7 @@ public final class QtJambiInternal {
 		void setField(Object owner, Field f, Object newValue)throws Throwable;
 		Object fetchField(Object owner, Field f)throws Throwable;
 		QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle);
+		<T,V> BiConsumer<T,V> getFieldSetter(Field f);
 	}
 	
 	private static final MethodInvocationHandler methodInvocationHandler;
@@ -871,6 +872,26 @@ public final class QtJambiInternal {
 				@Override
 				public QtJambiSignals.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
 					return null;
+				}
+
+				@Override
+				public <T,V> BiConsumer<T,V> getFieldSetter(Field f) {
+					try {
+						f.setAccessible(true);
+						return (T owner, V value) -> {
+							try {
+								f.set(owner, value);
+							} catch (RuntimeException | Error e) {
+								throw e;
+							}catch(Throwable t) {
+								throw new RuntimeException(t);
+							}
+						};
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
 				}
 			};
 		}
@@ -1715,6 +1736,8 @@ public final class QtJambiInternal {
 			registerCustomDebugStreamOperator(metaType);
 	}
 	
+	public native static boolean registerConverter(int metaType1, Class<?> classType1, int metaType2, Class<?> classType2, java.util.function.Function<?,?> converterFn);
+	
 	private static native boolean isObjectWrapperType(int metaType);
 	
 	//Qt6 only!
@@ -1786,7 +1809,7 @@ public final class QtJambiInternal {
 		private final Object object;
 
 		@Override
-		public void close() throws Exception {
+		public void close() {
 			if (object != null)
 				monitorExit(object);
 		}
@@ -2803,6 +2826,7 @@ public final class QtJambiInternal {
 							|| QMultiMap.class==parameterizedType.getRawType()
 							|| QHash.class==parameterizedType.getRawType()
 							|| QMultiHash.class==parameterizedType.getRawType()
+							|| QPair.class==parameterizedType.getRawType()
 						)
 						&& actualTypeArguments.length == 2) {
 					if (actualTypeArguments[0] == String.class
@@ -3376,31 +3400,64 @@ public final class QtJambiInternal {
 			throw new RuntimeException("Unable to find raw type for " + type.getTypeName()+"; type: "+getClass(type));
 		}
 	}
+    
+	private static final Object threadInterruptibleSetterMonitor = new Object();
+	private static BiConsumer<Thread,Object> threadInterruptibleSetter;
+	private static Object interruptible;
 	
-	private static final AtomicBoolean canSetThreadInterruptible = new AtomicBoolean(true);
+	private static Object interruptibleInvoke(Object proxy, Method method, Object[] args){
+		if(args.length==1 && args[0] instanceof Thread) {
+            Thread _thread = (Thread)args[0];
+            if(_thread.isAlive()) {
+                QThread _qthread = QThread.thread(_thread);
+                if(_qthread!=null && !_qthread.isDisposed() && !_qthread.isInterruptionRequested()){
+                	Object monitor = findInterfaceLink(_qthread, true);
+                	if(monitor!=null) {
+	                	synchronized(monitor){
+	                        _qthread.requestInterruption();
+	                    }
+                	}
+                }
+            }
+        }
+        return null;
+	}
 
 	@NativeAccess
-	private static boolean setThreadInterruptible(Thread thread, Object interruptible) {
-		if(canSetThreadInterruptible.get()) {
-			try {
-				Field blockerField = Thread.class.getDeclaredField("blocker");
-				setField(thread, blockerField, interruptible);
-				return true;
-			} catch (Throwable e) {
-				if(setFieldByName(thread, "blocker", "Lsun/nio/ch/Interruptible;", false, interruptible))
-					return true;
-				try {
-					Field blockOnField = Thread.class.getDeclaredField("blockOn");
-					setField(thread, blockOnField, interruptible);
-					return true;
-				} catch (Throwable e1) {
-					if(setFieldByName(thread, "blockOn", "Lsun/nio/ch/Interruptible;", false, interruptible))
-						return true;
-					canSetThreadInterruptible.set(false);
+	private static void setThreadInterruptible(QThread qthread, Thread thread, boolean set) {
+		BiConsumer<Thread,Object> setter;
+		synchronized(threadInterruptibleSetterMonitor){
+			if(threadInterruptibleSetter==null) {
+				for(Field field : Thread.class.getDeclaredFields()) {
+					if(!Modifier.isStatic(field.getModifiers())) {
+						switch(field.getType().getName()) {
+						case "sun.nio.ch.Interruptible":
+							try {
+					            interruptible = java.lang.reflect.Proxy.newProxyInstance(
+					            		field.getType().getClassLoader(), 
+					                    new Class[] { field.getType() }, 
+					                    QtJambiInternal::interruptibleInvoke);
+					        } catch (Throwable e) {
+					        }
+							threadInterruptibleSetter = methodInvocationHandler.getFieldSetter(field);
+							break;
+						}
+					}
+				}
+				if(threadInterruptibleSetter==null) {
+					threadInterruptibleSetter = (t,v)->{};
 				}
 			}
+			setter = threadInterruptibleSetter;
 		}
-		return false;
+		Object monitor = qthread==null ? null : findInterfaceLink(qthread, true);
+		if(monitor==null){
+			setter.accept(thread, set ? interruptible : null);
+		}else {
+			synchronized(monitor){
+				setter.accept(thread, set ? interruptible : null);
+			}
+		}
 	}
 
 	private static class AssociativeReference extends WeakReference<Object> implements Cleanable {
@@ -4453,7 +4510,9 @@ public final class QtJambiInternal {
 				AnnotatedElement rt = null;
 				if(useAnnotatedType)
 					rt = lamdaInfo.reflectiveMethod.getAnnotatedReturnType();
-				metaTypes[0] = QtJambiInternal.registerMetaType(lamdaInfo.reflectiveMethod.getReturnType(), lamdaInfo.reflectiveMethod.getGenericReturnType(), rt, false, false);
+				Class<?> returnType = lamdaInfo.reflectiveMethod.getReturnType();
+				Type genericReturnType = lamdaInfo.reflectiveMethod.getGenericReturnType();
+				metaTypes[0] = QtJambiInternal.registerMetaType(returnType, genericReturnType, rt, false, false);
 				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
 				for (int i = 0; i < parameters.length; i++) {
 					metaTypes[i+1] = registerMetaType(parameters[i]);
@@ -4492,7 +4551,9 @@ public final class QtJambiInternal {
 									if(useAnnotatedType) {
 										ae = mtd.getAnnotatedReturnType();
 									}
-									metaTypes[0] = QtJambiInternal.registerMetaType(mtd.getReturnType(), mtd.getGenericReturnType(), ae, false, false);
+									Class<?> returnType = mtd.getReturnType();
+									Type genericReturnType = mtd.getGenericReturnType();
+									metaTypes[0] = QtJambiInternal.registerMetaType(returnType, genericReturnType, ae, false, false);
 								}
 								Parameter[] params = mtd.getParameters();
 								for (int i = 0; i < params.length; i++) {
@@ -4544,17 +4605,17 @@ public final class QtJambiInternal {
 								}
 							}
 							if(mtd!=null && !mtd.isBridge() && !mtd.isDefault() && !Modifier.isAbstract(mtd.getModifiers())) {
-								Class<?>[] metaTypes = new Class[mtd.getParameterCount()+1];
+								Class<?>[] classTypes = new Class[mtd.getParameterCount()+1];
 								if(mtd.getReturnType()==void.class) {
-									metaTypes[0] = void.class;
+									classTypes[0] = void.class;
 								}else {
-									metaTypes[0] = mtd.getReturnType();
+									classTypes[0] = mtd.getReturnType();
 								}
 								Parameter[] params = mtd.getParameters();
 								for (int i = 0; i < params.length; i++) {
-									metaTypes[i+1] = params[i].getType();
+									classTypes[i+1] = params[i].getType();
 								}
-								return metaTypes;
+								return classTypes;
 							}
 						} catch (Exception e) {
 						}
@@ -4664,6 +4725,11 @@ public final class QtJambiInternal {
 		@Override
 		public Package getDefinedPackage(ClassLoader cl, String pkg) {
 			return RetroHelper.getDefinedPackage(cl, pkg);
+		}
+		
+		@Override
+		public void setQmlClassInfoGeneratorFunction(Function<Class<?>, Map<String, String>> qmlClassInfogeneratorFunction) {
+			MetaObjectTools.setQmlClassInfoGeneratorFunction(qmlClassInfogeneratorFunction);
 		}
 	};
 }

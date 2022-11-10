@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 /**
  * This annotation is used to mark a method as a notify signal
  * for a Qt property. The annotation gives the name of
- * the property.
+ * the property. You can specify multiple properties comma-separated.
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -46,6 +46,6 @@ import java.lang.annotation.Target;
 public @interface QtPropertyNotify {
 	/** Returns true if the property is enabled; otherwise, false. */
     boolean enabled() default true;
-    /** Returns the name of the property. */
+    /** Returns the name of the property or of multiple properties comma-separated. */
     String name() default "";
 }

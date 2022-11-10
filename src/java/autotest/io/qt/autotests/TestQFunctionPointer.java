@@ -204,40 +204,69 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	}
 	
 	@Test
-    public void testReturningFunctions() throws Throwable {
-		QObject obj = new QObject();
-    	obj.setObjectName("QObject Test");
+    public void testReturningFunctions_int() throws Throwable {
     	QFunctionPointer fp = FunctionalTest.getFunction(21);
     	Assert.assertEquals((Object)12345, fp.invoke(int.class, 12345));
-    	fp = FunctionalTest.getFunction(22);
+	}
+	
+	@Test
+    public void testReturningFunctions_boolean() throws Throwable {
+    	QFunctionPointer fp = FunctionalTest.getFunction(22);
     	Assert.assertEquals((Object)false, fp.invoke(boolean.class, false));
-    	fp = FunctionalTest.getFunction(23);
+	}
+	
+	@Test
+    public void testReturningFunctions_double() throws Throwable {
+    	QFunctionPointer fp = FunctionalTest.getFunction(23);
     	Assert.assertEquals((Object)7.5, fp.invoke(double.class, 7.5));
-    	fp = FunctionalTest.getFunction(24);
+	}
+	
+	@Test
+    public void testReturningFunctions_float() throws Throwable {
+    	QFunctionPointer fp = FunctionalTest.getFunction(24);
     	Assert.assertEquals((Object)9.5f, fp.invoke(float.class, 9.5f));
-    	fp = FunctionalTest.getFunction(28);
-    	Assert.assertEquals(obj, fp.invoke(QObject.class, obj));
-    	fp = FunctionalTest.getFunction(35);
+	}
+	
+	@Test
+    public void testReturningFunctions_char() throws Throwable {
+		QFunctionPointer fp = FunctionalTest.getFunction(35);
     	try {
 			QMetaType.Type char16 = QMetaType.Type.valueOf("Char16");
-			Assert.assertEquals('Z', (char)fp.invoke(QGenericArgument.<Character>returning(new QMetaType(char16)), 'Z'));
+			Assert.assertEquals((Object)'Z', fp.invoke(QGenericArgument.returning(new QMetaType(char16)), 'Z'));
 			fp = FunctionalTest.getFunction(36);
-			Assert.assertEquals('Q', (char)fp.invoke(QGenericArgument.<Character>returning(new QMetaType(char16)), 'Q'));
-			fp = FunctionalTest.getFunction(31);
+			Assert.assertEquals((Object)'Q', fp.invoke(QGenericArgument.returning(new QMetaType(char16)), 'Q'));
 		} catch (AssertionError e) {
 			throw e;
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-    	fp = FunctionalTest.getFunction(45);
+	}
+	
+	@Test
+    public void testReturningFunctions_QChar() throws Throwable {
+		Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+		QFunctionPointer fp = FunctionalTest.getFunction(25);
+    	Assert.assertEquals((Object)'W', fp.invoke(char.class, 'W'));    	
+	}
+	
+	@Test
+    public void testReturningFunctions_flags() throws Throwable {
+		Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+    	QFunctionPointer fp = FunctionalTest.getFunction(45);
     	Assert.assertEquals(Qt.AlignmentFlag.AlignVCenter.combined(Qt.AlignmentFlag.AlignJustify), fp.invoke(Qt.Alignment.class));
-    	fp = FunctionalTest.getFunction(31);
-    	Assert.assertEquals(Qt.AlignmentFlag.AlignBottom, fp.invoke(Qt.AlignmentFlag.class, Qt.AlignmentFlag.AlignBottom));
     	fp = FunctionalTest.getFunction(32);
     	Assert.assertEquals(Qt.AlignmentFlag.AlignTop.combined(Qt.AlignmentFlag.AlignBottom), fp.invoke(Qt.Alignment.class, Qt.AlignmentFlag.AlignTop.combined(Qt.AlignmentFlag.AlignBottom)));
-    	fp = FunctionalTest.getFunction(25);
-    	Assert.assertEquals((Object)'W', fp.invoke(char.class, 'W'));    	
-    	fp = FunctionalTest.getFunction(52);
+	}
+	
+	@Test
+    public void testReturningFunctions_enum() throws Throwable {
+		QFunctionPointer fp = FunctionalTest.getFunction(31);
+    	Assert.assertEquals(Qt.AlignmentFlag.AlignBottom, fp.invoke(Qt.AlignmentFlag.class, Qt.AlignmentFlag.AlignBottom));
+	}
+	
+	@Test
+    public void testReturningFunctions_functionpointer() throws Throwable {
+    	QFunctionPointer fp = FunctionalTest.getFunction(52);
     	{
     		QFunctionPointer arg = FunctionalTest.getFunction(0);
     		QFunctionPointer result = fp.invoke(QFunctionPointer.class, arg);
@@ -246,6 +275,15 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     		QNativePointer resultNP = QNativePointer.fromObject(result);
     		Assert.assertEquals(argNP.pointerValue().pointer(), resultNP.pointerValue().pointer());
     	}
+	}
+	
+	@Test
+    public void testReturningFunctions_pointer() throws Throwable {
+		QObject obj = new QObject();
+    	obj.setObjectName("QObject Test");
+    	QFunctionPointer fp;
+    	fp = FunctionalTest.getFunction(28);
+    	Assert.assertEquals(obj, fp.invoke(QObject.class, obj));
 	}
 	
 	@Test

@@ -28,9 +28,6 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,6 +36,7 @@ import io.qt.QtClassInfo;
 import io.qt.QtPropertyReader;
 import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
+import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
 import io.qt.NativeAccess;
@@ -75,12 +73,11 @@ public class TestQml2 extends ApplicationInitializer{
 			super(dc);
 		}
 		
-	    private List<QObject> _testObjects = new ArrayList<>();
-	    private final QQmlListProperty<QObject> testObjects = new QQmlListProperty<>(this, _testObjects);
+	    private final QList<QObject> _testObjects = new QList<>(QObject.class);
 		
 	    @QtPropertyReader(name="testObjects")	    
 		public QQmlListProperty<QObject> testObjects() {
-			return testObjects;
+			return new QQmlListProperty<>(this, _testObjects);
 		}
 	}
 	
@@ -119,11 +116,11 @@ public class TestQml2 extends ApplicationInitializer{
 		TestObjects backEnd = (TestObjects)root;
 		Assert.assertEquals(3, backEnd._testObjects.size());
 		Assert.assertEquals("child1", backEnd._testObjects.get(0).objectName());
-		Assert.assertEquals("child1", backEnd.testObjects.at(0).objectName());
+		Assert.assertEquals("child1", backEnd.testObjects().at(0).objectName());
 		Assert.assertEquals("item", backEnd._testObjects.get(1).objectName());
-		Assert.assertEquals("item", backEnd.testObjects.at(1).objectName());
+		Assert.assertEquals("item", backEnd.testObjects().at(1).objectName());
 		Assert.assertEquals("rectangle", backEnd._testObjects.get(2).objectName());
-		Assert.assertEquals("rectangle", backEnd.testObjects.at(2).objectName());
+		Assert.assertEquals("rectangle", backEnd.testObjects().at(2).objectName());
 		Assert.assertTrue(backEnd._testObjects.get(0) instanceof TestChild);
 		Assert.assertTrue(backEnd._testObjects.get(1) instanceof QQuickItem);
 		Assert.assertTrue(backEnd._testObjects.get(2) instanceof QQuickItem);

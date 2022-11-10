@@ -126,6 +126,14 @@ class QtJambiTypeManager {
                                        bool allowValuePointers = false);
         static ExternalToInternalConverter getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
 
+        static InternalToExternalConverter tryGetInternalToExternalConverter(
+                                       JNIEnv* env,
+                                       const QString &internalTypeName,
+                                       const QMetaType& internalMetaType,
+                                       jclass externalClass,
+                                       bool allowValuePointers = false);
+        static ExternalToInternalConverter tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
+
         static QStringList parseSignature(const QString &signature, QString *name = nullptr);
         static QHashFunction findHashFunction(bool isPointer, int metaType);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

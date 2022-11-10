@@ -2587,7 +2587,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <access modifier="protected"/>
             <inject-code class="native" position="beginning">
                 if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
-                    JavaException::raiseIllegalAccessError(%env, "Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::IllegalAccessError::throwNew(%env, "Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
                     return;
                 }
             </inject-code>

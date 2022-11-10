@@ -620,6 +620,9 @@ final class MetaObjectTools extends AbstractMetaObjectTools{
             for(QtClassInfo info : clazz.getAnnotationsByType(QtClassInfo.class)) {
                 classInfos.put(info.key(), info.value());
             }
+            if(qmlClassInfoGeneratorFunction!=null) {
+            	classInfos.putAll(qmlClassInfoGeneratorFunction.apply(clazz));
+            }
             
             Map<Method, MethodFlags> methodFlags = new HashMap<>();
             TreeMap<String, Method> propertyReaders = new TreeMap<>();
@@ -740,11 +743,16 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
 	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                                	metaTypeId = QtJambiInternal.findMetaType(typeName);
-	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(signalType.genericType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                                	QMetaType metaType = new QMetaType(metaTypeId);
+	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+	    	                            		|| !(signalType.genericType instanceof Class 
+	    	                            				|| metaType.name().toString().equals(typeName))
+	    	                            		|| metaType.javaType()!=signalType.type) {
 	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+	    	                                metaType = new QMetaType(metaTypeId);
 	    	                            }
 	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	    	                                typeName = new QMetaType(metaTypeId).name().toString();
+	    	                                typeName = metaType.name().toString();
 	    	                            else
 	    	                            	continue signalLoop;
 	                                }
@@ -770,7 +778,11 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 			                        PropertyAnnotation notify = PropertyAnnotation.notifyAnnotation(declaredField);
 			
 			                        if (notify != null) {
-			                            propertyNotifies.put(notify.name(), declaredField);
+			                        	for(String name : notify.name().split(",")) {
+			                        		name = name.trim();
+			                        		if(!name.isEmpty())
+			                        			propertyNotifies.put(name, declaredField);
+			                        	}
 			                        }
 			                    }
 	                        	addedMethodSignatures.add(methodSignature);
@@ -904,11 +916,16 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
 	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                                	metaTypeId = QtJambiInternal.findMetaType(typeName);
-	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(signalType.genericType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                                	QMetaType metaType = new QMetaType(metaTypeId);
+	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+	    	                            		|| !(signalType.genericType instanceof Class 
+	    	                            				|| metaType.name().toString().equals(typeName))
+	    	                            		|| metaType.javaType()!=signalType.type) {
 	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+	    	                                metaType = new QMetaType(metaTypeId);
 	    	                            }
 	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	    	                                typeName = new QMetaType(metaTypeId).name().toString();
+	    	                                typeName = metaType.name().toString();
 	    	                            else
 	    	                            	continue signalLoop;
 	                                }
@@ -981,15 +998,17 @@ signalLoop:	    for (Field declaredField : declaredFields) {
                             propertyFinalResolvers.put(property, false);
 	            		}else if((isQObject || isGadget) && Modifier.isFinal(declaredField.getModifiers()) && Modifier.isPublic(declaredField.getModifiers())) {
 	            			String property = declaredField.getName();
-	                		propertyMembers.put(property, declaredField);
-        					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
-                            propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
-                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
-                            propertyStoredResolvers.put(property, isStored(declaredField, clazz));
-                            propertyUserResolvers.put(property, isUser(declaredField, clazz));
-                            propertyRequiredResolvers.put(property, false);
-                            propertyConstantResolvers.put(property, true);
-                            propertyFinalResolvers.put(property, false);
+	            			if(!(Modifier.isStatic(declaredField.getModifiers()) && property.equals("staticMetaObject"))) {
+		                		propertyMembers.put(property, declaredField);
+	        					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
+	                            propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
+	                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
+	                            propertyStoredResolvers.put(property, isStored(declaredField, clazz));
+	                            propertyUserResolvers.put(property, isUser(declaredField, clazz));
+	                            propertyRequiredResolvers.put(property, false);
+	                            propertyConstantResolvers.put(property, true);
+	                            propertyFinalResolvers.put(property, false);
+	            			}
 	                	}
 	                }
 	            }
@@ -1078,15 +1097,20 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
                                 if(metaTypeId==QMetaType.Type.UnknownType.value()) {
     	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
-    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+    	                        	QMetaType metaType = new QMetaType(metaTypeId);
+    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+    	                            		|| !(genericParameterTypes[j] instanceof Class 
+    	                            				|| new QMetaType(metaTypeId).name().toString().equals(typeName))
+    	                            		|| metaType.javaType()!=parameterTypes[j]) {
     	                                metaTypeId = registerMetaType(parameterTypes[j], 
     	                                        genericParameterTypes[j],
     	                                        annotatedParameterTypes!=null ? annotatedParameterTypes[j] : null,
     	                                        isPointer,
     	                                        isReference);
+    	                                metaType = new QMetaType(metaTypeId);
     	                            }
     	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-    	                                typeName = new QMetaType(metaTypeId).name().toString();
+    	                                typeName = metaType.name().toString();
     	                            else continue cloop;
                                 }
                                 cppTypes.add(typeName);
@@ -1126,6 +1150,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                         (isQObject || isGadget)
                                         && !declaredMethod.isAnnotationPresent(QtUninvokable.class) 
                                         && !Modifier.isStatic(declaredMethod.getModifiers())
+                                        && (declaredMethod.getReturnType()==void.class || Modifier.isPublic(declaredMethod.getModifiers()))
+                                        && !(declaredMethod.getParameterCount()==0 && "clone".equals(declaredMethod.getName()))
                                 ) || (
                                         declaredMethod.isAnnotationPresent(QtInvokable.class) 
                                         && declaredMethod.getAnnotation(QtInvokable.class).value()
@@ -1203,7 +1229,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
                     	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                    	metaTypeId = QtJambiInternal.findMetaType(typeName);
-	                        if(metaTypeId==QMetaType.Type.UnknownType.value() || !(declaredMethod.getGenericReturnType() instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                    	QMetaType metaType = new QMetaType(metaTypeId);
+	                        if(metaTypeId==QMetaType.Type.UnknownType.value() 
+	                        		|| !(declaredMethod.getGenericReturnType() instanceof Class 
+	                        				|| metaType.name().toString().equals(typeName))
+	                        		|| metaType.javaType()!=declaredMethod.getReturnType()) {
 	                        	AnnotatedElement ae = null;
 	                        	if(QtJambiInternal.useAnnotatedType)
 	                        		ae = declaredMethod.getAnnotatedReturnType();
@@ -1213,9 +1243,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                                    ae,
 	                                    isPointer,
 	                                    isReference);
+	                        	metaType = new QMetaType(metaTypeId);
 	                        }
 	                        if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	                            typeName = new QMetaType(metaTypeId).name().toString();
+	                            typeName = metaType.name().toString();
                     	}
                     	methodParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
                     }else{
@@ -1293,15 +1324,20 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
                             if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
-	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericParameterTypes[j] instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                        	QMetaType metaType = new QMetaType(metaTypeId);
+	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+	                            		|| !(genericParameterTypes[j] instanceof Class 
+	                            				|| metaType.name().toString().equals(typeName))
+	                            		|| metaType.javaType()!=parameterTypes[j]) {
 	                                metaTypeId = registerMetaType(parameterTypes[j], 
 	                                        genericParameterTypes[j],
 	                                        annotatedParameterTypes==null ? null : annotatedParameterTypes[j],
 	                                        isPointer,
 	                                        isReference);
+	                                metaType = new QMetaType(metaTypeId);
 	                            }
 	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	                                typeName = new QMetaType(metaTypeId).name().toString();
+	                                typeName = metaType.name().toString();
                             }
                             cppTypes.add(typeName);
                             methodParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
@@ -2085,7 +2121,14 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaData.propertyUserResolvers.add(null);
                         }
                         
-                        if (Boolean.TRUE.equals(constantVariant) && writer!=null && notify!=null) {
+                        if (Boolean.TRUE.equals(constantVariant)) {
+                        	if(writer!=null || notify!=null)
+                        		throw new QPropertyDeclarationException(String.format("Property %1$s in class %2$s: Must not specify @QtPropertyConstant in combination with writer and/or notifier signal.", propertyName, clazz.getTypeName()));
+                            flags.set(PropertyFlags.Constant);
+                        }else if (writer==null 
+                        		&& notify==null 
+                        		&& qPropertyField==null
+                        		&& (propertyMemberField==null || Modifier.isFinal(propertyMemberField.getModifiers()))) {
                             flags.set(PropertyFlags.Constant);
                         }
                         
@@ -2107,8 +2150,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
                         	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
 	                        	metaTypeId = QtJambiInternal.findMetaType(typeName);
-	                            if(metaTypeId==QMetaType.Type.UnknownType.value() || !(genericPropertyType instanceof Class || new QMetaType(metaTypeId).name().toString().equals(typeName))) {
+	                        	QMetaType metaType = new QMetaType(metaTypeId);
+	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+	                            		|| !(genericPropertyType instanceof Class 
+	                            				|| metaType.name().toString().equals(typeName))
+	                            		|| metaType.javaType()!=propertyType) {
 	                                metaTypeId = registerMetaType(propertyType, genericPropertyType, annotatedPropertyType, isPointer, isReference);
+	                                metaType = new QMetaType(metaTypeId);
 	                            }
 	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
 	                                typeName = new QMetaType(metaTypeId).name().toString();
@@ -2521,4 +2569,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
     public static void usePackageContentAsGadgets(String _package) {
     	gadgetPackages.add(_package);
     }
+    
+    private static java.util.function.Function<Class<?>,Map<String,String>> qmlClassInfoGeneratorFunction;
+    
+	public static void setQmlClassInfoGeneratorFunction(
+			java.util.function.Function<Class<?>, Map<String, String>> qmlClassInfogeneratorFunction) {
+		MetaObjectTools.qmlClassInfoGeneratorFunction = qmlClassInfogeneratorFunction;
+	}
 }

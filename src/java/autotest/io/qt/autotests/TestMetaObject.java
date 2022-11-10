@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.QtEnumerator;
@@ -47,6 +48,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QPair;
 import io.qt.gui.QStandardItem;
 
 /**
@@ -292,6 +294,27 @@ public class TestMetaObject extends ApplicationInitializer {
     
     @Test public void slotHidesSignal() {
     	assertEquals(QMetaMethod.MethodType.Signal, QMetaObject.forType(SignalTest.class).method("quit").methodType());
+    }
+    
+    public static class PairSlotObject extends QObject {
+    	@QtInvokable
+        private QPair<String, String> invokablePairSupplier() {
+            return new QPair<>("A", "B");
+        }
+    	
+    	@SuppressWarnings("unused")
+		private int uninvokable() {
+            return 0;
+        }
+    }
+    
+    @Test public void testPairMetaType() {
+    	PairSlotObject object = new PairSlotObject();
+    	QMetaMethod invokablePairSupplier = object.metaObject().method("invokablePairSupplier");
+    	Assert.assertTrue(invokablePairSupplier.isValid());
+    	Assert.assertTrue(invokablePairSupplier.returnType()!=0);
+    	QMetaMethod uninvokable = object.metaObject().method("uninvokable");
+    	Assert.assertFalse(uninvokable.isValid());
     }
     
     public static void main(String args[]) {

@@ -50,6 +50,7 @@ import io.qt.core.QSize;
 import io.qt.core.Qt.Orientations;
 import io.qt.gui.QPaintEvent;
 import io.qt.gui.QPainter;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QFormLayout;
 import io.qt.widgets.QGraphicsItem;
@@ -93,7 +94,7 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
 	    @Override
 	    public boolean event(QEvent arg__1) {
 	        m_event = arg__1;
-	        eventClass = m_event.getClass();
+	        eventClass = QtJambiInternal.getClass(m_event);
 	        eventType = m_event.type();
 	        if (m_event instanceof CustomEvent)
 	            customEventSomething = ((CustomEvent)m_event).something();
@@ -185,9 +186,9 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
 		} catch (Throwable e) {}
 		for (QGraphicsItem item : scene.items()) {
 			if(item.toGraphicsObject()!=null){
-				assertEquals(item.toGraphicsObject().getClass().getName()+" == "+item.getClass().getName(), item.toGraphicsObject().getClass(), item.getClass());
+				assertEquals(QtJambiInternal.getClass(item.toGraphicsObject()).getName()+" == "+QtJambiInternal.getClass(item).getName(), QtJambiInternal.getClass(item.toGraphicsObject()), QtJambiInternal.getClass(item));
 			}else{
-				assertFalse("class is not ConcreteWrapper "+item.getClass().getName(), item.getClass().getName().endsWith("$ConcreteWrapper"));
+				assertFalse("class is not ConcreteWrapper "+QtJambiInternal.getClass(item).getName(), QtJambiInternal.getClass(item).getName().endsWith("$ConcreteWrapper"));
 			}
 		}
     }
@@ -323,7 +324,7 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
 		for (int j = 0; j < layout.count(); j++) {
 			QLayoutItem item = layout.itemAt(j);
 			assertFalse(item==null);
-			assertFalse("class is not ConcreteWrapper "+item.getClass().getName(), item.getClass().getName().endsWith("$ConcreteWrapper"));
+			assertFalse("class is not ConcreteWrapper "+QtJambiInternal.getClass(item).getName(), QtJambiInternal.getClass(item).getName().endsWith("$ConcreteWrapper"));
 		}
     }
 	
@@ -407,7 +408,7 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
     public void testGetButtonStyleOption()
     {
         QStyleOption opt = PolymorphicType.getButtonStyleOption();
-        assertTrue(opt==null ? "" : opt.getClass().getName(), opt instanceof QStyleOptionButton);
+        assertTrue(opt==null ? "" : QtJambiInternal.getClass(opt).getName(), opt instanceof QStyleOptionButton);
     }
 
     @Test
@@ -425,7 +426,7 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
     {
         QStyleOption opt = PolymorphicType.getUnmappedCustomStyleOption();
         assertTrue(opt instanceof QStyleOption);
-        assertEquals(opt.getClass().getName(), "io.qt.widgets.QStyleOption");
+        assertEquals(QtJambiInternal.getClass(opt).getName(), "io.qt.widgets.QStyleOption");
     }
     
     @Test
@@ -445,44 +446,8 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
     	slider.show();
     	QApplication.exec();
     	slider.hide();
-    	assertTrue("Type unexpected: " + (option[0]==null ? "null" : option[0].getClass().getName()), option[0] instanceof QStyleOptionSlider);
+    	assertTrue("Type unexpected: " + (option[0]==null ? "null" : QtJambiInternal.getClass(option[0]).getName()), option[0] instanceof QStyleOptionSlider);
     }
-
-    /*
-    @Test
-    public void testSendButtonStyleOption()
-    {
-        this.setStyle(new CustomStyle());
-        PolymorphicType.sendButtonStyleOption(this);
-        assertTrue(CustomStyle.m_option != null);
-        assertEquals(CustomStyle.m_option.type(), QStyleOption.OptionType.SO_Button.value());
-        assertTrue(CustomStyle.m_option instanceof QStyleOptionButton);
-    }
-
-    @Test
-    public void testSendCustomStyleOption()
-    {
-        this.setStyle(new CustomStyle());
-        PolymorphicType.sendCustomStyleOption(this, 40);
-        assertTrue(CustomStyle.m_option != null);
-        assertEquals(CustomStyle.m_option.type(), QStyleOption.OptionType.SO_CustomBase.value() + 1);
-        assertTrue(CustomStyle.m_option instanceof CustomStyleOption);
-
-        CustomStyleOption customOpt = (CustomStyleOption) CustomStyle.m_option;
-        assertEquals(customOpt.m_something(), 40);
-    }
-
-    @Test
-    public void testSendUnmappedCustomStyleOption()
-    {
-        this.setStyle(new CustomStyle());
-        PolymorphicType.sendUnmappedCustomStyleOption(this);
-        assertTrue(CustomStyle.m_option != null);
-        assertEquals(CustomStyle.m_option.type(), QStyleOption.OptionType.SO_Default.value());
-        assertTrue(CustomStyle.m_option instanceof QStyleOption);
-        assertEquals(CustomStyle.m_option.getClass().getName(), "io.qt.gui.QStyleOption");
-    }
-    */
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestPolymorphicTypes.class.getName());

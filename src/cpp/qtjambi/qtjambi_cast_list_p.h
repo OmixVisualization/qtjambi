@@ -1115,7 +1115,7 @@ public:
         return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
-        return registerMetaType<QVector<T>>(qPrintable(containerTypeName));
+        return registerMetaType<QVector<T>>(containerTypeName);
     }
 
     void appendVector(JNIEnv * env, void*, jobject) override {
@@ -1336,7 +1336,7 @@ public:
         return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
-        return registerMetaType<QLinkedList<T>>(qPrintable(containerTypeName));
+        return registerMetaType<QLinkedList<T>>(containerTypeName);
     }
 
     void append(JNIEnv * env, void*, jobject) override {

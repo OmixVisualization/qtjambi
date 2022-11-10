@@ -209,14 +209,18 @@ public abstract class AbstractInitializeTask extends Task {
         mySetProperty(-1, Constants.JAVA_HOME_TARGET, sourceValue, result, true);
         String targetJavaVersion = this.getProject().getProperty("target.java.version");
         if(targetJavaVersion==null || targetJavaVersion.isEmpty()) {
-	        Properties properties = new Properties();
-			try(FileInputStream stream = new FileInputStream(new File(new File(result), "release"))){
-				properties.load(stream);
-			} catch (IOException e) {
-				getProject().log("reading java version", e, Project.MSG_ERR);
-			}
+	        File releaseFile = new File(new File(result), "release");
 			targetJavaVersion = "11";
-			String javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+			String javaVersion = null;
+	        if(releaseFile.exists()) {
+		        Properties properties = new Properties();
+				try(FileInputStream stream = new FileInputStream(releaseFile)){
+					properties.load(stream);
+				} catch (IOException e) {
+					getProject().log("reading java version", e, Project.MSG_ERR);
+				}
+				javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+	        }
 			if(javaVersion!=null && !javaVersion.isEmpty()) {
 				int offset = 0;
 				if(javaVersion.startsWith("\"")) {

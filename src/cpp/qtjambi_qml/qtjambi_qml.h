@@ -44,4 +44,6 @@ int qtjambi_qmlRegisterUncreatableType(JNIEnv *env, jclass type, const char* uri
 
 int qtjambi_qmlRegisterUncreatableType(JNIEnv *env, jclass type, int metaObjectRevision, const char* uri, int versionMajor, int versionMinor, const char* qmlName, const QString& reason);
 
+void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const char* uri, int versionMajor, QList<int>* qmlTypeIds = nullptr);
+
 #endif // QTJAMBI_QML_H

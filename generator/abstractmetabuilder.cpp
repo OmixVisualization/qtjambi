@@ -1755,9 +1755,22 @@ void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
 
 void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<AbstractMetaArgument*>& actualArguments){
     const QString& oldFunctionName = meta_functional->typeEntry()->functionName();
-    if(AbstractMetaType * type = meta_functional->type()){
-        if(type->isPrimitive()){
-            if(type->typeEntry()->qualifiedTargetLangName()=="boolean"){
+    QString modifiedReturnType = meta_functional->typeReplaced(0);
+    AbstractMetaType * type = meta_functional->type();
+    if(type || (!modifiedReturnType.isEmpty() && modifiedReturnType!="void")){
+        if((type && type->isPrimitive() && modifiedReturnType.isEmpty())
+                || modifiedReturnType=="byte"
+                || modifiedReturnType=="int"
+                || modifiedReturnType=="long"
+                || modifiedReturnType=="short"
+                || modifiedReturnType=="float"
+                || modifiedReturnType=="double"
+                || modifiedReturnType=="char"
+                || modifiedReturnType=="boolean"){
+            if(modifiedReturnType.isEmpty() && type){
+                modifiedReturnType = type->typeEntry()->qualifiedTargetLangName();
+            }
+            if(modifiedReturnType=="boolean"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsBoolean")
@@ -1765,11 +1778,18 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("getAsBoolean");
                     meta_functional->setJavaFunctionalInterface("java.util.function.BooleanSupplier");
                     break;
-                case 1:
+                case 1:{
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="test")
                         return;
                     meta_functional->typeEntry()->setFunctionName("test");
-                    if(actualArguments[0]->type()->isPrimitive()){
+                    QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+                    if(modifiedArgType=="double"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.DoublePredicate");
+                    }else if(modifiedArgType=="int"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.IntPredicate");
+                    }else if(modifiedArgType=="long"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.LongPredicate");
+                    }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                         if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="double"){
                             meta_functional->setJavaFunctionalInterface("java.util.function.DoublePredicate");
                         }else if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
@@ -1782,6 +1802,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
                     }
                     break;
+                }
                 case 2:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="test")
                         return;
@@ -1794,7 +1815,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     break;
                 default:break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="char"){
+            }else if(modifiedReturnType=="char"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsChar")
@@ -1808,7 +1829,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsChar");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="byte"){
+            }else if(modifiedReturnType=="byte"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsByte")
@@ -1822,7 +1843,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsByte");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="short"){
+            }else if(modifiedReturnType=="short"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsShort")
@@ -1836,7 +1857,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsShort");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="int"){
+            }else if(modifiedReturnType=="int"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsInt")
@@ -1844,11 +1865,18 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("getAsInt");
                     meta_functional->setJavaFunctionalInterface("java.util.function.IntSupplier");
                     break;
-                case 1:
+                case 1:{
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsInt")
                         return;
                     meta_functional->typeEntry()->setFunctionName("applyAsInt");
-                    if(actualArguments[0]->type()->isPrimitive()){
+                    QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+                    if(modifiedArgType=="double"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.DoubleToIntFunction");
+                    }else if(modifiedArgType=="int"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.IntUnaryOperator");
+                    }else if(modifiedArgType=="long"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.LongToIntFunction");
+                    }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                         if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
                             meta_functional->setJavaFunctionalInterface("java.util.function.IntUnaryOperator");
                         }else if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="long"){
@@ -1861,6 +1889,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
                     }
                     break;
+                }
                 case 2:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsInt")
                         return;
@@ -1881,7 +1910,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsInt");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="float"){
+            }else if(modifiedReturnType=="float"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsFloat")
@@ -1895,7 +1924,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsFloat");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="double"){
+            }else if(modifiedReturnType=="double"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsDouble")
@@ -1903,11 +1932,18 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("getAsDouble");
                     meta_functional->setJavaFunctionalInterface("java.util.function.DoubleSupplier");
                     break;
-                case 1:
+                case 1:{
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsDouble")
                         return;
                     meta_functional->typeEntry()->setFunctionName("applyAsDouble");
-                    if(actualArguments[0]->type()->isPrimitive()){
+                    QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+                    if(modifiedArgType=="double"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.DoubleUnaryOperator");
+                    }else if(modifiedArgType=="int"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.IntToDoubleFunction");
+                    }else if(modifiedArgType=="long"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.LongToDoubleFunction");
+                    }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                         if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
                             meta_functional->setJavaFunctionalInterface("java.util.function.IntToDoubleFunction");
                         }else if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="long"){
@@ -1920,6 +1956,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
                     }
                     break;
+                }
                 case 2:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsDouble")
                         return;
@@ -1940,7 +1977,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("applyAsDouble");
                     break;
                 }
-            }else if(type->typeEntry()->qualifiedTargetLangName()=="long"){
+            }else if(modifiedReturnType=="long"){
                 switch(actualArguments.size()){
                 case 0:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="getAsLong")
@@ -1948,11 +1985,18 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                     meta_functional->typeEntry()->setFunctionName("getAsLong");
                     meta_functional->setJavaFunctionalInterface("java.util.function.LongSupplier");
                     break;
-                case 1:
+                case 1:{
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsLong")
                         return;
                     meta_functional->typeEntry()->setFunctionName("applyAsLong");
-                    if(actualArguments[0]->type()->isPrimitive()){
+                    QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+                    if(modifiedArgType=="double"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.DoubleToLongFunction");
+                    }else if(modifiedArgType=="int"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.IntToLongFunction");
+                    }else if(modifiedArgType=="long"){
+                        meta_functional->setJavaFunctionalInterface("java.util.function.LongUnaryOperator");
+                    }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                         if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
                             meta_functional->setJavaFunctionalInterface("java.util.function.IntToLongFunction");
                         }else if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="long"){
@@ -1965,6 +2009,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
                     }
                     break;
+                }
                 case 2:
                     if(!oldFunctionName.isEmpty() && oldFunctionName!="applyAsLong")
                         return;
@@ -1996,11 +2041,21 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                 meta_functional->setJavaFunctionalInterface("java.util.function.Supplier");
                 meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
                 break;
-            case 1:
+            case 1:{
                 if(!oldFunctionName.isEmpty() && oldFunctionName!="apply")
                     return;
                 meta_functional->typeEntry()->setFunctionName("apply");
-                if(actualArguments[0]->type()->isPrimitive()){
+                QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+                if(modifiedArgType=="double"){
+                    meta_functional->setJavaFunctionalInterface("java.util.function.DoubleFunction");
+                    meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
+                }else if(modifiedArgType=="int"){
+                    meta_functional->setJavaFunctionalInterface("java.util.function.IntFunction");
+                    meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
+                }else if(modifiedArgType=="long"){
+                    meta_functional->setJavaFunctionalInterface("java.util.function.LongFunction");
+                    meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
+                }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                     if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
                         meta_functional->setJavaFunctionalInterface("java.util.function.IntFunction");
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
@@ -2011,7 +2066,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                         meta_functional->setJavaFunctionalInterface("java.util.function.DoubleFunction");
                         meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
                     }
-                }else if(type->typeEntry()==actualArguments[0]->type()->typeEntry()
+                }else if(type && type->typeEntry()==actualArguments[0]->type()->typeEntry()
                          && type->typeUsagePattern()==actualArguments[0]->type()->typeUsagePattern()){
                      meta_functional->setJavaFunctionalInterface("java.util.function.UnaryOperator");
                      meta_functional->setJavaFunctionalInterfaceParameterTypes({0});
@@ -2020,12 +2075,13 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                      meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1),0});
                  }
                 break;
+            }
             case 2:
                 if(!oldFunctionName.isEmpty() && oldFunctionName!="apply")
                     return;
                 meta_functional->typeEntry()->setFunctionName("apply");
                 if(!actualArguments[0]->type()->isPrimitive() && !actualArguments[1]->type()->isPrimitive()){
-                    if(type->typeEntry()==actualArguments[0]->type()->typeEntry()
+                    if(type && type->typeEntry()==actualArguments[0]->type()->typeEntry()
                             && type->typeUsagePattern()==actualArguments[0]->type()->typeUsagePattern()
                             && type->typeEntry()==actualArguments[1]->type()->typeEntry()
                             && type->typeUsagePattern()==actualArguments[1]->type()->typeUsagePattern()){
@@ -2054,11 +2110,18 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
             meta_functional->typeEntry()->setFunctionName("run");
             meta_functional->setJavaFunctionalInterface("java.lang.Runnable");
             break;
-        case 1:
+        case 1:{
             if(!oldFunctionName.isEmpty() && oldFunctionName!="accept")
                 return;
             meta_functional->typeEntry()->setFunctionName("accept");
-            if(actualArguments[0]->type()->isPrimitive()){
+            QString modifiedArgType = meta_functional->typeReplaced(actualArguments[0]->argumentIndex()+1);
+            if(modifiedArgType=="double"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.DoubleConsumer");
+            }else if(modifiedArgType=="int"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.IntConsumer");
+            }else if(modifiedArgType=="long"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.LongConsumer");
+            }else if(modifiedArgType.isEmpty() && actualArguments[0]->type()->isPrimitive()){
                 if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="double"){
                     meta_functional->setJavaFunctionalInterface("java.util.function.DoubleConsumer");
                 }else if(actualArguments[0]->type()->typeEntry()->qualifiedTargetLangName()=="int"){
@@ -2071,11 +2134,22 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                 meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
             }
             break;
-        case 2:
+        }
+        case 2:{
             if(!oldFunctionName.isEmpty() && oldFunctionName!="accept")
                 return;
             meta_functional->typeEntry()->setFunctionName("accept");
-            if(actualArguments[1]->type()->isPrimitive()){
+            QString modifiedArgType2 = meta_functional->typeReplaced(actualArguments[1]->argumentIndex()+1);
+            if(modifiedArgType2=="double"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.ObjDoubleConsumer");
+                meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
+            }else if(modifiedArgType2=="int"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.ObjIntConsumer");
+                meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
+            }else if(modifiedArgType2=="long"){
+                meta_functional->setJavaFunctionalInterface("java.util.function.ObjLongConsumer");
+                meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
+            }else if(modifiedArgType2.isEmpty() && actualArguments[1]->type()->isPrimitive()){
                 if(actualArguments[1]->type()->typeEntry()->qualifiedTargetLangName()=="double"){
                     meta_functional->setJavaFunctionalInterface("java.util.function.ObjDoubleConsumer");
                     meta_functional->setJavaFunctionalInterfaceParameterTypes({uint(actualArguments[0]->argumentIndex()+1)});
@@ -2092,6 +2166,7 @@ void analyzeFunctional(AbstractMetaFunctional* meta_functional, const QList<Abst
                                                                            uint(actualArguments[1]->argumentIndex()+1)});
             }
             break;
+        }
         default:
             if(!oldFunctionName.isEmpty() && oldFunctionName!="accept")
                 return;

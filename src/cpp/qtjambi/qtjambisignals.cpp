@@ -627,7 +627,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNative)
             }else{
                 _connectionType = "QueuedConnection";
             }
-            JavaException::raiseIllegalStateException(env, qPrintable(QString("Cannot use signal QThread::%1 from adopted thread with connection type %2.").arg(qt_signalMethod.methodSignature().data()).arg(_connectionType)) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot use signal QThread::%1 from adopted thread with connection type %2.").arg(qt_signalMethod.methodSignature().data()).arg(_connectionType) QTJAMBI_STACKTRACEINFO);
             return nullptr;
         }
         int signalIndex = QMetaObjectPrivate::signalIndex(qt_signalMethod);
@@ -640,7 +640,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNative)
                                                                 Qt::ConnectionType(connectionType),
                                                                 slotObj->types(),
                                                                 qt_signalMethod.enclosingMetaObject());
-        return c ? qtjambi_cast<jobject>(env, c) : nullptr;
+        return qtjambi_cast<jobject>(env, c);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -668,9 +668,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_connectNativeToMetaMe
             return nullptr;
         }
         QMetaObject::Connection c = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
-        if(c){
-            return qtjambi_cast<jobject>(env, c);
-        }
+        return qtjambi_cast<jobject>(env, c);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }

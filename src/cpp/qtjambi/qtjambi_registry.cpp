@@ -78,11 +78,11 @@ Q_GLOBAL_STATIC(HashSet, gFunctionalHash)
 typedef QMap<size_t, PtrDeleterFunction> DeleterHash;
 Q_GLOBAL_STATIC(DeleterHash, gDeleterHash)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-typedef QHash<const QtPrivate::QMetaTypeInterface *, QByteArray> MetaTypeJavaTypeHash;
+typedef QHash<const QtPrivate::QMetaTypeInterface *, jclass> MetaTypeJavaTypeHash;
 typedef QMultiHash<QByteArray,QMetaType> JavaTypeMetaTypesHash;
 typedef QSet<const QtPrivate::QMetaTypeInterface *> JObjectWrappedMetaTypeHash;
 #else
-typedef QHash<int, QByteArray> MetaTypeJavaTypeHash;
+typedef QHash<int, jclass> MetaTypeJavaTypeHash;
 typedef QMultiHash<QByteArray,int> JavaTypeMetaTypesHash;
 typedef QSet<int> JObjectWrappedMetaTypeHash;
 #endif
@@ -138,9 +138,6 @@ Q_GLOBAL_STATIC(FunctionalResolverHash, gFunctionalResolverHash)
 
 Q_GLOBAL_STATIC(TypeStringHash, gMediaControlIIDHash)
 Q_GLOBAL_STATIC(StringTypeHash, gMediaControlIIDClassHash)
-
-Q_GLOBAL_STATIC(JObjectWrapper, gClassLoader)
-Q_GLOBAL_STATIC(QString, oldUrlBase)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gConstructorLock, (QReadWriteLock::Recursive))
 typedef QHash<hash_type,jmethodID> ConstructorIDHash;
@@ -763,7 +760,40 @@ const char* registerMetaTypeName(const QByteArray& typeName){
     return iter->data();
 }
 
-int registerQmlMetaType(const QByteArray& javaClass,
+bool qtjambi_register_metatype_converter(JNIEnv *env, const QMetaType& metaType1, jclass jsvalueClass, const QMetaType& metaType2, jclass targetClass, jmethodID constructor){
+    if(!QMetaType::hasRegisteredConverterFunction(metaType1, metaType2)){
+        InternalToExternalConverter converter1 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType1.name(), metaType1, jsvalueClass);
+        ExternalToInternalConverter reconverter1 = QtJambiTypeManager::getExternalToInternalConverter(env, jsvalueClass, metaType1.name(), metaType1);
+        InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, targetClass);
+        ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, targetClass, metaType2.name(), metaType2);
+        if(converter1 && reconverter1 && converter2 && reconverter2){
+            ParameterTypeInfo parameter1{metaType1.id(), jsvalueClass, std::move(converter1), std::move(reconverter1)};
+            ParameterTypeInfo parameter2{metaType2.id(), targetClass, std::move(converter2), std::move(reconverter2)};
+            return QMetaType::registerConverterFunction([parameter1, parameter2, constructor](const void *src, void *target)->bool{
+                if(JNIEnv *env = qtjambi_current_environment()){
+                    jvalue jv;
+                    jv.l = nullptr;
+                    if(parameter1.convertInternalToExternal(env, nullptr, src, &jv, true)){
+                        jobject result{nullptr};
+                        try{
+                            result = env->NewObject(parameter2.javaClass(), constructor, jv.l);
+                        }catch(const JavaException&){
+                            return false;
+                        }
+                        if(!result && !(QMetaType(parameter2.metaType()).flags() & QMetaType::IsPointer))
+                            return false;
+                        jv.l = result;
+                        return parameter2.convertExternalToInternal(env, nullptr, jv, target, jValueType::l);
+                    }
+                }
+                return false;
+            }, metaType1, metaType2);
+        }
+    }
+    return false;
+}
+
+int registerQmlMetaType(JNIEnv *env, jclass clazz,
                         const QByteArray& typeName,
                         QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                         QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
@@ -799,8 +829,8 @@ int registerQmlMetaType(const QByteArray& javaClass,
                                           flags,
                                           metaObject,
                                           metaObjectFn);
-    if(!javaClass.isEmpty())
-        registerJavaClassForCustomMetaType(metaType, javaClass);
+    if(clazz)
+        registerJavaClassForCustomMetaType(env, metaType, clazz);
     return metaType.id();
 }
 
@@ -1814,21 +1844,22 @@ void registerMediaControlInfo(const std::type_info& typeId, const char *media_co
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass){
-    return registerJavaClassForCustomMetaType(metaType, javaClass, false);
+void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass){
+    return registerJavaClassForCustomMetaType(env, metaType, javaClass, false);
 }
 
-void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass, bool isJObjectWrapped){
+void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass, bool isJObjectWrapped){
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
-    gMetaTypeJavaTypeHash->insert(metaType, javaClass);
-    gJavaTypeMetaTypesHash->insert(javaClass, metaType);
+    QByteArray javaName = qtjambi_class_name(env, javaClass).toLatin1().replace('.', '/');
+    gMetaTypeJavaTypeHash->insert(metaType, getGlobalClassRef(env, javaClass, javaName));
+    gJavaTypeMetaTypesHash->insert(javaName, metaType);
     if(isJObjectWrapped)
         gJObjectWrappedMetaTypes->insert(metaType);
 }
 
-void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass, bool isJObjectWrapped){
-    registerJavaClassForCustomMetaType(metaType.id(), javaClass, isJObjectWrapped);
+void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped){
+    registerJavaClassForCustomMetaType(env, metaType.id(), javaClass, isJObjectWrapped);
 }
 
 bool isJObjectWrappedMetaType(const QMetaType& metaType){
@@ -1836,13 +1867,13 @@ bool isJObjectWrappedMetaType(const QMetaType& metaType){
     return gJObjectWrappedMetaTypes->contains(metaType.id());
 }
 
-QByteArray registeredJavaClassForCustomMetaType(int metaType){
+jclass registeredJavaClassForCustomMetaType(int metaType){
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
     return gMetaTypeJavaTypeHash->value(metaType);
 }
 
-QByteArray registeredJavaClassForCustomMetaType(const QMetaType& metaType){
+jclass registeredJavaClassForCustomMetaType(const QMetaType& metaType){
     return registeredJavaClassForCustomMetaType(metaType.id());
 }
 
@@ -1852,12 +1883,13 @@ QList<int> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
     return gJavaTypeMetaTypesHash->values(javaClass);
 }
 #else
-void registerJavaClassForCustomMetaType(QMetaType metaType, const QByteArray& javaClass, bool isJObjectWrapped){
+void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped){
     const QtPrivate::QMetaTypeInterface * iface = metaType.iface();
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
-    gMetaTypeJavaTypeHash->insert(iface, javaClass);
-    gJavaTypeMetaTypesHash->insert(javaClass, metaType);
+    QByteArray javaName = qtjambi_class_name(env, javaClass).toLatin1().replace('.', '/');
+    gMetaTypeJavaTypeHash->insert(iface, getGlobalClassRef(env, javaClass, javaName));
+    gJavaTypeMetaTypesHash->insert(javaName, metaType);
     if(isJObjectWrapped)
         gJObjectWrappedMetaTypes->insert(iface);
 }
@@ -1867,13 +1899,13 @@ bool isJObjectWrappedMetaType(QMetaType metaType){
     return gJObjectWrappedMetaTypes->contains(metaType.iface());
 }
 
-QByteArray registeredJavaClassForCustomMetaType(const QtPrivate::QMetaTypeInterface * metaType){
+jclass registeredJavaClassForCustomMetaType(const QtPrivate::QMetaTypeInterface * metaType){
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
     return gMetaTypeJavaTypeHash->value(metaType);
 }
 
-QByteArray registeredJavaClassForCustomMetaType(QMetaType metaType){
+jclass registeredJavaClassForCustomMetaType(QMetaType metaType){
     return registeredJavaClassForCustomMetaType(metaType.iface());
 }
 
@@ -1881,19 +1913,19 @@ const QMetaObject *findWrappersMetaObject(const QtPrivate::QMetaTypeInterface *i
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         try {
-            QByteArray className;
+            jclass clazz = nullptr;
             {
                 QReadLocker locker(gLock());
-                className = (*gMetaTypeJavaTypeHash)[iface];
+                clazz = (*gMetaTypeJavaTypeHash)[iface];
             }
-            if(!className.isEmpty()){
-                jclass clazz = resolveClass(env, className);
-                const QMetaObject* meta_object = qtjambi_metaobject_for_class(env, clazz);
-                if(!meta_object){
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags = QtPrivate::QMetaTypeTypeFlags<void*>::Flags | QMetaType::PointerToGadget;
+            if(clazz){
+                if(const QMetaObject* meta_object = qtjambi_metaobject_for_class(env, clazz)){
                     registerMetaObjectByMetaTypeInterface(iface, meta_object);
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = &metaobjectByMetaTypeInterface;
+                }else{
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~(QMetaType::IsGadget | QMetaType::PointerToGadget);
+                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = [](const QtPrivate::QMetaTypeInterface*)->const QMetaObject*{return nullptr;};
                 }
-                const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = &metaobjectByMetaTypeInterface;
             }
         }catch(const JavaException&){
         }
@@ -2059,127 +2091,43 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
                 classLoader = nullptr;
             }
         }
+        if(!returned){
+            jobject currentThread = Java::Runtime::Thread::currentThread(env);
+            Q_ASSERT(currentThread);
 
-        if(!classLoader){
-            // Check internal property which is set in Eclipse integration
-            QString pathSeparator = ";";
-            QString qtClassPath;
-            {
-                if (jstring classPath = Java::Runtime::System::getProperty(env, env->NewStringUTF("io.qt.qtjambi.internal.urlbase")))
-                    qtjambi_to_qstring(qtClassPath, env, classPath);
+            if(jobject contextClassLoader = Java::Runtime::Thread::getContextClassLoader(env, currentThread)){
+                returned = Java::Runtime::ClassLoader::tryLoadClass(env, contextClassLoader, className);
+                if (env->ExceptionCheck() || returned == nullptr) {
+                    env->ExceptionClear();
+                    classLoader = nullptr;
+                }
             }
-            if (!qtClassPath.isEmpty()) {
-                QString oldBase;
-                {
-                    QReadLocker locker(gLock());
-                    classLoader = gClassLoader->object();
-                    oldBase = *oldUrlBase();
-                }
-
-                if (classLoader == nullptr) {
-                    // No class loader instantiated?
-                    // We have to make a URL loader, because the default is created with
-                    // the wrong class path in Eclipse.
-
-                    QWriteLocker locker(gLock());
-                    classLoader = gClassLoader->object();
-                    if (classLoader == nullptr) {
-                        locker.unlock();
-                        jobject currentThread = Java::Runtime::Thread::currentThread(env);
-                        Q_ASSERT(currentThread);
-
-                        jobject contextClassLoader = Java::Runtime::Thread::getContextClassLoader(env, currentThread);
-                        Q_ASSERT(currentThread);
-
-                        QStringList urlList = qtClassPath.split(pathSeparator);
-                        jobjectArray urls = Java::Runtime::URL::newArray(env, jsize(urlList.size()));
-                        Q_ASSERT(urls);
-
-                        for (int i=0; i<urlList.size(); ++i) {
-                            jobject url = Java::Runtime::URL::newInstance(env, qtjambi_from_qstring(env, urlList.at(i)));
-                            Q_ASSERT(url);
-
-                            env->SetObjectArrayElement(urls, i, url);
-                        }
-
-                        classLoader = Java::Runtime::URLClassLoader::newInstance(env, urls, contextClassLoader);
-                        Q_ASSERT(classLoader);
-
-                        locker.relock();
-                        gClassLoader->operator=(JObjectWrapper(env, classLoader));
-                        *oldUrlBase() = qtClassPath;
-                        oldBase = qtClassPath;
-                    }
-                }
-
-                if (classLoader && oldBase != qtClassPath) {
-                    // If the class path has changed after the class loader
-                    // was created, we need to update the class loader.
-                    // This is needed to load custom widgets in the current project.
-
-                    QWriteLocker locker(gLock());
-                    QStringList oldUrlList = oldUrlBase->split(pathSeparator);
-                    QStringList urlList = qtClassPath.split(pathSeparator);
-
-
-                    locker.unlock();
-                    for (int i=0; i<urlList.size(); ++i) {
-                        if (!oldUrlList.contains(urlList.at(i))) {
-                            jobject url = Java::Runtime::URL::newInstance(env, qtjambi_from_qstring(env, urlList.at(i)));
-                            Q_ASSERT(url);
-                            Java::Runtime::URLClassLoader::addURL(env, classLoader, url);
-                        }
-                    }
-                    locker.relock();
-                    *oldUrlBase() = qtClassPath;
-                }
-                // Look up the class in our custom class loader
-                if(classLoader){
-                    returned = Java::Runtime::ClassLoader::tryLoadClass(env, classLoader, className);
-                    if (env->ExceptionCheck()) {
-                        returned = nullptr;
-                        if(!exception)
-                            exception = env->ExceptionOccurred();
-                        env->ExceptionClear();
-                    }
-                }
-                if (returned == nullptr && exception) {
-#ifdef QTJAMBI_STACKTRACE
-                    if(qtClassName=="io.qt.internal.QtJambiInternal")
-                        JavaException(env, exception).raise();
-                    else
-                        JavaException(env, exception).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-#else
-                        JavaException(env, exception).raise();
-#endif
-                }
-            } else {
+        }
 #ifdef Q_OS_ANDROID
-                if(!qtClassName.endsWith("android/QtNative")){
-                    jclass cls = Java::Android::QtNative::getClass(env);
-                    classLoader = Java::Runtime::Class::getClassLoader(env, cls);
-                    returned = Java::Runtime::ClassLoader::tryLoadClass(env, classLoader, className);
-                    if (env->ExceptionCheck()) {
-                        returned = nullptr;
-                        if(!exception)
-                            exception = env->ExceptionOccurred();
-                        env->ExceptionClear();
-                    }
-                }
-                if (returned == nullptr && exception)
-#endif
-                {
-#ifdef QTJAMBI_STACKTRACE
-                    if(qtClassName=="io.qt.internal.QtJambiInternal"){
-                        JavaException(env, exception).raise();
-                    }else{
-                        JavaException(env, exception).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-                    }
-#else
-                    JavaException(env, exception).raise();
-#endif
-                }
+        if(!returned && !qtClassName.endsWith("android/QtNative")){
+            jclass cls = Java::Android::QtNative::getClass(env);
+            classLoader = Java::Runtime::Class::getClassLoader(env, cls);
+            if(classLoader)
+                returned = Java::Runtime::ClassLoader::tryLoadClass(env, classLoader, className);
+            if (env->ExceptionCheck()) {
+                returned = nullptr;
+                if(!exception)
+                    exception = env->ExceptionOccurred();
+                env->ExceptionClear();
             }
+        }
+#endif
+
+        if(!returned && exception){
+#ifdef QTJAMBI_STACKTRACE
+            if(qtClassName=="io.qt.internal.QtJambiInternal"){
+                JavaException(env, exception).raise();
+            }else{
+                JavaException(env, exception).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+            }
+#else
+            JavaException(env, exception).raise();
+#endif
         }
     }
 
@@ -2227,6 +2175,10 @@ jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className){
     Q_UNUSED(className)
     return cls;
 #endif
+}
+
+jclass qtjambi_to_global_reference(JNIEnv * env, jclass clazz){
+    return getGlobalClassRef(env, clazz, nullptr);
 }
 
 void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className){
@@ -2325,24 +2277,41 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread);
  * Field Cache
  */
 
+/*
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
-                      const char *className, bool isStatic)
+                      const char *className, bool isStatic, jthrowable* exceptionOccurred)
 {
     if(jclass clazz = resolveClass(env, className)){
-        return resolveField(env, fieldName, signature, clazz, isStatic);
+        return resolveField(env, fieldName, signature, clazz, isStatic, exceptionOccurred);
     }
     else return nullptr;
 }
+*/
+
+hash_type computeHash(JNIEnv* env, jclass clazz, const char *memberName, const char *signature, bool isStatic) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(signature)
+        return qHashMulti(0, clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0, memberName, signature, isStatic);
+    else
+        return qHashMulti(0, clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0, memberName, isStatic);
+#else
+    QList<hash_type> range;
+    range << qHash(clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0);
+    range << qHash(memberName);
+    if(signature)
+        range << qHash(signature);
+    range << qHash(isStatic);
+    return qHashRange(range.begin(), range.end());
+#endif
+}
 
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
-                      jclass clazz, bool isStatic)
+                      jclass clazz, bool isStatic, jthrowable* exceptionOccurred)
 {
     if(!clazz)
         return nullptr;
 #ifndef QTJAMBI_NOCACHE
-    hash_type classHash = hash_type(Java::Runtime::Object::hashCode(env,clazz));
-    hash_type key = hashSum({qHash(fieldName), classHash, hash_type(isStatic ? 1 : 0)});
-
+    hash_type key = computeHash(env,clazz,fieldName,nullptr,isStatic);
     {
         QReadLocker locker(gFieldLock());
         Q_UNUSED(locker)
@@ -2356,6 +2325,12 @@ jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
         returned = env->GetFieldID(clazz, fieldName, signature);
     else
         returned = env->GetStaticFieldID(clazz, fieldName, signature);
+    if(env->ExceptionCheck()){
+        if(exceptionOccurred)
+            *exceptionOccurred = env->ExceptionOccurred();
+        env->ExceptionClear();
+        return nullptr;
+    }
 #ifndef QTJAMBI_NOCACHE
     {
         QWriteLocker locker(gFieldLock());
@@ -2375,17 +2350,12 @@ jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
  * Method Cache
  */
 
-jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic)
+jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic, jthrowable* exceptionOccurred)
 {
     jmethodID returned = nullptr;
     if(clazz){
 #ifndef QTJAMBI_NOCACHE
-        hash_type classHash = hash_type(Java::Runtime::Object::hashCode(env,clazz));
-        hash_type key = hashSum({qHash(methodName),
-                            qHash(signature),
-                            classHash,
-                            hash_type(isStatic ? 1 : 0)});
-
+        hash_type key = computeHash(env,clazz,methodName,signature,isStatic);
         {
             QReadLocker locker(gMethodLock());
             Q_UNUSED(locker)
@@ -2398,7 +2368,12 @@ jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signatu
             returned = env->GetMethodID(clazz, methodName, signature);
         else
             returned = env->GetStaticMethodID(clazz, methodName, signature);
-        qtjambi_throw_java_exception(env);
+        if(env->ExceptionCheck()){
+            if(exceptionOccurred)
+                *exceptionOccurred = env->ExceptionOccurred();
+            env->ExceptionClear();
+            return nullptr;
+        }
 #ifndef QTJAMBI_NOCACHE
         QWriteLocker locker(gMethodLock());
         Q_UNUSED(locker)
@@ -2414,21 +2389,7 @@ jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signatu
 }
 
 jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz){
-    uint key = uint(Java::Runtime::Object::hashCode(env,clazz));
-    jmethodID constructor;
-    {
-        QReadLocker locker(gConstructorLock());
-        Q_UNUSED(locker)
-        constructor = gConstructorHash->value(key, nullptr);
-    }
-    if(!constructor){
-        QWriteLocker locker(gConstructorLock());
-        Q_UNUSED(locker)
-        constructor = env->GetMethodID(clazz, "<init>", "(Lio/qt/QtObject$QPrivateConstructor;)V");
-        qtjambi_throw_java_exception(env);
-        gConstructorHash->insert(key, constructor);
-    }
-    return constructor;
+    return resolveMethod(env, "<init>", "(Lio/qt/QtObject$QPrivateConstructor;)V", clazz);
 }
 
 jclass resolveLambdaInterface(JNIEnv* env, jclass lambdaClass){
@@ -2514,10 +2475,6 @@ QObject* createQmlErrorDummyObject(const QMetaObject* metaObject, void* placemen
 
 jclass qtjambi_find_generated_superclass(JNIEnv * env, jclass clazz){
     return Java::QtJambi::QtJambiInternal::findGeneratedSuperclass(env, clazz);
-}
-
-jobject qtjambi_find_QmlAttachedProperties(JNIEnv * env, jclass clazz){
-    return Java::QtJambi::QtJambiInternal::findQmlAttachedProperties(env, clazz);
 }
 
 void clear_registry_at_shutdown(JNIEnv * env){
@@ -3071,11 +3028,11 @@ void JObjectValueWrapper::serializableDataStreamIn(const QtPrivate::QMetaTypeInt
     }
 }
 
-void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, const QString& qtName, const QString& fullJavaName, jclass clazz);
+void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz);
 
-int qtjambi_register_list_metatype(JNIEnv *env, const QMetaType& elementType){
+int qtjambi_register_container_metatype(JNIEnv *env, ContainerType containerType, const QMetaType& elementType){
     int result = 0;
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(qtjambi_create_container_access(env, ContainerType::QList, elementType));
+    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(qtjambi_create_container_access(env, containerType, elementType));
     if(!listAccess){
         QHashFunction hashFunction;
         InternalToExternalConverter internalToExternalConverter;
@@ -3116,7 +3073,7 @@ int qtjambi_register_list_metatype(JNIEnv *env, const QMetaType& elementType){
         }
         listAccess = dynamic_cast<AbstractListAccess*>(qtjambi_create_container_access(
                                                                            env,
-                                                                           ContainerType::QList,
+                                                                           containerType,
                                                                            elementType,
                                                                            elementType.alignOf(),
                                                                            elementType.sizeOf(),
@@ -3127,7 +3084,19 @@ int qtjambi_register_list_metatype(JNIEnv *env, const QMetaType& elementType){
                                                                            ));
     }
     if(listAccess){
-        result = listAccess->registerContainer(QStringLiteral("QList<%1>").arg(QLatin1String(elementType.name())).toUtf8());
+        QString containerName;
+        switch(containerType){
+        case ContainerType::QSet:
+            containerName = QStringLiteral("QSet");
+        case ContainerType::QQueue:
+            containerName = QStringLiteral("QQueue");
+        case ContainerType::QStack:
+            containerName = QStringLiteral("QStack");
+        default:
+            containerName = QStringLiteral("QList");
+        }
+
+        result = listAccess->registerContainer(QStringLiteral("%1<%2>").arg(containerName, QLatin1String(elementType.name())).toUtf8());
         listAccess->dispose();
     }
     return result;
@@ -3217,7 +3186,7 @@ int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& ja
     QMetaType::registerConverterFunction(iconv, metaType, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>());
     QMetaType::registerConverterFunction(iconv, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Signed>(), metaType);
     QMetaType::registerConverterFunction(iconv, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>(), metaType);
-    registerJavaClassForCustomMetaType(metaType, javaClassName.toUtf8());
+    registerJavaClassForCustomMetaType(env, metaType, clazz);
     return result;
 }
 #else
@@ -3364,7 +3333,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                             original_meta_object
                         );
                     qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, typeId, clazz);
                     return typeId;
 #else
                     QMetaType metaType = createMetaType(typeName,
@@ -3386,7 +3355,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                         original_meta_object,
                                                         nullptr);
                     metaType.id();
-                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, metaType, clazz);
                     registerConverterVariant(env, metaType, typeName, javaClassName, clazz);
                     return metaType.id();
 #endif
@@ -3404,7 +3373,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                 original_meta_object
                             );
                         qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint16>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, typeId, clazz);
                         return typeId;
 #else
                         QMetaType metaType = createMetaType(typeName,
@@ -3426,7 +3395,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                             original_meta_object,
                                                             nullptr);
                         int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, metaType, clazz);
                         return _id;
 #endif
                     }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)){
@@ -3440,7 +3409,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                 original_meta_object
                             );
                         qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint64>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, typeId, clazz);
                         return typeId;
 #else
                         QMetaType metaType = createMetaType(typeName,
@@ -3462,7 +3431,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                             original_meta_object,
                                                             nullptr);
                         int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, metaType, clazz);
                         return _id;
 #endif
                     }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
@@ -3476,7 +3445,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                 original_meta_object
                             );
                         qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint8>(), typeId);
-                        registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, typeId, clazz);
                         return typeId;
 #else
                         QMetaType metaType = createMetaType(typeName,
@@ -3498,7 +3467,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                             original_meta_object,
                                                             nullptr);
                         int _id = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                        registerJavaClassForCustomMetaType(env, metaType, clazz);
                         return _id;
 #endif
                     }else /*if(Java::Runtime::Enum::isAssignableFrom(env, clazz)
@@ -3513,7 +3482,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                  original_meta_object
                              );
                          qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                         registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                         registerJavaClassForCustomMetaType(env, typeId, clazz);
                          return typeId;
 #else
                          enum E:qint32{};
@@ -3536,7 +3505,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                              original_meta_object,
                                                              nullptr);
                          int _id = metaType.id();
-                         registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                         registerJavaClassForCustomMetaType(env, metaType, clazz);
                          return _id;
 #endif
                     }
@@ -3552,7 +3521,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                             original_meta_object
                         );
                     qtjambi_register_comparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, typeId, clazz);
                     return typeId;
 #else
                     enum E:qint32{};
@@ -3575,7 +3544,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                         original_meta_object,
                                                         nullptr);
                     int _id = metaType.id();
-                    registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, metaType, clazz);
                     return _id;
 #endif
                 }
@@ -3585,7 +3554,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
                     qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, typeId, clazz);
                     return typeId;
 #else
                     QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
@@ -3617,7 +3586,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                     }
                     int typeId = QMetaType::registerNormalizedTypedef(metaTypeName, id);
                     qtjambi_register_comparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    registerJavaClassForCustomMetaType(typeId, javaClassName.toLatin1());
+                    registerJavaClassForCustomMetaType(env, typeId, clazz);
                     return typeId;
 #else
                     if(Java::Runtime::Enum::isAssignableFrom(env, clazz)){
@@ -3734,7 +3703,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                 return true;
                             }, QMetaType::fromType<JObjectWrapper>(), metaType);
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
-                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                            registerJavaClassForCustomMetaType(env, metaType, clazz);
                             return result;
                         }
                         if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
@@ -3757,10 +3726,13 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                             /*.size=*/ sizeof(JObjectWrapper),
                                                             /*.alignment=*/ alignof(JObjectWrapper),
                                                             /*.typeId=*/ QMetaType::UnknownType,
-                                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                            /*.flags=*/ QMetaType::TypeFlags(
+                                                                QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags
+                                                                | QMetaType::IsGadget
+                                                                ),
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                        registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                         QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                             if(src){
                                 new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
@@ -3818,7 +3790,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                                 /*.flags=*/ QMetaType::TypeFlags(superMetaType.iface()->flags),
                                                                 nullptr, &findWrappersMetaObject);
                             id = metaType.id();
-                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                            registerJavaClassForCustomMetaType(env, metaType, clazz);
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                             return id;
                         }else{
@@ -3921,7 +3893,7 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                     return true;
                                 }, QMetaType::fromType<JObjectWrapper>(), metaType);
                                 registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
-                                registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1());
+                                registerJavaClassForCustomMetaType(env, metaType, clazz);
                                 return result;
                             }
                             if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
@@ -3944,10 +3916,13 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                                 /*.size=*/ sizeof(JObjectWrapper),
                                                                 /*.alignment=*/ alignof(JObjectWrapper),
                                                                 /*.typeId=*/ QMetaType::UnknownType,
-                                                                /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                                /*.flags=*/ QMetaType::TypeFlags(
+                                                                    QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags
+                                                                        | QMetaType::IsGadget
+                                                                        ),
                                                                 nullptr, &findWrappersMetaObject);
                             int result = metaType.id();
-                            registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                            registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                             QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                                 if(src){
                                     new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
@@ -3996,10 +3971,13 @@ int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jbo
                                                             /*.size=*/ sizeof(JObjectWrapper),
                                                             /*.alignment=*/ alignof(JObjectWrapper),
                                                             /*.typeId=*/ QMetaType::UnknownType,
-                                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags),
+                                                            /*.flags=*/ QMetaType::TypeFlags(
+                                                                            QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags
+                                                                            | QMetaType::IsGadget
+                                                                    ),
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
-                        registerJavaClassForCustomMetaType(metaType, javaClassName.toLatin1(), true);
+                        registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                         QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                             if(src){
                                 new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));

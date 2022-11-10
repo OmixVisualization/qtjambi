@@ -226,15 +226,6 @@ void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread
         if(!jthread){
             Java::QtCore::QThread::set_javaThread(env, javaQThread, java_thread);
             Java::QtJambi::QtJambiInternal::createAssociation(env, java_thread, javaQThread);
-            /* don't use interruptible for adopted threads!
-            if(jobject interruptible = Java::QtCore::QThread::interruptible(env)){
-                JObjectSynchronizer sync(env, javaQThread);
-                Q_UNUSED(sync)
-                Java::QtJambi::QtJambiInternal::setThreadInterruptible(env, java_thread, interruptible);
-                env->DeleteLocalRef(interruptible);
-                interruptible = nullptr;
-            }
-            */
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_thread)){
                 if(!qt_thread->parent()){
                     if(QThreadData::get2(qt_thread)->isAdopted || link->qobject()==QCoreApplicationPrivate::mainThread()){

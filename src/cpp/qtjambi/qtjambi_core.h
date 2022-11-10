@@ -244,20 +244,30 @@ public:
     static void check(JNIEnv* env);
 #endif
     static void check(JNIEnv* env QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseQNoNativeResourcesException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseNumberFormatException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseIllegalAccessException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     static void raiseIllegalArgumentException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseIllegalStateException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseIllegalArgumentException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseNullPointerException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseIndexOutOfBoundsException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseQNonVirtualOverridingException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseNullPointerException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseQNoImplementationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    static void raiseIllegalAccessError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseQNoImplementationException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseError(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseRuntimeException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseRuntimeException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseUnsupportedOperationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseUnsupportedOperationException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseQThreadAffinityException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
+    static void raiseQThreadAffinityException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
+#else
+    static void raiseIllegalArgumentException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseNullPointerException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseQNoImplementationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseError(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseRuntimeException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseUnsupportedOperationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseQThreadAffinityException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
+#endif
 private:
     void update(JNIEnv *env);
     QSharedDataPointer<JavaExceptionPrivate> p;
@@ -1937,7 +1947,7 @@ T qtjambi_to_functional(JNIEnv *env, jobject java_object, const char *className)
     T fct = nullptr;
     T* result = &fct;
     if(!qtjambi_convert_to_native(env, typeid(T), nullptr, className, java_object, &result)){
-        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QString("null")).arg(QLatin1String(className))) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QStringLiteral("null")).arg(QLatin1String(className)) QTJAMBI_STACKTRACEINFO );
     }
     return result ? *result : nullptr;
 }
@@ -1948,7 +1958,7 @@ T qtjambi_to_functional(JNIEnv *env, jobject java_object)
     T fct = nullptr;
     T* result = &fct;
     if(!qtjambi_convert_to_native(env, typeid(T), nullptr, qtjambi_class_name(env, env->GetObjectClass(java_object)).replace(".", "/"), java_object, &result)){
-        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(T))))) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(T)))) QTJAMBI_STACKTRACEINFO );
     }
     return result ? *result : nullptr;
 }

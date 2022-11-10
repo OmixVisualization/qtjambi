@@ -118,7 +118,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QGraphicsItem sharedObject = object.createSharedObject2();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QGraphicsTextItem.class, sharedObject.getClass());
+		assertEquals(QGraphicsTextItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		((QGraphicsTextItem)sharedObject).dispose();
 		assertEquals("SharedObject2", object.deletedSharedObjectName());
@@ -129,7 +129,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QGraphicsItem sharedObject = object.createSharedObject2();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QGraphicsTextItem.class, sharedObject.getClass());
+		assertEquals(QGraphicsTextItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		General.internalAccess.setJavaOwnership(sharedObject);
 		WeakReference<QGraphicsItem> weak = new WeakReference<QGraphicsItem>(sharedObject);
@@ -189,7 +189,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject4();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QGridLayout.class, sharedObject.getClass());
+		assertEquals(QGridLayout.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		((QLayout)sharedObject).dispose();
 		assertEquals("SharedObject4", object.deletedSharedObjectName());
@@ -200,7 +200,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject4();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QGridLayout.class, sharedObject.getClass());
+		assertEquals(QGridLayout.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		General.internalAccess.setJavaOwnership(sharedObject);
 		WeakReference<QLayoutItem> weak = new WeakReference<QLayoutItem>(sharedObject);
@@ -227,7 +227,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject5();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QSpacerItem.class, sharedObject.getClass());
+		assertEquals(QSpacerItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		((QSpacerItem)sharedObject).dispose();
 		assertEquals("SpacerItem", object.deletedSharedObjectName());
@@ -238,7 +238,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject5();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QSpacerItem.class, sharedObject.getClass());
+		assertEquals(QSpacerItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
@@ -261,7 +261,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject6();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QWidgetItem.class, sharedObject.getClass());
+		assertEquals(QWidgetItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		QWidget widget = ((QWidgetItem)sharedObject).widget();
 		boolean[] disposed = {false};
@@ -282,7 +282,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 		QLayoutItem sharedObject = object.createSharedObject6();
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
-		assertEquals(QWidgetItem.class, sharedObject.getClass());
+		assertEquals(QWidgetItem.class, QtJambiInternal.getClass(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
 		QWidget widget = ((QWidgetItem)sharedObject).widget();
 		General.internalAccess.setJavaOwnership(sharedObject);

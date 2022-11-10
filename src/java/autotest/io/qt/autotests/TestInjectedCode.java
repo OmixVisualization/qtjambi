@@ -1116,7 +1116,8 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals(418, img.width());
     }
 
-    @Test
+    @SuppressWarnings("deprecation")
+	@Test
     public void testQCursorBitmap() {
         QCursor cursor = new QCursor(Qt.CursorShape.CrossCursor);
         assertTrue(cursor.bitmap().isNull());

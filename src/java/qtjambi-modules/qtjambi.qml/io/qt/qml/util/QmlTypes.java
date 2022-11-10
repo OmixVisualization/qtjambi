@@ -33,20 +33,19 @@ package io.qt.qml.util;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Supplier;
+import java.util.List;
 import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
-import io.qt.QtObjectInterface;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
-import io.qt.core.QObject;
+import io.qt.core.QList;
 import io.qt.core.QResource;
 import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
@@ -144,17 +143,13 @@ public final class QmlTypes {
 	 * @param versionMajor major version for qml import
 	 */
 	public static void registerPackage(Package pkg, String uri, int versionMajor, Class<?>... classes) {
+		boolean isModule = uri==null;
 		if(uri==null)
 			uri = pkg.getName();
-		Set<Class<?>> registeredClasses = new HashSet<>();
+		List<Class<?>> registeredClasses = new ArrayList<>();
 		for(Class<?> cls : classes) {
-			if(registeredClasses.contains(cls))
-				continue;
-			try{
-				analyzeType(cls, uri, versionMajor);
+			if(!registeredClasses.contains(cls))
 				registeredClasses.add(cls);
-			} catch (Exception e) {
-			}
 		}
 		QDir classPath = new QDir(":"+pkg.getName().replace('.', '/'));
 		for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
@@ -175,16 +170,22 @@ public final class QmlTypes {
 							}
 						}
 					}
-					if(registeredClasses.contains(cls))
-						continue;
-					analyzeType(cls, uri, versionMajor);
-					registeredClasses.add(cls);
+					if(!registeredClasses.contains(cls))
+						registeredClasses.add(cls);
 				} catch (Exception e) {
 				}
 			}
 		}
+		try{
+			analyzeType(uri, versionMajor, null, registeredClasses.toArray(new Class[registeredClasses.size()]));
+		} catch (Exception e) {
+		}
 		for(String qmlFile : classPath.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 			QtQml.qmlRegisterType(new QUrl("qrc:"+pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
+		}
+		if(isModule) {
+			QtQml.qmlRegisterModule(uri, versionMajor, 0);
+			QtQml.qmlProtectModule(uri, versionMajor);
 		}
 	}
 	
@@ -269,6 +270,33 @@ public final class QmlTypes {
 		if(_package==null) {
 			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
+		if(_package==null){
+			QDir classPath = new QDir(":"+pkg.replace('.', '/'));
+			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+					className = pkg+"."+className.substring(0, className.length()-6);
+					try {
+						Class<?> cls;
+						try {
+							cls = qmlClassLoader.loadClass(className);
+						} catch (Exception e) {
+							try {
+								cls = ClassLoader.getSystemClassLoader().loadClass(className);
+							} catch (Exception e1) {
+								try {
+									cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+								} catch (Exception e2) {
+									cls = Class.forName(className);
+								}
+							}
+						}
+						_package = cls.getPackage();
+						break;
+					} catch (Exception e) {
+					}
+				}
+			}
+		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
 		}
@@ -284,7 +312,7 @@ public final class QmlTypes {
 	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
 	 */
 	@SuppressWarnings("deprecation")
-	public static int registerType(Class<? extends QtObjectInterface> type) {
+	public static int registerType(Class<?> type) {
 		if(type.getPackage()==null)
 			throw new QmlTypeRegistrationException("Cannot register classes from default package.");
 		QmlImportMajorVersion importMajorVersion = type.getPackage().getAnnotation(QmlImportMajorVersion.class);
@@ -301,7 +329,7 @@ public final class QmlTypes {
 	 * @return the new type id
 	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
 	 */
-	public static int registerType(Class<? extends QtObjectInterface> type, int versionMajor) {
+	public static int registerType(Class<?> type, int versionMajor) {
 		return registerType(type, type.getPackage().getName(), versionMajor);
 	}
 	
@@ -313,50 +341,19 @@ public final class QmlTypes {
 	 * @return the new type id
 	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
 	 */
-	public static int registerType(Class<? extends QtObjectInterface> type, String uri, int versionMajor) {
+	public static int registerType(Class<?> type, String uri, int versionMajor) {
 		try {
-			return analyzeType(type, uri, versionMajor);
+			QList<Integer> resultTypeIDs = new QList<>(int.class);
+			analyzeType(uri, versionMajor, resultTypeIDs, type);
+			return resultTypeIDs.isEmpty() ? -1 : resultTypeIDs.first();
+		} catch (RuntimeException | Error e) {
+			throw e;
 		} catch (Exception e) {
 			throw new QmlTypeRegistrationException("Cannot register class "+type.getName(), e);
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static int analyzeType(Class<?> cls, String uri, int versionMajor) throws Exception {
-		if(cls.isInterface()) {
-			if(QtObjectInterface.class.isAssignableFrom(cls) && cls.isAnnotationPresent(QmlInterface.class))
-				return QtQml.qmlRegisterInterface((Class<? extends QtObjectInterface>)cls, uri, versionMajor);
-		}else if(QObject.class.isAssignableFrom(cls)){
-			if(cls.isAnnotationPresent(QmlAnonymous.class)){
-				return QtQml.qmlRegisterAnonymousType((Class<? extends QObject>)cls, uri, versionMajor);
-			}else if(cls.isAnnotationPresent(QmlElement.class) || cls.isAnnotationPresent(QmlNamedElement.class)) {
-				String qmlName = cls.getSimpleName();
-				QmlNamedElement namedElement = cls.getAnnotation(QmlNamedElement.class);
-				if(namedElement!=null)
-					qmlName = namedElement.name();
-				if(cls.isAnnotationPresent(QmlUncreatable.class)) {
-					String reason = null;
-					QmlUncreatable unc = cls.getAnnotation(QmlUncreatable.class);
-					if(unc!=null)
-						reason = unc.reason();
-					return QtQml.qmlRegisterUncreatableType((Class<? extends QObject>)cls, uri, versionMajor, getMinorVersion(cls), qmlName, reason);
-				}else if(cls.isAnnotationPresent(QmlSingleton.class)) {
-					Class<? extends QObject> _cls = (Class<? extends QObject>)cls;
-					Supplier<? extends QObject> fac = QtJambi_LibraryUtilities.internal.getFactory0(_cls.getDeclaredConstructor());
-					return QtQml.qmlRegisterSingletonType((Class<? extends QObject>)cls, uri, versionMajor, getMinorVersion(cls), qmlName, (qengine,jsengine)->{
-						try {
-							return fac.get();
-						} catch (Throwable e) {
-							throw new RuntimeException(e);
-						}
-					});
-				}else {
-					return QtQml.qmlRegisterType((Class<? extends QObject>)cls, uri, versionMajor, getMinorVersion(cls), qmlName);
-				}
-			}
-		}
-		return -1;
-	}
+	private static native void analyzeType(String uri, int versionMajor, Collection<Integer> resultTypeIDs, Class<?>... cls) throws Exception;
 	
 	private static int getMinorVersion(Class<?> cls) {
 		int versionMinor = 0;
@@ -468,6 +465,7 @@ public final class QmlTypes {
 				QtQml.qmlRegisterType(url, uri, version, 0, qmlFile.substring(0, qmlFile.length()-4));
 			}
 			QtQml.qmlRegisterModule(uri, version, 0);
+			QtQml.qmlProtectModule(uri, version);
         }
 	}
 }

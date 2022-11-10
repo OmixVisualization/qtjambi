@@ -1040,6 +1040,25 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
 #endif
 
 #ifdef QQMLLISTPROPERTY
+
+template<class T, bool = std::is_base_of<QObject,T>::value>
+struct QmlListPropertyUtility{
+    static jobject toJavaObject(JNIEnv *env, const QQmlListProperty<T>& d)
+    {
+        return qtjambi_from_object(env, &d, typeid(QQmlListProperty<void>), true, false);
+    }
+};
+
+template<class T>
+struct QmlListPropertyUtility<T,false>{
+    static jobject toJavaObject(JNIEnv *env, const QQmlListProperty<T>& d)
+    {
+        jobject result = qtjambi_from_object(env, &d, typeid(QQmlListProperty<void>), true, false);
+        qtjambi_register_qml_list_element_type(env, result, QMetaType::fromType<T*>());
+        return result;
+    }
+};
+
 template<bool has_scope,
          bool is_pointer, bool is_const, bool is_reference,
          typename T>
@@ -1054,9 +1073,7 @@ struct qtjambi_jnitype_container1_cast<true, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
          NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         jobject result = qtjambi_from_object<QQmlListProperty<QObject>>(env, QmlListPropertyUtility<T>::createFrom(_in), false, false);
-         qtjambi_set_java_ownership(env, result);
-         return result;
+         return QmlListPropertyUtility<T>::toJavaObject(env, _in);
     }
 };
 
@@ -1506,16 +1523,16 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                         _watcher->setFuture(_futureInterface.future());
                         return _watcher;
                     }else if(QFutureInterface<void>* futureInterface = dynamic_cast<QFutureInterface<void>*>(base)){
-                        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
                         if(baseType==QLatin1String("QFutureInterfaceBase")
                                 || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }
@@ -1525,7 +1542,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                 if(watcherType==QLatin1String("QFutureWatcher_shell")){
                     watcherType = QLatin1String("QFutureWatcher<?>");
                 }
-                JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1 to %2.").arg(watcherType).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast %1 to %2.").arg(watcherType).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
             }else if(is_reference)
                 JavaException::raiseNullPointerException(env, "Cannot cast null to QFutureWatcher&." QTJAMBI_STACKTRACEINFO );
         }
@@ -1599,11 +1616,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                 QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
                 if(baseType==QLatin1String("QFutureInterfaceBase")
                         || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                 }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                 }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }else{
@@ -1636,11 +1653,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                         QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
                         if(baseType==QLatin1String("QFutureInterfaceBase")
                                 || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }
@@ -3026,7 +3043,7 @@ struct qtjambi_jnitype_container1_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope*){
         jobject result = nullptr;
         if(!qtjambi_convert_from_native(env, typeid(NativeType), nativeTypeName, &deref_ptr<is_pointer,NativeType_c>::deref(in), true, false, result)){
-           JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast native type %1 to Java object.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+           JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast native type %1 to Java object.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -3050,7 +3067,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
         NativeType fct;
         NativeType* result = &fct;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result ? *result : NativeType();
     }

@@ -1523,7 +1523,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromArray)
                 if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
                     ptr = link->pointer();
                 else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
 
             }
 
@@ -1643,7 +1643,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromObject)
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, object))
             return qtjambi_from_cpointer(__jni_env, link->pointer(), QNativePointer::Type::Pointer, 1);
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, object))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -1780,7 +1780,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeObject)
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, value))
                 ptr = link->pointer();
             else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, value))
-                Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, value).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, value).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
 
         if (buf != 0)

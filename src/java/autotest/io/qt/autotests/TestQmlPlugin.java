@@ -42,7 +42,6 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
-import io.qt.internal.QtJambiInternal;
 
 public class TestQmlPlugin extends ApplicationInitializer{
 	
@@ -56,7 +55,6 @@ public class TestQmlPlugin extends ApplicationInitializer{
     public void run_testQmlPlugin() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
 		String imports = System.getProperty("io.qt.qml.imports", "");
 		if(!imports.isEmpty()) {
 			for(String i : imports.split(File.pathSeparator))
@@ -85,12 +83,12 @@ public class TestQmlPlugin extends ApplicationInitializer{
 		io.qt.qml.QQmlListProperty<?> wheelsList = (io.qt.qml.QQmlListProperty<?>)wheels;
 		Assert.assertEquals(4, wheelsList.count());
 		for (int i = 0; i < wheelsList.count(); i++) {
-			QObject wheel = wheelsList.at(i);
+			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(52., wheel.property("radius"));
 		}
 		car.setProperty("wheelRadius", 53);
 		for (int i = 0; i < wheelsList.count(); i++) {
-			QObject wheel = wheelsList.at(i);
+			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(53., wheel.property("radius"));
 		}
 	}
@@ -99,7 +97,6 @@ public class TestQmlPlugin extends ApplicationInitializer{
     public void run_testQmlPlugin2() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; import io.qt.test.garage 2.0; Garage{Car{}}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String version = QtJambiInternal.majorVersion()+"."+QtJambiInternal.minorVersion()+"."+QtJambiInternal.qtjambiPatchVersion();
 		String imports = System.getProperty("io.qt.qml-imports", "");
 		if(!imports.isEmpty()) {
 			for(String i : imports.split(File.pathSeparator))
@@ -135,12 +132,12 @@ public class TestQmlPlugin extends ApplicationInitializer{
 		io.qt.qml.QQmlListProperty<?> wheelsList = (io.qt.qml.QQmlListProperty<?>)wheels;
 		Assert.assertEquals(4, wheelsList.count());
 		for (int i = 0; i < wheelsList.count(); i++) {
-			QObject wheel = wheelsList.at(i);
+			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(52., wheel.property("radius"));
 		}
 		car.setProperty("wheelRadius", 53);
 		for (int i = 0; i < wheelsList.count(); i++) {
-			QObject wheel = wheelsList.at(i);
+			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(53., wheel.property("radius"));
 		}
 	}

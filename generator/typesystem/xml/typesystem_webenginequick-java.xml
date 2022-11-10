@@ -51,13 +51,14 @@
     <object-type name="QQuickWebEngineProfile">
         <extra-includes>
             <include file-name="QtWebEngineCore/QWebEngineDownloadRequest" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
         </extra-includes>
         <modify-function signature="downloadRequested(QQuickWebEngineDownloadRequest *)" private-signal="yes">
             <modify-argument index="1">
                 <replace-type modified-type="? extends io.qt.webengine.core.QWebEngineDownloadRequest"/>
                 <conversion-rule class="native">
 				Q_UNUSED(in)
-                JavaException::raiseIllegalAccessException(%env, "Calling signal downloadRequested from Java not allowed." QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IllegalAccessException::throwNew(%env, "Calling signal downloadRequested from Java not allowed." QTJAMBI_STACKTRACEINFO );
 				QQuickWebEngineDownloadRequest* %out{nullptr};
                 </conversion-rule>
                 <conversion-rule class="shell">
@@ -70,7 +71,7 @@
                 <replace-type modified-type="? extends io.qt.webengine.core.QWebEngineDownloadRequest"/>
                 <conversion-rule class="native">
                 Q_UNUSED(in)
-				JavaException::raiseIllegalAccessException(%env, "Calling signal downloadFinished from Java not allowed." QTJAMBI_STACKTRACEINFO );
+				Java::Runtime::IllegalAccessException::throwNew(%env, "Calling signal downloadFinished from Java not allowed." QTJAMBI_STACKTRACEINFO );
 				QQuickWebEngineDownloadRequest* %out{nullptr};
                 </conversion-rule>
                 <conversion-rule class="shell">

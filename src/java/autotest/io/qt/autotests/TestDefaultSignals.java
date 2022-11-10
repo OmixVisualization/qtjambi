@@ -113,7 +113,7 @@ public class TestDefaultSignals extends ApplicationInitializer {
     	QMetaMethod method = sender.metaObject().method("signal22(String)");
     	QReceiver receiver = new QReceiver();
     	QMetaObject.Connection con = sender.signal22.connect(receiver::receive2);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertEquals(QMetaMethod.fromSignal(sender.signal22), io.qt.internal.QtJambiSignals.signal(con));
     	method.invoke(sender, "TEST");
     	assertTrue("did not receive", receiver.received);

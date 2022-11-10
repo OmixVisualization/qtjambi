@@ -1109,6 +1109,28 @@ final class BundleGenerator {
 								Element libraryElement = doc.createElement("library");
 								libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
 								doc.getDocumentElement().appendChild(libraryElement);
+								
+								if(isDebug) {
+									File pdb = new File(libraryFile.getParentFile(), libraryFile.getName().substring(0, libraryFile.getName().length()-3)+"pdb");
+									if(pdb.exists()) {
+										jarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
+										Files.copy(pdb.toPath(), jarFile);
+										jarFile.closeEntry();
+										libraryElement = doc.createElement("file");
+										libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
+										doc.getDocumentElement().appendChild(libraryElement);
+									}else {
+										pdb = new File(libraryFile.getParentFile(), libraryFile.getName()+".debug");
+										if(pdb.exists()) {
+											jarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
+											Files.copy(pdb.toPath(), jarFile);
+											jarFile.closeEntry();
+											libraryElement = doc.createElement("file");
+											libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
+											doc.getDocumentElement().appendChild(libraryElement);
+										}
+								}
+							}
 							}
 							
 							switch(libPair.getKey()) {
@@ -1145,8 +1167,17 @@ final class BundleGenerator {
 												if(pluginFile.isFile()) {
 													String targetDirName = "plugins/" + subdir + "/";
 													if(osArchName.startsWith("windows-")) {
-														if(pluginFile.getName().endsWith(".pdb"))
-															continue;
+														if(pluginFile.getName().endsWith(".pdb")) {
+															if(isDebug) {
+																if(pluginFile.getName().endsWith("d.pdb")) {
+																	String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																	if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																		continue;
+																}else continue;
+															}else {
+																continue;
+															}
+														}
 														if(pluginFile.getName().endsWith(".dll.debug") && !isDebug)
 															continue;
 														if(isDebug && !pluginFile.getName().endsWith("d.dll"))
@@ -1197,8 +1228,17 @@ final class BundleGenerator {
 											if(pluginFile.isFile()) {
 												String targetDirName = "plugins/" + subdir + "/";
 												if(osArchName.startsWith("windows-")) {
-													if(pluginFile.getName().endsWith(".pdb"))
-														continue;
+													if(pluginFile.getName().endsWith(".pdb")) {
+														if(isDebug) {
+															if(pluginFile.getName().endsWith("d.pdb")) {
+																String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																	continue;
+															}else continue;
+														}else {
+															continue;
+														}
+													}
 													if(pluginFile.getName().endsWith(".dll.debug") && !isDebug)
 														continue;
 													if(isDebug && !pluginFile.getName().endsWith("d.dll"))
@@ -1565,8 +1605,17 @@ final class BundleGenerator {
 				if(osArchName.startsWith("windows-")) {
 					if(file.getName().endsWith(".dll.debug") && !isDebug)
 						continue;
-					if(file.getName().endsWith(".pdb"))
-						continue;
+					if(file.getName().endsWith(".pdb")) {
+						if(isDebug) {
+							if(file.getName().endsWith("d.pdb")) {
+								String libNoSuffix = file.getName().substring(0, file.getName().length()-5);
+								if(new File(dir, libNoSuffix+"dd.pdb").exists())
+									continue;
+							}else continue;
+						}else {
+							continue;
+						}
+					}
 					if(file.getName().endsWith(".dll")) {
 						isLibrary = true;
 						if(isDebug) {

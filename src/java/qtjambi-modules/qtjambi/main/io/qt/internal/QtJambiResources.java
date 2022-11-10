@@ -392,6 +392,8 @@ public final class QtJambiResources {
 					URLConnection urlConn = urlAlias.url.openConnection();
 					try(InputStream inStream = urlConn.getInputStream()){}
 				}
+			} catch(java.io.FileNotFoundException e) {
+				result = null;
 			} catch (Throwable e) {
 				if(!result.getProtocol().equals("jrt") && !result.getProtocol().equals("file"))
 					java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, ""+result, e);
@@ -829,7 +831,7 @@ public final class QtJambiResources {
         }
 
         synchronized Collection<String> classPathDirs() {
-            return Collections.unmodifiableSet(classPathDirs);
+            return new HashSet<>(classPathDirs);
         }
 
         private final Map<String, Set<String>> cache = new HashMap<>();

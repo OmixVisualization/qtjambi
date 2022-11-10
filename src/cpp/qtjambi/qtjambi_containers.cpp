@@ -1304,7 +1304,7 @@ void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNa
     QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") QTJAMBI_STACKTRACEINFO );
     using namespace QtJambiPrivate;
     AbstractListAccess* containerAccess = nullptr;
     bool isNativeContainer = false;
@@ -1316,7 +1316,7 @@ void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNa
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess){
@@ -1389,7 +1389,7 @@ void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNa
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1417,7 +1417,7 @@ void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNat
     QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") QTJAMBI_STACKTRACEINFO );
     using namespace QtJambiPrivate;
     AbstractSetAccess* containerAccess = nullptr;
     bool isNativeContainer = false;
@@ -1429,7 +1429,7 @@ void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNat
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess){
@@ -1546,7 +1546,7 @@ void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNat
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1577,7 +1577,7 @@ void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJ
     QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QLinkedList") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QLinkedList") QTJAMBI_STACKTRACEINFO );
     using namespace QtJambiPrivate;
     AbstractLinkedListAccess* containerAccess = nullptr;
     bool isNativeContainer = false;
@@ -1589,7 +1589,7 @@ void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJ
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess){
@@ -1697,7 +1697,7 @@ void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJ
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1727,7 +1727,7 @@ void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambi
     QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QVector") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QVector") QTJAMBI_STACKTRACEINFO );
     using namespace QtJambiPrivate;
     AbstractVectorAccess* containerAccess = nullptr;
     bool isNativeContainer = false;
@@ -1739,7 +1739,7 @@ void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambi
                 isNativeContainer  = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess){
@@ -1848,7 +1848,7 @@ void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambi
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1877,7 +1877,7 @@ void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNative
     QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") QTJAMBI_STACKTRACEINFO );
     keyType = getGlobalClassRef(env, keyType);
     valueType = getGlobalClassRef(env, valueType);
     using namespace QtJambiPrivate;
@@ -1891,7 +1891,7 @@ void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNative
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess)
@@ -2002,7 +2002,7 @@ void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNative
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -2036,7 +2036,7 @@ void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiN
     QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
     keyType = getGlobalClassRef(env, keyType);
     valueType = getGlobalClassRef(env, valueType);
     using namespace QtJambiPrivate;
@@ -2050,7 +2050,7 @@ void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiN
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess)
@@ -2160,7 +2160,7 @@ void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiN
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -2198,7 +2198,7 @@ void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeI
     QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") QTJAMBI_STACKTRACEINFO );
     keyType = getGlobalClassRef(env, keyType);
     valueType = getGlobalClassRef(env, valueType);
     using namespace QtJambiPrivate;
@@ -2212,7 +2212,7 @@ void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeI
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess)
@@ -2321,7 +2321,7 @@ void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeI
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -2355,7 +2355,7 @@ void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNa
     QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
     SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
-        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") ) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
     keyType = getGlobalClassRef(env, keyType);
     valueType = getGlobalClassRef(env, valueType);
     using namespace QtJambiPrivate;
@@ -2369,7 +2369,7 @@ void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNa
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess)
@@ -2478,7 +2478,7 @@ void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNa
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -2664,12 +2664,12 @@ ContainerAccessFactory qtjambi_get_access_factory(JNIEnv* env, ContainerType con
         if(idx>=0){
             gContainerAccessLoader->instance(idx);
             if(!(result = gContainerAccessFactoryHash->value(id, nullptr))){
-                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, env->NewStringUTF(qPrintable(QString("Unable to load container access plugin %1.").arg(lib)))));
+                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_from_qstring(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
             }
         }else{
             occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
-                                                                                env->NewStringUTF(qPrintable(QString("Container access plugin %1Access_S%2_A%3 missing.").arg(containerName, QString::number(size), QString::number(align)))),
-                                                                                env->NewStringUTF(qPrintable(containerName)),
+                                                                                qtjambi_from_qstring(env, QStringLiteral("Container access plugin %1Access_S%2_A%3 missing.").arg(containerName, QString::number(size), QString::number(align))),
+                                                                                qtjambi_from_qstring(env, containerName),
                                                                                 env->NewStringUTF("")));
         }
     }
@@ -2714,12 +2714,12 @@ BiContainerAccessFactory qtjambi_get_access_factory(JNIEnv* env, MapType contain
         if(idx>=0){
             gContainerAccessLoader->instance(idx);
             if(!(result = gBiContainerAccessFactoryHash->value(id, nullptr))){
-                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, env->NewStringUTF(qPrintable(QString("Unable to load container access plugin %1.").arg(lib)))));
+                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_from_qstring(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
             }
         }else{
             occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
-                                                                                env->NewStringUTF(qPrintable(QString("Container access plugin %1Access_S%2_A%3_S%4_A%5 missing.").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2)))),
-                                                                                env->NewStringUTF(qPrintable(containerName)),
+                                                                                qtjambi_from_qstring(env, QStringLiteral("Container access plugin %1Access_S%2_A%3_S%4_A%5 missing.").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2))),
+                                                                                qtjambi_from_qstring(env, containerName),
                                                                                 env->NewStringUTF("")));
         }
     }
@@ -2731,26 +2731,6 @@ void qtjambi_register_access_factory(ContainerType containerType, size_t align, 
                                                      isStatic
 #endif
                                                      , ContainerAccessFactory factory){
-    /*switch(containerType){
-    case ContainerType::QList:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QList,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    case ContainerType::QQueue:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QQueue,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    case ContainerType::QLinkedList:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QLinkedList,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    case ContainerType::QSet:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QSet,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    case ContainerType::QStack:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QStack,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    case ContainerType::QVector:
-        printf("%s\n", qPrintable(QString("registerAccessFactory(QVector,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
-        break;
-    }*/
     gContainerAccessFactoryHash->insert(qHash(containerType, align, size
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                                               , isStatic

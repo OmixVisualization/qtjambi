@@ -40,27 +40,8 @@
 /* Header for class io_qt_qml_QQmlListReference */
 
 #ifndef QT_JAMBI_RUN
-template<class T>
-struct QmlListPropertyUtility{
-    static QQmlListProperty<QObject>* createFrom(const QQmlListProperty<T>& d)
-    {
-        QQmlListProperty<QObject>* listProperty = new QQmlListProperty<QObject>();
-        listProperty->object = d.object;
-        listProperty->data = d.data;
-        listProperty->append = QQmlListProperty<QObject>::AppendFunction(d.append);
-        listProperty->at = QQmlListProperty<QObject>::AtFunction(d.at);
-        listProperty->clear = QQmlListProperty<QObject>::ClearFunction(d.clear);
-        listProperty->count = QQmlListProperty<QObject>::CountFunction(d.count);
-#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
-        listProperty->dummy1 = d.dummy1;
-        listProperty->dummy2 = d.dummy2;
-#else
-        listProperty->replace = QQmlListProperty<QObject>::ReplaceFunction(d.replace);
-        listProperty->removeLast = QQmlListProperty<QObject>::RemoveLastFunction(d.removeLast);
-#endif
-        return listProperty;
-    }
-};
+jobject qtjambi_from_object(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool invalidateAfterUse);
+void qtjambi_set_java_ownership(JNIEnv *env, jobject object);
 #endif //QT_JAMBI_RUN
 
 inline hash_type qHash(const QQmlScriptString &value)

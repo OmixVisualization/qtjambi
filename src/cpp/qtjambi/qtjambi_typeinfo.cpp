@@ -49,7 +49,7 @@ QT_WARNING_DISABLE_DEPRECATED
 void qtjambi_to_qstring(QString& result, JNIEnv *env, jobject object);
 JNIEnv *qtjambi_current_environment(bool initializeJavaThread);
 const QMetaObject *qtjambi_find_first_static_metaobject(const QMetaObject *meta_object);
-jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic);
+jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 bool isQObject(const std::type_info& typeId);
 
 struct QtJambiShellAccess : QtJambiShellImpl{
@@ -129,7 +129,10 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             case 8:  sig = QLatin1String("(J)L%1;"); break;
             default: sig = QLatin1String("(I)L%1;"); break;
             }
-            jmethodID creator_method = resolveMethod(env, "resolve", qPrintable(sig.arg(java_name)), java_class, true);
+            jthrowable exceptionOccurred = nullptr;
+            jmethodID creator_method = resolveMethod(env, "resolve", qPrintable(sig.arg(java_name)), java_class, true, &exceptionOccurred);
+            if(exceptionOccurred)
+                JavaException(env, exceptionOccurred).raise();
             Q_ASSERT(creator_method);
             result = new EnumTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size);
             break;
@@ -139,7 +142,10 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             size_t value_size = getValueSize(typeId);
             const std::type_info* flagId = getEnumForFlag(typeId);
             Q_ASSERT(flagId);
-            jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false);
+            jthrowable exceptionOccurred = nullptr;
+            jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false, &exceptionOccurred);
+            if(exceptionOccurred)
+                JavaException(env, exceptionOccurred).raise();
             Q_ASSERT(creator_method);
             result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, dynamic_cast<const EnumTypeEntry*>(get_type_entry(env, *flagId, false, nullptr)));
             break;
@@ -529,7 +535,10 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             if(unique_id(typeId)==unique_id(typeid(std::nullptr_t))){
                 result = new NullptrTypeEntry(env, typeId, qt_name, nullptr, nullptr, value_size);
             }else if(unique_id(typeId)==unique_id(typeid(QUrl::FormattingOptions))){
-                jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false);
+                jthrowable exceptionOccurred = nullptr;
+                jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false, &exceptionOccurred);
+                if(exceptionOccurred)
+                    JavaException(env, exceptionOccurred).raise();
                 Q_ASSERT(creator_method);
                 result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, nullptr);
             }else if(unique_id(typeId)==unique_id(typeid(QMetaObject::Connection))
@@ -1469,7 +1478,7 @@ bool InterfaceTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, 
         return false;
     }
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_value.l))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     return true;
 }
 
@@ -1758,7 +1767,7 @@ bool ObjectTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jVa
             *reinterpret_cast<void**>(output) = link->pointer();
         }
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_value.l))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         return true;
     }else return false;
 }
@@ -2736,7 +2745,7 @@ bool QObjectTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jV
             *reinterpret_cast<QObject**>(output) = link->qobject();
         }
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_value.l))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_value.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         return true;
     }else return false;
 }
@@ -2782,7 +2791,7 @@ bool FunctionalTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value,
         if(link){
             *reinterpret_cast<void**>(output) = link->pointer();
         }else if(java_value.l){
-            JavaException::raiseQNoNativeResourcesException(env, qPrintable(QString("Incomplete object of type: %1").arg(QLatin1String(this->javaName()))) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QLatin1String(this->javaName())) QTJAMBI_STACKTRACEINFO );
         }
     }else{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_value.l)){
@@ -2796,7 +2805,7 @@ bool FunctionalTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value,
                 }
             }
         }else if(java_value.l){
-            JavaException::raiseQNoNativeResourcesException(env, qPrintable(QString("Incomplete object of type: %1").arg(QLatin1String(this->javaName()))) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QLatin1String(this->javaName())) QTJAMBI_STACKTRACEINFO );
         }
     }
     return true;
@@ -3266,7 +3275,7 @@ QMetaObject::Connection qtjambi_to_QMetaObject$Connection(JNIEnv *env, jobject o
         return *reinterpret_cast<QMetaObject::Connection*>(link->pointer());
     }
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     return QMetaObject::Connection();
 }
 

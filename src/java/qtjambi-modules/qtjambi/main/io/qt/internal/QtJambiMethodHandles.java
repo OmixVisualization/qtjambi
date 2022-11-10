@@ -350,7 +350,7 @@ public final class QtJambiMethodHandles implements QtJambiInternal.MethodInvocat
 			setter.invoke(newValue);
 		}else {
 			if(owner==null)
-			throw new NullPointerException();
+				throw new NullPointerException();
 			MethodHandle setter = lookup.unreflectSetter(f);
 			setter.invoke(owner, newValue);
 		}
@@ -451,5 +451,35 @@ public final class QtJambiMethodHandles implements QtJambiInternal.MethodInvocat
 			};
 		}
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T,V> BiConsumer<T,V> getFieldSetter(Field f) {
+		java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(f.getDeclaringClass());
+		try {
+			MethodHandle setter = lookup.unreflectSetter(f);
+			if(useMethodHandleProxies) {
+				try {
+					return (BiConsumer<T,V>)MethodHandleProxies.asInterfaceInstance(BiConsumer.class, setter);
+				} catch (Throwable e) {
+				}
+			}
+			return (T owner, V value) -> {
+				if(owner==null)
+					throw new NullPointerException();
+				try{
+					setter.invoke(owner, value);
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
+				}
+			};
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

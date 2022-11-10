@@ -32,25 +32,74 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
 import io.qt.core.QIODevice;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaObject;
+import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
 import io.qt.core.QString;
 import io.qt.core.QVariant;
+import io.qt.core.QVersionNumber;
+import io.qt.core.Qt;
 import io.qt.gui.QWindow;
 import io.qt.internal.QtJambiInternal;
+import io.qt.widgets.QMdiSubWindow;
 
 public class TestMetaType extends ApplicationInitializer {
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+		testInitializeWithWidgets();
+    }
+	
+	@Test
+	public void testFromClassLoader() throws Exception {
+		Assume.assumeTrue("Qt version >= 6.0", QLibraryInfo.version().compareTo(new QVersionNumber(6,0))>=0);
+		Assume.assumeTrue("no qtjambi.antcontrib set", System.getProperties().containsKey("qtjambi.antcontrib"));
+		try(URLClassLoader cl = new URLClassLoader(new URL[]{new File(System.getProperty("qtjambi.antcontrib", ".")).toURI().toURL()})){
+			Class<?> cls2 = cl.loadClass("org.apache.tools.ant.taskdefs.Echo");
+			QtUtilities.usePackageContentAsGadgets(cls2.getPackage().getName());
+			QtUtilities.usePackageContentAsGadgets("org.apache.tools.ant");
+			QMetaObject mo2 = QMetaObject.forType(cls2);
+			QMetaProperty location = mo2.property("location");
+			assertEquals("org::apache::tools::ant::Location*", location.typeName());
+//			mo2.properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+" ("+p.userType()+" "+p.classType()+")"));
+		}
+	}
+	
+	@Test
+    public void testFlagsConnect() {
+		class Receiver extends QObject{
+			void onWindowStateChanged(Qt.WindowStates oldState, Qt.WindowStates newState) {
+			}
+		}
+		Receiver receiver = new Receiver();
+		QMdiSubWindow subwindow = new QMdiSubWindow();
+		subwindow.windowStateChanged.connect(receiver::onWindowStateChanged);
+//		QMetaType t = QMetaType.fromType(Qt.WindowStates.class);
+//		System.out.println(t.id() + " " + t.name());
+//		QMetaMethod mtd = QMetaMethod.fromSignal(subwindow.windowStateChanged);
+//		for (int i = 0; i < mtd.parameterCount(); i++) {
+//			System.out.println(mtd.parameterType(i)+" "+mtd.parameterTypeName(i)+" "+mtd.parameterMetaType(i));
+//		}
+	}
 	
 	@Test
     public void testOwnership() {

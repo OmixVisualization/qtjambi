@@ -49,6 +49,7 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.qml.QJSValue;
 
 public class TestMetaTypeQt6 extends ApplicationInitializer {
     @Test
@@ -249,6 +250,21 @@ public class TestMetaTypeQt6 extends ApplicationInitializer {
 }
 
 class CloneableMetaValue implements Cloneable{
+	
+	@SuppressWarnings("unused")
+	private static CloneableMetaValue create(QJSValue arguments) {
+		CloneableMetaValue value = new CloneableMetaValue();
+		if(arguments.isArray()) {
+			int length = arguments.property("length").toInt();
+			if(length==3) {
+				value.i = arguments.property(0).toInt();
+				value.d = arguments.property(1).toDouble();
+				value.s = arguments.property(2).toString();
+			}
+		}
+		return value;
+	}
+	
 	@QtPropertyMember
 	int i;
 	@QtPropertyMember

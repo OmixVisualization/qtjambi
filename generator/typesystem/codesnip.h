@@ -104,6 +104,7 @@ class CodeSnip : public CodeSnipAbstract {
             Position2,
             Position3,
             Position4,
+            Position5,
             Equals,
             Compare,
             HashCode,

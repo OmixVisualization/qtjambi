@@ -670,9 +670,9 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv *env, const QString &inte
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-QByteArray registeredJavaClassForCustomMetaType(QMetaType metaType);
+jclass registeredJavaClassForCustomMetaType(QMetaType metaType);
 #else
-QByteArray registeredJavaClassForCustomMetaType(const QMetaType& metaType);
+jclass registeredJavaClassForCustomMetaType(const QMetaType& metaType);
 #endif
 
 QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QString &_internalTypeName, const QMetaType& metaType) {
@@ -845,10 +845,8 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
         if(metaType.isValid()
                 && metaType.id()!=QMetaType::Nullptr
                 && metaType.id()!=QMetaType::Void){
-            QByteArray name = registeredJavaClassForCustomMetaType(metaType);
-            if(!name.isEmpty()){
-                return QLatin1String(name);
-            }
+            if(jclass clazz = registeredJavaClassForCustomMetaType(metaType))
+                return qtjambi_class_name(environment, clazz).replace('.', '/');
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QVariant variant(metaType.id(), nullptr);
             if(variant.canConvert(QMetaType::QVariantList)){
@@ -1053,13 +1051,92 @@ void QtJambiTypeManager::checkClassName(QObject* qobject, QString className, QSt
     }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+hash_type qHash(const QMetaType& metaType, hash_type seed = 0){
+    return qHash(metaType.id(), seed);
+}
+#endif
+
+hash_type computeHash(JNIEnv* env,
+                   const QString &internalTypeName,
+                   const QMetaType& internalMetaType,
+                   jclass externalClass,
+                   bool allowValuePointers){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(internalMetaType.isValid())
+        return qHashMulti(0, internalMetaType, externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0, allowValuePointers);
+    else
+        return qHashMulti(0, internalTypeName, externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0, allowValuePointers);
+#else
+    QList<hash_type> range;
+    if(internalMetaType.isValid())
+        range << qHash(internalMetaType);
+    else
+        range << qHash(internalTypeName);
+    range << qHash(externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0);
+    range << qHash(allowValuePointers);
+    return qHashRange(range.begin(), range.end());
+#endif
+}
+
+hash_type computeHash(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(internalMetaType.isValid())
+        return qHashMulti(0, internalMetaType, externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0);
+    else
+        return qHashMulti(0, internalTypeName, externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0);
+#else
+    QList<hash_type> range;
+    if(internalMetaType.isValid())
+        range << qHash(internalMetaType);
+    else
+        range << qHash(internalTypeName);
+    range << qHash(externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0);
+    return qHashRange(range.begin(), range.end());
+#endif
+}
+
+InternalToExternalConverter QtJambiTypeManager::tryGetInternalToExternalConverter(
+        JNIEnv* env,
+        const QString &internalTypeName,
+        const QMetaType& internalMetaType,
+        jclass externalClass,
+        bool allowValuePointers){
+    hash_type key = computeHash(env, internalTypeName, internalMetaType, externalClass, allowValuePointers);
+    {
+        QReadLocker locker(gCacheLock());
+        Q_UNUSED(locker)
+        if(gInternalToExternalConverters()->contains(key))
+            return (*gInternalToExternalConverters())[key];
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(internalMetaType.isValid() && !QMetaType(internalMetaType).iface()->metaObjectFn){
+        InternalToExternalConverter converter = getInternalToExternalConverterImpl(
+                    env,
+                    internalTypeName,
+                    internalMetaType,
+                    externalClass,
+                    allowValuePointers
+                );
+        Q_ASSERT(converter);
+        QWriteLocker locker(gCacheLock());
+        Q_UNUSED(locker)
+        if(gInternalToExternalConverters()->contains(key))
+            return (*gInternalToExternalConverters())[key];
+        (*gInternalToExternalConverters())[key] = converter;
+        return converter;
+    }
+#endif
+    return InternalToExternalConverter();
+}
+
 InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverter(
                                JNIEnv* env,
                                const QString &internalTypeName,
                                const QMetaType& internalMetaType,
                                jclass externalClass,
                                bool allowValuePointers){
-    hash_type key = hashSum({hash_type(qHash(internalTypeName)), hash_type(externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0), hash_type(qHash(allowValuePointers))});
+    hash_type key = computeHash(env, internalTypeName, internalMetaType, externalClass, allowValuePointers);
     {
         QReadLocker locker(gCacheLock());
         Q_UNUSED(locker)
@@ -1893,7 +1970,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(clazz.startsWith("io/qt/core/QMetaType$Generic")){
                             hashFunction = [](const void*, hash_type seed) -> hash_type{ return seed; };
                         }else{
-                            JavaException::raiseIllegalArgumentException(_env, qPrintable(QString("Unable to use %1 in QSet.").arg(QLatin1String(clazz.replace('/', '.').replace('$', '.')))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(_env, QStringLiteral("Unable to use %1 in QSet.").arg(QLatin1String(clazz.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     containerAccess = qtjambi_create_container_access(_env, containerType, memberMetaType,
@@ -2321,7 +2398,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             if(clazz1.startsWith("io/qt/core/QMetaType$Generic"))
                                 hashFunction1 = [](const void*, hash_type seed) -> hash_type{ return seed; };
                             else
-                                JavaException::raiseIllegalArgumentException(_env, qPrintable(QString("Unable to use %1 as hash key.").arg(QLatin1String(clazz1.replace('/', '.').replace('$', '.')))) QTJAMBI_STACKTRACEINFO );
+                                Java::Runtime::IllegalArgumentException::throwNew(_env, QStringLiteral("Unable to use %1 as hash key.").arg(QLatin1String(clazz1.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
                         }
                         containerAccess = qtjambi_create_container_access(_env, mapType,
                                                                           memberMetaType1,
@@ -3062,8 +3139,31 @@ QVariant int_for_QtEnumerator_or_QFlags(JNIEnv* env, jobject enum_value) {
     return result;
 }
 
+ExternalToInternalConverter QtJambiTypeManager::tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
+    hash_type key = computeHash(env, externalClass, internalTypeName, internalMetaType);
+    {
+        QReadLocker locker(gCacheLock());
+        Q_UNUSED(locker)
+        if(gExternalToInternalConverters()->contains(key))
+            return (*gExternalToInternalConverters())[key];
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    if(internalMetaType.isValid() && !QMetaType(internalMetaType).iface()->metaObjectFn){
+        ExternalToInternalConverter converter = getExternalToInternalConverterImpl(env, externalClass, internalTypeName, internalMetaType);
+        Q_ASSERT(converter);
+        QWriteLocker locker(gCacheLock());
+        Q_UNUSED(locker)
+        if(gExternalToInternalConverters()->contains(key))
+            return (*gExternalToInternalConverters())[key];
+        (*gExternalToInternalConverters())[key] = converter;
+        return converter;
+    }
+#endif
+    return ExternalToInternalConverter();
+}
+
 ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
-    hash_type key = hashSum({hash_type(externalClass ? Java::Runtime::Object::hashCode(env, externalClass) : 0), hash_type(qHash(internalTypeName)), hash_type(internalMetaType.id())});
+    hash_type key = computeHash(env, externalClass, internalTypeName, internalMetaType);
     {
         QReadLocker locker(gCacheLock());
         Q_UNUSED(locker)
@@ -4012,19 +4112,19 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -4058,12 +4158,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
@@ -4113,7 +4213,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             out = nptr;
                         }
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                     return true;
                 }else{
@@ -4161,19 +4261,19 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -4207,12 +4307,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
@@ -4262,7 +4362,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             out = nptr;
                         }
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                     return true;
                 }else{
@@ -4308,19 +4408,19 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         out = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     out = nullptr;
@@ -4350,19 +4450,19 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                     }
                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -4412,12 +4512,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                         if(scope && !out){
@@ -4481,12 +4581,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                         if(scope && !out){
@@ -4568,12 +4668,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
@@ -4682,12 +4782,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
 #else
                         const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name())) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name()).arg(_internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
 #endif
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
@@ -4915,7 +5015,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jstring> content;
@@ -4974,7 +5074,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -5031,7 +5131,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
             }
             if(scope && !out){
@@ -5084,7 +5184,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -5148,7 +5248,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -5576,7 +5676,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                         int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                         if(_internalMetaType!=given){
-                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
                         if(!env->IsInstanceOf(val.l, externalClass))
@@ -5610,7 +5710,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             *reinterpret_cast<QObject**>(out) = object;
                         return out;
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         return false;
                     }
                 };
@@ -5915,7 +6015,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     }
                                     response = true;
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 if(!out){
@@ -6438,7 +6538,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             }
                                             response = true;
                                         }else{
-                                            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                         }
                                     }else{
                                         if(!out){
@@ -6583,7 +6683,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     out = link->typedPointer(*typeId);
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -6616,7 +6716,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         }
                                     }
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -6631,7 +6731,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     out = link->pointer();
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -6647,20 +6747,20 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                                     int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                                     if(_internalMetaType!=given){
-                                        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         ptr = link->typedPointer(*typeId);
                                     }else{
-                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
                                     if(!env->IsInstanceOf(val.l, externalClass))
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         ptr = link->typedPointer(*typeId);
                                     }else{
-                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }
                             }
@@ -6702,20 +6802,20 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                                     int given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l)).id();
                                     if(_internalMetaType!=given){
-                                        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
+                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                         ptr = link->pointer();
                                     }else{
-                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
                                     if(!env->IsInstanceOf(val.l, externalClass))
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                         ptr = link->pointer();
                                     }else{
-                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }
                             }
@@ -6761,7 +6861,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     ptr = link->typedPointer(*typeId);
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                             if(scope && !out){
@@ -6781,7 +6881,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     ptr = link->pointer();
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                             if(scope && !out){
@@ -8028,9 +8128,19 @@ void qtjambi_container_dataStreamIn(const QtPrivate::QMetaTypeInterface * metaTy
 
 const char* registerMetaTypeName(const QByteArray& typeName);
 
+hash_type computeHash(const QtMetaContainerPrivate::QMetaSequenceInterface& defaultInterface, const QMetaType& elementMetaType){
+    QList<quintptr> range{quintptr(&defaultInterface),quintptr(elementMetaType.id())};
+    return qHashRange(range.begin(), range.end());
+}
+
+hash_type computeHash(const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface, const QMetaType& keyMetaType, const QMetaType& valueMetaType){
+    QList<quintptr> range{quintptr(&defaultInterface),quintptr(keyMetaType.id()),quintptr(valueMetaType.id())};
+    return qHashRange(range.begin(), range.end());
+}
+
 const QtMetaContainerPrivate::QMetaSequenceInterface& qtjambi_find_meta_sequence(QMetaType elementMetaType, const QtMetaContainerPrivate::QMetaSequenceInterface& defaultInterface)
 {
-    hash_type hash = hashSum({qHash(quintptr(&defaultInterface)), qHash(elementMetaType.id())});
+    hash_type hash = computeHash(defaultInterface, elementMetaType);
     {
         QReadLocker locker(gCacheLock());
         Q_UNUSED(locker)
@@ -8051,7 +8161,7 @@ const QtMetaContainerPrivate::QMetaSequenceInterface& qtjambi_find_meta_sequence
 
 const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_association(QMetaType metaType1, QHashFunction hashFunction1, QMetaType metaType2, QHashFunction hashFunction2, const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface)
 {
-    hash_type hash = hashSum({qHash(quintptr(&defaultInterface)), qHash(metaType1.id()), qHash(metaType2.id())});
+    hash_type hash = computeHash(defaultInterface, metaType1, metaType2);
     {
         QReadLocker locker(gCacheLock());
         Q_UNUSED(locker)

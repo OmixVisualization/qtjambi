@@ -1,0 +1,1 @@
+package io.qt.autotests.qmlreg;

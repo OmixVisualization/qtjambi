@@ -2014,7 +2014,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    	{
 	    		QColor prop = new QColor(0xff23ad);
 	    		QMetaObject.Connection connection = QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
-	    		assertTrue("not connected", connection!=null && connection.isConnected());
+	    		assertTrue("not connected", connection.isConnected());
 	    		carrier.setProperty("customProperty", prop);
 	    		assertEquals(QMetaType.fromType(QColor.class), Variants.propertyType(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));

@@ -97,12 +97,11 @@ import io.qt.widgets.QWidget;
 
 public class TestConnections extends ApplicationInitializer
 {
-	private static boolean hasSerializableLambdas;
+	static boolean hasSerializableLambdas = QtJambiInternal.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	hasSerializableLambdas = QtJambiInternal.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
     public TestConnections()
@@ -187,7 +186,11 @@ public class TestConnections extends ApplicationInitializer
 
         QNoSuchSlotException f = null;
         try {
-            sas.signal1.connect(sas::non_slot);
+        	if(!hasSerializableLambdas) {
+        		sas.signal1.connect(sas, "non_slot()test_javaToJavaConnect");
+        	}else {
+        		sas.signal1.connect(sas::non_slot);
+        	}
         } catch (QNoSuchSlotException e) {
             f = e;
         }
@@ -267,8 +270,13 @@ public class TestConnections extends ApplicationInitializer
     @Test public void run_cppEmitShouldEmitUniqueConnectedJavaSignal() {
         SignalsAndSlotsSubclass sas = new SignalsAndSlotsSubclass();
 
-        sas.signal1.connect(sas::slot4, Qt.ConnectionType.UniqueConnection);
-        sas.signal1.connect(sas::slot4, Qt.ConnectionType.UniqueConnection);
+        if(!hasSerializableLambdas) {
+	        sas.signal1.connect(sas, "slot4()", Qt.ConnectionType.UniqueConnection);
+	        sas.signal1.connect(sas, "slot4()", Qt.ConnectionType.UniqueConnection);
+        }else {
+            sas.signal1.connect(sas::slot4, Qt.ConnectionType.UniqueConnection);
+            sas.signal1.connect(sas::slot4, Qt.ConnectionType.UniqueConnection);
+        }
 
         assertEquals(0, sas.java_slot4_called);
         sas.emit_signal_1();
@@ -314,7 +322,11 @@ public class TestConnections extends ApplicationInitializer
 
         assertTrue(sas.connectSignal1ToSlot1_1());
 
-        assertTrue(sas.signal1.disconnect(sas::slot1_1));
+        if(!hasSerializableLambdas) {
+        	assertTrue(sas.signal1.disconnect(sas, "slot1_1()"));
+        }else {
+        	assertTrue(sas.signal1.disconnect(sas::slot1_1));
+        }
 
         assertEquals(0, sas.slot1_1_called());
         sas.emit_signal_1();
@@ -327,7 +339,11 @@ public class TestConnections extends ApplicationInitializer
         SignalsAndSlots sas = new SignalsAndSlots();
         assertTrue(sas.connectSignal1ToSlot1_1FP());
 
-        sas.signal1.disconnect(sas::slot1_1);
+        if(!hasSerializableLambdas) {
+        	sas.signal1.disconnect(sas, "slot1_1()");
+        }else {
+        	sas.signal1.disconnect(sas::slot1_1);
+        }
 
         assertEquals(0, sas.slot1_1_called());
         sas.emit_signal_1();
@@ -344,7 +360,11 @@ public class TestConnections extends ApplicationInitializer
     @Test public void run_cppDisconnectShouldDisconnectJava() {
         SignalsAndSlots sas = new SignalsAndSlots();
 
-        assertTrue(sas.signal1.connect(sas::slot1_1)!=null);
+        if(!hasSerializableLambdas) {
+        	assertTrue(sas.signal1.connect(sas, "slot1_1()").isConnected());
+        }else {
+        	assertTrue(sas.signal1.connect(sas::slot1_1).isConnected());
+        }
 
         assertTrue(sas.disconnectSignal1FromSlot1_1());
 
@@ -530,11 +550,17 @@ public class TestConnections extends ApplicationInitializer
         SignalsAndSlotsSubclass sas = new SignalsAndSlotsSubclass();
         SignalsAndSlots sas2 = new SignalsAndSlots();
 
-        sas.signal1.connect(sas2::slot1_1);
-        sas.signal2.connect(sas2::slot2);
-        sas.signal1.connect(sas::slot1_1);
-        sas.signal2.connect(sas::slot2);
-
+        if(!hasSerializableLambdas) {
+        	sas.signal1.connect(sas2, "slot1_1()");
+	        sas.signal2.connect(sas2, "slot2(int)");
+	        sas.signal1.connect(sas, "slot1_1()");
+	        sas.signal2.connect(sas, "slot2(int)");
+        }else {
+	        sas.signal1.connect(sas2::slot1_1);
+	        sas.signal2.connect(sas2::slot2);
+	        sas.signal1.connect(sas::slot1_1);
+	        sas.signal2.connect(sas::slot2);
+        }
         sas.disconnectAllFromReceiver(sas2);
 
         assertEquals(0, sas.slot1_1_called());
@@ -551,11 +577,21 @@ public class TestConnections extends ApplicationInitializer
         SignalsAndSlotsSubclass sasSub = new SignalsAndSlotsSubclass();
         SignalsAndSlots sasBase = new SignalsAndSlots();
 
-        QMetaObject.Connection c1 = sasSub.signal1.connect(sasBase::slot1_1);
-        QMetaObject.Connection c2 = sasSub.signal2.connect(sasBase::slot2);
-        QMetaObject.Connection c3 = sasSub.signal1.connect(sasSub::slot1_1);
-        QMetaObject.Connection c4 = sasSub.signal2.connect(((SignalsAndSlots)sasSub)::slot2);
-        
+        QMetaObject.Connection c1;
+        QMetaObject.Connection c2;
+        QMetaObject.Connection c3;
+        QMetaObject.Connection c4;
+        if(!hasSerializableLambdas) {
+        	c1 = sasSub.signal1.connect(sasBase, "slot1_1()");
+            c2 = sasSub.signal2.connect(sasBase, "slot2(int)");
+            c3 = sasSub.signal1.connect(sasSub, "slot1_1()");
+            c4 = sasSub.signal2.connect(((SignalsAndSlots)sasSub), "slot2(int)");
+        }else {
+            c1 = sasSub.signal1.connect(sasBase::slot1_1);
+            c2 = sasSub.signal2.connect(sasBase::slot2);
+            c3 = sasSub.signal1.connect(sasSub::slot1_1);
+            c4 = sasSub.signal2.connect(((SignalsAndSlots)sasSub)::slot2);
+        }
         assertTrue(c1 instanceof QtObject);
         assertTrue(c2 instanceof QtObject);
         assertTrue(c3 instanceof QtObject);
@@ -601,8 +637,13 @@ public class TestConnections extends ApplicationInitializer
 //        List<QMetaMethod> methods = sas.metaObject().methods();
 //        methods.forEach(System.out::println);
 
-        sas.signal1.connect(sas::slot1_1);
-        sas.signal1.connect(sas2::slot1_1);
+        if(!hasSerializableLambdas) {
+	        sas.signal1.connect(sas, "slot1_1()");
+	        sas.signal1.connect(sas2, "slot1_1()");
+        }else {
+	        sas.signal1.connect(sas::slot1_1);
+	        sas.signal1.connect(sas2::slot1_1);
+        }
 
         sas.disconnectReceiverFromSignal1(sas2);
 
@@ -619,8 +660,13 @@ public class TestConnections extends ApplicationInitializer
         SignalsAndSlots sas = new SignalsAndSlots();
         SignalsAndSlots sas2 = new SignalsAndSlots();
 
-        sas.signal1.connect(sas::slot1_1);
-        sas.signal1.connect(sas2::slot1_1);
+        if(!hasSerializableLambdas) {
+	        sas.signal1.connect(sas, "slot1_1()");
+	        sas.signal1.connect(sas2, "slot1_1()");
+        }else {
+	        sas.signal1.connect(sas::slot1_1);
+	        sas.signal1.connect(sas2::slot1_1);
+        }
 
         sas.signal1.disconnect(sas2);
 
@@ -911,10 +957,17 @@ public class TestConnections extends ApplicationInitializer
         assertTrue(widget.isEnabled());
 
         MyQObject obj = new MyQObject();
-        obj.signalMyQObject.connect(widget::show);
-        obj.signalNoParams.connect(widget::hide);
-        obj.signalBoolean.connect(widget::setEnabled);
-        obj.signalInteger.connect(widget::close);
+        if(!hasSerializableLambdas) {
+	        obj.signalMyQObject.connect(widget, "show()");
+	        obj.signalNoParams.connect(widget, "hide()");
+	        obj.signalBoolean.connect(widget, "setEnabled(boolean)");
+	        obj.signalInteger.connect(widget, "close()");
+        }else {
+            obj.signalMyQObject.connect(widget::show);
+            obj.signalNoParams.connect(widget::hide);
+            obj.signalBoolean.connect(widget::setEnabled);
+            obj.signalInteger.connect(widget::close);
+        }
         obj.javaSignalMyQObject(obj);
         assertTrue(widget.isVisible());
 
@@ -927,10 +980,15 @@ public class TestConnections extends ApplicationInitializer
         obj.javaSignalNoParams();
         assertTrue(!widget.isVisible());
 
-        assertTrue(obj.signalMyQObject.disconnect(widget::show));
-        assertTrue(obj.signalNoParams.disconnect(widget::hide));
-        assertTrue(obj.signalBoolean.disconnect(widget::setEnabled));
-
+        if(!hasSerializableLambdas) {
+	        assertTrue(obj.signalMyQObject.disconnect(widget, "show()"));
+	        assertTrue(obj.signalNoParams.disconnect(widget, "hide()"));
+	        assertTrue(obj.signalBoolean.disconnect(widget, "setEnabled(boolean)"));
+        }else {
+	        assertTrue(obj.signalMyQObject.disconnect(widget::show));
+	        assertTrue(obj.signalNoParams.disconnect(widget::hide));
+	        assertTrue(obj.signalBoolean.disconnect(widget::setEnabled));
+        }
         obj.javaSignalboolean(false);
         assertTrue(widget.isEnabled());
 
@@ -945,7 +1003,11 @@ public class TestConnections extends ApplicationInitializer
         assertTrue(widget.isVisible());
 
         obj.javaSignalint(10);
-        assertTrue(obj.signalInteger.disconnect(widget::close));
+        if(!hasSerializableLambdas) {
+        	assertTrue(obj.signalInteger.disconnect(widget, "close()"));
+        }else {
+        	assertTrue(obj.signalInteger.disconnect(widget::close));
+        }
 
         widget = new QWidget();
         QPushButton b1 = new QPushButton(widget);
@@ -992,7 +1054,11 @@ public class TestConnections extends ApplicationInitializer
         obj.signalLong.connect(b1::show);
         obj.signalLong.connect(b2::show);
         obj.signalMixed1.connect(widget::hide);
-        obj.signalString.connect(le::setText);
+        if(!hasSerializableLambdas) {
+        	obj.signalString.connect(le, "setText(java.lang.String)");
+        }else {
+        	obj.signalString.connect(le::setText);
+        }
         le.textChanged.connect(obj::javaSlotString);
         QApplication.instance().focusChanged.connect(obj::javaSlotFocusChanged);
         obj.signalQSize.connect(b2::setIconSize);
@@ -1031,9 +1097,13 @@ public class TestConnections extends ApplicationInitializer
         assertEquals("Line edit text", le.text());
         assertEquals("Line edit text", obj.slotResult);
 
-
-        assertTrue(obj.signalString.disconnect(le::setText));
-        obj.signalString.connect(le::selectAll);
+        if(!hasSerializableLambdas) {
+        	assertTrue(obj.signalString.disconnect(le, "setText(java.lang.String)"));
+            obj.signalString.connect(le, "selectAll()");
+        }else {
+        	assertTrue(obj.signalString.disconnect(le::setText));
+            obj.signalString.connect(le::selectAll);
+        }
 
         obj.javaSignalString("ABC");
         assertEquals("Line edit text", le.text());
@@ -1042,20 +1112,24 @@ public class TestConnections extends ApplicationInitializer
         boolean[] dataChanged = {false};
         QClipboard clipboard = QApplication.clipboard();
         Connection connection = clipboard.dataChanged.connect(()->{dataChanged[0] = true;});
-        assertTrue(obj.signalString.disconnect(le::selectAll));
-        obj.signalString.connect(le::cut);
+        if(!hasSerializableLambdas) {
+	        assertTrue(obj.signalString.disconnect(le, "selectAll()"));
+        }else {
+	        assertTrue(obj.signalString.disconnect(le::selectAll));
+	        obj.signalString.connect(le::cut);
+	        obj.javaSignalString("DEF");
+	        assertEquals(le.text(), "");
+	        assertEquals(obj.slotResult, "");
+	        QApplication.processEvents();
 
-        obj.javaSignalString("DEF");
-        assertEquals(le.text(), "");
-        assertEquals(obj.slotResult, "");
-        QApplication.processEvents();
-
-        if(dataChanged[0]) {
-	        obj.signalString.connect(le::paste);
-	        obj.javaSignalString("GHI");
-	        assertEquals("Line edit text", le.text());
-	        assertEquals("Line edit text", obj.slotResult);
+	        if(dataChanged[0]) {
+		        obj.signalString.connect(le::paste);
+		        obj.javaSignalString("GHI");
+		        assertEquals("Line edit text", le.text());
+		        assertEquals("Line edit text", obj.slotResult);
+	        }
         }
+
         QObject.disconnect(connection);
 
         obj.javaSignalTwoParameters(123.0, 456); // the signalDoubleInteger signal
@@ -1117,6 +1191,14 @@ public class TestConnections extends ApplicationInitializer
              Class<?>[] parameterTypes)
      {
 
+    	QMetaMethod signalMethod = QMetaMethod.fromSignal(signal);
+        System.out.println("signal: "+signalMethod.cppMethodSignature()+" = "+signalMethod.methodSignature()+" "+signalMethod.parameterClassTypes());
+        receiver.metaObject().methods().forEach(m->{
+     	   if(slot.startsWith(m.name().toString())) {
+     		   System.out.println("receiver slot: "+m.cppMethodSignature()+" = "+m.methodSignature()+" "+m.parameterClassTypes());
+     		   System.out.println("matches: "+QMetaObject.checkConnectArgs(signalMethod, m));
+     	   }
+        });
         Connection connection = signal.connect(receiver, slot);
         assertTrue(connection.isConnected());
         if (parameters == null)
@@ -2111,15 +2193,16 @@ public class TestConnections extends ApplicationInitializer
 			Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);
 		} catch (QMisfittingSignatureException e) {
 		}
-		try {
-			QMetaObject.Slot1<List<String>> slot = receiver::receiveStrings;
-			sender.objects.connect((QMetaObject.Slot1)slot);
-			Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);
-		} catch (QMisfittingSignatureException e) {
+		if(hasSerializableLambdas) {
+			try {
+				QMetaObject.Slot1<List<String>> slot = receiver::receiveStrings;
+				sender.objects.connect((QMetaObject.Slot1)slot);
+				Assert.assertFalse("QMisfittingSignatureException expected to be thrown", true);
+			} catch (QMisfittingSignatureException e) {
+			}
 		}
-		QMetaObject.Connection con;
-		con = sender.objects.connect(receiver, "receiveObjects(QList)");
-		assertTrue(con!=null);
+		QMetaObject.Connection con = sender.objects.connect(receiver, "receiveObjects(QList)");
+		assertTrue(con.isConnected());
 		sender.objects.emit(QList.of(obj));
 		assertTrue(receiver.objects instanceof QList);
 		assertEquals(1, receiver.objects.size());
@@ -2128,7 +2211,7 @@ public class TestConnections extends ApplicationInitializer
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.strings.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.strings.emit(Arrays.asList("TEST"));
 		assertTrue(receiver.strings instanceof QList);
 		assertEquals(1, receiver.strings.size());
@@ -2138,7 +2221,7 @@ public class TestConnections extends ApplicationInitializer
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.objectQList.connect(receiver, "receiveObjects(QList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.objectQList.emit(QList.of(obj));
 		assertTrue(receiver.objects instanceof QList);
 		assertEquals(1, receiver.objects.size());
@@ -2147,77 +2230,85 @@ public class TestConnections extends ApplicationInitializer
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.stringQList.connect(receiver, "receiveStrings(List)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.stringQList.emit(stringList);
 		assertTrue(receiver.strings instanceof QList);
 		assertEquals(1, receiver.strings.size());
 		assertEquals("TEST", receiver.strings.get(0));
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 
 		con = sender.stringQList.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.stringQList.emit(stringList);
 		assertTrue(receiver.strings instanceof QList);
 		assertEquals(1, receiver.strings.size());
 		assertEquals("TEST", receiver.strings.get(0));
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.qstringList.connect(receiver, "receiveStrings(List)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.qstringList.emit(stringList);
 		assertTrue(receiver.strings instanceof QList);
 		assertEquals(1, receiver.strings.size());
 		assertEquals("TEST", receiver.strings.get(0));
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 
 		con = sender.qstringList.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.qstringList.emit(stringList);
 		assertTrue(receiver.strings instanceof QList);
 		assertTrue(receiver.strings!=stringList);
 		assertEquals(1, receiver.strings.size());
 		assertEquals("TEST", receiver.strings.get(0));
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.qstringListPointer.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.qstringListPointer.emit(stringList);
-		assertTrue(receiver.strings == stringList);
+		if(hasSerializableLambdas) {
+			assertTrue(receiver.strings == stringList);
+		}
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.qstringListPointer.connect(receiver, "receiveStringListPointer(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.qstringListPointer.emit(stringList);
-		assertTrue(receiver.strings == stringList);
+		if(hasSerializableLambdas) {
+			assertTrue(receiver.strings == stringList);
+		}
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.stringQListPointer.connect(receiver, "receiveStringList(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.stringQListPointer.emit(stringList);
-		assertTrue(receiver.strings == stringList);
+		if(hasSerializableLambdas) {
+			assertTrue(receiver.strings == stringList);
+		}
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 		
 		con = sender.stringQListPointer.connect(receiver, "receiveStringListPointer(QStringList)");
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		sender.stringQListPointer.emit(stringList2);
 		assertTrue(receiver.stringList instanceof QStringList);
-		assertTrue(receiver.stringList.isDisposed());
+		if(hasSerializableLambdas) {
+			assertTrue(receiver.stringList.isDisposed());
+		}
 		receiver.reset();
-		assertTrue(con!=null);
+		assertTrue(con.isConnected());
 		assertTrue(QObject.disconnect(con));
 	}
 	

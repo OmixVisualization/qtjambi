@@ -755,7 +755,7 @@ void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject o
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -813,7 +813,7 @@ void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject o
                     throw;
                 }
             }else{
-                JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -980,7 +980,7 @@ void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject o
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1038,7 +1038,7 @@ void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject o
                     throw;
                 }
             }else{
-                JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1225,7 +1225,7 @@ void qtjambi_initialize_native_container(JNIEnv *env, jclass callingClass, jobje
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1283,7 +1283,7 @@ void qtjambi_initialize_native_container(JNIEnv *env, jclass callingClass, jobje
                     throw;
                 }
             }else{
-                JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1446,7 +1446,7 @@ void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject 
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1504,7 +1504,7 @@ void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject 
                     throw;
                 }
             }else{
-                JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1667,7 +1667,7 @@ void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject 
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1725,7 +1725,7 @@ void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject 
                     throw;
                 }
             }else{
-                JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1832,7 +1832,7 @@ void qtjambi_initialize_native_functional(JNIEnv *env, jclass callingClass, jobj
                             }
                         }
                         if(!foundConstructorFunction){
-                            JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1987,7 +1987,7 @@ void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject
                 if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(qtjambi_metaobject_for_class(env, objectClass, &originalMetaObject, false))){
                     if(mo->hasSignals()){
                         QString class_name = qtjambi_class_name(env, objectClass).replace("$", ".");
-                        JavaException::raiseUnsupportedOperationException(env, qPrintable(QString("Cannot define signals in class %1 because it's meta object is final.").arg(class_name)) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it's meta object is final.").arg(class_name) QTJAMBI_STACKTRACEINFO );
                     }
                 }
             }
@@ -2102,7 +2102,7 @@ void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject
                                 }
                             }
                             if(!foundConstructorFunction){
-                                JavaException::raiseError(env, qPrintable( QString("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                                Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 return;
                             }
                             constructorFunctions << foundConstructorFunction;
@@ -2171,7 +2171,7 @@ void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject
                         throw;
                     }
                 }else{
-                    JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(qtjambi_class_name(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 }
                 break;
             }
@@ -2195,7 +2195,7 @@ void qtjambi_initialize_native_interface(JNIEnv *env, jclass callingClass, jobje
         if(superTypeInfos.isEmpty())
             JavaException::raiseError(env, "Cannot determine type information about object's class." QTJAMBI_STACKTRACEINFO );
         if(superTypeInfos.size()>1 && !(isInterface(superTypeInfos.at(0).typeId()) || superTypeInfos.at(0).hasShell())){
-            JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QString(superTypeInfos.at(0).className()).replace("/", ".").replace("$", ".")) ) QTJAMBI_STACKTRACEINFO );
+            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QString(superTypeInfos.at(0).className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
         size_t totalSize = 0;
         QList<ConstructorFunction> constructorFunctions;
@@ -2274,7 +2274,7 @@ void qtjambi_initialize_native_interface(JNIEnv *env, jclass callingClass, jobje
                     }
                     argumentStrg += className;
                 }
-                JavaException::raiseIllegalArgumentException(env, qPrintable( QString("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) ) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
             }else{
                 constructorFunctions << foundConstructorFunction;
                 constructorArguments << givenArguments;

@@ -257,7 +257,7 @@ public class CreateNativeDeploymentTask extends Task {
 						case Windows:
 							if(!debug && f.endsWith(".dll") && !f.endsWith("d.dll")) {
 								_libraries.add(f);
-							}else if(debug && f.endsWith("d.dll")) {
+							}else if(debug && (f.endsWith("d.dll") || f.endsWith("d.pdb") || f.endsWith(".dll.debug"))) {
 								_libraries.add(f);
 							}
 							break;
@@ -417,6 +417,36 @@ public class CreateNativeDeploymentTask extends Task {
 				}else {
 //					System.out.println("Copying "+libFile+" to "+target+".");
 					Files.copy(libFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+					if(debug) {
+						switch(OSInfo.crossOS()) {
+						case Windows:
+							if(libName.endsWith(".dll")){
+								String pdbName = libName.substring(0, libName.length()-3)+"pdb";
+								java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
+								if(!pdbFile.exists() && _libdir.equals("bin")) {
+									pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
+								}
+								if(pdbFile.exists()) {
+									java.io.File pdbTarget = new java.io.File(targetLibDir, pdbName);
+									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									if(!libraryIncludes.isEmpty())
+										libraryIncludes += ",";
+									libraryIncludes += jarpath + "/" + pdbName;
+								}else {
+									pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+									if(pdbFile.exists()) {
+										java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
+										Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+										if(!libraryIncludes.isEmpty())
+											libraryIncludes += ",";
+										libraryIncludes += jarpath + "/" + libName+".debug";
+									}
+								}
+							}
+							break;
+							default:
+						}
+					}
 				}
 				switch(OSInfo.crossOS()) {
 				case Linux:
@@ -591,6 +621,34 @@ public class CreateNativeDeploymentTask extends Task {
 					Element libraryElement = doc.createElement("library");
 					libraryElement.setAttribute("name", _libdir+"/"+libName);
 					doc.getDocumentElement().appendChild(libraryElement);
+					
+					if(debug) {
+						switch(OSInfo.crossOS()) {
+						case Windows:
+							if(libName.endsWith(".dll")){
+								String pdbName = libName.substring(0, libName.length()-3)+"pdb";
+								java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
+								if(!pdbFile.exists() && _libdir.equals("bin")) {
+									pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
+								}
+								if(pdbFile.exists()) {
+									libraryElement = doc.createElement("file");
+									libraryElement.setAttribute("name", _libdir+"/"+pdbName);
+									doc.getDocumentElement().appendChild(libraryElement);
+								}else {
+									pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+									if(pdbFile.exists()) {
+										libraryElement = doc.createElement("file");
+										libraryElement.setAttribute("name", _libdir+"/"+libName+".debug");
+										doc.getDocumentElement().appendChild(libraryElement);
+									}
+								}
+							}
+							break;
+							default:
+						}
+					}
+					
 					String shortName;
 					Element symlinkElement;
 					if(!noSymlinks) {
@@ -995,6 +1053,11 @@ public class CreateNativeDeploymentTask extends Task {
         // Windows: QtCore.prl QtCored.prl
         //   Linux: libQtCore.prl ??????
         //  MacOSX: libQtCore.prl libQtCore_debug.prl
+    	if(qtMajorVersion>=5){
+    		if(name.startsWith("Qt") && !name.startsWith("Qt"+qtMajorVersion)){
+    			name = "Qt"+qtMajorVersion+name.substring(2);
+    		}
+    	}
     	if(infix==null){
     		infix = "";
     	}

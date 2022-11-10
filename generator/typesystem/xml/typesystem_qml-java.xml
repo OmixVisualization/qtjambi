@@ -49,6 +49,9 @@
     <inject-code class="metainfo">
     initialize_meta_info_QQmlListProperty();
     </inject-code>
+    <inject-code class="java" position="end">
+    internal.setQmlClassInfoGeneratorFunction(QmlClassInfoProvider::provide);
+    </inject-code>
     <inject-code class="module-info">
     exports io.qt.qml.util;
     </inject-code>

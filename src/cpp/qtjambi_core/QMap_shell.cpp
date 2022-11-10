@@ -604,7 +604,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
         if(!metaType.save(*stream, container.first)){
 #endif
             containerName.prepend("QDataStream& << ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -637,7 +637,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
         if(!metaType.load(*stream, container.first)){
 #endif
             containerName.prepend("QDataStream& >> ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -668,7 +668,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
             debug_stream(stream.nospace(), metaType, container.first);
             if(strg.isEmpty()){
                 containerName.prepend("QDebug >> ");
-                JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
             }
 #else
             QMetaType metaType(containerAccess->registerContainer(containerName));
@@ -908,7 +908,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
         if(!metaType.save(*stream, container.first)){
 #endif
             containerName.prepend("QDataStream& << ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -941,7 +941,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
         if(!metaType.load(*stream, container.first)){
 #endif
             containerName.prepend("QDataStream& >> ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -974,7 +974,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
             QMetaType metaType(containerAccess->registerContainer(containerName));
             if(!metaType.debugStream(stream.nospace(), container.first)){
                 containerName.prepend("QDebug >> ");
-                JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
             }
 #endif
         }

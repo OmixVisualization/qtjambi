@@ -11,9 +11,6 @@ namespace QtRemoteObjects {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtROIoDeviceBase$ReadResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }
-namespace QtJambi{
-    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtObjectInterface)
-}
 }
 
 #endif // QTJAMBI_REMOTE_OJECTS_REPOSITORY_H

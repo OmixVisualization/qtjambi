@@ -1737,7 +1737,6 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
     	AtomicInteger counter = new AtomicInteger();
     	TreeMap<Integer,Double> calls = new TreeMap<>();
     	{
-    		List<QEasingCurve.EasingFunction> f = new ArrayList<>();
 	    	QHash<String,QList<QEasingCurve.EasingFunction>> container = new QHash<>(String.class, QMetaType.fromType(QList.class, QMetaType.fromType(QEasingCurve.EasingFunction.class)));
 	    	Assert.assertTrue(container!=null);
 	    	for(int i=0; i<100; ++i) {
@@ -1746,7 +1745,6 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 					calls.put(_i, progress);
 					return 0;
 	    		};
-	    		f.add(object);
 	    		container.put(""+i, QList.of(object));
 	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
@@ -1763,7 +1761,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -1775,7 +1773,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
             ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
-            	Thread.sleep(25);
+            	Thread.sleep(25+i*10);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
@@ -1812,7 +1810,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	            ApplicationInitializer.runGC();
 	            Thread.yield();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -1824,7 +1822,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
             ApplicationInitializer.runGC();
             Thread.yield();
             synchronized(TestReferenceCountingContainers.class) {
-            	Thread.sleep(25);
+            	Thread.sleep(25+i*10);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
@@ -1969,7 +1967,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
         for (int i = 0; i < 50 && counter.get()<100; i++) {
             ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
-            	Thread.sleep(25);
+            	Thread.sleep(25+i*10);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
@@ -1992,7 +1990,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
 	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -2004,7 +2002,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
 	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -2015,7 +2013,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
         for (int i = 0; i < 50 && counter.get()<100; i++) {
             ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
-            	Thread.sleep(25);
+            	Thread.sleep(25+i*10);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
@@ -2034,7 +2032,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
 	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -2046,7 +2044,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
 	        for (int i = 0; i < 20 && counter.get()==0; i++) {
 	            ApplicationInitializer.runGC();
 	            synchronized(TestReferenceCountingContainers.class) {
-	            	Thread.sleep(25);
+	            	Thread.sleep(25+i*10);
 	            }
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	            QCoreApplication.processEvents();
@@ -2057,7 +2055,7 @@ public class TestReferenceCountingContainers extends ApplicationInitializer {
         for (int i = 0; i < 50 && counter.get()<2; i++) {
             ApplicationInitializer.runGC();
             synchronized(TestReferenceCountingContainers.class) {
-            	Thread.sleep(25);
+            	Thread.sleep(25+i*10);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();

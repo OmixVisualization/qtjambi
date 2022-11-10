@@ -263,13 +263,13 @@ public class TestMultiSignals extends ApplicationInitializer {
     	Object[] received = {null};
     	QMetaObject.Connection con;
     	con = sender.multiSignal.connect((Integer i)->{received[0] = i;});
-    	assertTrue(con instanceof QtObject);
+    	assertTrue(con instanceof QtObject && con.isConnected());
     	sender.multiSignal.emit(1);
     	assertEquals(Integer.valueOf(1), received[0]);
     	con = sender.multiSignal.connect((String s)->{
     		received[0] = s;
 		});
-    	assertTrue(con instanceof QtObject);
+    	assertTrue(con instanceof QtObject && con.isConnected());
     	received[0] = null;
     	sender.multiSignal.emit("TEST");
     	assertEquals("TEST", received[0]);
@@ -281,14 +281,14 @@ public class TestMultiSignals extends ApplicationInitializer {
     	Object[] received = {null};
     	QMetaObject.Connection con;
     	con = sender.multiSignal.connect((Integer i)->{received[0] = i;});
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	sender.multiSignal.emit(1);
     	assertEquals(Integer.valueOf(1), received[0]);
     	con = sender.multiSignal.connect((String s)->{
     		received[0] = s;
 		});
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	received[0] = null;
     	sender.multiSignal.emit("TEST");
@@ -300,14 +300,14 @@ public class TestMultiSignals extends ApplicationInitializer {
     	Object[] received = {null};
     	QMetaObject.Connection con;
     	con = CustomStaticMultiSender.multiSignal.connect((Integer i)->{received[0] = i;});
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	CustomStaticMultiSender.multiSignal.emit(1);
     	assertEquals(Integer.valueOf(1), received[0]);
     	con = CustomStaticMultiSender.multiSignal.connect((String s)->{
     		received[0] = s;
 		});
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	received[0] = null;
     	CustomStaticMultiSender.multiSignal.emit("TEST");

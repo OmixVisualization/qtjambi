@@ -33,6 +33,7 @@
 
 #include "qtjambi_core.h"
 #include <QtCore/QVector>
+#include <QtCore/QReadWriteLock>
 
 class J2CStringBuffer;
 
@@ -79,6 +80,8 @@ public:
 #define QTJAMBI_SET_OBJECTUSERDATA_ID(ID, object, data) QtJambiObjectData::setUserData(object, ID, data)
 #endif
 
+QTJAMBI_EXPORT QReadWriteLock* qtjambi_objectdata_lock();
+
 class QTJAMBI_EXPORT ApplicationData : public QtJambiObjectData
 {
 public:
@@ -93,6 +96,8 @@ private:
     char** m_chars;
     Q_DISABLE_COPY_MOVE(ApplicationData)
 };
+
+QTJAMBI_EXPORT jclass qtjambi_to_global_reference(JNIEnv * env, jclass clazz);
 
 QTJAMBI_EXPORT jobject qtjambi_find_object(JNIEnv *env, const void * pointer);
 

@@ -138,7 +138,7 @@ public class TestConcurrent extends ApplicationInitializer {
         		ints, 
         		i->i*i,
         		(String r, Integer n) -> {
-        			Integer i = (r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
+        			Integer i = (r==null || r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
 		            return i.toString();
 		        }
         );
@@ -162,7 +162,7 @@ public class TestConcurrent extends ApplicationInitializer {
         String result = QtConcurrent.blockingMappedReduced(ints,
         		i->i*i,
         		(String r, Integer n) -> {
-                    Integer i = (r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
+                    Integer i = (r==null || r.isEmpty() ? 0 : Integer.parseInt(r)) + n;
                     return i.toString();
                 }
         );
@@ -249,6 +249,10 @@ public class TestConcurrent extends ApplicationInitializer {
         QFuture<Integer> future = QtConcurrent.filteredReduced(ints,
         		i->i >= COUNT,
         		(r, intermediate)->{
+        			if(intermediate==null)
+        				intermediate = 0;
+        			if(r==null)
+        				r = 0;
         			return r + intermediate;
         		}
         );
@@ -274,7 +278,13 @@ public class TestConcurrent extends ApplicationInitializer {
 
         Integer result = QtConcurrent.blockingFilteredReduced(ints,
         		i->i >= COUNT,
-        		(r, intermediate)->r + intermediate
+        		(r, intermediate)->{
+        			if(intermediate==null)
+        				intermediate = 0;
+        			if(r==null)
+        				r = 0;
+        			return r + intermediate;
+    			}
         );
         assertEquals(COUNT*2, ints.size());
 

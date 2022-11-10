@@ -36,7 +36,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a class to be added in minor version.
+ * <p>This annotation marks a class to be added in minor version.</p>
+ * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#QML_ADDED_IN_MINOR_VERSION">QML_ADDED_IN_MINOR_VERSION(VERSION)</a></p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

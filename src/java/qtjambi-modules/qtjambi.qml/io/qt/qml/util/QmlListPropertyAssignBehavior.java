@@ -12,7 +12,7 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
+** 
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
@@ -21,22 +21,42 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
 
-#ifndef QMLATTACHEDPROPERTIESFUNCTION_H
-#define QMLATTACHEDPROPERTIESFUNCTION_H
+package io.qt.qml.util;
 
-#ifdef Q_OS_MAC
-#  include <jni.h>
-#else
-#  include <jni.h>
-#endif
-#include <QtQml/qqmlprivate.h>
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-QQmlAttachedPropertiesFunc attachedPropertiesFunc(JNIEnv * env, jclass clazz, jobject method);
-
-#endif // QMLATTACHEDPROPERTIESFUNCTION_H
+/**
+ * <p>This annotation defines the behavior of the list properties of this class.</p>
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface QmlListPropertyAssignBehavior {
+	/**
+	 * This enum contains different list properties behaviors.
+	 */
+	public enum Behavior{
+		/**
+		 * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_APPEND">QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_APPEND</a></p>
+		 */
+		Append,
+		/**
+		 * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_REPLACE">QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_REPLACE</a></p>
+		 */
+		Replace,
+		/**
+		 * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_REPLACE_IF_NOT_DEFAULT">QML_LIST_PROPERTY_ASSIGN_BEHAVIOR_REPLACE_IF_NOT_DEFAULT</a></p>
+		 */
+		ReplaceIfNotDefault
+	}
+	Behavior value();
+}

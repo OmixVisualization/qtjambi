@@ -2258,13 +2258,14 @@ public final void copyDataTo(float[] values)    {
             <include file-name="QtCore/private/qthread_p.h" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
             <include file-name="qtjambi/qtjambi_nativeinterface.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
             <include file-name="qtjambi_gui_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="QGuiApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
             <inject-code class="native" position="beginning">
                 if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
-                    JavaException::raiseIllegalAccessError(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::IllegalAccessError::throwNew(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
                     return;
                 }
             </inject-code>
@@ -2625,7 +2626,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;16){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2637,7 +2638,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;16){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2673,7 +2674,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;16){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 16." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2715,7 +2716,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;12){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2739,7 +2740,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;12){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2780,7 +2781,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;8){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2804,7 +2805,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;8){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2846,7 +2847,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;12){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2870,7 +2871,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;12){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 12." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2912,7 +2913,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;9){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 9." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 9." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2936,7 +2937,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;9){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 9." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 9." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -2978,7 +2979,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;6){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3002,7 +3003,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;6){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3044,7 +3045,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;8){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3068,7 +3069,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;8){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 8." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3110,7 +3111,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;6){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3134,7 +3135,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;6){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 6." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3176,7 +3177,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferConstData %out(%env, %in);
                     if(%out.size()&lt;4){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 4." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 4." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>
@@ -3200,7 +3201,7 @@ if(!useQApplicationExec){</inject-code>
                 <conversion-rule class="native">
                     JBufferData %out(%env, %in);
                     if(%out.size()&lt;4){
-                        JavaException::raiseIndexOutOfBoundsException(%env, "Buffer size is less 4." QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less 4." QTJAMBI_STACKTRACEINFO );
                         return;
                     }
                 </conversion-rule>

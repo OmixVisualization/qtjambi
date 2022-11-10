@@ -203,7 +203,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QGuiApplication,
 
 namespace QtJambi
 {
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtObjectInterface,)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QUnsuccessfulInvocationException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
@@ -234,9 +233,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(longValue,()J)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(toByteArray,()[B)
 )
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;))
 }
 
 }

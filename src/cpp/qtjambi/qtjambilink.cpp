@@ -3981,7 +3981,10 @@ void qtjambi_resolve_signals(JNIEnv *env, jobject java_object, const QMetaObject
                                 }
                                 Q_ASSERT_X(clazz, "qtjambi_resolve_signals", qPrintable(QString("unable to find class").arg(metaObject->className())));
 
-                                jfieldID fieldId = resolveField(env, info.signal_name, info.signal_signature, clazz);
+                                jthrowable exceptionOccurred = nullptr;
+                                jfieldID fieldId = resolveField(env, info.signal_name, info.signal_signature, clazz, false, &exceptionOccurred);
+                                if(exceptionOccurred)
+                                    JavaException(env, exceptionOccurred).raise();
                                 Q_ASSERT_X(fieldId, "qtjambi_resolve_signals", qPrintable(QString("unable to find signal field %1").arg(info.signal_name)));
 
                                 jobject signal = env->GetObjectField(java_object, fieldId);
@@ -4009,13 +4012,18 @@ void qtjambi_resolve_signals(JNIEnv *env, jobject java_object, const QMetaObject
                             }
                             Q_ASSERT_X(clazz, "qtjambi_resolve_signals", qPrintable(QString("unable to find class").arg(metaObject->className())));
 
-                            jfieldID fieldId = resolveField(env, first.signal_name, qPrintable(QString("L%1$MultiSignal_%2;").arg(qtjambi_class_name(env, clazz).replace('.', '/')).arg(first.signal_name)), clazz);
+                            jthrowable exceptionOccurred = nullptr;
+                            jfieldID fieldId = resolveField(env, first.signal_name, qPrintable(QString("L%1$MultiSignal_%2;").arg(qtjambi_class_name(env, clazz).replace('.', '/')).arg(first.signal_name)), clazz, false, &exceptionOccurred);
+                            if(exceptionOccurred)
+                                JavaException(env, exceptionOccurred).raise();
                             if(!fieldId)
-                                fieldId = resolveField(env, first.signal_name, "Lio/qt/core/QObject$MultiSignal;", clazz);
-                            qtjambi_throw_java_exception(env);
+                                fieldId = resolveField(env, first.signal_name, "Lio/qt/core/QObject$MultiSignal;", clazz, false, &exceptionOccurred);
+                            if(exceptionOccurred)
+                                JavaException(env, exceptionOccurred).raise();
                             Q_ASSERT_X(fieldId, "qtjambi_resolve_signals", qPrintable(QString("unable to find signal field %1").arg(first.signal_name)));
 
                             jobject reflectedField = env->ToReflectedField(clazz, fieldId, false);
+                            qtjambi_throw_java_exception(env);
 
                             jobject multiSignal = env->GetObjectField(java_object, fieldId);
                             qtjambi_throw_java_exception(env);

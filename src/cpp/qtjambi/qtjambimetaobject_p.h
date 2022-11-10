@@ -47,12 +47,25 @@ public:
     ParameterTypeInfo();
     ParameterTypeInfo(
             int metaTypeId,
+            jclass _javaClass
+        );
+    ParameterTypeInfo(
+            int metaTypeId,
             jclass _javaClass,
-            const InternalToExternalConverter& _internalToExternalConverter,
-            const ExternalToInternalConverter& _externalToInternalConverter
-            );
+            InternalToExternalConverter&& internalToExternalConverter,
+            ExternalToInternalConverter&& externalToInternalConverter
+        );
+    ParameterTypeInfo(
+            int metaTypeId,
+            const QString& typeName,
+            jclass _javaClass,
+            InternalToExternalConverter&& internalToExternalConverter,
+            ExternalToInternalConverter&& externalToInternalConverter
+        );
     ParameterTypeInfo(const ParameterTypeInfo& other);
     ParameterTypeInfo& operator=(const ParameterTypeInfo& other);
+    ParameterTypeInfo(ParameterTypeInfo&& other);
+    ParameterTypeInfo& operator=(ParameterTypeInfo&& other);
 
     bool convertInternalToExternal(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType) const;
     bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, const jvalue& in,void* & out, jValueType valueType) const;
@@ -62,10 +75,15 @@ public:
     static ExternalToInternalConverter default_externalToInternalConverter();
     static ParameterTypeInfo voidTypeInfo(JNIEnv* env);
 private:
+    void resolveI2E(JNIEnv* env);
+    void resolveE2I(JNIEnv* env);
     int m_qTypeId;
+    QString m_typeName;
     jclass m_javaClass;
     InternalToExternalConverter m_internalToExternalConverter;
     ExternalToInternalConverter m_externalToInternalConverter;
+    uint m_resolvedI2E : 1;
+    uint m_resolvedE2I : 1;
     friend class QtJambiMetaObject;
 };
 
@@ -137,6 +155,7 @@ private:
     QtJambiMetaObjectPrivate *d_ptr;
     Q_DECLARE_PRIVATE(QtJambiMetaObject)
     Q_DISABLE_COPY_MOVE(QtJambiMetaObject)
+    friend QtJambiMetaObjectPrivate;
     friend void clear_metaobjects_at_shutdown(JNIEnv * env);
     friend const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider);
     friend class DynamicMetaObjectFunctionTable;
