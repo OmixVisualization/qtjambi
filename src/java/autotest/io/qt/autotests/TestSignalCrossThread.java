@@ -157,7 +157,10 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 			// create and connect up from inside the thread
 			if(signalReceiver == null) {
 				//signal = new Signal1<Object>();
-				signal.connect(this::testThreadCallback, connectionType);
+				if(TestConnections.hasSerializableLambdas)
+					signal.connect(this::testThreadCallback, connectionType);
+				else
+					signal.connect(this, "testThreadCallback(Object)", connectionType);
 				signalReceiver = signal;
 				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "runIn(connect testThreadCallback(Object)) " + QThread.currentThread() + " " + this.thread());
 			}
@@ -326,7 +329,10 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 			this.notifyObject = notifyObject;
 		}
 		public void connect(Qt.ConnectionType connectionType) {
-			signal.connect(this::recvThreadCallback, connectionType);
+			if(TestConnections.hasSerializableLambdas)
+				signal.connect(this::recvThreadCallback, connectionType);
+			else
+				signal.connect(this, "recvThreadCallback(Object)", connectionType);
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "MyRecever() connect recvThreadCallback(Object)" + Thread.currentThread() + " " + this.thread());
 		}
 		protected void recvThreadCallback(Object o) {  // renamed to avoice confusion

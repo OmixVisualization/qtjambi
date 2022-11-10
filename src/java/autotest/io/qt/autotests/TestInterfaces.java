@@ -32,6 +32,7 @@ package io.qt.autotests;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -60,10 +61,12 @@ import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.ObjectD;
 import io.qt.autotests.generated.TestAbstractClass;
 import io.qt.autotests.generated.TestInterface;
 import io.qt.autotests.generated.TestPrivateInterface;
+import io.qt.autotests.generated.Tulip;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QFactoryInterface;
+import io.qt.core.QList;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QPointF;
@@ -842,6 +845,26 @@ public class TestInterfaces extends ApplicationInitializer {
 			Assert.assertTrue(false);
 		} catch (Exception e) {
 			Assert.assertTrue(e instanceof NullPointerException);
+		}
+	}
+	
+	@Test
+	public void test_manyEasingFunctions() {
+		QList<QEasingCurve.EasingFunction> container = Tulip.createListOfEasingFunctions();
+    	Assert.assertTrue(container!=null);
+    	TreeMap<Integer,Double> calls = new TreeMap<>();
+    	for(int i=0; i<100; ++i) {
+    		int _i = i;
+    		QEasingCurve.EasingFunction object = progress -> {
+				calls.put(_i, progress);
+				return 0;
+    		};
+    		container.add(object);
+    	}
+    	Tulip.testEasingFunctions(container);
+        Assert.assertEquals(100, calls.size());
+        for (int i = 0; i < calls.size(); i++) {
+        	Assert.assertEquals(i+1, calls.get(i).intValue());
 		}
 	}
 	

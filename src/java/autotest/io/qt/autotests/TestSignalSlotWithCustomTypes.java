@@ -259,7 +259,7 @@ public class TestSignalSlotWithCustomTypes extends ApplicationInitializer {
         QSlider slider = new QSlider();
         Foobar foo = new Foobar();
         QMetaObject.Connection connection = slider.valueChanged.connect(foo::onChanged);
-        Assert.assertTrue(connection!=null && connection.isConnected());
+        Assert.assertTrue(connection.isConnected());
         slider.setValue(5);
         Assert.assertEquals(5, result[0]);
     }

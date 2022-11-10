@@ -103,9 +103,53 @@ void AutoHashAccess::debugStream(QDebug &dbg, const void *ptr){
             while (n != e) {
                 if(i>0)
                     dbg << "; ";
-                kiface->debugStream(kiface, dbg, n.key());
+                if(kiface->debugStream)
+                    kiface->debugStream(kiface, dbg, n.key());
+                else if(kiface->flags & QMetaType::IsPointer){
+                    if(kiface->metaObjectFn && kiface->metaObjectFn(kiface))
+                        dbg << kiface->metaObjectFn(kiface)->className() << "(";
+                    else if(QLatin1String(kiface->name).endsWith('*'))
+                        dbg << QLatin1String(kiface->name).chopped(1) << "(";
+                    else
+                        dbg << kiface->name << "(";
+                    dbg << "0x" << QString::number(*reinterpret_cast<const qint64*>(n.key()), 16);
+                    dbg << ")";
+                }else if(kiface->flags & QMetaType::IsEnumeration){
+                    dbg << kiface->name << "(";
+                    switch(kiface->size){
+                    case 1: dbg << *reinterpret_cast<const qint8*>(n.key()); break;
+                    case 2: dbg << *reinterpret_cast<const qint16*>(n.key()); break;
+                    case 4: dbg << *reinterpret_cast<const qint32*>(n.key()); break;
+                    case 8: dbg << *reinterpret_cast<const qint64*>(n.key()); break;
+                    default: break;
+                    }
+                    dbg << ")";
+                }else
+                    dbg << QVariant(m_keyMetaType, n.key());
                 dbg << ",";
-                viface->debugStream(viface, dbg, n.value());
+                if(viface->debugStream)
+                    viface->debugStream(viface, dbg, n.value());
+                else if(viface->flags & QMetaType::IsPointer){
+                    if(viface->metaObjectFn && viface->metaObjectFn(viface))
+                        dbg << viface->metaObjectFn(viface)->className() << "(";
+                    else if(QLatin1String(viface->name).endsWith('*'))
+                        dbg << QLatin1String(viface->name).chopped(1) << "(";
+                    else
+                        dbg << viface->name << "(";
+                    dbg << "0x" << QString::number(*reinterpret_cast<const qint64*>(n.value()), 16);
+                    dbg << ")";
+                }else if(viface->flags & QMetaType::IsEnumeration){
+                    dbg << viface->name << "(";
+                    switch(viface->size){
+                    case 1: dbg << *reinterpret_cast<const qint8*>(n.value()); break;
+                    case 2: dbg << *reinterpret_cast<const qint16*>(n.value()); break;
+                    case 4: dbg << *reinterpret_cast<const qint32*>(n.value()); break;
+                    case 8: dbg << *reinterpret_cast<const qint64*>(n.value()); break;
+                    default: break;
+                    }
+                    dbg << ")";
+                }else
+                    dbg << QVariant(m_valueMetaType, n.value());
                 ++n;
                 ++i;
             }
@@ -120,7 +164,29 @@ void AutoHashAccess::debugStream(QDebug &dbg, const void *ptr){
             while (n != e) {
                 if(i>0)
                     dbg << ", ";
-                kiface->debugStream(kiface, dbg, n.key());
+                if(kiface->debugStream)
+                    kiface->debugStream(kiface, dbg, n.key());
+                else if(kiface->flags & QMetaType::IsPointer){
+                    if(kiface->metaObjectFn && kiface->metaObjectFn(kiface))
+                        dbg << kiface->metaObjectFn(kiface)->className() << "(";
+                    else if(QLatin1String(kiface->name).endsWith('*'))
+                        dbg << QLatin1String(kiface->name).chopped(1) << "(";
+                    else
+                        dbg << kiface->name << "(";
+                    dbg << "0x" << QString::number(*reinterpret_cast<const qint64*>(n.key()), 16);
+                    dbg << ")";
+                }else if(kiface->flags & QMetaType::IsEnumeration){
+                    dbg << kiface->name << "(";
+                    switch(kiface->size){
+                    case 1: dbg << *reinterpret_cast<const qint8*>(n.key()); break;
+                    case 2: dbg << *reinterpret_cast<const qint16*>(n.key()); break;
+                    case 4: dbg << *reinterpret_cast<const qint32*>(n.key()); break;
+                    case 8: dbg << *reinterpret_cast<const qint64*>(n.key()); break;
+                    default: break;
+                    }
+                    dbg << ")";
+                }else
+                    dbg << QVariant(m_keyMetaType, n.key());
                 ++n;
                 ++i;
             }
@@ -140,13 +206,46 @@ void AutoHashAccess::dataStreamOut(QDataStream &s, const void *ptr){
         s << quint32(d->size);
         if(m_offset2){
             while (n != e) {
-                kiface->dataStreamOut(kiface, s, n.key());
-                viface->dataStreamOut(viface, s, n.value());
+                if(kiface->dataStreamOut)
+                    kiface->dataStreamOut(kiface, s, n.key());
+                else if(kiface->flags & QMetaType::IsEnumeration){
+                    switch(kiface->size){
+                    case 1: s << *reinterpret_cast<const qint8*>(n.key()); break;
+                    case 2: s << *reinterpret_cast<const qint16*>(n.key()); break;
+                    case 4: s << *reinterpret_cast<const qint32*>(n.key()); break;
+                    case 8: s << *reinterpret_cast<const qint64*>(n.key()); break;
+                    default: break;
+                    }
+                }else
+                    QVariant(m_keyMetaType, n.key()).save(s);
+                if(viface->dataStreamOut)
+                    viface->dataStreamOut(viface, s, n.value());
+                else if(viface->flags & QMetaType::IsEnumeration){
+                    switch(viface->size){
+                    case 1: s << *reinterpret_cast<const qint8*>(n.value()); break;
+                    case 2: s << *reinterpret_cast<const qint16*>(n.value()); break;
+                    case 4: s << *reinterpret_cast<const qint32*>(n.value()); break;
+                    case 8: s << *reinterpret_cast<const qint64*>(n.value()); break;
+                    default: break;
+                    }
+                }else
+                    QVariant(m_valueMetaType, n.value()).save(s);
                 ++n;
             }
         }else{
             while (n != e) {
-                kiface->dataStreamOut(kiface, s, n.key());
+                if(kiface->dataStreamOut)
+                    kiface->dataStreamOut(kiface, s, n.key());
+                else if(kiface->flags & QMetaType::IsEnumeration){
+                    switch(kiface->size){
+                    case 1: s << *reinterpret_cast<const qint8*>(n.key()); break;
+                    case 2: s << *reinterpret_cast<const qint16*>(n.key()); break;
+                    case 4: s << *reinterpret_cast<const qint32*>(n.key()); break;
+                    case 8: s << *reinterpret_cast<const qint64*>(n.key()); break;
+                    default: break;
+                    }
+                }else
+                    QVariant(m_keyMetaType, n.key()).save(s);
                 ++n;
             }
         }
@@ -168,13 +267,41 @@ void AutoHashAccess::dataStreamIn(QDataStream &s, void *ptr){
     if(m_offset2){
         for(size_t i=0; i<size; ++i){
             void* key = operator new(kiface->size);
-            if(kiface->defaultCtr)
-                kiface->defaultCtr(kiface, key);
-            kiface->dataStreamIn(kiface, s, key);
+            if(kiface->dataStreamIn){
+                if(kiface->defaultCtr)
+                    kiface->defaultCtr(kiface, key);
+                kiface->dataStreamIn(kiface, s, key);
+            }else if(kiface->flags & QMetaType::IsEnumeration){
+                switch(kiface->size){
+                case 1: s >> *reinterpret_cast<qint8*>(key); break;
+                case 2: s >> *reinterpret_cast<qint16*>(key); break;
+                case 4: s >> *reinterpret_cast<qint32*>(key); break;
+                case 8: s >> *reinterpret_cast<qint64*>(key); break;
+                default: break;
+                }
+            }else{
+                QVariant v(m_keyMetaType);
+                v.load(s);
+                m_keyMetaType.construct(key, v.data());
+            }
             void* value = operator new(viface->size);
-            if(viface->defaultCtr)
-                viface->defaultCtr(viface, value);
-            viface->dataStreamIn(viface, s, value);
+            if(viface->dataStreamIn){
+                if(viface->defaultCtr)
+                    viface->defaultCtr(viface, value);
+                viface->dataStreamIn(viface, s, value);
+            }else if(viface->flags & QMetaType::IsEnumeration){
+                switch(viface->size){
+                case 1: s >> *reinterpret_cast<qint8*>(value); break;
+                case 2: s >> *reinterpret_cast<qint16*>(value); break;
+                case 4: s >> *reinterpret_cast<qint32*>(value); break;
+                case 8: s >> *reinterpret_cast<qint64*>(value); break;
+                default: break;
+                }
+            }else{
+                QVariant v(m_valueMetaType);
+                v.load(s);
+                m_valueMetaType.construct(value, v.data());
+            }
             emplace(ptr, key, value);
             if(kiface->dtor)
                 kiface->dtor(kiface, key);
@@ -186,9 +313,23 @@ void AutoHashAccess::dataStreamIn(QDataStream &s, void *ptr){
     }else{
         for(size_t i=0; i<size; ++i){
             void* key = operator new(kiface->size);
-            if(kiface->defaultCtr)
-                kiface->defaultCtr(kiface, key);
-            kiface->dataStreamIn(kiface, s, key);
+            if(kiface->dataStreamIn){
+                if(kiface->defaultCtr)
+                    kiface->defaultCtr(kiface, key);
+                kiface->dataStreamIn(kiface, s, key);
+            }else if(kiface->flags & QMetaType::IsEnumeration){
+                switch(kiface->size){
+                case 1: s >> *reinterpret_cast<qint8*>(key); break;
+                case 2: s >> *reinterpret_cast<qint16*>(key); break;
+                case 4: s >> *reinterpret_cast<qint32*>(key); break;
+                case 8: s >> *reinterpret_cast<qint64*>(key); break;
+                default: break;
+                }
+            }else{
+                QVariant v(m_keyMetaType);
+                v.load(s);
+                m_keyMetaType.construct(key, v.data());
+            }
             emplace(ptr, key, nullptr);
             if(kiface->dtor)
                 kiface->dtor(kiface, key);

@@ -9,7 +9,7 @@ SUBDIRS += Generic6Function
 SUBDIRS += DoubleToDoubleFunction
 SUBDIRS += FloatToFloatFunction
 greaterThan(QT_MAJOR_VERSION, 5): {
-    SUBDIRS += PluginMetaDataFunction MetaTypeFunction
+    SUBDIRS += PluginMetaDataFunction MetaTypeFunction QmlTypeCreatorFunction
 }
 else{
     SUBDIRS += VariantDataFunction

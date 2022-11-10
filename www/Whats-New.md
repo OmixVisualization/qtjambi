@@ -1,29 +1,28 @@
-# What's new in QtJambi 6.4.0 / 6.3.5 / 6.2.8 / 5.15.10
+# What's new in QtJambi 6.4.1 / 6.2.9 / 5.15.11
 
 ## Bugfixes
 
 Solved issues:
-* `qrc:` paths not working for directory classpaths
-* [Issue 89](../../../issues/89): Functions missing from QQuickRenderTarget
-* [Issue 86](../../../issues/86): Add all java object constants as readonly properties when used in qml
-* [Issue 85](../../../issues/85): Fix ‘numeric_limits’ is not a member of ‘std’ error
-* [Issue 84](../../../issues/84): Could not load the Qt platform plugin "wayland" in "" even though it was found.
-* [Issue 83](../../../issues/83): QUrl with "qrc:" not working for resources in directory-based class paths.
-* [Issue 79](../../../issues/79): Wrong minial version for QWebEngineFileSystemAccessRequest?
-* [Issue 78](../../../issues/78): better description of macos startup in readme
-* [Issue 77](../../../issues/77): Using "Object" in a slot
-* [Issue 75](../../../issues/75): QProperty and notification signals
+* [Issue 94](../../../issues/94): A lot of new logs in the code that seems to have no obvious errors
+* [Issue 93](../../../issues/93): Final class fields are not marked as constant when imported as qobject properties
+* [Issue 92](../../../issues/92): Meta Object loading system doesn't use custom classloaders - can't find classes from downloaded jars
+* [Issue 98](../../../issues/98): QObect meta type parsing broken?
+* removing memory leak in QQmlListProperty. QQmlListProperty now requires QList instead of java list. Alternatively, you can specify access functions similar to native Qt.
+* Resolved: Stack overflow caused by cascades of registering meta types and generating meta objects.
+* Resolved: NullPointerException in combination with classpath resources.
 
 ## New Features
 
-* New modules QtHttpServer and QtSpatialAudio
-* New classes QtMath, QtAlgorithms and QtGlobal making available many Qt functions in global scope
-* Providing QVariant as value class.
-* Removing `$` character from class names translated to native.
-* All Java classes lead to distinct values in `QMetaType.fromType()`.
-* All Java classes can be gadgets ready for meta-programming and qml.
-* Improved "reduce" features in QtConcurrent
+* You can now use annotations from `io.qt.qml.util` to define Qml types. Then, use `QtQml.qmlRegisterTypesAndRevisions()` to register these types to Qml.
+* Ability to define value types for Qml in Qt 6.4.
+* Ability to register metatype converters.
+* Ability to use the same signal as notifier for different properties.
+* Non-public methods with non-void return type are now considered not to be invokable.
 
 ## Compatibility
 
-QtJambi 6.3.5, 6.2.8 and 5.15.10 are source-compatible and in most cases binary-compatible to its predecessor releases. 
+QtJambi 6.4.1, 6.2.9 and 5.15.11 are source-compatible and binary-compatible to its predecessor releases (except `QQmlListProperty` constructor). 
+
+## Remark
+
+This is the last regular release for Qt 5.15.

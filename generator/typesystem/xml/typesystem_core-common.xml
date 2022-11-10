@@ -253,7 +253,6 @@
     <rejection class="QMetaType::SaveOperator"/>
     <rejection class="QMetaType::TypedConstructor"/>
     <rejection class="QMetaType::TypedDestructor"/>
-    <rejection class="QMetaType::ConverterFunction"/>
     <rejection class="QMetaType::MutableViewFunction"/>
     <rejection class="QAbstractAnimationPrivate"/>
     <rejection class="QAbstractButtonPrivate"/>
@@ -595,14 +594,10 @@
     <rejection class="QNativeInterface::Private::TypeInfo" since="6.0.0"/>
     <rejection class="QNativeInterface::Private::has_type_info" since="6.0.0"/>
     <rejection class="QNativeInterface::QAndroidApplication::TypeInfo" since="6.0.0"/>
-    <rejection class="QMetaType" function-name="registerConverterFunction" since="6.0.0"/>
-    <rejection class="QMetaType" function-name="unregisterConverterFunction" since="6.0.0"/>
     <rejection class="QMetaType" function-name="registerMutableViewFunction" since="6.0.0"/>
     <rejection class="QMetaType" function-name="unregisterMutableViewFunction" since="6.0.0"/>
     <rejection class="QMetaType" function-name="view" since="6.0.0"/>
     <rejection class="QMetaType" function-name="iface" since="6.0.0"/>
-    <rejection class="QMetaType" function-name="hasRegisteredDebugStreamOperator"/>
-    <rejection class="QMetaType" function-name="debugStream"/>
     <rejection class="QPluginParsedMetaData" function-name="parse" since="6.3.0"/>
     <rejection class="QPluginParsedMetaData" function-name="value" since="6.3.0"/>
     <rejection class="QFutureInterfaceBase" function-name="get" since="6.3.0"/>
@@ -3336,6 +3331,8 @@
     <rejection class="QMetaType" function-name="registerEqualsComparator"/>
     <rejection class="QMetaType" function-name="registerNormalizedTypedef"/>
     <rejection class="QMetaType" function-name="registerTypedef"/>
+    <rejection class="QMetaType" function-name="registerConverterFunction" since="6.0.0"/>
+    <rejection class="QMetaType::ConverterFunction"/>
     <rejection class="QtPrivate::QMetaTypeInterface"/>
     <value-type name="QMetaType">
         <custom-constructor>
@@ -3350,7 +3347,9 @@
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
         </extra-includes>
         <modify-function signature="hasRegisteredConverterFunction&lt;From,To>()" remove="all"/>
-        <modify-function signature="hasRegisteredMutableViewFunction&lt;From,To>()" remove="all"/>
+        <modify-function signature="hasRegisteredMutableViewFunction&lt;From,To>()" remove="all" since="6.0.0"/>
+        <modify-function signature="canView(QMetaType,QMetaType)" remove="all" since="6.0.0"/>
+        <modify-function signature="hasRegisteredMutableViewFunction(QMetaType,QMetaType)" remove="all" since="6.0.0"/>
         <modify-function signature="operator=(const QMetaType &amp;)" remove="all" until="5.*"/>
     </value-type>
     <enum-type name="QMetaType::TypeFlag" flags="QMetaType::TypeFlags">

@@ -1,10 +1,12 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QHash>
 #include "qtjambi_application.h"
+#include "qtjambi_qml.h"
 #include "qtjambi_registry.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambilink_p.h"
 #include "qtjambi_metainfo.h"
+#include "qtjambi_cast.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 namespace QtPrivate{
@@ -99,3 +101,6 @@ void qtjambi_unregister_converter(int from, int to){
 }
 #endif
 
+void qtjambi_register_qml_list_element_type(JNIEnv *env, jobject qmlList, const QMetaType& elementType){
+    Java::QtQml::QQmlListProperty::set_elementType(env, qmlList, qtjambi_cast<jobject>(env, elementType));
+}

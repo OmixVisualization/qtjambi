@@ -12,7 +12,7 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
+** 
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
@@ -21,24 +21,28 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
 
-#ifndef QMLCREATEPARENTFUNCTION_H
-#define QMLCREATEPARENTFUNCTION_H
+package io.qt.qml.util;
 
-#include <QtCore/QObject>
-#ifdef Q_OS_MAC
-#  include <jni.h>
-#else
-#  include <jni.h>
-#endif
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-typedef QObject*(*CreateParentFunction)(QObject*);
+import io.qt.QtMetaType;
 
-CreateParentFunction createParentFunction(JNIEnv * env, jclass clazz, jmethodID constructor);
-
-#endif // QMLCREATEPARENTFUNCTION_H
+/**
+ * This annotation marks a class to be registered as qml sequential container type.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface QmlSequencialContainer {
+	Class<?> value();
+	QtMetaType valueType() default @QtMetaType();
+}

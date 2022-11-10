@@ -128,7 +128,7 @@ struct qtjambi_jnitype_caster<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope*){
         jobject result = nullptr;
         if(!qtjambi_convert_from_native(env, typeid(NativeType_ptr), nativeTypeName, &in, true, false, result)){
-           JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast to type %1").arg(QLatin1String(nativeTypeName ? nativeTypeName : qtjambi_type_name(typeid(NativeType)).data()))) QTJAMBI_STACKTRACEINFO );
+           JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast to type %1").arg(QLatin1String(nativeTypeName ? nativeTypeName : qtjambi_type_name(typeid(NativeType)).data())) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -149,7 +149,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         NativeType_ptr fct = nullptr;
         NativeType_ptr* result = &fct;
         if(!qtjambi_convert_to_native(env, typeid(NativeType_ptr), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result ? *result : nullptr;
     }
@@ -202,7 +202,7 @@ struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, true, 
     static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -232,10 +232,10 @@ struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, false,
     static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         if(!result)
-            JavaException::raiseNullPointerException(env, qPrintable(QString("Cannot cast null to reference type %1").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseNullPointerException(env, QStringLiteral("Cannot cast null to reference type %1").arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         return *result;
     }
 };
@@ -285,7 +285,7 @@ struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, true, 
     static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -356,7 +356,7 @@ struct qtjambi_jnitype_copy_assignable_decider_cast<has_scope, NativeType, is_co
     static NativeType_cr cast(JNIEnv * env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType* result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return checked_deref<NativeType>(env, result);
     }
@@ -401,7 +401,7 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
     static NativeType_cr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType result;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -417,7 +417,7 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
     static NativeType_cr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return qtjambi_deref_value<NativeType, supports_StandardConstructor<NativeType>::value, supports_CopyConstructor<NativeType>::value, is_const, is_reference>::deref(env, result);
     }
@@ -1652,7 +1652,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType result;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QStringLiteral("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }

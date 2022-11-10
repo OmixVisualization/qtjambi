@@ -5673,7 +5673,7 @@ class QObject___ extends QObject {
      *
      * <p>The Connection handle will be invalid  if it cannot create the
      * connection, for example, the parameters were invalid.
-     * You can check if a QMetaObject.Connection is returned.</p>
+     * You can check {@link QMetaObject.Connection#isConnected()} on the returned connection object.</p>
      *
      * <p>This function works in the same way as
      * {@link #connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)}
@@ -9548,7 +9548,7 @@ class QTimer___ extends QTimer {
         private QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
             super(QAbstractEventDispatcher.instance());
             QMetaObject.Connection connection = timeout.connect(slot);
-            if(connection==null || connection.isConnected() || (obj!=null && connection.receiver()!=obj)) {
+            if(!connection.isConnected() || (obj!=null && connection.receiver()!=obj)) {
                 this.slot = slot;
                 this.receiver = obj;
             }else {
@@ -13059,6 +13059,7 @@ class QMetaType___ extends QMetaType {
      * Writes a value to data stream.
      * @param <U>
      */
+    @FunctionalInterface
     public interface DataStreamInFn<U> extends java.util.function.BiConsumer<QDataStream, U>, java.io.Serializable{
     }
     
@@ -13066,6 +13067,7 @@ class QMetaType___ extends QMetaType {
      * Reads a value from data stream.
      * @param <U>
      */
+    @FunctionalInterface
     public interface DataStreamOutFn<U> extends java.util.function.Function<QDataStream, U>, java.io.Serializable{
     }
     
@@ -13111,11 +13113,36 @@ class QMetaType___ extends QMetaType {
         int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DebugStreamFn.class, debugstreamFn);
         Class<?>[] debugstreamClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DebugStreamFn.class, debugstreamFn);
         if(debugstreamTypes==null || debugstreamTypes.length!=3)
-            throw new IllegalArgumentException("DataStreamIn and/or DataStreamOut function not a lambda expression.");
+            throw new IllegalArgumentException("DebugStreamFn function not a lambda expression.");
         if(debugstreamTypes[2]==0)
             throw new IllegalArgumentException("Unable to recognize meta type.");
         io.qt.internal.QtJambiInternal.registerDebugStreamOperator(debugstreamTypes[2], debugstreamClassTypes[2], debugstreamFn);
         return debugstreamTypes[2];
+    }
+	
+    /**
+     * <p>Convert value of T1 into T2</p>
+     * @param <T1>
+     * @param <T2>
+     */
+    @FunctionalInterface
+    public interface ConverterFn<T1,T2> extends java.util.function.Function<T1, T2>, java.io.Serializable {
+    }
+    
+    /**
+     * Registers debug stream operator for meta type <code>T</code>.
+     * @param debugstreamFn (only lambda expressions allowed)
+     * @return the registered meta type
+     */
+    public static <T1,T2> boolean registerConverter(ConverterFn<T1,T2> converterFn) {
+        java.util.Objects.requireNonNull(converterFn);
+        int[] converterTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(ConverterFn.class, converterFn);
+        Class<?>[] converterClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(ConverterFn.class, converterFn);
+        if(converterTypes==null || converterTypes.length!=2)
+            throw new IllegalArgumentException("ConverterFn function not a lambda expression.");
+        if(converterTypes[0]==0 || converterTypes[1]==0)
+            throw new IllegalArgumentException("Unable to recognize meta type.");
+        return io.qt.internal.QtJambiInternal.registerConverter(converterTypes[0], converterClassTypes[0], converterTypes[1], converterClassTypes[1], converterFn);
     }
     
     @io.qt.QtUninvokable
@@ -16775,33 +16802,6 @@ class QThread___{
      */
     public final void interrupt() {
         requestInterruption();
-    }
-    
-    private final static Object interruptible;
-    
-    static{
-        Object _interruptible = null;
-        try {
-            _interruptible = java.lang.reflect.Proxy.newProxyInstance(
-                    QThread.class.getClassLoader(), 
-                    new Class[] { Class.forName("sun.nio.ch.Interruptible") }, 
-                    (proxy, method, args)->{
-                        if(args.length==1 && args[0] instanceof Thread) {
-                            Thread thread = (Thread)args[0];
-                            if(thread.isAlive()) {
-                                QThread qthread = thread(thread);
-                                try(io.qt.internal.QtJambiInternal.Monitor monitor = io.qt.internal.QtJambiInternal.synchronizedNativeId(qthread)){
-                                    if(qthread!=null && !qthread.isDisposed() && !qthread.isInterruptionRequested()){
-                                        qthread.requestInterruption();
-                                    }
-                                }
-                            }
-                        }
-                        return null;
-                    });
-        } catch (Throwable e) {
-        }
-        interruptible = _interruptible;
     }
 }// class
 

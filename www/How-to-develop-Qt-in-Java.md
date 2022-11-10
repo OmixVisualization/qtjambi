@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.10`, `6.2.8`, `6.3.5` or by `6.4.0`).
+(exchange `$VERSION` either by `5.15.11`, `6.2.9` or by `6.4.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.4.0.jar Test.java
+javac -cp qtjambi-6.4.1.jar Test.java
 ```
 
 ## Executing Example
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.4.0.jar;qtjambi-native-windows-x64-6.4.0.jar;. -Djava.library.path=C:\Qt\6.4.0\msvc2019_64\bin Test
+java -cp qtjambi-6.4.1.jar;qtjambi-native-windows-x64-6.4.1.jar;. -Djava.library.path=C:\Qt\6.4.0\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.4.0.jar:qtjambi-native-linux-x64-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/gcc_64/lib Test
+java -cp qtjambi-6.4.1.jar:qtjambi-native-linux-x64-6.4.1.jar:. -Djava.library.path=<path to>/Qt/6.4.0/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.4.0.jar:qtjambi-native-macos-6.4.0.jar:. -Djava.library.path=<path to>/Qt/6.4.0/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.4.1.jar:qtjambi-native-macos-6.4.1.jar:. -Djava.library.path=<path to>/Qt/6.4.0/macos/lib -XstartOnFirstThread Test
 ```
 
 ### Native Components
@@ -94,13 +94,11 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.10/),
+Documentation](https://doc.qtjambi.io/5.15.11/),
 [QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.8/)
-[QtJambi 6.3 API Reference
-Documentation](https://doc.qtjambi.io/6.3.5/)
+Documentation](https://doc.qtjambi.io/6.2.9/)
 and [QtJambi 6.4 API Reference
-Documentation](https://doc.qtjambi.io/6.4.0/)
+Documentation](https://doc.qtjambi.io/6.4.1/)
 
 ## Useful Java System Properties for QtJambi
 

@@ -330,11 +330,11 @@ QFutureInterfaceBase* qtjambi_translate_futureinterfaces(QSharedPointer<QFutureI
                                 }
                                 if(baseType==QLatin1String("QFutureInterfaceBase")
                                         || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                         }
@@ -358,11 +358,11 @@ QFutureInterfaceBase* qtjambi_translate_futureinterfaces(QSharedPointer<QFutureI
                                 }
                                 if(baseType==QLatin1String("QFutureInterfaceBase")
                                         || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType)) QTJAMBI_STACKTRACEINFO );
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                         }

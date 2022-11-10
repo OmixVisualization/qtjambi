@@ -296,14 +296,46 @@ slots and invokable methods.
 
 ### Methods
 
-Basically, all non-static methods in the new class are considered to be
+Basically, all public, non-static methods and non-public but void methods in a `QObject`-based class are considered to be
 invokable by Qt. You can avoid this by annotating the method with
-`@QtUninvokable`. On the other hand, static methods and constructors can
+`@QtUninvokable`. On the other hand, static and non-public methods as well as constructors can
 be made invokable with annotation `@QtInvokable`.
 
 ``` Java
-@QtUninvokable
-private void analyze() {
+public class Implementor extends QObject{
+    // invokable by default:
+	public String doSomething(int arg) {
+        ...
+    }
+	
+    // not invokable by default:
+	private int doSomething(double arg) {
+        ...
+    }
+	
+    // avoids being invokable by default:
+    @QtUninvokable
+    private void doSomething() {
+        ...
+    }
+
+    // making private supplier invokable:
+    @QtInvokable
+    private int returnSomething() {
+        ...
+    }
+	
+    // making static method invokable:
+    @QtInvokable
+    public static void doSomethingStatic(int arg) {
+        ...
+    }
+	
+    // making constructor invokable:
+    @QtInvokable
+	public Implementor(){
+	    super();
+	}
 }
 ```
 

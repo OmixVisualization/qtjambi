@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import io.qt.QtAsGadget;
 import io.qt.QtEnumerator;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
@@ -53,10 +54,16 @@ import io.qt.core.QVariant;
 import io.qt.core.QVersionNumber;
 import io.qt.gui.QVector4D;
 import io.qt.qml.QJSEngine;
+import io.qt.qml.QJSManagedValue;
 import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
+import io.qt.qml.QQmlError;
 import io.qt.qml.QtQml;
+import io.qt.qml.util.QmlNamedElement;
+import io.qt.qml.util.QmlSingleton;
+import io.qt.qml.util.QmlTypeRegistrationException;
+import io.qt.qml.util.QmlTypes;
 
 public class TestQmlQt6 extends ApplicationInitializer{
 	
@@ -72,6 +79,8 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		Assert.assertEquals(QCoreApplication.instance(), result);
 	}
 	
+	@QmlNamedElement(name="Singleton")
+	@QmlSingleton
 	static class Singleton extends QObject{
 		public final QProperty<String> text = new QProperty<>("Hello, world!");
 		
@@ -84,6 +93,12 @@ public class TestQmlQt6 extends ApplicationInitializer{
 			}
 		}
 		public final QComputedIntProperty number = new QComputedIntProperty(()->this.m_number);
+	}
+	
+	@QmlNamedElement(name="NonQObjectSingleton")
+	@QmlSingleton
+	@QtAsGadget
+	static class Singleton3{
 	}
 	
 	@Test
@@ -114,6 +129,46 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		s.setNumber(29);
 		Assert.assertEquals(29, iprop.value());
 		Assert.assertEquals(29, root.property("number"));
+	}
+	
+	@Test
+    public void run_testSingletonType() {
+		QtQml.qmlClearTypeRegistrations();
+		int id = QmlTypes.registerType(Singleton.class, "io.qt.test", 1);
+		Assert.assertTrue(id!=-1);
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"Item{\n" + 
+				"    property string text: Singleton.text\n" + 
+				"    property int number: Singleton.number\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QObject root = component.create();
+		Singleton s = engine.singletonInstance(Singleton.class, id);
+		Assert.assertEquals("Hello, world!", root.property("text"));
+		s.text.setValue("Hello, world?");
+		Assert.assertEquals("Hello, world?", root.property("text"));
+		QIntProperty iprop = new QIntProperty();
+		iprop.setBinding(()->s.number.value());
+		Assert.assertEquals(8, iprop.value());
+		Assert.assertEquals(8, root.property("number"));
+		s.setNumber(29);
+		Assert.assertEquals(29, iprop.value());
+		Assert.assertEquals(29, root.property("number"));
+	}
+	
+	@Test
+    public void run_testSingletonTypeNonQObject() {
+		QtQml.qmlClearTypeRegistrations();
+		try{
+			QmlTypes.registerType(Singleton3.class, "io.qt.test", 1);
+			Assert.fail("QmlTypeRegistrationException expected");
+		} catch (QmlTypeRegistrationException e) {
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -166,6 +221,21 @@ public class TestQmlQt6 extends ApplicationInitializer{
 	
 	static class CustomValueType implements Cloneable
 	{
+		public CustomValueType(QJSValue arguments) {
+			if(arguments.isArray()) {
+				int length = arguments.property("length").toInt();
+				if(length==3) {
+					i = arguments.property(0).toInt();
+					d = arguments.property(1).toDouble();
+					s = arguments.property(2).toString();
+				}
+			}else if(arguments.isObject()) {
+				i = arguments.property("i").toInt();
+				d = arguments.property("d").toDouble();
+				s = arguments.property("s").toString();
+			}
+		}
+		
 		public CustomValueType() {}
 		
 		public CustomValueType(int i, double d, String s) {
@@ -315,10 +385,12 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Test
     public void testCustomTypes() {
 		qmlClearTypeRegistrations();
 	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
+	    qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -336,9 +408,44 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"        object.customValueType.d = 3.9;\n" + 
 				"        object.customValueType.s = \"TEST2\";\n" + 
 				"    }\n" + 
+				"    function changeObject2(){\n" + 
+				"        object.someEnum = ObjectType.C;\n" + 
+				"        var v = [3, 9.6, \"TEST8\"];\n" + 
+				"        let v2 = {array: v};\n" + 
+				"        console.log(v2);\n" + 
+				"        object.customValueType = v;\n" + 
+				"    }\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		engine.setOutputWarningsToStandardError(true);
+		engine.warnings.connect(warnings->{
+			for(QQmlError warning : warnings) {
+				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+			}
+		});
+		
+		QJSValue jsv = engine.newArray(3);
+		jsv.setProperty(0, 5);
+		jsv.setProperty(1, 5.6);
+		jsv.setProperty(2, "CREATE_TEST");
+		CustomValueType v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), CustomValueType.class);
+		Assert.assertEquals(5, v.i);
+		Assert.assertEquals(5.6, v.d, 0.0001);
+		Assert.assertEquals("CREATE_TEST", v.s);
+		
+		jsv = engine.newObject();
+		jsv.setProperty("i", 25);
+		jsv.setProperty("d", 25.6);
+		jsv.setProperty("s", "CREATE_TEST2");
+		v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), CustomValueType.class);
+		Assert.assertEquals(25, v.i);
+		Assert.assertEquals(25.6, v.d, 0.0001);
+		Assert.assertEquals("CREATE_TEST2", v.s);
+		v = QVariant.fromValue(jsv).value(CustomValueType.class);
+		Assert.assertEquals(25, v.i);
+		Assert.assertEquals(25.6, v.d, 0.0001);
+		Assert.assertEquals("CREATE_TEST2", v.s);
+		
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -349,12 +456,29 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		Assert.assertEquals(ObjectType.SomeEnum.D, object.someEnum);
 		ObjectType.SomeEnum someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
 		Assert.assertEquals(ObjectType.SomeEnum.D, someEnum);
+		Assert.assertEquals(5, object.customValueType.i);
+		Assert.assertEquals(7.9, object.customValueType.d, 0.0001);
+		Assert.assertEquals("TEST", object.customValueType.s);
+		
 	    QMetaObject mo = root.metaObject();
 	    QMetaMethod changeObject = mo.method("changeObject");
 	    changeObject.invoke(root);
 		Assert.assertEquals(ObjectType.SomeEnum.B, object.someEnum);
 		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
 		Assert.assertEquals(ObjectType.SomeEnum.B, someEnum);
+		Assert.assertEquals(6, object.customValueType.i);
+		Assert.assertEquals(3.9, object.customValueType.d, 0.0001);
+		Assert.assertEquals("TEST2", object.customValueType.s);
+		
+		changeObject = mo.method("changeObject2");
+	    changeObject.invoke(root);
+		Assert.assertEquals(ObjectType.SomeEnum.C, object.someEnum);
+		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+		Assert.assertEquals(ObjectType.SomeEnum.C, someEnum);
+		Assert.assertEquals(3, object.customValueType.i);
+		Assert.assertEquals(9.6, object.customValueType.d, 0.0001);
+		Assert.assertEquals("TEST8", object.customValueType.s);
+		
 		Assert.assertEquals(QMetaType.fromType(CustomGadgetType.class), QVariant.fromValue(new CustomGadgetType()).metaType());
 		Assert.assertEquals(QMetaType.fromType(CustomValueType.class), QVariant.fromValue(new CustomValueType()).metaType());
 		Assert.assertEquals(QMetaType.fromName("JObjectWrapper"), QVariant.fromValue(new ObjectType()).metaType());
@@ -363,4 +487,36 @@ public class TestQmlQt6 extends ApplicationInitializer{
 //		System.out.println(QMetaObject.forType(Runnable.class).methods());
 //		System.out.println(QMetaObject.forType(Runnable.class).properties());
 	}
+	
+	@SuppressWarnings("rawtypes")
+	@Test
+    public void testCustomTypes2() {
+		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
+		qmlClearTypeRegistrations();
+	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
+	    qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"Item{\n" + 
+				"    property customValueType someValueType: [8, 2.1, \"TEST3\"]\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		engine.setOutputWarningsToStandardError(true);
+		engine.warnings.connect(warnings->{
+			for(QQmlError warning : warnings) {
+				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+			}
+		});
+		
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QObject root = component.create();
+		
+		CustomValueType someValueType = QVariant.convert(root.property("someValueType"), CustomValueType.class);
+		Assert.assertEquals(8, someValueType.i);
+		Assert.assertEquals(2.1, someValueType.d, 0.0001);
+		Assert.assertEquals("TEST3", someValueType.s);
+    }
 }

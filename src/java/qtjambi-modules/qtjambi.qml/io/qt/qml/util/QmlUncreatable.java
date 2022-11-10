@@ -36,7 +36,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a class to be registered as uncreatable qml type in combination with <code>QmlElement</code> or <code>QmlNamedElement</code>.
+ * <p>This annotation marks a class to be registered as uncreatable qml type in combination with <code>QmlElement</code> or <code>QmlNamedElement</code>.</p>
+ * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#QML_UNCREATABLE">QML_UNCREATABLE(reason)</a></p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

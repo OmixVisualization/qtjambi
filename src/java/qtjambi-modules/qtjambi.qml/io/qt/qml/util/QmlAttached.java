@@ -12,7 +12,7 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
+** 
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
@@ -21,41 +21,26 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
 
-#include <QtCore/QtGlobal>
-#include <qtjambi/qtjambi_global.h>
+package io.qt.qml.util;
 
-#include "qmlattachedpropertiesfunction.h"
-#include <qtjambi/qtjambi_core.h>
-#include <qtjambi/qtjambi_functionpointer.h>
-#include <qtjambi/qtjambi_jobjectwrapper.h>
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-QObject* attachedProperties(const JObjectWrapper& clazzWrapper, jmethodID qmlAttachedProperties, QObject* parent){
-    if(JNIEnv * env = qtjambi_current_environment()){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-        jobject result = env->CallStaticObjectMethod(jclass(clazzWrapper.object()), qmlAttachedProperties, qtjambi_from_QObject(env, parent));
-        qtjambi_throw_java_exception(env);
-        return qtjambi_to_qobject(env, result);
-    }
-    return nullptr;
+/**
+ * <p>This annotation marks a class to be registered as attached qml type.</p>
+ * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#QML_ATTACHED">QML_ATTACHED(ATTACHED_TYPE)</a></p>
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface QmlAttached {
+	Class<?> value();
 }
-
-QQmlAttachedPropertiesFunc attachedPropertiesFunc(JNIEnv * env, jclass clazz, jobject method){
-    if(!method)
-        return nullptr;
-    uint hash = 1;
-    hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, method));
-    hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
-    jmethodID qmlAttachedProperties = env->FromReflectedMethod(method);
-    JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<16,QObject*(QObject*)>([clazzWrapper, qmlAttachedProperties](QObject* parent) -> QObject* {
-        return attachedProperties(clazzWrapper, qmlAttachedProperties, parent);
-    }, hash);
-}
-
-

@@ -555,7 +555,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                   << INDENT << "final static int qtMinorVersion = " << m_qtVersionMinor << ";" << Qt::endl << Qt::endl
                   << INDENT << "final static int qtJambiPatch = " << m_qtjambiVersionPatch << ";" << Qt::endl;
                 if(typeSystemEntry){
-                    s << Qt::endl << INDENT << "static{" << Qt::endl;
+                    s << Qt::endl << INDENT << "final static io.qt.InternalAccess internal;" << Qt::endl
+                      << Qt::endl << INDENT << "static{" << Qt::endl;
                     {
                         INDENTATION(INDENT)
                         s << INDENT << "try {" << Qt::endl;
@@ -820,13 +821,16 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             }else{
                                 s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
                             }
-                            generateInitializer(s, typeSystemEntry, {}, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
+                            generateInitializer(s, typeSystemEntry, package, TypeSystem::TargetLangCode, CodeSnip::Position5, INDENT);
                         }
                         s << INDENT << "} catch(Error t) {" << Qt::endl
                           << INDENT << "    throw t;" << Qt::endl
                           << INDENT << "} catch(Throwable t) {" << Qt::endl
                           << INDENT << "    throw new ExceptionInInitializerError(t);" << Qt::endl
                           << INDENT << "}" << Qt::endl;
+                        if(package!="io.qt.internal")
+                            s << INDENT << "internal = internalAccess();" << Qt::endl;
+                        generateInitializer(s, typeSystemEntry, {}, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
                     }
                     s << INDENT << "}" << Qt::endl;
                 }else{
@@ -847,6 +851,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                               << INDENT << "final static java.util.Map<String,java.util.List<NativeLibraryManager.Dependency>> getDependencies() {" << Qt::endl
                               << INDENT << "    return java.util.Collections.unmodifiableMap(dependencies);" << Qt::endl
                               << INDENT << "}" << Qt::endl << Qt::endl;
+                        }else{
+                            s << INDENT << "final static io.qt.InternalAccess internal;" << Qt::endl << Qt::endl;
                         }
 
                         generateInitializer(s, typeSystemEntry, package, TypeSystem::TargetLangCode, CodeSnip::Beginning, INDENT);
@@ -930,17 +936,21 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             }
                             s << INDENT << "}" << Qt::endl;
                         }
+                        if(package!="io.qt.internal")
+                            s << INDENT << "    internal = internalAccess();" << Qt::endl;
+                        generateInitializer(s, typeSystemEntry, package, TypeSystem::TargetLangCode, CodeSnip::Position5, INDENT);
                         s << INDENT << "}" << Qt::endl;
                         generateInitializer(s, typeSystemEntry, package, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
                     }else if(package!="io.qt.internal"){
-                        s << Qt::endl << INDENT << "static{" << Qt::endl;
-                        s << INDENT << "    io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
-                        s << INDENT << "}" << Qt::endl;
+                        s << INDENT << "static final io.qt.InternalAccess internal;" << Qt::endl << Qt::endl
+                          << INDENT << "static{" << Qt::endl
+                          << INDENT << "    io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl
+                          << INDENT << "    internal = internalAccess();" << Qt::endl
+                          << INDENT << "}" << Qt::endl;
                     }
                 }
                 if(package!="io.qt.internal"){
-                    s << INDENT << "static final io.qt.InternalAccess internal = internalAccess();" << Qt::endl << Qt::endl
-                      << INDENT << "private static native io.qt.InternalAccess internalAccess();" << Qt::endl << Qt::endl;
+                    s << INDENT << "private static native io.qt.InternalAccess internalAccess();" << Qt::endl << Qt::endl;
                 }
                 s << INDENT << "static void initialize() { };" << Qt::endl << Qt::endl
                   << INDENT << "private QtJambi_LibraryUtilities() throws java.lang.InstantiationError { throw new java.lang.InstantiationError(\"Cannot instantiate QtJambi_LibraryUtilities.\"); }" << Qt::endl;

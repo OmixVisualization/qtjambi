@@ -36,7 +36,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a class to be registered as anonymous qml type.
+ * <p>This annotation marks a class to be registered as anonymous qml type.</p>
+ * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#QML_ANONYMOUS">QML_ANONYMOUS</a></p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

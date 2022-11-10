@@ -58,13 +58,13 @@ public class TestScxml extends ApplicationInitializer {
     	Assert.assertTrue(data.open(QIODevice.OpenModeFlag.ReadOnly));
     	QScxmlStateMachine sm = QScxmlStateMachine.fromData(data);
     	QMetaObject.Connection connection = sm.connectToState("hello", ()->{});
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToState("hello", b->{});
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", ()->{});
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", event->{});
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	class Receiver extends QObject{
     		void receive(){}
     		void receiveBoolean(boolean b){}
@@ -72,21 +72,21 @@ public class TestScxml extends ApplicationInitializer {
     	}
     	Receiver r = new Receiver();
     	connection = sm.connectToState("hello", r::receive);
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToState("hello", r::receiveBoolean);
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r::receive);
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r::receiveEvent);
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToState("hello", r, "receive()");
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToState("hello", r, "receiveBoolean(boolean)");
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r, "receive()");
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r, "receiveEvent(QScxmlEvent)");
-    	Assert.assertTrue(connection!=null);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	data.close();
     }
 

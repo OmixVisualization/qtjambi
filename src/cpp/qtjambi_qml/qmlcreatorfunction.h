@@ -40,17 +40,6 @@ typedef void(*CreatorFunction)(void*);
 CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast);
 #else
 
-struct CreatorFunctionMetaData : QSharedData{
-    JObjectWrapper clazzWrapper;
-    const QMetaObject *meta_object;
-    jmethodID constructor;
-    size_t objectSize;
-    int psCast;
-    int vsCast;
-    int viCast;
-    int fhCast;
-};
-
 void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast);
 
 void createQmlObject(void* placement,void* metaData);

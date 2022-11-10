@@ -36,7 +36,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a class to be registered as qml interface type.
+ * <p>This annotation marks a class to be registered as qml interface type.</p>
+ * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#QML_INTERFACE">QML_INTERFACE</a></p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

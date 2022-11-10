@@ -195,25 +195,126 @@ void AutoPairAccess::debugStream(QDebug &s, const void *ptr){
     const QtPrivate::QMetaTypeInterface *iface = m_keyMetaType.iface();
     s = s.nospace().noquote();
     s << "std::pair(";
-    iface->debugStream(iface, s, ptr);
+    if(iface->debugStream)
+        iface->debugStream(iface, s, ptr);
+    else if(iface->flags & QMetaType::IsPointer){
+        if(iface->metaObjectFn && iface->metaObjectFn(iface))
+            s << iface->metaObjectFn(iface)->className() << "(";
+        else if(QLatin1String(iface->name).endsWith('*'))
+            s << QLatin1String(iface->name).chopped(1) << "(";
+        else
+            s << iface->name << "(";
+        s << "0x" << QString::number(*reinterpret_cast<const qint64*>(ptr), 16);
+        s << ")";
+    }else if(iface->flags & QMetaType::IsEnumeration){
+        s << iface->name << "(";
+        switch(iface->size){
+        case 1: s << *reinterpret_cast<const qint8*>(ptr); break;
+        case 2: s << *reinterpret_cast<const qint16*>(ptr); break;
+        case 4: s << *reinterpret_cast<const qint32*>(ptr); break;
+        case 8: s << *reinterpret_cast<const qint64*>(ptr); break;
+        default: break;
+        }
+        s << ")";
+    }else
+        s << QVariant(m_keyMetaType, ptr);
     s << ",";
+    ptr = reinterpret_cast<const char*>(ptr)+m_offset;
     iface = m_valueMetaType.iface();
-    iface->debugStream(iface, s, reinterpret_cast<const char*>(ptr)+m_offset);
+    if(iface->debugStream)
+        iface->debugStream(iface, s, ptr);
+    else if(iface->flags & QMetaType::IsPointer){
+        if(iface->metaObjectFn && iface->metaObjectFn(iface))
+            s << iface->metaObjectFn(iface)->className() << "(";
+        else if(QLatin1String(iface->name).endsWith('*'))
+            s << QLatin1String(iface->name).chopped(1) << "(";
+        else
+            s << iface->name << "(";
+        s << "0x" << QString::number(*reinterpret_cast<const qint64*>(ptr), 16);
+        s << ")";
+    }else if(iface->flags & QMetaType::IsEnumeration){
+        s << iface->name << "(";
+        switch(iface->size){
+        case 1: s << *reinterpret_cast<const qint8*>(ptr); break;
+        case 2: s << *reinterpret_cast<const qint16*>(ptr); break;
+        case 4: s << *reinterpret_cast<const qint32*>(ptr); break;
+        case 8: s << *reinterpret_cast<const qint64*>(ptr); break;
+        default: break;
+        }
+        s << ")";
+    }else
+        s << QVariant(m_valueMetaType, ptr);
     s << ")";
 }
 
 void AutoPairAccess::dataStreamOut(QDataStream &s, const void *ptr){
     const QtPrivate::QMetaTypeInterface *iface = m_keyMetaType.iface();
-    iface->dataStreamOut(iface, s, ptr);
+    if(iface->dataStreamOut)
+        iface->dataStreamOut(iface, s, ptr);
+    else if(iface->flags & QMetaType::IsEnumeration){
+        switch(iface->size){
+        case 1: s << *reinterpret_cast<const qint8*>(ptr); break;
+        case 2: s << *reinterpret_cast<const qint16*>(ptr); break;
+        case 4: s << *reinterpret_cast<const qint32*>(ptr); break;
+        case 8: s << *reinterpret_cast<const qint64*>(ptr); break;
+        default: break;
+        }
+    }else
+        QVariant(m_keyMetaType, ptr).save(s);
     iface = m_valueMetaType.iface();
-    iface->dataStreamOut(iface, s, reinterpret_cast<const char*>(ptr)+m_offset);
+    ptr = reinterpret_cast<const char*>(ptr)+m_offset;
+    if(iface->dataStreamOut)
+        iface->dataStreamOut(iface, s, ptr);
+    else if(iface->flags & QMetaType::IsEnumeration){
+        switch(iface->size){
+        case 1: s << *reinterpret_cast<const qint8*>(ptr); break;
+        case 2: s << *reinterpret_cast<const qint16*>(ptr); break;
+        case 4: s << *reinterpret_cast<const qint32*>(ptr); break;
+        case 8: s << *reinterpret_cast<const qint64*>(ptr); break;
+        default: break;
+        }
+    }else
+        QVariant(m_valueMetaType, ptr).save(s);
 }
 
 void AutoPairAccess::dataStreamIn(QDataStream &s, void *ptr){
     const QtPrivate::QMetaTypeInterface *iface = m_keyMetaType.iface();
-    iface->dataStreamIn(iface, s, ptr);
+    if(iface->dataStreamIn){
+        iface->dataStreamIn(iface, s, ptr);
+    }else if(iface->flags & QMetaType::IsEnumeration){
+        switch(iface->size){
+        case 1: s >> *reinterpret_cast<qint8*>(ptr); break;
+        case 2: s >> *reinterpret_cast<qint16*>(ptr); break;
+        case 4: s >> *reinterpret_cast<qint32*>(ptr); break;
+        case 8: s >> *reinterpret_cast<qint64*>(ptr); break;
+        default: break;
+        }
+    }else{
+        if(iface->dtor)
+            iface->dtor(iface, ptr);
+        QVariant v(m_keyMetaType);
+        v.load(s);
+        m_keyMetaType.construct(ptr, v.data());
+    }
     iface = m_valueMetaType.iface();
-    iface->dataStreamIn(iface, s, reinterpret_cast<char*>(ptr)+m_offset);
+    ptr = reinterpret_cast<char*>(ptr)+m_offset;
+    if(iface->dataStreamIn){
+        iface->dataStreamIn(iface, s, ptr);
+    }else if(iface->flags & QMetaType::IsEnumeration){
+        switch(iface->size){
+        case 1: s >> *reinterpret_cast<qint8*>(ptr); break;
+        case 2: s >> *reinterpret_cast<qint16*>(ptr); break;
+        case 4: s >> *reinterpret_cast<qint32*>(ptr); break;
+        case 8: s >> *reinterpret_cast<qint64*>(ptr); break;
+        default: break;
+        }
+    }else{
+        if(iface->dtor)
+            iface->dtor(iface, ptr);
+        QVariant v(m_valueMetaType);
+        v.load(s);
+        m_valueMetaType.construct(ptr, v.data());
+    }
 }
 #endif
 

@@ -2222,6 +2222,7 @@
         <modify-function signature="showMaximized()" thread-affine="yes"/>
         <modify-function signature="showMinimized()" thread-affine="yes"/>
         <modify-function signature="showNormal()" thread-affine="yes"/>
+        <modify-function signature="requestUpdate()" thread-affine="ui"/>
         <modify-function signature="setWindowState(Qt::WindowState)" thread-affine="yes"/>
         <modify-function signature="setWindowStates(QFlags&lt;Qt::WindowState>)" thread-affine="yes"/>
         <modify-function signature="nativeEvent(const QByteArray &amp;, void *, long *)" remove="all" until="5.*"/>

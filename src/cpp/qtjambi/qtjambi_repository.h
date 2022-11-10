@@ -37,6 +37,20 @@
 
 QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader = nullptr);
 
+#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
+    private: jmethodID __constructor;\
+    public: static inline jthrowable newInstance(JNIEnv* env,...){\
+        auto _this = __qt_get_this(env);\
+        va_list args;\
+        jobject result;\
+        va_start(args, env);\
+        result = env->NewObjectV(_this.class_ref,_this.__constructor,args);\
+        va_end(args);\
+        JavaException::check(env);\
+        return jthrowable(result);\
+    }
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #ifdef QTJAMBI_STACKTRACE
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
     public: static inline void throwNew(JNIEnv* env, const char* message, const char *methodName, const char *fileName, int lineNumber){\
@@ -56,24 +70,34 @@ QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject c
 #endif
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
-    private: jmethodID __constructor;\
-    public: static inline jthrowable newInstance(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
-        va_list args;\
-        jobject result;\
-        va_start(args, env);\
-        result = env->NewObjectV(_this.class_ref,_this.__constructor,args);\
-        va_end(args);\
-        JavaException::check(env);\
-        return jthrowable(result);\
-    }\
-    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const char* message){\
+    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, const char* message){\
         return newInstance(env, env->NewStringUTF(message));\
     }\
-    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const ::QString& message){\
-        return newInstance(env, env->NewStringUTF(qPrintable(message)));\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, const ::QString& message){\
+        return newInstance(env, env->NewString(reinterpret_cast<const jchar *>(message.utf16()), jsize(message.length())));\
     }\
     QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
+#else
+#ifdef QTJAMBI_STACKTRACE
+#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
+    public: static inline void throwNew(JNIEnv* env, ::QAnyStringView message, const char *methodName, const char *fileName, int lineNumber){\
+        JavaException(env, newInstanceWithMessage(env, message)).raise(env, methodName, fileName, lineNumber);\
+    }
+#else
+#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
+    public: static inline void throwNew(JNIEnv* env, ::QAnyStringView message){\
+        throw JavaException(env, newInstanceWithMessage(env, message));\
+    }
+#endif
+
+#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
+    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, ::QAnyStringView message){\
+        return newInstance(env, qtjambi_from_qanystringview(env, message));\
+    }\
+    QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
+#endif
 
 QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
 
@@ -89,6 +113,61 @@ namespace Runtime
               QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(clone)
     )
 
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Class,
+                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(cast)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredMethods)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredMethod)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getDeclaredField)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getMethod)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getEnumConstants)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getClassLoader)
+                  QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isAnnotationPresent)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getAnnotation)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getInterfaces)
+                  QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getModifiers)
+                  QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getComponentType)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getTypeParameters)
+                  QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isArray)
+                  QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isPrimitive)
+                  QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isSynthetic)
+                  QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isInterface)
+                 public: static inline jstring tryGetName(JNIEnv* env,jclass object){
+                     auto _this = __qt_get_this(env);
+                     jobject result = env->CallObjectMethod(object,_this.__getName);
+                     return jstring(result);
+                 }
+                 public: static inline jobject tryGetDeclaredMethod(JNIEnv* env,jclass object,jstring name,jobjectArray parameters){
+                     auto _this = __qt_get_this(env);
+                     jobject result = env->CallObjectMethod(object,_this.__getDeclaredMethod, name, parameters);
+                     return jstring(result);
+                 }
+            )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Method,
+        QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
+        QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getReturnType))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Constructor,
+        QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
+        QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Executable,
+                  QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getModifiers)
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getParameterTypes))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Field,
+                  QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
+                  QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getModifiers)
+                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
+                  QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getType))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Modifier,
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isNative)
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isStatic)
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isFinal)
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isAbstract))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassCastException,
                   QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 
@@ -349,6 +428,12 @@ namespace Runtime
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(set))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(NullPointerException,
+                  QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(IndexOutOfBoundsException,
+                  QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 }
 
 namespace QtCore{
@@ -367,8 +452,7 @@ namespace QtCore{
                   QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(cls))
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QThread,
-        QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(javaThread)
-        QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(interruptible))
+        QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(javaThread))
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaObject$Slot1,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
@@ -528,6 +612,63 @@ namespace QtCore{
                                      QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(value)
                                      QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
                                      )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QIterator,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMapIterator,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QLinkedList,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVector,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+#endif
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QStringList,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QList,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQueue,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QStack,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QSet,
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+    )
 }
 
 namespace QtGui{
@@ -535,6 +676,14 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QValidator$QValidationData,
               QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
               QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(string)
               QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(position))
+}
+
+namespace QtJambi {
+QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtObject)
+
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObjectInterface,
+              QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(dispose)
+              QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDisposed))
 }
 
 #ifdef Q_OS_ANDROID

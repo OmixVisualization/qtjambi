@@ -77,6 +77,9 @@ void clear_repository_at_shutdown(JNIEnv *){
 namespace Java{
 
 namespace QtQml{
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlListProperty,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(elementType,Lio/qt/core/QMetaType;)
+        )
 
 namespace Internal{
         QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlTypes$JarImport,
@@ -105,7 +108,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(javaThread,Ljava/lang/Thread;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(interruptible,Ljava/lang/Object;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaMethod,
@@ -929,6 +931,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(cast,(Ljava/lang/Object;)Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredMethods,()[Ljava/lang/reflect/Method;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredMethod,(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getMethod,(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getDeclaredField,(Ljava/lang/String;)Ljava/lang/reflect/Field;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getEnumConstants,()[Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getClassLoader,()Ljava/lang/ClassLoader;)
@@ -1109,7 +1112,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findInterfaceLink,(Lio/qt/QtObjectInterface;ZZ)Lio/qt/internal/QtJambiInternal$NativeLink;)
     QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(createNativeLinkInterface,createNativeLink,(Lio/qt/QtObjectInterface;)Lio/qt/internal/QtJambiInternal$NativeLink;)
     QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(createNativeLinkObject,createNativeLink,(Lio/qt/internal/QtJambiObject;)Lio/qt/internal/QtJambiInternal$NativeLink;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setThreadInterruptible,(Ljava/lang/Thread;Ljava/lang/Object;)Z)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setThreadInterruptible,(Lio/qt/core/QThread;Ljava/lang/Thread;Z)V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)

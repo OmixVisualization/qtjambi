@@ -64,7 +64,6 @@ import java.util.TreeSet;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.PropertyHelper;
 
 import io.qt.tools.ant.FindCompiler.Compiler;
 
@@ -205,21 +204,26 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			}
 		}
 
+		/*
 		String javaHome = System.getenv("JAVA_HOME");
 		if (javaHome == null) {
 			javaHome = this.getProject().getProperty("JAVA_HOME");
 		} else {
 			this.getProject().setNewProperty("JAVA_HOME", javaHome);
 		}
-		if (javaHome != null) {
-			Properties properties = new Properties();
-			try (FileInputStream stream = new FileInputStream(new File(new File(javaHome), "release"))) {
-				properties.load(stream);
-			} catch (IOException e) {
-				getProject().log("reading java version", e, Project.MSG_ERR);
-			}
+		if (javaHome != null && new File(javaHome).isDirectory()) {
+	        File releaseFile = new File(new File(javaHome), "release");
 			String majorVersion = "11";
-			String javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+			String javaVersion = null;
+	        if(releaseFile.exists()) {
+				Properties properties = new Properties();
+				try (FileInputStream stream = new FileInputStream(releaseFile)) {
+					properties.load(stream);
+				} catch (IOException e) {
+					getProject().log("reading java version", e, Project.MSG_ERR);
+				}
+				javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+	        }
 			if (javaVersion != null) {
 				if (javaVersion.startsWith("\"") && javaVersion.endsWith("\"")) {
 					javaVersion = javaVersion.substring(1, javaVersion.length() - 1);
@@ -255,7 +259,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			} else {
 				getProject().log(this, "source.java.version=" + srcJavaVersion, Project.MSG_INFO);
 			}
-		}
+		}*/
 
 		String sourceValue;
 
@@ -1265,22 +1269,17 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	private String detectConfiguration(String wantedConfiguration) {
 		String dsoName = "QtCore";
 
-		String dsoPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null,
-				null, false);
+		String dsoPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, false);
 		String prlPath = null;
 		if (dsoPath != null) // Ok not look for PRL
-			prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null,
-					true); // prl=true
+			prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
 		if (dsoPath == null) {
-			dsoPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null,
-					false);
+			dsoPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, false);
 			if (dsoPath != null) // if not found look in other directory
-				prlPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null,
-						null, true); // prl=true
+				prlPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
 			if (prlPath == null) // on windows using legacy Qt SDK types the *.dll are in bin/ and the *.prl in
-									// lib/
-				prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null,
-						null, true); // prl=true
+				// lib/
+				prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
 		}
 
 		String thisConfiguration = null;

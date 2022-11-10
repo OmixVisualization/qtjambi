@@ -165,7 +165,7 @@ ant all
 
 Further options:
         </echo>
-        <java classname="org.apache.tools.ant.Main">
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
             <arg value="-projecthelp" />
             <arg value="-buildfile" />
             <arg value="${ant.file}" />

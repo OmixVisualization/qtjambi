@@ -1299,7 +1299,7 @@ JObjectWrapperRef JObjectArrayWrapper::operator[](jsize index){
         if(index>=0 && index < env->GetArrayLength(object())){
             return JObjectWrapperRef(*this, index);
         }else{
-            JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("%1").arg(index)) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IndexOutOfBoundsException::throwNew(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
         }
     }
     return JObjectWrapperRef(JObjectWrapper(), 0);

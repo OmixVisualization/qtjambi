@@ -1495,6 +1495,7 @@ void JavaGenerator::writeEnum(QTextStream &s, const AbstractMetaEnum *java_enum)
     QStringList linesPos2;
     QStringList linesPos3;
     QStringList linesPos4;
+    QStringList linesPos5;
     QStringList linesBegin;
     QStringList linesEnd;
     for(const CodeSnip &snip : entry->codeSnips()) {
@@ -1507,6 +1508,8 @@ void JavaGenerator::writeEnum(QTextStream &s, const AbstractMetaEnum *java_enum)
                 linesPos3 << snip.code().split("\n");
             }else if (snip.position == CodeSnip::Position4) {
                 linesPos4 << snip.code().split("\n");
+            }else if (snip.position == CodeSnip::Position5) {
+                linesPos5 << snip.code().split("\n");
             }else if (snip.position == CodeSnip::Beginning) {
                 linesBegin << snip.code().split("\n");
             }else if (snip.position == CodeSnip::End){
@@ -1957,6 +1960,7 @@ void JavaGenerator::writeEnum(QTextStream &s, const AbstractMetaEnum *java_enum)
               << INDENT << "        return Integer.compare(value(), other.value());" << Qt::endl
               << INDENT << "    }" << Qt::endl;
             printExtraCode(linesPos4, s, true);
+            printExtraCode(linesPos5, s, true);
             s << INDENT << "}" << Qt::endl
               << INDENT << Qt::endl;
         }
@@ -7861,6 +7865,7 @@ void JavaGenerator::generateFake(const AbstractMetaClass *fake_class) {
                 QStringList linesPos2;
                 QStringList linesPos3;
                 QStringList linesPos4;
+                QStringList linesPos5;
                 QStringList linesBegin;
                 QStringList linesEnd;
                 for(const CodeSnip &snip : enm->typeEntry()->codeSnips()) {
@@ -7873,6 +7878,8 @@ void JavaGenerator::generateFake(const AbstractMetaClass *fake_class) {
                             linesPos3 << snip.code().split("\n");
                         }else if (snip.position == CodeSnip::Position4) {
                             linesPos4 << snip.code().split("\n");
+                        }else if (snip.position == CodeSnip::Position5) {
+                            linesPos5 << snip.code().split("\n");
                         }else if (snip.position == CodeSnip::Beginning) {
                             linesBegin << snip.code().split("\n");
                         }else if (snip.position == CodeSnip::End){
@@ -7936,6 +7943,7 @@ void JavaGenerator::generateFake(const AbstractMetaClass *fake_class) {
                   << INDENT << "        return new " << flagsName << "(value());" << Qt::endl
                   << INDENT << "    }" << Qt::endl;
                 printExtraCode(linesPos4, s, true);
+                printExtraCode(linesPos5, s, true);
                 s << INDENT << "}" << Qt::endl << Qt::endl;
                 if (fileOut.done())
                     ++m_num_generated_written;

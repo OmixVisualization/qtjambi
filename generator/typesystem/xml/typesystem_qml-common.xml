@@ -57,7 +57,6 @@
     <rejection class="QQmlInfo" function-name="operator&lt;&lt;"/>
     <rejection class="QJSEngine" function-name="objectById"/>
     <rejection class="" function-name="qjsvalue_cast"/>
-    <rejection class="" function-name="qmlRegisterTypesAndRevisions"/>
     <rejection class="QJSValueList"/>
     <rejection class="QJSValue::QJSValueList"/>
     <rejection class="QQmlTypeInfo"/>
@@ -531,16 +530,14 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 		</instantiation>
 		<instantiation proxy-call="qtjambi_qmlRegisterAnonymousType" since="6.3.0">
 			<argument type="QString"/>
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 			<add-argument index="2" type="int" name="metaObjectRevisionMinor"/>
 		</instantiation>
 	</global-function>
@@ -570,8 +567,7 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 		</instantiation>
 	</global-function>
 	<global-function signature="qmlRegisterInterface&lt;T>(const char*, int)" target-type="QtQml">
@@ -599,8 +595,7 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 			<add-argument index="2" type="int" name="metaObjectRevision"/>
 		</instantiation>
 	</global-function>
@@ -611,9 +606,8 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
-			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
+			<add-argument index="2" type="java.lang.Class&lt;?>" name="extendedType"/>
 		</instantiation>
 	</global-function>
 	<global-function signature="qmlRegisterExtendedType&lt;T,E>(const char*, int, int, const char*)" target-type="QtQml">
@@ -626,9 +620,8 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
-			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
+			<add-argument index="2" type="java.lang.Class&lt;?>" name="extendedType"/>
 		</instantiation>
 	</global-function>
 	<global-function signature="qmlRegisterExtendedUncreatableType&lt;T,E>(const char*, int, int, const char*, QString)" target-type="QtQml">
@@ -641,9 +634,8 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
-			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
+			<add-argument index="2" type="java.lang.Class&lt;?>" name="extendedType"/>
 		</instantiation>
 		<instantiation proxy-call="qtjambi_qmlRegisterExtendedUncreatableType">
 			<argument type="QObject"/>
@@ -654,9 +646,8 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
-			<add-argument index="2" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="extendedType"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
+			<add-argument index="2" type="java.lang.Class&lt;?>" name="extendedType"/>
 			<add-argument index="3" type="int" name="metaObjectRevision"/>
 		</instantiation>
 	</global-function>
@@ -702,8 +693,7 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 		</instantiation>
 		<instantiation proxy-call="qtjambi_qmlRegisterType">
 			<argument type="QString"/>
@@ -714,8 +704,7 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 			<add-argument index="2" type="int" name="metaObjectRevision"/>
 		</instantiation>
 	</global-function>
@@ -729,8 +718,7 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 		</instantiation>
 		<instantiation proxy-call="qtjambi_qmlRegisterUncreatableType">
 			<argument type="QObject"/>
@@ -741,9 +729,40 @@
 			<modify-argument index="4">
 				<replace-type modified-type="java.lang.String"/>
 			</modify-argument>
-			<add-argument index="1" type="java.lang.Class&lt;? extends io.qt.core.QObject>" name="type" until="6.3"/>
-			<add-argument index="1" type="java.lang.Class&lt;?>" name="type" since="6.4"/>
+			<add-argument index="1" type="java.lang.Class&lt;?>" name="type"/>
 			<add-argument index="2" type="int" name="metaObjectRevision"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterTypesAndRevisions&lt;T,Args...>(const char*, int)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterTypesAndRevisions">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument type="java.lang.Class&lt;?>..." name="types"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterTypesAndRevisions&lt;T,Args...>(const char*, int, QList&lt;int> *)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterTypesAndRevisions">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument type="java.lang.Class&lt;?>..." name="types"/>
+		</instantiation>
+	</global-function>
+	<global-function signature="qmlRegisterTypesAndRevisions&lt;Args...>(const char*, int, QList&lt;int> *)" target-type="QtQml">
+		<instantiation proxy-call="qtjambi_qmlRegisterTypesAndRevisions">
+			<argument type="QObject"/>
+			<argument type="QObject"/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+			</modify-argument>
+			<add-argument type="java.lang.Class&lt;?>..." name="types"/>
 		</instantiation>
 	</global-function>
 

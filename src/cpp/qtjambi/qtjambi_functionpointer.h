@@ -41,6 +41,11 @@
 #include <utility>
 #include <type_traits>
 
+#if Q_CC_MSVC && !defined(QT_DEBUG)
+// required because msvc merges the templates as code optimization
+QTJAMBI_EXPORT QFunctionPointer template_keep_dummy(QFunctionPointer ptr, ushort n);
+#endif
+
 namespace QtJambiPrivate{
 
 typedef void(*FunctionPointerDisposer)(QFunctionPointer);
@@ -178,7 +183,6 @@ public:
     }
 
     static Ret caller(Fn fn, Args...args);
-    static Fn initialFunctions[count];
 private:
     QHash<qintptr,hash_type> hashes;
     QQueue<Fn> freeFunctions;
@@ -186,33 +190,34 @@ private:
 };
 
 template<ushort n, ushort count, typename Callable, typename Ret, typename... Args>
-struct FunctionInitializer{
+struct CallableHashInitializer{
     typedef typename fn<Ret,Args...>::type Fn;
-    static void setInitialFunction(Fn* initialFunctions, QQueue<Fn>& freeFunctions){
-        initialFunctions[n] = [](Args...args) -> Ret {
-            return CallableHash<count, Callable, Ret, Args...>::caller(CallableHash<count, Callable, Ret, Args...>::initialFunctions[n], std::forward<Args>(args)...);
-        };
-        freeFunctions.enqueue(initialFunctions[n]);
-        FunctionInitializer<n+1, count, Callable, Ret, Args...>::setInitialFunction(initialFunctions, freeFunctions);
+
+    static Ret call(Args...args){
+#if Q_CC_MSVC && !defined(QT_DEBUG)
+        // required because msvc merges the templates as code optimization
+        return CallableHash<count, Callable, Ret, Args...>::caller(Fn(template_keep_dummy(QFunctionPointer(&call), n)), std::forward<Args>(args)...);
+#endif
+        return CallableHash<count, Callable, Ret, Args...>::caller(&call, std::forward<Args>(args)...);
+    }
+
+    static void initialize(QQueue<Fn>& freeFunctions){
+        freeFunctions.enqueue(&call);
+        CallableHashInitializer<n+1, count, Callable, Ret, Args...>::initialize(freeFunctions);
     }
 };
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
-struct FunctionInitializer<count, count, Callable, Ret, Args...>{
+struct CallableHashInitializer<count, count, Callable, Ret, Args...>{
     typedef typename fn<Ret,Args...>::type Fn;
-    static void setInitialFunction(Fn*, QQueue<Fn>&){}
+    static void initialize(QQueue<Fn>&){}
 };
-
-template<ushort count, typename Callable, typename Ret, typename... Args>
-void setInitialFunction(typename fn<Ret,Args...>::type* initialFunctions, QQueue<typename fn<Ret,Args...>::type>& freeFunctions){
-    FunctionInitializer<0, count, Callable, Ret, Args...>::setInitialFunction(initialFunctions, freeFunctions);
-}
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
 CallableHash<count, Callable,Ret,Args...>::CallableHash() : hashes(), freeFunctions(), s()
 {
     freeFunctions.reserve(count);
-    setInitialFunction<count, Callable, Ret, Args...>(initialFunctions, freeFunctions);
+    CallableHashInitializer<0, count, Callable, Ret, Args...>::initialize(freeFunctions);
 }
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
@@ -222,9 +227,6 @@ Ret CallableHash<count, Callable,Ret,Args...>::caller(Fn fn, Args...args){
         qtjambi_no_function_available(typeid(Ret(*)(Args...)));
     return stor->callable(std::forward<Args>(args)...);
 };
-
-template<ushort count, typename Callable, typename Ret, typename... Args>
-typename CallableHash<count,Callable,Ret,Args...>::Fn CallableHash<count,Callable,Ret,Args...>::initialFunctions[count];
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
 CallableHash<count,Callable,Ret,Args...>& CallableHash<count,Callable,Ret,Args...>::instance(){

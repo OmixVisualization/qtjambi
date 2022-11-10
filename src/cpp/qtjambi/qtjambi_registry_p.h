@@ -109,14 +109,14 @@ void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetIn
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos);
 QHashFunctionPtr registeredHashFunction(const std::type_info& typeId);
 const QtJambiTypeInfo* getQTypeInfo(const std::type_info& typeId);
-jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false);
-jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false);
+jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
+//jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void registerJavaClassForCustomMetaType(const QMetaType& metaType, const QByteArray& javaClass, bool isJObjectWrapped = false);
-void registerJavaClassForCustomMetaType(int metaType, const QByteArray& javaClass, bool isJObjectWrapped);
+void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped = false);
+void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass, bool isJObjectWrapped);
 bool isJObjectWrappedMetaType(const QMetaType& metaType);
 #else
-void registerJavaClassForCustomMetaType(QMetaType metaType, const QByteArray& javaClass, bool isJObjectWrapped = false);
+void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped = false);
 bool isJObjectWrappedMetaType(QMetaType metaType);
 #endif
 
@@ -148,15 +148,6 @@ bool isJObjectWrappedMetaType(QMetaType metaType);
 #  define REF_JOBJECT // noop
 #  define DEREF_JOBJECT // noop
 #endif // JOBJECT_REFCOUNT
-
-template<typename T>
-T hashSum(std::initializer_list<T> list){
-    T result = 1;
-    for(const T* i = list.begin(); i!=list.end(); ++i){
-        result = 31 * result + *i;
-    }
-    return result;
-}
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 struct JObjectValueWrapperPrivate;

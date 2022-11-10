@@ -80,7 +80,7 @@ public final class QtJambiPlugins {
 		return qRegisteredPluginInterface(QtJambiInternal.internalAccess.nativeId(iid));
 	}
 
-	public static native Class<? extends QtObjectInterface> qRegisteredPluginInterface(long iid);
+	private static native Class<? extends QtObjectInterface> qRegisteredPluginInterface(long iid);
 
 	public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
 		if (metaData == null) {

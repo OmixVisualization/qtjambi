@@ -39,6 +39,7 @@
 #include <qtjambi/qtjambi_functionpointer.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <qtjambi/qtjambi_qml.h>
+#include <qtjambi/qtjambi_application.h>
 #include "qmlcreatorfunction.h"
 
 class QmlParserStatus : public QQmlParserStatus{
@@ -123,7 +124,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                 jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                 if(pl!=0){
                     QString className = qtjambi_class_name(env, jclass(clazzWrapper.object()));
-                    JavaException::raiseRuntimeException(env, qPrintable(QString("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className)) QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className) QTJAMBI_STACKTRACEINFO );
                 }
             }QTJAMBI_CATCH(const JavaException& exn){
                 QObject* obj = reinterpret_cast<QObject*>(placement);
@@ -146,6 +147,17 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
 }
 #else
 
+struct CreatorFunctionMetaData : QSharedData{
+    jclass clazz;
+    const QMetaObject *meta_object;
+    jmethodID constructor;
+    size_t objectSize;
+    int psCast;
+    int vsCast;
+    int viCast;
+    int fhCast;
+};
+
 typedef QHash<hash_type,QSharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
 Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
 
@@ -154,7 +166,7 @@ void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jcla
     if(gMetaDataHash->contains(hash)){
         return (*gMetaDataHash)[hash];
     }else{
-        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), {env, clazz}, meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast});
+        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), qtjambi_to_global_reference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast});
         return (*gMetaDataHash)[hash];
     }
 }
@@ -166,9 +178,9 @@ void createQmlObject(void* placement,void* _metaData){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             QtJambiExceptionInhibitor __exnHandler;
             QTJAMBI_TRY{
-                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazzWrapper.object(), jlong(placement));
+                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazz, jlong(placement));
                 QTJAMBI_TRY{
-                    env->NewObject(jclass(metaData->clazzWrapper.object()), metaData->constructor, declarativeConstructor);
+                    env->NewObject(metaData->clazz, metaData->constructor, declarativeConstructor);
                     qtjambi_throw_java_exception(env);
                 }QTJAMBI_CATCH(const JavaException& exn){
                     jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
@@ -183,8 +195,8 @@ void createQmlObject(void* placement,void* _metaData){
                 }QTJAMBI_TRY_END
                 jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                 if(pl!=0){
-                    QString className = qtjambi_class_name(env, jclass(metaData->clazzWrapper.object()));
-                    JavaException::raiseRuntimeException(env, qPrintable(QString("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className)) QTJAMBI_STACKTRACEINFO );
+                    QString className = qtjambi_class_name(env, metaData->clazz);
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className) QTJAMBI_STACKTRACEINFO );
                 }
             }QTJAMBI_CATCH(const JavaException& exn){
                 QObject* obj = reinterpret_cast<QObject*>(placement);

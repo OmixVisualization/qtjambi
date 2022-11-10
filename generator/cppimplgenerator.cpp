@@ -2875,6 +2875,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
             s << INDENT << "if(method_id && (__jni_env = qtjambi_current_environment())) {" << Qt::endl;
             {
                 INDENTATION(INDENT)
+                s << INDENT << "QTJAMBI_JNI_LOCAL_FRAME(__jni_env, " << QString::number(100*(arguments.size()+2)) << ")" << Qt::endl;
                 QString new_return_type = java_function->typeReplaced(0);
                 bool has_function_type = ((function_type!= nullptr
                                            || !new_return_type.isEmpty())
@@ -2924,8 +2925,7 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                 s << INDENT << "QTJAMBI_TRY {" << Qt::endl;
                 {
                     INDENTATION(INDENT)
-                    s << INDENT << "QTJAMBI_JNI_LOCAL_FRAME(__jni_env, " << QString::number(100*(arguments.size()+2)) << ")" << Qt::endl
-                      << INDENT << "if(jobject __java_this = " << shellClassName(implementor) << "::__shell()->getJavaObjectLocalRef(__jni_env)){" << Qt::endl;
+                    s << INDENT << "if(jobject __java_this = " << shellClassName(implementor) << "::__shell()->getJavaObjectLocalRef(__jni_env)){" << Qt::endl;
                     {
                         INDENTATION(INDENT)
                         {
@@ -3033,8 +3033,8 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
                                         s << INDENT << "if (__java_return_value == nullptr) {" << Qt::endl;
                                         {
                                             INDENTATION(INDENT)
-                                            s << INDENT << "JavaException::raiseNullPointerException(__jni_env, qPrintable(QString(\"Method %1." << java_function->name()
-                                              << " must not return null.\").arg(qtjambi_object_class_name(__jni_env, __java_this))) QTJAMBI_STACKTRACEINFO );" << Qt::endl;
+                                            s << INDENT << "JavaException::raiseNullPointerException(__jni_env, QStringLiteral(\"Method %1." << java_function->name()
+                                              << " must not return null.\").arg(qtjambi_object_class_name(__jni_env, __java_this)) QTJAMBI_STACKTRACEINFO );" << Qt::endl;
                                         }
 
                                         s << INDENT << "}" << Qt::endl;

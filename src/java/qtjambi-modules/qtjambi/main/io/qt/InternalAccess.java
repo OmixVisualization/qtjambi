@@ -34,6 +34,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -189,4 +190,6 @@ public interface InternalAccess {
     Object invokeMethod(Method method, Object object, Object... args) throws Throwable;
     
     Package getDefinedPackage(ClassLoader cl, String pkg);
+    
+    void setQmlClassInfoGeneratorFunction(Function<Class<?>, Map<String, String>> qmlClassInfogeneratorFunction);
 }

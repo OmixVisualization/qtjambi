@@ -60,6 +60,7 @@ import io.qt.autotests.generated.TestInterface;
 import io.qt.core.QByteArray;
 import io.qt.core.QEvent;
 import io.qt.core.QLibraryInfo;
+import io.qt.core.QList;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
@@ -164,19 +165,23 @@ public class TestQml extends ApplicationInitializer{
 
 	    private String m_userName = "";
 	    private String m_userName2 = "not set";
-	    private List<TestChild> _testChildren = new ArrayList<>();
-	    private final QQmlListProperty<TestChild> testChildren = new QQmlListProperty<>(this, _testChildren);
-	    private List<QQuickItem> _testItems = new ArrayList<>();
-	    private final QQmlListProperty<QQuickItem> testItems = new QQmlListProperty<>(this, _testItems);
+	    private final List<TestChild> _testChildren = new ArrayList<>();
+	    private final QList<QQuickItem> _testItems = new QList<>(QQuickItem.class);
 
 	    @QtPropertyReader(name="testChildren")	    
 		public QQmlListProperty<TestChild> testChildren() {
-			return testChildren;
+	    	return new QQmlListProperty<>(TestChild.class, this, 
+	    			(o, e)->o._testChildren.add(e),
+	    			o->o._testChildren.size(),
+	    			(o,i)->o._testChildren.get((int)i),
+	    			o->o._testChildren.clear(),
+	    			(o,i,e)->o._testChildren.set((int)i, e),
+	    			o->o._testChildren.remove(o._testChildren.size()-1));
 		}
 	    
 	    @QtPropertyReader(name="testItems")	    
 		public QQmlListProperty<QQuickItem> testItems() {
-			return testItems;
+			return new QQmlListProperty<>(this, _testItems);
 		}
 	};
 	
@@ -310,9 +315,9 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertEquals("test", backEnd.userName2());
 		Assert.assertEquals(2, backEnd._testChildren.size());
 		Assert.assertEquals("child1", backEnd._testChildren.get(0).objectName());
-		Assert.assertEquals("child1", backEnd.testChildren.at(0).objectName());
+		Assert.assertEquals("child1", backEnd.testChildren().at(0).objectName());
 		Assert.assertEquals("child2", backEnd._testChildren.get(1).objectName());
-		Assert.assertEquals("child2", backEnd.testChildren.at(1).objectName());
+		Assert.assertEquals("child2", backEnd.testChildren().at(1).objectName());
 		Assert.assertEquals(id, QtQml.qmlTypeId("io.qt.test", 1, 0, "TestObject"));
 	}
 	
@@ -551,9 +556,9 @@ public class TestQml extends ApplicationInitializer{
 		TestObject backEnd = (TestObject)root;
 		Assert.assertEquals(2, backEnd._testChildren.size());
 		Assert.assertEquals("child1", backEnd._testChildren.get(0).objectName());
-		Assert.assertEquals("child1", backEnd.testChildren.at(0).objectName());
+		Assert.assertEquals("child1", backEnd.testChildren().at(0).objectName());
 		Assert.assertEquals("child2", backEnd._testChildren.get(1).objectName());
-		Assert.assertEquals("child2", backEnd.testChildren.at(1).objectName());
+		Assert.assertEquals("child2", backEnd.testChildren().at(1).objectName());
 		Assert.assertTrue(backEnd.children().at(0) instanceof TestObjectExtension);
 		TestObjectExtension ext = (TestObjectExtension)backEnd.children().at(0);
 		Assert.assertEquals(new QColor(Qt.GlobalColor.blue), ext.testColor());
@@ -735,11 +740,10 @@ public class TestQml extends ApplicationInitializer{
 		
 		@QtPropertyReader(name="messages")
 	    public QQmlListProperty<Message> messages() {
-	    	return p_messages;
+	    	return new QQmlListProperty<>(this, m_messages);
 	    }
 
-	    List<Message> m_messages = new ArrayList<>();
-		QQmlListProperty<Message> p_messages = new QQmlListProperty<>(this, m_messages);
+	    QList<Message> m_messages = new QList<>(Message.class);
 		
 		boolean hasReceived;
 		String receivedText;

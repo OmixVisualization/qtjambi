@@ -30,21 +30,16 @@ package io.qt.autotests;
 
 import static org.junit.Assume.assumeTrue;
 
-import java.util.function.Consumer;
-
 import org.junit.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtInvokable;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyWriter;
 import io.qt.QtUtilities;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
-import io.qt.quick.*;
 import io.qt.webengine.core.*;
 import io.qt.webengine.quick.*;
 import io.qt.widgets.*;

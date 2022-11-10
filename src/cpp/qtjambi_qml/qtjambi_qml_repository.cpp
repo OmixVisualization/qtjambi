@@ -31,6 +31,13 @@
 #include "qtjambi_qml_repository.h"
 
 namespace Java{
+namespace QtJambi {
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtMetaType,
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(type,()Lio/qt/core/QMetaType$Type;)
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(name,()Ljava/lang/String;)
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(id,()I))
+}
+
 namespace QtQml{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlExpression$ValueIsUndefined,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
@@ -39,12 +46,34 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlExpression$ValueIsUndefined,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlIncubationController$WhileFlag,
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(flag,J)
 )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlListProperty,)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlListProperty$ReplaceFunction,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Ljava/lang/Object;JLjava/lang/Object;)V))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlListProperty$AtFunction,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Ljava/lang/Object;J)Ljava/lang/Object;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QJSValue,)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlTypeRegistrationException,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+)
+namespace Util{
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlSingleton,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlElement,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlNamedElement,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlValueType,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlUncreatable,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlUnavailable,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlExtended,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Class;))
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlAnonymous,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlInterface,)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlAttached,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Class;))
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlForeign,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Class;)
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(metaType,()Lio/qt/QtMetaType;))
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml/util,QmlSequencialContainer,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()Ljava/lang/Class;)
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(valueType,()Lio/qt/QtMetaType;))
 }
-
-namespace Runtime {
-    QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/reflect,Method,
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(getReturnType,()Ljava/lang/Class;)
-    )
 }
-
 }

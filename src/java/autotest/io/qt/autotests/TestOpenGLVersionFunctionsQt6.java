@@ -48,7 +48,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import org.junit.Test;
 import io.qt.opengl.*;
-import io.qt.gui.*;
 
 public class TestOpenGLVersionFunctionsQt6 extends ApplicationInitializer {
 

@@ -31,17 +31,16 @@
 package io.qt.qml;
 
 import java.util.Objects;
+import java.util.function.*;
 
-import io.qt.QtUninvokable;
-import io.qt.core.QObject;
+import io.qt.*;
+import io.qt.core.*;
 
 /**
- * This class is a wrapper class of the C++ template type QQmlListProperty.
- * The generator takes care about mapping the native template parameter
- * to the generic java parameter.
- *
+ * <p>The QQmlListProperty class allows applications to expose list-like properties of QObject-derived classes to QML.</p>
+ * <p>Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qqmllistproperty.html">QQmlListProperty</a></p>
  */
-public final class QQmlListProperty<T extends QObject> extends io.qt.QtObject
+public final class QQmlListProperty<T extends QtObjectInterface> extends QtObject
     implements java.lang.Cloneable
 {
 
@@ -49,29 +48,122 @@ public final class QQmlListProperty<T extends QObject> extends io.qt.QtObject
         io.qt.qml.QtJambi_LibraryUtilities.initialize();
     }
     
-    private final java.util.List<T> list;
-
+    @NativeAccess
+    private QMetaType elementType = null;
+    
     public QQmlListProperty(){
         super((QPrivateConstructor)null);
-        this.list = null;
-        initialize_native(this);
+        initialize_native_plain(this);
     }
 
-    private static native <T extends QObject> void initialize_native(QQmlListProperty<T> instance);
+    private static native void initialize_native_plain(QQmlListProperty<?> instance);
 
-    public QQmlListProperty(io.qt.core.QObject o, java.util.List<T> list){
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-1">QQmlListProperty::QQmlListProperty(QObject*, QList&lt;T *>*)</a></p>
+     */
+    public QQmlListProperty(QObject o, QList<T> list){
         super((QPrivateConstructor)null);
-        this.list = list;
-        initialize_native(this, Objects.requireNonNull(o), list);
+        long listNativeId = QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(list));
+        initialize_native_list(this, Objects.requireNonNull(o), list);
+        elementType = getListElementType(listNativeId);
+    }
+    
+    private static native QMetaType getListElementType(long listNativeId);
+
+    private static native void initialize_native_list(QQmlListProperty<?> instance, QObject o, QList<?> list);
+    
+    /**
+     * Replace the element at position index in the list property with value.
+     */
+    public interface ReplaceFunction<O,T>{
+    	void accept(O object, long index, T t);
+    }
+    
+    /**
+     * Return the element at position index in the list property.
+     */
+    public interface AtFunction<O,T>{
+    	T apply(O object, long index);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-4">QQmlListProperty::QQmlListProperty(QObject *, void *, CountFunction, AtFunction)</a></p>
+     */
+    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+    		O o, 
+    		ToLongFunction<O> countFunction, 
+    		AtFunction<O,T> atFunction) {
+    	this(elementType, o, null, countFunction, atFunction, null, null, null);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-2">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction)</a></p>
+     */
+    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+    		O o, 
+    		BiConsumer<O,T> appendFunction, 
+    		ToLongFunction<O> countFunction, 
+    		AtFunction<O,T> atFunction,
+    		Consumer<O> clearFunction) {
+    	this(elementType, o, appendFunction, countFunction, atFunction, clearFunction, null, null);
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-3">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction, ReplaceFunction, RemoveLastFunction)</a></p>
+     */
+    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+									    		O o, 
+									    		BiConsumer<O,T> appendFunction, 
+									    		ToLongFunction<O> countFunction, 
+									    		AtFunction<O,T> atFunction,
+									    		Consumer<O> clearFunction,
+									    		ReplaceFunction<O,T> replaceFunction,
+									    		Consumer<O> removeLastFunction) {
+        super((QPrivateConstructor)null);
+        QMetaType metaType = QMetaType.fromType(elementType);
+        initialize_native_functions(this, metaType, o, 
+        		appendFunction, 
+        		countFunction, 
+        		atFunction,
+        		clearFunction,
+        		replaceFunction,
+        		removeLastFunction, Objects.hash(metaType, 
+						        				appendFunction, 
+						                		countFunction, 
+						                		atFunction,
+						                		clearFunction,
+						                		replaceFunction,
+						                		removeLastFunction));
+    }
+    
+    private static native void initialize_native_functions(QQmlListProperty<?> instance, QMetaType metaType, QObject o, 
+    		BiConsumer<?,?> appendFunction, 
+    		ToLongFunction<?> countFunction, 
+    		AtFunction<?,?> atFunction,
+    		Consumer<?> clearFunction,
+    		ReplaceFunction<?,?> replaceFunction,
+    		Consumer<?> removeLastFunction, int hash);
+
+    @QtUninvokable
+    public final void append(T object) {
+    	append(object, QtJambi_LibraryUtilities.internal.checkedNativeId(elementType));
     }
 
-    private static native <T extends QObject> void initialize_native(QQmlListProperty<T> instance, io.qt.core.QObject o, java.util.List<T> list);
+    private native final void append(T object, long elementType);
+    
+    @io.qt.QtUninvokable
+    public final void replace(long index, T object) {
+    	replace(index, object, QtJambi_LibraryUtilities.internal.checkedNativeId(elementType));
+    }
+    
+    private native final void replace(long index, T object, long elementType);
 
     @QtUninvokable
-    public native final void append(T object);
+    public final T at(long index) {
+    	return at(index, QtJambi_LibraryUtilities.internal.checkedNativeId(elementType));
+    }
 
-    @QtUninvokable
-    public native final T at(long index);
+    private native final T at(long index, long elementType);
 
     @QtUninvokable
     public native final boolean canAppend();
@@ -86,26 +178,33 @@ public final class QQmlListProperty<T extends QObject> extends io.qt.QtObject
     public native final boolean canCount();
 
     @QtUninvokable
+    public native final boolean canRemoveLast();
+
+    @QtUninvokable
+    public native final boolean canReplace();
+
+    @QtUninvokable
     native public final void clear();
 
     @QtUninvokable
     public native final long count();
-
+    
+    @io.qt.QtUninvokable
+    public native final void removeLast();
+    
     @QtUninvokable
-    public native final io.qt.core.QObject object();
+    public native final QObject object();
 
     private QQmlListProperty(QPrivateConstructor p) { 
-    	super(p); 
-        this.list = null;
+    	super(p);
 	}
 
     @Override
-    public QQmlListProperty<T> clone() {
-        if(list!=null) {
-        	return new QQmlListProperty<>(object(), list);
-        }else {
-        	return clone_native();
-        }
+    public QQmlListProperty<T> clone(){
+    	QQmlListProperty<T> clone = clone_native();
+    	clone.elementType = this.elementType;
+    	return clone;
     }
+    
     private native QQmlListProperty<T> clone_native();
 }

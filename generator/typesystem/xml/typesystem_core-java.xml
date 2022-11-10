@@ -532,6 +532,9 @@ struct RegistryHelper&lt;QPointF, false>{
     </value-type>
 
     <value-type name="QLocale">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
         <modify-function signature="toDouble(QString,bool*) const" throws="NumberFormatException">
             <modify-argument index="2">
                 <remove-argument/>
@@ -542,7 +545,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toFloat(QString,bool*) const" throws="NumberFormatException">
@@ -555,7 +558,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toInt(QString,bool*) const" throws="NumberFormatException">
@@ -568,7 +571,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toLongLong(QString,bool*) const" rename="toLong" throws="NumberFormatException">
@@ -581,7 +584,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toShort(QString,bool*) const" throws="NumberFormatException">
@@ -594,7 +597,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
     </value-type>
@@ -657,7 +660,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toInt(bool*, int) const" throws="NumberFormatException" since="6.3.0">
@@ -670,7 +673,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -684,7 +687,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -698,7 +701,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <inject-code class="java" position="equals">
@@ -768,7 +771,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -782,7 +785,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -796,7 +799,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -810,7 +813,7 @@ struct RegistryHelper&lt;QPointF, false>{
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
 
@@ -4540,6 +4543,7 @@ if(!useQGuiApplicationExec){</inject-code>
                 </modify-argument>
             </instantiation>
         </modify-function>
+        <modify-function signature="hasRegisteredDebugStreamOperator&lt;T>()" remove="all"/>
         <modify-function signature="compare(const void *, const void *) const" since="6">
             <inject-code class="java" position="beginning">
                 <argument-map index="1" meta-name="%1"/>
@@ -4788,6 +4792,47 @@ if(!useQGuiApplicationExec){</inject-code>
                 <replace-type modified-type="java.lang.Object"/>
                 <conversion-rule class="native">
                     QVariant variant = qtjambi_convert_checked_object_to_qvariant(%env, %in, QMetaType(%2));
+                    const void* %out = variant.data();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="debugStream(QDebug &amp;, const void *)" since="6">
+            <inject-code class="java" position="beginning">
+                <argument-map index="2" meta-name="%2"/>
+                %2 = cast(javaType(), %2);
+            </inject-code>
+            <modify-argument index="1">
+				<no-null-pointer/>
+                <replace-type modified-type="io.qt.core.QDebug"/>
+                <conversion-rule class="native">
+                    QDebug&amp; %out = qtjambi_cast&lt;QDebug&amp;>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                    QVariant variant = qtjambi_convert_checked_object_to_qvariant(%env, %in, *__qt_this);
+                    const void* %out = variant.data();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="debugStream(QDebug &amp;, const void *, int)">
+            <inject-code class="java" position="beginning">
+                <argument-map index="2" meta-name="%2"/>
+                <argument-map index="3" meta-name="%3"/>
+                %2 = cast(javaType(%3), %2);
+            </inject-code>
+            <modify-argument index="1">
+				<no-null-pointer/>
+                <replace-type modified-type="io.qt.core.QDebug"/>
+                <conversion-rule class="native">
+                    QDebug&amp; %out = qtjambi_cast&lt;QDebug&amp;>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                    QVariant variant = qtjambi_convert_checked_object_to_qvariant(%env, %in, QMetaType(%3));
                     const void* %out = variant.data();
                 </conversion-rule>
             </modify-argument>
@@ -5164,6 +5209,7 @@ if(!useQGuiApplicationExec){</inject-code>
             <include file-name="io.qt.*" location="java"/>
             <include file-name="java.lang.reflect.*" location="java"/>
             <include file-name="java.util.logging.*" location="java"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
         </extra-includes>
         <modify-function signature="QFactoryLoader(const char *, const QString &amp;, Qt::CaseSensitivity)">
             <modify-argument index="1">
@@ -5171,7 +5217,7 @@ if(!useQGuiApplicationExec){</inject-code>
                 <conversion-rule class="native">
                 const char* %out = getInterfaceIID(%env, jclass(%in));
                 if(!%out){
-                    JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Class %1 is not registered as plugin interface.").arg(qtjambi_class_name(%env, jclass(%in)))) QTJAMBI_STACKTRACEINFO);
+                    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral("Class %""1 is not registered as plugin interface.").arg(qtjambi_class_name(%env, jclass(%in))) QTJAMBI_STACKTRACEINFO);
                 }
                 </conversion-rule>
             </modify-argument>
@@ -5189,8 +5235,8 @@ if(!useQGuiApplicationExec){</inject-code>
             <modify-argument index="0">
                 <conversion-rule class="native" until="6.2.*">
                 for(QJsonObject&amp; obj : %in){
-                    if(obj["IID"].isString()){
-                        if(jclass iface = getInterfaceByIID(%env, obj["IID"].toString().toUtf8())){
+                    if(obj[QStringLiteral("IID")].isString()){
+                        if(jclass iface = getInterfaceByIID(%env, obj[QStringLiteral("IID")].toString().toUtf8())){
                             obj["interface"] = qtjambi_class_name(%env, iface);
                         }
                     }
@@ -5200,10 +5246,10 @@ if(!useQGuiApplicationExec){</inject-code>
                 <conversion-rule class="native" since="6.3.0">
                 for(QPluginParsedMetaData&amp; obj : __qt_return_value){
                     QCborMap map = obj.toCbor();
-                    QCborValue iid = map.value(QLatin1String("IID"));
+                    QCborValue iid = map.value(QStringLiteral("IID"));
                     if(iid.isString()){
                         if(jclass iface = getInterfaceByIID(__jni_env, iid.toString().toUtf8())){
-                            map.insert(QLatin1String("interface"), qtjambi_class_name(__jni_env, iface));
+                            map.insert(QStringLiteral("interface"), qtjambi_class_name(__jni_env, iface));
                         }
                     }
                     obj.~QPluginParsedMetaData();
@@ -5890,6 +5936,9 @@ if(!useQGuiApplicationExec){</inject-code>
         </modify-function>
     </value-type>
     <value-type name="QString" implements="Appendable, CharSequence" target-type="final class">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
         <modify-function signature="QString(const QChar*,qsizetype)" since="6.0">
             <modify-argument index="1">
                 <array-type length-parameter="2"/>
@@ -6229,7 +6278,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toLongLong(bool*,int) const" rename="toLong" throws="NumberFormatException">
@@ -6242,7 +6291,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toShort(bool*,int) const" throws="NumberFormatException">
@@ -6255,7 +6304,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toDouble(bool*) const" throws="NumberFormatException">
@@ -6268,7 +6317,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="toFloat(bool*) const" throws="NumberFormatException">
@@ -6281,7 +6330,7 @@ if(!useQGuiApplicationExec){</inject-code>
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok)
-                    JavaException::raiseNumberFormatException(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::NumberFormatException::throwNew(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );
             </inject-code>
         </modify-function>
         <modify-function signature="setNum(double, char, int)">

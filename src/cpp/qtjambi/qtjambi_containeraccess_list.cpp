@@ -168,7 +168,29 @@ void AutoListAccess::debugStream(QDebug &s, const void *container)
         const void* element = p->ptr + i * m_offset;
         if(i>0)
             s << ", ";
-        iface->debugStream(iface, s, element);
+        if(iface->debugStream)
+            iface->debugStream(iface, s, element);
+        else if(iface->flags & QMetaType::IsPointer){
+            if(iface->metaObjectFn && iface->metaObjectFn(iface))
+                s << iface->metaObjectFn(iface)->className() << "(";
+            else if(QLatin1String(iface->name).endsWith('*'))
+                s << QLatin1String(iface->name).chopped(1) << "(";
+            else
+                s << iface->name << "(";
+            s << "0x" << QString::number(*reinterpret_cast<const qint64*>(element), 16);
+            s << ")";
+        }else if(iface->flags & QMetaType::IsEnumeration){
+            s << iface->name << "(";
+            switch(iface->size){
+            case 1: s << *reinterpret_cast<const qint8*>(element); break;
+            case 2: s << *reinterpret_cast<const qint16*>(element); break;
+            case 4: s << *reinterpret_cast<const qint32*>(element); break;
+            case 8: s << *reinterpret_cast<const qint64*>(element); break;
+            default: break;
+            }
+            s << ")";
+        }else
+            s << QVariant(m_elementMetaType, element);
     }
     s << ")";
 }
@@ -180,7 +202,18 @@ void AutoListAccess::dataStreamOut(QDataStream &s, const void *container)
     s << quint32(p->size);
     for(qsizetype i = 0; i<p->size; ++i){
         const void* element = p->ptr + i * m_offset;
-        iface->dataStreamOut(iface, s, element);
+        if(iface->dataStreamOut)
+            iface->dataStreamOut(iface, s, element);
+        else if(iface->flags & QMetaType::IsEnumeration){
+            switch(iface->size){
+            case 1: s << *reinterpret_cast<const qint8*>(element); break;
+            case 2: s << *reinterpret_cast<const qint16*>(element); break;
+            case 4: s << *reinterpret_cast<const qint32*>(element); break;
+            case 8: s << *reinterpret_cast<const qint64*>(element); break;
+            default: break;
+            }
+        }else
+            QVariant(m_elementMetaType, element).save(s);
     }
 }
 
@@ -194,7 +227,23 @@ void AutoListAccess::dataStreamIn(QDataStream &s, void *container)
     QArrayDataPointer<char> detached(allocate(size));
     for(quint32 i = 0; i<size; ++i){
         void* target = detached.ptr + i * m_offset;
-        iface->dataStreamIn(iface, s, target);
+        if(iface->dataStreamIn){
+            if(iface->defaultCtr)
+                iface->defaultCtr(iface, target);
+            iface->dataStreamIn(iface, s, target);
+        }else if(iface->flags & QMetaType::IsEnumeration){
+            switch(iface->size){
+            case 1: s >> *reinterpret_cast<qint8*>(target); break;
+            case 2: s >> *reinterpret_cast<qint16*>(target); break;
+            case 4: s >> *reinterpret_cast<qint32*>(target); break;
+            case 8: s >> *reinterpret_cast<qint64*>(target); break;
+            default: break;
+            }
+        }else{
+            QVariant v(m_elementMetaType);
+            v.load(s);
+            m_elementMetaType.construct(target, v.data());
+        }
         ++detached.size;
     }
     if (detached->ptr)

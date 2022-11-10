@@ -34,17 +34,47 @@
 #include <qtjambi/qtjambi_repository.h>
 
 namespace Java{
+namespace QtJambi {
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMetaType,
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(type)
+                                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(name)
+                                 QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(id))
+}
+
 namespace QtQml {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlExpression$ValueIsUndefined,
                                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlIncubationController$WhileFlag,
                                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(flag))
-}
-
-namespace Runtime{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Method,
-        QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getReturnType))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlListProperty,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlListProperty$ReplaceFunction,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlListProperty$AtFunction,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QJSValue,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlTypeRegistrationException,
+                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+    namespace Util{
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlSingleton,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlElement,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlNamedElement,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlValueType,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlUncreatable,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlUnavailable,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlExtended,
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(value))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlAnonymous,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlInterface,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlForeign,
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(value)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(metaType))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlAttached,
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(value))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlSequencialContainer,
+                                         QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(value)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(valueType))
+    }
 }
 }
 

@@ -153,7 +153,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     	PrivateSignalOwnerQObject o = new PrivateSignalOwnerQObject();
     	String[] result = {null};
     	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertTrue(con instanceof QtObject);
     	o.emitString("test");
     	assertEquals("test", result[0]);
@@ -164,7 +164,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     	PrivateSignalOwnerQObject o = new PrivateSignalOwnerQObject();
     	String[] result = {null};
     	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertTrue(con instanceof QtObject);
     	try{
         	PrivateSignalAccessor.emitPrivateSignal(o.privateSignal, "test");
@@ -179,7 +179,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     	PrivateSignalOwnerObject o = new PrivateSignalOwnerObject();
     	String[] result = {null};
     	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	o.emitString("test");
     	assertEquals("test", result[0]);
@@ -190,7 +190,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     	PrivateSignalOwnerObject o = new PrivateSignalOwnerObject();
     	String[] result = {null};
     	QMetaObject.Connection con = o.privateSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	try{
     		QInstanceMemberSignals.emit(o.privateSignal, "test");
@@ -204,7 +204,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     public void test_emit_private_signal_static() {
     	String[] result = {null};
     	QMetaObject.Connection con = PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	PrivateStaticSignalOwner.emitStaticString("statictest");
     	assertEquals("statictest", result[0]);
@@ -215,7 +215,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     	new PrivateStaticSignalOwnerQObject();
     	String[] result = {null};
     	QMetaObject.Connection con = PrivateStaticSignalOwnerQObject.privateStaticSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	PrivateStaticSignalOwnerQObject.emitStaticString("statictest");
     	assertEquals("statictest", result[0]);
@@ -225,7 +225,7 @@ public class TestPrivateSignals extends ApplicationInitializer {
     public void test_external_emit_private_signal_static() {
     	String[] result = {null};
     	QMetaObject.Connection con = PrivateStaticSignalOwner.privateStaticSignal.connect(s->result[0] = s);
-    	assertTrue(con!=null);
+    	assertTrue(con.isConnected());
     	assertFalse(con instanceof QtObject);
     	QStaticMemberSignals.emit(PrivateStaticSignalOwner.privateStaticSignal, "statictest");
     	assertEquals("statictest", result[0]);

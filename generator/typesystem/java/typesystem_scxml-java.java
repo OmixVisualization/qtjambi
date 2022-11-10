@@ -191,10 +191,10 @@ class QScxmlStateMachine___ {
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
                 case Method:
                 case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
                 default:
                     break;
                 }
@@ -225,10 +225,10 @@ class QScxmlStateMachine___ {
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
                 case Method:
                 case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
                 default:
                     break;
                 }
