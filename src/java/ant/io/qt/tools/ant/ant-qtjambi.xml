@@ -48,8 +48,6 @@
         classname="io.qt.tools.ant.ResolvePathTask"/>
 
     <!-- Added due to dash in name -->
-    <typedef name="plugin-designer"
-         classname="io.qt.tools.ant.PluginDesignerPath"/>
     <typedef name="directory"
          classname="io.qt.tools.ant.Directory"/>
     <typedef name="file"
