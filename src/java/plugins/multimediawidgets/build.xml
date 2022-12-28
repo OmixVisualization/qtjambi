@@ -1,0 +1,35 @@
+<project default="build">
+    <property name="plugin-subdir" value="designer"/>
+    <property name="module-name" value="multimediawidgets"/>
+    <property name="qtjambi-module-name" value="qtjambi.designer"/>
+    <property name="qtjambi-module-name2" value="qtjambi.multimedia"/>
+    <property name="qtjambi.required.modules" value="qtjambi,
+                                             qtjambi.xml,
+                                             qtjambi.sql,
+                                             qtjambi.network,
+                                             qtjambi.opengl,
+                                             qtjambi.openglwidgets,
+                                             qtjambi.designer,
+                                             qtjambi.multimedia,
+                                             qtjambi.multimediawidgets"/>
+    <target name="build">
+        <if>
+            <and>
+                <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+                <available file="${generator.outputdir}/java/${qtjambi-module-name2}" type="dir"/>
+            </and>
+            <then>
+                <path id="sourcedirs">
+                    <pathelement location="${java.srcdir}/plugins/${module-name}"/>
+                </path>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="build-plugin">
+                    <property name="module" value="${module-name}"/>
+                    <property name="jar.excludes" value=""/>
+                    <property name="module.excludes" value=""/>
+                    <property name="plugin.metadata" value="{''Keys'':[''MultimediaWidgets'']}"/>
+                    <property name="plugin.class.name" value="io.qt.designer.multimedia.QMultimediaPlugin"/>
+                </ant>
+            </then>
+        </if>
+    </target>
+</project>

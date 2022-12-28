@@ -1,28 +1,24 @@
-# What's new in QtJambi 6.4.1 / 6.2.9 / 5.15.11
+# What's new in QtJambi 6.4.2 / 6.2.10 / 5.15.12
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 94](../../../issues/94): A lot of new logs in the code that seems to have no obvious errors
-* [Issue 93](../../../issues/93): Final class fields are not marked as constant when imported as qobject properties
-* [Issue 92](../../../issues/92): Meta Object loading system doesn't use custom classloaders - can't find classes from downloaded jars
-* [Issue 98](../../../issues/98): QObect meta type parsing broken?
-* removing memory leak in QQmlListProperty. QQmlListProperty now requires QList instead of java list. Alternatively, you can specify access functions similar to native Qt.
-* Resolved: Stack overflow caused by cascades of registering meta types and generating meta objects.
-* Resolved: NullPointerException in combination with classpath resources.
+* [Issue 103](../../../issues/103): QList can‘t be sorted
+* [Issue 118](../../../issues/118): Support for calling special squish functions from java
+* [Issue 121](../../../issues/121): Class Qt3DWindow can‘t be new
+* Issue with `QMap` or `QHash` of java types fixed
 
 ## New Features
 
-* You can now use annotations from `io.qt.qml.util` to define Qml types. Then, use `QtQml.qmlRegisterTypesAndRevisions()` to register these types to Qml.
-* Ability to define value types for Qml in Qt 6.4.
-* Ability to register metatype converters.
-* Ability to use the same signal as notifier for different properties.
-* Non-public methods with non-void return type are now considered not to be invokable.
+* Completely refactored library kernel
+* 99% of third-party legacy code removed
+* `qHash(T)` now available in `QtGlobal` namespace
+* `qobject_cast<T>(QObject)` now available as static method in `QObject`
+* `QModelIndex` is now a Java wrapper for the native type. Thus, it no longer converts to null but to invalid `QModelIndex` instance
+* Making QtJambi Generator available
+* Making QtJambi header files available
 
 ## Compatibility
 
-QtJambi 6.4.1, 6.2.9 and 5.15.11 are source-compatible and binary-compatible to its predecessor releases (except `QQmlListProperty` constructor). 
+QtJambi 6.4.2, 6.2.10 and 5.15.12 are source-compatible but not binary-compatible to its predecessor releases. 
 
-## Remark
-
-This is the last regular release for Qt 5.15.

@@ -14,15 +14,16 @@
 	  <create-function-pointer-qrc dir="${qtjambi.builddir}" module="qtjambi"/>
       <qmake recursive="true"
           dir="${qtjambi.builddir}"
-          pro="${basedir}/src/cpp/qtjambi.pro"
+          pro="${basedir}/src/cpp/QtJambi.pro"
           config="${qtjambi.configuration} ${qtjambi.config.jumptable}"
-          qtconfig="${qtjambi.qtconfig}"
+          qtjambiModules="${qtjambi.modules}"
           debugTools="${qtjambi.debug-tools}"
           qmakebinary="${qtjambi.qt.qmake.abspath}"/>
   </target>
 
   <target name="library.native.make-impl" depends="init.build">
       <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
+      <make dir="${qtjambi.builddir}" target="install"/>
   </target>
   
   <target name="library.native.plugins-impl" depends="init.build">
@@ -183,7 +184,7 @@
 			<mkdir dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
 		</else>
 	</if>
-    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+    <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
         <property name="qtjambi-native-bundle" value="true"/>
         <property name="platformjar.debug" value="false"/>
         <property name="platformjar.debug.suffix" value=""/>
@@ -196,7 +197,7 @@
   </target>
 
   <target name="library.native.bundle.plugins.release">
-    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+    <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
         <property name="qtjambi-build" value="true"/>
         <property name="qtjambi.testbuild" value="false"/>
         <property name="platformjar.debug" value="false"/>
@@ -205,7 +206,7 @@
     <if>
         <istrue value="${qtjambi.qml.any.true}"/>
         <then>
-            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+            <ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
                 <property name="qtjambi-build" value="true"/>
                 <property name="qtjambi.testbuild" value="false"/>
                 <property name="platformjar.debug" value="false"/>
@@ -238,7 +239,7 @@
 			<mkdir dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
 		</else>
 	</if>
-    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+    <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
         <property name="qtjambi-native-bundle" value="true"/>
         <property name="platformjar.debug" value="true"/>
         <property name="platformjar.debug.suffix" value="-debug"/>
@@ -263,7 +264,7 @@
   </target>
 
   <target name="library.native.bundle.plugins.debug">
-    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+    <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
         <property name="qtjambi-build" value="true"/>
         <property name="qtjambi.testbuild" value="false"/>
         <property name="platformjar.debug" value="true"/>
@@ -272,7 +273,7 @@
     <if>
         <istrue value="${qtjambi.qml.any.true}"/>
         <then>
-            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+            <ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
                 <property name="qtjambi-build" value="true"/>
                 <property name="qtjambi.testbuild" value="false"/>
                 <property name="platformjar.debug" value="true"/>
@@ -349,7 +350,13 @@
 							<arg value="--configuration=${debug.conf}" />
 							<arg value="--dir=${deploymentdir}" />
 							<arg value="--platform=${qtjambi.osname}" />
-							<arg value="--qtdir=${qtjambi.qtdir}" />
+							<arg value="--bins=${qtjambi.qt.bindir}" />
+							<arg value="--libs=${qtjambi.qt.libdir}" />
+							<arg value="--libexecs=${qtjambi.qt.libexecdir}" />
+							<arg value="--plugins=${qtjambi.qt.pluginsdir}" />
+							<arg value="--resources=${qtjambi.qt.resourcesdir}" />
+							<arg value="--translations=${qtjambi.qt.translationsdir}" />
+							<arg value="--qml=${qtjambi.qt.qmlmodulesdir}" />
 							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
 							<classpath>
 								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,qtjambi-deployer-native-*-${qtjambi.jar.version}.jar"/>

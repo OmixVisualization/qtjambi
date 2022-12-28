@@ -22,12 +22,12 @@
         Import files containing tasks for the compilation.
     -->
 
-    <import file="setenv.xml"/>
+    <import file="antfiles/setenv.xml"/>
     <import file="antfiles/generator.xml"/>
     <import file="antfiles/native.xml"/>
     <import file="antfiles/java.xml"/>
     <import file="antfiles/clean.xml"/>
-    <import file="build_autotests.xml" />
+    <import file="antfiles/autotests.xml" />
 
     <!-- These properties used to be at the top of build.properties
          but no one is expected to change them.
@@ -61,10 +61,10 @@
             <compilerarg value="-Xlint:deprecation" />
             <compilerarg value="-Xlint:unchecked" />
             <compilerarg value="-Xlint:-module,-options" />
-            <src path="${java.srcdir}/ant-qtjambi"/>
+            <src path="${java.srcdir}/ant"/>
         </javac>
         <copy todir="${antjardir}/ant-qtjambi" includeemptydirs="false">
-            <fileset dir="${java.srcdir}/ant-qtjambi">
+            <fileset dir="${java.srcdir}/ant">
                 <include name="**/*"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/*.java"/>
@@ -199,11 +199,11 @@ Further options:
         <antcall target="finished"/>
     </target>
 
-    <target name="generator" depends="log, setenv, init.taskdef"
+    <target name="generate" depends="log, setenv, init.taskdef"
         description="Compiles and runs the Qt Jambi Generator.">
-        <foreach-version targets="generator-impl"/>
+        <foreach-version targets="generate-impl"/>
     </target>
-    <target name="generator-impl" depends="tools.generator.make, tools.generator.run"/>
+    <target name="generate-impl" depends="tools.generator.make, tools.generator.run"/>
 
     <target name="generator.run" depends="log, setenv, init.taskdef"
         description="Runs the Qt Jambi generator on the Qt headers">
@@ -211,11 +211,6 @@ Further options:
     </target>
     <target name="generator.run-impl" depends="init.build, tools.generator.run">
         <antcall target="finished"/>
-    </target>
-    
-    <target name="generator.xmlmerge" depends="log, setenv, init.taskdef"
-        description="Merges the XML files used by the Qt Jambi generator.">
-        <foreach-version targets="init.build, generator.xmlmerge-impl"/>
     </target>
 
     <target name="library.native" depends="log, setenv, init.taskdef"
@@ -280,7 +275,7 @@ Further options:
         description="Generates, builds and bundles the Qt Jambi libraries.">
         <foreach-version targets="all-impl"/>
     </target>
-    <target name="all-impl" depends="generator-impl, library-impl"/>
+    <target name="all-impl" depends="generate-impl, library-impl"/>
     
     <target name="clean" depends="log, setenv, init.taskdef"
         description="Cleans everything">

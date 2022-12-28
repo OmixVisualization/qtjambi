@@ -1,0 +1,25 @@
+<project default="build">
+    <property name="dir-name" value="testcar"/>
+    <property name="module-name" value="io.qt.test.car"/>
+    <property name="module-dir" value="${module-name}"/>
+    <stringreplace property="module-dir" target="." replacement="/"/>
+    <property name="qtjambi-module-name" value="qtjambi.qml"/>
+    <property name="qtjambi.required.modules" value="qtjambi, qtjambi.network, qtjambi.qml"/>
+    <target name="build">
+        <condition property="build.module" value="true">
+            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+        </condition>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl" if="build.module">
+        <path id="sourcedirs">
+            <pathelement location="${java.srcdir}/qml/${dir-name}"/>
+        </path>
+        <ant antfile="${basedir}/../qml.xml" inheritrefs="true" target="build-qml">
+            <property name="module" value="${module-name}"/>
+            <property name="module-dir" value="${module-dir}"/>
+            <property name="jar.excludes" value="qmldir"/>
+            <property name="module.excludes" value=""/>
+        </ant>
+    </target>
+</project>
