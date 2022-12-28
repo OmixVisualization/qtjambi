@@ -4,24 +4,16 @@
     -->
 
     <target name="tools.generator.run" unless="${skip-generate}">
-		<antcall target="generator.xmlmerge-impl"/>
         <mkdir dir="${generator.outputdir}"/>
-        <generator dir="${generator.builddir}"
-                debugTools="${qtjambi.debug-tools}"
-                inputDirectory="generator"
+        <generator dir="${generator.builddir}/../bin"
+                importdirectories="${basedir}/src/cpp/QtJambiGenerator"
                 outputDirectory="${generator.outputdir}"
-                generatorDirectory="${generator.builddir}"
-                typesystem="generator/targets/build_all.xml"
-                typesystemsDirectory="${generator.xmlmerge.outputdir}"
-                header="generator/targets/qtjambi_masterinclude.h"
-                qtincludedirectory="${qtjambi.qt.includedir}"
+                generatorDirectory="${generator.builddir}/../bin"
                 qtdocdirectory="${qtjambi.qt.docdir}"
-                qtlibdirectory="${tools.qt.libdir}"
-                qtbindirectory="${tools.qt.bindir}"
-                targetJavaVersion="${target.java.version}"
-                qtjambiVersion="${qtjambi.patchversion}"
-                includepaths="${generator.includepaths};${generator.extra.includes}"
-                options="${qtjambi.generator.jumptable}"/>
+                qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
+                qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
+                includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${generator.includepaths};${generator.extra.includes}"
+			/>
     </target>
 	
     <!-- NOTES includepaths: For Linux the following paths _APPENDED_ to the
@@ -37,113 +29,17 @@
 
     <target name="tools.generator.qmake" depends="init.build">
         <mkdir dir="${generator.builddir}"/>
-		<condition property="generator.configuration" value="debug" else="release">
-			<or>
-				<equals arg1="${qtjambi.configuration}" arg2="debug"/>
-				<and>
-					<equals arg1="${qtjambi.configuration}" arg2="debug_and_release"/>
-					<equals arg1="${generator.configuration}" arg2="debug"/>
-				</and>
-			</or>
-		</condition>
-        <qmake dir="${generator.builddir}" pro="${basedir}/generator/generator.pro"
-                config="${generator.configuration}"
-                qmakebinary="${tools.qt.qmake.abspath}" tools="true"/>
+        <delete quiet="true">
+            <fileset dir="${generator.builddir}">
+                <include name="Makefile*"/>
+            </fileset>
+        </delete>
+        <qmake dir="${generator.builddir}" pro="${basedir}/src/cpp/QtJambiGenerator/QtJambiGenerator.pro"
+                config="${qtjambi.configuration}"
+                tools="true"/>
     </target>
 
     <target name="tools.generator.make" depends="tools.generator.qmake">
         <make dir="${generator.builddir}" tools="true"/>
     </target>
-
-    <!--
-        XML Merging for the generator
-    -->
-
-    <macrodef name="xmlmerge">
-        <attribute name="victim"/>
-        <sequential>
-            <xslt force="true" style="generator/typesystem/xml/merge.xsl"
-                in="generator/typesystem/xml/typesystem_@{victim}-common.xml"
-                out="${generator.xmlmerge.outputdir}/typesystem_@{victim}.xml">
-                <param name="source"
-                    expression="typesystem_@{victim}-java.xml"/>
-            </xslt>
-        </sequential>
-    </macrodef>
-
-    <target name="generator.xmlmerge-impl">
-        <xmlmerge victim="core"/>
-		<xmlmerge victim="concurrent"/>
-        <xmlmerge victim="gui"/>
-		<xmlmerge victim="widgets"/>
-		<xmlmerge victim="opengl"/>
-		<xmlmerge victim="openglwidgets"/>
-        <xmlmerge victim="sql"/>
-        <xmlmerge victim="network"/>
-        <xmlmerge victim="networkauth"/>
-        <xmlmerge victim="xml"/>
-        <xmlmerge victim="xmlpatterns"/>
-        <xmlmerge victim="qml"/>
-		<xmlmerge victim="quick"/>
-		<xmlmerge victim="quicktest"/>
-		<xmlmerge victim="quickcontrols2"/>
-		<xmlmerge victim="quickwidgets"/>
-		<xmlmerge victim="printsupport"/>
-		<xmlmerge victim="script"/>
-        <xmlmerge victim="scripttools"/>
-        <xmlmerge victim="multimedia"/>
-		<xmlmerge victim="multimediawidgets"/>
-        <xmlmerge victim="svg"/>
-        <xmlmerge victim="svgwidgets"/>
-        <xmlmerge victim="dbus"/>
-		<xmlmerge victim="test"/>
-        <xmlmerge victim="help"/>
-		<xmlmerge victim="websockets"/>
-		<xmlmerge victim="webchannel"/>
-		<xmlmerge victim="webenginecore"/>
-		<xmlmerge victim="webenginewidgets"/>
-		<xmlmerge victim="webview"/>
-		<xmlmerge victim="webengine"/>
-		<xmlmerge victim="webenginequick"/>
-        <xmlmerge victim="designer"/>
-		<xmlmerge victim="winextras"/>
-		<xmlmerge victim="macextras"/>
-		<xmlmerge victim="x11extras"/>
-		<xmlmerge victim="serialport"/>
-		<xmlmerge victim="qt3dcore"/>
-		<xmlmerge victim="qt3dextras"/>
-		<xmlmerge victim="qt3drenderer"/>
-		<xmlmerge victim="qt3dinput"/>
-		<xmlmerge victim="qt3dquick"/>
-		<xmlmerge victim="qt3dquickextras"/>
-		<xmlmerge victim="qt3dquickrenderer"/>
-		<xmlmerge victim="qt3danimation"/>
-		<xmlmerge victim="qt3dquickscene2d"/>
-		<xmlmerge victim="qt3dlogic"/>
-		<xmlmerge victim="gamepad"/>
-		<xmlmerge victim="remoteobjects"/>
-		<xmlmerge victim="scxml"/>
-		<xmlmerge victim="bluetooth"/>
-		<xmlmerge victim="location"/>
-		<xmlmerge victim="positioning"/>
-		<xmlmerge victim="nfc"/>
-		<xmlmerge victim="sensors"/>
-		<xmlmerge victim="serialbus"/>
-		<xmlmerge victim="purchasing"/>
-		<xmlmerge victim="texttospeech"/>
-		<xmlmerge victim="uitools"/>
-		<xmlmerge victim="charts"/>
-		<xmlmerge victim="datavisualization"/>
-		<xmlmerge victim="lottie"/>
-		<xmlmerge victim="quick3d"/>
-		<xmlmerge victim="virtkey"/>
-		<xmlmerge victim="statemachine"/>
-		<xmlmerge victim="pdf"/>
-		<xmlmerge victim="pdfwidgets"/>
-		<xmlmerge victim="activex"/>
-		<xmlmerge victim="ui4"/>
-		<xmlmerge victim="httpserver"/>
-		<xmlmerge victim="spatialaudio"/>
-    </target>
-
 </project>

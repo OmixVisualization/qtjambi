@@ -10,7 +10,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
+     -p qtjambi-6.4.2.jar:qtjambi-deployer-6.4.2.jar
      -m qtjambi.deployer qt
 ```
 
@@ -18,16 +18,16 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
+     -cp qtjambi-6.4.2.jar:qtjambi-deployer-6.4.2.jar
      io.qt.qtjambi.deployer.Main qt
 ```
 
 *QtJambi deployer* autodetects Qt installation on your computer and creates jar bundles for each of the Qt libraries along with their specific plugins.
 E.g. the output files for Windows look this way:
 
-- `qt-lib-core-native-windows-x64-6.3.1.jar`
-- `qt-lib-gui-native-windows-x64-6.3.1.jar`
-- `qt-lib-qml-native-windows-x64-6.3.1.jar`
+- `qt-lib-core-native-windows-x64-6.4.1.jar`
+- `qt-lib-gui-native-windows-x64-6.4.1.jar`
+- `qt-lib-qml-native-windows-x64-6.4.1.jar`
 - ...
 
 Place these libraries next to the **qtjambi-native-X.jar** files.
@@ -39,7 +39,7 @@ Possible arguments are:
   - `--platform=...` Target platform, e.g. `android-arm64`, `windows-x64`, `linux-x64`, `macos`. 
   - `-d`, `--target-directory=...` Directory where to place the generated bundle files
   - `--condifuration=...` Either `debug` or `release` (default), wether to bundle release libraries or debug libraries.
-  - `--qtdir=...` path to *Qt* version, e.g. `C:\Qt\6.3.1\msvc2019_64`
+  - `--qtdir=...` path to *Qt* version, e.g. `C:\Qt\6.4.1\msvc2019_64`
   - `--qtbase=...` alternatively path to *Qt* installation, e.g. `C:\Qt`.
   - `--target-version=` version to be bundles
   - `--utilities=...` path to Android utilities (only for android bundles). E.g. `--utilities=utilities/QtAndroidBindings.jar`.

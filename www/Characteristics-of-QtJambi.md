@@ -998,7 +998,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.5.jar:qtjambi-uic-6.3.5.jar
+     -p qtjambi-6.4.2.jar:qtjambi-uic-6.4.2.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1006,7 +1006,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.5.jar:qtjambi-uic-6.3.5.jar
+     -cp qtjambi-6.4.2.jar:qtjambi-uic-6.4.2.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1250,7 +1250,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
+     -p qtjambi-6.4.2.jar:qtjambi-deployer-6.4.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1262,7 +1262,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
+     -cp qtjambi-6.4.2.jar:qtjambi-deployer-6.4.2.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1289,7 +1289,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.3.5.jar:qtjambi-deployer-6.3.5.jar
+     -p qtjambi-6.4.2.jar:qtjambi-deployer-6.4.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

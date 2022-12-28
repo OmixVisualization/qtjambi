@@ -1,0 +1,562 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of QtJambi.
+**
+** $BEGIN_LICENSE$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+import QtJambiGenerator 1.0
+
+TypeSystem{
+    packageName: "io.qt.positioning"
+    defaultSuperClass: "io.qt.QtObject"
+    qtLibrary: "QtPositioning"
+    module: "qtjambi.positioning"
+    description: "Provides access to position, satellite and area monitoring classes."
+
+    InjectCode{
+        target: CodeClass.MetaInfo
+        position: Position.Position1
+        Text{content: "void initialize_meta_info_QtPositioning();"}
+    }
+    
+    InjectCode{
+        target: CodeClass.MetaInfo
+        Text{content: "initialize_meta_info_QtPositioning();"}
+    }
+    
+    ValueType{
+        name: "QGeoAreaMonitorInfo"
+        ModifyFunction{
+            signature: "operator=(const QGeoAreaMonitorInfo &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoAddress"
+        ModifyFunction{
+            signature: "operator=(const QGeoAddress &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    EnumType{
+        name: "QGeoShape::ShapeType"
+    }
+    
+    ValueType{
+        name: "QGeoShape"
+        isPolymorphicBase: true
+        polymorphicIdExpression: "%1->type() == QGeoShape::UnknownType"
+        ModifyFunction{
+            signature: "toString()const"
+            access: Modification.NonFinal
+        }
+        ModifyFunction{
+            signature: "operator=(const QGeoShape &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoCircle"
+        polymorphicIdExpression: "%1->type() == QGeoShape::CircleType"
+        ModifyFunction{
+            signature: "center()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator=(const QGeoCircle &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoPath"
+        polymorphicIdExpression: "%1->type() == QGeoShape::PathType"
+        ModifyFunction{
+            signature: "operator=(const QGeoPath &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoPolygon"
+        polymorphicIdExpression: "%1->type() == QGeoShape::PolygonType"
+        ModifyFunction{
+            signature: "operator=(const QGeoPolygon &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoRectangle"
+        polymorphicIdExpression: "%1->type() == QGeoShape::RectangleType"
+        ModifyFunction{
+            signature: "center()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator=(const QGeoRectangle &)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator|=(const QGeoRectangle &)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator|(const QGeoRectangle &)const"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    EnumType{
+        name: "QGeoCoordinate::CoordinateType"
+    }
+    
+    EnumType{
+        name: "QGeoCoordinate::CoordinateFormat"
+    }
+    
+    ValueType{
+        name: "QGeoCoordinate"
+        ModifyFunction{
+            signature: "operator=(const QGeoCoordinate &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    ValueType{
+        name: "QGeoLocation"
+        ModifyFunction{
+            signature: "operator=(const QGeoLocation &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    EnumType{
+        name: "QGeoSatelliteInfo::Attribute"
+    }
+    
+    EnumType{
+        name: "QGeoSatelliteInfo::SatelliteSystem"
+    }
+    
+    ValueType{
+        name: "QGeoSatelliteInfo"
+        ModifyFunction{
+            signature: "operator=(const QGeoSatelliteInfo &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    EnumType{
+        name: "QGeoPositionInfo::Attribute"
+    }
+    
+    ValueType{
+        name: "QGeoPositionInfo"
+        ModifyFunction{
+            signature: "operator=(const QGeoPositionInfo &)"
+            remove: RemoveFlag.All
+        }
+    }
+    
+    EnumType{
+        name: "QGeoAreaMonitorSource::Error"
+    }
+    
+    EnumType{
+        name: "QGeoAreaMonitorSource::AreaMonitorFeature"
+        flags: "QGeoAreaMonitorSource::AreaMonitorFeatures"
+    }
+    
+    ObjectType{
+        name: "QGeoAreaMonitorSource"
+        ModifyFunction{
+            signature: "setPositionInfoSource(QGeoPositionInfoSource*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcPositionInfoSource"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createDefaultSource(QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createSource(QString,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiPositioning.java"
+                quoteAfterLine: "class QGeoAreaMonitorSource___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "requestUpdate(const QGeoAreaMonitorInfo &, const char *)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "io.qt.core.QMetaObject$AbstractSignal"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QByteArray %out;\n"+
+                                  "if(!%in)\n"+
+                                  "    JavaException::raiseNullPointerException(%env, \"Parameter 'signal' must not be null.\" QTJAMBI_STACKTRACEINFO);\n"+
+                                  "jobject containingObject = Java::QtJambi::SignalUtility$AbstractSignal::containingObject(%env, %in);\n"+
+                                  "if(jobject __java_this = CoreAPI::javaObject(__this_nativeId, %env)) {\n"+
+                                  "    if(!%env->IsSameObject(__java_this, containingObject)){\n"+
+                                  "        JavaException::raiseIllegalArgumentException(%env, \"Given signal has to be one of the instance's signals.\" QTJAMBI_STACKTRACEINFO);\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "jint signalIndex = Java::QtJambi::SignalUtility$AbstractSignal::methodIndex(%env, %in);\n"+
+                                  "QMetaMethod metaSignal = this->metaObject()->method(signalIndex);\n"+
+                                  "if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)\n"+
+                                  "    return false;\n"+
+                                  "%out = qFlagLocation(QByteArray(\"2\").append(metaSignal.methodSignature()));"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);\n"+
+                                  "if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal){\n"+
+                                  "    __qt_return_value = false;\n"+
+                                  "}else{\n"+
+                                  "    jobject __java_metaSignal = qtjambi_cast<jobject>(%env, metaSignal);\n"+
+                                  "    if(!__java_metaSignal){\n"+
+                                  "        __qt_return_value = false;\n"+
+                                  "    }else{\n"+
+                                  "        jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);"}
+                }
+            }
+            InjectCode{
+                target: CodeClass.Shell
+                position: Position.End
+                Text{content: "    }\n"+
+                              "}"}
+            }
+        }
+    }
+    
+    EnumType{
+        name: "QGeoPositionInfoSource::Error"
+    }
+    
+    EnumType{
+        name: "QGeoPositionInfoSource::PositioningMethod"
+        flags: "QGeoPositionInfoSource::PositioningMethods"
+    }
+    
+    ObjectType{
+        name: "QGeoPositionInfoSource"
+        ModifyFunction{
+            signature: "createDefaultSource(QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createSource(QString,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createDefaultSource(QMap<QString,QVariant>,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createSource(QString,QMap<QString,QVariant>,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+    }
+    
+    EnumType{
+        name: "QGeoSatelliteInfoSource::Error"
+    }
+    
+    ObjectType{
+        name: "QGeoSatelliteInfoSource"
+        ModifyFunction{
+            signature: "createDefaultSource(QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createSource(QString,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createDefaultSource(QMap<QString,QVariant>,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createSource(QString,QMap<QString,QVariant>,QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+    }
+    
+    EnumType{
+        name: "QNmeaPositionInfoSource::UpdateMode"
+    }
+    
+    ObjectType{
+        name: "QNmeaPositionInfoSource"
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "parsePosInfoFromNmeaData(const char *, int, QGeoPositionInfo *, bool *)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$Result"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jobject %out = nullptr;\n"+
+                                  "if(%in){\n"+
+                                  "    %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(\n"+
+                                  "    %env, qtjambi_cast<jobject>(%env, %3), %4);\n"+
+                                  "}"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "bool %out = false;\n"+
+                                  "if(%in){\n"+
+                                  "    if(%3){\n"+
+                                  "        jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);\n"+
+                                  "        *%3 = qtjambi_cast<QGeoPositionInfo>(%env, __java_%3);\n"+
+                                  "    }\n"+
+                                  "    if(%4){\n"+
+                                  "        *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                ReplaceType{
+                    modifiedType: "java.nio.ByteBuffer"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "JBufferConstData %in_buffer(%env, %in);\n"+
+                                  "const char* %out = %in_buffer;"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "jobject %out = %env->NewDirectByteBuffer(const_cast<char*>(%in), %2);"}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QGeoPositionInfo %in;\n"+
+                                  "QGeoPositionInfo* %out = &%in;"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "bool %in = false;\n"+
+                                  "bool* %out = &%in;"}
+                }
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiPositioning.java"
+                quoteAfterLine: "class QNmeaPositionInfoSource___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "setDevice(QIODevice *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDevice"
+                    action: ReferenceCount.Set
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: "if(device()!=__rcDevice){\n"+
+                              "    __rcDevice = null;\n"+
+                              "}"}
+            }
+        }
+    }
+    
+    ObjectType{
+        name: "QNmeaSatelliteInfoSource"
+        ModifyFunction{
+            signature: "setDevice(QIODevice*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDevice"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parseSatelliteInfoFromNmea(const char *, int, QList<QGeoSatelliteInfo> &, QGeoSatelliteInfo::SatelliteSystem &)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                ArrayType{
+                    lengthParameter: 2
+                }
+            }
+            ModifyArgument{
+                index: 4
+                NoNullPointer{
+                }
+                ArrayType{
+                    minLength: 1
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parseSatellitesInUseFromNmea(const char *, int, QList<int> &)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                ArrayType{
+                    lengthParameter: 2
+                }
+            }
+        }
+        since: [6, 2]
+    }
+    
+    EnumType{
+        name: "QNmeaSatelliteInfoSource::SatelliteInfoParseStatus"
+        since: [6, 2]
+    }
+    
+    EnumType{
+        name: "QNmeaSatelliteInfoSource::UpdateMode"
+        since: [6, 2]
+    }
+    
+    InterfaceType{
+        name: "QGeoPositionInfoSourceFactory"
+    }
+    
+    InterfaceType{
+        name: "QGeoPositionInfoSourceFactoryV2"
+        since: [5, 14]
+        until: 5
+    }
+}

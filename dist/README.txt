@@ -1,1 +1,0 @@
-This is a pre-release. It will most probably expose bugs.

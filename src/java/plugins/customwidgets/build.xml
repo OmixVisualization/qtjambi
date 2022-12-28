@@ -1,0 +1,23 @@
+<project default="build">
+    <property name="plugin-subdir" value="designer"/>
+    <property name="module-name" value="customwidgets"/>
+    <property name="qtjambi-module-name" value="qtjambi.designer"/>
+    <property name="qtjambi.required.modules" value="qtjambi,qtjambi.xml,qtjambi.opengl,qtjambi.openglwidgets,qtjambi.designer"/>
+    <target name="build">
+        <if>
+            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+            <then>
+                <path id="sourcedirs">
+                    <pathelement location="${java.srcdir}/plugins/${module-name}"/>
+                </path>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="build-plugin">
+                    <property name="module" value="${module-name}"/>
+                    <property name="jar.excludes" value=""/>
+                    <property name="module.excludes" value=""/>
+                    <property name="plugin.metadata" value="{''Keys'':[''CustomWidgets'']}"/>
+                    <property name="plugin.class.name" value="io.qt.designer.customwidgets.QCustomWidgetsPlugin"/>
+                </ant>
+            </then>
+        </if>
+    </target>
+</project>

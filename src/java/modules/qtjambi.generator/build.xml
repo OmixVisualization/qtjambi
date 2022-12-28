@@ -1,0 +1,20 @@
+<project default="build">
+    <target name="build">
+        <dirname property="antfile.dir" file="${ant.file}"/>
+        <basename property="module" file="${antfile.dir}"/>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl">
+        <mkdir dir="${generator.outputdir}/java/${module}"/>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}"/>
+        </path>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
+            <property name="jar.excludes" value=""/>
+            <property name="module.excludes" value=""/>
+            <property name="application.mainclass" value="io.qt.qtjambi.generator.Main"/>
+            <property name="application.name" value="QtJambi Generator"/>
+        </ant>
+    </target>
+</project>

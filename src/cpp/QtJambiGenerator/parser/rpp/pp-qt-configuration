@@ -1,0 +1,116 @@
+#define QTJAMBI_GENERATOR_RUNNING
+
+#define QTJAMBI_CORE_H
+#define QTJAMBI_CONVERT_H
+#define QTJAMBI_CONTAINERS_H
+#define QTJAMBI_GLOBAL_H
+#define QTJAMBI_REGISTRY_H
+#define QTJAMBI_TEST_H
+#define QTJAMBI_REPOSITORY_H
+#define QTJAMBI_UTILS_H
+#define QTJAMBI_TYPETESTS_H
+#define QTJAMBI_QML_H
+
+#define __cplusplus 1
+
+#define __STDC__
+
+// Qt
+#define Q_NULLPTR nullptr
+#define Q_NAMESPACE
+#define QT_COORD_TYPE _QT_COORD_TYPE __QT_COORD_TYPE; using ___QT_COORD_TYPE =
+#define QOBJECTDEFS_H
+#define QTMETAMACROS_H
+#define QFLAGS_H
+#define decltype(A) DECL_TYPE
+#define QT6_ONLY(...)
+#define QT7_ONLY(...)
+#define Q_DECLARE_JNI_TYPE(...)
+
+// not yet supported
+#define Q_COMPILER_DELETE_MEMBERS
+#define Q_COMPILER_DEFAULT_MEMBERS
+#define Q_COMPILER_NULLPTR
+#define Q_COMPILER_EXPLICIT_OVERRIDES
+#define Q_DECL_HIDDEN_STATIC_METACALL
+//#define constexpr
+
+//#define noexcept(X)
+//#define Q_DECL_NOEXCEPT
+//#define Q_DECL_NOEXCEPT_EXPR(x)
+//#define Q_DECL_NOTHROW
+#define Q_MOC_INCLUDE(X)
+
+#define Q_SLOTS slots
+#define Q_SLOT Q_INVOKABLE
+#define Q_SIGNALS public signals
+
+#define Q_DECLARE_INCOMPATIBLE_FLAGS(X)
+#define Q_DECLARE_OPERATORS_FOR_FLAGS(X)
+#define Q_CLASSINFO(A,B)
+#define Q_REVISION(A)
+#define QDOC_PROPERTY(A)
+#define Q_PRIVATE_PROPERTY(A,B)
+#define __declspec(A)
+#define JNICALL
+#define __forceinline
+#define __stdcall
+#define QT_WARNING_DISABLE_INVALID_OFFSETOF
+#define Q_OBJECT_BINDABLE_PROPERTY(Class, Type, name, ...)
+#define Q_OBJECT_COMPUTED_PROPERTY(Class, Type, name, ...)
+
+#define Q_PRIVATE_SLOT(a, b)
+#define Q_DECLARE_INTERFACE(a,b)
+#define Q_INTERFACES(a)
+#define Q_OVERRIDE(a)
+#define Q_DECL_ALIGN(a) alignas(a)
+#define Q_DECL_FINAL final
+#define Q_DECL_OVERRIDE override
+#define Q_DECL_CONSTEXPR constexpr
+#define Q_OS_OS2
+#define ULONG_MAX Integer.MAX_VALUE
+#define Q_NO_USING_KEYWORD
+#define emit
+#define Q_EMIT
+#define SIGNAL(A) #A
+#define SLOT(A) #A
+#define Q_NAMESPACE_EXPORT()
+#define Q_COMPILER_INITIALIZER_LISTS
+#define Q_DECL_DEPRECATED QTJAMBI_DEPRECATED
+#define Q_DECL_DEPRECATED_X(text) QTJAMBI_DEPRECATED_X(text)
+#define Q_DECL_ENUMERATOR_DEPRECATED QTJAMBI_DEPRECATED
+#define Q_DECL_ENUMERATOR_DEPRECATED_X(text) QTJAMBI_DEPRECATED_X(text)
+#define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
+#define QT_DEPRECATED_VERSION_X_5(a,text) QTJAMBI_DEPRECATED_X(text)
+#define QT_DEPRECATED_VERSION_X_6(a,text) QTJAMBI_DEPRECATED_X(text)
+#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_5(a) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_6(a) QTJAMBI_DEPRECATED
+#define Q_DECLARE_TR_FUNCTIONS
+#define Q_OBJECT_FAKE Q_OBJECT
+#define Q_GADGET_EXPORT(...) Q_GADGET
+#define Q_OBJECT_EXPORT(...) Q_OBJECT
+#define Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(...)
+#define Q_DECLARE_MIXED_ENUM_OPERATORS(...)
+
+// There are symbols in Qt that exist in Debug but
+// not in release
+#define QT_NO_DEBUG
+
+#define Q_FLAG(ENUM)\
+inline const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return qt_getQtMetaObject(); }
+#define Q_FLAGS(ENUM)
+
+#define Q_ENUM(ENUM)\
+inline const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return qt_getQtMetaObject(); }
+#define Q_ENUMS(ENUM)
+
+#define Q_ENUM_NS(ENUM) Q_ENUM(ENUM)
+#define Q_FLAG_NS(ENUM) Q_ENUM(ENUM)
+
+#define Q_DECLARE_FLAGS(FLAGS,ENUM)\
+typedef QFlags<ENUM> FLAGS;\
+Q_ENUM(ENUM)
+
+#define Q_ASSERT(a) static_cast<void>(0)
+#define Q_ASSERT_X(a) static_cast<void>(0)

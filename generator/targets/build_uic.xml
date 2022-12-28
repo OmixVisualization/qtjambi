@@ -1,4 +1,0 @@
-<typesystem>
-  <load-typesystem name="typesystem_core.xml" 		        generate="no"/>
-  <load-typesystem name="typesystem_ui4.xml" 		        generate="yes"	            unless="QTJAMBI_NO_DESIGNER"/>
-</typesystem>
