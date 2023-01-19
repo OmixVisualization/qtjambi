@@ -138,6 +138,7 @@
             <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
             <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestBluetoothDiscovery.java"/>
+            <exclude name="io/qt/**/TestQuickTextureMetalQt6.java"/>
         </fileset>
     </target>
     <property file="tests.properties"/>

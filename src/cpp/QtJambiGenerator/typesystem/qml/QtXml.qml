@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -102,6 +102,21 @@ TypeSystem{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
+    }
+
+    EnumType{
+        name: "QDomDocument::ParseOption"
+        flags: "QDomDocument::ParseOptions"
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QDomDocument::ParseResult"
+        ModifyFunction{
+            signature: "operator bool() const"
+            rename: "success"
+        }
+        since: [6,5]
     }
     
     ValueType{
@@ -457,6 +472,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
+            Remove{since: [6,4]}
         }
         ModifyFunction{
             signature: "setContent(QByteArray,QString*,int*,int*)"
@@ -500,6 +516,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
+            Remove{since: [6,4]}
         }
         ModifyFunction{
             signature: "setContent(QIODevice*,QString*,int*,int*)"
@@ -550,6 +567,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
+            Remove{since: [6,4]}
         }
     }
     

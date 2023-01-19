@@ -264,10 +264,12 @@ public class ForeachVersionTask extends Task {
 												qtDirs.add(new java.io.File(versionDir, "gcc_64"));
 												break;
 											case MacOS:
-												if(iVersion[0]<6) {
-													qtDirs.add(new java.io.File(versionDir, "clang_64"));
-												}else {
-													qtDirs.add(new java.io.File(versionDir, "macos"));
+												if(!"true".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "ios"))) {
+													if(iVersion[0]<6) {
+														qtDirs.add(new java.io.File(versionDir, "clang_64"));
+													}else {
+														qtDirs.add(new java.io.File(versionDir, "macos"));
+													}
 												}
 												if(!"false".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "ios"))) {
 													qtDirs.add(new java.io.File(versionDir, "ios"));
@@ -299,10 +301,12 @@ public class ForeachVersionTask extends Task {
 											java.io.File qtDir = null;
 											switch(OSInfo.os()) {
 											case MacOS:
-												if(iVersion[0]<6) {
-													qtDir = new java.io.File(versionDir, "clang_64");
-												}else {
-													qtDir = new java.io.File(versionDir, "macos");
+												if(!"true".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "ios"))) {
+													if(iVersion[0]<6) {
+														qtDir = new java.io.File(versionDir, "clang_64");
+													}else {
+														qtDir = new java.io.File(versionDir, "macos");
+													}
 												}
 												if(!"false".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "ios"))) {
 													qtDirs.add(new java.io.File(versionDir, "ios"));

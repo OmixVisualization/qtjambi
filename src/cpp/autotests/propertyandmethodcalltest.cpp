@@ -4,6 +4,14 @@
 #define QTJAMBI_ARG(Type, MetaType, arg) QArgument<Type >(#MetaType, arg)
 #define QTJAMBI_RETURN_ARG(Type, MetaType, arg) QReturnArgument<Type >(#MetaType, arg)
 #define TEST_METHOD(Type, MetaType, Method) "test"#Method"("#MetaType")"
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#undef Q_ARG
+#undef Q_RETURN_ARG
+#define Q_ARG(Type, data)           QArgument<Type>(QT_STRINGIFY(Type), data)
+#define Q_RETURN_ARG(Type, data)    QReturnArgument<Type>(QT_STRINGIFY(Type), data)
+#endif
+
 #define PROPERTY_TEST(Type, MetaType, Property)\
     bool result = false;\
     if(qobj && qobj->metaObject()){\
@@ -13,7 +21,7 @@
         if(variant.metaType()==QMetaType::fromName(#MetaType)){\
             const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod(TEST_METHOD(Type, MetaType, Property)));\
             if(testmethod.isValid())\
-                testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), QGenericArgument(#MetaType, variant.constData()));\
+                testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QGenericArgument(#MetaType, variant.constData()));\
         }\
     }\
     return result;
@@ -27,7 +35,7 @@
     if(qmethod.isValid())\
         qmethod.invoke(qobj, QGenericReturnArgument(#MetaType, variant.data()));\
     if(testmethod.isValid())\
-        testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), QGenericArgument(#MetaType, variant.constData()));\
+        testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QGenericArgument(#MetaType, variant.constData()));\
     }\
     return result;
 #else
@@ -44,7 +52,7 @@
         Type arg = pValue.value<Type>();\
         const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod(TEST_METHOD(Type, MetaType, Property)));\
         if(testmethod.isValid())\
-            testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
+            testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
     }\
     return result;
 
@@ -55,9 +63,9 @@
     const QMetaMethod qmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("get"#Method"()"));\
     const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod(TEST_METHOD(Type, MetaType, Method)));\
     if(qmethod.isValid())\
-        qmethod.invoke(qobj, QTJAMBI_RETURN_ARG(Type, MetaType, arg));\
+        qmethod.invoke(qobj, Qt::AutoConnection, QTJAMBI_RETURN_ARG(Type, MetaType, arg));\
     if(testmethod.isValid())\
-        testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), QTJAMBI_ARG(Type, MetaType, arg));\
+        testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QTJAMBI_ARG(Type, MetaType, arg));\
     }\
     return result;
 
@@ -75,7 +83,7 @@
             Type arg = reinterpret_cast<Type>(*data);\
             const QMetaMethod testmethod = metaobject->method(metaobject->indexOfMethod(TEST_METHOD(Type, MetaType, Property)));\
             if(testmethod.isValid())\
-                testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), QTJAMBI_ARG(Type, MetaType, arg));\
+                testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QTJAMBI_ARG(Type, MetaType, arg));\
         }\
     }\
     return result;
@@ -334,7 +342,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyQtFlags(QObject* qobj){
         name[0] = name[0].toLower();
         Qt::Orientations arg = qobj->property(name.toLatin1()).value<Qt::Orientations>();
         const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("testQtFlags(Qt::Orientations)"));
-        testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Qt::Orientations, arg));
+        testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(QFlags<Qt::Orientation>, arg));
     }
     return result;
 }

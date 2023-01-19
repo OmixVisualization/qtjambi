@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -193,7 +193,7 @@ public class TestThreads extends ApplicationInitializer {
 	    	QThread thread = QThread.create(()->{
 	    		QObject object = new QObject();
 	    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
-	    		object.destroyed.connect(()->qobjectDestroyed.set(true));
+	    		object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 	    	});
 	    	QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
     		thread.destroyed.connect(()->threadDestroyed.set(true), Qt.ConnectionType.DirectConnection);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -194,9 +194,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				_moduleInfos.put("quick3d", new ModuleInfo("QTJAMBI_NO_QUICK3D", "QtQuick3D"));
 				_moduleInfos.put("statemachine", new ModuleInfo("QTJAMBI_NO_STATEMACHINE", "QtStateMachine"));
 				if((qtMajorVersion==6 && qtMinorVersion>=4) || qtMajorVersion>6) {
-					_moduleInfos.put("statemachine", new ModuleInfo("QTJAMBI_NO_STATEMACHINE", "QtStateMachine"));
 					_moduleInfos.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer", ModuleInfo.Headers.Private));
 					_moduleInfos.put("spatialaudio", new ModuleInfo("QTJAMBI_NO_SPATIALAUDIO", "QtSpatialAudio"));
+				}
+				if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) {
+					_moduleInfos.put("grpc", new ModuleInfo("QTJAMBI_NO_GRPC", "QtGrpc"));
+					_moduleInfos.put("protobuff", new ModuleInfo("QTJAMBI_NO_PROTOBUFF", "QtProtobuf"));
 				}
 			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);

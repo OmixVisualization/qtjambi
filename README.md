@@ -14,6 +14,8 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 ## Availability
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/OmixVisualization/qtjambi)](/releases)
+[![Downloads (total)](https://img.shields.io/github/downloads/OmixVisualization/qtjambi/total)](/releases)
 
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
@@ -23,7 +25,7 @@ Most Qt modules are available as QtJambi module as [listed here](www/Modules.md)
 QtJambi is an open source project making the power of Qt available for your Java projects free of charge. However, this project is causing ongoing costs. 
 Please consider supporting this project by donation. Your support is highly appreciated.
 
-[![Donate with PayPal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=M5Z5VMA7FFCEE)
+[Sponsor this project](https://github.com/sponsors/OmixVisualization)
 
 ## How To Build From Sources
 
@@ -55,7 +57,7 @@ This saves compilation time.
 
 `> set PATH=...\apache-ant-1.10.3\bin;%PATH%`
 
-`> set QTDIR=C:\Qt\6.4.1\msvc2019_64`
+`> set QTDIR=C:\Qt\6.4.2\msvc2019_64`
 
 #### Pre-Build Steps On Linux and macOS
 
@@ -65,9 +67,9 @@ This saves compilation time.
 
 `> export JAVA_HOME_TARGET=path to your java jdk`
 
-`> export QTDIR=/opt/Qt/6.4.1/gcc_64` on Linux
+`> export QTDIR=/opt/Qt/6.4.2/gcc_64` on Linux
 
-`> export QTDIR=/opt/Qt/6.4.1/macos` on macOS
+`> export QTDIR=/opt/Qt/6.4.2/macos` on macOS
 
 #### Building Bindings
 
@@ -100,7 +102,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.12`, `6.2.10` or by `6.4.2`).
+(exchange `$VERSION` either by `5.15.13`, `6.2.11` or by `6.4.3`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -120,7 +122,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.4.2.jar Test.java
+javac -cp qtjambi-6.4.3.jar Test.java
 ```
 
 ### Execute Example
@@ -139,19 +141,19 @@ In case your Linux distribution provides Qt (of correct version) as system libra
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.4.2.jar;. -Djava.library.path=C:\Qt\6.4.1\msvc2019_64\bin Test
+java -cp qtjambi-6.4.3.jar;. -Djava.library.path=C:\Qt\6.4.2\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.4.2.jar:. -Djava.library.path=<path to>/Qt/6.4.1/gcc_64/lib Test
+java -cp qtjambi-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.4.2.jar:. -Djava.library.path=<path to>/Qt/6.4.1/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/macos/lib -XstartOnFirstThread Test
 ```
 
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 

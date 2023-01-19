@@ -1,5 +1,5 @@
 #include <QtCore/QtGlobal>
-#include <QtCore/QVector>
+#include <vector>
 #include <QtCore/QtPlugin>
 
 template <class _Ty, size_t _Size>
@@ -29,7 +29,7 @@ struct FunctionInitializer<0>{
     static void initialize(QFunctionPointer*){}
 };
 
-extern "C" Q_DECL_EXPORT Call* initialize(Call onNull, QVector<QFunctionPointer>& functions){
+extern "C" Q_DECL_EXPORT Call* initialize(Call onNull, std::vector<QFunctionPointer>& functions){
     functions.resize(arraysize(call)-1);
     FunctionInitializer<arraysize(call)-1>::initialize(functions.data());
     call[0] = onNull;

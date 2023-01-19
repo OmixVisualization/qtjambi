@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -2778,6 +2778,36 @@ TypeSystem{
         name: "QImageCapture"
         since: [6, 2]
     }
+
+    ObjectType{
+        name: "QScreenCapture"
+        ModifyFunction{
+            signature: "setScreen(QScreen*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcScreen"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setWindow(QWindow*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcWindow"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: [6, 5]
+    }
+
+    EnumType{
+        name: "QScreenCapture::Error"
+        since: [6, 5]
+    }
     
     ObjectType{
         name: "QMediaCaptureSession"
@@ -2850,6 +2880,17 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+        }
+        ModifyFunction{
+            signature: "setScreenCapture(QScreenCapture*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcScreenCapture"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 5]
         }
         since: [6, 2]
     }

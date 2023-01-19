@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -76,6 +76,7 @@ public:
     }
 
     static bool isRejectedUserProperty(const QObject* object, const char * propertyName);
+    Q_DISABLE_COPY_MOVE(QtJambiObjectData)
 };
 #define QTJAMBI_OBJECTUSERDATA_TYPE_ID(TYPE) typeid(TYPE)
 #define QTJAMBI_OBJECTUSERDATA_ID_TYPE const std::type_info&
@@ -94,6 +95,7 @@ public:
 
     char** chars();
     int& size();
+    void update(JNIEnv *env);
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     int m_size;

@@ -24,9 +24,9 @@ public class CreateFunctionPointerQrcTask extends Task {
 				libFormat = "%1$s.dll";
 				break;
 			case IOS:
-				dlibFormat = "lib%1$s_debug.a";
-				libFormat = "lib%1$s.a";
-				break;
+//				dlibFormat = "lib%1$s_debug.dylib";
+//				libFormat = "lib%1$s.dylib";
+//				break;
 			case MacOS:
 				dlibFormat = "lib%1$s_debug.dylib";
 				libFormat = "lib%1$s.dylib";

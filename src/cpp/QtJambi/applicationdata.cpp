@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,8 +29,13 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QCoreApplication>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
 #include "qtjambiapi.h"
 #include "coreapi.h"
+#include "java_p.h"
+#include "qtjambi_cast.h"
 
 ApplicationData::ApplicationData(JNIEnv *env, jobjectArray array)
     : QtJambiObjectData(), m_size(int(env->GetArrayLength(array))), m_chars(m_size>0 ? new char*[size_t(m_size)] : nullptr)
@@ -66,6 +71,23 @@ char** ApplicationData::chars(){
 
 int& ApplicationData::size(){
     return m_size;
+}
+
+void ApplicationData::update(JNIEnv *env){
+    if(m_size>0 && (!m_chars[0] || m_chars[0][0]==0)){
+        QDir sunBootLibraryPath(qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("sun.boot.library.path"), nullptr)));
+        if(sunBootLibraryPath.exists() && sunBootLibraryPath.cdUp()){
+            if(QFileInfo(QCoreApplication::applicationFilePath()).dir().canonicalPath().startsWith(sunBootLibraryPath.canonicalPath())){
+                return;
+            }
+        }
+        QByteArray path = QCoreApplication::applicationFilePath().toLocal8Bit();
+        char* newArg0 = new char[path.size()+1];
+        newArg0[path.size()] = 0;
+        memcpy(newArg0, path.data(), path.size());
+        std::swap(m_chars[0], newArg0);
+        delete[] newArg0;
+    }
 }
 
 QTJAMBI_OBJECTUSERDATA_ID_IMPL(,ApplicationData::)

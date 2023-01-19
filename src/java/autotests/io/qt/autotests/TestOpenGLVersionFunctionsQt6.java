@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,10 +39,15 @@ import io.qt.opengl.*;
 
 public class TestOpenGLVersionFunctionsQt6 extends ApplicationInitializer {
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test() {
+		Class<? extends QAbstractOpenGLFunctions> QOpenGLFunctions_ES2_class = null;
+		try {
+			QOpenGLFunctions_ES2_class = (Class<? extends QAbstractOpenGLFunctions>)Class.forName("io.qt.opengl.QOpenGLFunctions_ES2");
+		} catch (Throwable e) {}
 		for(Class<? extends QAbstractOpenGLFunctions> cls : Arrays.asList(
-				QOpenGLFunctions_ES2.class,
+				QOpenGLFunctions_ES2_class,
 				QOpenGLFunctions_1_0.class,
 				QOpenGLFunctions_1_1.class,
 				QOpenGLFunctions_1_2.class,
@@ -69,9 +74,11 @@ public class TestOpenGLVersionFunctionsQt6 extends ApplicationInitializer {
 				QOpenGLFunctions_4_4_Core.class,
 				QOpenGLFunctions_4_5_Compatibility.class,
 				QOpenGLFunctions_4_5_Core.class)) {
-			QAbstractOpenGLFunctions versionFunctions = QOpenGLVersionFunctionsFactory.get(cls);
-			System.out.println(cls.getName()+": "+versionFunctions);
-			assertTrue("Expected "+cls.getName()+" but was "+(versionFunctions==null ? "null" : versionFunctions.getClass().getName()), versionFunctions==null || versionFunctions.getClass()==cls);
+			if(cls!=null) {
+				QAbstractOpenGLFunctions versionFunctions = QOpenGLVersionFunctionsFactory.get(cls);
+				System.out.println(cls.getName()+": "+versionFunctions);
+				assertTrue("Expected "+cls.getName()+" but was "+(versionFunctions==null ? "null" : versionFunctions.getClass().getName()), versionFunctions==null || versionFunctions.getClass()==cls);
+			}
 		}
 	}
 }

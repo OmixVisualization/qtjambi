@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -379,7 +379,7 @@ abstract class SignalUtility {
 	        			flags |= ct.value();
 					}
 	        	}
-	            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, c, slot.parameterTypes().size(), flags);
+	            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 0, c, slot.parameterTypes().size(), flags);
 				if(connection.isConnected()) {
 					QPair<AbstractConnection<?>,QMetaObject.Connection> pair = new QPair<>(c, connection);
 					synchronized(nativeConnectionHandles) {
@@ -452,7 +452,9 @@ abstract class SignalUtility {
         			flags |= ct.value();
 				}
         	}
-            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, c, slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
+            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 
+            		receiver instanceof QObject ? NativeUtility.checkedNativeId((QObject)receiver) : 0, 
+    				c, slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
 			if(connection.isConnected()) {
 				QPair<AbstractConnection<?>,QMetaObject.Connection> pair = new QPair<>(c, connection);
 				synchronized(nativeConnectionHandles) {
@@ -482,7 +484,10 @@ abstract class SignalUtility {
         			flags |= ct.value();
 				}
         	}
-            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, c, -1, flags);
+            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), 
+            		methodIndex, metaObjectId, 
+            		lambdaOwner instanceof QObject ? NativeUtility.checkedNativeId((QObject)lambdaOwner) : 0,
+    				c, -1, flags);
 			if(connection.isConnected()) {
 				synchronized(nativeConnectionHandles) {
 					nativeConnectionHandles.add(new QPair<>(c, connection));
@@ -4648,7 +4653,7 @@ abstract class SignalUtility {
     	return false;
     }
 
-	private static native final Connection connectNative(long senderObjectId, int signal, long senderMetaObjectId, AbstractConnection<?> connection, int argumentCount, int connectionType);
+	private static native final Connection connectNative(long senderObjectId, int signal, long senderMetaObjectId, long contextNativeId, AbstractConnection<?> connection, int argumentCount, int connectionType);
 	
 	private static native final Connection connectNativeToMetaMethod(long senderObjectId, int signal, long senderMetaObjectId, long receiverObjectId, long slotId, int connectionType);
 	

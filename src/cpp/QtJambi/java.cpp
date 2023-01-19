@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -972,7 +972,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,OptionalDouble,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,System,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(gc,()V)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getProperty,(Ljava/lang/String;)Ljava/lang/String;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getProperty,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setProperty,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(identityHashCode,(Ljava/lang/Object;)I)
 )
@@ -996,11 +996,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,InputStream,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/zip,ZipEntry,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getSize,()J)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URLClassLoader,
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(newInstance,([Ljava/net/URL;Ljava/lang/ClassLoader;)Ljava/net/URLClassLoader;)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(addURL,(Ljava/net/URL;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ClassLoader,

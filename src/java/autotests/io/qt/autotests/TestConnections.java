@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1031,17 +1031,17 @@ public class TestConnections extends ApplicationInitializer
         assertTrue(le.isVisible());
         widget.setGeometry(new QRect(200, 300, 400, 500));
         QRect rect = widget.geometry();
-        assertEquals(rect.x(), 200);
-        assertEquals(rect.y(), 300);
-        assertEquals(rect.width(), 400);
-        assertEquals(rect.height(), 500);
+        assertEquals("widget.geometry.x", 200, rect.x());
+        assertEquals("widget.geometry.y", 300, rect.y());
+        assertEquals("widget.geometry.height", 400, rect.width());
+        assertEquals("widget.geometry.width", 500, rect.height());
         QSize test = new QSize();
-        assertEquals(test.width(), -1);
-        assertEquals(test.height(), -1);
+        assertEquals(-1, test.width());
+        assertEquals(-1, test.height());
 
         QSize sz = new QSize(10, 20);
-        assertEquals(sz.width(), 10);
-        assertEquals(sz.height(), 20);
+        assertEquals(10, sz.width());
+        assertEquals(20, sz.height());
         b1.setIconSize(sz);
         QSize sz2 = b1.iconSize();
         assertEquals(sz2.width(), sz.width());
@@ -1139,8 +1139,8 @@ public class TestConnections extends ApplicationInitializer
         assertTrue(!b2.isVisible());
 
         sz = new QSize(40, 60);
-        assertEquals(sz.width(), 40);
-        assertEquals(sz.height(), 60);
+        assertEquals(40, sz.width());
+        assertEquals(60, sz.height());
         // CHECKME: This maybe leaking the QSize object ?
         obj.javaSignalQSize(sz);
 

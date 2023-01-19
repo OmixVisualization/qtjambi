@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,6 +32,12 @@
 #include "metainfo.h"
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#include <signal.h>
+#include <stdio.h>
+#include <map>
+#include <initializer_list>
+#endif
 #include "java_p.h"
 #include "utils_p.h"
 #include "qtjambilink_p.h"
@@ -185,5 +191,80 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNI
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
+    return false;
+}
+
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#if defined(signals)
+#undef signals
+#endif
+
+struct SignalCache : public QtJambiObjectData{
+    SignalCache() = default;
+    ~SignalCache() override = default;
+    QTJAMBI_OBJECTUSERDATA_ID_IMPL(static,)
+    Q_DISABLE_COPY_MOVE(SignalCache)
+    static std::initializer_list<int> signals(){
+        static std::initializer_list<int> signals{SIGSEGV,SIGBUS,SIGFPE,SIGPIPE,SIGILL,SIGQUIT,SIGUSR2,SIGFPE};
+        return signals;
+    }
+    std::map<int,std::pair<int,void(*)(int)>> handlers;
+};
+#endif
+
+extern "C" Q_DECL_EXPORT bool JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *)
+{
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+    if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+        std::unique_ptr<SignalCache> cache{new SignalCache()};
+        for(int s : SignalCache::signals()){
+            struct sigaction sa;
+            memset(&sa, 0, sizeof(sa));
+            if(sigaction(s, nullptr, &sa)==0){
+                qDebug("Signalhandler for %d saved.", s);
+                cache->handlers[s] = {sa.sa_flags, sa.sa_handler};
+            }else
+                qDebug("Unable to save signalhandler for %d.", s);
+        }
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, cache.release());
+        return true;
+    }
+#endif
+    return false;
+}
+
+extern "C" Q_DECL_EXPORT bool JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv *)
+{
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+    if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+        std::unique_ptr<SignalCache> cache{nullptr};
+        {
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            cache.reset(QTJAMBI_GET_OBJECTUSERDATA(SignalCache, mainThread));
+            QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, nullptr);
+        }
+        if(cache){
+            for(int s : SignalCache::signals()){
+                struct sigaction sa;
+                struct sigaction sa2;
+                memset(&sa, 0, sizeof(sa));
+                memset(&sa2, 0, sizeof(sa2));
+                sa.sa_flags = cache->handlers[s].first;
+                sa.sa_handler = cache->handlers[s].second;
+                if(sigaction(s, &sa, &sa2)==0){
+                    if(sa.sa_handler!=sa2.sa_handler)
+                        qDebug("Signalhandler for %d restored.", s);
+                    else
+                        qDebug("Signalhandler for %d unchanged.", s);
+                }else
+                    qDebug("Unable to restore signalhandler for %d.", s);
+            }
+            return true;
+        }
+    }
+#endif
     return false;
 }

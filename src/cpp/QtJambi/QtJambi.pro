@@ -205,12 +205,9 @@ exists($$GENERATED): INSTALL_HEADERS.files += $$GENERATED
 
 macx:{
     contains(CONFIG, lib_bundle):{
-        QMAKE_RPATHDIR = @loader_path/.
         INSTALL_HEADERS.path = Headers/QtJambi
         INSTALL_HEADERS.version = Versions
         QMAKE_BUNDLE_DATA += INSTALL_HEADERS
-    }else{
-        !isEmpty(QTJAMBI_EXTENSION_SHLIB): QMAKE_EXTENSION_SHLIB = $$QTJAMBI_EXTENSION_SHLIB
     }
 }else{
     INSTALLS += INSTALL_HEADERS

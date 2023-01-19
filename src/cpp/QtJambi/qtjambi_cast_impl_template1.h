@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1036,8 +1036,7 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
 };
 #endif
 
-#ifdef QQMLLISTPROPERTY
-
+#ifdef QQMLLIST_H
 template<class T, bool = std::is_base_of<QObject,T>::value>
 struct QmlListPropertyUtility{
     static jobject toJavaObject(JNIEnv *env, const QQmlListProperty<T>& d)
@@ -1363,17 +1362,18 @@ struct qtjambi_jnitype_template1_cast<true, has_scope,
     }
 };
 
-template<typename T>
+template<typename T, bool isConstructible = std::is_copy_constructible<T>::value && std::is_destructible<T>::value, bool isMovable = std::is_move_constructible<T>::value && std::is_destructible<T>::value>
 struct FutureVariantHandler{
+    Q_STATIC_ASSERT_X(isConstructible || isMovable, "Cannot cast QFuture with non-constructible and non-movable result type.");
     static void reportNativeResults(JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
        if(count==1){
            dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResult(QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>()), beginIndex);
        }else{
            QVector<QVariant> results(count);
            for(int i=0; i<count; ++i){
-               results << QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>());
+               results << QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex + i).template value<T>());
            }
-           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResults(results, count);
+           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResults(results, beginIndex, count);
        }
     }
 
@@ -1383,9 +1383,29 @@ struct FutureVariantHandler{
         }else{
             QVector<T> results(count);
             for(int i=0; i<count; ++i){
-                results << sourceFuture->resultStoreBase().resultAt(i).template value<QVariant>().template value<T>();
+                results << sourceFuture->resultStoreBase().resultAt(beginIndex + i).template value<QVariant>().template value<T>();
             }
-            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResults(results, count);
+            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResults(results, beginIndex, count);
+        }
+    }
+};
+
+template<typename T>
+struct FutureVariantHandler<T,false,true>{
+    static void reportNativeResults(JNIEnv * env, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
+        for(int i=0; i<count; ++i){
+            jobject obj = qtjambi_cast<jobject>(env, targetFuture->resultStoreBase().resultAt(beginIndex + i).template value<T>());
+            dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResult(QtJambiAPI::convertJavaObjectToQVariant(env, obj), beginIndex + i);
+        }
+    }
+
+    static void reportJavaResults(JNIEnv *env, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>&targetFuture, int beginIndex, int count){
+        for(int i=0; i<count; ++i){
+            QVariant v = sourceFuture->resultStoreBase().resultAt(beginIndex + i).template value<QVariant>();
+            jobject o = QtJambiAPI::convertQVariantToJavaObject(env, v);
+            T* n = qtjambi_cast<T*>(env, o);
+            if(n)
+                dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResult(std::move(*n), beginIndex + i);
         }
     }
 };

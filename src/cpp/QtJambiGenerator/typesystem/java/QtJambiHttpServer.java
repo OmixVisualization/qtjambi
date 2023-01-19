@@ -1,7 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG.
- ** All rights reserved.
+ ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -45,55 +44,14 @@ class QHttpServer___ {
     @io.qt.QtUninvokable
     private native void afterRequest(long __this__nativeId, boolean isBi, Object action);
 
-    @Override
-    protected void missingHandler(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
-        missingHandler(QtJambi_LibraryUtilities.internal.nativeId(this),
-                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
-    }
+    @io.qt.QtUninvokable
+    private native void missingHandler(long __this__nativeId, long request, long argX);
 
     @io.qt.QtUninvokable
-    private native void missingHandler(long __this__nativeId, long request, long socket);
-
-    @Override
-    protected boolean handleRequest(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
-        return handleRequest(QtJambi_LibraryUtilities.internal.nativeId(this),
-                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
-    }
+    private native boolean handleRequest(long __this__nativeId, long request, long argX);
 
     @io.qt.QtUninvokable
-    private native boolean handleRequest(long __this__nativeId, long request, long socket);
-
-    @io.qt.QtUninvokable
-    private void sendResponse(QHttpServerResponse response, QHttpServerRequest request,
-            io.qt.network.QTcpSocket socket) {
-        sendResponse(QtJambi_LibraryUtilities.internal.nativeId(this),
-                QtJambi_LibraryUtilities.internal.checkedNativeId(response),
-                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
-    }
-
-    @io.qt.QtUninvokable
-    private void sendResponse(Object result, QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
-        if (result instanceof QHttpServerResponse)
-            sendResponse((QHttpServerResponse) result, request, socket);
-        else if (result instanceof String)
-            sendResponse(new QHttpServerResponse((String) result), request, socket);
-        else if (result instanceof io.qt.core.QByteArray)
-            sendResponse(new QHttpServerResponse((io.qt.core.QByteArray) result), request, socket);
-        else if (result instanceof io.qt.core.QJsonArray)
-            sendResponse(new QHttpServerResponse((io.qt.core.QJsonArray) result), request, socket);
-        else if (result instanceof io.qt.core.QJsonObject)
-            sendResponse(new QHttpServerResponse((io.qt.core.QJsonObject) result), request, socket);
-        else if (result == null)
-            sendResponse(new QHttpServerResponse(QHttpServerResponder.StatusCode.NoContent), request, socket);
-        else
-            sendResponse(new QHttpServerResponse(result.toString()), request, socket);
-    }
-
-    @io.qt.QtUninvokable
-    private native void sendResponse(long __this__nativeId, long response, long request, long socket);
+    private native void sendResponse(long __this__nativeId, long response, long request, long argX);
 
     public interface GenericViewHandler {
         void invoke(Object[] args, QHttpServerResponder responder, QHttpServerRequest request);
@@ -113,94 +71,30 @@ class QHttpServer___ {
     }
 
     @io.qt.QtUninvokable
-    private QHttpServerRouterRule.RouterHandler createRouterHandler(GenericViewHandler viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
-            Object[] values = values(rem, metaTypes);
-            viewHandler.invoke(values, makeResponder(request, socket), request);
-        };
-    }
-
-    @io.qt.QtUninvokable
     private <R> QHttpServerRouterRule.RouterHandler createRouterHandler(
             java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler,
             io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
+        return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             R result = viewHandler.apply(values, request);
-            sendResponse(result, request, socket);
+            sendResponse(result, request, responder);
         };
     }
 
     @io.qt.QtUninvokable
     private <R> QHttpServerRouterRule.RouterHandler createRouterHandler(
             java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
+        return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             R result = viewHandler.apply(values);
-            sendResponse(result, request, socket);
-        };
-    }
-
-    @io.qt.QtUninvokable
-    private QHttpServerRouterRule.RouterHandler createRouterHandler(
-            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
-            Object[] values = values(rem, metaTypes);
-            viewHandler.accept(values, makeResponder(request, socket));
-        };
-    }
-
-    @io.qt.QtUninvokable
-    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
-            Object[] values = values(rem, metaTypes, makeResponder(request, socket));
-            try {
-                slotInvoker.invoke(viewHandler, values);
-            } catch (RuntimeException | Error e) {
-                throw e;
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    @io.qt.QtUninvokable
-    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequestResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
-            Object[] values = values(rem, metaTypes, request, makeResponder(request, socket));
-            try {
-                slotInvoker.invoke(viewHandler, values);
-            } catch (RuntimeException | Error e) {
-                throw e;
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    @io.qt.QtUninvokable
-    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponderRequest(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
-            Object[] values = values(rem, metaTypes, makeResponder(request, socket), request);
-            try {
-                slotInvoker.invoke(viewHandler, values);
-            } catch (RuntimeException | Error e) {
-                throw e;
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
+            sendResponse(result, request, responder);
         };
     }
 
     @io.qt.QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequest(
             ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
+        return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes, request);
             Object result;
             try {
@@ -210,14 +104,14 @@ class QHttpServer___ {
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
-            sendResponse(result, request, socket);
+            sendResponse(result, request, responder);
         };
     }
 
     @io.qt.QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandler(
             ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
-        return (rem, request, socket) -> {
+        return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             Object result;
             try {
@@ -227,7 +121,7 @@ class QHttpServer___ {
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
-            sendResponse(result, request, socket);
+            sendResponse(result, request, responder);
         };
     }
 
@@ -706,6 +600,233 @@ class QHttpServer___ {
                         createRouterHandlerRequest(viewHandler, info.slotInvoker, metaTypes)), metaTypes);
             }
         }
+    }
+}// class
+
+class QHttpServer_64__ {
+    @Override
+    protected void missingHandler(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+        missingHandler(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.nativeId(socket));
+    }
+
+    @Override
+    protected boolean handleRequest(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+        return handleRequest(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.nativeId(socket));
+    }
+
+    @io.qt.QtUninvokable
+    private void sendResponse(QHttpServerResponse response, QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+        sendResponse(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(response),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.nativeId(socket));
+    }
+
+    @io.qt.QtUninvokable
+    private void sendResponse(Object result, QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+        if (result instanceof QHttpServerResponse)
+            sendResponse((QHttpServerResponse) result, request, socket);
+        else if (result instanceof String)
+            sendResponse(new QHttpServerResponse((String) result), request, socket);
+        else if (result instanceof io.qt.core.QByteArray)
+            sendResponse(new QHttpServerResponse((io.qt.core.QByteArray) result), request, socket);
+        else if (result instanceof io.qt.core.QJsonArray)
+            sendResponse(new QHttpServerResponse((io.qt.core.QJsonArray) result), request, socket);
+        else if (result instanceof io.qt.core.QJsonObject)
+            sendResponse(new QHttpServerResponse((io.qt.core.QJsonObject) result), request, socket);
+        else if (result == null)
+            sendResponse(new QHttpServerResponse(QHttpServerResponder.StatusCode.NoContent), request, socket);
+        else
+            sendResponse(new QHttpServerResponse(result.toString()), request, socket);
+    }
+
+    @io.qt.QtUninvokable
+    private QHttpServerRouterRule.RouterHandler createRouterHandler(GenericViewHandler viewHandler,
+            io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, socket) -> {
+            Object[] values = values(rem, metaTypes);
+            viewHandler.invoke(values, makeResponder(request, socket), request);
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private QHttpServerRouterRule.RouterHandler createRouterHandler(
+            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
+            io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, socket) -> {
+            Object[] values = values(rem, metaTypes);
+            viewHandler.accept(values, makeResponder(request, socket));
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponder(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, socket) -> {
+            Object[] values = values(rem, metaTypes, makeResponder(request, socket));
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequestResponder(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, socket) -> {
+            Object[] values = values(rem, metaTypes, request, makeResponder(request, socket));
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponderRequest(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, socket) -> {
+            Object[] values = values(rem, metaTypes, makeResponder(request, socket), request);
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+}// class
+
+class QHttpServer_65__ {
+
+    @io.qt.QtUninvokable
+    private native void sendResponseFuture(long __this__nativeId, io.qt.core.QFuture<QHttpServerResponse> response, long request, long responder);
+
+    @Override
+    protected void missingHandler(QHttpServerRequest request, QHttpServerResponder responder) {
+        missingHandler(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
+    }
+
+    @Override
+    protected boolean handleRequest(QHttpServerRequest request, QHttpServerResponder responder) {
+        return handleRequest(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
+    }
+
+    @io.qt.QtUninvokable
+    private void sendResponse(QHttpServerResponse response, QHttpServerRequest request, QHttpServerResponder responder) {
+        sendResponse(QtJambi_LibraryUtilities.internal.nativeId(this),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(response),
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.nativeId(responder));
+    }
+
+    @io.qt.QtUninvokable
+    private void sendResponse(io.qt.core.QFuture<QHttpServerResponse> response, QHttpServerRequest request, QHttpServerResponder responder) {
+        sendResponseFuture(QtJambi_LibraryUtilities.internal.nativeId(this),
+                response,
+                QtJambi_LibraryUtilities.internal.checkedNativeId(request),
+                QtJambi_LibraryUtilities.internal.nativeId(responder));
+    }
+
+    @SuppressWarnings("unchecked")
+    @io.qt.QtUninvokable
+    private void sendResponse(Object result, QHttpServerRequest request, QHttpServerResponder responder) {
+        if (result instanceof QHttpServerResponse)
+            sendResponse((QHttpServerResponse) result, request, responder);
+        else if (result instanceof String)
+            sendResponse(new QHttpServerResponse((String) result), request, responder);
+        else if (result instanceof io.qt.core.QByteArray)
+            sendResponse(new QHttpServerResponse((io.qt.core.QByteArray) result), request, responder);
+        else if (result instanceof io.qt.core.QJsonArray)
+            sendResponse(new QHttpServerResponse((io.qt.core.QJsonArray) result), request, responder);
+        else if (result instanceof io.qt.core.QJsonObject)
+            sendResponse(new QHttpServerResponse((io.qt.core.QJsonObject) result), request, responder);
+        else if (result instanceof io.qt.core.QFuture)
+            sendResponse((io.qt.core.QFuture<QHttpServerResponse>) result, request, responder);
+        else if (result == null)
+            sendResponse(new QHttpServerResponse(QHttpServerResponder.StatusCode.NoContent), request, responder);
+        else
+            sendResponse(new QHttpServerResponse(result.toString()), request, responder);
+    }
+
+    @io.qt.QtUninvokable
+    private QHttpServerRouterRule.RouterHandler createRouterHandler(GenericViewHandler viewHandler,
+            io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, responder) -> {
+            Object[] values = values(rem, metaTypes);
+            viewHandler.invoke(values, responder, request);
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private QHttpServerRouterRule.RouterHandler createRouterHandler(
+            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
+            io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, responder) -> {
+            Object[] values = values(rem, metaTypes);
+            viewHandler.accept(values, responder);
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponder(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, responder) -> {
+            Object[] values = values(rem, metaTypes, responder);
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequestResponder(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, responder) -> {
+            Object[] values = values(rem, metaTypes, request, responder);
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @io.qt.QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponderRequest(
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+        return (rem, request, responder) -> {
+            Object[] values = values(rem, metaTypes, responder, request);
+            try {
+                slotInvoker.invoke(viewHandler, values);
+            } catch (RuntimeException | Error e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 }// class
 

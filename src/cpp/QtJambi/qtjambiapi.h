@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -306,24 +306,24 @@ QTJAMBI_EXPORT bool isQByteArrayViewObject(JNIEnv *env, jobject obj);
 
 QTJAMBI_EXPORT bool isJavaString(JNIEnv *env, jobject obj);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership = false);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, const std::type_info& typeId, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership = false);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, bool makeCopyOfValueTypes, bool cppOwnership = false);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, jclass clazz, bool makeCopyOfValueTypes, bool invalidateAfterUse = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, jclass clazz, bool makeCopyOfValueTypes, bool cppOwnership = false);
 
 template<typename T>
-jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, bool makeCopyOfValueTypes, bool invalidateAfterUse = false)
+jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, bool makeCopyOfValueTypes, bool cppOwnership = false)
 {
-    return convertNativeToJavaObject(env, qt_object, typeid(T), makeCopyOfValueTypes, invalidateAfterUse);
+    return convertNativeToJavaObject(env, qt_object, typeid(T), makeCopyOfValueTypes, cppOwnership);
 }
 
 template<typename T>
-jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, const char *className, bool makeCopyOfValueTypes, bool invalidateAfterUse = false)
+jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, const char *className, bool makeCopyOfValueTypes, bool cppOwnership = false)
 {
-    return convertNativeToJavaObject(env, qt_object, className, typeid(T), makeCopyOfValueTypes, invalidateAfterUse);
+    return convertNativeToJavaObject(env, qt_object, className, typeid(T), makeCopyOfValueTypes, cppOwnership);
 }
 
 QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const char *className);

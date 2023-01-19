@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,10 +37,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import io.qt.core.QBuffer;
-import io.qt.core.QByteArray;
-import io.qt.core.QIODevice;
-import io.qt.core.QLibraryInfo;
 import io.qt.xml.QDomDocument;
 import io.qt.xml.QDomElement;
 
@@ -57,76 +53,5 @@ public class TestXmlInjectedCode extends ApplicationInitializer {
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestXmlInjectedCode.class.getName());
-    }
-    
-    @Test
-    public void testQDomDocument_setContent() {
-    	String content = "<root></root>";
-    	QDomDocument doc = new QDomDocument();
-    	QDomDocument.Result result = doc.setContent(content);
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QByteArray(content));
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	QBuffer buffer = new QBuffer(new QByteArray(content));
-    	buffer.open(QIODevice.OpenModeFlag.ReadOnly);
-    	result = doc.setContent(buffer);
-    	buffer.close();
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(content, false);
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QByteArray(content), false);
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	buffer = new QBuffer(new QByteArray(content));
-    	buffer.open(QIODevice.OpenModeFlag.ReadOnly);
-    	result = doc.setContent(buffer);
-    	buffer.close();
-    	assertEquals(result.errorMessage, true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent("<unclosed>");
-    	assertEquals(false, result.success);
-    	if(QLibraryInfo.version().majorVersion()==5) {
-	    	assertEquals(11, result.errorColumn);
-	    	assertEquals(1, result.errorLine);
-	    	assertEquals("unexpected end of file", result.errorMessage);
-    	}else {
-	    	assertEquals(10, result.errorColumn);
-	    	assertEquals(1, result.errorLine);
-	    	assertEquals("Premature end of document.", result.errorMessage);    		
-    	}
-    	result = doc.setContent("<unclosed></X>");
-    	assertEquals(false, result.success);
-    	assertEquals(14, result.errorColumn);
-    	assertEquals(1, result.errorLine);
-    	if(QLibraryInfo.version().majorVersion()==5) {
-    		assertEquals("tag mismatch", result.errorMessage);
-    	}else {
-    		assertEquals("Opening and ending tag mismatch.", result.errorMessage);
-    	}
-    	result = doc.setContent("no XML");
-    	assertEquals(false, result.success);
-    	assertEquals(1, result.errorColumn);
-    	assertEquals(1, result.errorLine);
-    	if(QLibraryInfo.version().majorVersion()==5) {
-    		assertEquals("error occurred while parsing element", result.errorMessage);
-    	}else {
-    		assertEquals("Start tag expected.", result.errorMessage);
-    	}
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import io.qt.QtInvokable;
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.General;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
@@ -106,6 +107,8 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
         QWebEngineScriptCollection _userScripts = QtWebEngineQuick.toWebEngineScriptCollection(userScripts);
         Assert.assertTrue(_settings!=null);
         Assert.assertTrue(_userScripts!=null);
+        Assert.assertTrue(General.internalAccess.isSplitOwnership(_settings));
+        Assert.assertTrue(General.internalAccess.isSplitOwnership(_userScripts));
         boolean value = QVariant.toBoolean(settings.property("autoLoadImages"));
         _settings.setAttribute(QWebEngineSettings.WebAttribute.AutoLoadImages, !value);
         Assert.assertEquals(!value, settings.property("autoLoadImages"));

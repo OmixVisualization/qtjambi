@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -56,6 +56,7 @@ import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
 import io.qt.autotests.generated.ContainerTest;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.QHash_int;
 import io.qt.autotests.generated.QList_int;
 import io.qt.autotests.generated.QMap_int;
@@ -557,6 +558,10 @@ public class TestContainers extends ApplicationInitializer {
     	assertFalse(tulip.constHash().find(20).keyValuePair().isPresent());
     	assertEquals(new QPoint(5,6), tulip.constHash().find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
     	assertEquals(Arrays.asList(2), mapRef.keys());
+        mapRef.dispose();
+        Assert.assertTrue(mapRef.isDisposed());
+        mapRef = tulip.hashRef();
+    	assertEquals(Arrays.asList(2), mapRef.keys());
     }
     
     @Test
@@ -571,6 +576,11 @@ public class TestContainers extends ApplicationInitializer {
     	mapRef.removeAll(1);
     	assertFalse(tulip.constMultiHash().find(20).keyValuePair().isPresent());
     	assertEquals(new QPoint(5,6), tulip.constMultiHash().find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
+    	assertEquals(Arrays.asList(2), mapRef.keys());
+        Assert.assertTrue(General.internalAccess.isSplitOwnership(mapRef));
+        mapRef.dispose();
+        Assert.assertTrue(mapRef.isDisposed());
+        mapRef = tulip.multiHashRef();
     	assertEquals(Arrays.asList(2), mapRef.keys());
     }
     

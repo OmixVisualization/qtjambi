@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -295,6 +295,20 @@ public final class QtUtilities {
      * This method can only be called from inside the main thread and before calling {@link QCoreApplication#exec()}.
      */
     public static native boolean reinstallEventNotifyCallback();
+    
+    /**
+     * Third-party libraries must not overwrite Java's installed signal handlers. 
+     * Several of these signal handlers are crucial for JVM to work.
+     * This method saves the installed signal handlers for later restoring by {@link #restoreUnixSignalHandlers()}.
+     */
+    public static native boolean saveUnixSignalHandlers();
+    
+    /**
+     * Third-party libraries must not overwrite Java's installed signal handlers. 
+     * Several of these signal handlers are crucial for JVM to work.
+     * This method restores the signal handlers previously saved by {@link #saveUnixSignalHandlers()}.
+     */
+    public static native boolean restoreUnixSignalHandlers();
     
     /**
      * Return the version of QtJambi

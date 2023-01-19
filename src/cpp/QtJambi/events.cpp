@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -554,10 +554,18 @@ void disableThreadAffinity(){
     UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void onDynamicPropertyChange(QObject *receiver, QDynamicPropertyChangeEvent* event);
+#endif
 
 bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 {
     switch (event->type()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    case QEvent::DynamicPropertyChange:
+        onDynamicPropertyChange(receiver, dynamic_cast<QDynamicPropertyChangeEvent*>(event));
+        break;
+#endif
     case QEvent::ChildAdded:
     case QEvent::ChildRemoved:
         {

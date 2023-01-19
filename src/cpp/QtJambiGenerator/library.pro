@@ -159,7 +159,10 @@ win32-msvc* {
     CONFIG += embed_manifest_dll force_embed_manifest
 }
 
-mac:{
+macx:{
+    QMAKE_TARGET_BUNDLE_PREFIX = io.qtjambi
+    QMAKE_SONAME_PREFIX = @rpath
+    CONFIG += no_default_rpath no_qt_rpath
     if($$QTJAMBI_GENERATE_FRAMEWORKS): CONFIG+=lib_bundle
     !isEmpty(QTJAMBI_EXTENSION_SHLIB): QMAKE_EXTENSION_SHLIB = $$QTJAMBI_EXTENSION_SHLIB
     QMAKE_CXXFLAGS += -fpermissive

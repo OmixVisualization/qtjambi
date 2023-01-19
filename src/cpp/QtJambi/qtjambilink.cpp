@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,6 +39,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "registryutil_p.h"
 #include "threadutils_p.h"
 #include "qtjambimetaobject_p.h"
+#include "jnienvironment.h"
 
 #include <cstring>
 #include <QDebug>
@@ -362,6 +363,72 @@ ValueOwnerUserData::~ValueOwnerUserData(){
 
 void ValueOwnerUserData::addDeleter(const std::function<void()>& deleter){
     m_deleters << deleter;
+}
+
+QTJAMBI_OBJECTUSERDATA_ID_IMPL(,DependencyManagerUserData::)
+
+DependencyManagerUserData::DependencyManagerUserData() : QtJambiObjectData(), m_lock(QReadWriteLock::Recursive) {
+}
+
+DependencyManagerUserData::~DependencyManagerUserData(){
+    QList<QWeakPointer<QtJambiLink>> dependentObjects;
+    {
+        QWriteLocker locker(&m_lock);
+        dependentObjects.swap(m_dependentObjects);
+    }
+    if(!dependentObjects.isEmpty()){
+        if(JniEnvironment env{1024}){
+            clear(env, dependentObjects);
+        }
+    }
+}
+
+void DependencyManagerUserData::clear(JNIEnv* env){
+    QList<QWeakPointer<QtJambiLink>> dependentObjects;
+    {
+        QWriteLocker locker(&m_lock);
+        dependentObjects.swap(m_dependentObjects);
+    }
+    clear(env, dependentObjects);
+}
+
+void DependencyManagerUserData::clear(JNIEnv* env, QList<QWeakPointer<QtJambiLink>>& dependentObjects){
+    for(const QWeakPointer<QtJambiLink>& weakLink : dependentObjects){
+        if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
+            link->invalidate(env);
+        }
+    }
+}
+
+void DependencyManagerUserData::addDependentObject(const QWeakPointer<QtJambiLink>& dependent){
+    QWriteLocker locker(&m_lock);
+    m_dependentObjects << dependent;
+    m_dependentObjects.removeAll({});
+}
+
+void DependencyManagerUserData::removeDependentObject(const QWeakPointer<QtJambiLink>& dependent){
+    QWriteLocker locker(&m_lock);
+    m_dependentObjects.removeAll(dependent);
+    m_dependentObjects.removeAll({});
+}
+
+bool DependencyManagerUserData::hasDependencies() const{
+    return !m_dependentObjects.isEmpty();
+}
+
+DependencyManagerUserData* DependencyManagerUserData::instance(const QObject* object, bool forceConstruction){
+    DependencyManagerUserData* dm{nullptr};
+    {
+        QReadLocker locker(QtJambiLinkUserData::lock());
+        dm = QTJAMBI_GET_OBJECTUSERDATA(DependencyManagerUserData, object);
+    }
+    if(!dm && forceConstruction){
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        if(!(dm = QTJAMBI_GET_OBJECTUSERDATA(DependencyManagerUserData, object))){
+            QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, const_cast<QObject*>(object), dm = new DependencyManagerUserData());
+        }
+    }
+    return dm;
 }
 
 static volatile int sObjectCacheMode = 2;
@@ -1175,10 +1242,10 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedObject(JNIEnv 
     }else{
         qtJambiLink->init(env);
     }
+    qtJambiLink->setSplitOwnership(env);
     if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
         _owner->registerDependentObject(qtJambiLink->getStrongPointer());
     }
-    qtJambiLink->setSplitOwnership(env);
     return qtJambiLink->getStrongPointer();
 }
 
@@ -1211,10 +1278,10 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
     }else{
         qtJambiLink->init(env);
     }
+    qtJambiLink->setSplitOwnership(env);
     if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
         _owner->registerDependentObject(qtJambiLink->getStrongPointer());
     }
-    qtJambiLink->setSplitOwnership(env);
     return qtJambiLink->getStrongPointer();
 }
 
@@ -1247,10 +1314,10 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
     }else{
         qtJambiLink->init(env);
     }
+    qtJambiLink->setSplitOwnership(env);
     if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
         _owner->registerDependentObject(qtJambiLink->getStrongPointer());
     }
-    qtJambiLink->setSplitOwnership(env);
     return qtJambiLink->getStrongPointer();
 }
 
@@ -1833,7 +1900,7 @@ void MetaTypedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -1974,16 +2041,38 @@ Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gDependencyLock, (QReadWriteLock::Recu
 typedef QMultiHash<QSharedPointer<QtJambiLink>, QWeakPointer<QtJambiLink>> DependencyHash;
 Q_GLOBAL_STATIC(DependencyHash, gDependencies)
 
+void QtJambiLink::registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
+    if(object){
+        DependencyManagerUserData* dm = DependencyManagerUserData::instance(object);
+        dm->addDependentObject(link);
+        if(link->ownership()!=Ownership::Java)
+            link->m_flags.setFlag(Flag::NoNativeDeletion);
+    }
+}
+
+void QtJambiLink::unregisterDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
+    if(object){
+        DependencyManagerUserData* dm = DependencyManagerUserData::instance(object);
+        dm->removeDependentObject(link);
+        link->m_flags.setFlag(Flag::NoNativeDeletion, false);
+    }
+}
+
 void QtJambiLink::registerDependentObject(const QSharedPointer<QtJambiLink>& link)
 {
     if(!link->m_flags.testFlag(Flag::IsDependent)){
-        if(!m_flags.testFlag(Flag::HasDependencies))
-            m_flags.setFlag(Flag::HasDependencies);
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        QWeakPointer<QtJambiLink> weakLink(link);
-        if(!gDependencies->contains(m_this, weakLink))
-            gDependencies->insert(m_this, weakLink);
+        if(isQObject()){
+            registerDependentObject(qobject(), link);
+        }else{
+            if(!m_flags.testFlag(Flag::HasDependencies))
+                m_flags.setFlag(Flag::HasDependencies);
+            if(link->ownership()!=Ownership::Java)
+                link->m_flags.setFlag(Flag::NoNativeDeletion);
+            QWriteLocker locker(gDependencyLock());
+            Q_UNUSED(locker)
+            gDependencies->insert(m_this, link);
+            gDependencies->remove(m_this, QWeakPointer<QtJambiLink>{});
+        }
         link->m_flags.setFlag(Flag::IsDependent);
     }
 }
@@ -1991,28 +2080,42 @@ void QtJambiLink::registerDependentObject(const QSharedPointer<QtJambiLink>& lin
 void QtJambiLink::unregisterDependentObject(const QSharedPointer<QtJambiLink>& link)
 {
     if(link->m_flags.testFlag(Flag::IsDependent)){
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        gDependencies->remove(m_this, link);
-        if(!gDependencies->contains(m_this))
-            m_flags.setFlag(Flag::HasDependencies, false);
+        if(isQObject()){
+            unregisterDependentObject(qobject(), link);
+        }else{
+            QWriteLocker locker(gDependencyLock());
+            Q_UNUSED(locker)
+            gDependencies->remove(m_this, link);
+            gDependencies->remove(m_this, QWeakPointer<QtJambiLink>{});
+            if(!gDependencies->contains(m_this))
+                m_flags.setFlag(Flag::HasDependencies, false);
+        }
         link->m_flags.setFlag(Flag::IsDependent, false);
+        link->m_flags.setFlag(Flag::NoNativeDeletion, false);
     }
 }
 
 void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
 {
-    if(m_flags.testFlag(Flag::HasDependencies)){
-        QList<QWeakPointer<QtJambiLink>> dependentObjects;
-        {
-            QWriteLocker locker(gDependencyLock());
-            Q_UNUSED(locker)
-            dependentObjects = gDependencies->values(m_this);
-            gDependencies->remove(m_this);
+    if(isQObject()){
+        if(QObject* obj = qobject()){
+            if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(obj, false)){
+                dm->clear(env);
+            }
         }
-        for(const QWeakPointer<QtJambiLink>& weakLink : dependentObjects){
-            if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
-                link->invalidate(env);
+    }else{
+        if(m_flags.testFlag(Flag::HasDependencies)){
+            QList<QWeakPointer<QtJambiLink>> dependentObjects;
+            {
+                QWriteLocker locker(gDependencyLock());
+                Q_UNUSED(locker)
+                dependentObjects = gDependencies->values(m_this);
+                gDependencies->remove(m_this);
+            }
+            for(const QWeakPointer<QtJambiLink>& weakLink : dependentObjects){
+                if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
+                    link->invalidate(env);
+                }
             }
         }
     }
@@ -2048,7 +2151,7 @@ void PointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             m_pointer = nullptr;
             dispose();
             Java::Runtime::RuntimeException::throwNew(env, "Unable to delete object due to missing deleter or meta type information." QTJAMBI_STACKTRACEINFO );
@@ -2144,7 +2247,7 @@ void MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QTJAMBI_DEBUG_TRACE_WITH_THREAD("call QMetaType::destroy()")
@@ -2171,7 +2274,7 @@ void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -2248,7 +2351,7 @@ void DeletableOwnedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -2321,7 +2424,7 @@ void DeletablePointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -2394,7 +2497,7 @@ void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
-        if(!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QTJAMBI_DEBUG_TRACE_WITH_THREAD("call destructor_function")
@@ -2529,7 +2632,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
 
         if(isInitialized()){
-            if (!m_flags.testFlag(Flag::IsDependent) && (m_flags.testFlag(Flag::JavaOwnership) || forced)) {
+            if (!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)) {
                 QThread *currentThread = QThread::currentThread();
                 QThread *objectThread = m_pointer->thread();
                 // Explicit dispose from current thread, delete object

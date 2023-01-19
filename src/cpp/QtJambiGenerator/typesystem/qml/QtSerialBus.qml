@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -46,6 +46,31 @@ TypeSystem{
     
     Rejection{
         className: "QModbusPdu::IsType"
+    }
+
+    NamespaceType{
+        name: "QtCanBus"
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QtCanBus::DataSource"
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QtCanBus::DataFormat"
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QtCanBus::DataEndian"
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QtCanBus::MultiplexState"
+        since: [6,5]
     }
     
     ObjectType{
@@ -985,6 +1010,62 @@ TypeSystem{
         name: "QCanBusDevice::CanBusStatusGetter"
         generate: false
         using: "std::function<QCanBusDevice::CanBusStatus()>"
+    }
+
+    ObjectType{
+        name: "QCanDbcFileParser"
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QCanDbcFileParser::Error"
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QCanFrameProcessor"
+        ModifyFunction{
+            signature: "operator=(const QCanFrameProcessor &)"
+            remove: RemoveFlag.All
+        }
+        since: [6,5]
+    }
+
+    EnumType{
+        name: "QCanFrameProcessor::Error"
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QCanFrameProcessor::ParseResult"
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QCanMessageDescription"
+        ModifyFunction{
+            signature: "operator=(const QCanMessageDescription &)"
+            remove: RemoveFlag.All
+        }
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QCanSignalDescription"
+        ModifyFunction{
+            signature: "operator=(const QCanSignalDescription &)"
+            remove: RemoveFlag.All
+        }
+        since: [6,5]
+    }
+
+    ValueType{
+        name: "QCanUniqueIdDescription"
+        ModifyFunction{
+            signature: "operator=(const QCanUniqueIdDescription &)"
+            remove: RemoveFlag.All
+        }
+        since: [6,5]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: function '*::CalcFuncPtr' is specified in typesystem, but not declared"}
