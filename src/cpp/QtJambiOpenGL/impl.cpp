@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,7 +31,9 @@
 
 #include <QtOpenGL/QOpenGLVersionFunctionsFactory>
 #include <QtOpenGL/qopenglversionfunctions.h>
+#if defined(QT_OPENGL_ES_2)
 #include <QtOpenGL/QOpenGLFunctions_ES2>
+#endif
 #include <QtJambi/qtjambi_cast.h>
 
 QAbstractOpenGLFunctions* qtjambi_QOpenGLVersionFunctionsFactory_get(JNIEnv *__jni_env, jclass type, QOpenGLContext* context){

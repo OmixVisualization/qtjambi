@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -194,7 +194,7 @@ QRecursiveMutex* functionPointerLock(){
     return gMutex();
 }
 
-typedef QFunctionPointer* (*Initialize)(QFunctionPointer onNull, QVector<QFunctionPointer>& functions);
+typedef QFunctionPointer* (*Initialize)(QFunctionPointer onNull, std::vector<QFunctionPointer>& functions);
 
 #ifdef Q_OS_ANDROID
 #define unique_id(id) qHash(QLatin1String((id).name()))
@@ -252,13 +252,13 @@ QFunctionPointer extractFunction(
         std::unique_ptr<QLibrary> library(new QLibrary(tmpFile));
         if(library->load()){
             if(Initialize initialize = Initialize(library->resolve("initialize"))){
-                QVector<QFunctionPointer> functions;
+                std::vector<QFunctionPointer> functions;
                 QFunctionPointer* callers = initialize(on_null_ptr, functions);
                 Q_ASSERT(callers);
                 QSet<size_type> freeIndexes;
                 QVector<LibraryFunction> libFunctions;
                 libFunctions.resize(functions.size());
-                for(size_type i=0; i<functions.size(); ++i){
+                for(std::vector<QFunctionPointer>::size_type i=0; i<functions.size(); ++i){
                     freeIndexes << i;
                     LibraryFunction& lf = libFunctions[i];
                     lf.initialize(callers + i, functions[i]);

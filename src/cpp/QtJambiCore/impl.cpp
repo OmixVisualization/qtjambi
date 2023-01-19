@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -56,6 +56,13 @@ QT_WARNING_DISABLE_DEPRECATED
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 #include <QtCore/qcoreapplication_platform.h>
 #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_CONFIG(permissions)
+#include <QtCore/QPermission>
+#endif
+#endif
+
 
 #include <QtJambi/qtjambi_cast.h>
 
@@ -5589,6 +5596,99 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_CONFIG(permissions)
+struct Permission{
+    Qt::PermissionStatus m_status = Qt::PermissionStatus::Undetermined;
+    QVariant m_data;
+};
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPermission_setData)
+(JNIEnv * __jni_env, jclass, QtJambiNativeID __this_id, jobject value)
+{
+    QTJAMBI_TRY{
+        Permission* permission = QtJambiAPI::objectFromNativeId<Permission>(__this_id);
+        QtJambiAPI::checkPointer(__jni_env, permission);
+        permission->m_data = QtJambiAPI::convertJavaObjectToQVariant(__jni_env, value);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPermission_data)
+(JNIEnv * __jni_env, jclass, QtJambiNativeID __this_id)
+{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
+        Permission* permission = QtJambiAPI::objectFromNativeId<Permission>(__this_id);
+        QtJambiAPI::checkPointer(__jni_env, permission);
+        result = QtJambiAPI::convertQVariantToJavaObject(__jni_env, permission->m_data);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_requestPermissionSlot0)
+(JNIEnv * __jni_env, jclass, QtJambiNativeID this_id, QtJambiNativeID permission_id, QtJambiNativeID context_id, jobject slot)
+{
+    QTJAMBI_TRY{
+        QCoreApplication *__qt_this = QtJambiAPI::objectFromNativeId<QCoreApplication>(this_id);
+        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QPermission *permission = QtJambiAPI::objectFromNativeId<QPermission>(permission_id);
+        QtJambiAPI::checkPointer(__jni_env, permission);
+        QObject *context = QtJambiAPI::objectFromNativeId<QObject>(context_id);
+        JObjectWrapper _slot(__jni_env, slot);
+        auto functor = [_slot](const QPermission &){
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    Java::QtCore::QMetaObject$Slot0::invoke(env, _slot.object());
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.raiseInJava(env);
+                }QTJAMBI_TRY_END
+            }
+        };
+        if(context)
+            __qt_this->requestPermission<decltype(functor)>(*permission, context, functor);
+        else
+            __qt_this->requestPermission<decltype(functor)>(*permission, functor);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_requestPermissionSlot1)
+(JNIEnv * __jni_env, jclass, QtJambiNativeID this_id, QtJambiNativeID permission_id, QtJambiNativeID context_id, jobject slot)
+{
+    QTJAMBI_TRY{
+        QCoreApplication *__qt_this = QtJambiAPI::objectFromNativeId<QCoreApplication>(this_id);
+        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QPermission *permission = QtJambiAPI::objectFromNativeId<QPermission>(permission_id);
+        QtJambiAPI::checkPointer(__jni_env, permission);
+        QObject *context = QtJambiAPI::objectFromNativeId<QObject>(context_id);
+        JObjectWrapper _slot(__jni_env, slot);
+        auto functor = [_slot](const QPermission & perm){
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    Java::QtCore::QMetaObject$Slot0::invoke(env, _slot.object(), qtjambi_cast<jobject>(env, perm));
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.raiseInJava(env);
+                }QTJAMBI_TRY_END
+            }
+        };
+        if(context)
+            __qt_this->requestPermission<decltype(functor)>(*permission, context, functor);
+        else
+            __qt_this->requestPermission<decltype(functor)>(*permission, functor);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+#endif
+#endif
 
 void initialize_meta_info_QFutureInterface();
 

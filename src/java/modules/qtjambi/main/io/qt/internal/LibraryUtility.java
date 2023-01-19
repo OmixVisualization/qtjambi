@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -96,12 +96,14 @@ final class LibraryUtility {
 	private static Boolean dontUseQtFrameworks = operatingSystem==OperatingSystem.MacOS ? null : Boolean.FALSE;
     
     private static boolean dontSearchDeploymentSpec = false;
+    private static final boolean useStaticLibs = operatingSystem==OperatingSystem.IOS 
+    											 || Boolean.getBoolean("io.qt.staticlibs");
     private static final boolean noNativeDeployment = Boolean.getBoolean("io.qt.no-native-deployment") 
     		|| Boolean.getBoolean("qtjambi.no-native-deployment")
     		|| Boolean.getBoolean("io.qt.no-deployment-spec") 
     		|| Boolean.getBoolean("qtjambi.no-deployment-spec")
     		|| operatingSystem==OperatingSystem.Android
-    		|| operatingSystem==OperatingSystem.IOS;
+    		|| useStaticLibs;
     private static final Set<URL> loadedNativeDeploymentUrls = new HashSet<>();
     private static final List<LibraryBundle> nativeDeployments = new ArrayList<>();
 
@@ -907,7 +909,7 @@ final class LibraryUtility {
     @NativeAccess
 	@QtUninvokable
     private static void extractContainerAccessLib(String library) {
-    	if(!noNativeDeployment) {
+    	if(!noNativeDeployment && !useStaticLibs) {
 	    	String libraryPlatformName;
 	    	switch (operatingSystem) {
 	        case Windows: 
@@ -915,11 +917,9 @@ final class LibraryUtility {
 		                ? library + "d.dll"  // "QtFood4.dll"
 		                : library + ".dll");
 	        	break;
+	        case IOS: 
 	        case MacOS: 
 				libraryPlatformName = "plugins/containeraccess/lib" + library + ".dylib";
-	        	break;
-	        case IOS: 
-				libraryPlatformName = "plugins/containeraccess/lib" + library + ".a";
 	        	break;
 	        case Android:
 	        	switch (architecture) {
@@ -1016,54 +1016,56 @@ final class LibraryUtility {
 
     static void loadLibrary(String library) {
     	String libraryPlatformName;
-    	switch (operatingSystem) {
-        case IOS: 
-        	libraryPlatformName = library;
-        	break;
-        case Windows: 
-        	libraryPlatformName = library + ".dll";
-        	break;
-        case MacOS: 
-        	{
-        		Availability availability = getLibraryAvailability(library, "lib" + library + ".jnilib", Collections.emptyList());
-        		if(availability.isAvailable()) {
-        			libraryPlatformName = "lib" + library + ".jnilib";
-        		}else {
-        			availability = getLibraryAvailability(library, "lib" + library + ".dylib", Collections.emptyList());
-        			if(availability.isAvailable()) {
-        				libraryPlatformName = "lib" + library + ".dylib";
-        			}else {
-        				libraryPlatformName = library + ".framework/" + library;
-        			}
-        		}
-        	}
-        	break;
-        case Android:
-        	switch (architecture) {
-			case arm:
-				libraryPlatformName = library + "_armeabi-v7a";
-				break;
-			case arm64:
-				libraryPlatformName = library + "_arm64-v8a";
-				break;
-			case x86:
-				libraryPlatformName = library + "_x86";
-				break;
-			case x86_64:
-				libraryPlatformName = library + "_x86_64";
-				break;
+    	if(useStaticLibs) {
+    		libraryPlatformName = library;
+    	}else {
+	    	switch (operatingSystem) {
+	        case Windows: 
+	        	libraryPlatformName = library + ".dll";
+	        	break;
+	        case IOS: 
+	        case MacOS: 
+	        	{
+	        		Availability availability = getLibraryAvailability(library, library + ".framework/" + library, Collections.emptyList());
+	        		if(availability.isAvailable()) {
+	        			libraryPlatformName = library + ".framework/" + library;
+	        		}else {
+	        			availability = getLibraryAvailability(library, "lib" + library + ".dylib", Collections.emptyList());
+	        			if(availability.isAvailable()) {
+	        				libraryPlatformName = "lib" + library + ".dylib";
+	        			}else {
+	        				libraryPlatformName = "lib" + library + ".jnilib";
+	        			}
+	        		}
+	        	}
+	        	break;
+	        case Android:
+	        	switch (architecture) {
+				case arm:
+					libraryPlatformName = library + "_armeabi-v7a";
+					break;
+				case arm64:
+					libraryPlatformName = library + "_arm64-v8a";
+					break;
+				case x86:
+					libraryPlatformName = library + "_x86";
+					break;
+				case x86_64:
+					libraryPlatformName = library + "_x86_64";
+					break;
+				default:
+					libraryPlatformName = library;
+					break;
+				}
+	//        	libraryPlatformName = "lib" + libraryPlatformName + ".so";
+	        	break;
+	        case Linux:
+	        	libraryPlatformName = "lib" + library + ".so";
+	        	break;
 			default:
-				libraryPlatformName = library;
-				break;
-			}
-//        	libraryPlatformName = "lib" + libraryPlatformName + ".so";
-        	break;
-        case Linux:
-        	libraryPlatformName = "lib" + library + ".so";
-        	break;
-		default:
-			return;
-        }
+				return;
+	        }
+    	}
     	loadNativeLibrary(Object.class, getLibraryAvailability(library, libraryPlatformName, Collections.emptyList()), null);
     }
     
@@ -1488,7 +1490,7 @@ final class LibraryUtility {
     
     private static Availability getLibraryAvailability(String libraryRawName, String libFormat, List<String> replacements) {
     	if(operatingSystem!=OperatingSystem.Android
-    			&& operatingSystem!=OperatingSystem.IOS) {
+    			&& !useStaticLibs) {
 	    	List<String> libraryPaths = null;
 	        // search active deploymentSpec for existance of library
 	        Iterator<String> iter = replacements.iterator();
@@ -1553,7 +1555,7 @@ final class LibraryUtility {
         try {
         	if(loadedLibraries.contains(availability.libFormat))
         		return null;
-        	if(operatingSystem==OperatingSystem.Android || operatingSystem==OperatingSystem.IOS) {
+        	if(operatingSystem==OperatingSystem.Android || useStaticLibs) {
     	        ClassLoader callerClassLoader = callerClass.getClassLoader();
         		if(callerClassLoader==LibraryUtility.class.getClassLoader()
                 		|| callerClassLoader==Object.class.getClassLoader()) {
@@ -2222,94 +2224,97 @@ final class LibraryUtility {
         if(prefix!=null)
         	lib = prefix + lib;
     	replacements.clear();
-        switch (operatingSystem) {
-        case Windows: {
-        	if(version.length>0)
-        		replacements.add(""+version[0]);
-        	replacements.add("");
-        	if (configuration == LibraryBundle.Configuration.Debug)
-                lib += "d";
-    		return lib + "%1$s.dll";  // "foobar1.dll"
-        }
-        case MacOS: 
-        	if(dontUseQtJambiFrameworks) {
-            	switch(version.length) {
-            	default:
-            		replacements.add("."+version[0]);
-            		replacements.add("."+version[0]+"."+version[1]);
-        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-            		replacements.add("");
-            		break;
-            	case 2:
-            		replacements.add("."+version[0]);
-            		replacements.add("."+version[0]+"."+version[1]);
-            		replacements.add("");
-            		break;
-            	case 1:
-            		replacements.add("."+version[0]);
-            	case 0: 
-            		replacements.add("");
-            		break;
-            	}
-            	if (configuration == LibraryBundle.Configuration.Debug)
-                    lib += "_debug";
-            	return "lib" + lib + "%1$s.jnilib";
-        	}else {
-            	switch(version.length) {
-            	default:
-            		replacements.add(""+version[0]);
-            	case 0: 
-            		replacements.add("6");
-            		break;
-            	}
-            	if (configuration == LibraryBundle.Configuration.Debug)
-                    lib += "_debug";
-            	return lib + ".framework/Versions/%1$s/"+lib;
-        	}
-        case Linux:
-        	switch(version.length) {
-        	default:
-    			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-        	case 2:
-        		replacements.add("."+version[0]+"."+version[1]);
-        	case 1:
-        		replacements.add("."+version[0]);
-        	case 0: 
-        		replacements.add("");
-        		break;
-        	}
-        	if (configuration == LibraryBundle.Configuration.Debug)
-        		return "lib" + lib + "_debug.so%1$s";
-        	else return "lib" + lib + ".so%1$s";
-		case IOS: 
-			return lib;
-		case Android: 
-			if (configuration == LibraryBundle.Configuration.Debug)
-				switch(architecture) {
-	        	case arm:
-	        		return lib + "_debug_armeabi-v7a";
-	        	case arm64:
-	        		return lib + "_debug_arm64-v8a";
-	        	case x86_64:
-	        		return lib + "_debug_x86_64";
-	        	default:
-	        		return lib + "_debug_x86";
+    	if(useStaticLibs) {
+    		return lib;
+    	}else {
+	        switch (operatingSystem) {
+	        case Windows: {
+	        	if(version.length>0)
+	        		replacements.add(""+version[0]);
+	        	replacements.add("");
+	        	if (configuration == LibraryBundle.Configuration.Debug)
+	                lib += "d";
+	    		return lib + "%1$s.dll";  // "foobar1.dll"
+	        }
+			case IOS: 
+	        case MacOS: 
+	        	if(dontUseQtJambiFrameworks) {
+	            	switch(version.length) {
+	            	default:
+	            		replacements.add("."+version[0]);
+	            		replacements.add("."+version[0]+"."+version[1]);
+	        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+	            		replacements.add("");
+	            		break;
+	            	case 2:
+	            		replacements.add("."+version[0]);
+	            		replacements.add("."+version[0]+"."+version[1]);
+	            		replacements.add("");
+	            		break;
+	            	case 1:
+	            		replacements.add("."+version[0]);
+	            	case 0: 
+	            		replacements.add("");
+	            		break;
+	            	}
+	            	if (configuration == LibraryBundle.Configuration.Debug)
+	                    lib += "_debug";
+	            	return "lib" + lib + "%1$s.jnilib";
+	        	}else {
+	            	switch(version.length) {
+	            	default:
+	            		replacements.add(""+version[0]);
+	            	case 0: 
+	            		replacements.add("6");
+	            		break;
+	            	}
+	            	if (configuration == LibraryBundle.Configuration.Debug)
+	                    lib += "_debug";
+	            	return lib + ".framework/Versions/%1$s/"+lib;
 	        	}
-			else
-	        	switch(architecture) {
-	        	case arm:
-	        		return lib + "_armeabi-v7a";
-	        	case arm64:
-	        		return lib + "_arm64-v8a";
-	        	case x86_64:
-	        		return lib + "_x86_64";
+	        case Linux:
+	        	switch(version.length) {
 	        	default:
-	        		return lib + "_x86";
+	    			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+	        	case 2:
+	        		replacements.add("."+version[0]+"."+version[1]);
+	        	case 1:
+	        		replacements.add("."+version[0]);
+	        	case 0: 
+	        		replacements.add("");
+	        		break;
 	        	}
-		default:
-			break;
-        }
-        throw new RuntimeException("Unreachable statement");
+	        	if (configuration == LibraryBundle.Configuration.Debug)
+	        		return "lib" + lib + "_debug.so%1$s";
+	        	else return "lib" + lib + ".so%1$s";
+			case Android: 
+				if (configuration == LibraryBundle.Configuration.Debug)
+					switch(architecture) {
+		        	case arm:
+		        		return lib + "_debug_armeabi-v7a";
+		        	case arm64:
+		        		return lib + "_debug_arm64-v8a";
+		        	case x86_64:
+		        		return lib + "_debug_x86_64";
+		        	default:
+		        		return lib + "_debug_x86";
+		        	}
+				else
+		        	switch(architecture) {
+		        	case arm:
+		        		return lib + "_armeabi-v7a";
+		        	case arm64:
+		        		return lib + "_arm64-v8a";
+		        	case x86_64:
+		        		return lib + "_x86_64";
+		        	default:
+		        		return lib + "_x86";
+		        	}
+			default:
+				break;
+	        }
+	        throw new RuntimeException("Unreachable statement");
+    	}
     }
 
 
@@ -2327,102 +2332,105 @@ final class LibraryUtility {
     	}
         String prefix = qtXlibName.startsWith("lib") ? "" : "lib";
         replacements.clear();
-        switch (operatingSystem) {
-        case IOS:
-        	return qtXlibName;
-        case Windows:
-        	if(version!=null && version.length>0 && !isQt){
-        		replacements.add(""+version[0]);
-        		replacements.add("");
-	            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
-		                ? qtXlibName + "d%1$s.dll"  // "QtFood4.dll"
-		                : qtXlibName + "%1$s.dll";  // "QtFoo4.dll"
-        	}else {
-	            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
-	                ? qtXlibName + "d.dll"  // "QtFood4.dll"
-	                : qtXlibName + ".dll";  // "QtFoo4.dll"
-        	}
-        case MacOS:
-        	if(dontUseQtFrameworks==null || !dontUseQtFrameworks) {
-        		if(version!=null && version.length>0 && version[0]<6)
-        			return String.format("%1$s%2$s.framework/Versions/%3$s/%1$s%2$s", qtprefix, libraryName, version[0]);
-        		else
-        			return String.format("%1$s%2$s.framework/Versions/A/%1$s%2$s", qtprefix, libraryName);
-        	}else {
-        		if(version!=null) {
-    	        	switch(version.length) {
-    	        	default:
-            			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-    	        	case 2:
-    	        		replacements.add("."+version[0]+"."+version[1]);
-    	        	case 1:
-    	        		replacements.add("."+version[0]);
-    	        	case 0: 
-    	        		replacements.add("");
-    	        		break;
-    	        	}
-        		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
-        			List<String> parts = new ArrayList<>();
-        			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
-        			while(!parts.isEmpty()) {
-        				replacements.add("."+String.join(".", parts));
-        				parts.remove(parts.size()-1);
-        			}
-        			replacements.add("");
-        		}else {
-        			replacements.add("");
-        		}
-	        	if(version!=null && version.length>1 && version[0]>=5 && version[1]>=14) {
-	        		return prefix + qtXlibName + "%1$s.dylib";
-	        	}else {
-		            return configuration == LibraryBundle.Configuration.Debug
-		                ? prefix + qtXlibName + "_debug%1$s.dylib"  // "libQtFoo_debug.4.dylib"
-		                : prefix + qtXlibName + "%1$s.dylib";  // "libQtFoo.4.dylib"
-	        	}
-        	}
-        case Linux:
-    		if(version!=null) {
-	        	switch(version.length) {
-	        	default:
-        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-	        	case 2:
-	        		replacements.add("."+version[0]+"."+version[1]);
-	        	case 1:
-	        		replacements.add("."+version[0]);
-	        	case 0: 
+    	if(useStaticLibs) {
+    		return qtXlibName;
+    	}else {
+	        switch (operatingSystem) {
+	        case Windows:
+	        	if(version!=null && version.length>0 && !isQt){
+	        		replacements.add(""+version[0]);
 	        		replacements.add("");
-	        		break;
+		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
+			                ? qtXlibName + "d%1$s.dll"  // "QtFood4.dll"
+			                : qtXlibName + "%1$s.dll";  // "QtFoo4.dll"
+	        	}else {
+		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
+		                ? qtXlibName + "d.dll"  // "QtFood4.dll"
+		                : qtXlibName + ".dll";  // "QtFoo4.dll"
 	        	}
-    		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
-    			List<String> parts = new ArrayList<>();
-    			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
-    			while(!parts.isEmpty()) {
-    				replacements.add("."+String.join(".", parts));
-    				parts.remove(parts.size()-1);
-    			}
-    			replacements.add("");
-    		}else {
-    			replacements.add("");
-    		}
-        	return prefix + qtXlibName + ".so%1$s";
-        case Android:
-        	switch (architecture) {
-			case arm:
-				return qtXlibName + "_armeabi-v7a";
-			case arm64:
-				return qtXlibName + "_arm64-v8a";
-			case x86:
-				return qtXlibName + "_x86";
-			case x86_64:
-				return qtXlibName + "_x86_64";
+	        case IOS:
+	        case MacOS:
+	        	if(dontUseQtFrameworks==null || !dontUseQtFrameworks) {
+	        		if(version!=null && version.length>0 && version[0]<6)
+	        			return String.format("%1$s%2$s.framework/Versions/%3$s/%1$s%2$s", qtprefix, libraryName, version[0]);
+	        		else
+	        			return String.format("%1$s%2$s.framework/Versions/A/%1$s%2$s", qtprefix, libraryName);
+	        	}else {
+	        		if(version!=null) {
+	    	        	switch(version.length) {
+	    	        	default:
+	            			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+	    	        	case 2:
+	    	        		replacements.add("."+version[0]+"."+version[1]);
+	    	        	case 1:
+	    	        		replacements.add("."+version[0]);
+	    	        	case 0: 
+	    	        		replacements.add("");
+	    	        		break;
+	    	        	}
+	        		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
+	        			List<String> parts = new ArrayList<>();
+	        			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
+	        			while(!parts.isEmpty()) {
+	        				replacements.add("."+String.join(".", parts));
+	        				parts.remove(parts.size()-1);
+	        			}
+	        			replacements.add("");
+	        		}else {
+	        			replacements.add("");
+	        		}
+		        	if(version!=null && version.length>1 && version[0]>=5 && version[1]>=14) {
+		        		return prefix + qtXlibName + "%1$s.dylib";
+		        	}else {
+			            return configuration == LibraryBundle.Configuration.Debug
+			                ? prefix + qtXlibName + "_debug%1$s.dylib"  // "libQtFoo_debug.4.dylib"
+			                : prefix + qtXlibName + "%1$s.dylib";  // "libQtFoo.4.dylib"
+		        	}
+	        	}
+	        case Linux:
+	    		if(version!=null) {
+		        	switch(version.length) {
+		        	default:
+	        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+		        	case 2:
+		        		replacements.add("."+version[0]+"."+version[1]);
+		        	case 1:
+		        		replacements.add("."+version[0]);
+		        	case 0: 
+		        		replacements.add("");
+		        		break;
+		        	}
+	    		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
+	    			List<String> parts = new ArrayList<>();
+	    			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
+	    			while(!parts.isEmpty()) {
+	    				replacements.add("."+String.join(".", parts));
+	    				parts.remove(parts.size()-1);
+	    			}
+	    			replacements.add("");
+	    		}else {
+	    			replacements.add("");
+	    		}
+	        	return prefix + qtXlibName + ".so%1$s";
+	        case Android:
+	        	switch (architecture) {
+				case arm:
+					return qtXlibName + "_armeabi-v7a";
+				case arm64:
+					return qtXlibName + "_arm64-v8a";
+				case x86:
+					return qtXlibName + "_x86";
+				case x86_64:
+					return qtXlibName + "_x86_64";
+				default:
+					break;
+				}
+	            // Linux doesn't have a dedicated "debug" library since 4.2
+	            return prefix + qtXlibName + ".so";  // "libQtFoo.so.4"
 			default:
 				break;
-			}
-            // Linux doesn't have a dedicated "debug" library since 4.2
-            return prefix + qtXlibName + ".so";  // "libQtFoo.so.4"
-		default:
-			break;
-        }
+	        }
+    	}
         throw new RuntimeException("Unreachable statement");
     }
 

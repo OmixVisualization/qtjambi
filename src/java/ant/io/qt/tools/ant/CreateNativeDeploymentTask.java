@@ -454,14 +454,11 @@ public class CreateNativeDeploymentTask extends Task {
 									pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
 								}
 								if(pdbFile.exists()) {
-									/*
-									 * don't include pdb files in jar
 									java.io.File pdbTarget = new java.io.File(targetLibDir, pdbName);
 									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
 									if(!libraryIncludes.isEmpty())
 										libraryIncludes += ",";
 									libraryIncludes += jarpath + "/" + pdbName;
-									*/
 								}else {
 									pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
 									if(pdbFile.exists()) {

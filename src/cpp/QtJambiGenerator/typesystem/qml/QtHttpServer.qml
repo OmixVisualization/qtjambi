@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -138,6 +138,7 @@ TypeSystem{
                 index: 2
                 invalidateAfterUse: true
             }
+            until: [6,4]
         }
         ModifyFunction{
             signature: "handleRequest(QHttpServerRequest,QTcpSocket*)"
@@ -149,6 +150,31 @@ TypeSystem{
                 index: 2
                 invalidateAfterUse: true
             }
+            until: [6,4]
+        }
+        ModifyFunction{
+            signature: "missingHandler(QHttpServerRequest,QHttpServerResponder&&)"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            ModifyArgument{
+                index: 2
+                invalidateAfterUse: true
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "handleRequest(QHttpServerRequest,QHttpServerResponder&)"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            ModifyArgument{
+                index: 2
+                invalidateAfterUse: true
+            }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "makeResponder(QHttpServerRequest,QTcpSocket*)"
@@ -163,6 +189,7 @@ TypeSystem{
                                   "QtJambiAPI::setJavaOwnership(%env, %out);"}
                 }
             }
+            until: [6,4]
         }
     }
     
@@ -180,7 +207,7 @@ TypeSystem{
                 target: CodeClass.Java
                 position: Position.Beginning
                 Text{content: "if(__rcRouter!=null && !__rcRouter.isDisposed())\n"+
-                              "return __rcRouter;"}
+                              "    return __rcRouter;"}
             }
             InjectCode{
                 target: CodeClass.Java
@@ -195,6 +222,18 @@ TypeSystem{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
                 quoteAfterLine: "class QHttpServer___"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
+                quoteAfterLine: "class QHttpServer_64__"
+                quoteBeforeLine: "}// class"
+                until: [6,4]
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
+                quoteAfterLine: "class QHttpServer_65__"
+                quoteBeforeLine: "}// class"
+                since: [6,5]
             }
         }
     }
@@ -545,6 +584,12 @@ TypeSystem{
             Include{
                 fileName: "QtNetwork/QTcpSocket"
                 location: Include.Global
+                until: [6,4]
+            }
+            Include{
+                fileName: "QtHttpServer/QHttpServerResponder"
+                location: Include.Global
+                since: [6,5]
             }
         }
     }

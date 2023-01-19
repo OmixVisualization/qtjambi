@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
 import io.qt.core.QPluginLoader;
 import io.qt.location.QGeoCodingManagerEngine;
@@ -56,52 +57,98 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 	@Test
     public void test()
     {
-		String errorString = null;
+		String errorString = "";
 		QPluginLoader pluginLoader = null;
-		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox");
-		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapboxd");
-		}
-		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox_debug");
-		}
-		if(pluginLoader.isLoaded() || pluginLoader.load()){
-			Map<String,Object> parameters = new HashMap<>();
-			parameters.put("mapbox.access_token", "12345");
+		if(QLibraryInfo.version().majorVersion()<=5) {
+			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox");
+			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
+				pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapboxd");
+			}
+			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
+				pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox_debug");
+			}
+			if(pluginLoader.isLoaded() || pluginLoader.load()){
+				Map<String,Object> parameters = new HashMap<>();
+				parameters.put("mapbox.access_token", "12345");
+	
+				QObject servicePlugin = pluginLoader.instance();
+				Assert.assertTrue(servicePlugin!=null);
+				Assert.assertTrue(servicePlugin.inherits(QGeoServiceProviderFactory.class));
+				QGeoServiceProviderFactory factory = servicePlugin.qt_metacast(QGeoServiceProviderFactory.class);
+				
+				Result<QGeoRoutingManagerEngine> createRoutingManagerEngine = factory.createRoutingManagerEngine(parameters);
+				Assert.assertTrue(createRoutingManagerEngine!=null);
+				Assert.assertTrue(createRoutingManagerEngine.engine()!=null);
+				Assert.assertEquals(null, createRoutingManagerEngine.engine().parent());
+				Assert.assertTrue(General.internalAccess.isJavaOwnership(createRoutingManagerEngine.engine()));
+				Assert.assertEquals(QGeoServiceProvider.Error.NoError, createRoutingManagerEngine.error());
+				Assert.assertEquals(null, createRoutingManagerEngine.errorString());
+				Assert.assertEquals("", createRoutingManagerEngine.engine().managerName());
+				Assert.assertEquals("QGeoRoutingManagerEngineMapbox", createRoutingManagerEngine.engine().metaObject().className());
+				
+				Result<QPlaceManagerEngine> createPlaceManagerEngine = factory.createPlaceManagerEngine(Collections.emptyMap());
+				Assert.assertTrue(createPlaceManagerEngine!=null);
+				Assert.assertEquals(null, createPlaceManagerEngine.engine());
+				Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createPlaceManagerEngine.error());
+				Assert.assertEquals("Mapbox plugin requires a 'mapbox.access_token' parameter.\n" + 
+						"Please visit https://www.mapbox.com", createPlaceManagerEngine.errorString());
+				
+				Result<QGeoCodingManagerEngine> createGeocodingManagerEngine = factory.createGeocodingManagerEngine(Collections.emptyMap());
+				Assert.assertTrue(createGeocodingManagerEngine!=null);
+				Assert.assertEquals(null, createGeocodingManagerEngine.engine());
+				Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createGeocodingManagerEngine.error());
+				Assert.assertEquals("Mapbox plugin requires a 'mapbox.access_token' parameter.\n" + 
+						"Please visit https://www.mapbox.com", createGeocodingManagerEngine.errorString());
+				
+				servicePlugin.dispose();
+				Assert.assertTrue(factory.isDisposed());
+			}else {
+				errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+			}
+			
+			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia");
+			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
+	    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokiad");
+	    	}
+			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
+	    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia_debug");
+	    	}
+			if(pluginLoader.isLoaded() || pluginLoader.load()){
+				Map<String,Object> parameters = new HashMap<>();
+				parameters.put("here.app_id", "qtjambi");
+				parameters.put("here.token", "12345");
 
-			QObject servicePlugin = pluginLoader.instance();
-			Assert.assertTrue(servicePlugin!=null);
-			Assert.assertTrue(servicePlugin.inherits(QGeoServiceProviderFactory.class));
-			QGeoServiceProviderFactory factory = servicePlugin.qt_metacast(QGeoServiceProviderFactory.class);
-			
-			Result<QGeoRoutingManagerEngine> createRoutingManagerEngine = factory.createRoutingManagerEngine(parameters);
-			Assert.assertTrue(createRoutingManagerEngine!=null);
-			Assert.assertTrue(createRoutingManagerEngine.engine()!=null);
-			Assert.assertEquals(null, createRoutingManagerEngine.engine().parent());
-			Assert.assertTrue(General.internalAccess.isJavaOwnership(createRoutingManagerEngine.engine()));
-			Assert.assertEquals(QGeoServiceProvider.Error.NoError, createRoutingManagerEngine.error());
-			Assert.assertEquals(null, createRoutingManagerEngine.errorString());
-			Assert.assertEquals("", createRoutingManagerEngine.engine().managerName());
-			Assert.assertEquals("QGeoRoutingManagerEngineMapbox", createRoutingManagerEngine.engine().metaObject().className());
-			
-			Result<QPlaceManagerEngine> createPlaceManagerEngine = factory.createPlaceManagerEngine(Collections.emptyMap());
-			Assert.assertTrue(createPlaceManagerEngine!=null);
-			Assert.assertEquals(null, createPlaceManagerEngine.engine());
-			Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createPlaceManagerEngine.error());
-			Assert.assertEquals("Mapbox plugin requires a 'mapbox.access_token' parameter.\n" + 
-					"Please visit https://www.mapbox.com", createPlaceManagerEngine.errorString());
-			
-			Result<QGeoCodingManagerEngine> createGeocodingManagerEngine = factory.createGeocodingManagerEngine(Collections.emptyMap());
-			Assert.assertTrue(createGeocodingManagerEngine!=null);
-			Assert.assertEquals(null, createGeocodingManagerEngine.engine());
-			Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createGeocodingManagerEngine.error());
-			Assert.assertEquals("Mapbox plugin requires a 'mapbox.access_token' parameter.\n" + 
-					"Please visit https://www.mapbox.com", createGeocodingManagerEngine.errorString());
-			
-			servicePlugin.dispose();
-			Assert.assertTrue(factory.isDisposed());
-		}else {
-			errorString = pluginLoader.errorString();
+				QObject servicePlugin = pluginLoader.instance();
+				Assert.assertTrue(servicePlugin!=null);
+				Assert.assertTrue(servicePlugin.inherits(QGeoServiceProviderFactory.class));
+				QGeoServiceProviderFactory factory = servicePlugin.qt_metacast(QGeoServiceProviderFactory.class);
+
+				Result<QGeoRoutingManagerEngine> createRoutingManagerEngine = factory.createRoutingManagerEngine(parameters);
+				Assert.assertTrue(createRoutingManagerEngine!=null);
+				Assert.assertTrue(createRoutingManagerEngine.engine()!=null);
+				Assert.assertEquals(null, createRoutingManagerEngine.engine().parent());
+				Assert.assertTrue(General.internalAccess.isJavaOwnership(createRoutingManagerEngine.engine()));
+				Assert.assertEquals(QGeoServiceProvider.Error.NoError, createRoutingManagerEngine.error());
+				Assert.assertEquals(null, createRoutingManagerEngine.errorString());
+				Assert.assertEquals("", createRoutingManagerEngine.engine().managerName());
+				Assert.assertEquals("QGeoRoutingManagerEngineNokia", createRoutingManagerEngine.engine().metaObject().className());
+				
+				Result<QPlaceManagerEngine> createPlaceManagerEngine = factory.createPlaceManagerEngine(Collections.emptyMap());
+				Assert.assertTrue(createPlaceManagerEngine!=null);
+				Assert.assertEquals(null, createPlaceManagerEngine.engine());
+				Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createPlaceManagerEngine.error());
+				Assert.assertEquals("Qt Location requires app_id and token parameters.\n" + 
+						"Please register at https://developer.here.com/ to get your personal application credentials.", createPlaceManagerEngine.errorString());
+				
+				Result<QGeoCodingManagerEngine> createGeocodingManagerEngine = factory.createGeocodingManagerEngine(Collections.emptyMap());
+				Assert.assertTrue(createGeocodingManagerEngine!=null);
+				Assert.assertEquals(null, createGeocodingManagerEngine.engine());
+				Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createGeocodingManagerEngine.error());
+				Assert.assertEquals("Qt Location requires app_id and token parameters.\n" + 
+						"Please register at https://developer.here.com/ to get your personal application credentials.", createGeocodingManagerEngine.errorString());
+			}else {
+				errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+			}
 		}
 		
 		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_itemsoverlay");
@@ -147,51 +194,7 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			Assert.assertTrue(factory3!=factory);
 			Assert.assertTrue(factory3!=factory2);
 		}else {
-			errorString = pluginLoader.errorString();
-		}
-		
-		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia");
-		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokiad");
-    	}
-		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia_debug");
-    	}
-		if(pluginLoader.isLoaded() || pluginLoader.load()){
-			Map<String,Object> parameters = new HashMap<>();
-			parameters.put("here.app_id", "qtjambi");
-			parameters.put("here.token", "12345");
-
-			QObject servicePlugin = pluginLoader.instance();
-			Assert.assertTrue(servicePlugin!=null);
-			Assert.assertTrue(servicePlugin.inherits(QGeoServiceProviderFactory.class));
-			QGeoServiceProviderFactory factory = servicePlugin.qt_metacast(QGeoServiceProviderFactory.class);
-
-			Result<QGeoRoutingManagerEngine> createRoutingManagerEngine = factory.createRoutingManagerEngine(parameters);
-			Assert.assertTrue(createRoutingManagerEngine!=null);
-			Assert.assertTrue(createRoutingManagerEngine.engine()!=null);
-			Assert.assertEquals(null, createRoutingManagerEngine.engine().parent());
-			Assert.assertTrue(General.internalAccess.isJavaOwnership(createRoutingManagerEngine.engine()));
-			Assert.assertEquals(QGeoServiceProvider.Error.NoError, createRoutingManagerEngine.error());
-			Assert.assertEquals(null, createRoutingManagerEngine.errorString());
-			Assert.assertEquals("", createRoutingManagerEngine.engine().managerName());
-			Assert.assertEquals("QGeoRoutingManagerEngineNokia", createRoutingManagerEngine.engine().metaObject().className());
-			
-			Result<QPlaceManagerEngine> createPlaceManagerEngine = factory.createPlaceManagerEngine(Collections.emptyMap());
-			Assert.assertTrue(createPlaceManagerEngine!=null);
-			Assert.assertEquals(null, createPlaceManagerEngine.engine());
-			Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createPlaceManagerEngine.error());
-			Assert.assertEquals("Qt Location requires app_id and token parameters.\n" + 
-					"Please register at https://developer.here.com/ to get your personal application credentials.", createPlaceManagerEngine.errorString());
-			
-			Result<QGeoCodingManagerEngine> createGeocodingManagerEngine = factory.createGeocodingManagerEngine(Collections.emptyMap());
-			Assert.assertTrue(createGeocodingManagerEngine!=null);
-			Assert.assertEquals(null, createGeocodingManagerEngine.engine());
-			Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createGeocodingManagerEngine.error());
-			Assert.assertEquals("Qt Location requires app_id and token parameters.\n" + 
-					"Please register at https://developer.here.com/ to get your personal application credentials.", createGeocodingManagerEngine.errorString());
-		}else {
-			errorString = pluginLoader.errorString();
+			errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
 		}
 
 		
@@ -238,11 +241,11 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			Assert.assertEquals("", createGeocodingManagerEngine.engine().managerName());
 			Assert.assertEquals("QGeoCodingManagerEngineOsm", createGeocodingManagerEngine.engine().metaObject().className());
 		}else {
-			errorString = pluginLoader.errorString();
+			errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
 		}
 
 		{
-			Assert.assertTrue(errorString, errorString==null);
+			Assert.assertTrue(errorString, errorString.isEmpty());
     	}
     }
 }

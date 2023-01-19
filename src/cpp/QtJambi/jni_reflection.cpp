@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,7 +44,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_privateLookup)
         static jmethodID constructor = [](JNIEnv *env) -> jmethodID {
             jmethodID result(nullptr);
 #ifndef Q_OS_ANDROID
-            QString version = qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("java.version")));
+            QString version = qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("java.version"), nullptr));
             if(version.startsWith("1."))
 #endif
             {

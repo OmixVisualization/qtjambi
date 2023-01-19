@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.11`, `6.2.9` or by `6.4.1`).
+(exchange `$VERSION` either by `5.15.13`, `6.2.11` or by `6.4.3`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.4.1.jar Test.java
+javac -cp qtjambi-6.4.3.jar Test.java
 ```
 
 ## Executing Example
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.4.1.jar;qtjambi-native-windows-x64-6.4.1.jar;. -Djava.library.path=C:\Qt\6.4.0\msvc2019_64\bin Test
+java -cp qtjambi-6.4.3.jar;qtjambi-native-windows-x64-6.4.3.jar;. -Djava.library.path=C:\Qt\6.4.2\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.4.1.jar:qtjambi-native-linux-x64-6.4.1.jar:. -Djava.library.path=<path to>/Qt/6.4.0/gcc_64/lib Test
+java -cp qtjambi-6.4.3.jar:qtjambi-native-linux-x64-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.4.1.jar:qtjambi-native-macos-6.4.1.jar:. -Djava.library.path=<path to>/Qt/6.4.0/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.4.3.jar:qtjambi-native-macos-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/macos/lib -XstartOnFirstThread Test
 ```
 
 ### Native Components
@@ -94,11 +94,11 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.11/),
+Documentation](https://doc.qtjambi.io/5.15.13/),
 [QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.9/)
+Documentation](https://doc.qtjambi.io/6.2.11/)
 and [QtJambi 6.4 API Reference
-Documentation](https://doc.qtjambi.io/6.4.1/)
+Documentation](https://doc.qtjambi.io/6.4.3/)
 
 ## Useful Java System Properties for QtJambi
 
@@ -121,7 +121,7 @@ If you native library bundles QtJambi extracts these components to temporary dir
 
 * `io.qt.keep-temp-deployment` - Specify `true` to avoid library deletion at program termination. The libraries remain in temporary directory instead.
 * `io.qt.deploymentdir` - Specify `user` to let QtJambi extract libraries to user's application data directory. Specify `common` to let them be extracted to common program data directory. Specify a target directory to let them be extracted there.
-* `io.qt.no-deployment-spec` - Specify `true` if you want to inhibit the search for native library bundles at all and load QtJambi from library path instead.
+* `io.qt.no-native-deployment` - Specify `true` if you want to inhibit the search for native library bundles at all and load QtJambi from library path instead.
 
 ### QtJambi Runtime
 

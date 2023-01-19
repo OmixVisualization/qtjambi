@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -9893,6 +9893,27 @@ class QTimer___ extends QTimer {
     private static Qt.TimerType defaultTypeFor(int msecs){ 
         return msecs >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer; 
     }
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     */
+    public final QMetaObject.Connection callOnTimeout(QMetaObject.Slot0 slot, Qt.ConnectionType... type){
+        return timeout.connect(slot, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     */
+    public final QMetaObject.Connection callOnTimeout(QMetaObject.Connectable0 connectable, Qt.ConnectionType... type){
+        return timeout.connect(connectable, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     */
+    public final QMetaObject.Connection callOnTimeout(QObject receiver, String method, Qt.ConnectionType... type){
+        return timeout.connect(receiver, method, type);
+    }
     
 }// class
 
@@ -9969,10 +9990,9 @@ class QCoreApplication___ extends QCoreApplication {
         try {
             T application = java.util.Objects.requireNonNull(constructor.apply(args), "Constructor function does not instantiate QCoreApplication.");
             QtJambi_LibraryUtilities.internal.setCppOwnership(application);
-            removeLibraryPath(QDir.fromNativeSeparators(System.getProperty("sun.boot.library.path")));
-            QDir userDir = new QDir(System.getProperty("user.dir"));
-            if(userDir.cd("plugins")){
-                addLibraryPath(userDir.canonicalPath());
+            String bootPath = System.getProperty("sun.boot.library.path", "");
+            if(!bootPath.isEmpty()) {
+                removeLibraryPath(QDir.fromNativeSeparators(bootPath));
             }
             return application;
         } catch (Error e) {
@@ -10130,6 +10150,92 @@ class QCoreApplication__62_ {
     public final <QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(Class<QNativeInterface> nativeInterfaceClass) {
         return resolveInterface(nativeInterfaceClass);
     }
+}// class
+
+class QCoreApplication__65_ {
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void requestPermission(io.qt.core.QPermission.Request permission, QMetaObject.Slot0 functor){
+        requestPermission(new QPermission(permission), functor);
+    }
+
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void requestPermission(io.qt.core.QPermission.Request permission, QMetaObject.Slot1<QPermission> functor){
+        requestPermission(new QPermission(permission), functor);
+    }
+
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void requestPermission(io.qt.core.QPermission permission, QMetaObject.Slot0 functor){
+        QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
+        requestPermissionSlot0(
+                        QtJambi_LibraryUtilities.internal.nativeId(this),
+                        QtJambi_LibraryUtilities.internal.checkedNativeId(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.nativeId(context),
+                                functor);
+    }
+
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final void requestPermission(io.qt.core.QPermission permission, QMetaObject.Slot1<QPermission> functor){
+        QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
+        requestPermissionSlot1(
+                        QtJambi_LibraryUtilities.internal.nativeId(this),
+                        QtJambi_LibraryUtilities.internal.checkedNativeId(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.nativeId(context),
+                                functor);
+    }
+
+    private native final void requestPermissionSlot1(long __this__nativeId, long permission, long context, QMetaObject.Slot1<QPermission> functor);
+
+    private native final void requestPermissionSlot0(long __this__nativeId, long permission, long context, QMetaObject.Slot0 functor);
+
+    /**
+     * <p>See <a href="@docRoot/qcoreapplication.html#checkPermission">QCoreApplication::checkPermission(QPermission)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.Qt.PermissionStatus checkPermission(io.qt.core.QPermission.Request permission){
+        return checkPermission(new QPermission(permission));
+    }
+}// class
+
+class QPermission___{
+
+    /**
+     * interface type for permission requests
+     */
+    public interface Request extends io.qt.QtObjectInterface{
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qpermission.html#QPermission">QPermission::QPermission&lt;T>(T)</a></p>
+     */
+    public QPermission(Request request){
+        super((QPrivateConstructor)null);
+        initialize_native(this);
+        setData(QtJambi_LibraryUtilities.internal.nativeId(this), request);
+    }
+
+    private static native void setData(long nativeId, Request request);
+
+    /**
+     * <p>See <a href="@docRoot/qpermission.html#QPermission">QPermission::data&lt;T>()</a></p>
+     */
+    public final Request data() {
+        return data(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    private static native Request data(long nativeId);
+
 }// class
 
 class QTranslator___ extends QTranslator {
@@ -15807,6 +15913,13 @@ class Qt___ extends Qt {
     
 }// class
 
+class QTimeZone___{
+    // No known zone > 12 hrs West of Greenwich (Baker Island, USA)
+    public static final int MinUtcOffsetSecs = -14 * 3600;
+    // No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati)
+    public static final int MaxUtcOffsetSecs = +14 * 3600;
+}// class
+
 class QCollatorSortKey___{
     
     @io.qt.QtUninvokable
@@ -17508,6 +17621,7 @@ class QBindableInterface__{
 }// class
 
 class QLoggingCategory__{
+    private QByteArray __rcCategory;
     /**
      * <p>Overloaded constructor for {@link #QLoggingCategory(java.lang.String, io.qt.core.QtMsgType)}
      *  with <code>severityLevel = io.qt.core.QtMsgType.QtDebugMsg</code>.</p>

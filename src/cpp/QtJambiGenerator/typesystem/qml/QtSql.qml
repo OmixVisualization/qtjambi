@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -422,6 +422,7 @@ TypeSystem{
         ModifyFunction{
             signature: "setQuery(QSqlQuery)"
             remove: RemoveFlag.All
+            until: [6,4]
         }
         ModifyFunction{
             signature: "beforeInsert(QSqlRecord&)"

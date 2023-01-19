@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -3382,7 +3382,7 @@ bool QModelIndexTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, boo
     if(valueType==jValueType::l && result && qt_object){
         const QModelIndex* index = reinterpret_cast<const QModelIndex*>(qt_object);
         if(index->model())
-            CoreAPI::registerDependentObject(env, output->l, qtjambi_cast<jobject>(env, index->model()));
+            QtJambiLink::registerDependentObject(index->model(), QtJambiLink::findLinkForJavaObject(env, output->l));
     }
     return result;
 }
@@ -3392,7 +3392,7 @@ bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
     if(valueType==jValueType::l && result && ptr_shared_pointer){
         if(const QModelIndex* index = reinterpret_cast<const QModelIndex*>(sharedPointerGetter(ptr_shared_pointer))){
             if(index->model())
-                CoreAPI::registerDependentObject(env, output->l, qtjambi_cast<jobject>(env, index->model()));
+                QtJambiLink::registerDependentObject(index->model(), QtJambiLink::findLinkForJavaObject(env, output->l));
         }
     }
     return result;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,7 +57,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineS
         QObject *_object = qtjambi_cast<QObject*>(env, object);
         if(QQuickWebEngineSettings* settings = qobject_cast<QQuickWebEngineSettings*>(_object)){
             QWebEngineSettings* wSettings = QQuickWebEngineViewPrivate::getWebEngineSettings(settings);
-            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wSettings, false, true);
+            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wSettings, false);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -75,7 +75,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineS
         QObject *_object = qtjambi_cast<QObject*>(env, object);
         if(QQuickWebEngineScriptCollection* collection = qobject_cast<QQuickWebEngineScriptCollection*>(_object)){
             QWebEngineScriptCollection* wCollection = QQuickWebEngineViewPrivate::getWebEngineScriptCollection(collection);
-            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wCollection, false, true);
+            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wCollection, false);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }
     }QTJAMBI_CATCH(const JavaException& exn){

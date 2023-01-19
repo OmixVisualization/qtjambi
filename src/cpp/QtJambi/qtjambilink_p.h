@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -120,8 +120,26 @@ struct ValueOwnerUserData : public QtJambiObjectData
     inline const QPointer<const QObject>& pointer() const { return m_object; }
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
+    Q_DISABLE_COPY_MOVE(ValueOwnerUserData)
     QPointer<const QObject> m_object;
     QList<std::function<void()>> m_deleters;
+};
+
+struct DependencyManagerUserData : public QtJambiObjectData
+{
+    DependencyManagerUserData();
+    ~DependencyManagerUserData() override;
+    void addDependentObject(const QWeakPointer<QtJambiLink>& dependent);
+    void removeDependentObject(const QWeakPointer<QtJambiLink>& dependent);
+    bool hasDependencies() const;
+    void clear(JNIEnv* env);
+    static DependencyManagerUserData* instance(const QObject* object, bool forceConstruction = true);
+    QTJAMBI_OBJECTUSERDATA_ID_DECL
+private:
+    Q_DISABLE_COPY_MOVE(DependencyManagerUserData)
+    void clear(JNIEnv* env, QList<QWeakPointer<QtJambiLink>>& dependentObjects);
+    QList<QWeakPointer<QtJambiLink>> m_dependentObjects;
+    QReadWriteLock m_lock;
 };
 
 struct QtJambiLinkUserData : public QtJambiObjectData
@@ -136,6 +154,7 @@ struct QtJambiLinkUserData : public QtJambiObjectData
     static QReadWriteLock* lock();
 
 private:
+    Q_DISABLE_COPY_MOVE(QtJambiLinkUserData)
     QWeakPointer<QtJambiLink> m_link;
 };
 
@@ -144,6 +163,7 @@ struct QtJambiMetaObjectLinkUserData : public QtJambiLinkUserData{
     inline const QMetaObject* metaObject() const override {return m_metaObject; }
 private:
     const QMetaObject* m_metaObject;
+    Q_DISABLE_COPY_MOVE(QtJambiMetaObjectLinkUserData)
 };
 
 class QSharedPointerToQObjectLink;
@@ -277,7 +297,8 @@ public:
 #endif
         HasDisposedSignal = 0x020000,
         IsPendingObjectResolved = 0x040000,
-        IsPendingValueOwner = 0x080000
+        IsPendingValueOwner = 0x080000,
+        NoNativeDeletion = 0x100000
     };
     typedef QFlags<Flag> Flags;
 
@@ -339,6 +360,8 @@ public:
     virtual void* typedPointer(const std::type_info& qtType) const;
     void registerDependentObject(const QSharedPointer<QtJambiLink>& link);
     void unregisterDependentObject(const QSharedPointer<QtJambiLink>& link);
+    static void registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
+    static void unregisterDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* qtTypeName() const;

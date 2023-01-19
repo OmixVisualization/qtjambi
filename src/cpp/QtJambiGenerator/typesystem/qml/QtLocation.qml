@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -37,6 +37,15 @@ TypeSystem{
     description: "Displays map, navigation, and place content in a QML application."
 
     Rejection{
+        className: "QGeoRoute"
+        functionName: "d"
+    }
+    Rejection{
+        className: "QGeoRoute"
+        functionName: "const_d"
+    }
+
+    Rejection{
         className: "QGeoServiceProviderFactory"
         functionName: "createMappingManagerEngine"
     }
@@ -44,6 +53,11 @@ TypeSystem{
     Rejection{
         className: "QGeoServiceProviderFactoryV2"
         functionName: "createNavigationManagerEngine"
+    }
+
+    Rejection{
+        className: "QGeoServiceProvider"
+        functionName: "mappingManager"
     }
     
     NamespaceType{
@@ -195,6 +209,16 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "setQmlEngine(QQmlEngine*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcEngine"
+                    action: ReferenceCount.Set
+                }
             }
         }
         ModifyFunction{
@@ -558,6 +582,11 @@ TypeSystem{
     
     EnumType{
         name: "QPlaceContent::Type"
+    }
+
+    EnumType{
+        name: "QPlaceContent::DataTag"
+        since: [6,5]
     }
     
     ValueType{

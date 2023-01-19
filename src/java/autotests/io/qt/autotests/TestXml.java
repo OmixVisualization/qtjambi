@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -84,7 +84,7 @@ public class TestXml extends ApplicationInitializer {
         QFile file = new QFile(":generator/typesystem_core.txt");
         if (!file.open(QIODevice.OpenModeFlag.ReadOnly))
             return;
-        Result res = doc.setContent(file);
+        Result res = doc.setContent(file, false);
         if (!res.success) {
             file.close();
             assertTrue("Failed to open file", false);
@@ -100,11 +100,8 @@ public class TestXml extends ApplicationInitializer {
 
             found = found || "private".equals(element.attribute("modifier"));
         }
-
-        assertTrue(found);
-
         file.close();
-
+        assertTrue(found);
     }
 
     public static void main(String args[]) {

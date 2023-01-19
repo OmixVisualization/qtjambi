@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1429,10 +1429,19 @@ QUrlEntryEngine::QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileNa
       QClassPathEntry(),
       m_classPathEntryFileName(classPathEntryFileName),
       m_fileName(fileName),
-      m_connection(env, Java::Runtime::URL::openConnection(env, url)),
+      m_connection(),
       m_inputStream(),
-      m_size(Java::Runtime::URLConnection::getContentLengthLong(env, m_connection.object()))
+      m_size(0)
 {
+    try{
+        jobject connection = Java::Runtime::URL::openConnection(env, url);
+        if(connection){
+            m_connection = {env, connection};
+            m_size = Java::Runtime::URLConnection::getContentLengthLong(env, connection);
+        }
+    }catch(const JavaException& exn){
+        exn.report(env);
+    }
 }
 
 QUrlEntryEngine::~QUrlEntryEngine(){

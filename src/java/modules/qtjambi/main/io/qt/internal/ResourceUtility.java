@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -74,6 +74,42 @@ final class ResourceUtility {
 	
 	private ResourceUtility() {
 	}
+	
+	private interface JarResourceFactoryInterface{
+		JarResource create(File fileToJarFile) throws IOException;
+        JarResource create(URL urlToJarFile) throws IOException;
+	}
+	
+	private static class JarResourceFactory implements JarResourceFactoryInterface{
+		@Override
+		public JarResource create(File fileToJarFile) throws IOException {
+			return new JarResource(fileToJarFile);
+		}
+		@Override
+		public JarResource create(URL urlToJarFile) throws IOException {
+			return new JarResource(urlToJarFile);
+		}
+	}
+	
+	private static class RecognizableJarResourceFactory implements JarResourceFactoryInterface{
+		@Override
+		public JarResource create(File fileToJarFile) throws IOException {
+			return new RecognizableJarResource(fileToJarFile);
+		}
+		@Override
+		public JarResource create(URL urlToJarFile) throws IOException {
+			return new RecognizableJarResource(urlToJarFile);
+		}
+	}
+	
+	private final static JarResourceFactoryInterface factory;
+	static {
+		if(Boolean.getBoolean("io.qt.acknowledge-resources")) {
+			factory = new RecognizableJarResourceFactory();
+		}else {
+			factory = new JarResourceFactory();
+		}
+	}
 
     private static class UrlOrFile {
         UrlOrFile(URL url, File file) {
@@ -132,10 +168,17 @@ final class ResourceUtility {
 							}else {
 								urlPath = url.getPath();
 								end = "!/META-INF/MANIFEST.MF";
+								if(!urlPath.contains(":") || !urlPath.endsWith(end)) { // this is possible if URL is not jar-based
+									urlPath = url.toString();
+									end = "/META-INF/MANIFEST.MF";
+								}
 							}
 							if(urlPath.endsWith(end)) {
 								urlPath = urlPath.substring(0, urlPath.length() - end.length());
 								URL fileUrl = new URL(urlPath);
+								if(fileUrl.getPath().isEmpty()) {
+									fileUrl = new URL(urlPath+"/");
+								}
 								if(!cpUrls.contains(fileUrl)) {
 									cache.addPath(fileUrl);
 									cpUrls.add(fileUrl);
@@ -345,7 +388,7 @@ final class ResourceUtility {
 				if (urlOrFile.file != null) { // Due to workaround
 					if (!urlOrFile.file.exists())
 						result = null;
-				} else if(!urlOrFile.url.toString().endsWith("/")){
+				} else if(!urlOrFile.url.toString().endsWith("/") && !urlOrFile.url.getPath().isEmpty()){
 					URLConnection urlConn = urlOrFile.url.openConnection();
 					try(InputStream inStream = urlConn.getInputStream()){}
 				}
@@ -450,9 +493,9 @@ final class ResourceUtility {
         try {
             if(urlOrFile.file != null) {  // Due to workaround
                 if(urlOrFile.file.isFile()) // skip dirs
-                    myJarFile = new JarResource(urlOrFile.file);
+                    myJarFile = factory.create(urlOrFile.file);
             } else if(!"jrt".equals(urlOrFile.url.getProtocol())){
-                 myJarFile = new JarResource(urlOrFile.url);
+                 myJarFile = factory.create(urlOrFile.url);
             }
         } catch(ZipException e) {
             // This often fails with "java.util.zip.ZipException: error in opening zip file" but never discloses the filename
@@ -484,7 +527,7 @@ final class ResourceUtility {
         return new UrlOrFile(url, file);
     }
 
-    private static final class JarResource{
+    private static class JarResource{
         private URLConnection urlConnection;  // do we need to keep this around ?
         private File fileToJarFile;    // we store this object type to differentiate between URLs and direct File IO.
         private URL urlToJarFile;  // we save this to allow for close/reopen based on just this handle
@@ -520,7 +563,7 @@ final class ResourceUtility {
 
         // This method may never throw an exception
         @NativeAccess
-        void get() {
+        final void get() {
             synchronized(this) {
                 refCount++;
             }
@@ -529,7 +572,7 @@ final class ResourceUtility {
         // This method must cause a double increment on the reopen() case
         // Returns the previous refCount, so 0 means we just reopened, non-zero means we did get()
         @NativeAccess
-        int getOrReopen() throws IOException {
+        final int getOrReopen() throws IOException {
             int oldRefCount;
             synchronized (this) {
                 oldRefCount = refCount;
@@ -542,7 +585,7 @@ final class ResourceUtility {
 
         // This method may never throw an exception
         @NativeAccess
-        void put() {
+        final void put() {
             JarFile closeJarFile = null;
             synchronized(this) {
                 refCount--;
@@ -562,14 +605,14 @@ final class ResourceUtility {
             }
         }
 
-        void reopen() throws IOException {
+        final void reopen() throws IOException {
             if(jarFile != null)
                 throw new IOException("jarFile already open");
             openInternal();
         }
 
         @NativeAccess
-        String getName() {
+        final String getName() {
             return jarFile.getName();
         }
 
@@ -583,7 +626,7 @@ final class ResourceUtility {
         	if(entry==null) {
         		JarEntry aliasEntry = jarFile.getJarEntry(name+".alias");
         		if(aliasEntry!=null) {
-        			try(InputStream stream = jarFile.getInputStream(aliasEntry)){
+        			try(InputStream stream = getInputStream(aliasEntry)){
         				Properties aliasProperties = new Properties();
         				aliasProperties.load(stream);
         				QLocale locale = new QLocale();
@@ -700,6 +743,55 @@ final class ResourceUtility {
         }
     }
     
+    private static final class RecognizableJarResource extends JarResource{
+
+		RecognizableJarResource(URL urlToJarFile) throws IOException {
+			super(urlToJarFile);
+		}
+
+		RecognizableJarResource(File fileToJarFile) throws IOException {
+			super(fileToJarFile);
+		}
+		
+		@Override
+		JarEntry getJarEntry(String name) {
+			JarEntry entry = super.getJarEntry(name);
+			if(entry!=null) {
+				try {
+					ResourceUtility.class.getClassLoader().getResource(entry.getName());
+				} catch (Exception e) {
+				}
+			}
+			return entry;
+		}
+		
+		@Override
+		InputStream getInputStream(ZipEntry entry) throws IOException {
+			if(entry!=null) {
+				try {
+					ResourceUtility.class.getClassLoader().getResource(entry.getName());
+				} catch (Exception e) {
+				}
+			}
+            return super.getInputStream(entry);
+        }
+    	
+		@Override
+		Enumeration<JarEntry> entries() {
+            Enumeration<JarEntry> entries = super.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+    			if(entry!=null) {
+    				try {
+    					ResourceUtility.class.getClassLoader().getResource(entry.getName());
+    				} catch (Exception e) {
+    				}
+    			}
+            }
+            return super.entries();
+        }
+    }
+    
     @NativeAccess
     private static Collection<String> classPathDirs() {
     	return cache.classPathDirs();
@@ -748,13 +840,13 @@ final class ResourceUtility {
                         return;
                     } else if(fileDir.isFile()) {
                         try {
-                            resource = new JarResource(fileDir);
+                            resource = factory.create(fileDir);
                         } catch(IOException eat) {
                         }
                     }else {
                     	return;
                     }
-                }else if(url.toString().endsWith("/")) {
+                }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
                 	synchronized(classPathDirs) {
                 		classPathDirs.add(url.toString());
                 	}
@@ -762,7 +854,7 @@ final class ResourceUtility {
                 }
                 if(resource == null) {
                     try {
-                        resource = new JarResource(url);
+                        resource = factory.create(url);
                     } catch(ZipException e) {
                         throw new ZipException(e.getMessage() + ": " + url);
                     }
@@ -853,19 +945,19 @@ final class ResourceUtility {
                         return;
                     } else if(fileDir.isFile()) {
                         try {
-                            resource = new JarResource(fileDir);
+                            resource = factory.create(fileDir);
                         } catch(IOException eat) {
                         }
                     }else {
                     	return;
                     }
-                }else if(url.toString().endsWith("/")) {
+                }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
                 	removeImpl(url.toString());
                     return;
                 }
                 if(resource == null) {
                     try {
-                        resource = new JarResource(url);
+                        resource = factory.create(url);
                     } catch(ZipException e) {
                     }
                 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** (in parts)
 **
 ** This file is part of QtJambi.

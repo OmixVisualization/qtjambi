@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -1755,6 +1755,15 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         since: [5, 14]
+    }
+
+    ValueType{
+        name: "QHttp1Configuration"
+        ModifyFunction{
+            signature: "operator=(const QHttp1Configuration &)"
+            remove: RemoveFlag.All
+        }
+        since: [6, 5]
     }
     
     

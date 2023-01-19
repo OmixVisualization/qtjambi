@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -650,10 +650,10 @@ public abstract class ClassAnalyzerUtility {
 			Function<Object,Object> writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotClass, cls -> {
 				Method writeReplace = null;
 				try {
-					writeReplace = cls.getMethod("writeReplace");
+					writeReplace = cls.getDeclaredMethod("writeReplace");
 				} catch (Throwable e) {}
 				if(writeReplace == null) try {
-					writeReplace = cls.getDeclaredMethod("writeReplace");
+					writeReplace = cls.getMethod("writeReplace");
 				} catch (Throwable e) {}
 				return writeReplace==null ? null : ReflectionUtility.functionFromMethod(writeReplace);
 			});

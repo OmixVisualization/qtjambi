@@ -63,7 +63,19 @@ INCLUDEPATH += $$PWD/..
 DEPENDPATH += $$PWD/..
 
 macx:{
-    if($$QTJAMBI_GENERATE_FRAMEWORKS): CONFIG+=lib_bundle
+    CONFIG+=no_default_rpath no_qt_rpath
+    QMAKE_SONAME_PREFIX = @rpath
+    if($$QTJAMBI_GENERATE_FRAMEWORKS):{
+        QMAKE_TARGET_BUNDLE_PREFIX = io.qtjambi
+        CONFIG+=lib_bundle
+        QMAKE_RPATHDIR = @loader_path/../../../
+    }else{
+        equals(QTJAMBI_EXTENSION_SHLIB,dylib) | isEmpty(QTJAMBI_EXTENSION_SHLIB):{
+        }else{
+            QMAKE_EXTENSION_SHLIB = $$QTJAMBI_EXTENSION_SHLIB
+        }
+        QMAKE_RPATHDIR = @loader_path/.
+    }
 }
 macx | ios:{
     INCLUDEPATH += $$JAVA_HOME_TARGET/include
@@ -180,12 +192,9 @@ exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
                 LIBS += -L$$QTJAMBI_LIB_PATH
                 LIBS += -l$$QTJAMBI_LIB_NAME
             }else{
-                QMAKE_EXTENSION_SHLIB = $$QTJAMBI_EXTENSION_SHLIB
                 LIBS += $$QTJAMBI_LIB_PATH/lib$$member(QTJAMBI_LIB_NAME, 0).$$QTJAMBI_EXTENSION_SHLIB
             }
         }
-        QMAKE_SONAME_PREFIX = @rpath
-        QMAKE_RPATHDIR = @loader_path/.
     } else {
         INSTALLS += INSTALL_HEADERS
         LIBS += -L$$QTJAMBI_LIB_PATH

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -687,7 +687,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 bool hasChanged = false;
                 Java::QtJambi::ResourceUtility::initialize(env);
                 QStringList libraryPaths = QCoreApplication::libraryPaths();
-                QFileInfo sunBootLibraryPath(qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("sun.boot.library.path"))));
+                QFileInfo sunBootLibraryPath(qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("sun.boot.library.path"), nullptr)));
                 if(sunBootLibraryPath.exists())
                     hasChanged |= libraryPaths.removeAll(sunBootLibraryPath.absoluteFilePath()) > 0;
                 QFileInfo thisLibraryPath(getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(&JNI_OnLoad)));
@@ -741,8 +741,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 #define PATHSEP ':'
 #endif
                 {
-                    QStringList paths = qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("io.qt.pluginpath"))).split(PATHSEP);
-                    paths << qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("qtjambi.pluginpath"))).split(PATHSEP);
+                    QStringList paths = qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("io.qt.pluginpath"), nullptr)).split(PATHSEP);
+                    paths << qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("qtjambi.pluginpath"), nullptr)).split(PATHSEP);
                     for (const QString& p : qAsConst(paths)) {
                         libraryPaths << QFileInfo(p).absoluteFilePath();
                         hasChanged = true;
@@ -785,7 +785,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                     }
                 }
             });
-
+            Java::Runtime::URL::getClass(env);
+            Java::Runtime::URLConnection::getClass(env);
         }catch(const JavaException& e){
             if(env){
                 JniLocalFrame __jniLocalFrame(env, 16);

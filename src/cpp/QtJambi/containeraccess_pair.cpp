@@ -173,9 +173,15 @@ void* AutoPairAccess::constructContainer(void* result, const void* container) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void* AutoPairAccess::constructContainer(void* result, void* container) {
     const QtPrivate::QMetaTypeInterface *iface = m_keyMetaType.iface();
-    iface->moveCtr(iface, result, container);
+    if(iface->moveCtr)
+        iface->moveCtr(iface, result, container);
+    else
+        memcpy(result, container, iface->size);
     iface = m_valueMetaType.iface();
-    iface->moveCtr(iface, reinterpret_cast<char*>(result)+m_offset, reinterpret_cast<char*>(container)+m_offset);
+    if(iface->moveCtr)
+        iface->moveCtr(iface, reinterpret_cast<char*>(result)+m_offset, reinterpret_cast<char*>(container)+m_offset);
+    else
+        memcpy(reinterpret_cast<char*>(result)+m_offset, reinterpret_cast<char*>(container)+m_offset, iface->size);
     return result;
 }
 

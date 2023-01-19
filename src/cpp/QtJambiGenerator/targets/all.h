@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -105,7 +105,7 @@
 
 #ifndef QTJAMBI_NO_GUI
 #define QACCESSIBLE_H
-typedef void* GLsync;
+typedef struct __GLsync *GLsync;
 #include <QtGui/QtGui>
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/QOpenGLFunctions_1_0>
@@ -178,7 +178,11 @@ typedef void* GLsync;
 #undef Q_OBJECT_FAKE
 #endif
 #define Q_OBJECT_FAKE
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
 #include <ActiveQt/ActiveQt>
+#else
+#include <ActiveQt/QtActiveQt>
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtAxContainer/QtAxContainer>
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -44,6 +44,11 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_gui();"}
+    }
+
+    Rejection{
+        className: "QWindowsMimeConverter"
+        since: [6,5]
     }
     
     PrimitiveType{
@@ -4976,6 +4981,31 @@ TypeSystem{
         }
     }
     
+    InterfaceType{
+        name: "QAccessibleSelectionInterface"
+        ModifyFunction{
+            signature: "isSelected(QAccessibleInterface*)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "select(QAccessibleInterface*)"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "unselect(QAccessibleInterface*)"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+        }
+        since: [6,5]
+    }
     
     ObjectType{
         name: "QAccessibleObject"
@@ -7967,7 +7997,8 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
+                Text{content: "applicationData->update(%env);\n"+
+                              "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
             }
         }
         ModifyFunction{
@@ -12537,6 +12568,12 @@ TypeSystem{
             since: 6
         }
     }
+
+    EnumType{
+        name: "QTextLayout::GlyphRunRetrievalFlag"
+        flags: "QTextLayout::GlyphRunRetrievalFlags"
+        since: [6,5]
+    }
     
     InterfaceType{
         name: "QAbstractUndoItem"
@@ -12838,6 +12875,22 @@ TypeSystem{
                 index: "return"
                 replaceValue: "this"
             }
+        }
+        ModifyFunction{
+            signature: "rotate(qreal,Qt::Axis,qreal)"
+            ModifyArgument{
+                index: "return"
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "rotateRadians(qreal,Qt::Axis,qreal)"
+            ModifyArgument{
+                index: "return"
+                replaceValue: "this"
+            }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "scale(qreal,qreal)"
@@ -20265,6 +20318,30 @@ TypeSystem{
         generate: false
         ModifyFunction{
             signature: "QWebOSScreen()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+        }
+        since: [6, 2]
+    }
+
+    Rejection{
+        className: "QNativeInterface::QWaylandApplication::TypeInfo"
+    }
+
+    InterfaceType{
+        name: "QNativeInterface::QWaylandApplication"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QWaylandApplication"
+        ppCondition: "defined(Q_OS_UNIX)"
+        isNativeInterface: true
+        generate: false
+        ModifyFunction{
+            signature: "QWaylandApplication()"
             remove: RemoveFlag.All
         }
         ExtraIncludes{

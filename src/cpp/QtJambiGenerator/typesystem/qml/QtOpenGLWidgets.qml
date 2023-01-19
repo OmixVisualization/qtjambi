@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -38,6 +38,11 @@ TypeSystem{
 
     EnumType{
         name: "QOpenGLWidget::UpdateBehavior"
+    }
+
+    EnumType{
+        name: "QOpenGLWidget::TargetBuffer"
+        since: [6,5]
     }
     
     ObjectType{

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -3328,7 +3328,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                         return id;
                 }
                 const QMetaObject *const original_meta_object = registeredOriginalMetaObject(*typeId);
-                QMetaType::TypeFlags flags = QMetaType::MovableType | QMetaType::NeedsDestruction | QMetaType::NeedsConstruction;
+                QMetaType::TypeFlags flags;
                 QByteArray typeName = QMetaObject::normalizedType(qtType);
                 EntryTypes entryType = getEntryType(*typeId);
                 if(isReference){
@@ -3355,20 +3355,26 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     default: break;
                     }
                 }
+                bool isQObject = false;
                 switch(entryType){
-                case EntryTypes::ObjectTypeInfo:
                 case EntryTypes::QObjectTypeInfo:
+                    isQObject = true;
+                case EntryTypes::ObjectTypeInfo:
                 case EntryTypes::InterfaceTypeInfo:
                 case EntryTypes::FunctionalTypeInfo: {
+                    flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                     flags |= QMetaType::IsPointer;
 #endif
                     if(entryType!=EntryTypes::FunctionalTypeInfo && !typeName.endsWith("*")){
                         typeName = QMetaObject::normalizedType(typeName + "*");
                     }
-                    if(Java::QtCore::QObject::isAssignableFrom(env, clazz)){
+                    if(isQObject){
                         flags |= QMetaType::PointerToQObject;
                     }else if(original_meta_object){
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                        flags |= QMetaType::IsGadget;
+#endif
                         flags |= QMetaType::PointerToGadget;
                     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -3411,7 +3417,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
 #endif
                 }
                 case EntryTypes::EnumTypeInfo:{
-                    flags |= QMetaType::IsEnumeration;
+                    flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<Qt::Orientation>::Flags);
                     if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         int typeId = QMetaType::registerNormalizedType(

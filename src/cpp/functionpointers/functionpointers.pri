@@ -5,10 +5,13 @@ isEmpty(TARGET):{
 }
 TEMPLATE = lib
 
-DEFINES += QT_NO_VERSION_TAGGING
-CONFIG += unversioned_libname skip_target_version_ext
+QT -= core gui
 
-QT = core
+DEFINES += QT_NO_VERSION_TAGGING
+CONFIG -= staticlib static
+CONFIG += unversioned_libname skip_target_version_ext shared
+
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 SOURCES = impl.cpp
 
@@ -31,7 +34,9 @@ CONFIG(debug, debug|release) {
 }
 
 macx:CONFIG -= precompile_header
+macx:CONFIG += no_default_rpath no_qt_rpath
 macx:QMAKE_CXXFLAGS += -Wc++14-extensions
+macx:QMAKE_CXXFLAGS += -F$$[QT_INSTALL_LIBS]
 macx:QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
 android:CONFIG += rtti
 android:CONFIG += exceptions

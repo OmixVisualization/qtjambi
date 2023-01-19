@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -1462,6 +1462,24 @@ TypeSystem{
                     Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
                 }
             }
+        }
+        ModifyFunction{
+            signature: "projectionMatrix() const"
+            ModifyArgument{
+                index: "return"
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QMatrix4x4"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
+                }
+            }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "render(const QSGRenderNode::RenderState*)"

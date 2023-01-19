@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,9 @@
 
 #include "coreapi.h"
 #include "qtjambilink_p.h"
+#include "java_p.h"
+
+namespace QtJambiPrivate{
 
 struct ObjectDataContainerPrivate : public QSharedData {
     ObjectDataContainerPrivate();
@@ -44,6 +47,7 @@ struct ObjectDataContainerPrivate : public QSharedData {
 class ObjectDataContainer{
 public:
     ObjectDataContainer();
+    ObjectDataContainer(const std::type_info& id, QtJambiObjectData* data);
     ObjectDataContainer(const ObjectDataContainer& other);
     ObjectDataContainer(ObjectDataContainer&& other);
     ~ObjectDataContainer();
@@ -53,15 +57,20 @@ public:
     void swap(ObjectDataContainer& other);
     void setUserData(const std::type_info& id, QtJambiObjectData* data);
     QtJambiObjectData* userData(const std::type_info& id) const;
+    static bool useHiddenObjectData();
 private:
     QExplicitlySharedDataPointer<ObjectDataContainerPrivate> p;
 };
 
-Q_DECLARE_METATYPE(ObjectDataContainer)
+}
 
-void swap(ObjectDataContainer& a, ObjectDataContainer& b){
+Q_DECLARE_METATYPE(QtJambiPrivate::ObjectDataContainer)
+
+void swap(QtJambiPrivate::ObjectDataContainer& a, QtJambiPrivate::ObjectDataContainer& b){
     a.swap(b);
 }
+
+namespace QtJambiPrivate{
 
 ObjectDataContainerPrivate::ObjectDataContainerPrivate() : indexes(), data() {
     indexes.fill(0, 3);
@@ -90,6 +99,12 @@ ObjectDataContainer::ObjectDataContainer(const ObjectDataContainer& other)
 ObjectDataContainer::ObjectDataContainer(ObjectDataContainer&& other)
     : p(std::move(other.p))
 {}
+
+ObjectDataContainer::ObjectDataContainer(const std::type_info& id, QtJambiObjectData* data)
+    : ObjectDataContainer()
+{
+    setUserData(id, data);
+}
 
 ObjectDataContainer::~ObjectDataContainer(){}
 
@@ -134,23 +149,50 @@ QtJambiObjectData* ObjectDataContainer::userData(const std::type_info& id) const
     return idx>=0 && idx<p->data.size() ? p->data.at(idx) : nullptr;
 }
 
+bool ObjectDataContainer::useHiddenObjectData(){
+    static bool result = []()->bool{
+        if(JniEnvironment env{100}){
+            try{
+                if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-hidden-objectdata"))){
+                    return false;
+                }
+            }catch(const JavaException& exn){exn.report(env);}
+        }
+        return true;
+    }();
+    return result;
+}
+
+}
 
 QtJambiObjectData::QtJambiObjectData(){}
 QtJambiObjectData::~QtJambiObjectData(){}
 
 QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std::type_info& id)
 {
+    using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
     if(p && (id!=typeid(ValueOwnerUserData) || !p->wasDeleted) && p->extraData){
-        char name[sizeof(void*)+1];
-        memcpy(name, &p->extraData, sizeof(void*));
-        name[sizeof(void*)] = '\0';
-        const auto i = p->extraData->propertyNames.indexOf(name);
-        if(i>=0){
-            const QVariant& variant = p->extraData->propertyValues.at(i);
-            if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data());
-                return container->userData(id);
+        if(ObjectDataContainer::useHiddenObjectData()){
+            const auto i = p->extraData->propertyNames.size();
+            if(i<p->extraData->propertyValues.size()){
+                const QVariant& variant = p->extraData->propertyValues[i];
+                if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                    const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data());
+                    return container->userData(id);
+                }
+            }
+        }else{
+            char name[sizeof(void*)+1];
+            memcpy(name, &p->extraData, sizeof(void*));
+            name[sizeof(void*)] = '\0';
+            const auto i = p->extraData->propertyNames.indexOf(name);
+            if(i>=0){
+                const QVariant& variant = p->extraData->propertyValues[i];
+                if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                    const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data());
+                    return container->userData(id);
+                }
             }
         }
     }
@@ -159,42 +201,76 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
 
 void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, QtJambiObjectData* data)
 {
+    using namespace QtJambiPrivate;
     QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
     if(p && (id!=typeid(ValueOwnerUserData) || !p->wasDeleted)){
-        if (!p->extraData)
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+        if (!p->extraData)
             p->extraData = new QObjectPrivate::ExtraData;
-#else
+#elif QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+        if (!p->extraData)
             p->extraData = new QObjectPrivate::ExtraData(p);
+#else
+        p->ensureExtraData();
 #endif
-        char name[sizeof(void*)+1];
-        memcpy(name, &p->extraData, sizeof(void*));
-        name[sizeof(void*)] = '\0';
-        const auto i = p->extraData->propertyNames.indexOf(name);
-        if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
-            ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data());
-            container->setUserData(id, data);
-        }else{
-            ObjectDataContainer container;
-            container.setUserData(id, data);
-            if(i<0){
-                p->extraData->propertyNames.append(name);
-                p->extraData->propertyValues.append(QVariant::fromValue(container));
+        if(ObjectDataContainer::useHiddenObjectData()){
+            const auto i = p->extraData->propertyNames.size();
+            if(i<p->extraData->propertyValues.size()
+                    && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data());
+                container->setUserData(id, data);
             }else{
-                p->extraData->propertyValues.replace(i, QVariant::fromValue(container));
+                if(i<p->extraData->propertyValues.size()){
+                    p->extraData->propertyValues.replace(i, QVariant::fromValue<ObjectDataContainer>({id, data}));
+                }else{
+                    p->extraData->propertyValues.append(QVariant::fromValue<ObjectDataContainer>({id, data}));
+                }
+            }
+        }else{
+            char name[sizeof(void*)+1];
+            memcpy(name, &p->extraData, sizeof(void*));
+            name[sizeof(void*)] = '\0';
+            const auto i = p->extraData->propertyNames.indexOf(name);
+            if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data());
+                container->setUserData(id, data);
+            }else{
+                if(i<0){
+                    p->extraData->propertyNames.append(name);
+                    p->extraData->propertyValues.append(QVariant::fromValue<ObjectDataContainer>({id, data}));
+                }else{
+                    p->extraData->propertyValues.replace(i, QVariant::fromValue<ObjectDataContainer>({id, data}));
+                }
             }
         }
     }
 }
 
 bool QtJambiObjectData::isRejectedUserProperty(const QObject* object, const char * propertyName) {
+    using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(propertyName && p && p->extraData){
+    if(propertyName && p && p->extraData && !ObjectDataContainer::useHiddenObjectData()){
         char name[sizeof(void*)+1];
         memcpy(name, &p->extraData, sizeof(void*));
         name[sizeof(void*)] = '\0';
         return strcmp(name, propertyName)==0;
     }
     return false;
+}
+
+void onDynamicPropertyChange(QObject *object, QDynamicPropertyChangeEvent* event){
+    using namespace QtJambiPrivate;
+    if(ObjectDataContainer::useHiddenObjectData() && event){
+        QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
+        if(p && p->extraData){
+            // check if property has been appended:
+            if(!p->extraData->propertyNames.isEmpty() && p->extraData->propertyNames.last()==event->propertyName()){
+                if(p->extraData->propertyNames.size()==p->extraData->propertyValues.size()-1
+                        && p->extraData->propertyValues[p->extraData->propertyValues.size()-2].metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                    p->extraData->propertyValues[p->extraData->propertyValues.size()-2].swap(p->extraData->propertyValues[p->extraData->propertyValues.size()-1]);
+                }
+            }
+        }
+    }
 }
 #endif

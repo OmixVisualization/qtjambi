@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -435,7 +435,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
 class NativeSlotObject : public QtPrivate::QSlotObjectBase
 {
 public:
-    NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* receiver = nullptr);
+    NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable = nullptr);
     ~NativeSlotObject();
     int* types();
 private:
@@ -445,13 +445,13 @@ private:
     JObjectWrapper m_connection;
     int m_argumentCount;
     int* const m_types;
-    QObject* m_receiver;
+    QObject* m_deletable;
     bool m_nothrow;
 };
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
-    (JNIEnv * env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, jobject connection, jint argumentCount, jint connectionType)
+    (JNIEnv * env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, QtJambiNativeID contextNativeId, jobject connection, jint argumentCount, jint connectionType)
 {
     try{
         QSharedPointer<QtJambiLink> senderLink = QtJambiLink::fromNativeId(senderObjectId);
@@ -459,14 +459,16 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
         QObject* sender = senderLink->qobject();
         Q_ASSERT(senderMetaObjectId);
         QMetaMethod qt_signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
-        QObject* receiver = sender;
+        QObject* deletable = nullptr;
+        QObject* context = QtJambiAPI::objectFromNativeId<QObject>(contextNativeId);
         connectionType = connectionType & ~Qt::UniqueConnection;
         QThread* senderAsThread = dynamic_cast<QThread*>(sender);
         if(connectionType==Qt::AutoConnection || connectionType==Qt::DirectConnection){
-            connectionType = Qt::DirectConnection;
-            if(senderAsThread){
-                receiver = new QObject();
-                receiver->moveToThread(nullptr);
+            if(senderAsThread && !context){
+                connectionType = Qt::DirectConnection;
+                deletable = new QObject();
+                deletable->moveToThread(nullptr);
+                context = deletable;
             }
         }else if(senderAsThread && QThreadData::get2(senderAsThread)->isAdopted){
             QString _connectionType;
@@ -478,11 +480,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
             Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot use signal QThread::%1 from adopted thread with connection type %2.").arg(qt_signalMethod.methodSignature().data()).arg(_connectionType) QTJAMBI_STACKTRACEINFO);
             return nullptr;
         }
+        if(!context)
+            context = sender;
         int signalIndex = QMetaObjectPrivate::signalIndex(qt_signalMethod);
-        slotObj = new NativeSlotObject(env, senderLink, qt_signalMethod, connection, argumentCount, connectionType, signalIndex==0, receiver == sender ? nullptr : receiver);
+        slotObj = new NativeSlotObject(env, senderLink, qt_signalMethod, connection, argumentCount, connectionType, signalIndex==0, deletable);
         QMetaObject::Connection c = QObjectPrivate::connectImpl(sender,
                                                                 signalIndex,
-                                                                receiver,
+                                                                context,
                                                                 nullptr,
                                                                 slotObj,
                                                                 Qt::ConnectionType(connectionType),
@@ -635,7 +639,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024AbstractReflectiv
     return nullptr;
 }
 
-NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* receiver)
+NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable)
     : QSlotObjectBase(&NativeSlotObject::impl),
       m_signal(signal),
       m_link(link),
@@ -660,7 +664,7 @@ NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLin
             return nullptr;
           }(env, signal, connectionType)
       ),
-      m_receiver(receiver),
+      m_deletable(deletable),
       m_nothrow(nothrow)
 {
 }
@@ -669,8 +673,8 @@ NativeSlotObject::~NativeSlotObject()
 {
     if(m_types)
         delete[] m_types;
-    if(m_receiver)
-        delete m_receiver;
+    if(m_deletable)
+        delete m_deletable;
 }
 
 int* NativeSlotObject::types() { return m_types; }

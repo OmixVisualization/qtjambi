@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -7640,24 +7640,59 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << "qtjambi_cast<QStringView>(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
         }
     } else if (java_type->isTargetLangAnyStringView()) {
-        if((option & DirectReturn) == DirectReturn){
-            s << INDENT << "return ";
-        }else if((option & NoTmpVariable) == NoTmpVariable){
-            if(!qt_name.isEmpty())
-                s << INDENT << qt_name << " = ";
-        }else{
-            s << INDENT;
-            writeTypeInfo(s, java_type, NoOption); //ForceConstReference
-            s << ' ' << qt_name << " = ";
-        }
         if(qtjambi_scope.isEmpty()){
+            if((option & DirectReturn) == DirectReturn){
+                s << INDENT << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!qt_name.isEmpty())
+                    s << INDENT << qt_name << " = ";
+            }else{
+                s << INDENT;
+                writeTypeInfo(s, java_type, NoOption); //ForceConstReference
+                s << ' ' << qt_name << " = ";
+            }
             s << INDENT << "QString " << qt_name << "_qstring = qtjambi_cast<QString>(" << __jni_env << ", " << java_name << ");";
             s << INDENT;
             writeTypeInfo(s, java_type, NoOption); //ForceConstReference
             s << ' ' << qt_name << " = QAnyStringView(" << qt_name << "_qstring);";
             semiRequired = false;
         }else{
-            s << "qtjambi_cast<QAnyStringView>(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
+            if((option & OptionalScope) == OptionalScope){
+                s << INDENT << "if(" << qtjambi_scope << "){" << Qt::endl;
+                {
+                    INDENTATION(INDENT)
+                    s << INDENT << "if(" << qt_name << "){" << Qt::endl;
+                    {
+                        INDENTATION(INDENT)
+                        s << INDENT << "*reinterpret_cast<QAnyStringView*>(" << qt_name << ") = qtjambi_cast<QAnyStringView>(" << __jni_env << ", *" << qtjambi_scope << ", " << java_name << ");" << Qt::endl;
+                    }
+                    s << INDENT << "}else{" << Qt::endl;
+                    {
+                        INDENTATION(INDENT)
+                        s << INDENT << qt_name << " = &qtjambi_cast<QAnyStringView&>(" << __jni_env << ", *" << qtjambi_scope << ", " << java_name << ");" << Qt::endl;
+                    }
+                    s << INDENT << "}" << Qt::endl;
+                }
+                s << INDENT << "}else{" << Qt::endl;
+                {
+                    INDENTATION(INDENT)
+                    s << INDENT << "return false;" << Qt::endl;
+                }
+                s << INDENT << "}" << Qt::endl;
+                semiRequired = false;
+            }else{
+                if((option & DirectReturn) == DirectReturn){
+                    s << INDENT << "return ";
+                }else if((option & NoTmpVariable) == NoTmpVariable){
+                    if(!qt_name.isEmpty())
+                        s << INDENT << qt_name << " = ";
+                }else{
+                    s << INDENT;
+                    writeTypeInfo(s, java_type, NoOption); //ForceConstReference
+                    s << ' ' << qt_name << " = ";
+                }
+                s << "qtjambi_cast<QAnyStringView>(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
+            }
         }
     } else if (java_type->isTargetLangUtf8StringView()) {
         if((option & DirectReturn) == DirectReturn){

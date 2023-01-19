@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -1925,6 +1925,11 @@ TypeSystem{
         className: "QDeadlineTimer"
         functionName: "_q_data"
     }
+
+    Rejection{
+        className: "QDeadlineTimer"
+        functionName: "remainingTimeAsDuration"
+    }
     
     Rejection{
         className: "QtPrivate"
@@ -2778,6 +2783,10 @@ TypeSystem{
     Rejection{
         className: "QStringMatcher::Data"
     }
+
+    Rejection{
+        className: "QLatin1StringMatcher"
+    }
     
     Rejection{
         className: "StringBuilder"
@@ -2797,6 +2806,10 @@ TypeSystem{
     
     Rejection{
         className: "QLocale::Data"
+    }
+
+    Rejection{
+        className: "QMetaMethod::Data"
     }
     
     Rejection{
@@ -3862,6 +3875,11 @@ TypeSystem{
         name: "Qt::ScreenOrientation"
         flags: "Qt::ScreenOrientations"
     }
+
+    EnumType{
+        name: "Qt::PermissionStatus"
+        since: [6, 5]
+    }
     
     EnumType{
         name: "QtMsgType"
@@ -4401,6 +4419,44 @@ TypeSystem{
     EnumType{
         name: "Qt::MaskMode"
     }
+
+    EnumType{
+        name: "Qt::ToolBarArea"
+        flags: "Qt::ToolBarAreas"
+        RejectEnumValue{
+            name: "AllToolBarAreas"
+        }
+    }
+
+    EnumType{
+        name: "Qt::WidgetAttribute"
+        RejectEnumValue{
+            name: "WA_ForceAcceptDrops"
+        }
+        RejectEnumValue{
+            name: "WA_NoBackground"
+        }
+        RejectEnumValue{
+            name: "WA_MacMetalStyle"
+        }
+    }
+
+    EnumType{
+        name: "Qt::ReturnByValueConstant"
+        generate: false
+        since: [5, 15]
+    }
+
+    EnumType{
+        name: "Qt::SplitBehaviorFlags"
+        flags: "Qt::SplitBehavior"
+        since: [5, 14]
+    }
+
+    EnumType{
+        name: "Qt::Appearance"
+        since: [6, 5]
+    }
     
     EnumType{
         name: "QCryptographicHash::Algorithm"
@@ -4573,6 +4629,10 @@ TypeSystem{
         RejectEnumValue{
             name: "Qt_6_4"
             since: [6, 4]
+        }
+        RejectEnumValue{
+            name: "Qt_6_5"
+            since: [6, 5]
         }
         RejectEnumValue{
             name: "Qt_DefaultCompiledVersion"
@@ -4845,27 +4905,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "Qt::ToolBarArea"
-        flags: "Qt::ToolBarAreas"
-        RejectEnumValue{
-            name: "AllToolBarAreas"
-        }
-    }
-    
-    EnumType{
-        name: "Qt::WidgetAttribute"
-        RejectEnumValue{
-            name: "WA_ForceAcceptDrops"
-        }
-        RejectEnumValue{
-            name: "WA_NoBackground"
-        }
-        RejectEnumValue{
-            name: "WA_MacMetalStyle"
-        }
-    }
-    
-    EnumType{
         name: "QElapsedTimer::ClockType"
     }
     
@@ -5001,12 +5040,6 @@ TypeSystem{
         RejectEnumValue{
             name: "ByteOrder"
         }
-    }
-    
-    EnumType{
-        name: "Qt::ReturnByValueConstant"
-        generate: false
-        since: [5, 15]
     }
     
     NamespaceType{
@@ -5275,6 +5308,12 @@ TypeSystem{
         ModifyFunction{
             signature: "operator[](int)const"
             rename: "at"
+            until: [6,4]
+        }
+        ModifyFunction{
+            signature: "operator[](qsizetype)const"
+            rename: "at"
+            since: [6,5]
         }
         InjectCode{
             target: CodeClass.Java
@@ -8441,10 +8480,23 @@ TypeSystem{
             signature: "operator=(QTimeZone)"
             remove: RemoveFlag.All
         }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QTimeZone___"
+                quoteBeforeLine: "}// class"
+            }
+        }
     }
     
     ValueType{
         name: "QTimeZone::OffsetData"
+    }
+
+    EnumType{
+        name: "QTimeZone::Initialization"
+        since: [6,5]
     }
     
     
@@ -10769,6 +10821,30 @@ TypeSystem{
                 }
             }
             since: [5, 15]
+        }
+        ModifyFunction{
+            signature: "removeAt(qsizetype)"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "removeFirst()"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "removeLast()"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
         }
     }
     
@@ -13343,6 +13419,27 @@ TypeSystem{
                 RemoveArgument{
                 }
             }
+            until: [6,4]
+        }
+        ModifyFunction{
+            signature: "setData(const char*,qsizetype)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "byte[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "JByteArrayPointer %out(%env, jbyteArray(%in));\n"+
+                                  "jint %2 = %out.size();"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{
+                }
+            }
+            since: [6,5]
         }
     }
     
@@ -14597,7 +14694,8 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
+                Text{content: "applicationData->update(%env);\n"+
+                              "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
             }
         }
         ModifyFunction{
@@ -14649,6 +14747,14 @@ TypeSystem{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QCoreApplication__62_"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            since: [6, 5]
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QCoreApplication__65_"
                 quoteBeforeLine: "}// class"
             }
         }
@@ -14719,8 +14825,96 @@ TypeSystem{
             }
             since: [6, 2]
         }
+        ModifyFunction{
+            signature: "checkPermission(QPermission)"
+            ppCondition: "QT_CONFIG(permissions)"
+            since: [6, 5]
+        }
     }
     
+
+    ValueType{
+        name: "QPermission"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QPermission___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QLocationPermission"
+        ModifyFunction{
+            signature: "operator=(QLocationPermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
+    EnumType{
+        name: "QLocationPermission::Accuracy"
+        since: [6, 5]
+    }
+
+    EnumType{
+        name: "QLocationPermission::Availability"
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QCalendarPermission"
+        ModifyFunction{
+            signature: "operator=(QCalendarPermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QContactsPermission"
+        ModifyFunction{
+            signature: "operator=(QContactsPermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QCameraPermission"
+        ModifyFunction{
+            signature: "operator=(QCameraPermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QMicrophonePermission"
+        ModifyFunction{
+            signature: "operator=(QMicrophonePermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
+    ValueType{
+        name: "QBluetoothPermission"
+        ModifyFunction{
+            signature: "operator=(QBluetoothPermission)"
+            remove: RemoveFlag.All
+        }
+        implementing: "QPermission.Request"
+        since: [6, 5]
+    }
+
     ObjectType{
         name: "QSettings"
         ExtraIncludes{
@@ -16564,10 +16758,12 @@ TypeSystem{
         ModifyFunction{
             signature: "QXmlStreamReader(const char*)"
             remove: RemoveFlag.All
+            until: [6,4]
         }
         ModifyFunction{
             signature: "addData(const char*)"
             remove: RemoveFlag.All
+            until: [6,4]
         }
         ModifyFunction{
             signature: "setEntityResolver(QXmlStreamEntityResolver*)"
@@ -18086,6 +18282,11 @@ TypeSystem{
             since: [6, 4]
         }
         ModifyFunction{
+            signature: "operator+=(QUtf8StringView)"
+            remove: RemoveFlag.All
+            since: [6, 5]
+        }
+        ModifyFunction{
             signature: "operator+=(QStringView)"
             remove: RemoveFlag.All
         }
@@ -19280,6 +19481,50 @@ TypeSystem{
             }
             since: 6
         }
+        ModifyFunction{
+            signature: "erase(const QChar*)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "append(QUtf8StringView)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "prepend(QUtf8StringView)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "insert(qsizetype,QUtf8StringView)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "removeAt(qsizetype)"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "removeFirst()"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "removeLast()"
+            ModifyArgument{
+                index: 0
+                replaceValue: "this"
+            }
+            since: [6,5]
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -19299,12 +19544,6 @@ TypeSystem{
         name: "QtJambiItemSelection"
         extendType: "QItemSelection"
         since: 6
-    }
-    
-    EnumType{
-        name: "Qt::SplitBehaviorFlags"
-        flags: "Qt::SplitBehavior"
-        since: [5, 14]
     }
     
     EnumType{
@@ -21266,6 +21505,16 @@ TypeSystem{
             remove: RemoveFlag.JavaOnly
         }
         ModifyFunction{
+            signature: "QUntypedBindable(QObject*,const char*,const QtPrivate::QBindableInterface *)"
+            remove: RemoveFlag.All
+            since: [6, 5]
+        }
+        ModifyFunction{
+            signature: "QUntypedBindable(QObject*,QMetaProperty,const QtPrivate::QBindableInterface *)"
+            remove: RemoveFlag.All
+            since: [6, 5]
+        }
+        ModifyFunction{
             signature: "takeBinding()"
             access: Modification.NonFinal
             since: [6, 1]
@@ -21590,7 +21839,7 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.registerDependentObject(%1, this);"}
+                Text{content: "__rcCategory = %1;"}
             }
         }
         ModifyFunction{
@@ -21614,7 +21863,7 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.registerDependentObject(%1, this);"}
+                Text{content: "__rcCategory = %1;"}
             }
             until: 5
         }
@@ -21819,6 +22068,11 @@ TypeSystem{
             signature: "operator<<(const char16_t*)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "operator<<(qfloat16)"
+            remove: RemoveFlag.All
+            since: [6,5]
         }
         ModifyFunction{
             signature: "operator<<(char32_t)"
@@ -22932,6 +23186,18 @@ TypeSystem{
         signature: "qIsNaN(qfloat16)"
         remove: RemoveFlag.All
     }
+
+    GlobalFunction{
+        signature: "qSqrt(qfloat16)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qHypot(qfloat16, qfloat16)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
     
     GlobalFunction{
         signature: "qIsNull(qfloat16)"
@@ -23122,10 +23388,28 @@ TypeSystem{
         signature: "qQNaN()"
         targetType: "QtNumeric"
     }
+
+    GlobalFunction{
+        signature: "qt_snan()"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qSNaN()"
+        targetType: "QtNumeric"
+        since: [6,5]
+    }
     
     GlobalFunction{
         signature: "qIsFinite<T>(T)"
         remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qRegisterMetaType(QMetaType)"
+        remove: RemoveFlag.All
+        since: [6,5]
     }
     
     GlobalFunction{
@@ -23211,6 +23495,90 @@ TypeSystem{
     GlobalFunction{
         signature: "qMax<T,U>(T, U)"
         remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qBound<T, U>(const T&, const T&, const U&)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qBound<T, U>(const T&, const U&, const T&)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qBound<T, U>(const U&, const T&, const T&)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "convertDoubleTo<T>(double, T*, bool)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qt_saturate<To, From>(From)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "add_overflow<T, V2>(T, std::integral_constant<T,V2>, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "add_overflow<T>(T, T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "add_overflow<V2, T>(T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "mul_overflow<T, V2>(T, std::integral_constant<T,V2>, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "mul_overflow<T>(T, T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "mul_overflow<V2, T>(T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "sub_overflow<T, V2>(T, std::integral_constant<T,V2>, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "sub_overflow<T>(T, T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "sub_overflow<V2, T>(T, T*)"
+        remove: RemoveFlag.All
+        since: [6,5]
     }
 
     GlobalFunction{
@@ -23667,6 +24035,18 @@ TypeSystem{
     GlobalFunction{
         signature: "qHypot<Tx,Ty,Tz>(Tx, Ty, Tz)"
         remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qHypot<T>(T, qfloat16)"
+        remove: RemoveFlag.All
+        since: [6,5]
+    }
+
+    GlobalFunction{
+        signature: "qHypot<T>(qfloat16, T)"
+        remove: RemoveFlag.All
+        since: [6,5]
     }
     
     GlobalFunction{

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2022 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -65,6 +65,15 @@ TypeSystem{
     
     EnumType{
         name: "QGeoShape::ShapeType"
+    }
+
+    Rejection{
+        className: "QGeoShape"
+        functionName: "dataStreamOut"
+    }
+    Rejection{
+        className: "QGeoShape"
+        functionName: "dataStreamIn"
     }
     
     ValueType{
@@ -469,6 +478,57 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "parsePosInfoFromNmeaData(QByteArrayView, QGeoPositionInfo *, bool *)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$Result"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jobject %out = nullptr;\n"+
+                                  "if(%in){\n"+
+                                  "    %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(\n"+
+                                  "    %env, qtjambi_cast<jobject>(%env, %2), %3);\n"+
+                                  "}"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "bool %out = false;\n"+
+                                  "if(%in){\n"+
+                                  "    if(%2){\n"+
+                                  "        jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);\n"+
+                                  "        *%2 = qtjambi_cast<QGeoPositionInfo>(%env, __java_%2);\n"+
+                                  "    }\n"+
+                                  "    if(%3){\n"+
+                                  "        *%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QGeoPositionInfo %in;\n"+
+                                  "QGeoPositionInfo* %out = &%in;"}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "bool %in = false;\n"+
+                                  "bool* %out = &%in;"}
+                }
+            }
+            since: [6,5]
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiPositioning.java"
@@ -525,6 +585,18 @@ TypeSystem{
                     minLength: 1
                 }
             }
+        }
+        ModifyFunction{
+            signature: "parseSatelliteInfoFromNmea(QByteArrayView, QList<QGeoSatelliteInfo> &, QGeoSatelliteInfo::SatelliteSystem &)"
+            ModifyArgument{
+                index: 3
+                NoNullPointer{
+                }
+                ArrayType{
+                    minLength: 1
+                }
+            }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "parseSatellitesInUseFromNmea(const char *, int, QList<int> &)"
