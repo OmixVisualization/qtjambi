@@ -519,10 +519,6 @@ Following Qt 6.4 modules are provided by QtJambi:
     * [**qtjambi-uic-native-windows-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-windows-x64/6.4.3/jar)
     * [**qtjambi-uic-native-linux-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-linux-x64/6.4.3/jar)
     * [**qtjambi-uic-native-macos-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-macos/6.4.3/jar)
-    * [**qtjambi-uic-native-android-x86-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x86/6.4.3/jar)
-    * [**qtjambi-uic-native-android-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x64/6.4.3/jar)
-    * [**qtjambi-uic-native-android-arm-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm/6.4.3/jar)
-    * [**qtjambi-uic-native-android-arm64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm64/6.4.3/jar)
 * QtJambi Deployer:
     * [**qtjambi-deployer-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer/6.4.3/jar)
     * [**qtjambi-deployer-native-windows-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer-native-windows-x64/6.4.3/jar)
@@ -537,10 +533,6 @@ Following Qt 6.4 modules are provided by QtJambi:
     * [**qtjambi-generator-native-windows-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-windows-x64/6.4.3/jar)
     * [**qtjambi-generator-native-linux-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-linux-x64/6.4.3/jar)
     * [**qtjambi-generator-native-macos-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-macos/6.4.3/jar)
-    * [**qtjambi-generator-native-android-x86-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x86/6.4.3/jar)
-    * [**qtjambi-generator-native-android-x64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x64/6.4.3/jar)
-    * [**qtjambi-generator-native-android-arm-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm/6.4.3/jar)
-    * [**qtjambi-generator-native-android-arm64-6.4.3.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm64/6.4.3/jar)
 
 ## QtJambi for Qt 6.2
 
@@ -1024,10 +1016,6 @@ Following Qt 6.2 modules are provided by QtJambi:
     * [**qtjambi-uic-native-windows-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-windows-x64/6.2.11/jar)
     * [**qtjambi-uic-native-linux-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-linux-x64/6.2.11/jar)
     * [**qtjambi-uic-native-macos-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-macos/6.2.11/jar)
-    * [**qtjambi-uic-native-android-x86-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x86/6.2.11/jar)
-    * [**qtjambi-uic-native-android-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x64/6.2.11/jar)
-    * [**qtjambi-uic-native-android-arm-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm/6.2.11/jar)
-    * [**qtjambi-uic-native-android-arm64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm64/6.2.11/jar)
 * QtJambi Deployer:
     * [**qtjambi-deployer-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer/6.2.11/jar)
     * [**qtjambi-deployer-native-windows-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer-native-windows-x64/6.2.11/jar)
@@ -1042,10 +1030,6 @@ Following Qt 6.2 modules are provided by QtJambi:
     * [**qtjambi-generator-native-windows-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-windows-x64/6.2.11/jar)
     * [**qtjambi-generator-native-linux-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-linux-x64/6.2.11/jar)
     * [**qtjambi-generator-native-macos-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-macos/6.2.11/jar)
-    * [**qtjambi-generator-native-android-x86-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x86/6.2.11/jar)
-    * [**qtjambi-generator-native-android-x64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x64/6.2.11/jar)
-    * [**qtjambi-generator-native-android-arm-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm/6.2.11/jar)
-    * [**qtjambi-generator-native-android-arm64-6.2.11.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm64/6.2.11/jar)
 
 
 ## QtJambi for Qt 5.15
@@ -1566,10 +1550,6 @@ Following Qt 5.15 modules are provided by QtJambi:
     * [**qtjambi-uic-native-windows-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-windows-x64/5.15.13/jar)
     * [**qtjambi-uic-native-linux-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-linux-x64/5.15.13/jar)
     * [**qtjambi-uic-native-macos-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-macos/5.15.13/jar)
-    * [**qtjambi-uic-native-android-x86-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x86/5.15.13/jar)
-    * [**qtjambi-uic-native-android-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-x64/5.15.13/jar)
-    * [**qtjambi-uic-native-android-arm-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm/5.15.13/jar)
-    * [**qtjambi-uic-native-android-arm64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic-native-android-arm64/5.15.13/jar)
 * QtJambi Deployer:
     * [**qtjambi-deployer-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer/5.15.13/jar)
     * [**qtjambi-deployer-native-windows-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer-native-windows-x64/5.15.13/jar)
@@ -1584,8 +1564,4 @@ Following Qt 5.15 modules are provided by QtJambi:
     * [**qtjambi-generator-native-windows-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-windows-x64/5.15.13/jar)
     * [**qtjambi-generator-native-linux-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-linux-x64/5.15.13/jar)
     * [**qtjambi-generator-native-macos-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-macos/5.15.13/jar)
-    * [**qtjambi-generator-native-android-x86-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x86/5.15.13/jar)
-    * [**qtjambi-generator-native-android-x64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-x64/5.15.13/jar)
-    * [**qtjambi-generator-native-android-arm-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm/5.15.13/jar)
-    * [**qtjambi-generator-native-android-arm64-5.15.13.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator-native-android-arm64/5.15.13/jar)
 
