@@ -166,7 +166,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2022 Dr. Peter Droste, 
+            Copyright (C) 2009-2023 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
@@ -178,7 +178,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2022 Dr. Peter Droste, 
+            Copyright (C) 2009-2023 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
