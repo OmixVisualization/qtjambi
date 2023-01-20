@@ -301,15 +301,15 @@ invokable by Qt. You can avoid this by annotating the method with
 `@QtUninvokable`. On the other hand, static and non-public methods as well as constructors can
 be made invokable with annotation `@QtInvokable`.
 
-``` Java
+```Java
 public class Implementor extends QObject{
     // invokable by default:
-	public String doSomething(int arg) {
+    public String doSomething(int arg) {
         ...
     }
 	
     // not invokable by default:
-	private int doSomething(double arg) {
+    private int doSomething(double arg) {
         ...
     }
 	
@@ -333,9 +333,9 @@ public class Implementor extends QObject{
 	
     // making constructor invokable:
     @QtInvokable
-	public Implementor(){
-	    super();
-	}
+    public Implementor(){
+        super();
+    }
 }
 ```
 
