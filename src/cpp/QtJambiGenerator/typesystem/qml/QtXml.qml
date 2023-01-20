@@ -472,7 +472,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
-            Remove{since: [6,4]}
+            Remove{since: [6,5]}
         }
         ModifyFunction{
             signature: "setContent(QByteArray,QString*,int*,int*)"
@@ -516,7 +516,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
-            Remove{since: [6,4]}
+            Remove{since: [6,5]}
         }
         ModifyFunction{
             signature: "setContent(QIODevice*,QString*,int*,int*)"
@@ -567,7 +567,7 @@ TypeSystem{
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
                 }
             }
-            Remove{since: [6,4]}
+            Remove{since: [6,5]}
         }
     }
     

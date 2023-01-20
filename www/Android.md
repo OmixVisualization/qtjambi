@@ -81,7 +81,7 @@ Exchange `android-arm64` by `android-arm` (armeabi-v7a), `android-x86` (x86) or 
 In case you add further qtjambi modules you might need to add the following code to the `android` section:
 
 ```gradle
-	packagingOptions{
+    packagingOptions{
         exclude 'META-INF/INDEX.LIST'
     }
 ```
