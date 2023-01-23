@@ -27,7 +27,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.uic.java;
+package io.qt.uic.kotlin;
 
 import static io.qt.core.QLogging.qWarning;
 import static io.qt.uic.Utils.propertyMap;
@@ -116,7 +116,7 @@ import io.qt.widgets.QSizePolicy;
 public class WriteInitialization extends TreeWalker {
 
 	public static void formatMemberFnPtrConnection(QTextStream str, SignalSlot signal, SignalSlot slot) {
-		str.append(signal.name).append(".");
+		str.append(signal.name).append("?.");
 		if(signal.metaMethod!=null) {
 			str.append(signal.metaMethod.name());
 		}else {
@@ -124,10 +124,10 @@ public class WriteInitialization extends TreeWalker {
 			String functionName = signal.signature.substring(0, parenPos);
 			str.append(functionName);			
 		}
-		str.append(".connect(");
+		str.append("?.connect(");
 		if(slot.metaMethod!=null) {
 			if(slot.isAmbiguous) {
-				str.append("(QMetaObject.Slot").append(slot.metaMethod.parameterCount());
+				str.append("QMetaObject.Slot").append(slot.metaMethod.parameterCount());
 				List<Class<?>> parameterClassTypes = slot.metaMethod.parameterClassTypes();
 				if(!parameterClassTypes.isEmpty()) {
 					str.append('<');
@@ -138,12 +138,14 @@ public class WriteInitialization extends TreeWalker {
 					}
 					str.append('>');
 				}
-				str.append(')');
+				str.append('(');
 			}
 			str.append(slot.name).append("::").append(slot.metaMethod.name());
+			if(slot.isAmbiguous)
+				str.append(')');
 		}else if(slot.method!=null) {
 			if(slot.isAmbiguous) {
-				str.append("(QMetaObject.Slot").append(slot.method.getParameterCount());
+				str.append("QMetaObject.Slot").append(slot.method.getParameterCount());
 				Class<?>[] parameterClassTypes = slot.method.getParameterTypes();
 				if(parameterClassTypes.length>0) {
 					str.append('<');
@@ -154,9 +156,11 @@ public class WriteInitialization extends TreeWalker {
 					}
 					str.append('>');
 				}
-				str.append(')');
+				str.append('(');
 			}
 			str.append(slot.name).append("::").append(slot.metaMethod.name());
+			if(slot.isAmbiguous)
+				str.append(')');
 		}else {
 			int parenPos = slot.signature.indexOf('(');
 			String functionName = slot.signature.substring(0, parenPos);
@@ -314,25 +318,23 @@ public class WriteInitialization extends TreeWalker {
 		    if (emptyItemPolicy == Item.EmptyItemPolicy.ConstructItemOnly && m_children.isEmpty()) {
 		        if (m_setupUiData.policy == ItemData.TemporaryVariableGeneratorPolicy.DontGenerate) {
 		            m_setupUiStream.append(m_indent);
-		            m_setupUiStream.append("new ");
 		            m_setupUiStream.append(m_itemClassName);
 		            m_setupUiStream.append("(");
 		            m_setupUiStream.append(parent);
-		            m_setupUiStream.append(");").endl();
+		            m_setupUiStream.append(")").endl();
 		            return "";
 		        }
 		    }
 
 		    String uniqueName = m_driver.unique("__" + m_itemClassName.toLowerCase());
 		    m_setupUiStream.append(m_indent);
-	        m_setupUiStream.append(m_itemClassName);
-            m_setupUiStream.append(" ");
+            m_setupUiStream.append("var ");
 		    m_setupUiStream.append(uniqueName);
-            m_setupUiStream.append(" = new ");
+            m_setupUiStream.append(" = ");
             m_setupUiStream.append(m_itemClassName);
             m_setupUiStream.append("(");
             m_setupUiStream.append(parent);
-            m_setupUiStream.append(");").endl();
+            m_setupUiStream.append(")").endl();
 
 		    for(QPair<String, String> pair : m_setupUiData.setters) {
 		        m_setupUiStream.append(m_indent);
@@ -355,7 +357,7 @@ public class WriteInitialization extends TreeWalker {
 		    String uniqueName = m_driver.unique("___" + m_itemClassName.toLowerCase());
 		    m_retranslateUiStream.append(m_indent);
 	        m_retranslateUiStream.append(m_itemClassName).append(" ");
-		    m_retranslateUiStream.append(uniqueName).append(" = ").append(parentPath).append(';').endl();
+		    m_retranslateUiStream.append(uniqueName).append(" = ").append(parentPath).endl();
 
 		    for(QPair<String, String> pair : m_retranslateUiData.setters) {
 		        m_retranslateUiStream.append(m_indent).append(uniqueName).append(pair.second).endl();
@@ -466,7 +468,7 @@ public class WriteInitialization extends TreeWalker {
         
         private static void writeSetter(String indent, String varName, String setter, String v, QTextStream str) {
         	str.append(indent).append(varName).append('.').append(setter)
-        		.append('(').append(v).append(");").endl();
+        		.append('(').append(v).append(")").endl();
         }
         
         private static void writeContentsMargins(String indent, String objectName, int value, QTextStream str)
@@ -587,13 +589,13 @@ public class WriteInitialization extends TreeWalker {
 	    String widgetClassName = node.elementWidget().attributeClass();
 
 	    m_output.append(m_option.indent)
-	            .append("public void setupUi(").append(widgetClassName).append(" ").append(varName).append(")").append("{").endl()
+	            .append("fun setupUi(").append(varName).append(": ").append(widgetClassName).append(")").append("{").endl()
 	    		.append(m_option.indent).endl();
 
 	    for (String connection : m_uic.databaseInfo().connections()) {
 	        if ("(default)".equals(connection))
 	            continue;
-	        m_output.append(m_indent).append(Driver.normalizedName(connection)).append("Connection = io.qt.sql.QSqlDatabase.database(").append(formatString(connection)).append(");").endl();
+	        m_output.append(m_indent).append(Driver.normalizedName(connection)).append("Connection = io.qt.sql.QSqlDatabase.database(").append(formatString(connection)).append(")").endl();
 	    }
 
 	    acceptWidget(node.elementWidget());
@@ -605,7 +607,7 @@ public class WriteInitialization extends TreeWalker {
 	            continue;
 	        }
 
-	        m_output.append(m_indent).append(b.labelVarName).append(".setBuddy(").append(buddyVarName).append(");").endl();
+	        m_output.append(m_indent).append(b.labelVarName).append(".setBuddy(").append(buddyVarName).append(")").endl();
 	    }
 
 	    if (node.elementTabStops()!=null)
@@ -614,7 +616,7 @@ public class WriteInitialization extends TreeWalker {
 	    if (m_delayedActionInitialization.length()>0)
 	        m_output.endl().append(m_delayedActionInitialization.toString());
 
-	    m_output.endl().append(m_indent).append("this.retranslateUi(").append(varName).append(");").endl();
+	    m_output.endl().append(m_indent).append("this.retranslateUi(").append(varName).append(")").endl();
 
 	    if (node.elementConnections()!=null)
 	        acceptConnections(node.elementConnections());
@@ -624,14 +626,14 @@ public class WriteInitialization extends TreeWalker {
 	        m_output.endl().append(m_delayedInitialization.toString()).endl();
 
 	    if (m_option.autoConnection && m_connectSlotsByName)
-	        m_output.endl().append(m_indent).append("QMetaObject.connectSlotsByName(").append(varName).append(");").endl();
+	        m_output.endl().append(m_indent).append("QMetaObject.connectSlotsByName(").append(varName).append(")").endl();
 
 	    m_output.append(m_option.indent).append("}").endl().endl();
 
 	    m_refreshOut.flush();
 
 	    m_output.append(m_option.indent)
-		        .append("public void retranslateUi(").append(widgetClassName).append(" ").append(varName).append(")").endl()
+		        .append("fun retranslateUi(").append(varName).append(": ").append(widgetClassName).append(")").endl()
 				.append(m_option.indent).append("{").endl()
 				.append(m_refreshInitialization.toString())
 				.append(m_option.indent).append("}").endl();
@@ -656,9 +658,9 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	    }
 	    if (id.isEmpty()) {
-	        m_output.append(m_indent).append(parentWidget).append(".addPage(").append(pageVarName).append(");").endl();
+	        m_output.append(m_indent).append(parentWidget).append(".addPage(").append(pageVarName).append(")").endl();
 	    } else {
-	        m_output.append(m_indent).append(parentWidget).append(".setPage(").append(id).append(", ").append(pageVarName).append(");").endl();
+	        m_output.append(m_indent).append(parentWidget).append(".setPage(").append(id).append(", ").append(pageVarName).append(")").endl();
 	    }
 	}
 	
@@ -698,7 +700,7 @@ public class WriteInitialization extends TreeWalker {
 	    CustomWidgetsInfo cwi = m_uic.customWidgetsInfo();
 
 	    if (m_widgetChain.size() != 1) {
-	        m_output.append(m_indent).append(varName).append(" = new ").append(cwi.realClassName(className)).append('(').append(parentWidget).append(");").endl();
+	        m_output.append(m_indent).append(varName).append(" = ").append(cwi.realClassName(className)).append('(').append(parentWidget).append(")").endl();
 	    }
 
 	    parentWidget = savedParentWidget;
@@ -752,28 +754,28 @@ public class WriteInitialization extends TreeWalker {
 
 	    if (cwi._extends(parentClass, "QMainWindow")) {
 	        if (cwi._extends(className, "QMenuBar")) {
-	            m_output.append(m_indent).append(parentWidget).append(".setMenuBar(").append(varName).append(");").endl();
+	            m_output.append(m_indent).append(parentWidget).append("?.setMenuBar(").append(varName).append(")").endl();
 	        } else if (cwi._extends(className, "QToolBar")) {
-	            m_output.append(m_indent).append(parentWidget).append(".addToolBar("
+	            m_output.append(m_indent).append(parentWidget).append("?.addToolBar("
 	               ).append(toolBarAreaStringFromDOMAttributes(attributes).replace("::", ".")).append(varName
-	               ).append(");").endl();
+	               ).append(")").endl();
 
 	            DomProperty pbreak = attributes.get("toolBarBreak");
                 if (pbreak!=null && Boolean.parseBoolean(pbreak.elementBool())) {
-                    m_output.append(m_indent).append(parentWidget).append(".insertToolBarBreak(").append( varName).append(");").endl();
+                    m_output.append(m_indent).append(parentWidget).append("?.insertToolBarBreak(").append( varName).append(")").endl();
                 }
 
 	        } else if (cwi._extends(className, "QDockWidget")) {
-	            m_output.append(m_indent).append(parentWidget).append(".addDockWidget(");
+	            m_output.append(m_indent).append(parentWidget).append("?.addDockWidget(");
 	            DomProperty pstyle = attributes.get("dockWidgetArea");
 	            if (pstyle!=null) {
 	                m_output.append("Qt.DockWidgetArea.").append(Qt.DockWidgetArea.resolve(pstyle.elementNumber()).name()).append(", ");
 	            }
-	            m_output.append(varName).append(");").endl();
+	            m_output.append(varName).append(")").endl();
 	        } else if (m_uic.customWidgetsInfo()._extends(className, "QStatusBar")) {
-	            m_output.append(m_indent).append(parentWidget).append(".setStatusBar(").append(varName).append(");").endl();
+	            m_output.append(m_indent).append(parentWidget).append("?.setStatusBar(").append(varName).append(")").endl();
 	        } else {
-	                m_output.append(m_indent).append(parentWidget).append(".setCentralWidget(").append(varName).append(");").endl();
+	                m_output.append(m_indent).append(parentWidget).append("?.setCentralWidget(").append(varName).append(")").endl();
 	        }
 	    }
 
@@ -782,7 +784,7 @@ public class WriteInitialization extends TreeWalker {
 	    if (addPageMethod.isEmpty())
 	        addPageMethod = cwi.simpleContainerAddPageMethod(parentClass);
 	    if (!addPageMethod.isEmpty()) {
-	        m_output.append(m_indent).append(parentWidget).append('.').append(addPageMethod).append('(').append(varName).append(");").endl();
+	        m_output.append(m_indent).append(parentWidget).append('.').append(addPageMethod).append('(').append(varName).append(")").endl();
 	    } else if (m_uic.customWidgetsInfo()._extends(parentClass, "QWizard")) {
 	        addWizardPage(varName, node, parentWidget);
 	    } else if (m_uic.customWidgetsInfo()._extends(parentClass, "QToolBox")) {
@@ -792,21 +794,21 @@ public class WriteInitialization extends TreeWalker {
 	        DomProperty picon = attributes.get("icon");
 	        if (picon!=null)
 	            icon = ", " + iconCall(picon); // Side effect: Writes icon definition
-	        m_output.append(m_indent).append(parentWidget).append(".addItem("
+	        m_output.append(m_indent).append(parentWidget).append("?.addItem("
 	           ).append(varName).append(icon).append(", ").append(noTrCall(plabelString, pageDefaultString)
-	           ).append(");").endl();
+	           ).append(")").endl();
 
 	        autoTrOutput(plabelString, pageDefaultString).append(m_indent).append(parentWidget
-	           ).append(".setItemText(").append(parentWidget
-	           ).append(".indexOf(" ).append(varName).append("), "
-	           ).append(autoTrCall(plabelString, pageDefaultString)).append(");").flush();
+	           ).append("?.setItemText(").append(parentWidget
+	           ).append("?.indexOf(" ).append(varName).append("), "
+	           ).append(autoTrCall(plabelString, pageDefaultString)).append(")").flush();
 
 	        DomProperty ptoolTip = attributes.get("toolTip");
 	        if (ptoolTip!=null) {
 	            autoTrOutput(ptoolTip.elementString())
-	               .append(m_indent).append(parentWidget).append(".setItemToolTip(").append(parentWidget
-	               ).append(".indexOf(").append(varName).append("), "
-	               ).append(autoTrCall(ptoolTip.elementString())).append(");").flush();
+	               .append(m_indent).append(parentWidget).append("?.setItemToolTip(").append(parentWidget
+	               ).append("?.indexOf(").append(varName).append("), "
+	               ).append(autoTrCall(ptoolTip.elementString())).append(")").flush();
 	        }
 	    } else if (m_uic.customWidgetsInfo()._extends(parentClass, "QTabWidget")) {
 	        DomProperty ptitle = attributes.get("title");
@@ -815,27 +817,27 @@ public class WriteInitialization extends TreeWalker {
 	        DomProperty picon = attributes.get("icon");
 	        if (picon!=null)
 	            icon = ", " + iconCall(picon); // Side effect: Writes icon definition
-	        m_output.append(m_indent).append(parentWidget).append(".addTab("
-	           ).append(varName).append(icon).append(", \"\");").endl();
+	        m_output.append(m_indent).append(parentWidget).append("?.addTab("
+	           ).append(varName).append(icon).append(", \"\")").endl();
 
 	        autoTrOutput(ptitleString, pageDefaultString).append(m_indent).append(parentWidget
-	           ).append(".setTabText(").append(parentWidget
-	           ).append(".indexOf(").append(varName).append("), "
-	           ).append(autoTrCall(ptitleString, pageDefaultString)).append(");").flush();
+	           ).append("?.setTabText(").append(parentWidget
+	           ).append("?.indexOf(").append(varName).append("), "
+	           ).append(autoTrCall(ptitleString, pageDefaultString)).append(")").flush();
 
 	        DomProperty ptoolTip = attributes.get("toolTip");
 	        if (ptoolTip!=null) {
 	            autoTrOutput(ptoolTip.elementString())
-	               .append(m_indent).append(parentWidget).append(".setTabToolTip("
-	               ).append(parentWidget).append(".indexOf(").append(varName
-	               ).append("), ").append(autoTrCall(ptoolTip.elementString())).append(");").flush();
+	               .append(m_indent).append(parentWidget).append("?.setTabToolTip("
+	               ).append(parentWidget).append("?.indexOf(").append(varName
+	               ).append("), ").append(autoTrCall(ptoolTip.elementString())).append(")").flush();
 	        }
 	        DomProperty pwhatsThis = attributes.get("whatsThis");
 	        if (pwhatsThis!=null) {
 	            autoTrOutput(pwhatsThis.elementString())
-	               .append(m_indent).append(parentWidget).append(".setTabWhatsThis("
-	               ).append(parentWidget).append(".indexOf(").append(varName
-	               ).append("), ").append(autoTrCall(pwhatsThis.elementString())).append(");").flush();
+	               .append(m_indent).append(parentWidget).append("?.setTabWhatsThis("
+	               ).append(parentWidget).append("?.indexOf(").append(varName
+	               ).append("), ").append(autoTrCall(pwhatsThis.elementString())).append(")").flush();
 	        }
 	    }
 
@@ -849,7 +851,7 @@ public class WriteInitialization extends TreeWalker {
 	                headerProperties.add(fakeProperty);
 	            }
 	        }
-	        writeProperties(varName + ".header()", objectName + "_headerView",
+	        writeProperties(varName + "?.header()", objectName + "_headerView",
 	                        "QHeaderView", headerProperties,
 	                        Flag.WritePropertyIgnoreObjectName.value());
 
@@ -865,7 +867,7 @@ public class WriteInitialization extends TreeWalker {
 	                    headerProperties.add(fakeProperty);
 	                }
 	            }
-	            String headerVar = varName + "." + headerPrefix + "()";
+	            String headerVar = varName + "?." + headerPrefix + "()";
 	            writeProperties(headerVar, objectName+"_"+headerPrefix, "QHeaderView",
 	                            headerProperties, Flag.WritePropertyIgnoreObjectName.value());
 	        }
@@ -882,7 +884,7 @@ public class WriteInitialization extends TreeWalker {
 	                    m_option.messagePrefix(),
 	                    name));
 	        } else {
-	            m_output.append(m_indent).append(_varName).append(".raise_();").endl();
+	            m_output.append(m_indent).append(_varName).append("?.raise_()").endl();
 	        }
 	    }
 	}
@@ -898,12 +900,12 @@ public class WriteInitialization extends TreeWalker {
 
 	    boolean isGroupBox = false;
 
-	    m_output.append(m_indent).append(varName).append(" = new ").append(className).append('(');
+	    m_output.append(m_indent).append(varName).append(" = ").append(className).append('(');
 
 	    if (m_layoutChain.top()==null && !isGroupBox)
 	        m_output.append(m_driver.findOrInsertWidget(m_widgetChain.top()));
 
-	    m_output.append(");").endl();
+	    m_output.append(")").endl();
 
 	    // Suppress margin on a read child layout
 	    boolean suppressMarginDefault = m_layoutChain.top()!=null;
@@ -1038,7 +1040,7 @@ public class WriteInitialization extends TreeWalker {
     // Write a statement to create a spacer item.
     void writeSpacerItem(DomSpacer node, QTextStream output) {
         Map<String, DomProperty> properties = propertyMap(node.elementProperty());
-        output.append("new QSpacerItem(");
+        output.append("QSpacerItem(");
 
         int w = 0;
         int h = 0;
@@ -1097,7 +1099,7 @@ public class WriteInitialization extends TreeWalker {
 	    String layoutName = m_driver.findOrInsertLayout(layout);
 	    String itemName = m_driver.findOrInsertLayoutItem(node);
 
-	    m_output.endl().append(m_indent).append(layoutName).append(".").append(layoutAddMethod(node.kind(), layout.attributeClass())).append('(');
+	    m_output.endl().append(m_indent).append(layoutName).append("?.").append(layoutAddMethod(node.kind(), layout.attributeClass())).append('(');
 
 	    if ("QGridLayout".equals(layout.attributeClass())) {
 	        int row = node.attributeRow();
@@ -1118,7 +1120,7 @@ public class WriteInitialization extends TreeWalker {
 	        if (layout.attributeClass().contains("Box") && !node.attributeAlignment().isEmpty())
 	            m_output.append(", 0, ").append(node.attributeAlignment().replace("::", "."));
 	    }
-	    m_output.append(");").endl();
+	    m_output.append(")").endl();
 	}
 
 	//
@@ -1133,7 +1135,7 @@ public class WriteInitialization extends TreeWalker {
 	    if (m_actionGroupChain.top()!=null)
 	        parentName = m_driver.findOrInsertActionGroup(m_actionGroupChain.top());
 
-	    m_output.append(m_indent).append(varName).append(" = new QActionGroup(").append(parentName).append(");").endl();
+	    m_output.append(m_indent).append(varName).append(" = QActionGroup(").append(parentName).append(")").endl();
 	    writeProperties(varName, objectName, "QActionGroup", node.elementProperty());
 
 	    m_actionGroupChain.push(node);
@@ -1153,7 +1155,7 @@ public class WriteInitialization extends TreeWalker {
 	    if (m_actionGroupChain.top()!=null)
 	        parentName = m_driver.findOrInsertActionGroup(m_actionGroupChain.top());
 
-	    m_output.append(m_indent).append(varName).append(" = new QAction(").append(parentName).append(");").endl();
+	    m_output.append(m_indent).append(varName).append(" = QAction(").append(parentName).append(")").endl();
 	    writeProperties(varName, objectName, "QAction", node.elementProperty());
 	}
 	
@@ -1169,13 +1171,13 @@ public class WriteInitialization extends TreeWalker {
 
 	    if (m_widgetChain.top()!=null && "separator".equals(actionName)) {
 	        // separator is always reserved!
-	        m_actionOut.append(m_indent).append(varName).append(".addSeparator();").endl();
+	        m_actionOut.append(m_indent).append(varName).append("?.addSeparator()").endl();
 	        return;
 	    }
 
 	    DomWidget domWidget = m_driver.widgetByName(actionName);
 	    if (domWidget!=null && m_uic.isMenu(domWidget.attributeClass())) {
-	        m_actionOut.append(m_indent).append(varName).append(".addAction(").append(m_driver.findOrInsertWidget(domWidget)).append(".menuAction());").endl();
+	        m_actionOut.append(m_indent).append(varName).append("?.addAction(").append(m_driver.findOrInsertWidget(domWidget)).append("?.menuAction())").endl();
 	        return;
 	    }
 
@@ -1185,7 +1187,7 @@ public class WriteInitialization extends TreeWalker {
 	        return;
 	    }
 
-	    m_actionOut.append(m_indent).append(varName).append(".addAction(").append(m_driver.findOrInsertAction(domAction)).append(");").endl();
+	    m_actionOut.append(m_indent).append(varName).append("?.addAction(").append(m_driver.findOrInsertAction(domAction)).append(")").endl();
 	}
 
 	//
@@ -1212,7 +1214,7 @@ public class WriteInitialization extends TreeWalker {
 	            continue;
 
 	        m_output.append(m_indent).append("QWidget.setTabOrder("
-	           ).append(lastName).append(", ").append(name).append(");").endl();
+	           ).append(lastName).append(", ").append(name).append(")").endl();
 
 	        lastName = name;
 	    }
@@ -1279,8 +1281,8 @@ public class WriteInitialization extends TreeWalker {
 	
 	private static String domColor2QString(DomColor c) {
 	    if (c.hasAttributeAlpha())
-	        return String.format("new QColor(%1$s, %2$s, %3$s, %4$s)", c.elementRed(), c.elementGreen(), c.elementBlue(), c.attributeAlpha());
-	    return String.format("new QColor(%1$s, %2$s, %3$s)", c.elementRed(), c.elementGreen(), c.elementBlue());
+	        return String.format("QColor(%1$s, %2$s, %3$s, %4$s)", c.elementRed(), c.elementGreen(), c.elementBlue(), c.attributeAlpha());
+	    return String.format("QColor(%1$s, %2$s, %3$s)", c.elementRed(), c.elementGreen(), c.elementBlue());
 	}
 	
 	public static QVersionNumber colorRoleVersionAdded(String roleName)
@@ -1309,18 +1311,18 @@ public class WriteInitialization extends TreeWalker {
 	        break;
 	    default:
 	        QLogging.qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Designer.", m_option.messagePrefix());
-	        return "new QIcon()";
+	        return "QIcon()";
 	    }
 	    return pixCall(type, s);
 	}
 	
 	private String pixCall(String t, String text){
 	    if (text.isEmpty()) {
-	        return "new " + t + "()";
+	        return "" + t + "()";
 	    }
 
 	    StringBuilder str = new StringBuilder();
-	    str.append("new ");
+	    str.append("");
 	    str.append(t);
 	    str.append("(");
 	    String pixFunc = m_uic.pixmapFunction();
@@ -1448,14 +1450,14 @@ public class WriteInitialization extends TreeWalker {
 	    for (int i = 0; i < count; i++) {
 	        if (!list[i].equals(defaultValue)) {
 	            m_output.append(m_indent).append(varName).append('.').append(setFunction
-	               ).append('(').append(i).append(", ").append(list[i]).append(");").endl();
+	               ).append('(').append(i).append(", ").append(list[i]).append(")").endl();
 	        }
 	    }
 	}
 	
 	private String writeStringListProperty(DomStringList list){
 	    StringBuilder propertyValue = new StringBuilder();
-	    propertyValue.append("new QStringList(");
+	    propertyValue.append("QStringList(");
 	    QStringList values = list.elementString();
 	    if (values.isEmpty())
 	        return propertyValue.toString();
@@ -1542,23 +1544,23 @@ public class WriteInitialization extends TreeWalker {
 	        Map<String, DomProperty> properties = propertyMap(lst);
 	        DomProperty p = properties.get("control");
 	        if (p!=null) {
-	            m_output.append(m_indent).append(varName).append(".setControl("
+	            m_output.append(m_indent).append(varName).append("?.setControl("
 	               ).append(formatString(Utils.toString(p.elementString()))
-	               ).append(");").endl();
+	               ).append(")").endl();
 	        }
 	    }
 
 	    String indent = "";
 	    if (m_widgetChain.top()==null) {
 	        indent = m_option.indent;
-            m_output.append(m_indent).append("if (").append(varName).append(".objectName().isEmpty())\n");
+            m_output.append(m_indent).append("if (").append(varName).append("?.objectName().isEmpty())\n");
 	    }
 	    if (0==(flags & Flag.WritePropertyIgnoreObjectName.value())) {
 	        if (objectName.startsWith("this."))
 	        	objectName = objectName.substring(5);
 	        m_output.append(m_indent).append(indent
-	           ).append(varName).append(".setObjectName("
-	           ).append(formatString(objectName)).append(");").endl();
+	           ).append(varName).append("?.setObjectName("
+	           ).append(formatString(objectName)).append(")").endl();
 	    }
 
 	    int leftMargin, topMargin, rightMargin, bottomMargin;
@@ -1575,23 +1577,23 @@ public class WriteInitialization extends TreeWalker {
 	        // special case for the property `geometry': Do not use position
 	        if (isTopLevel && "geometry".equals(propertyName)  && p.elementRect()!=null) {
 	            DomRect r = p.elementRect();
-	            m_output.append(m_indent).append(varName).append(".resize("
-	               ).append(r.elementWidth()).append(", ").append(r.elementHeight()).append(");").endl();
+	            m_output.append(m_indent).append(varName).append("?.resize("
+	               ).append(r.elementWidth()).append(", ").append(r.elementHeight()).append(")").endl();
 	            continue;
 	        }
 	        if (propertyName.equals("currentRow") // QListWidget::currentRow
 	                && m_uic.customWidgetsInfo()._extends(className, "QListWidget")) {
-	            m_delayedOut.append(m_indent).append(varName).append(".setCurrentRow(").append(p.elementNumber()).append(");").endl();
+	            m_delayedOut.append(m_indent).append(varName).append("?.setCurrentRow(").append(p.elementNumber()).append(")").endl();
 	            continue;
 	        }
 	        if (propertyName.equals("currentIndex") // set currentIndex later
 	            && (m_uic.customWidgetsInfo().extendsOneOf(className, currentIndexWidgets))) {
-	            m_delayedOut.append(m_indent).append(varName).append(".setCurrentIndex(").append(p.elementNumber()).append(");").endl();
+	            m_delayedOut.append(m_indent).append(varName).append("?.setCurrentIndex(").append(p.elementNumber()).append(")").endl();
 	            continue;
 	        }
 	        if (propertyName.equals("tabSpacing")
 	            && m_uic.customWidgetsInfo()._extends(className, "QToolBox")) {
-	            m_delayedOut.append(m_indent).append(varName).append(".layout().setSpacing(").append(p.elementNumber()).append(");").endl();
+	            m_delayedOut.append(m_indent).append(varName).append("?.layout().setSpacing(").append(p.elementNumber()).append(")").endl();
 	            continue;
 	        }
 	        if (propertyName.equals("control") // ActiveQt support
@@ -1618,10 +1620,10 @@ public class WriteInitialization extends TreeWalker {
 	            if (p.elementEnum().equals("Qt.Orientation.Vertical"))
 	                shape = "QFrame.Shape.VLine";
 
-	            m_output.append(m_indent).append(varName).append(".setFrameShape(").append(shape).append(");").endl();
+	            m_output.append(m_indent).append(varName).append("?.setFrameShape(").append(shape).append(")").endl();
 	            // QFrame Default is 'Plain'. Make the line 'Sunken' unless otherwise specified
 	            if (!frameShadowEncountered) {
-	                m_output.append(m_indent).append(varName).append(".setFrameShadow(QFrame.Shadow.Sunken);").endl();
+	                m_output.append(m_indent).append(varName).append("?.setFrameShadow(QFrame.Shadow.Sunken)").endl();
 	            }
 	            continue;
 	        } else if ((flags & Flag.WritePropertyIgnoreMargin.value())!=0  && propertyName.equals("margin")) {
@@ -1655,10 +1657,10 @@ public class WriteInitialization extends TreeWalker {
         	StringBuilder setFunction = new StringBuilder();
 	        {
 	            if (stdset) {
-	            	setFunction.append(".set").append(Character.toUpperCase(propertyName.charAt(0))
+	            	setFunction.append("?.set").append(Character.toUpperCase(propertyName.charAt(0))
 	                   ).append(propertyName.substring(1)).append('(');
 	            } else {
-	            	setFunction.append(".setProperty(\"").append(propertyName).append("\", ");
+	            	setFunction.append("?.setProperty(\"").append(propertyName).append("\", ");
 	            }
 	        } // QTextStream
 
@@ -1679,7 +1681,7 @@ public class WriteInitialization extends TreeWalker {
 	            } else {
 	                StringBuilder str = new StringBuilder();
 	                if (!stdset)
-	                    str.append("new QByteArray(");
+	                    str.append("QByteArray(");
 	                str.append(formatString(p.elementCstring()));
 	                if (!stdset)
 	                    str.append(')');
@@ -1687,12 +1689,12 @@ public class WriteInitialization extends TreeWalker {
 	            }
 	            break;
 	        case Cursor:
-	            propertyValue = String.format("new QCursor(Qt.CursorShape.%1$s)", Qt.CursorShape.resolve(p.elementCursor()).name());
+	            propertyValue = String.format("QCursor(Qt.CursorShape.%1$s)", Qt.CursorShape.resolve(p.elementCursor()).name());
 	            break;
 	        case CursorShape:
 	            if (p.hasAttributeStdset() && p.attributeStdset()==0)
-	                varNewName += ".viewport()";
-	            propertyValue = String.format("new QCursor(Qt.CursorShape.%1$s)", p.elementCursorShape());
+	                varNewName += "?.viewport()";
+	            propertyValue = String.format("QCursor(Qt.CursorShape.%1$s)", p.elementCursorShape());
 	            break;
 	        case Enum:
 	            propertyValue = p.elementEnum();
@@ -1809,7 +1811,7 @@ public class WriteInitialization extends TreeWalker {
 	        case Palette: {
 	            DomPalette pal = p.elementPalette();
 	            String paletteName = m_driver.unique("palette");
-	            m_output.append(m_indent).append("QPalette ").append(paletteName).append(" = new QPalette();").endl();
+	            m_output.append(m_indent).append("var ").append(paletteName).append(" = QPalette()").endl();
 	            writeColorGroup(pal.elementActive(), "QPalette.ColorGroup.Active", paletteName);
 	            writeColorGroup(pal.elementInactive(), "QPalette.ColorGroup.Inactive", paletteName);
 	            writeColorGroup(pal.elementDisabled(), "QPalette.ColorGroup.Disabled", paletteName);
@@ -1819,28 +1821,28 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	        case Point: {
 	            DomPoint po = p.elementPoint();
-	            propertyValue = String.format("new QPoint(%1$s, %2$s)",po.elementX(),po.elementY());
+	            propertyValue = String.format("QPoint(%1$s, %2$s)",po.elementX(),po.elementY());
 	            break;
 	        }
 	        case PointF: {
 	            DomPointF pof = p.elementPointF();
-	            propertyValue = String.format("new QPointF(%1$s, %2$s)",pof.elementX(),pof.elementY());
+	            propertyValue = String.format("QPointF(%1$s, %2$s)",pof.elementX(),pof.elementY());
 	            break;
 	        }
 	        case Rect: {
 	            DomRect r = p.elementRect();
-	            propertyValue = String.format("new QRect(%1$s, %2$s, %3$s, %4$s)",r.elementX(),r.elementY(),r.elementWidth(),r.elementHeight());
+	            propertyValue = String.format("QRect(%1$s, %2$s, %3$s, %4$s)",r.elementX(),r.elementY(),r.elementWidth(),r.elementHeight());
 	            break;
 	        }
 	        case RectF: {
 	            DomRectF rf = p.elementRectF();
-	            propertyValue = String.format("new QRectF(%1$s, %2$s, %3$s, %4$s)",rf.elementX(),rf.elementY(),rf.elementWidth(),rf.elementHeight());
+	            propertyValue = String.format("QRectF(%1$s, %2$s, %3$s, %4$s)",rf.elementX(),rf.elementY(),rf.elementWidth(),rf.elementHeight());
 	            break;
 	        }
 	        case Locale: {
 	             DomLocale locale = p.elementLocale();
 	             StringBuilder str = new StringBuilder();
-	             str.append("new QLocale(QLocale.Language.")
+	             str.append("QLocale(QLocale.Language.")
 	             	.append(locale.attributeLanguage())
 	             	.append(", QLocale.Country.").append(locale.attributeCountry()).append(')');
 	             propertyValue = str.toString();
@@ -1848,20 +1850,20 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	        case SizePolicy: {
 	            String spName = writeSizePolicy( p.elementSizePolicy());
-	            m_output.append(m_indent).append(spName).append(".setHeightForWidth("
-	               ).append(varName).append(".sizePolicy().hasHeightForWidth());").endl();
+	            m_output.append(m_indent).append(spName).append("?.setHeightForWidth("
+	               ).append(varName).append("?.sizePolicy().hasHeightForWidth())").endl();
 
 	            propertyValue = spName;
 	            break;
 	        }
 	        case Size: {
 	             DomSize s = p.elementSize();
-	              propertyValue = String.format("new QSize(%1$s, %2$s)", s.elementWidth(), s.elementHeight());
+	              propertyValue = String.format("QSize(%1$s, %2$s)", s.elementWidth(), s.elementHeight());
 	            break;
 	        }
 	        case SizeF: {
 	            DomSizeF sf = p.elementSizeF();
-	             propertyValue = String.format("new QSizeF(%1$s, %2$s)", sf.elementWidth(), sf.elementHeight());
+	             propertyValue = String.format("QSizeF(%1$s, %2$s)", sf.elementWidth(), sf.elementHeight());
 	            break;
 	        }
 	        case String: {
@@ -1913,7 +1915,7 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	        case Date: {
 	            DomDate d = p.elementDate();
-	            propertyValue = String.format("new QDate(%1$s, %2$s, %3$s)",
+	            propertyValue = String.format("QDate(%1$s, %2$s, %3$s)",
 	            						d.elementYear(),
 	            						d.elementMonth(),
 	            						d.elementDay());
@@ -1921,7 +1923,7 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	        case Time: {
 	            DomTime t = p.elementTime();
-	            propertyValue = String.format("new QTime(%1$s, %2$s, %3$s)", 
+	            propertyValue = String.format("QTime(%1$s, %2$s, %3$s)", 
 					            		t.elementHour(),
 					            		t.elementMinute(),
 					            		t.elementSecond());
@@ -1929,7 +1931,7 @@ public class WriteInitialization extends TreeWalker {
 	        }
 	        case DateTime: {
 	            DomDateTime dt = p.elementDateTime();
-	            propertyValue = String.format("new QDateTime(new QDate(%1$s, %2$s, %3$s), new QTime(%4$s, %5$s, %6$s))", 
+	            propertyValue = String.format("QDateTime(new QDate(%1$s, %2$s, %3$s), new QTime(%4$s, %5$s, %6$s))", 
 	            					dt.elementYear(),
 	                            	dt.elementMonth(),
 	                            	dt.elementDay(),
@@ -1945,7 +1947,7 @@ public class WriteInitialization extends TreeWalker {
 	        case Url: {
 	            DomUrl u = p.elementUrl();
 	            StringBuilder _propertyValue = new StringBuilder();
-	            _propertyValue.append("new QUrl("
+	            _propertyValue.append("QUrl("
 	               ).append(formatString(u.elementString().text())).append(")");
                 propertyValue = ""+propertyValue;
 	            break;
@@ -1959,13 +1961,13 @@ public class WriteInitialization extends TreeWalker {
 
 	        if (!propertyValue.isEmpty()) {
 	            QTextStream o = delayProperty ? m_delayedOut : autoTrOutput(p);
-	            o.append(m_indent).append(varNewName).append(setFunction.toString()).append(propertyValue).append(");").endl().flush();
+	            o.append(m_indent).append(varNewName).append(setFunction.toString()).append(propertyValue).append(")").endl().flush();
 	        }
 	    }
 	    if (leftMargin != -1 || topMargin != -1 || rightMargin != -1 || bottomMargin != -1) {
-	        m_output.append(m_indent).append(varName).append(".setContentsMargins("
+	        m_output.append(m_indent).append(varName).append("?.setContentsMargins("
 	           ).append(leftMargin).append(", ").append(topMargin).append(", "
-	           ).append(rightMargin).append(", ").append(bottomMargin).append(");").endl();
+	           ).append(rightMargin).append(", ").append(bottomMargin).append(")").endl();
 	    }
 	}
 	
@@ -1981,7 +1983,7 @@ public class WriteInitialization extends TreeWalker {
 	        m_output.append(m_indent).append(paletteName).append(".setColor(").append(group
 	           ).append(", ").append("QPalette.ColorRole.").append(QPalette.ColorRole.resolve(i).name()
 	           ).append(", ").append(domColor2QString(color)
-	           ).append(");").endl();
+	           ).append(")").endl();
 	    }
 
 	    // new format
@@ -1993,7 +1995,7 @@ public class WriteInitialization extends TreeWalker {
 	            String brushName = writeBrushInitialization(colorRole.elementBrush());
 	            m_output.append(m_indent).append(paletteName).append(".setBrush("
 	               ).append(group).append(", QPalette.ColorRole.").append(roleName
-	               ).append(", ").append(brushName).append(");").endl();
+	               ).append(", ").append(brushName).append(")").endl();
 	        }
 	    }
 	}
@@ -2011,33 +2013,33 @@ public class WriteInitialization extends TreeWalker {
 	        String gradientName = m_driver.unique("gradient");
 	        if (gradientType.equals("LinearGradient")) {
 	            m_output.append(m_indent
-        		   ).append("QLinearGradient ").append(gradientName).append(" = new QLinearGradient("
+        		   ).append("var ").append(gradientName).append(" = QLinearGradient("
 	               ).append(gradient.attributeStartX()
 	               ).append(", ").append(gradient.attributeStartY()
 	               ).append(", ").append(gradient.attributeEndX()
-	               ).append(", ").append(gradient.attributeEndY()).append(");").endl();
+	               ).append(", ").append(gradient.attributeEndY()).append(")").endl();
 	        } else if (gradientType.equals("RadialGradient")) {
 	            m_output.append(m_indent
-	            	   ).append("QRadialGradient ").append(gradientName).append(" = new QRadialGradient("
+	            	   ).append("var ").append(gradientName).append(" = QRadialGradient("
 		               ).append(gradient.attributeCentralX()
 		               ).append(", ").append(gradient.attributeCentralY()
 		               ).append(", ").append(gradient.attributeRadius()
 		               ).append(", ").append(gradient.attributeFocalX()
-		               ).append(", ").append(gradient.attributeFocalY()).append(");").endl();
+		               ).append(", ").append(gradient.attributeFocalY()).append(")").endl();
 	        } else if (gradientType.equals("ConicalGradient")) {
 	            m_output.append(m_indent
-	            		).append("QConicalGradient ").append(gradientName).append(" = new QConicalGradient("
+	            		).append("var ").append(gradientName).append(" = QConicalGradient("
 	               ).append(gradient.attributeCentralX()
 	               ).append(", ").append(gradient.attributeCentralY()
-	               ).append(", ").append(gradient.attributeAngle()).append(");").endl();
+	               ).append(", ").append(gradient.attributeAngle()).append(")").endl();
 	        }
 
 	        m_output.append(m_indent).append(gradientName).append(".setSpread(QGradient.").append(gradient.attributeSpread()
-	           ).append(");").endl();
+	           ).append(")").endl();
 
 	        if (gradient.hasAttributeCoordinateMode()) {
 	            m_output.append(m_indent).append(gradientName).append(".setCoordinateMode(QGradient.").append(gradient.attributeCoordinateMode()
-	               ).append(");").endl();
+	               ).append(")").endl();
 	        }
 
 	       List<DomGradientStop> stops = gradient.elementGradientStop();
@@ -2045,23 +2047,23 @@ public class WriteInitialization extends TreeWalker {
 	            DomColor color = stop.elementColor();
 	            m_output.append(m_indent).append(gradientName).append(".setColorAt("
 	               ).append(stop.attributePosition()).append(", "
-	               ).append(domColor2QString(color)).append(");").endl();
+	               ).append(domColor2QString(color)).append(")").endl();
 	        }
-	        m_output.append(m_indent).append("QBrush ").append(brushName)
-	        		.append(" = new QBrush(").append(gradientName).append(");").endl();
+	        m_output.append(m_indent).append("var ").append(brushName)
+	        		.append(" = QBrush(").append(gradientName).append(")").endl();
 	    } else if (style.equals("TexturePattern")) {
 	        DomProperty property = brush.elementTexture();
 	        String iconValue = iconCall(property);
 
-	        m_output.append(m_indent).append("QBrush ").append(brushName)
-	        		.append(" = new QBrush(").append(iconValue).append(");").endl();
+	        m_output.append(m_indent).append("var ").append(brushName)
+	        		.append(" = QBrush(").append(iconValue).append(")").endl();
 	    } else {
 	        DomColor color = brush.elementColor();
-	        m_output.append(m_indent).append("QBrush ").append(brushName)
-	        		.append(" = new QBrush(").append(domColor2QString(color)).append(");").endl();
+	        m_output.append(m_indent).append("var ").append(brushName)
+	        		.append(" = QBrush(").append(domColor2QString(color)).append(")").endl();
 
 	        m_output.append(m_indent).append(brushName)
-	        		.append(".setStyle(Qt.BrushStyle.SolidPattern").append(");").endl();
+	        		.append(".setStyle(Qt.BrushStyle.SolidPattern").append(")").endl();
 	    }
 	}
 	
@@ -2072,10 +2074,10 @@ public class WriteInitialization extends TreeWalker {
 	private void addInitializer(Item item, String name, int column, String value, String directive, boolean translatable) {
 	    if (!value.isEmpty()) {
 	        StringBuilder setter = new StringBuilder();
-	        setter.append(".set").append(Character.toUpperCase(name.charAt(0))).append(name.substring(1)).append('(');
+	        setter.append("?.set").append(Character.toUpperCase(name.charAt(0))).append(name.substring(1)).append('(');
 	        if (column >= 0)
 	            setter.append(column).append(", ");
-	        setter.append(value).append(");");
+	        setter.append(value).append(")");
 	        item.addSetter(setter.toString(), directive, translatable);
 	    }
 	}
@@ -2163,7 +2165,7 @@ public class WriteInitialization extends TreeWalker {
 	    DomAction action = m_driver.actionByName(menuAction);
 	    if (action!=null && action.hasAttributeMenu()) {
 	        m_output.append(m_indent).append(menuAction).append(" = ").append(menuName
-	           ).append(".menuAction();").endl();
+	           ).append("?.menuAction()").endl();
 	    }
 	}
 	
@@ -2185,16 +2187,16 @@ public class WriteInitialization extends TreeWalker {
 	        if (icon!=null)
 	            iconValue = iconCall(icon);
 
-	        m_output.append(m_indent).append(varName).append(".addItem(");
+	        m_output.append(m_indent).append(varName).append("?.addItem(");
 	        if (icon!=null)
 	            m_output.append(iconValue).append(", ");
 
 	        if (needsTranslation(text.elementString())) {
-	            m_output.append("\"\");").endl();
-	            m_refreshOut.append(m_indent).append(varName).append(".setItemText(").append(i).append(", ").append(trCall(text.elementString())
-	               ).append(");").endl();
+	            m_output.append("\"\")").endl();
+	            m_refreshOut.append(m_indent).append(varName).append("?.setItemText(").append(i).append(", ").append(trCall(text.elementString())
+	               ).append(")").endl();
 	        } else {
-	            m_output.append(noTrCall(text.elementString())).append(");").endl();
+	            m_output.append(noTrCall(text.elementString())).append(")").endl();
 	        }
 	    }
 	    m_refreshOut.endl();
@@ -2221,7 +2223,7 @@ public class WriteInitialization extends TreeWalker {
 
 	        item.writeSetupUi(varName);
 	        StringBuilder parentPath = new StringBuilder();
-	        parentPath.append(varName).append(".item(").append(i).append(')');
+	        parentPath.append(varName).append("?.item(").append(i).append(')');
 	        item.writeRetranslateUi(parentPath.toString());
 	    }
 	    enableSorting(w, varName, tempName);
@@ -2244,14 +2246,14 @@ public class WriteInitialization extends TreeWalker {
 	        if (p!=null) {
 	            DomString str = p.elementString();
 	            if (str!=null && str.text().isEmpty()) {
-	                m_output.append(m_indent).append(varName).append(".headerItem().setText(").append(i).append(", \"\");").endl();
+	                m_output.append(m_indent).append(varName).append("?.headerItem().setText(").append(i).append(", \"\")").endl();
 	            }
 	        }
 	    }
 	    String itemName = item.writeSetupUi("", Item.EmptyItemPolicy.DontConstruct);
-	    item.writeRetranslateUi(varName + ".headerItem()");
+	    item.writeRetranslateUi(varName + "?.headerItem()");
 	    if (itemName!=null && !itemName.isEmpty()) {
-	        m_output.append(m_indent).append(varName).append(".setHeaderItem(").append(itemName).append(");").endl();
+	        m_output.append(m_indent).append(varName).append("?.setHeaderItem(").append(itemName).append(")").endl();
 	    }
 
 	    if (w.elementItem().isEmpty())
@@ -2264,7 +2266,7 @@ public class WriteInitialization extends TreeWalker {
 	        Item itm = items.get(i);
 	        itm.writeSetupUi(varName);
 	        StringBuilder parentPath = new StringBuilder();
-	        parentPath.append(varName).append(".topLevelItem(").append(i).append(')');
+	        parentPath.append(varName).append("?.topLevelItem(").append(i).append(')');
 	        itm.writeRetranslateUi(parentPath.toString());
 	    }
 
@@ -2314,9 +2316,9 @@ public class WriteInitialization extends TreeWalker {
 	    List<DomColumn> columns = w.elementColumn();
 
 	    if (!columns.isEmpty()) {
-	        m_output.append(m_indent).append("if (").append(varName).append(".columnCount() < ").append(columns.size()).append(')');
-	        m_output.endl().append(m_indent).append(m_option.indent).append(varName).append(".setColumnCount("
-	           ).append(columns.size()).append(");").endl();
+	        m_output.append(m_indent).append("if (").append(varName).append("?.columnCount() < ").append(columns.size()).append(')');
+	        m_output.endl().append(m_indent).append(m_option.indent).append(varName).append("?.setColumnCount("
+	           ).append(columns.size()).append(")").endl();
 	    }
 
 	    for (int i = 0; i < columns.size(); ++i) {
@@ -2329,10 +2331,10 @@ public class WriteInitialization extends TreeWalker {
 
 	            String itemName = item.writeSetupUi("", Item.EmptyItemPolicy.ConstructItemAndVariable);
 	            StringBuilder parentPath = new StringBuilder();
-	            parentPath.append(varName).append(".horizontalHeaderItem(").append(i).append(')');
+	            parentPath.append(varName).append("?.horizontalHeaderItem(").append(i).append(')');
 	            item.writeRetranslateUi(parentPath.toString());
-	            m_output.append(m_indent).append(varName).append(".setHorizontalHeaderItem("
-	               ).append(i).append(", ").append(itemName).append(");").endl();
+	            m_output.append(m_indent).append(varName).append("?.setHorizontalHeaderItem("
+	               ).append(i).append(", ").append(itemName).append(")").endl();
 	        }
 	    }
 
@@ -2340,8 +2342,8 @@ public class WriteInitialization extends TreeWalker {
 	    List<DomRow> rows = w.elementRow();
 
 	    if (!rows.isEmpty()) {
-	        m_output.append(m_indent).append("if (").append(varName).append(".rowCount() < ").append(rows.size()).append(')').endl()
-	        		.append(m_indent).append(m_option.indent).append(varName).append(".setRowCount(").append(rows.size()).append(");").endl();
+	        m_output.append(m_indent).append("if (").append(varName).append("?.rowCount() < ").append(rows.size()).append(')').endl()
+	        		.append(m_indent).append(m_option.indent).append(varName).append("?.setRowCount(").append(rows.size()).append(")").endl();
 	    }
 
 	    for (int i = 0; i < rows.size(); ++i) {
@@ -2354,10 +2356,10 @@ public class WriteInitialization extends TreeWalker {
 
 	            String itemName = item.writeSetupUi("", Item.EmptyItemPolicy.ConstructItemAndVariable);
 	            StringBuilder parentPath = new StringBuilder();
-	            parentPath.append(varName).append(".verticalHeaderItem(").append(i).append(')');
+	            parentPath.append(varName).append("?.verticalHeaderItem(").append(i).append(')');
 	            item.writeRetranslateUi(parentPath.toString());
-	            m_output.append(m_indent).append(varName).append(".setVerticalHeaderItem("
-	               ).append(i).append(", ").append(itemName).append(");").endl();
+	            m_output.append(m_indent).append(varName).append("?.setVerticalHeaderItem("
+	               ).append(i).append(", ").append(itemName).append(")").endl();
 	        }
 	    }
 
@@ -2378,10 +2380,10 @@ public class WriteInitialization extends TreeWalker {
 
 	            String itemName = item.writeSetupUi("", Item.EmptyItemPolicy.ConstructItemAndVariable);
 	            StringBuilder parentPath = new StringBuilder();
-	            parentPath.append(varName).append(".item(").append(r
+	            parentPath.append(varName).append("?.item(").append(r
 	               ).append(", ").append(c).append(')');
 	            item.writeRetranslateUi(parentPath.toString());
-	            m_output.append(m_indent).append(varName).append(".setItem(").append(r).append(", ").append(c).append(", ").append(itemName).append(");").endl();
+	            m_output.append(m_indent).append(varName).append("?.setItem(").append(r).append(", ").append(c).append(", ").append(itemName).append(")").endl();
 	        }
 	    }
 	    enableSorting(w, varName, tempName);
@@ -2395,15 +2397,15 @@ public class WriteInitialization extends TreeWalker {
 	        m_refreshOut.endl();
 	        m_refreshOut.append(m_indent);
             m_refreshOut.append("boolean ");
-	        m_refreshOut.append(tempName).append(" = ").append(varName).append(".isSortingEnabled();").endl()
-	        			.append(m_indent).append(varName).append(".setSortingEnabled(false);").endl();
+	        m_refreshOut.append(tempName).append(" = ").append(varName).append("?.isSortingEnabled()").endl()
+	        			.append(m_indent).append(varName).append("?.setSortingEnabled(false)").endl();
 	    }
 	    return tempName;
 	}
 	
 	private void enableSorting(DomWidget w, String varName, String tempName) {
 	    if (!w.elementItem().isEmpty()) {
-	        m_refreshOut.append(m_indent).append(varName).append(".setSortingEnabled(").append(tempName).append(");").append('\n');
+	        m_refreshOut.append(m_indent).append(varName).append("?.setSortingEnabled(").append(tempName).append(")").append('\n');
 	    }
 	}
 	
@@ -2430,46 +2432,46 @@ public class WriteInitialization extends TreeWalker {
 	    String fontName = m_driver.unique("font");
 	    m_fontPropertiesNameMap.put(f, fontName);
 
-	    m_output.append(m_indent).append("QFont ").append(fontName).append(" = new QFont();").endl();
+	    m_output.append(m_indent).append("var ").append(fontName).append(" = QFont()").endl();
 	    if (f.hasElementFamily() && !f.elementFamily().isEmpty()) {
-	        m_output.append(m_indent).append(fontName).append(".setFamilies("
+	        m_output.append(m_indent).append(fontName).append("?.setFamilies("
 	           ).append("java.util.Arrays.asList("
 	           ).append(formatString(f.elementFamily())
-	           ).append("));").endl();
+	           ).append("))").endl();
 	    }
 	    if (f.hasElementPointSize() && f.elementPointSize() > 0) {
-	         m_output.append(m_indent).append(fontName).append(".setPointSize(").append(f.elementPointSize()
-	            ).append(");").endl();
+	         m_output.append(m_indent).append(fontName).append("?.setPointSize(").append(f.elementPointSize()
+	            ).append(")").endl();
 	    }
 
 	    if (f.hasElementBold()) {
-	        m_output.append(m_indent).append(fontName).append(".setBold("
-	           ).append(Boolean.toString(f.elementBold())).append(");").endl();
+	        m_output.append(m_indent).append(fontName).append("?.setBold("
+	           ).append(Boolean.toString(f.elementBold())).append(")").endl();
 	    }
 	    if (f.hasElementItalic()) {
-	        m_output.append(m_indent).append(fontName).append(".setItalic("
-	           ).append(Boolean.toString(f.elementItalic())).append(");").endl();
+	        m_output.append(m_indent).append(fontName).append("?.setItalic("
+	           ).append(Boolean.toString(f.elementItalic())).append(")").endl();
 	    }
 	    if (f.hasElementUnderline()) {
-	        m_output.append(m_indent).append(fontName).append(".setUnderline("
-	           ).append(Boolean.toString(f.elementUnderline())).append(");").endl();
+	        m_output.append(m_indent).append(fontName).append("?.setUnderline("
+	           ).append(Boolean.toString(f.elementUnderline())).append(")").endl();
 	    }
 	    if (f.hasElementStrikeOut()) {
-	         m_output.append(m_indent).append(fontName).append(".setStrikeOut("
-	           ).append(Boolean.toString(f.elementStrikeOut())).append(");").endl();
+	         m_output.append(m_indent).append(fontName).append("?.setStrikeOut("
+	           ).append(Boolean.toString(f.elementStrikeOut())).append(")").endl();
 	    }
 	    if (f.hasElementKerning()) {
-	        m_output.append(m_indent).append(fontName).append(".setKerning("
-	           ).append(Boolean.toString(f.elementKerning())).append(");").endl();
+	        m_output.append(m_indent).append(fontName).append("?.setKerning("
+	           ).append(Boolean.toString(f.elementKerning())).append(")").endl();
 	    }
 	    if (f.hasElementAntialiasing()) {
-	        m_output.append(m_indent).append(fontName).append(".setStyleStrategy(QFont.StyleStrategy."
+	        m_output.append(m_indent).append(fontName).append("?.setStyleStrategy(QFont.StyleStrategy."
 	           ).append((f.elementAntialiasing() ? "PreferDefault" : "NoAntialias")
-	           ).append(");").endl();
+	           ).append(")").endl();
 	    }
 	    if (f.hasElementStyleStrategy()) {
-	         m_output.append(m_indent).append(fontName).append(".setStyleStrategy(QFont.StyleStrategy.")
-	         		 .append(f.elementStyleStrategy()).append(");").endl();
+	         m_output.append(m_indent).append(fontName).append("?.setStyleStrategy(QFont.StyleStrategy.")
+	         		 .append(f.elementStyleStrategy()).append(")").endl();
 	    }
 	    return  fontName;
 	}
@@ -2477,8 +2479,8 @@ public class WriteInitialization extends TreeWalker {
 	private static void writeIconAddFile(QTextStream output, String indent,
             String iconName, String fileName,
             String mode, String state){
-		output.append(indent).append(iconName).append(".addFile(").append(formatString(fileName)).append(", new QSize(), QIcon.Mode.")
-			  .append(mode).append(", QIcon.State.").append(state).append(");").endl();
+		output.append(indent).append(iconName).append("?.addFile(").append(formatString(fileName)).append(", QSize(), QIcon.Mode.")
+			  .append(mode).append(", QIcon.State.").append(state).append(")").endl();
 	}
 	
 	private static void writeResourceIcon(QTextStream output,
@@ -2522,9 +2524,9 @@ public class WriteInitialization extends TreeWalker {
 	private static void writeIconAddPixmap(QTextStream output, String indent,
 	             String iconName, String call,
 	             String mode, String state){
-		output.append(indent).append(iconName).append(".addPixmap(").append(call)
+		output.append(indent).append(iconName).append("?.addPixmap(").append(call)
 		      .append(", QIcon.Mode.").append(mode).append(", QIcon.State.")
-		      .append(state).append(");").endl();
+		      .append(state).append(")").endl();
 	}
 	
 	private static boolean iconHasStatePixmaps(DomResourceIcon i) {
@@ -2549,7 +2551,7 @@ public class WriteInitialization extends TreeWalker {
 
 	    if (!isIconFormat44(i)) { // pre-4.4 legacy
 	        m_output.append(m_indent);
-            m_output.append("QIcon ");
+            m_output.append("var ");
 	        m_output.append(iconName).append(" = ").append(pixCall("QIcon", i.text())).append(';').endl();
 	        return iconName;
 	    }
@@ -2557,17 +2559,17 @@ public class WriteInitialization extends TreeWalker {
 	    // 4.4 onwards
 	    if (i.attributeTheme().isEmpty()) {
 	        // No theme: Write resource icon as is
-	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon();").endl();
+	    	m_output.append(m_indent).append("var ").append(iconName).append(" = QIcon()").endl();
 	        if (m_uic.pixmapFunction().isEmpty())
 	            writeResourceIcon(m_output, iconName, m_indent, i);
 	        else
 	            writePixmapFunctionIcon(m_output, iconName, m_indent, i);
 	        return iconName;
 	    }else if(i.attributeTheme().startsWith(":") || i.attributeTheme().startsWith("classpath:") || i.attributeTheme().startsWith("/:classpath:")) {
-	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon(").append(formatString(i.attributeTheme())).append(");").endl();
+	    	m_output.append(m_indent).append("var ").append(iconName).append(" = QIcon(").append(formatString(i.attributeTheme())).append(")").endl();
 	    	return iconName;
 	    }else if(i.attributeResource().startsWith(":") || i.attributeResource().startsWith("classpath:") || i.attributeResource().startsWith("/:classpath:")) {
-	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon(").append(formatString(i.attributeResource())).append(");").endl();
+	    	m_output.append(m_indent).append("var ").append(iconName).append(" = QIcon(").append(formatString(i.attributeResource())).append(")").endl();
 	    	return iconName;
 	    }
 
@@ -2575,7 +2577,7 @@ public class WriteInitialization extends TreeWalker {
 	    if (iconHasStatePixmaps(i)) {
 	        // Theme + default state pixmaps:
 	        // Generate code to check the theme and default to state pixmaps
-	    	m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon();").endl();
+	    	m_output.append(m_indent).append("var ").append(iconName).append(" = QIcon()").endl();
 	        String themeNameStringVariableC = "iconThemeName";
 	        // Store theme name in a variable
 	        m_output.append(m_indent);
@@ -2589,7 +2591,7 @@ public class WriteInitialization extends TreeWalker {
 	        m_output.append("QIcon.hasThemeIcon("
 	           ).append(themeNameStringVariableC).append(')').append(") {").endl()
 	        	.append(m_indent).append(m_option.indent).append(iconName).append(" = QIcon.fromTheme("
-	           ).append(themeNameStringVariableC).append(");").append(m_indent).append("} else {").endl();
+	           ).append(themeNameStringVariableC).append(")").append(m_indent).append("} else {").endl();
 	        if (m_uic.pixmapFunction().isEmpty())
 	            writeResourceIcon(m_output, iconName, m_indent+m_option.indent, i);
 	        else
@@ -2600,8 +2602,8 @@ public class WriteInitialization extends TreeWalker {
 	    }
 
 	    // Theme, but no state pixmaps: Construct from theme directly.
-	    m_output.append(m_indent).append("QIcon ").append(iconName).append(" = new QIcon(QIcon.fromTheme(")
-	    					 					  .append(formatString(i.attributeTheme())).append("));").endl();
+	    m_output.append(m_indent).append("var ").append(iconName).append(" = QIcon(QIcon.fromTheme(")
+	    					 					  .append(formatString(i.attributeTheme())).append("))").endl();
 	    return iconName;
 	}
 	
@@ -2660,7 +2662,7 @@ public class WriteInitialization extends TreeWalker {
 	    String spName = m_driver.unique("sizePolicy");
 	    m_sizePolicyNameMap.put(sp, spName);
 
-	    m_output.append(m_indent).append("QSizePolicy ").append(spName).append(" = new QSizePolicy(");
+	    m_output.append(m_indent).append("var ").append(spName).append(" = QSizePolicy(");
 	    if (sp.hasElementHSizeType() && sp.hasElementVSizeType()) {
 	        m_output.append("QSizePolicy.Policy.")
 	        		.append(QSizePolicy.Policy.resolve(sp.elementHSizeType()).name())
@@ -2670,12 +2672,12 @@ public class WriteInitialization extends TreeWalker {
 	        m_output.append("QSizePolicy.Policy.").append(sp.attributeHSizeType()
 	           ).append(", QSizePolicy.Policy.").append(sp.attributeVSizeType());
 	    }
-	    m_output.append(");").endl();
+	    m_output.append(")").endl();
 
-	    m_output.append(m_indent).append(spName).append(".setHorizontalStretch("
-	       ).append(sp.elementHorStretch()).append(");").endl();
-	    m_output.append(m_indent).append(spName).append(".setVerticalStretch("
-	       ).append(sp.elementVerStretch()).append(");").endl();
+	    m_output.append(m_indent).append(spName).append("?.setHorizontalStretch("
+	       ).append(sp.elementHorStretch()).append(")").endl();
+	    m_output.append(m_indent).append(spName).append("?.setVerticalStretch("
+	       ).append(sp.elementVerStretch()).append(")").endl();
 	    return spName;
 	}
 	
@@ -2726,13 +2728,13 @@ public class WriteInitialization extends TreeWalker {
 	        String className = "QButtonGroup";
 	        m_output.append(m_indent);
 	        if (createGroupOnTheFly)
-	            m_output.append(className).append(' ');
-	        m_output.append(groupName).append(" = new ").append(className).append('(').append(m_mainFormVarName).append(");").endl();
+	            m_output.append("var ");
+	        m_output.append(groupName).append(" = ").append(className).append('(').append(m_mainFormVarName).append(")").endl();
 	        m_buttonGroups.add(groupName);
 	        writeProperties(groupName, objectName, className, group.elementProperty());
 	    }
-	    m_output.append(m_indent).append(groupName).append(".addButton("
-	       ).append(varName).append(");").endl();
+	    m_output.append(m_indent).append(groupName).append("?.addButton("
+	       ).append(varName).append(")").endl();
 	}
 	
 	@SuppressWarnings("unused")

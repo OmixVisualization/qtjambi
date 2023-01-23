@@ -89,10 +89,10 @@ public class Driver {
 	}
     
     public boolean uic(String fileName) {
-    	return uic(fileName, (String)null);
+    	return uic(fileName, (String)null, "java");
     }
     
-    public boolean uic(String fileName, String outputDir) {
+    public boolean uic(String fileName, String outputDir, String language) {
     	QIODevice input;
         if (fileName==null || fileName.isEmpty()) {
         	input = QIODevice.fromInputStream(System.in);
@@ -108,7 +108,7 @@ public class Driver {
 
         Uic tool = new Uic(this);
         try {
-        	return tool.write(input, outputDir);
+        	return tool.write(input, outputDir, language);
         }finally {
         	input.close();
         	input.dispose();

@@ -37,9 +37,6 @@ import io.qt.core.QIODevice;
 import io.qt.core.QTextStream;
 import io.qt.core.QXmlStreamAttributes;
 import io.qt.core.QXmlStreamReader;
-import io.qt.uic.java.WriteClass;
-import io.qt.uic.java.WriteDeclaration;
-import io.qt.uic.java.WriteImports;
 import io.qt.uic.ui4.DomCustomWidget;
 import io.qt.uic.ui4.DomCustomWidgets;
 import io.qt.uic.ui4.DomHeader;
@@ -120,7 +117,7 @@ public class Uic {
 	public CustomWidgetsInfo customWidgetsInfo()
     { return cWidgetsInfo; }
 
-	public boolean write(QIODevice in, String outputDir) {
+	public boolean write(QIODevice in, String outputDir, String language) {
 		DomUI ui = null;
 	    {
 	        QXmlStreamReader reader = new QXmlStreamReader();
@@ -158,6 +155,11 @@ public class Uic {
 	    	className = qualifiedClassName;
 	    }
 	    
+	    String fileSuffix;
+	    if("kotlin".equals(language))
+	    	fileSuffix = ".kt";
+	    else
+	    	fileSuffix = ".java";
 	    QTextStream oldOutput = m_output;
 
         QFile outputFile = null;
@@ -165,7 +167,7 @@ public class Uic {
         if (outputDir==null || outputDir.isEmpty()) {
         	iodevice = QIODevice.fromOutputStream(System.out);
         }else {
-        	QFileInfo targetFile = new QFileInfo(outputDir + "/" + drv.option().targetPackage.replace('.', '/') + "/" + drv.option().prefix + className + drv.option().postfix + ".java");
+        	QFileInfo targetFile = new QFileInfo(outputDir + "/" + drv.option().targetPackage.replace('.', '/') + "/" + drv.option().prefix + className + drv.option().postfix + fileSuffix);
         	targetFile.absoluteDir().mkpath(".");
         	iodevice = outputFile = new QFile(targetFile.absoluteFilePath());
         }
@@ -191,9 +193,16 @@ public class Uic {
 	    info.acceptUI(ui);
 	    cWidgetsInfo.acceptUI(ui);
 	    
-        new WriteImports(this).acceptUI(ui);
+	    if("kotlin".equals(language))
+	    	new io.qt.uic.kotlin.WriteImports(this).acceptUI(ui);
+	    else
+	    	new io.qt.uic.java.WriteImports(this).acceptUI(ui);
+	    
         new Validator(this).acceptUI(ui);
-        new WriteDeclaration(this).acceptUI(ui);
+        if("kotlin".equals(language))
+        	new io.qt.uic.kotlin.WriteDeclaration(this).acceptUI(ui);
+        else
+        	new io.qt.uic.java.WriteDeclaration(this).acceptUI(ui);
         
         m_output.dispose();
         iodevice.close();
@@ -202,14 +211,17 @@ public class Uic {
         if(outputDir!=null 
         		&& ((drv.option().prefix!=null && !drv.option().prefix.isEmpty()) 
         				|| (drv.option().postfix!=null && !drv.option().postfix.isEmpty()))) {
-        	iodevice = outputFile = new QFile(outputDir + "/" + drv.option().targetPackage.replace('.', '/') + "/" + className + ".java");
+        	iodevice = outputFile = new QFile(outputDir + "/" + drv.option().targetPackage.replace('.', '/') + "/" + className + fileSuffix);
         	if(!outputFile.exists() || drv.option().forceOutput) {
 	        	if(iodevice.open(QIODevice.OpenModeFlag.WriteOnly)) {
 	        		m_output = new QTextStream(iodevice);
 	        	}else {
 	        		return false;
 	        	}
-	            new WriteClass(this, className).acceptUI(ui);
+	        	if("kotlin".equals(language))
+	        		new io.qt.uic.kotlin.WriteClass(this, className).acceptUI(ui);
+	        	else
+	        		new io.qt.uic.java.WriteClass(this, className).acceptUI(ui);
 	            m_output.dispose();
 	            outputFile.close();
 	        	m_output = oldOutput;

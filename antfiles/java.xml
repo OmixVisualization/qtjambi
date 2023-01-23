@@ -55,7 +55,7 @@
         </if>
     </target>
     
-    <target name="deploy-snapshot" depends="init.build">
+    <target name="deploy-snapshot" depends="init.build" unless="${skip-java-build}">
         <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy" value="true"/>
             <property name="qtjambi-deploy-snapshot" value="true"/>
@@ -66,7 +66,7 @@
         </ant>
     </target>
     
-    <target name="deploy-release" depends="init.build">
+    <target name="deploy-release" depends="init.build" unless="${skip-java-build}">
         <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy" value="true"/>
             <property name="qtjambi-deploy-snapshot" value="false"/>
@@ -77,7 +77,7 @@
         </ant>
     </target>
     
-    <target name="deploy-bundle" depends="init.build">
+    <target name="deploy-bundle" depends="init.build" unless="${skip-java-build}">
         <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
             <property name="qtjambi-deploy-bundle" value="true"/>
         </ant>
@@ -165,7 +165,7 @@ ${javac.quick.excludes}
 ${javac.declarative.excludes}
 ${javac.extra.excludes}"/>
   </target>
-  <target name="javadocs-impl" depends="init.build">
+  <target name="javadocs-impl" depends="init.build" unless="${skip-java-build}">
     <delete dir="${outputDir}/javadocs" failonerror="no"/>
     <mkdir dir="${outputDir}/javadocs"/>
     <tstamp>
@@ -276,7 +276,7 @@ ${javac.extra.excludes}"/>
         <property name="qtjambi-javadoc" value="true"/>
     </ant-->
   </target>
-  <target name="single.javadocs-impl" depends="init.build,single.javadocs-impl2">
+  <target name="single.javadocs-impl" depends="init.build,single.javadocs-impl2" unless="${skip-java-build}">
   </target>
   <target name="single.javadocs-impl2">
     <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
