@@ -14,8 +14,8 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 ## Availability
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/OmixVisualization/qtjambi)](/releases)
-[![Downloads (total)](https://img.shields.io/github/downloads/OmixVisualization/qtjambi/total)](/releases)
+[![Release (latest by date)](https://img.shields.io/github/v/release/OmixVisualization/qtjambi)](https://github.com/OmixVisualization/qtjambi/releases)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/OmixVisualization)](https://github.com/sponsors/OmixVisualization)
 
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
