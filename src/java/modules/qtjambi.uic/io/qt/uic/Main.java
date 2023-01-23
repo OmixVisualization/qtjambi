@@ -93,7 +93,7 @@ public class Main {
 	
 		    QCommandLineOption generatorOption = new QCommandLineOption(QList.of("g", "generator"));
 		    generatorOption.setDescription("Select generator.");
-		    generatorOption.setValueName("c++|python|java");
+		    generatorOption.setValueName("c++|python|java|kotlin");
 		    generatorOption.setDefaultValue("java");
 		    generatorOption.setFlags(QCommandLineOption.Flag.HiddenFromHelp);
 		    parser.addOption(generatorOption);
@@ -128,16 +128,24 @@ public class Main {
 		            driver.option().forceStringConnectionSyntax = true;
 		    }
 	
+		    String language = "java";
 		    if (parser.isSet(generatorOption)) {
-		        if (parser.value(generatorOption).compareTo("python") == 0) {
+		    	language = parser.value(generatorOption).toLowerCase();
+		        if (language.compareTo("python") == 0) {
 		        	System.err.println("QtJambi UIC could not generate python code. Use Qt's native UIC tool instead.");
 		        	System.exit(-1);
 		        }
-		        if (parser.value(generatorOption).compareTo("c++") == 0
-		        		|| parser.value(generatorOption).compareTo("cpp") == 0
-		        		|| parser.value(generatorOption).compareTo("cplusplus") == 0)
+		        if (language.compareTo("c++") == 0
+		        		|| language.compareTo("cpp") == 0
+		        		|| language.compareTo("cplusplus") == 0) {
 		        	System.err.println("QtJambi UIC could not generate c++ code. Use Qt's native UIC tool instead.");
 		        	System.exit(-1);
+		        }
+		        if (language.compareTo("java") != 0
+		        		&& language.compareTo("kotlin") != 0) {
+		        	System.err.println(String.format("QtJambi UIC could not generate %1$s code.", language));
+		        	System.exit(-1);
+		        }
 		    }
 	
 		    String inputFile = null;
@@ -149,7 +157,7 @@ public class Main {
 		        return;
 		    }
 	
-		    driver.uic(inputFile, driver.option().outputDir);
+		    driver.uic(inputFile, driver.option().outputDir, language);
 		}
 	}
 

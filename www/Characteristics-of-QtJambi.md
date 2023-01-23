@@ -1012,6 +1012,7 @@ java -Djava.library.path=<path to Qt libraries>
 
 
 **QtJambi UIC** produces the widget class in output directory (`-o`) and target package (`-p`) as java source code file.
+By specifying `--generator=kotlin` you can generate Kotlin code.
 
 ## Platform Specific API
 

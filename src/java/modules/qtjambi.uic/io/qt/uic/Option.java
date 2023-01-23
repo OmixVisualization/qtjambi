@@ -47,7 +47,7 @@ public class Option {
 	public String targetPackage = "";
 	public String qrcOutputFile = "";
 	public String indent = "    ";
-	public String prefix = "UI_";
+	public String prefix = "Ui_";
 	public String postfix = "";
 	public String translateFunction = "";
 	public String imports = "";

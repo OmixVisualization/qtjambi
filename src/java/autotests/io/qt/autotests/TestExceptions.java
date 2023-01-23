@@ -30,6 +30,7 @@ package io.qt.autotests;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.General;
@@ -47,8 +48,16 @@ import io.qt.core.Qt;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
+import io.qt.widgets.QDialog;
+import io.qt.widgets.QWizard;
+import io.qt.widgets.QWizardPage;
 
 public class TestExceptions extends ApplicationInitializer {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
 	@Test
     public void test_runnable_run() {
@@ -309,6 +318,24 @@ public class TestExceptions extends ApplicationInitializer {
 			Assert.assertEquals("Event Exception", thrown[0].getMessage());
     	}finally {
     		QThread.currentThread().setUncaughtExceptionHandler(null);
+    	}
+    }
+    
+    @Test
+    public void testExceptionDuringExec() {
+    	QWizard dialog = new QWizard();
+    	dialog.addPage(new QWizardPage(){
+
+			@Override
+			public void initializePage() {
+				throw new RuntimeException("Exec Exception");
+			}
+    	});
+    	try {
+    		dialog.exec();
+			Assert.fail("Exception expected to be thrown.");
+		}catch(RuntimeException e) {
+			Assert.assertEquals("Exec Exception", e.getMessage());
     	}
     }
 
