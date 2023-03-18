@@ -33,44 +33,44 @@
 #include <QtSql/QtSql>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QSqlError &value)
+inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.type()));
-    hashCode = hashCode * 31 + qHash(value.driverText());
-    hashCode = hashCode * 31 + qHash(value.databaseText());
-    hashCode = hashCode * 31 + qHash(value.nativeErrorCode());
-    hashCode = hashCode * 31 + qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.type()));
+    seed = hash(seed, value.driverText());
+    seed = hash(seed, value.databaseText());
+    seed = hash(seed, value.nativeErrorCode());
+    seed = hash(seed, value.text());
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 
-inline hash_type qHash(const QSqlField &value)
+inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.type()));
-    hashCode = hashCode * 31 + qHash(int(value.requiredStatus()));
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.tableName());
-    hashCode = hashCode * 31 + qHash(value.isReadOnly());
-    hashCode = hashCode * 31 + qHash(value.isAutoValue());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.length());
-    hashCode = hashCode * 31 + qHash(value.precision());
-    hashCode = hashCode * 31 + qHash(value.typeID());
-    hashCode = hashCode * 31 + qHash(value.isGenerated());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.type()));
+    seed = hash(seed, int(value.requiredStatus()));
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.tableName());
+    seed = hash(seed, value.isReadOnly());
+    seed = hash(seed, value.isAutoValue());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.length());
+    seed = hash(seed, value.precision());
+    seed = hash(seed, value.typeID());
+    seed = hash(seed, value.isGenerated());
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 
-inline hash_type qHash(const QSqlRecord &value)
+inline hash_type qHash(const QSqlRecord &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.count());
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.count());
     for(int i=0; i<value.count(); ++i){
-        hashCode = hashCode * 31 + qHash(value.field(i));
+        seed = hash(seed, value.field(i));
     }
-    return hashCode;
+    return seed;
 }
 
 #endif // QTJAMBISQL_HASHES_H

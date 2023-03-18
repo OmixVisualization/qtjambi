@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.quick.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQuickWidgets"
     module: "qtjambi.quickwidgets"
     description: "Provides a C++ widget class for displaying a Qt Quick user interface."

@@ -62,8 +62,12 @@ class NameCompiler: protected DefaultVisitor {
         void run(UnqualifiedNameAST *node) { internal_run(node); }
 
         QString name() const { return _M_name.join("::"); }
+        const QStringList& templateArgs() const { return _M_templateArgs; }
         const QStringList& qualifiedName() const { return _M_name; }
         const TypeInfo& functionalReturnType() const { return _M_functionalReturnType; }
+        const TypeInfo& operatorCastType() const { return _M_operatorCastType; }
+        OperatorType operatorType() const { return _M_operatorType; }
+        const QList<TypeInfo>& templateArgumentTypes() const { return _M_templateArgumentTypes; }
         const QList<TypeInfo>& functionalArgumentTypes() const { return _M_functionalArgumentTypes; }
         const QList<QString>& functionalArgumentNames() const { return _M_functionalArgumentNames; }
 
@@ -71,14 +75,18 @@ class NameCompiler: protected DefaultVisitor {
         virtual void visitUnqualifiedName(UnqualifiedNameAST *node);
         virtual void visitTemplateArgument(TemplateArgumentAST *node);
 
-        QString internal_run(AST *node);
-        QString decode_operator(std::size_t index, bool op2) const;
+        void internal_run(AST *node);
+        QString decode_operator(std::size_t index, unsigned opLength) const;
 
     private:
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QStringList _M_name;
+        QStringList _M_templateArgs;
+        QList<TypeInfo> _M_templateArgumentTypes;
         TypeInfo _M_functionalReturnType;
+        OperatorType _M_operatorType;
+        TypeInfo _M_operatorCastType;
         QList<TypeInfo> _M_functionalArgumentTypes;
         QList<QString> _M_functionalArgumentNames;
 };

@@ -46,13 +46,13 @@ class QtJambi_LibraryUtilities_2_{
     try{
         java.io.File qtjambiLib = LibraryUtility.loadQtJambiLibrary();
         if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.Android) {
-            java.util.List<String> paths = new java.util.ArrayList<>();
+            List<String> paths = new ArrayList<>();
             String path;
             switch(LibraryUtility.operatingSystem) {
             case MacOS:
-                path = io.qt.QtUtilities.getenv("DYLD_LIBRARY_PATH");
-                String path2 = io.qt.QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
-                java.util.List<String> paths2 = new java.util.ArrayList<>();
+                path = QtUtilities.getenv("DYLD_LIBRARY_PATH");
+                String path2 = QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
+                List<String> paths2 = new ArrayList<>();
                 paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
                 if(path2!=null && !path2.isEmpty()) {
                     for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
@@ -61,13 +61,13 @@ class QtJambi_LibraryUtilities_2_{
                     }
                 }
                 path2 = String.join(java.io.File.pathSeparator, paths2);
-                io.qt.QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
+                QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
                 break;
             case Windows:
-                path = io.qt.QtUtilities.getenv("PATH");
+                path = QtUtilities.getenv("PATH");
                 break;
             default:
-                path = io.qt.QtUtilities.getenv("LD_LIBRARY_PATH");
+                path = QtUtilities.getenv("LD_LIBRARY_PATH");
                 break;
             }
             if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.MacOS)
@@ -83,13 +83,13 @@ class QtJambi_LibraryUtilities_2_{
             path = String.join(java.io.File.pathSeparator, paths);
             switch(LibraryUtility.operatingSystem) {
             case MacOS:
-                io.qt.QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
+                QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
                 break;
             case Windows:
-                io.qt.QtUtilities.putenv("PATH", path);
+                QtUtilities.putenv("PATH", path);
                 break;
             default:
-                io.qt.QtUtilities.putenv("LD_LIBRARY_PATH", path);
+                QtUtilities.putenv("LD_LIBRARY_PATH", path);
                 break;
             }
         }
@@ -99,7 +99,7 @@ class QtJambi_LibraryUtilities_2_{
             if(coreLib!=null) {
                 java.io.File prl = new java.io.File(coreLib.getParentFile(), "Resources/QtCore.prl");
                 if(prl.exists()) {
-                    java.util.Properties prlProp = new java.util.Properties();
+                    Properties prlProp = new Properties();
                     try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
                         prlProp.load(inStream);
                     } catch(Throwable t2) {}
@@ -119,7 +119,7 @@ class QtJambi_LibraryUtilities_2_{
                     prl = new java.io.File(coreLib.getParentFile().getParentFile(), "lib\\Qt"+qtMajorVersion+"Core.prl");
                 }
                 if(prl.exists()) {
-                    java.util.Properties prlProp = new java.util.Properties();
+                    Properties prlProp = new Properties();
                     try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
                         prlProp.load(inStream);
                     } catch(Throwable t2) {}
@@ -141,7 +141,7 @@ class QtJambi_LibraryUtilities_2_{
             if(coreLib!=null) {
                 java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+qtMajorVersion+"Core.prl");
                 if(prl.exists()) {
-                    java.util.Properties prlProp = new java.util.Properties();
+                    Properties prlProp = new Properties();
                     try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
                         prlProp.load(inStream);
                     } catch(Throwable t2) {}
@@ -167,9 +167,9 @@ class QObject___ extends QObject {
      */
     protected static final class QDeclarativeConstructor { 
         private QDeclarativeConstructor(Class<?> cls, long placement) { this.placement = placement; this.cls = cls; }
-        @io.qt.NativeAccess
+        @NativeAccess
         private final long placement;
-        @io.qt.NativeAccess
+        @NativeAccess
         private final Class<?> cls;
     }
     
@@ -199,7 +199,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
-    public static String tr(String source) {
+    public static @NonNull String tr(@Nullable String source) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source);
     }
@@ -215,7 +215,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
-    public static String tr(String source, String comment) {
+    public static @NonNull String tr(@Nullable String source, @Nullable String comment) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment);
     }
@@ -233,7 +233,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
      */
-    public static String tr(String source, String comment, int count) {
+    public static @NonNull String tr(@Nullable String source, @Nullable String comment, int count) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment, count);
     }
@@ -250,7 +250,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -269,7 +269,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -289,7 +289,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -310,7 +310,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -333,7 +333,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -356,7 +356,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -380,7 +380,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -405,7 +405,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -431,7 +431,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -458,7 +458,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -477,7 +477,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal1Default1(Supplier<? extends A> arg1Default){
+        public Signal1Default1(@StrictNonNull Supplier<? extends A> arg1Default){
             super();
             if(arg1Default!=null){
                 this.arg1Default = arg1Default;
@@ -498,7 +498,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -518,7 +518,7 @@ class QObject___ extends QObject {
             super();
         }
 
-        public Signal2Default1(Supplier<? extends B> arg2Default) {
+        public Signal2Default1(@StrictNonNull Supplier<? extends B> arg2Default) {
             super(arg2Default);
         }
         
@@ -527,7 +527,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -547,7 +547,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal2Default2(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default){
+        public Signal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default){
             super(arg2Default);
             if(arg1Default!=null){
                 this.arg1Default = arg1Default;
@@ -568,7 +568,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -588,7 +588,7 @@ class QObject___ extends QObject {
         private Signal3Default1() {
         }
         
-        public Signal3Default1(Supplier<? extends C> arg3Default) {
+        public Signal3Default1(@StrictNonNull Supplier<? extends C> arg3Default) {
             super(arg3Default);
         }
         
@@ -597,7 +597,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -617,7 +617,7 @@ class QObject___ extends QObject {
         private Signal3Default2() {
         }
         
-        public Signal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default){
+        public Signal3Default2(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default){
             super(arg2Default, arg3Default);
         }
         
@@ -626,7 +626,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -647,7 +647,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal3Default3(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default){
+        public Signal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default){
             super(arg2Default, arg3Default);
             if(arg2Default!=null){
                 this.arg1Default = arg1Default;
@@ -668,7 +668,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -689,12 +689,12 @@ class QObject___ extends QObject {
         private Signal4Default1() {
         }
         
-        public Signal4Default1(Supplier<? extends D> arg4Default){
+        public Signal4Default1(@StrictNonNull Supplier<? extends D> arg4Default){
             super(arg4Default);
         }
         
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -715,7 +715,7 @@ class QObject___ extends QObject {
         private Signal4Default2() {
         }
         
-        public Signal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
+        public Signal4Default2(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
             super(arg3Default, arg4Default);
         }
         
@@ -724,7 +724,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -745,7 +745,7 @@ class QObject___ extends QObject {
         private Signal4Default3() {
         }
         
-        public Signal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
+        public Signal4Default3(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
             super(arg2Default, arg3Default, arg4Default);
         }
         
@@ -754,7 +754,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -776,8 +776,8 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal4Default4(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, 
-                Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
+        public Signal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default,
+                Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
             super(arg2Default, arg3Default, arg4Default);
             if(arg1Default!=null){
                 this.arg1Default = arg1Default;
@@ -798,7 +798,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -820,7 +820,7 @@ class QObject___ extends QObject {
         private Signal5Default1() {
         }
         
-        public Signal5Default1(Supplier<? extends E> arg5Default){
+        public Signal5Default1(@StrictNonNull Supplier<? extends E> arg5Default){
             super(arg5Default);
         }
         
@@ -829,7 +829,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -851,7 +851,7 @@ class QObject___ extends QObject {
         private Signal5Default2() {
         }
         
-        public Signal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
+        public Signal5Default2(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg4Default, arg5Default);
         }
         
@@ -860,7 +860,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -882,7 +882,7 @@ class QObject___ extends QObject {
         private Signal5Default3() {
         }
         
-        public Signal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
+        public Signal5Default3(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg3Default, arg4Default, arg5Default);
         }
         
@@ -891,7 +891,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -913,7 +913,7 @@ class QObject___ extends QObject {
         private Signal5Default4() {
         }
         
-        public Signal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
+        public Signal5Default4(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default);
         }
         
@@ -922,7 +922,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -945,7 +945,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal5Default5(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
+        public Signal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default);
             if(arg1Default!=null){
                 this.arg1Default = arg1Default;
@@ -966,7 +966,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -989,7 +989,7 @@ class QObject___ extends QObject {
         private Signal6Default1() {
         }
         
-        public Signal6Default1(Supplier<? extends F> arg6Default){
+        public Signal6Default1(@StrictNonNull Supplier<? extends F> arg6Default){
             super(arg6Default);
         }
         
@@ -998,7 +998,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1021,7 +1021,7 @@ class QObject___ extends QObject {
         private Signal6Default2() {
         }
         
-        public Signal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+        public Signal6Default2(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg5Default, arg6Default);
         }
         
@@ -1030,7 +1030,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1053,7 +1053,7 @@ class QObject___ extends QObject {
         private Signal6Default3() {
         }
         
-        public Signal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+        public Signal6Default3(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg4Default, arg5Default, arg6Default);
         }
         
@@ -1062,7 +1062,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1085,7 +1085,7 @@ class QObject___ extends QObject {
         private Signal6Default4() {
         }
         
-        public Signal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+        public Signal6Default4(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default);
         }
         
@@ -1094,7 +1094,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1117,7 +1117,7 @@ class QObject___ extends QObject {
         private Signal6Default5() {
         }
         
-        public Signal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+        public Signal6Default5(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
         
@@ -1126,7 +1126,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1150,7 +1150,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal6Default6(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+        public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
@@ -1170,7 +1170,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1194,7 +1194,7 @@ class QObject___ extends QObject {
         private Signal7Default1() {
         }
         
-        public Signal7Default1(Supplier<? extends G> arg7Default){
+        public Signal7Default1(@StrictNonNull Supplier<? extends G> arg7Default){
             super(arg7Default);
         }
         
@@ -1203,7 +1203,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1227,7 +1227,7 @@ class QObject___ extends QObject {
         private Signal7Default2() {
         }
         
-        public Signal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default2(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg6Default, arg7Default);
         }
         
@@ -1236,7 +1236,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1260,7 +1260,7 @@ class QObject___ extends QObject {
         private Signal7Default3() {
         }
         
-        public Signal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default3(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg5Default, arg6Default, arg7Default);
         }
         
@@ -1269,7 +1269,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1293,7 +1293,7 @@ class QObject___ extends QObject {
         private Signal7Default4() {
         }
         
-        public Signal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default4(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default);
         }
         
@@ -1302,7 +1302,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1326,7 +1326,7 @@ class QObject___ extends QObject {
         private Signal7Default5() {
         }
         
-        public Signal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default5(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
         
@@ -1335,7 +1335,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1359,7 +1359,7 @@ class QObject___ extends QObject {
         private Signal7Default6() {
         }
         
-        public Signal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default6(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
         
@@ -1368,7 +1368,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1393,7 +1393,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal7Default7(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+        public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
@@ -1413,7 +1413,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1438,7 +1438,7 @@ class QObject___ extends QObject {
         private Signal8Default1() {
         }
         
-        public Signal8Default1(Supplier<? extends H> arg8Default){
+        public Signal8Default1(@StrictNonNull Supplier<? extends H> arg8Default){
             super(arg8Default);
         }
         
@@ -1447,7 +1447,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1472,7 +1472,7 @@ class QObject___ extends QObject {
         private Signal8Default2() {
         }
         
-        public Signal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default2(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg7Default, arg8Default);
         }
         
@@ -1481,7 +1481,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1506,7 +1506,7 @@ class QObject___ extends QObject {
         private Signal8Default3() {
         }
         
-        public Signal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default3(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg6Default, arg7Default, arg8Default);
         }
         
@@ -1515,7 +1515,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1540,7 +1540,7 @@ class QObject___ extends QObject {
         private Signal8Default4() {
         }
         
-        public Signal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default4(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default);
         }
         
@@ -1549,7 +1549,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1574,7 +1574,7 @@ class QObject___ extends QObject {
         private Signal8Default5() {
         }
         
-        public Signal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default5(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
         
@@ -1583,7 +1583,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1608,7 +1608,7 @@ class QObject___ extends QObject {
         private Signal8Default6() {
         }
         
-        public Signal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default6(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
         
@@ -1617,7 +1617,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1642,7 +1642,7 @@ class QObject___ extends QObject {
         private Signal8Default7() {
         }
         
-        public Signal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default7(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
         
@@ -1651,7 +1651,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1677,7 +1677,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal8Default8(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+        public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
@@ -1697,7 +1697,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1723,7 +1723,7 @@ class QObject___ extends QObject {
         private Signal9Default1() {
         }
         
-        public Signal9Default1(Supplier<? extends I> arg9Default){
+        public Signal9Default1(@StrictNonNull Supplier<? extends I> arg9Default){
             super(arg9Default);
         }
         
@@ -1732,7 +1732,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1758,7 +1758,7 @@ class QObject___ extends QObject {
         private Signal9Default2() {
         }
         
-        public Signal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default2(@StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg8Default, arg9Default);
         }
         
@@ -1767,7 +1767,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1793,7 +1793,7 @@ class QObject___ extends QObject {
         private Signal9Default3() {
         }
         
-        public Signal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default3(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg7Default, arg8Default, arg9Default);
         }
         
@@ -1802,7 +1802,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1828,7 +1828,7 @@ class QObject___ extends QObject {
         private Signal9Default4() {
         }
         
-        public Signal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default4(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg6Default, arg7Default, arg8Default, arg9Default);
         }
         
@@ -1837,7 +1837,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1863,7 +1863,7 @@ class QObject___ extends QObject {
         private Signal9Default5() {
         }
         
-        public Signal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default5(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
         
@@ -1872,7 +1872,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1898,7 +1898,7 @@ class QObject___ extends QObject {
         private Signal9Default6() {
         }
         
-        public Signal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default6(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
         
@@ -1907,7 +1907,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1933,7 +1933,7 @@ class QObject___ extends QObject {
         private Signal9Default7() {
         }
         
-        public Signal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default7(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
         
@@ -1942,7 +1942,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -1968,7 +1968,7 @@ class QObject___ extends QObject {
         private Signal9Default8() {
         }
         
-        public Signal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default8(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
         
@@ -1977,7 +1977,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2004,7 +2004,7 @@ class QObject___ extends QObject {
             this.arg1Default = null;
         }
         
-        public Signal9Default9(Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+        public Signal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
@@ -2024,7 +2024,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2046,7 +2046,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit() {
             emitSignal();
         }
@@ -2056,7 +2056,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2080,7 +2080,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1) {
             emitSignal(arg1);
         }
@@ -2090,7 +2090,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2115,7 +2115,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2) {
             emitSignal(arg1, arg2);
         }
@@ -2125,7 +2125,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2151,7 +2151,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3) {
             emitSignal(arg1, arg2, arg3);
         }
@@ -2161,7 +2161,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2189,7 +2189,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4) {
             emitSignal(arg1, arg2, arg3, arg4);
         }
@@ -2199,7 +2199,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2227,7 +2227,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
             emitSignal(arg1, arg2, arg3, arg4, arg5);
         }
@@ -2237,7 +2237,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2266,7 +2266,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6);
         }
@@ -2276,7 +2276,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2306,7 +2306,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
@@ -2316,7 +2316,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2347,7 +2347,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6,
                 G arg7, H arg8) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -2358,7 +2358,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2390,7 +2390,7 @@ class QObject___ extends QObject {
         /**
          * Emits the signal.
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6,
                 G arg7, H arg8, I arg9) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -2401,7 +2401,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     }
@@ -2410,15 +2410,15 @@ class QObject___ extends QObject {
      * Emits a private signal. This method may only be called from inside the signal owning object.
      * 
      * @param signal the signal to be emitted
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static void emit(PrivateSignal0 signal) throws io.qt.QSignalAccessException {
+    protected static void emit(@StrictNonNull PrivateSignal0 signal) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit();
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2428,15 +2428,15 @@ class QObject___ extends QObject {
      * @param <A> The type of the first parameter of the signal.
      * @param signal the signal to be emitted
      * @param arg1 The argument for the first parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A> void emit(PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
+    protected static <A> void emit(@StrictNonNull PrivateSignal1<A> signal, A arg1) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2448,15 +2448,15 @@ class QObject___ extends QObject {
      * @param signal the signal to be emitted
      * @param arg1 The argument for the first parameter of the signal.
      * @param arg2 The argument for the second parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B> void emit(PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
+    protected static <A,B> void emit(@StrictNonNull PrivateSignal2<A,B> signal, A arg1, B arg2) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2470,15 +2470,15 @@ class QObject___ extends QObject {
      * @param arg1 The argument for the first parameter of the signal.
      * @param arg2 The argument for the second parameter of the signal.
      * @param arg3 The argument for the third parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C> void emit(PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
+    protected static <A,B,C> void emit(@StrictNonNull PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2494,15 +2494,15 @@ class QObject___ extends QObject {
      * @param arg2 The argument for the second parameter of the signal.
      * @param arg3 The argument for the third parameter of the signal.
      * @param arg4 The argument for the fourth parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D> void emit(PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D> void emit(@StrictNonNull PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2520,15 +2520,15 @@ class QObject___ extends QObject {
      * @param arg3 The argument for the third parameter of the signal.
      * @param arg4 The argument for the fourth parameter of the signal.
      * @param arg5 The argument for the fifth parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D,E> void emit(PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D,E> void emit(@StrictNonNull PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4, arg5);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2548,15 +2548,15 @@ class QObject___ extends QObject {
      * @param arg4 The argument for the fourth parameter of the signal.
      * @param arg5 The argument for the fifth parameter of the signal.
      * @param arg6 The argument for the sixth parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D,E,F> void emit(PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D,E,F> void emit(@StrictNonNull PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2578,15 +2578,15 @@ class QObject___ extends QObject {
      * @param arg5 The argument for the fifth parameter of the signal.
      * @param arg6 The argument for the sixth parameter of the signal.
      * @param arg7 The argument for the seventh parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D,E,F,G> void emit(PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D,E,F,G> void emit(@StrictNonNull PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2610,15 +2610,15 @@ class QObject___ extends QObject {
      * @param arg6 The argument for the sixth parameter of the signal.
      * @param arg7 The argument for the seventh parameter of the signal.
      * @param arg8 The argument for the eighth parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D,E,F,G,H> void emit(PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D,E,F,G,H> void emit(@StrictNonNull PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2644,15 +2644,15 @@ class QObject___ extends QObject {
      * @param arg7 The argument for the seventh parameter of the signal.
      * @param arg8 The argument for the eighth parameter of the signal.
      * @param arg9 The argument for the ninth parameter of the signal.
-     * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
+     * @throws QSignalAccessException if signal is emitted from outside the declaring class.
      */
-    protected static <A,B,C,D,E,F,G,H,I> void emit(PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
+    protected static <A,B,C,D,E,F,G,H,I> void emit(@StrictNonNull PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QSignalAccessException {
         Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
         Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }else {
-            throw new io.qt.QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
+            throw new QSignalAccessException(signalDeclaringClass, signal.name(), callerClass);
         }
     }
     
@@ -2670,7 +2670,7 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
-        public final QObject containingObject() {
+        public final @NonNull QObject containingObject() {
             return QObject.this;
         }
     
@@ -2680,7 +2680,7 @@ class QObject___ extends QObject {
          * @param connection the connection to be removed
          * @return <code>true</code> if the disconnection was successful.
          */
-        public final boolean disconnect(QMetaObject.Connection connection) {
+        public final boolean disconnect(QMetaObject.@NonNull Connection connection) {
             return super.disconnect(connection);
         }
         
@@ -2704,7 +2704,7 @@ class QObject___ extends QObject {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... type) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
@@ -2733,10 +2733,10 @@ class QObject___ extends QObject {
          * @param slot the slot to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+         * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
-        public final io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{
+        public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) throws QNoSuchSignalException{
             return super.connect(slot, connectionType);
         }
 
@@ -2746,7 +2746,7 @@ class QObject___ extends QObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(io.qt.core.QMetaObject.Slot0 slot) {
+        public final boolean disconnect(QMetaObject.@NonNull Slot0 slot) {
             return super.disconnect(slot);
         }
         
@@ -2756,9 +2756,9 @@ class QObject___ extends QObject {
          * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{
+        public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull Connectable0 signal, Qt.@NonNull ConnectionType @NonNull... connectionType) throws QNoSuchSignalException{
             return super.connect((QMetaObject.AbstractSignal)signal, connectionType);
         }
     
@@ -2768,7 +2768,7 @@ class QObject___ extends QObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(io.qt.core.QMetaObject.Connectable0 signal) {
+        public final boolean disconnect(QMetaObject.@NonNull Connectable0 signal) {
             return super.disconnect((QMetaObject.AbstractSignal)signal);
         }
         
@@ -2778,9 +2778,9 @@ class QObject___ extends QObject {
          * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
-         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.AbstractPublicSignal0 signal, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{
+        public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPublicSignal0 signal, Qt.@NonNull ConnectionType @NonNull... connectionType) throws QNoSuchSignalException{
             return super.connect(signal, connectionType);
         }
     
@@ -2790,26 +2790,26 @@ class QObject___ extends QObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(io.qt.core.QMetaObject.AbstractPublicSignal0 signal) {
+        public final boolean disconnect(QMetaObject.@StrictNonNull AbstractPublicSignal0 signal) {
             return super.disconnect(signal);
         }
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private QMetaObject.Connection connectSlot(QMetaObject.AbstractSlot slotObject, Qt.ConnectionType[] connectionType) {
             return super.connect(slotObject, connectionType);
         }
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private boolean disconnectSlot(QMetaObject.AbstractSlot slotObject) {
             return super.disconnect(slotObject);
         }
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private QMetaObject.Connection connectSignal(QMetaObject.AbstractSignal slotObject, Qt.ConnectionType[] connectionType) {
             return super.connect(slotObject, connectionType);
         }
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         private boolean disconnectSignal(QMetaObject.AbstractSignal slotObject) {
             return super.disconnect(slotObject);
         }
@@ -2822,10 +2822,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal0 signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2836,39 +2836,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal1<?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal1<A> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal2<?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2880,26 +2851,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal2<A,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal2<A,B> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2910,10 +2865,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal3<?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2925,10 +2880,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal3<A,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2941,27 +2896,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal3<A,B,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2972,10 +2910,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2987,10 +2925,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3003,10 +2941,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3020,28 +2958,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3052,10 +2972,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3067,10 +2987,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3083,10 +3003,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3100,10 +3020,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3118,29 +3038,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3151,10 +3052,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3166,10 +3067,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3182,10 +3083,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3199,10 +3100,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3217,10 +3118,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3236,30 +3137,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3270,10 +3151,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3285,10 +3166,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3301,10 +3182,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3318,10 +3199,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3336,10 +3217,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3355,10 +3236,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3375,31 +3256,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3410,10 +3270,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3425,10 +3285,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3441,10 +3301,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3458,10 +3318,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3476,10 +3336,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3495,10 +3355,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3515,10 +3375,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3536,32 +3396,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3572,10 +3410,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3587,10 +3425,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3603,10 +3441,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3620,10 +3458,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3638,10 +3476,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3657,10 +3495,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3677,10 +3515,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3698,10 +3536,10 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3720,10 +3558,150 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     */
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3738,1287 +3716,15 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
-     * @param <I> The type of the ninth parameter of the signal.
      * @param signal the signal to be connected
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal0 signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal1<?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal1<A> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal2<?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal2<A,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal2<A,B> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal3<?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal3<A,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal3<A,B,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.Slot0 slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param <I> The type of the ninth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
-        return signal.disconnect(slot);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(QMetaObject.AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(QMetaObject.AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(QMetaObject.AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param <I> The type of the ninth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.Connection connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connect(connectSignal, connectionType);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param <I> The type of the ninth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal) {
-        return signal.disconnect(connectSignal);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot0 slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C,D> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
-     */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
-        return signal.connectSlot(slot, connectionType);
     }
     
     /**
@@ -5037,11 +3743,1305 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     * @throws io.qt.QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+        return signal.disconnect(slot);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connect(connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal) {
+        return signal.disconnect(connectSignal);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -5052,10 +5052,10 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5067,26 +5067,10 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
-        return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be connected
-     * @param connectSignal the signal to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
-     */
-    public static <A,B> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5095,15 +5079,14 @@ class QObject___ extends QObject {
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5113,15 +5096,14 @@ class QObject___ extends QObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5132,15 +5114,14 @@ class QObject___ extends QObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5152,15 +5133,14 @@ class QObject___ extends QObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5173,15 +5153,14 @@ class QObject___ extends QObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5195,15 +5174,14 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5218,155 +5196,19 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
-     * @param <I> The type of the ninth parameter of the signal.
      * @param signal the signal to be connected
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws io.qt.QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.Connection connect(MultiSignal signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(MultiSignal signal, QMetaObject.Slot0 slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A> boolean disconnect(MultiSignal signal, QMetaObject.Slot1<? super A> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B> boolean disconnect(MultiSignal signal, QMetaObject.Slot2<? super A,? super B> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C> boolean disconnect(MultiSignal signal, QMetaObject.Slot3<? super A,? super B,? super C> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D> boolean disconnect(MultiSignal signal, QMetaObject.Slot4<? super A,? super B,? super C,? super D> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E> boolean disconnect(MultiSignal signal, QMetaObject.Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F> boolean disconnect(MultiSignal signal, QMetaObject.Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G> boolean disconnect(MultiSignal signal, QMetaObject.Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param <B> The type of the second parameter of the signal.
-     * @param <C> The type of the third parameter of the signal.
-     * @param <D> The type of the fourth parameter of the signal.
-     * @param <E> The type of the fifth parameter of the signal.
-     * @param <F> The type of the sixth parameter of the signal.
-     * @param <G> The type of the seventh parameter of the signal.
-     * @param <H> The type of the eighth parameter of the signal.
-     * @param signal the signal to be disconnected
-     * @param slot the slot to be disconnected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static <A,B,C,D,E,F,G,H> boolean disconnect(MultiSignal signal, QMetaObject.Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
-        return signal.disconnectSlot(slot);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5377,81 +5219,84 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param connectSignal the signal to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     */
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
+        return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     * 
      * @param signal the signal to be disconnected
      * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(MultiSignal signal, QMetaObject.Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+    public static boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot0 slot) {
         return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
-     * 
-     * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
-     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
-     */
-    public static boolean disconnect(MultiSignal signal, QMetaObject.Connectable0 connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
-    }
-    
-    /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A> boolean disconnect(MultiSignal signal, QMetaObject.Connectable1<? super A> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot1<? super A> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B> boolean disconnect(MultiSignal signal, QMetaObject.Connectable2<? super A,? super B> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C> boolean disconnect(MultiSignal signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D> boolean disconnect(MultiSignal signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C,D> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5459,15 +5304,15 @@ class QObject___ extends QObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E> boolean disconnect(MultiSignal signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C,D,E> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5476,15 +5321,15 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E,F> boolean disconnect(MultiSignal signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C,D,E,F> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5494,15 +5339,15 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E,F,G> boolean disconnect(MultiSignal signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C,D,E,F,G> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5513,15 +5358,15 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      * @param signal the signal to be disconnected
-     * @param connectSignal the signal to be connected
+     * @param slot the slot to be disconnected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E,F,G,H> boolean disconnect(MultiSignal signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal) {
-        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    public static <A,B,C,D,E,F,G,H> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnectSlot(slot);
     }
     
     /**
-     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
@@ -5533,10 +5378,165 @@ class QObject___ extends QObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      * @param signal the signal to be disconnected
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+        return signal.disconnectSlot(slot);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param signal the signal to be disconnected
      * @param connectSignal the signal to be connected
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(MultiSignal signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal) {
+    public static boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable0 connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable1<? super A> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable2<? super A,? super B> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable3<? super A,? super B,? super C> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal) {
+        return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
+    }
+    
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>connectSignal</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param connectSignal the signal to be connected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <A,B,C,D,E,F,G,H,I> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal) {
         return signal.disconnectSignal((QMetaObject.AbstractSignal)connectSignal);
     }
     
@@ -5633,7 +5633,7 @@ class QObject___ extends QObject {
      * @see #sender()
      * @see QMetaType#registerMetaType(Class)
      */
-    public static QMetaObject.Connection connect(QObject sender, String signal, QObject receiver, String slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull String signal, @StrictNonNull QObject receiver, @StrictNonNull String slot, Qt.ConnectionType... connectionType) {
         if(signal.isEmpty())
             throw new IllegalArgumentException("Empty string not allowed as signal.");
         if(slot.isEmpty())
@@ -5663,12 +5663,12 @@ class QObject___ extends QObject {
      * You can check {@link QMetaObject.Connection#isConnected()} on the returned connection object.</p>
      *
      * <p>This function works in the same way as
-     * {@link #connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)}
+     * {@link #connect(QObject, String, QObject, String, Qt.ConnectionType...)}
      * but it uses QMetaMethod to specify signal and method.</p>
      *
-     * @see #connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)
+     * @see #connect(QObject, String, QObject, String, Qt.ConnectionType...)
      */
-    public static QMetaObject.Connection connect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull QMetaMethod signal, QObject receiver, @StrictNonNull QMetaMethod slot, Qt.ConnectionType... connectionType) {
         java.util.Objects.requireNonNull(signal);
         java.util.Objects.requireNonNull(slot);
         byte flags = 0;
@@ -5735,7 +5735,7 @@ class QObject___ extends QObject {
      * any signal. If not, only the specified signal is disconnected.</p>
      * 
      * <p>If <i>receiver</i> is 0, it disconnects anything connected to
-     * <i>signal</i>. If not, QMetaObject.Slots in objects other than <i>receiver</i> are not
+     * <i>signal</i>. If not, QMetaObject.@StrictNonNull Slots in objects other than <i>receiver</i> are not
      * disconnected.</p>
      * 
      * <p>If <i>method</i> is 0, it disconnects anything that is connected to
@@ -5746,7 +5746,7 @@ class QObject___ extends QObject {
      * 
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static boolean disconnect(QObject sender, String signal, QObject receiver, String slot) {
+    public static boolean disconnect(@StrictNonNull QObject sender, String signal, QObject receiver, String slot) {
         if(signal!=null && signal.isEmpty())
             throw new IllegalArgumentException("Empty string not allowed as signal.");
         if(slot!=null && slot.isEmpty())
@@ -5793,7 +5793,7 @@ class QObject___ extends QObject {
      * @see #disconnect(QObject, String, QObject, String)
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
-    public static boolean disconnect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot) {
+    public static boolean disconnect(@StrictNonNull QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot) {
         return QMetaObject.disconnectMethods(
                 java.util.Objects.requireNonNull(sender),
                 signal==null ? -1 : signal.methodIndex(),
@@ -5813,7 +5813,7 @@ class QObject___ extends QObject {
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      * 
      */
-    public static boolean disconnect(QMetaObject.Connection connection) {
+    public static boolean disconnect(QMetaObject.@NonNull Connection connection) {
         return CoreUtility.disconnectOne(connection);
     }
     
@@ -5841,7 +5841,7 @@ class QObject___ extends QObject {
      * Returns a pointer to the meta-object of this object.
      * @return the object's meta-object
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native final QMetaObject metaObject();
         
     /**
@@ -5850,8 +5850,8 @@ class QObject___ extends QObject {
      * @param targetType
      * @return the object as targetType or null
      */
-    @io.qt.QtUninvokable
-    public final <T extends QtObjectInterface> T qt_metacast(Class<T> targetType) {
+    @QtUninvokable
+    public final <T extends QtObjectInterface> T qt_metacast(@StrictNonNull Class<T> targetType) {
         return QMetaObject.cast(targetType, this);
     }
     
@@ -5861,16 +5861,16 @@ class QObject___ extends QObject {
      * @param targetType
      * @return <code>true</code> if object instance of targetType
      */
-    @io.qt.QtUninvokable
-    public final boolean inherits(Class<?> targetType){
+    @QtUninvokable
+    public final boolean inherits(@StrictNonNull Class<?> targetType){
         return targetType.isInstance(this) || inherits(QMetaObject.internalNameOfType(targetType).replace("*", ""));
     }
     
     /**
      * @see #receivers(String)
      */
-    @io.qt.QtUninvokable
-    protected final int receivers(io.qt.core.QMetaObject.AbstractSignal signalObject){
+    @QtUninvokable
+    protected final int receivers(QMetaObject.@StrictNonNull AbstractSignal signalObject){
         if(signalObject.methodIndex()>=0 && signalObject.containingObject()==this) {
             QMetaMethod method = metaObject().methods().get(signalObject.methodIndex());
             return receivers("2" + method.cppMethodSignature());
@@ -5882,7 +5882,7 @@ class QObject___ extends QObject {
      * <p>See <a href="@docRoot/qobject.html#qobject_cast">qobject_cast&lt;T>(QObject *)</a></p>
      */
     @QtUninvokable
-    public static <T extends QtObjectInterface> T qobject_cast(Class<T> targetType, QObject object) {
+    public static <T extends @Nullable QtObjectInterface> T qobject_cast(@StrictNonNull Class<T> targetType, @Nullable QObject object) {
         return QMetaObject.cast(targetType, object);
     }
     
@@ -6220,7 +6220,7 @@ class QObject_6__ extends QObject {
      * "<code>public final Signal0 fooChanged</code>" as it's notify signal and 
      * "<code>public QBindable&lt;T> bindableFoo()</code>" as it's bindable supplier.
      * </p>
-     * <p>Instead of meeting these naming conventions you can use the <code>io.qt.QtProperty...</code> annotations
+     * <p>Instead of meeting these naming conventions you can use the <code>QtProperty...</code> annotations
      * to make the fields and methods identified as property:</p>
      * <code>
      * public class MyObject extends QObject{<br>
@@ -6312,7 +6312,7 @@ class QObject_6__ extends QObject {
          * Otherwise, a default value is used.</p>
          * @param functor
          */
-        public QProperty(QtUtilities.Supplier<? extends T> functor) {
+        public QProperty(QtUtilities.@StrictNonNull Supplier<? extends T> functor) {
             this(new QPropertyBinding<>(functor));
         }
         
@@ -6357,7 +6357,7 @@ class QObject_6__ extends QObject {
          */
         @SuppressWarnings("unchecked")
         @QtUninvokable
-        public final QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding)
+        public final @NonNull QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding)
         {
             if(newBinding!=null && !io.qt.core.QProperty.checkType(core.valueMetaType(this), newBinding.valueMetaType()))
                 return new QPropertyBinding<>();
@@ -6399,7 +6399,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QPropertyBinding<T> setBinding(QtUtilities.Supplier<? extends T> functor)
+        public final @NonNull QPropertyBinding<T> setBinding(QtUtilities.@StrictNonNull Supplier<? extends T> functor)
         {
             try {
                 QPropertyBinding.setPendingMetaType(this::valueMetaType);
@@ -6410,7 +6410,7 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QPropertyBinding<T> makeBinding()
+        private @NonNull QPropertyBinding<T> makeBinding()
         {
             core.initialize(this);
             try {
@@ -6437,7 +6437,7 @@ class QObject_6__ extends QObject {
          * @return binding
          */
         @QtUninvokable
-        public final QPropertyBinding<T> binding()
+        public final @NonNull QPropertyBinding<T> binding()
         {
             return new QPropertyBinding<>(this);
         }
@@ -6448,7 +6448,7 @@ class QObject_6__ extends QObject {
          * @return the removed binding
          */
         @QtUninvokable
-        public final QPropertyBinding<T> takeBinding()
+        public final @NonNull QPropertyBinding<T> takeBinding()
         {
             return setBinding(new QPropertyBinding<>());
         }
@@ -6463,7 +6463,7 @@ class QObject_6__ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f)
+        public final @NonNull QPropertyChangeHandler onValueChanged(Runnable f)
         {
             return new QPropertyChangeHandler(bindingData(), f);
         }
@@ -6476,7 +6476,7 @@ class QObject_6__ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f)
+        public final @NonNull QPropertyChangeHandler subscribe(Runnable f)
         {
             f.run();
             return onValueChanged(f);
@@ -6491,8 +6491,8 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f)
+        @QtUninvokable
+        public final @NonNull QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
         }
@@ -6529,7 +6529,7 @@ class QObject_6__ extends QObject {
             return core.hasSignal(this);
         }
         
-        QMetaType valueMetaType() {
+        @NonNull QMetaType valueMetaType() {
             return core.valueMetaType(this);
         }
         
@@ -6595,7 +6595,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>boolean</code>-typed property with the provided binding.
          * @param binding
          */
-        public QBooleanProperty(QPropertyBinding<@QtPrimitiveType Boolean> binding) {
+        public QBooleanProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Boolean> binding) {
             super();
             if(io.qt.core.QBooleanProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -6667,7 +6667,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Boolean> newBinding)
+        public final QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Boolean> newBinding)
         {
             if(!io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType()))
                 return new QBooleanPropertyBinding();
@@ -6792,7 +6792,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -6891,7 +6891,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>byte</code>-typed property with the provided binding.
          * @param binding
          */
-        public QByteProperty(QPropertyBinding<@QtPrimitiveType Byte> binding) {
+        public QByteProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Byte> binding) {
             super();
             if(io.qt.core.QByteProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -6905,7 +6905,7 @@ class QObject_6__ extends QObject {
          * <p>Constructs a <code>byte</code>-typed property bound to the provided <code>functor</code>.</p>
          * @param functor
          */
-        public QByteProperty(io.qt.QtUtilities.ByteSupplier functor) {
+        public QByteProperty(QtUtilities.ByteSupplier functor) {
             this(new QBytePropertyBinding(functor));
         }
         
@@ -6963,7 +6963,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Byte> newBinding)
+        public final QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Byte> newBinding)
         {
             if(!io.qt.core.QByteProperty.checkType(newBinding.valueMetaType()))
                 return new QBytePropertyBinding();
@@ -7007,7 +7007,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBytePropertyBinding setBinding(io.qt.QtUtilities.ByteSupplier functor)
+        public final QBytePropertyBinding setBinding(QtUtilities.ByteSupplier functor)
         {
             return setBinding(new QBytePropertyBinding(functor));
         }
@@ -7088,7 +7088,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -7187,7 +7187,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>short</code>-typed property with the provided binding.
          * @param binding
          */
-        public QShortProperty(QPropertyBinding<@QtPrimitiveType Short> binding) {
+        public QShortProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Short> binding) {
             super();
             if(io.qt.core.QShortProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -7238,7 +7238,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QShortPropertyBinding setBinding(io.qt.QtUtilities.ShortSupplier functor)
+        public final QShortPropertyBinding setBinding(QtUtilities.ShortSupplier functor)
         {
             return setBinding(new QShortPropertyBinding(functor));
         }
@@ -7274,7 +7274,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QShortPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Short> newBinding)
+        public final QShortPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Short> newBinding)
         {
             if(!io.qt.core.QShortProperty.checkType(newBinding.valueMetaType()))
                 return new QShortPropertyBinding();
@@ -7386,7 +7386,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -7485,7 +7485,7 @@ class QObject_6__ extends QObject {
          * Constructs an <code>int</code>-typed property with the provided binding.
          * @param binding
          */
-        public QIntProperty(QPropertyBinding<@QtPrimitiveType Integer> binding) {
+        public QIntProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Integer> binding) {
             super();
             if(io.qt.core.QIntProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -7557,7 +7557,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Integer> newBinding)
+        public final QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Integer> newBinding)
         {
             if(!io.qt.core.QIntProperty.checkType(newBinding.valueMetaType()))
                 return new QIntPropertyBinding();
@@ -7682,7 +7682,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -7781,7 +7781,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>long</code>-typed property with the provided binding.
          * @param binding
          */
-        public QLongProperty(QPropertyBinding<@QtPrimitiveType Long> binding) {
+        public QLongProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Long> binding) {
             super();
             if(io.qt.core.QLongProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -7853,7 +7853,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Long> newBinding)
+        public final QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Long> newBinding)
         {
             if(!io.qt.core.QLongProperty.checkType(newBinding.valueMetaType()))
                 return new QLongPropertyBinding();
@@ -7978,7 +7978,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -8077,7 +8077,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>float</code>-typed property with the provided binding.
          * @param binding
          */
-        public QFloatProperty(QPropertyBinding<@QtPrimitiveType Float> binding) {
+        public QFloatProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Float> binding) {
             super();
             if(io.qt.core.QFloatProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -8091,7 +8091,7 @@ class QObject_6__ extends QObject {
          * <p>Constructs a <code>float</code>-typed property bound to the provided <code>functor</code>.</p>
          * @param functor
          */
-        public QFloatProperty(io.qt.QtUtilities.FloatSupplier functor) {
+        public QFloatProperty(QtUtilities.FloatSupplier functor) {
             this(new QFloatPropertyBinding(functor));
         }
         
@@ -8149,7 +8149,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Float> newBinding)
+        public final QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Float> newBinding)
         {
             if(!io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType()))
                 return new QFloatPropertyBinding();
@@ -8187,13 +8187,13 @@ class QObject_6__ extends QObject {
         
         /**
          * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
-         * <p>The first time the property value is read, the binding is evaluated by invoking {@link io.qt.QtUtilities.FloatSupplier#getAsFloat()} of <code>functor</code>.
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link QtUtilities.FloatSupplier#getAsFloat()} of <code>functor</code>.
          * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
          * @param functor
          * @return oldBinding
          */
         @QtUninvokable
-        public final QFloatPropertyBinding setBinding(io.qt.QtUtilities.FloatSupplier functor)
+        public final QFloatPropertyBinding setBinding(QtUtilities.FloatSupplier functor)
         {
             return setBinding(new QFloatPropertyBinding(functor));
         }
@@ -8274,7 +8274,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -8373,7 +8373,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>double</code>-typed property with the provided binding.
          * @param binding
          */
-        public QDoubleProperty(QPropertyBinding<@QtPrimitiveType Double> binding) {
+        public QDoubleProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Double> binding) {
             super();
             if(io.qt.core.QDoubleProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -8445,7 +8445,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Double> newBinding)
+        public final QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@StrictNonNull Double> newBinding)
         {
             if(!io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType()))
                 return new QDoublePropertyBinding();
@@ -8570,7 +8570,7 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QPropertyNotifier addNotifier(Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
@@ -8669,7 +8669,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>char</code>-typed property with the provided binding.
          * @param binding
          */
-        public QCharProperty(QPropertyBinding<@QtPrimitiveType Character> binding) {
+        public QCharProperty(QPropertyBinding<@QtPrimitiveType@NonNull Character> binding) {
             super();
             if(io.qt.core.QCharProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
@@ -8683,7 +8683,7 @@ class QObject_6__ extends QObject {
          * <p>Constructs a <code>char</code>-typed property bound to the provided <code>functor</code>.</p>
          * @param functor
          */
-        public QCharProperty(io.qt.QtUtilities.CharSupplier functor) {
+        public QCharProperty(QtUtilities.@NonNull CharSupplier functor) {
             this(new QCharPropertyBinding(functor));
         }
         
@@ -8720,7 +8720,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QCharPropertyBinding setBinding(QCharPropertyBinding newBinding)
+        public final @NonNull QCharPropertyBinding setBinding(QCharPropertyBinding newBinding)
         {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
@@ -8741,7 +8741,7 @@ class QObject_6__ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Character> newBinding)
+        public final @NonNull QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType@NonNull Character> newBinding)
         {
             if(!io.qt.core.QCharProperty.checkType(newBinding.valueMetaType()))
                 return new QCharPropertyBinding();
@@ -8779,19 +8779,19 @@ class QObject_6__ extends QObject {
         
         /**
          * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
-         * <p>The first time the property value is read, the binding is evaluated by invoking {@link io.qt.QtUtilities.CharSupplier#getAsChar()} of <code>functor</code>.
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link QtUtilities.CharSupplier#getAsChar()} of <code>functor</code>.
          * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
          * @param functor
          * @return oldBinding
          */
         @QtUninvokable
-        public final QCharPropertyBinding setBinding(io.qt.QtUtilities.CharSupplier functor)
+        public final @NonNull QCharPropertyBinding setBinding(QtUtilities.@NonNull CharSupplier functor)
         {
             return setBinding(new QCharPropertyBinding(functor));
         }
         
         @QtUninvokable
-        private QCharPropertyBinding makeBinding()
+        private @NonNull QCharPropertyBinding makeBinding()
         {
             return new QCharPropertyBinding(this::value);
         }
@@ -8812,7 +8812,7 @@ class QObject_6__ extends QObject {
          * @return binding
          */
         @QtUninvokable
-        public final QCharPropertyBinding binding()
+        public final @NonNull QCharPropertyBinding binding()
         {
             return new QCharPropertyBinding(this);
         }
@@ -8823,7 +8823,7 @@ class QObject_6__ extends QObject {
          * @return the removed binding
          */
         @QtUninvokable
-        public final QCharPropertyBinding takeBinding()
+        public final @NonNull QCharPropertyBinding takeBinding()
         {
             return setBinding(new QCharPropertyBinding());
         }
@@ -8838,7 +8838,7 @@ class QObject_6__ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f)
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
         {
             return new QPropertyChangeHandler(bindingData(), f);
         }
@@ -8851,7 +8851,7 @@ class QObject_6__ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f)
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
         {
             f.run();
             return onValueChanged(f);
@@ -8866,8 +8866,8 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f)
+        @QtUninvokable
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
         }
@@ -8943,7 +8943,7 @@ class QObject_6__ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f)
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
         {
             return new QPropertyChangeHandler(bindingData(), f);
         }
@@ -8956,7 +8956,7 @@ class QObject_6__ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f)
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
         {
             f.run();
             return onValueChanged(f);
@@ -8971,8 +8971,8 @@ class QObject_6__ extends QObject {
          * @return property notifier
          * @see QPropertyNotifier
          */
-        @io.qt.QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f)
+        @QtUninvokable
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
         {
             return new QPropertyNotifier(bindingData(), f);
         }
@@ -8983,7 +8983,7 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        public abstract QMetaType valueMetaType();
+        public abstract @NonNull QMetaType valueMetaType();
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
@@ -9026,7 +9026,7 @@ class QObject_6__ extends QObject {
          * Constructs a computed-value property whose type corresponds to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedProperty(QtUtilities.Supplier<? extends T> getter) {
+        public QComputedProperty(QtUtilities.@StrictNonNull Supplier<? extends T> getter) {
             super();
             QPropertyBinding.analyzeMetaType(getter);
             this.getter = getter;
@@ -9042,9 +9042,15 @@ class QObject_6__ extends QObject {
             bindingStorage().registerDependency(this);
             return getter.get();
         }
+
+        @QtUninvokable
+        private @NonNull QPropertyBinding<T> makeBinding()
+        {
+            return new QPropertyBinding<>(this::value);
+        }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return QPropertyBinding.analyzeMetaType(getter);
         }
     }
@@ -9061,7 +9067,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>boolean</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedBooleanProperty(java.util.function.BooleanSupplier getter) {
+        public QComputedBooleanProperty(java.util.function.@NonNull BooleanSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9076,9 +9082,15 @@ class QObject_6__ extends QObject {
             bindingStorage().registerDependency(this);
             return getter.getAsBoolean();
         }
+
+        @QtUninvokable
+        private @NonNull QBooleanPropertyBinding makeBinding()
+        {
+            return new QBooleanPropertyBinding(this::value);
+        }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.Bool);
         }
     }
@@ -9095,7 +9107,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>byte</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedByteProperty(QtUtilities.ByteSupplier getter) {
+        public QComputedByteProperty(QtUtilities.@NonNull ByteSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9112,13 +9124,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QBytePropertyBinding makeBinding()
+        private @NonNull QBytePropertyBinding makeBinding()
         {
             return new QBytePropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.SChar);
         }
     }
@@ -9135,7 +9147,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>short</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedShortProperty(QtUtilities.ShortSupplier getter) {
+        public QComputedShortProperty(QtUtilities.@NonNull ShortSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9152,13 +9164,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QShortPropertyBinding makeBinding()
+        private @NonNull QShortPropertyBinding makeBinding()
         {
             return new QShortPropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.Short);
         }
     }
@@ -9175,7 +9187,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>int</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedIntProperty(java.util.function.IntSupplier getter) {
+        public QComputedIntProperty(java.util.function.@NonNull IntSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9192,13 +9204,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QIntPropertyBinding makeBinding()
+        private @NonNull QIntPropertyBinding makeBinding()
         {
             return new QIntPropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.Int);
         }
     }
@@ -9215,7 +9227,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>long</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedLongProperty(java.util.function.LongSupplier getter) {
+        public QComputedLongProperty(java.util.function.@NonNull LongSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9232,13 +9244,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QLongPropertyBinding makeBinding()
+        private @NonNull QLongPropertyBinding makeBinding()
         {
             return new QLongPropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.LongLong);
         }
     }
@@ -9255,7 +9267,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>float</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedFloatProperty(QtUtilities.FloatSupplier getter) {
+        public QComputedFloatProperty(QtUtilities.@NonNull FloatSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9272,13 +9284,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QFloatPropertyBinding makeBinding()
+        private @NonNull QFloatPropertyBinding makeBinding()
         {
             return new QFloatPropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.Float);
         }
     }
@@ -9295,7 +9307,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>double</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedDoubleProperty(java.util.function.DoubleSupplier getter) {
+        public QComputedDoubleProperty(java.util.function.@NonNull DoubleSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9312,13 +9324,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QDoublePropertyBinding makeBinding()
+        private @NonNull QDoublePropertyBinding makeBinding()
         {
             return new QDoublePropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.Double);
         }
     }
@@ -9335,7 +9347,7 @@ class QObject_6__ extends QObject {
          * Constructs a <code>char</code>-typed computed-value property according to the given value supplier.
          * @param getter supplying the computed value
          */
-        public QComputedCharProperty(QtUtilities.CharSupplier getter) {
+        public QComputedCharProperty(QtUtilities.@NonNull CharSupplier getter) {
             super();
             this.getter = getter;
         }
@@ -9352,13 +9364,13 @@ class QObject_6__ extends QObject {
         }
         
         @QtUninvokable
-        private QCharPropertyBinding makeBinding()
+        private @NonNull QCharPropertyBinding makeBinding()
         {
             return new QCharPropertyBinding(this::value);
         }
         
         @QtUninvokable
-        public final QMetaType valueMetaType() {
+        public final @NonNull QMetaType valueMetaType() {
             return new QMetaType(QMetaType.Type.QChar);
         }
     }
@@ -9487,7 +9499,7 @@ class QSignalTransition___{
     /**
      * Sets the signal associated with this signal transition.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setSignal(io.qt.core.QMetaObject.AbstractSignal signal){
         if(signal.containingObject() instanceof io.qt.core.QObject) {
             io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
@@ -9507,7 +9519,7 @@ class QState___{
      * Adds a transition associated with the given signal of the given sender object, and returns the new QSignalTransition object. 
      * The transition has this state as the source, and the given target as the target state.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, QAbstractState target) {
         if(signal.containingObject() instanceof io.qt.core.QObject && signal.methodIndex()!=0) {
             io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
@@ -9526,46 +9538,46 @@ abstract class QUrl___ extends QUrl{
      * Supertype interface for {@link UrlFormattingOption} and {@link ComponentFormattingOption}
      * to be joined in QFiags type {@link FormattingOptions}
      */
-    public interface FormattingOption extends io.qt.QtFlagEnumerator{
+    public interface FormattingOption extends QtFlagEnumerator{
         
-        public final static FormattingOption None                   = UrlFormattingOption.None;
-        public final static FormattingOption RemoveScheme           = UrlFormattingOption.RemoveScheme;
-        public final static FormattingOption RemovePassword         = UrlFormattingOption.RemovePassword;
-        public final static FormattingOption RemoveUserInfo         = UrlFormattingOption.RemoveUserInfo;
-        public final static FormattingOption RemovePort             = UrlFormattingOption.RemovePort;
-        public final static FormattingOption RemoveAuthority        = UrlFormattingOption.RemoveAuthority;
-        public final static FormattingOption RemovePath             = UrlFormattingOption.RemovePath;
-        public final static FormattingOption RemoveQuery            = UrlFormattingOption.RemoveQuery;
-        public final static FormattingOption RemoveFragment         = UrlFormattingOption.RemoveFragment;
-        public final static FormattingOption PreferLocalFile        = UrlFormattingOption.PreferLocalFile;
-        public final static FormattingOption StripTrailingSlash     = UrlFormattingOption.StripTrailingSlash;
-        public final static FormattingOption RemoveFilename         = UrlFormattingOption.RemoveFilename;
-        public final static FormattingOption NormalizePathSegments  = UrlFormattingOption.NormalizePathSegments;
-        public final static FormattingOption EncodeSpaces           = ComponentFormattingOption.EncodeSpaces;
-        public final static FormattingOption EncodeUnicode          = ComponentFormattingOption.EncodeUnicode;
-        public final static FormattingOption EncodeDelimiters       = ComponentFormattingOption.EncodeDelimiters;
-        public final static FormattingOption EncodeReserved         = ComponentFormattingOption.EncodeReserved;
-        public final static FormattingOption DecodeReserved         = ComponentFormattingOption.DecodeReserved;
-        public final static FormattingOption FullyEncoded           = ComponentFormattingOption.FullyEncoded;
-        public final static FormattingOption FullyDecoded           = ComponentFormattingOption.FullyDecoded;
+        public final static @NonNull FormattingOption None                   = UrlFormattingOption.None;
+        public final static @NonNull FormattingOption RemoveScheme           = UrlFormattingOption.RemoveScheme;
+        public final static @NonNull FormattingOption RemovePassword         = UrlFormattingOption.RemovePassword;
+        public final static @NonNull FormattingOption RemoveUserInfo         = UrlFormattingOption.RemoveUserInfo;
+        public final static @NonNull FormattingOption RemovePort             = UrlFormattingOption.RemovePort;
+        public final static @NonNull FormattingOption RemoveAuthority        = UrlFormattingOption.RemoveAuthority;
+        public final static @NonNull FormattingOption RemovePath             = UrlFormattingOption.RemovePath;
+        public final static @NonNull FormattingOption RemoveQuery            = UrlFormattingOption.RemoveQuery;
+        public final static @NonNull FormattingOption RemoveFragment         = UrlFormattingOption.RemoveFragment;
+        public final static @NonNull FormattingOption PreferLocalFile        = UrlFormattingOption.PreferLocalFile;
+        public final static @NonNull FormattingOption StripTrailingSlash     = UrlFormattingOption.StripTrailingSlash;
+        public final static @NonNull FormattingOption RemoveFilename         = UrlFormattingOption.RemoveFilename;
+        public final static @NonNull FormattingOption NormalizePathSegments  = UrlFormattingOption.NormalizePathSegments;
+        public final static @NonNull FormattingOption EncodeSpaces           = ComponentFormattingOption.EncodeSpaces;
+        public final static @NonNull FormattingOption EncodeUnicode          = ComponentFormattingOption.EncodeUnicode;
+        public final static @NonNull FormattingOption EncodeDelimiters       = ComponentFormattingOption.EncodeDelimiters;
+        public final static @NonNull FormattingOption EncodeReserved         = ComponentFormattingOption.EncodeReserved;
+        public final static @NonNull FormattingOption DecodeReserved         = ComponentFormattingOption.DecodeReserved;
+        public final static @NonNull FormattingOption FullyEncoded           = ComponentFormattingOption.FullyEncoded;
+        public final static @NonNull FormattingOption FullyDecoded           = ComponentFormattingOption.FullyDecoded;
             
-        public static FormattingOptions flags(FormattingOption... values) {
+        public static @NonNull FormattingOptions flags(@NonNull FormattingOption @NonNull... values) {
             return new FormattingOptions(values);
         }
         
-        public default io.qt.QFlags<?> asFlags() {
+        public default @NonNull QFlags<?> asFlags() {
             return new FormattingOptions(value());
         }
         
-        public static FormattingOption resolve(int value) {
+        public static @NonNull FormattingOption resolve(int value) {
             try {
                 return UrlFormattingOption.resolve(value);
-            }catch(io.qt.QNoSuchEnumValueException e){
+            }catch(QNoSuchEnumValueException e){
                 return ComponentFormattingOption.resolve(value);
             }
         }
         
-        public static FormattingOption[] values() {
+        public static @NonNull FormattingOption @NonNull[] values() {
             UrlFormattingOption[] v1 = UrlFormattingOption.values();
             ComponentFormattingOption[] v2 = ComponentFormattingOption.values();
             FormattingOption[] values = new FormattingOption[v1.length + v2.length];
@@ -9578,10 +9590,10 @@ abstract class QUrl___ extends QUrl{
     /**
      * QFlags type for joining {@link UrlFormattingOption} and {@link ComponentFormattingOption}.
      */
-    public static final class FormattingOptions extends io.qt.QFlags<FormattingOption> implements Comparable<FormattingOptions> {
+    public static final class FormattingOptions extends QFlags<FormattingOption> implements Comparable<FormattingOptions> {
         private static final long serialVersionUID = -4458464052834800982L;
 
-        public FormattingOptions(FormattingOption ... args) {
+        public FormattingOptions(@NonNull FormattingOption @NonNull... args) {
             super(args); 
             for (FormattingOption arg : args) {
                 if( !(arg instanceof UrlFormattingOption) 
@@ -9596,12 +9608,12 @@ abstract class QUrl___ extends QUrl{
         }
         
         @Override
-        public FormattingOptions clone() {
+        public @NonNull FormattingOptions clone() {
             return new FormattingOptions(value());
         }
         
         @Override
-        public FormattingOptions combined(FormattingOption flag) {
+        public @NonNull FormattingOptions combined(FormattingOption flag) {
             if( !(flag instanceof UrlFormattingOption) 
                     && !(flag instanceof ComponentFormattingOption) ) {
                 throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(flag).getName() + ") are not allowed.");
@@ -9610,7 +9622,7 @@ abstract class QUrl___ extends QUrl{
         }
         
         @Override
-        public FormattingOption[] flags() {
+        public @NonNull FormattingOption @NonNull[] flags() {
             return super.flags(FormattingOption.values());
         }
 
@@ -9623,47 +9635,47 @@ abstract class QUrl___ extends QUrl{
     /**
      * <p>See <a href="@docRoot/qurl.html#toDisplayString">QUrl::toDisplayString(QUrl::FormattingOptions)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final java.lang.String toDisplayString(FormattingOption... options)    {
+    @QtUninvokable
+    public final java.lang.@NonNull String toDisplayString(@NonNull FormattingOption @NonNull... options)    {
         return toDisplayString(new FormattingOptions(options));
     }
 
     /**
      * <p>See <a href="@docRoot/qurl.html#toString">QUrl::toString(QUrl::FormattingOptions)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final java.lang.String toString(FormattingOption... options)    {
+    @QtUninvokable
+    public final java.lang.@NonNull String toString(@NonNull FormattingOption @NonNull... options)    {
         return toString(new FormattingOptions(options));
     }
     
     /**
      * <p>See <a href="@docRoot/qurl.html#url">QUrl::url(QUrl::FormattingOptions)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final java.lang.String url(FormattingOption... options)    {
+    @QtUninvokable
+    public final java.lang.@NonNull String url(@NonNull FormattingOption @NonNull... options)    {
         return url(new FormattingOptions(options));
     }
 
     /**
      * <p>See <a href="@docRoot/qurl.html#toEncoded">QUrl::toEncoded(QUrl::FormattingOptions)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray toEncoded(FormattingOption... options)    {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QByteArray toEncoded(@NonNull FormattingOption @NonNull... options)    {
         return toEncoded(new FormattingOptions(options));
     }
     
     /**
      * <p>See <a href="@docRoot/qurl.html#toStringList">QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</a></p>
      */
-    public static QStringList toStringList(java.util.Collection<? extends io.qt.core.QUrl> uris, FormattingOption... options){
+    public static @NonNull QStringList toStringList(java.util.Collection<? extends io.qt.core.@NonNull QUrl> uris, @NonNull FormattingOption @NonNull... options){
         return toStringList(uris, new FormattingOptions(options));
     }
     
     /**
      * <p>See <a href="@docRoot/qurl.html#adjusted">QUrl::adjusted(QUrl::FormattingOptions)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QUrl adjusted(io.qt.core.QUrl.FormattingOption... options){
+    @QtUninvokable
+    public final io.qt.core.@NonNull QUrl adjusted(io.qt.core.QUrl.@NonNull FormattingOption @NonNull... options){
         return adjusted(new FormattingOptions(options));
     }
     
@@ -9671,7 +9683,7 @@ abstract class QUrl___ extends QUrl{
      * @deprecated Use <code>new QUrl("qrc:path")</code> instead.
      */
     @Deprecated
-    public static io.qt.core.QUrl fromClassPath(java.lang.String classpath){
+    public static io.qt.core.@NonNull QUrl fromClassPath(java.lang.@NonNull String classpath){
         return new io.qt.core.QUrl("qrc:"+classpath);
     }
 }// class
@@ -9681,39 +9693,39 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     /**
      * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean setData(int row, int col, Object value) {
+    @QtUninvokable
+    public final boolean setData(int row, int col, @Nullable Object value) {
         return setData(this.index(row, col), value, io.qt.core.Qt.ItemDataRole.DisplayRole);
     }
     
     /**
      * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean setData(int row, int col, Object value, int role) {
+    @QtUninvokable
+    public final boolean setData(int row, int col, @Nullable Object value, int role) {
         return setData(this.index(row, col), value, role);
     }
 
     /**
      * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final Object data(int row, int col) {
+    @QtUninvokable
+    public final @Nullable Object data(int row, int col) {
         return data(this.index(row, col), Qt.ItemDataRole.DisplayRole);
     }
     
     /**
      * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final Object data(int row, int col, int role) {
+    @QtUninvokable
+    public final @Nullable Object data(int row, int col, int role) {
         return data(this.index(row, col), role);
     }
 
     /**
      * <p>See <a href="@docRoot/qabstractitemmodel.html#createIndex-1">QAbstractItemModel::createIndex(int,int,quintptr)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     protected final io.qt.core.QModelIndex createIndex(int row, int column){
         return createIndex(row, column, 0);
     }
@@ -9792,7 +9804,7 @@ class QTimer___ extends QTimer {
      * @see #start()
      * @see <a href="@docRoot/qtimer.html#singleShot">QTimer::singleShot(int,const QObject*,const char *)</a>
      */
-     public static void singleShot(int msec, QObject obj, String method) {
+     public static void singleShot(int msec, @Nullable QObject obj, @NonNull String method) {
         singleShot(msec, defaultTypeFor(msec), obj, method);
     }
 
@@ -9812,7 +9824,7 @@ class QTimer___ extends QTimer {
      * @since 5.4
      * @see <a href="@docRoot/qtimer.html#singleShot-6">QTimer::singleShot(int,const QObject*,Functor)</a>
      */    
-    public static void singleShot(int msec, QObject context, QMetaObject.Slot0 slot) {
+    public static void singleShot(int msec, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), context, slot);
     }
 
@@ -9829,7 +9841,7 @@ class QTimer___ extends QTimer {
      * @see #start()
      * @see <a href="@docRoot/qtimer.html#singleShot-1">QTimer::singleShot(int,Qt::TimerType,const QObject*,const char *)</a>
      */
-    public static void singleShot(int msec, Qt.TimerType timeType, QObject obj, String method) {
+    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
         new QSingleShotTimer(msec, timeType, obj, method);
     }
 
@@ -9846,7 +9858,7 @@ class QTimer___ extends QTimer {
      * @since 5.4
      * @see <a href="@docRoot/qtimer.html#singleShot-2">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
      */
-    public static void singleShot(int msec, QMetaObject.Slot0 slot) {
+    public static void singleShot(int msec, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), null, slot);
     }
 
@@ -9864,7 +9876,7 @@ class QTimer___ extends QTimer {
      * @since 5.4
      * @see <a href="@docRoot/qtimer.html#singleShot-3">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
      */
-    public static void singleShot(int msec, Qt.TimerType timeType, QMetaObject.Slot0 slot) {
+    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, timeType, null, slot);
     }
 
@@ -9886,7 +9898,7 @@ class QTimer___ extends QTimer {
      * @since 5.4
      * @see <a href="@docRoot/qtimer.html#singleShot-7">QTimer::singleShot(int,Qt::TimerType,const QObject*,Functor)</a>
      */
-    public static void singleShot(int msec, Qt.TimerType timeType, QObject context, QMetaObject.Slot0 slot) {
+    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         new QSingleShotTimer(msec, timeType, context, slot);
     }
     
@@ -9897,21 +9909,21 @@ class QTimer___ extends QTimer {
     /**
      * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
      */
-    public final QMetaObject.Connection callOnTimeout(QMetaObject.Slot0 slot, Qt.ConnectionType... type){
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(slot, type);
     }
 
     /**
      * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
      */
-    public final QMetaObject.Connection callOnTimeout(QMetaObject.Connectable0 connectable, Qt.ConnectionType... type){
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(connectable, type);
     }
 
     /**
      * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
      */
-    public final QMetaObject.Connection callOnTimeout(QObject receiver, String method, Qt.ConnectionType... type){
+    public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, method, type);
     }
     
@@ -9921,7 +9933,7 @@ class QCoreApplication___ extends QCoreApplication {
     
     private static boolean __qt_isInitializing = false;
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static native void preinit();
 
     /**
@@ -9936,8 +9948,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @param args
      * @return QCoreApplication instance
      */
-    @io.qt.QtUninvokable
-    public static QCoreApplication initialize(String args[]) {
+    @QtUninvokable
+    public static @NonNull QCoreApplication initialize(String args @StrictNonNull[]) {
         return initialize(null, args, QCoreApplication::new);
     }
 
@@ -9947,8 +9959,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @param args
      * @return QCoreApplication instance
      */
-    @io.qt.QtUninvokable
-    public static QCoreApplication initialize(String applicationName, String args[]) {
+    @QtUninvokable
+    public static @NonNull QCoreApplication initialize(String applicationName, String args @StrictNonNull[]) {
         return initialize(applicationName, args, QCoreApplication::new);
     }
 
@@ -9959,8 +9971,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @param constructor
      * @return T instance
      */
-    @io.qt.QtUninvokable
-    public static <T extends QCoreApplication> T initialize(String args[], java.util.function.Function<String[],T> constructor) {
+    @QtUninvokable
+    public static <T extends @NonNull QCoreApplication> T initialize(String args @StrictNonNull[], java.util.function.@NonNull Function<String[],T> constructor) {
         return initialize(null, args, constructor);
     }
     
@@ -9972,8 +9984,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @param constructor
      * @return T instance
      */
-    @io.qt.QtUninvokable
-    public static <T extends QCoreApplication> T initialize(String applicationName, String args[], java.util.function.Function<String[],T> constructor) {
+    @QtUninvokable
+    public static <T extends @NonNull QCoreApplication> T initialize(String applicationName, String args @StrictNonNull[], java.util.function.@NonNull Function<String[],T> constructor) {
         if (instance() != null)
             throw new RuntimeException("QCoreApplication can only be initialized once");
         preinit();
@@ -10010,13 +10022,13 @@ class QCoreApplication___ extends QCoreApplication {
      * Destroys the QCoreApplication instance and purges Qt.
      * @see <a href="@docRoot/qcoreapplication.html#dtor.QCoreApplication">~QCoreApplication()</a>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void shutdown() {
         QCoreApplication app = instance();
         if(app != null) {
             QThread currentThread = QThread.currentThread();
             if(currentThread!=app.thread())
-                throw new io.qt.QThreadAffinityException("Must not call QCoreApplication.shutdown() from outside main thread.", null, app.thread(), currentThread);
+                throw new QThreadAffinityException("Must not call QCoreApplication.shutdown() from outside main thread.", null, app.thread(), currentThread);
             if(app.thread().loopLevel()>0)
                 throw new IllegalStateException("Must not call QCoreApplication.shutdown() in event loop.");
             System.gc();
@@ -10088,8 +10100,8 @@ class QCoreApplication___ extends QCoreApplication {
      * Adds a pre-routine to be executed before initializing QCoreApplication.
      * @see initialize(String[])
      */
-    @io.qt.QtUninvokable
-    public static void addPreRoutine(Runnable startUpFunction) {
+    @QtUninvokable
+    public static void addPreRoutine(@NonNull Runnable startUpFunction) {
         preRoutines.add(startUpFunction);
     }
 
@@ -10098,8 +10110,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @see <a href="@docRoot/qcoreapplication.html#qAddPostRoutine">qAddPostRoutine(QtCleanUpFunction)</a>
      * @see shutdown()
      */
-    @io.qt.QtUninvokable
-    public static void addPostRoutine(Runnable cleanUpFunction) {
+    @QtUninvokable
+    public static void addPostRoutine(@NonNull Runnable cleanUpFunction) {
         postRoutines.add(cleanUpFunction);
     }
 
@@ -10109,8 +10121,8 @@ class QCoreApplication___ extends QCoreApplication {
      * @see addPostRoutine(Runnable)
      * @see shutdown()
      */
-    @io.qt.QtUninvokable
-    public static void removePostRoutine(Runnable cleanUpFunction){
+    @QtUninvokable
+    public static void removePostRoutine(@NonNull Runnable cleanUpFunction){
         postRoutines.remove(cleanUpFunction);
     }
 
@@ -10118,8 +10130,8 @@ class QCoreApplication___ extends QCoreApplication {
 
     private static final java.util.List<Runnable> postRoutines = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
 
-    @io.qt.NativeAccess
-    @io.qt.QtUninvokable
+    @NativeAccess
+    @QtUninvokable
     private static void execPreRoutines() {
         for(Runnable preRoutine : new java.util.ArrayList<>(preRoutines)) {
             try {
@@ -10131,8 +10143,8 @@ class QCoreApplication___ extends QCoreApplication {
         preRoutines.clear();
     }
 
-    @io.qt.NativeAccess
-    @io.qt.QtUninvokable
+    @NativeAccess
+    @QtUninvokable
     private static void execPostRoutines() {
         for(Runnable postRoutine : new java.util.ArrayList<>(postRoutines)) {
             try {
@@ -10146,66 +10158,86 @@ class QCoreApplication___ extends QCoreApplication {
 }// class
     
 class QCoreApplication__62_ {
-    @io.qt.QtUninvokable
-    public final <QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(Class<QNativeInterface> nativeInterfaceClass) {
+    @QtUninvokable
+    public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(Class<QNativeInterface> nativeInterfaceClass) {
         return resolveInterface(nativeInterfaceClass);
     }
 }// class
 
 class QCoreApplication__65_ {
+    private <T extends QPermission> T createPermission(Class<T> permissionType) {
+        try {
+            return permissionType.cast(QtJambi_LibraryUtilities.internal.invokeContructor(permissionType.getConstructor()));
+        } catch (Throwable e) {
+            return permissionType.cast(QMetaType.fromType(permissionType).create());
+        }
+    }
+
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#checkPermission">QCoreApplication::checkPermission(QPermission)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void requestPermission(io.qt.core.QPermission.Request permission, QMetaObject.Slot0 functor){
-        requestPermission(new QPermission(permission), functor);
+    @QtUninvokable
+    public final io.qt.core.Qt.@NonNull PermissionStatus checkPermission(@StrictNonNull Class<? extends QPermission> permissionType){
+        return checkPermission(createPermission(permissionType));
     }
 
     /**
      * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void requestPermission(io.qt.core.QPermission.Request permission, QMetaObject.Slot1<QPermission> functor){
-        requestPermission(new QPermission(permission), functor);
-    }
-
-    /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final void requestPermission(io.qt.core.QPermission permission, QMetaObject.Slot0 functor){
-        QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
-        requestPermissionSlot0(
+    @QtUninvokable
+    public final <T extends QPermission> void requestPermission(@StrictNonNull Class<T> permissionType, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
+        QPermission permission = createPermission(permissionType);
+                QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
+        requestPermissionSlot2(
                         QtJambi_LibraryUtilities.internal.nativeId(this),
-                        QtJambi_LibraryUtilities.internal.checkedNativeId(permission),
-                        context==null ? 0 : QtJambi_LibraryUtilities.internal.nativeId(context),
+                        java.util.Objects.requireNonNull(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.checkedNativeId(context),
                                 functor);
     }
 
     /**
      * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void requestPermission(io.qt.core.QPermission permission, QMetaObject.Slot1<QPermission> functor){
+    @QtUninvokable
+    public final void requestPermission(@StrictNonNull Class<? extends QPermission> permissionType, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
+        QPermission permission = createPermission(permissionType);
         QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
         requestPermissionSlot1(
                         QtJambi_LibraryUtilities.internal.nativeId(this),
-                        QtJambi_LibraryUtilities.internal.checkedNativeId(permission),
-                        context==null ? 0 : QtJambi_LibraryUtilities.internal.nativeId(context),
+                        java.util.Objects.requireNonNull(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.checkedNativeId(context),
                                 functor);
     }
 
-    private native final void requestPermissionSlot1(long __this__nativeId, long permission, long context, QMetaObject.Slot1<QPermission> functor);
-
-    private native final void requestPermissionSlot0(long __this__nativeId, long permission, long context, QMetaObject.Slot0 functor);
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     */
+    @QtUninvokable
+    public final <T extends QPermission> void requestPermission(@StrictNonNull T permission, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
+        QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
+        requestPermissionSlot2(
+                        QtJambi_LibraryUtilities.internal.nativeId(this),
+                        java.util.Objects.requireNonNull(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.checkedNativeId(context),
+                                functor);
+    }
 
     /**
-     * <p>See <a href="@docRoot/qcoreapplication.html#checkPermission">QCoreApplication::checkPermission(QPermission)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.Qt.PermissionStatus checkPermission(io.qt.core.QPermission.Request permission){
-        return checkPermission(new QPermission(permission));
+    @QtUninvokable
+    public final void requestPermission(@StrictNonNull QPermission permission, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
+        QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(functor);
+        requestPermissionSlot1(
+                        QtJambi_LibraryUtilities.internal.nativeId(this),
+                        java.util.Objects.requireNonNull(permission),
+                        context==null ? 0 : QtJambi_LibraryUtilities.internal.checkedNativeId(context),
+                                functor);
     }
+
+    private native final void requestPermissionSlot1(long __this__nativeId, QPermission permission, long context, QMetaObject.Slot1<Qt.PermissionStatus> functor);
+
+    private native final void requestPermissionSlot2(long __this__nativeId, QPermission permission, long context, QMetaObject.Slot2<? extends QPermission, Qt.PermissionStatus> functor);
 }// class
 
 class QPermission___{
@@ -10213,7 +10245,7 @@ class QPermission___{
     /**
      * interface type for permission requests
      */
-    public interface Request extends io.qt.QtObjectInterface{
+    public interface Request extends QtObjectInterface{
     }
 
     /**
@@ -10253,7 +10285,7 @@ class QItemSelection___ extends QItemSelection {
 
 class QXmlStreamAttributes___ extends QXmlStreamAttributes {
     
-    public QXmlStreamAttributes(java.util.Collection<io.qt.core.QXmlStreamAttribute> collection){
+    public QXmlStreamAttributes(java.util.Collection<QXmlStreamAttribute> collection){
         this();
         append(collection);
     }
@@ -10275,332 +10307,332 @@ class QDebug___ extends QDebug {
      * {@inheritDoc}
      */
     @Override
-    public QDebug append(CharSequence csq, int start, int end) {
+    public final @NonNull QDebug append(CharSequence csq, int start, int end) {
         return append(csq==null ? "null" : csq.subSequence(start, end));
     }
 
     /**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug endl(){
+    @QtUninvokable
+    public final @NonNull QDebug endl(){
         endl(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void endl(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug flush(){
+    @QtUninvokable
+    public final @NonNull QDebug flush(){
         flush(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void flush(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug reset(){
+    @QtUninvokable
+    public final @NonNull QDebug reset(){
         reset(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void reset(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug bin(){
+    @QtUninvokable
+    public final @NonNull QDebug bin(){
         bin(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void bin(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug oct(){
+    @QtUninvokable
+    public final @NonNull QDebug oct(){
         oct(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void oct(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug hex(){
+    @QtUninvokable
+    public final @NonNull QDebug hex(){
         hex(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void hex(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug dec(){
+    @QtUninvokable
+    public final @NonNull QDebug dec(){
         dec(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void dec(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug showbase(){
+    @QtUninvokable
+    public final @NonNull QDebug showbase(){
         showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void showbase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug forcesign(){
+    @QtUninvokable
+    public final @NonNull QDebug forcesign(){
         forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void forcesign(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug forcepoint(){
+    @QtUninvokable
+    public final @NonNull QDebug forcepoint(){
         forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void forcepoint(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug noshowbase(){
+    @QtUninvokable
+    public final @NonNull QDebug noshowbase(){
         noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noshowbase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug noforcesign(){
+    @QtUninvokable
+    public final @NonNull QDebug noforcesign(){
         noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noforcesign(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug noforcepoint(){
+    @QtUninvokable
+    public final @NonNull QDebug noforcepoint(){
         noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noforcepoint(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug uppercasebase(){
+    @QtUninvokable
+    public final @NonNull QDebug uppercasebase(){
         uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void uppercasebase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug uppercasedigits(){
+    @QtUninvokable
+    public final @NonNull QDebug uppercasedigits(){
         uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void uppercasedigits(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug lowercasebase(){
+    @QtUninvokable
+    public final @NonNull QDebug lowercasebase(){
         lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void lowercasebase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug lowercasedigits(){
+    @QtUninvokable
+    public final @NonNull QDebug lowercasedigits(){
         lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void lowercasedigits(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug fixed(){
+    @QtUninvokable
+    public final @NonNull QDebug fixed(){
         fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void fixed(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug scientific(){
+    @QtUninvokable
+    public final @NonNull QDebug scientific(){
         scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void scientific(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug left(){
+    @QtUninvokable
+    public final @NonNull QDebug left(){
         left(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void left(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug right(){
+    @QtUninvokable
+    public final @NonNull QDebug right(){
         right(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void right(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug center(){
+    @QtUninvokable
+    public final @NonNull QDebug center(){
         center(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void center(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug bom(){
+    @QtUninvokable
+    public final @NonNull QDebug bom(){
         bom(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void bom(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug ws(){
+    @QtUninvokable
+    public final @NonNull QDebug ws(){
         ws(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void ws(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug qSetFieldWidth(int width){
+    @QtUninvokable
+    public final @NonNull QDebug qSetFieldWidth(int width){
         setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setFieldWidth(long __this__nativeId, int width);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug qSetRealNumberPrecision(int precision){
+    @QtUninvokable
+    public final @NonNull QDebug qSetRealNumberPrecision(int precision){
         setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setRealNumberPrecision(long __this__nativeId, int precision);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug qSetPadChar(char ch){
+    @QtUninvokable
+    public final @NonNull QDebug qSetPadChar(char ch){
         setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setPadChar(long __this__nativeId, char ch);
     
     /**
@@ -10608,17 +10640,17 @@ class QDebug___ extends QDebug {
      */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> QDebug(String string){
-        this(new QTextStream.StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), io.qt.core.QIODevice.OpenModeFlag.WriteOnly.asFlags()));
+        this(new QTextStream.StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), QIODevice.OpenModeFlag.WriteOnly.asFlags()));
     }
     
-    @io.qt.QtUninvokable
-    public final io.qt.core.QDebug append(java.lang.Object obj){
+    @QtUninvokable
+    public final @NonNull QDebug append(java.lang.Object obj){
         QMetaType metaType = QList.getMetaType(obj);
         debugStream(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native static void debugStream(long debug, long metaType, Object value);
 }// class
 
@@ -10626,11 +10658,15 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#string">QTextStream::string() const</a></p>
      */
-    public final CharSequence string() {
+    public final @Nullable CharSequence string() {
         QIODevice device = device_private();
         if(device instanceof StringDevice) {
             flush();
             return ((StringDevice<?>) device).string;
+        }
+        if(device instanceof CharSequence) {
+            flush();
+            return (CharSequence) device;
         }
         return null;
     }
@@ -10639,16 +10675,16 @@ class QTextStream___ extends QTextStream {
      * {@inheritDoc}
      */
     @Override
-    public QTextStream append(CharSequence csq, int start, int end) {
+    public final @NonNull QTextStream append(CharSequence csq, int start, int end) {
         return append(csq==null ? "null" : csq.subSequence(start, end));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#device">QTextStream::device()const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QIODevice device(){
-        io.qt.core.QIODevice __qt_return_value = device_private();
+    @QtUninvokable
+    public final @Nullable QIODevice device(){
+        QIODevice __qt_return_value = device_private();
         if(__qt_return_value instanceof StringDevice)
             return null;
         return __qt_return_value;
@@ -10658,23 +10694,23 @@ class QTextStream___ extends QTextStream {
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> void setString(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
-        setString(string, new io.qt.core.QIODevice.OpenMode(openMode));
+    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
+        setString(string, new QIODevice.OpenMode(openMode));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> void setString(String string) {
-        setString(string, new io.qt.core.QIODevice.OpenMode(4));
+    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string) {
+        setString(string, new QIODevice.OpenMode(4));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> void setString(String string, io.qt.core.QIODevice.OpenMode openMode) {
+    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenMode openMode) {
         flush();
         setDevice(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
@@ -10682,21 +10718,21 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public void setString(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
-        setString(string, new io.qt.core.QIODevice.OpenMode(openMode));
+    public void setString(@NonNull String string, QIODevice.OpenModeFlag ... openMode) {
+        setString(string, new QIODevice.OpenMode(openMode));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public void setString(String string) {
-        setString(string, new io.qt.core.QIODevice.OpenMode(4));
+    public void setString(@NonNull String string) {
+        setString(string, new QIODevice.OpenMode(4));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public void setString(String string, io.qt.core.QIODevice.OpenMode openMode) {
+    public void setString(@NonNull String string, QIODevice.OpenMode openMode) {
         setString(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
     
@@ -10704,50 +10740,50 @@ class QTextStream___ extends QTextStream {
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> QTextStream(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
-        this(string, new io.qt.core.QIODevice.OpenMode(openMode));
+    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
+        this(string, new QIODevice.OpenMode(openMode));
     }
     /**
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> QTextStream(String string) {
-        this(string, new io.qt.core.QIODevice.OpenMode(3));
+    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string) {
+        this(string, new QIODevice.OpenMode(3));
     }
     /**
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> QTextStream(String string, io.qt.core.QIODevice.OpenMode openMode){
+    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenMode openMode){
         this(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public QTextStream(String string, io.qt.core.QIODevice.OpenModeFlag ... openMode) {
-        this(string, new io.qt.core.QIODevice.OpenMode(openMode));
+    public QTextStream(@NonNull String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
+        this(string, new QIODevice.OpenMode(openMode));
     }
     /**
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public QTextStream(String string) {
-        this(string, new io.qt.core.QIODevice.OpenMode(3));
+    public QTextStream(@NonNull String string) {
+        this(string, new QIODevice.OpenMode(3));
     }
     /**
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
      */
-    public QTextStream(String string, io.qt.core.QIODevice.OpenMode openMode){
+    public QTextStream(@NonNull String string, QIODevice.@NonNull OpenMode openMode){
         this(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
     
     @SuppressWarnings("hiding")
     static final class StringDevice<String extends Object & Appendable & CharSequence> extends QIODevice{
-        StringDevice(String string, io.qt.core.QIODevice.OpenModeFlag... openMode) {
-            this(string, io.qt.core.QIODevice.OpenModeFlag.flags(openMode));
+        StringDevice(String string, QIODevice.OpenModeFlag... openMode) {
+            this(string, QIODevice.OpenModeFlag.flags(openMode));
         }
         
-        StringDevice(String string, io.qt.core.QIODevice.OpenMode openMode) {
+        StringDevice(String string, QIODevice.OpenMode openMode) {
             super();
             this.string = string;
             openMode.set(QIODevice.OpenModeFlag.Text);
@@ -10809,412 +10845,412 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(java.lang.String s){
-        return writeString(s);
+    @QtUninvokable
+    public final @NonNull QTextStream writeString(java.lang.String s){
+        return append(s);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(java.lang.CharSequence s){
-        return writeString(s);
+    @QtUninvokable
+    public final @NonNull QTextStream writeString(java.lang.CharSequence s){
+        return append(s);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(double v){
-        return writeDouble(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeDouble(double v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(byte v){
-        return writeByte(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeByte(byte v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(io.qt.core.QByteArray v){
-        return writeBytes(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeBytes(QByteArray v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(char v){
-        return writeChar(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeChar(char v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(float v){
-        return writeFloat(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeFloat(float v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(int v){
-        return writeInt(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeInt(int v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(long v){
-        return writeLong(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeLong(long v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QTextStream append(short v){
-        return writeShort(v);
+    @QtUninvokable
+    public final @NonNull QTextStream writeShort(short v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream endl(){
+    @QtUninvokable
+    public final @NonNull QTextStream endl(){
         endl(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void endl(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream flush(){
+    @QtUninvokable
+    public final @NonNull QTextStream flush(){
         flush(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void flush(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream reset(){
+    @QtUninvokable
+    public final @NonNull QTextStream reset(){
         reset(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void reset(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream bin(){
+    @QtUninvokable
+    public final @NonNull QTextStream bin(){
         bin(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void bin(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream oct(){
+    @QtUninvokable
+    public final @NonNull QTextStream oct(){
         oct(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void oct(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream hex(){
+    @QtUninvokable
+    public final @NonNull QTextStream hex(){
         hex(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void hex(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream dec(){
+    @QtUninvokable
+    public final @NonNull QTextStream dec(){
         dec(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void dec(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream showbase(){
+    @QtUninvokable
+    public final @NonNull QTextStream showbase(){
         showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void showbase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream forcesign(){
+    @QtUninvokable
+    public final @NonNull QTextStream forcesign(){
         forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void forcesign(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream forcepoint(){
+    @QtUninvokable
+    public final @NonNull QTextStream forcepoint(){
         forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void forcepoint(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream noshowbase(){
+    @QtUninvokable
+    public final @NonNull QTextStream noshowbase(){
         noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noshowbase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream noforcesign(){
+    @QtUninvokable
+    public final @NonNull QTextStream noforcesign(){
         noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noforcesign(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream noforcepoint(){
+    @QtUninvokable
+    public final @NonNull QTextStream noforcepoint(){
         noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void noforcepoint(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream uppercasebase(){
+    @QtUninvokable
+    public final @NonNull QTextStream uppercasebase(){
         uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void uppercasebase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream uppercasedigits(){
+    @QtUninvokable
+    public final @NonNull QTextStream uppercasedigits(){
         uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void uppercasedigits(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream lowercasebase(){
+    @QtUninvokable
+    public final @NonNull QTextStream lowercasebase(){
         lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void lowercasebase(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream lowercasedigits(){
+    @QtUninvokable
+    public final @NonNull QTextStream lowercasedigits(){
         lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void lowercasedigits(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream fixed(){
+    @QtUninvokable
+    public final @NonNull QTextStream fixed(){
         fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void fixed(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream scientific(){
+    @QtUninvokable
+    public final @NonNull QTextStream scientific(){
         scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void scientific(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream left(){
+    @QtUninvokable
+    public final @NonNull QTextStream left(){
         left(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void left(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream right(){
+    @QtUninvokable
+    public final @NonNull QTextStream right(){
         right(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void right(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream center(){
+    @QtUninvokable
+    public final @NonNull QTextStream center(){
         center(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void center(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream bom(){
+    @QtUninvokable
+    public final @NonNull QTextStream bom(){
         bom(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void bom(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream ws(){
+    @QtUninvokable
+    public final @NonNull QTextStream ws(){
         ws(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void ws(long __this__nativeId);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream qSetFieldWidth(int width){
+    @QtUninvokable
+    public final @NonNull QTextStream qSetFieldWidth(int width){
         setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setFieldWidth(long __this__nativeId, int width);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream qSetRealNumberPrecision(int precision){
+    @QtUninvokable
+    public final @NonNull QTextStream qSetRealNumberPrecision(int precision){
         setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setRealNumberPrecision(long __this__nativeId, int precision);
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QTextStream qSetPadChar(char ch){
+    @QtUninvokable
+    public final @NonNull QTextStream qSetPadChar(char ch){
         setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
         return this;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void setPadChar(long __this__nativeId, char ch);
     
 }// class
 
 class QBitArray___ extends QBitArray {
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean[] toBitArray() {
         long size = size();
         if(size>Integer.MAX_VALUE)
@@ -11227,8 +11263,8 @@ class QBitArray___ extends QBitArray {
         return res;
     }
     
-    public static io.qt.core.QBitArray fromBits(boolean[] data){
-        io.qt.core.QBitArray array = new io.qt.core.QBitArray(data.length);
+    public static QBitArray fromBits(boolean[] data){
+        QBitArray array = new QBitArray(data.length);
         for (int i = 0; i < data.length; i++) {
             if(data[i])
                 array.setBit(i);
@@ -11236,7 +11272,7 @@ class QBitArray___ extends QBitArray {
         return array;
     }
     
-    public static io.qt.core.QBitArray fromBits(byte[] data){
+    public static QBitArray fromBits(byte[] data){
         return fromBits(java.nio.ByteBuffer.wrap(data), data.length*8);
     }
 }// class
@@ -11261,10 +11297,10 @@ class QDate___ extends QDate {
 class QByteArray_5_12__ extends QByteArray {
 
     /**
-     * <p>Overloaded function for {@link #compare(byte[], io.qt.core.Qt.CaseSensitivity)}
-     *  with <code>cs = io.qt.core.Qt.CaseSensitivity.CaseSensitive</code>.</p>
+     * <p>Overloaded function for {@link #compare(byte[], Qt.CaseSensitivity)}
+     *  with <code>cs = Qt.CaseSensitivity.CaseSensitive</code>.</p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(byte[] b) {
         return compare(new QByteArray(b));
     }
@@ -11272,16 +11308,16 @@ class QByteArray_5_12__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
+    @QtUninvokable
+    public final int compare(byte[] b, Qt.CaseSensitivity cs) {
         return compare(new QByteArray(b), cs);
     }
     
     /**
-     * <p>Overloaded function for {@link #compare(String, io.qt.core.Qt.CaseSensitivity)}
-     *  with <code>cs = io.qt.core.Qt.CaseSensitivity.CaseSensitive</code>.</p>
+     * <p>Overloaded function for {@link #compare(String, Qt.CaseSensitivity)}
+     *  with <code>cs = Qt.CaseSensitivity.CaseSensitive</code>.</p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(String str) {
         return compare(new QByteArray(str));
     }
@@ -11289,19 +11325,19 @@ class QByteArray_5_12__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
+    @QtUninvokable
+    public final int compare(String str, Qt.CaseSensitivity cs) {
         return compare(new QByteArray(str), cs);
     }
 }// class
 
 class QByteArray_5_15__ extends QByteArray {
     /**
-     * Result class for {@link #fromBase64Encoding(io.qt.core.QByteArray, io.qt.core.QByteArray.Base64Options)}
+     * Result class for {@link #fromBase64Encoding(QByteArray, QByteArray.Base64Options)}
      */
     public static class FromBase64Result{
-        public final io.qt.core.QByteArray decoded;
-        public final io.qt.core.QByteArray.Base64DecodingStatus decodingStatus;
+        public final QByteArray decoded;
+        public final QByteArray.Base64DecodingStatus decodingStatus;
         private FromBase64Result(QByteArray decoded, int decodingStatus) {
             super();
             this.decoded = decoded;
@@ -11322,7 +11358,7 @@ class QByteArray___ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray prepend(byte[] data) {
         return this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
     }
@@ -11330,43 +11366,61 @@ class QByteArray___ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray append(byte[] a){
+    @QtUninvokable
+    public final QByteArray append(byte[] a){
         return append(java.nio.ByteBuffer.wrap(a), a.length);
     }
-    
+
     /**
      * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray set(byte[] data){
-        return set(java.nio.ByteBuffer.wrap(data));
+    @QtUninvokable
+    public final void assign(byte[] data){
+        assign(java.nio.ByteBuffer.wrap(data));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     */
+    @QtUninvokable
+    public final void assign(String data){
+        assign(new QByteArray(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     * @deprecated Use {@link #assign(io.qt.core.QByteArray)} instead.
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray set(String data){
-        return set(new QByteArray(data));
+     @Deprecated
+    @QtUninvokable
+    public final void set(byte[] data){
+        set(java.nio.ByteBuffer.wrap(data));
+    }
+    
+    /**
+     * @deprecated Use {@link #assign(String)} instead.
+     */
+     @Deprecated
+    @QtUninvokable
+    public final void set(String data){
+        set(new QByteArray(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join()</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList);
     
     /**
      * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(char)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
     
     /**
      * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArray)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep);
     
 }// class
@@ -11391,7 +11445,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,int)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray prepend(byte[] data, int size) {
         return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
@@ -11399,15 +11453,15 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,int)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray append(byte[] a, int size){
+    @QtUninvokable
+    public final QByteArray append(byte[] a, int size){
         return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#count-2">QByteArray::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int count(byte data[]) {
         return count(java.nio.ByteBuffer.wrap(data));
     }
@@ -11415,7 +11469,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(byte data[]) {
         return contains(java.nio.ByteBuffer.wrap(data));
     }
@@ -11423,7 +11477,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#startsWith-2">QByteArray::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(String str) {
         return startsWith(new QByteArray(str));
     }
@@ -11431,7 +11485,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(String str) {
         return contains(new QByteArray(str));
     }
@@ -11439,7 +11493,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int count(String str) {
         return count(new QByteArray(str));
     }
@@ -11447,7 +11501,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#endsWith-2">QByteArray::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(String str) {
         return endsWith(new QByteArray(str));
     }
@@ -11455,7 +11509,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend-3">QByteArray::prepend(const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray prepend(String str) {
         return prepend(new QByteArray(str));
     }
@@ -11463,7 +11517,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-1">QByteArray::replace(int,int,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(int index, int len, byte[] data) {
         this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
@@ -11472,7 +11526,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#insert-3">QByteArray::insert(int,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray insert(int i, byte[] data) {
         this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
@@ -11481,7 +11535,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
         return replace(before, new QByteArray(after));
     }
@@ -11489,7 +11543,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(const char*,QByteArray)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(byte[] before, QByteArray after) {
         return replace(new QByteArray(before), after);
     }
@@ -11497,7 +11551,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(QByteArray before, byte[] after) {
         return replace(before, new QByteArray(after));
     }
@@ -11505,7 +11559,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(String before, String after) {
         return replace(new QByteArray(before), new QByteArray(after));
     }
@@ -11513,7 +11567,7 @@ class QByteArray_5__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(byte[] before, byte[] after) {
         return replace(new QByteArray(before), new QByteArray(after));
     }
@@ -11548,7 +11602,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,qsizetype)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray prepend(byte[] data, long size) {
         return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
@@ -11556,15 +11610,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,qsizetype)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray append(byte[] a, long size){
+    @QtUninvokable
+    public final QByteArray append(byte[] a, long size){
         return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(String str) {
         return contains(new QByteArrayView(str));
     }
@@ -11572,7 +11626,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(String str) {
         return count(new QByteArrayView(str));
     }
@@ -11580,7 +11634,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(String str) {
         return endsWith(new QByteArrayView(str));
     }
@@ -11588,7 +11642,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(byte[] str) {
         return endsWith(new QByteArrayView(str));
     }
@@ -11596,7 +11650,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer str) {
         return endsWith(new QByteArrayView(str));
     }
@@ -11604,7 +11658,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray prepend(String str) {
         return prepend(getBytes(str));
     }
@@ -11612,7 +11666,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(String str) {
         return startsWith(new QByteArrayView(str));
     }
@@ -11620,7 +11674,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(byte[] str) {
         return startsWith(new QByteArrayView(str));
     }
@@ -11628,7 +11682,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer str) {
         return startsWith(new QByteArrayView(str));
     }
@@ -11636,31 +11690,31 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char*)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray append(String a){
+    @QtUninvokable
+    public final QByteArray append(String a){
         return append(getBytes(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(String str) {
-        return compare(str, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+        return compare(str, Qt.CaseSensitivity.CaseSensitive);
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
+    @QtUninvokable
+    public final int compare(String str, Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(str), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(byte data[]) {
         return count(new QByteArrayView(data));
     }
@@ -11668,7 +11722,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(byte data[]) {
         return contains(new QByteArrayView(data));
     }
@@ -11676,23 +11730,23 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(byte[] b) {
-        return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+        return compare(b, Qt.CaseSensitivity.CaseSensitive);
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
+    @QtUninvokable
+    public final int compare(byte[] b, Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(b), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(java.nio.ByteBuffer data) {
         return count(new QByteArrayView(data));
     }
@@ -11700,7 +11754,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(java.nio.ByteBuffer data) {
         return contains(new QByteArrayView(data));
     }
@@ -11708,23 +11762,23 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(java.nio.ByteBuffer b) {
-        return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+        return compare(b, Qt.CaseSensitivity.CaseSensitive);
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(java.nio.ByteBuffer b, io.qt.core.Qt.CaseSensitivity cs) {
+    @QtUninvokable
+    public final int compare(java.nio.ByteBuffer b, Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(b), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(String strg) {
         return indexOf(strg, (int)0);
     }
@@ -11732,15 +11786,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(String strg, long from){
-        return indexOf(new io.qt.core.QByteArrayView(strg), from);
+        return indexOf(new QByteArrayView(strg), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(byte[] other) {
         return indexOf(other, (int)0);
     }
@@ -11748,15 +11802,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(byte[] other, long from){
-        return indexOf(new io.qt.core.QByteArrayView(other), from);
+        return indexOf(new QByteArrayView(other), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other) {
         return indexOf(other, (int)0);
     }
@@ -11764,15 +11818,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other, long from){
-        return indexOf(new io.qt.core.QByteArrayView(other), from);
+        return indexOf(new QByteArrayView(other), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(QByteArray other) {
         return indexOf(other, (long)0);
     }
@@ -11780,15 +11834,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(QByteArray other, long from){
-        return indexOf(new io.qt.core.QByteArrayView(other), from);
+        return indexOf(new QByteArrayView(other), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(String strg) {
         return lastIndexOf(strg, (long)0);
     }
@@ -11796,15 +11850,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(String strg, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(strg), from);
+        return lastIndexOf(new QByteArrayView(strg), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(byte[] other) {
         return lastIndexOf(other, (long)0);
     }
@@ -11812,15 +11866,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(byte[] other, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+        return lastIndexOf(new QByteArrayView(other), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other) {
         return lastIndexOf(other, (long)0);
     }
@@ -11828,15 +11882,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+        return lastIndexOf(new QByteArrayView(other), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(QByteArray other) {
         return lastIndexOf(other, (long)0);
     }
@@ -11844,15 +11898,15 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(QByteArray other, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+        return lastIndexOf(new QByteArrayView(other), from);
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace">QByteArray::replace(qsizetype,qsizetype,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(long index, long len, byte[] data) {
         this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
@@ -11861,7 +11915,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#insert">QByteArray::insert(qsizetype,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray insert(long i, byte[] data) {
         this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
@@ -11870,7 +11924,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(QByteArray before, byte[] after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11878,7 +11932,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11886,7 +11940,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(byte[] before, String after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11894,7 +11948,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(byte[] before, QByteArray after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11902,7 +11956,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(String before, QByteArray after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11910,7 +11964,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(String before, byte[] after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11918,7 +11972,7 @@ class QByteArray_6__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QByteArray replace(String before, String after) {
         return replace(new QByteArrayView(before), new QByteArrayView(after));
     }
@@ -11928,7 +11982,7 @@ class QByteArray_63__ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArrayView)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArrayView sep);
 }// class
 
@@ -11944,7 +11998,7 @@ class QByteArrayView___ extends QByteArray {
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeBytes(pointer);
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
+            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
     private native static void initialize_native(QByteArrayView instance, byte[] data, Long[] pointerOut);
@@ -11960,7 +12014,7 @@ class QByteArrayView___ extends QByteArray {
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeString(pointer);
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
+            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
@@ -11974,14 +12028,14 @@ class QByteArrayView___ extends QByteArray {
         if(data.isDirect()) {
             initialize_native(this, data);
             purgeTask = data::hashCode;
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
+            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
             Long[] pointerOut = {null};
             initialize_native(this, data, pointerOut);
             if(pointerOut[0]!=null) {
                 long pointer = pointerOut[0];
                 purgeTask = ()->purgeBuffer(pointer);
-                io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
+                QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
             }
         }
     }
@@ -11997,7 +12051,7 @@ class QByteArrayView___ extends QByteArray {
         if(data!=null) {
             initialize_native(this, data);
             purgeTask = data::isDisposed;
-            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
+            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
             initialize_native(this);
         }
@@ -12009,321 +12063,321 @@ class QByteArrayView___ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(io.qt.core.QByteArray a){
-        return compare(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final int compare(QByteArray a){
+        return compare(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(io.qt.core.QByteArray a, io.qt.core.Qt.CaseSensitivity cs){
-        return compare(new io.qt.core.QByteArrayView(a), cs);
+    @QtUninvokable
+    public final int compare(QByteArray a, Qt.CaseSensitivity cs){
+        return compare(new QByteArrayView(a), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(byte[] a){
-        return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(byte[] a, io.qt.core.Qt.CaseSensitivity cs){
-        return compare(new io.qt.core.QByteArrayView(a), cs);
+    @QtUninvokable
+    public final int compare(byte[] a, Qt.CaseSensitivity cs){
+        return compare(new QByteArrayView(a), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(java.nio.ByteBuffer a){
-        return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(java.nio.ByteBuffer a, io.qt.core.Qt.CaseSensitivity cs){
-        return compare(new io.qt.core.QByteArrayView(a), cs);
+    @QtUninvokable
+    public final int compare(java.nio.ByteBuffer a, Qt.CaseSensitivity cs){
+        return compare(new QByteArrayView(a), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int compare(String a){
-        return compare(new io.qt.core.QByteArrayView(a));
+        return compare(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final int compare(String a, io.qt.core.Qt.CaseSensitivity cs){
-        return compare(new io.qt.core.QByteArrayView(a), cs);
+    @QtUninvokable
+    public final int compare(String a, Qt.CaseSensitivity cs){
+        return compare(new QByteArrayView(a), cs);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean contains(io.qt.core.QByteArray a){
-        return contains(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final boolean contains(QByteArray a){
+        return contains(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(byte[] a){
-        return contains(new io.qt.core.QByteArrayView(a));
+        return contains(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(String a){
-        return contains(new io.qt.core.QByteArrayView(a));
+        return contains(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(java.nio.ByteBuffer a){
-        return contains(new io.qt.core.QByteArrayView(a));
+        return contains(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable">QByteArrayView::QtUninvokable(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean endsWith(io.qt.core.QByteArray a){
-        return endsWith(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final boolean endsWith(QByteArray a){
+        return endsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(byte[] a){
-        return endsWith(new io.qt.core.QByteArrayView(a));
+        return endsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(String a){
-        return endsWith(new io.qt.core.QByteArrayView(a));
+        return endsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer a){
-        return endsWith(new io.qt.core.QByteArrayView(a));
+        return endsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean startsWith(io.qt.core.QByteArray a){
-        return startsWith(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final boolean startsWith(QByteArray a){
+        return startsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(byte[] a){
-        return startsWith(new io.qt.core.QByteArrayView(a));
+        return startsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(String a){
-        return startsWith(new io.qt.core.QByteArrayView(a));
+        return startsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer a){
-        return startsWith(new io.qt.core.QByteArrayView(a));
+        return startsWith(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final long count(io.qt.core.QByteArray a){
-        return count(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final long count(QByteArray a){
+        return count(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(byte[] a){
-        return count(new io.qt.core.QByteArrayView(a));
+        return count(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(String a){
-        return count(new io.qt.core.QByteArrayView(a));
+        return count(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long count(java.nio.ByteBuffer a){
-        return count(new io.qt.core.QByteArrayView(a));
+        return count(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final long indexOf(io.qt.core.QByteArray a){
-        return indexOf(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final long indexOf(QByteArray a){
+        return indexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(byte[] a){
-        return indexOf(new io.qt.core.QByteArrayView(a));
+        return indexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(String a){
-        return indexOf(new io.qt.core.QByteArrayView(a));
+        return indexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a){
-        return indexOf(new io.qt.core.QByteArrayView(a));
+        return indexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final long indexOf(io.qt.core.QByteArray a, long from){
-        return indexOf(new io.qt.core.QByteArrayView(a), from);
+    @QtUninvokable
+    public final long indexOf(QByteArray a, long from){
+        return indexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(byte[] a, long from){
-        return indexOf(new io.qt.core.QByteArrayView(a), from);
+        return indexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(String a, long from){
-        return indexOf(new io.qt.core.QByteArrayView(a), from);
+        return indexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a, long from){
-        return indexOf(new io.qt.core.QByteArrayView(a), from);
+        return indexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final long lastIndexOf(io.qt.core.QByteArray a){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+    @QtUninvokable
+    public final long lastIndexOf(QByteArray a){
+        return lastIndexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(byte[] a){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+        return lastIndexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(String a){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+        return lastIndexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a));
+        return lastIndexOf(new QByteArrayView(a));
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final long lastIndexOf(io.qt.core.QByteArray a, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+    @QtUninvokable
+    public final long lastIndexOf(QByteArray a, long from){
+        return lastIndexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(byte[] a, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+        return lastIndexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(String a, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+        return lastIndexOf(new QByteArrayView(a), from);
     }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a, long from){
-        return lastIndexOf(new io.qt.core.QByteArrayView(a), from);
+        return lastIndexOf(new QByteArrayView(a), from);
     }
 }// class
 
@@ -12332,85 +12386,85 @@ class QStringConverter___{
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(io.qt.core.QByteArray data){
-        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(QByteArray data){
+        return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data){
-        return encodingForData(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data){
+        return encodingForData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(io.qt.core.QByteArray data, char expectedFirstCharacter){
-        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data, char expectedFirstCharacter){
+        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(byte[] data){
-        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(byte[] data){
+        return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data){
-        return encodingForData(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data){
+        return encodingForData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
-        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
+        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(String data){
-        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(String data){
+        return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data){
-        return encodingForData(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data){
+        return encodingForData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
-        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
+        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
-        return encodingForHtml(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
+        return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
-        return encodingForData(new io.qt.core.QByteArrayView(data));
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
+        return encodingForData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
      */
-    public static java.util.Optional<io.qt.core.QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
-        return encodingForData(new io.qt.core.QByteArrayView(data), expectedFirstCharacter);
+    public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
+        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
 }// class
@@ -12420,29 +12474,29 @@ class QUuid_63__{
     /**
      * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
      */
-    public static io.qt.core.QUuid fromRfc4122(io.qt.core.QByteArray data){
-        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    public static QUuid fromRfc4122(QByteArray data){
+        return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
      */
-    public static io.qt.core.QUuid fromRfc4122(byte[] data){
-        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    public static QUuid fromRfc4122(byte[] data){
+        return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
      */
-    public static io.qt.core.QUuid fromRfc4122(String data){
-        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    public static QUuid fromRfc4122(String data){
+        return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
      */
-    public static io.qt.core.QUuid fromRfc4122(java.nio.ByteBuffer data){
-        return fromRfc4122(new io.qt.core.QByteArrayView(data));
+    public static QUuid fromRfc4122(java.nio.ByteBuffer data){
+        return fromRfc4122(new QByteArrayView(data));
     }
     
 }// class
@@ -12690,34 +12744,34 @@ class QSignalMapper___ extends QSignalMapper {
 
 class QAbstractFileEngine_MapExtensionReturn___ extends QAbstractFileEngine_MapExtensionReturn {
     
-    private io.qt.QNativePointer currentAddressNativePointer; // don't garbage collect while in use
+    private QNativePointer currentAddressNativePointer; // don't garbage collect while in use
     public final void setAddress(String address) {
-        currentAddressNativePointer = address != null ? io.qt.QNativePointer.createCharPointer(address) : null;
+        currentAddressNativePointer = address != null ? QNativePointer.createCharPointer(address) : null;
         address_private(currentAddressNativePointer);
     }
 
     public final String address() {
-        io.qt.QNativePointer np = address_private();
+        QNativePointer np = address_private();
         return np != null ? charPointerToString(np) : null;
     }
 }// class
 
 class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_UnMapExtensionOption {
     
-    private io.qt.QNativePointer currentAddressNativePointer; // don't garbage collect while in use
+    private QNativePointer currentAddressNativePointer; // don't garbage collect while in use
     public final void setAddress(String address) {
-        currentAddressNativePointer = address != null ? io.qt.QNativePointer.createCharPointer(address) : null;
+        currentAddressNativePointer = address != null ? QNativePointer.createCharPointer(address) : null;
         address_private(currentAddressNativePointer);
     }
 
     public final String address() {
-        io.qt.QNativePointer np = address_private();
+        QNativePointer np = address_private();
         return np != null ? charPointerToString(np) : null;
     }
 }// class
 
 class QFutureInterfaceBase___ {
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native final void reportException(Throwable e);
 }// class
 
@@ -12726,8 +12780,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<Void> connect(QMetaObject.AbstractPrivateSignal0 signal) {
+    @QtUninvokable
+    public static @NonNull QFuture<Void> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
@@ -12752,8 +12806,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A> QFuture<A> connect(QMetaObject.AbstractPrivateSignal1<A> signal) {
+    @QtUninvokable
+    public static <A> @NonNull QFuture<A> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<A> promise = new QFutureInterface<>();
@@ -12779,8 +12833,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B> QFuture<QPair<A,B>> connect(QMetaObject.AbstractPrivateSignal2<A,B> signal) {
+    @QtUninvokable
+    public static <A,B> @NonNull QFuture<QPair<A,B>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<QPair<A,B>> promise = new QFutureInterface<>();
@@ -12806,8 +12860,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal) {
+    @QtUninvokable
+    public static <A,B,C> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12833,8 +12887,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal) {
+    @QtUninvokable
+    public static <A,B,C,D> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12860,8 +12914,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D,E> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal) {
+    @QtUninvokable
+    public static <A,B,C,D,E> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12887,8 +12941,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D,E,F> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
+    @QtUninvokable
+    public static <A,B,C,D,E,F> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12914,8 +12968,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D,E,F,G> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12941,8 +12995,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D,E,F,G,H> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12968,8 +13022,8 @@ class QtFuture___ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             QFutureInterface<Object[]> promise = new QFutureInterface<>();
@@ -12998,8 +13052,8 @@ class QtFuture_6_1__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture">QtFuture::makeReadyFuture(T)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <T> QFuture<T> makeReadyFuture(T value)
+    @QtUninvokable
+    public static <T> @NonNull QFuture<T> makeReadyFuture(T value)
     {
         QFutureInterface<T> promise = new QFutureInterface<>();
         promise.reportStarted();
@@ -13011,8 +13065,8 @@ class QtFuture_6_1__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-2">QtFuture::makeReadyFuture(QList&lt;T>)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static <T> QFuture<T> makeReadyFuture(java.util.Collection<T> values)
+    @QtUninvokable
+    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.Collection<T> values)
     {
         QFutureInterface<T> promise = new QFutureInterface<>();
         promise.reportStarted();
@@ -13024,8 +13078,8 @@ class QtFuture_6_1__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-1">QtFuture::makeReadyFuture()</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<Void> makeReadyFuture()
+    @QtUninvokable
+    public static @NonNull QFuture<Void> makeReadyFuture()
     {
         QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
         promise.reportStarted();
@@ -13036,8 +13090,8 @@ class QtFuture_6_1__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeExceptionalFuture">QtFuture::makeExceptionalFuture(QException)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<Void> makeExceptionalFuture(Throwable exception)
+    @QtUninvokable
+    public static @NonNull QFuture<Void> makeExceptionalFuture(@StrictNonNull Throwable exception)
     {
         QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
         promise.reportStarted();
@@ -13051,8 +13105,8 @@ class QtFuture_6_3__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
+    @QtUninvokable
+    public static @NonNull QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
         if(futures==null || futures.length==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QFuture<?>> promise = new QPromise<>();
@@ -13072,8 +13126,8 @@ class QtFuture_6_3__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
+    @QtUninvokable
+    public static @NonNull QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QFuture<?>> promise = new QPromise<>();
@@ -13093,8 +13147,8 @@ class QtFuture_6_3__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
+    @QtUninvokable
+    public static @NonNull QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
         if(futures==null || futures.length==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QList<QFuture<?>>> promise = new QPromise<>();
@@ -13119,8 +13173,8 @@ class QtFuture_6_3__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
      */
-    @io.qt.QtUninvokable
-    public static QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
+    @QtUninvokable
+    public static @NonNull QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QList<QFuture<?>>> promise = new QPromise<>();
@@ -13146,7 +13200,7 @@ class QtFuture_6_3__ {
 class QJsonDocument___{
     
     /**
-     * Result class for {@link #fromJson(io.qt.core.QByteArray)}
+     * Result class for {@link #fromJson(QByteArray)}
      */
     public static final class FromJsonResult{
         private FromJsonResult(QJsonDocument document, QJsonParseError error) {
@@ -13154,8 +13208,8 @@ class QJsonDocument___{
             this.document = document;
             this.error = error;
         }
-        public final io.qt.core.QJsonDocument document;
-        public final io.qt.core.QJsonParseError error;
+        public final @NonNull QJsonDocument document;
+        public final @NonNull QJsonParseError error;
     }
 }// class
 
@@ -13163,30 +13217,30 @@ class QJsonDocument___{
 class QJsonDocument_5__{
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static io.qt.core.QJsonDocument fromRawData(String data) {
-        return fromRawData(data, io.qt.core.QJsonDocument.DataValidation.Validate);
+    public static QJsonDocument fromRawData(String data) {
+        return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static io.qt.core.QJsonDocument fromRawData(String data, io.qt.core.QJsonDocument.DataValidation validation) {
+    public static QJsonDocument fromRawData(String data, QJsonDocument.DataValidation validation) {
         return fromRawData(data.getBytes(), validation);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static io.qt.core.QJsonDocument fromRawData(byte[] data) {
-        return fromRawData(data, io.qt.core.QJsonDocument.DataValidation.Validate);
+    public static QJsonDocument fromRawData(byte[] data) {
+        return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static io.qt.core.QJsonDocument fromRawData(byte[] data, io.qt.core.QJsonDocument.DataValidation validation) {
+    public static QJsonDocument fromRawData(byte[] data, QJsonDocument.DataValidation validation) {
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
         return fromRawData(buffer, buffer.capacity(), validation);
     }
@@ -13215,25 +13269,25 @@ class QLockFile__{
 class QPropertyAnimation___ extends QPropertyAnimation {
     
     /**
-     * <p>Overloaded constructor for {@link #QPropertyAnimation(io.qt.core.QObject,io.qt.core.QByteArray,io.qt.core.QObject)}
+     * <p>Overloaded constructor for {@link #QPropertyAnimation(QObject,QByteArray,QObject)}
      * with <code>parent = null</code>.</p>
      */
-    public QPropertyAnimation(io.qt.core.QObject target, String propertyName){
-        this(target, new io.qt.core.QByteArray(propertyName), null);
+    public QPropertyAnimation(QObject target, String propertyName){
+        this(target, new QByteArray(propertyName), null);
     }
     
     /**
-     * <p>Overloaded constructor for {@link #QPropertyAnimation(io.qt.core.QObject,io.qt.core.QByteArray,io.qt.core.QObject)}.</p>
+     * <p>Overloaded constructor for {@link #QPropertyAnimation(QObject,QByteArray,QObject)}.</p>
      */
-    public QPropertyAnimation(io.qt.core.QObject target, String propertyName, io.qt.core.QObject parent){
-        this(target, new io.qt.core.QByteArray(propertyName), parent);
+    public QPropertyAnimation(QObject target, String propertyName, QObject parent){
+        this(target, new QByteArray(propertyName), parent);
     }
     
     /**
-     * <p>Overloaded function for {@link #setPropertyName(io.qt.core.QByteArray)}.</p>
+     * <p>Overloaded function for {@link #setPropertyName(QByteArray)}.</p>
      */
     public final void setPropertyName(String propertyName)    {
-        setPropertyName(new io.qt.core.QByteArray(propertyName));
+        setPropertyName(new QByteArray(propertyName));
     }
     
 }// class
@@ -13300,22 +13354,22 @@ class QMetaType_6__ extends QMetaType {
     /**
      * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
      */
-    public static io.qt.core.QMetaType fromName(String name){
-        return fromName(new io.qt.core.QByteArrayView(name));
+    public static QMetaType fromName(String name){
+        return fromName(new QByteArrayView(name));
     }
     
     /**
      * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(QByteArray)</a></p>
      */
-    public static io.qt.core.QMetaType fromName(QByteArray name){
-        return fromName(new io.qt.core.QByteArrayView(name));
+    public static QMetaType fromName(QByteArray name){
+        return fromName(new QByteArrayView(name));
     }
     
     /**
      * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
      */
-    public static io.qt.core.QMetaType fromName(byte[] name){
-        return fromName(new io.qt.core.QByteArrayView(name));
+    public static QMetaType fromName(byte[] name){
+        return fromName(new QByteArrayView(name));
     }
     
 }// class
@@ -13335,7 +13389,7 @@ class QMetaType___ extends QMetaType {
      * @return type name
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final String toString() {
         return ""+name();
     }
@@ -13446,14 +13500,14 @@ class QMetaType___ extends QMetaType {
         return io.qt.internal.MetaTypeUtility.registerConverter(converterTypes[0], converterClassTypes[0], converterTypes[1], converterClassTypes[1], converterFn);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static native Class<?> javaType(long __this__nativeId);
     
     /**
      * Returns the Java class for this meta type.
      * @return java class
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Class<?> javaType(){
         return javaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
@@ -13462,21 +13516,21 @@ class QMetaType___ extends QMetaType {
      * Returns the Java class for the given meta type ID.
      * @return java class
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static native Class<?> javaType(int metaTypeId);
 
     /**
      * Interface super type for all generic classes representing a QMetaType-registered but Java-unknown value type.
      */
     public interface GenericTypeInterface{
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public QMetaType metaType();
     }
     
     /**
      * This class represents a QMetaType-registered but Java-unknown enumerator type which can be used in QFlags.
      */
-    public static final class GenericFlag implements io.qt.QtFlagEnumerator{
+    public static final class GenericFlag implements QtFlagEnumerator{
         private GenericFlag(int value) {
             super();
             this.value = value;
@@ -13496,16 +13550,16 @@ class QMetaType___ extends QMetaType {
         public String name() { return "unknown"; }
         
         @Override 
-        public Class<? extends io.qt.QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
+        public Class<? extends QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
     }
     
     /**
      * This class represents a QMetaType-registered but Java-unknown QFlags type.
      */
-    public static final class GenericFlags extends io.qt.QFlags<GenericFlag> implements GenericTypeInterface, Comparable<io.qt.QFlags<?>>{
+    public static final class GenericFlags extends QFlags<GenericFlag> implements GenericTypeInterface, Comparable<QFlags<?>>{
         private static final long serialVersionUID = -7659504264600507749L;
     
-        @io.qt.NativeAccess
+        @NativeAccess
         private GenericFlags(int type, int value) {
             super(value);
             this.type = type;
@@ -13533,7 +13587,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public int compareTo(io.qt.QFlags<?> o) {
+        public int compareTo(QFlags<?> o) {
                 return Integer.compare(value(), o.value());
         }
     }
@@ -13541,8 +13595,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown enumerator.
      */
-    private abstract static class AbstractGenericEnumerator implements io.qt.QtAbstractEnumerator, GenericTypeInterface{
-        @io.qt.NativeAccess
+    private abstract static class AbstractGenericEnumerator implements QtAbstractEnumerator, GenericTypeInterface{
+        @NativeAccess
         private AbstractGenericEnumerator(int type, int index, String name) {
             super();
             this.type = type;
@@ -13613,8 +13667,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown 32 Bit enumerator.
      */
-    public final static class GenericEnumerator extends AbstractGenericEnumerator implements io.qt.QtEnumerator{
-        @io.qt.NativeAccess
+    public final static class GenericEnumerator extends AbstractGenericEnumerator implements QtEnumerator{
+        @NativeAccess
         private GenericEnumerator(int type, int index, int value, String name) {
             super(type, index, name);
             this.value = value;
@@ -13628,7 +13682,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends io.qt.QtEnumerator> getDeclaringClass() {
+        public Class<? extends QtEnumerator> getDeclaringClass() {
             return GenericEnumerator.class;
         }
     
@@ -13662,8 +13716,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown 8 Bit enumerator.
      */
-    public final static class GenericByteEnumerator extends AbstractGenericEnumerator implements io.qt.QtByteEnumerator{
-        @io.qt.NativeAccess
+    public final static class GenericByteEnumerator extends AbstractGenericEnumerator implements QtByteEnumerator{
+        @NativeAccess
         private GenericByteEnumerator(int type, int index, byte value, String name) {
             super(type, index, name);
             this.value = value;
@@ -13677,7 +13731,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends io.qt.QtByteEnumerator> getDeclaringClass() {
+        public Class<? extends QtByteEnumerator> getDeclaringClass() {
             return GenericByteEnumerator.class;
         }
     
@@ -13711,8 +13765,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown 16 Bit enumerator.
      */
-    public final static class GenericShortEnumerator extends AbstractGenericEnumerator implements io.qt.QtShortEnumerator{
-        @io.qt.NativeAccess
+    public final static class GenericShortEnumerator extends AbstractGenericEnumerator implements QtShortEnumerator{
+        @NativeAccess
         private GenericShortEnumerator(int type, int index, short value, String name) {
             super(type, index, name);
             this.value = value;
@@ -13726,7 +13780,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends io.qt.QtShortEnumerator> getDeclaringClass() {
+        public Class<? extends QtShortEnumerator> getDeclaringClass() {
             return GenericShortEnumerator.class;
         }
     
@@ -13760,8 +13814,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown 64 Bit enumerator.
      */
-    public final static class GenericLongEnumerator extends AbstractGenericEnumerator implements io.qt.QtLongEnumerator{
-        @io.qt.NativeAccess
+    public final static class GenericLongEnumerator extends AbstractGenericEnumerator implements QtLongEnumerator{
+        @NativeAccess
         private GenericLongEnumerator(int type, int index, long value, String name) {
             super(type, index, name);
             this.value = value;
@@ -13775,7 +13829,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends io.qt.QtLongEnumerator> getDeclaringClass() {
+        public Class<? extends QtLongEnumerator> getDeclaringClass() {
             return GenericLongEnumerator.class;
         }
     
@@ -13809,8 +13863,8 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown value type.
      */
-    public final static class GenericValue extends io.qt.QtObject implements Cloneable, GenericTypeInterface{
-        @io.qt.NativeAccess
+    public final static class GenericValue extends QtObject implements Cloneable, GenericTypeInterface{
+        @NativeAccess
         private GenericValue(QPrivateConstructor p) { super(p); }
         
         private native GenericValue clone(int type);
@@ -13821,10 +13875,10 @@ class QMetaType___ extends QMetaType {
             return clone(type);
         }
 
-        @io.qt.NativeAccess
+        @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public QMetaType metaType() {
             return new QMetaType(type);
         }
@@ -13837,13 +13891,13 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown object type.
      */
-    public final static class GenericObject extends io.qt.QtObject implements GenericTypeInterface{
+    public final static class GenericObject extends QtObject implements GenericTypeInterface{
         private GenericObject(QPrivateConstructor p) { super(p); }
         
-        @io.qt.NativeAccess
+        @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public QMetaType metaType() {
             return new QMetaType(type);
         }
@@ -13852,13 +13906,13 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown gadget type.
      */
-    public final static class GenericGadget extends io.qt.QtGadget implements GenericTypeInterface{
+    public final static class GenericGadget extends QtGadget implements GenericTypeInterface{
         private GenericGadget(QPrivateConstructor p) {super(p);}
         
-        @io.qt.NativeAccess
+        @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public QMetaType metaType() {
             return new QMetaType(type);
         }
@@ -13907,7 +13961,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(QDataStream stream, Object object){
+    public static void saveObject(@StrictNonNull QDataStream stream, Object object){
         saveObject(stream, object, null);
     }
     
@@ -13915,7 +13969,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(QDataStream stream, Object object, Boolean[] ok){
+    public static void saveObject(@StrictNonNull QDataStream stream, Object object, Boolean[] ok){
         QVariant variant = new QVariant(object);
         int metaType = variant.userType();
         stream.append(metaType);
@@ -13928,7 +13982,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(QDataStream stream){
+    public static Object loadObject(@StrictNonNull QDataStream stream){
         return loadObject(stream, null);
     }
     
@@ -13936,7 +13990,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(QDataStream stream, Boolean ok[]){
+    public static Object loadObject(@StrictNonNull QDataStream stream, Boolean ok[]){
         java.util.Optional<Object> optional = QMetaType.load(stream, stream.readInt());
         if(ok!=null && ok.length>0)
             ok[0] = optional.isPresent();
@@ -13981,7 +14035,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType metaType) {
+    public static Object convert(Object obj, @StrictNonNull QMetaType metaType) {
         return convert(obj, metaType.id(), null);
     }
     
@@ -13989,7 +14043,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType metaType, boolean ok[]) {
+    public static Object convert(Object obj, @StrictNonNull QMetaType metaType, boolean ok[]) {
         return convert(obj, metaType.id(), ok);
     }
     
@@ -13997,7 +14051,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType.Type metaType) {
+    public static Object convert(Object obj, QMetaType.@StrictNonNull Type metaType) {
         return convert(obj, metaType.value(), null);
     }
     
@@ -14005,7 +14059,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType.Type metaType, boolean ok[]) {
+    public static Object convert(Object obj, QMetaType.@StrictNonNull Type metaType, boolean ok[]) {
         return convert(obj, metaType.value(), ok);
     }
     
@@ -14013,7 +14067,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, Type metaType) {
+    public static Object convert(Object obj, @StrictNonNull Type metaType) {
         return convert(obj, metaType.value(), null);
     }
     
@@ -14021,37 +14075,37 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, Type metaType, boolean ok[]) {
+    public static Object convert(Object obj, @StrictNonNull Type metaType, boolean ok[]) {
         return convert(obj, metaType.value(), ok);
     }
     
     /**
      * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean canConvert(io.qt.core.QMetaType.Type targetType){
+    @QtUninvokable
+    public final boolean canConvert(QMetaType.@StrictNonNull Type targetType){
         return canConvert(targetType.value());
     }
     
     /**
      * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean canConvert(Type targetType){
+    @QtUninvokable
+    public final boolean canConvert(@StrictNonNull Type targetType){
         return canConvert(targetType.value());
     }
 
     /**
      * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(int)</a></p>
      */
-    public final boolean convert(Class<?> cl, QMetaType...instantiations) {
+    public final boolean convert(@StrictNonNull Class<?> cl, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
         return convert(QMetaType.fromType(cl, instantiations).id());
     }
     
     /**
      * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(int,const void*)</a></p>
      */
-    public QVariant(QMetaType.Type metaType){
+    public QVariant(QMetaType.@StrictNonNull Type metaType){
         this(metaType.value(), null); 
     }
     
@@ -14072,7 +14126,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(int)}
      */
-    public static boolean canConvert(Object obj, QMetaType.Type type) {
+    public static boolean canConvert(Object obj, QMetaType.@StrictNonNull Type type) {
         return canConvert(obj, type.value());
     }
 }// class
@@ -14082,7 +14136,7 @@ class QVariant_6__ {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
      */
-    public QVariant(io.qt.core.QMetaType.Type type, java.lang.Object copy){
+    public QVariant(QMetaType.@NonNull Type type, java.lang.Object copy){
         this(new QMetaType(type), copy);
     }
     
@@ -14090,7 +14144,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(QDataStream stream, Object object){
+    public static void saveObject(@StrictNonNull QDataStream stream, Object object){
         saveObject(stream, object, null);
     }
     
@@ -14098,7 +14152,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(QDataStream stream, Object object, Boolean[] ok){
+    public static void saveObject(@StrictNonNull QDataStream stream, Object object, Boolean[] ok){
         QVariant variant = new QVariant(object);
         QMetaType metaType = variant.metaType();
         stream.append(metaType.id());
@@ -14111,7 +14165,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(QDataStream stream){
+    public static Object loadObject(@StrictNonNull QDataStream stream){
         return loadObject(stream, null);
     }
     
@@ -14119,7 +14173,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(QDataStream stream, Boolean ok[]){
+    public static Object loadObject(@StrictNonNull QDataStream stream, Boolean ok[]){
         QMetaType metaType = new QMetaType(stream.readInt());
         java.util.Optional<Object> optional = metaType.load(stream);
         if(ok!=null && ok.length>0)
@@ -14131,7 +14185,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType metaType) {
+    public static Object convert(Object obj, @StrictNonNull QMetaType metaType) {
         return convert(obj, metaType, null);
     }
     
@@ -14139,7 +14193,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType metaType, boolean ok[]) {
+    public static Object convert(Object obj, @StrictNonNull QMetaType metaType, boolean ok[]) {
         java.util.Objects.requireNonNull(metaType);
         if(obj==null){
             if(ok!=null && ok.length>0)
@@ -14181,8 +14235,8 @@ class QVariant_6__ {
     /**
      * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final boolean canConvert(io.qt.core.QMetaType.Type targetType){
+    @QtUninvokable
+    public final boolean canConvert(QMetaType.@NonNull Type targetType){
         return canConvert(new QMetaType(targetType));
     }
     
@@ -14190,7 +14244,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType.Type type) {
+    public static Object convert(Object obj, QMetaType.@NonNull Type type) {
         return convert(obj, new QMetaType(type));
     }
     
@@ -14198,7 +14252,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType.Type type, boolean ok[]) {
+    public static Object convert(Object obj, QMetaType.@NonNull Type type, boolean ok[]) {
         return convert(obj, new QMetaType(type), ok);
     }
     
@@ -14206,8 +14260,8 @@ class QVariant_6__ {
      * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
      */
     @Deprecated
-    @io.qt.QtUninvokable
-    public final boolean canConvert(Type targetType){
+    @QtUninvokable
+    public final boolean canConvert(@StrictNonNull Type targetType){
         return canConvert(new QMetaType(targetType.value()));
     }
     
@@ -14215,7 +14269,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvert(Object obj, QMetaType type) {
+    public static boolean canConvert(Object obj, @StrictNonNull QMetaType type) {
         QMetaType objectType = QMetaType.fromObject(obj);
         if(objectType.equals(type))
             return true;
@@ -14226,14 +14280,14 @@ class QVariant_6__ {
     /**
      * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(QMetaType)</a></p>
      */
-    public final boolean convert(Class<?> cl, QMetaType...instantiations) {
+    public final boolean convert(@StrictNonNull Class<?> cl, @StrictNonNull QMetaType @StrictNonNull...instantiations) {
         return convert(QMetaType.fromType(cl, instantiations));
     }
     
     /**
      * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
      */
-    public QVariant(QMetaType.Type metaType){
+    public QVariant(QMetaType.@NonNull Type metaType){
         this(new QMetaType(metaType), null); 
     }
     
@@ -14241,7 +14295,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvert(Object obj, QMetaType.Type type) {
+    public static boolean canConvert(Object obj, QMetaType.@NonNull Type type) {
         return canConvert(obj, new QMetaType(type));
     }
     
@@ -14291,7 +14345,7 @@ class QVariant___ {
      * @see {@link #convert(QMetaType)}
      */
     @SuppressWarnings("unchecked")
-    public static <T> T convert(Object obj, Class<T> cl, QMetaType...instantiations) {
+    public static <T> T convert(Object obj, @StrictNonNull Class<T> cl, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
         boolean[] ok = {false};
         Object result = convert(obj, QMetaType.fromType(cl, instantiations), ok);
         Class<?> _cl = cl.isPrimitive() ? getComplexType(cl) : cl;
@@ -14326,17 +14380,17 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> boolean canConvertToEnum(Class<E> enumClass, Object obj)
+    public static <E extends Enum<?>> boolean canConvertToEnum(@StrictNonNull Class<E> enumClass, Object obj)
     {
         if(enumClass.isInstance(obj)) {
             return true;
         }else {
             QVariant variant = new QVariant(obj);
-            if(io.qt.QtEnumerator.class.isAssignableFrom(enumClass) 
-                    || io.qt.QtByteEnumerator.class.isAssignableFrom(enumClass) 
-                    || io.qt.QtShortEnumerator.class.isAssignableFrom(enumClass)) {
+            if(QtEnumerator.class.isAssignableFrom(enumClass) 
+                    || QtByteEnumerator.class.isAssignableFrom(enumClass) 
+                    || QtShortEnumerator.class.isAssignableFrom(enumClass)) {
                 return variant.canConvert(QMetaType.Type.Int);
-            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(enumClass)) {
+            }else if(QtLongEnumerator.class.isAssignableFrom(enumClass)) {
                 return variant.canConvert(QMetaType.Type.Long);
             }else if (variant.canConvert(QMetaType.Type.Int)) {
                 boolean[] ok = {false};
@@ -14353,14 +14407,14 @@ class QVariant___ {
      */
     public static boolean canConvertToFlags(Object obj)
     {
-        return obj instanceof io.qt.QFlags || new QVariant(obj).canConvert(QMetaType.Type.Int);
+        return obj instanceof QFlags || new QVariant(obj).canConvert(QMetaType.Type.Int);
     }
     
     /**
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj) {
+    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, Object obj) {
         return toEnum(enumClass, obj, (boolean[])null);
     }
     
@@ -14368,7 +14422,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> E toEnum(Class<E> enumClass, Object obj, boolean ok[]) {
+    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, Object obj, boolean ok[]) {
         if(enumClass.isInstance(obj)) {
             try {
                 if(ok!=null && ok.length>0)
@@ -14378,7 +14432,7 @@ class QVariant___ {
             }
         }else {
             QVariant variant = new QVariant(obj);
-            if(io.qt.QtEnumerator.class.isAssignableFrom(enumClass)) {
+            if(QtEnumerator.class.isAssignableFrom(enumClass)) {
                 try {
                     java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", int.class);
                     int value = variant.toInt(ok);
@@ -14386,7 +14440,7 @@ class QVariant___ {
                         return enumClass.cast(resolveMethod.invoke(null, value));
                 } catch (Exception e) {
                 }
-            }else if(io.qt.QtByteEnumerator.class.isAssignableFrom(enumClass)) {
+            }else if(QtByteEnumerator.class.isAssignableFrom(enumClass)) {
                 try {
                     java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", byte.class);
                     int value = variant.toInt(ok);
@@ -14394,7 +14448,7 @@ class QVariant___ {
                         return enumClass.cast(resolveMethod.invoke(null, (byte)value));
                 } catch (Exception e) {
                 }
-            }else if(io.qt.QtShortEnumerator.class.isAssignableFrom(enumClass)) {
+            }else if(QtShortEnumerator.class.isAssignableFrom(enumClass)) {
                 try {
                     java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", short.class);
                     int value = variant.toInt(ok);
@@ -14402,7 +14456,7 @@ class QVariant___ {
                         return enumClass.cast(resolveMethod.invoke(null, value));
                 } catch (Exception e) {
                 }
-            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(enumClass)) {
+            }else if(QtLongEnumerator.class.isAssignableFrom(enumClass)) {
                 try {
                     java.lang.reflect.Method resolveMethod = enumClass.getMethod("resolve", long.class);
                     long value = variant.toLong(ok);
@@ -14427,7 +14481,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static <F extends io.qt.QFlags<?>> F toFlags(Class<F> flagsClass, Object obj) {
+    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, Object obj) {
         return toFlags(flagsClass, obj, null);
     }
     
@@ -14435,7 +14489,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static <F extends io.qt.QFlags<?>> F toFlags(Class<F> flagsClass, Object obj, boolean ok[]) {
+    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, Object obj, boolean ok[]) {
         if(flagsClass.isInstance(obj)) {
             try{
                 if(ok!=null && ok.length>0)
@@ -14540,8 +14594,8 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toString()}
      */
-    public static String toString(Object obj){
-        return obj==null ? new String() : obj.toString();
+    public static @NonNull String toString(Object obj){
+        return obj==null ? new String() : ""+obj;
     }
     
     /**
@@ -14580,10 +14634,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toByteArray()}
      */
-    public static QByteArray toByteArray(Object obj)
+    public static @NonNull QByteArray toByteArray(Object obj)
     {
         if(obj instanceof QByteArray) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QByteArray)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QByteArray);
@@ -14607,10 +14661,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toBitArray()}
      */
-    public static QBitArray toBitArray(Object obj)
+    public static @NonNull QBitArray toBitArray(Object obj)
     {
         if(obj instanceof QBitArray) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QBitArray)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QBitArray);
@@ -14657,10 +14711,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toDate()}
      */
-    public static QDate toDate(Object obj)
+    public static @NonNull QDate toDate(Object obj)
     {
         if(obj instanceof QDate) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QDate)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QDate);
@@ -14684,10 +14738,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toDateTime()}
      */
-    public static QDateTime toDateTime(Object obj)
+    public static @NonNull QDateTime toDateTime(Object obj)
     {
         if(obj instanceof QDateTime) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QDateTime)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QDateTime);
@@ -14745,10 +14799,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLine()}
      */
-    public static QLine toLine(Object obj)
+    public static @NonNull QLine toLine(Object obj)
     {
         if(obj instanceof QLine) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QLine)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QLine);
@@ -14772,10 +14826,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLineF()}
      */
-    public static QLineF toLineF(Object obj)
+    public static @NonNull QLineF toLineF(Object obj)
     {
         if(obj instanceof QLineF) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QLineF)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QLineF);
@@ -14799,10 +14853,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLocale()}
      */
-    public static QLocale toLocale(Object obj)
+    public static @NonNull QLocale toLocale(Object obj)
     {
         if(obj instanceof QLocale) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QLocale)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QLocale);
@@ -14826,10 +14880,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toPoint()}
      */
-    public static QPoint toPoint(Object obj)
+    public static @NonNull QPoint toPoint(Object obj)
     {
         if(obj instanceof QPoint) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QPoint)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QPoint);
@@ -14853,10 +14907,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toPointF()}
      */
-    public static QPointF toPointF(Object obj)
+    public static @NonNull QPointF toPointF(Object obj)
     {
         if(obj instanceof QPointF) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QPointF)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QPointF);
@@ -14880,10 +14934,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRect()}
      */
-    public static QRect toRect(Object obj)
+    public static @NonNull QRect toRect(Object obj)
     {
         if(obj instanceof QRect) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QRect)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QRect);
@@ -14907,10 +14961,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRectF()}
      */
-    public static QRectF toRectF(Object obj)
+    public static @NonNull QRectF toRectF(Object obj)
     {
         if(obj instanceof QRectF) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QRectF)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QRectF);
@@ -14934,10 +14988,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRegularExpression()}
      */
-    public static QRegularExpression toRegularExpression(Object obj)
+    public static @NonNull QRegularExpression toRegularExpression(Object obj)
     {
         if(obj instanceof QRegularExpression) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QRegularExpression)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QRegularExpression);
@@ -14961,10 +15015,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toSize()}
      */
-    public static QSize toSize(Object obj)
+    public static @NonNull QSize toSize(Object obj)
     {
         if(obj instanceof QSize) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QSize)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QSize);
@@ -14988,10 +15042,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toSizeF()}
      */
-    public static QSizeF toSizeF(Object obj)
+    public static @NonNull QSizeF toSizeF(Object obj)
     {
         if(obj instanceof QSizeF) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QSizeF)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QSizeF);
@@ -15015,10 +15069,10 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toTime()}
      */
-    public static QTime toTime(Object obj)
+    public static @NonNull QTime toTime(Object obj)
     {
         if(obj instanceof QTime) {
-            if(!((io.qt.QtObjectInterface)obj).isDisposed())
+            if(!((QtObjectInterface)obj).isDisposed())
                 return (QTime)obj;
         }else if(obj!=null){
             Object returned = convert(obj, QMetaType.Type.QTime);
@@ -15071,7 +15125,7 @@ class QVariant___ {
      * @see {@link #toList()}
      */
     @SuppressWarnings("unchecked")
-    public static QList<Object> toList(Object obj)
+    public static @NonNull QList<Object> toList(Object obj)
     {
         if (obj instanceof java.util.Collection){
             if (obj instanceof QList && ((QList<?>)obj).elementMetaType().javaType()==Object.class)
@@ -15101,7 +15155,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toStringList()}
      */
-    public static QStringList toStringList(Object obj)
+    public static @NonNull QStringList toStringList(Object obj)
     {
         if (obj instanceof java.util.Collection){
             if (obj instanceof QStringList) {
@@ -15134,7 +15188,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toList()}
      */
-    public static java.util.Collection<?> toCollection(Object obj)
+    public static java.util.@NonNull Collection<?> toCollection(Object obj)
     {
         if (obj instanceof java.util.Collection){
             return (java.util.Collection<?>)obj;
@@ -15161,7 +15215,7 @@ class QVariant___ {
      * @see {@link #toHash()}
      */
     @SuppressWarnings("unchecked")
-    public static QHash<String,Object> toHash(Object obj)
+    public static @NonNull QHash<String,Object> toHash(Object obj)
     {
         if (obj instanceof java.util.Map) {
             if(obj instanceof QHash 
@@ -15188,7 +15242,7 @@ class QVariant___ {
      * @see {@link #toMap()}
      */
     @SuppressWarnings("unchecked")
-    public static QMap<String,Object> toMap(Object obj)
+    public static @NonNull QMap<String,Object> toMap(Object obj)
     {
         if (obj instanceof java.util.Map) {
             if(obj instanceof QMap 
@@ -15237,7 +15291,7 @@ class QMetaMethod___ {
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#parameterTypes">QMetaMethod::parameterTypes() const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<Class<?>> parameterClassTypes() {
         if(parameterClassTypes==null) {
             parameterClassTypes = java.util.Collections.unmodifiableList(parameterClassTypes_native());
@@ -15245,13 +15299,13 @@ class QMetaMethod___ {
         return parameterClassTypes;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native final java.util.List<Class<?>> parameterClassTypes_native();
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#parameterType">QMetaMethod::parameterType(int index) const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Class<?> parameterClassType(int index) {
         return parameterClassTypes().get(index);
     }
@@ -15259,21 +15313,21 @@ class QMetaMethod___ {
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#returnType">QMetaMethod::returnType() const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Class<?> returnClassType(){
         if(returnClassType==null)
             returnClassType = returnClassType_native();
         return returnClassType;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native final Class<?> returnClassType_native();
         
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#methodSignature">QMetaMethod::methodSignature() const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final String methodSignature() {
+    @QtUninvokable
+    public final @NonNull String methodSignature() {
         if(!isValid())
             return "";
         StringBuilder args = new StringBuilder();
@@ -15309,26 +15363,26 @@ class QMetaMethod___ {
     }
     
     @Override
-    @io.qt.QtUninvokable
-    public final String toString() {
+    @QtUninvokable
+    public final @NonNull String toString() {
         return methodSignature();
     }
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#invoke-1">QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final Object invoke(QObject object, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+    @QtUninvokable
+    public final Object invoke(QObject object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         return invoke(object, Qt.ConnectionType.AutoConnection, args);
     }
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#invoke">QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+    @QtUninvokable
+    public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         if(!isValid())
-            throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
+            throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
         if(parameterCount() != args.length) {
             throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
         }
@@ -15340,17 +15394,17 @@ class QMetaMethod___ {
             }
         }
         if(connection==Qt.ConnectionType.BlockingQueuedConnection && object.thread()==QThread.currentThread()) {
-            throw new io.qt.QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
+            throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
         }
         Class<?>[] argClassTypes = new Class<?>[1+parameterCount()];
         Class<?> returnType = returnClassType();
         argClassTypes[0] = returnType==null ? void.class : returnType;
         if(argClassTypes[0]!=void.class && argClassTypes[0]!=Void.class) {
             if(connection==Qt.ConnectionType.QueuedConnection) {
-                throw new io.qt.QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
             }else if(connection==Qt.ConnectionType.AutoConnection) {
                 if(QThread.currentThread() != object.thread()) {
-                    throw new io.qt.QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+                    throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
                 }
             }
         }
@@ -15361,16 +15415,16 @@ class QMetaMethod___ {
         return invoke_native(object, argClassTypes, connection.ordinal(), args);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native Object invoke_native(QObject object__id, Class<?>[] argClassTypes, int connection, Object[] args);
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget">QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final Object invokeOnGadget(Object object, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+    @QtUninvokable
+    public final @Nullable Object invokeOnGadget(Object object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         if(!isValid())
-            throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
+            throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
         if(parameterCount() != args.length) {
             throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
         }
@@ -15391,14 +15445,14 @@ class QMetaMethod___ {
         return invoke_native(object, argClassTypes, args);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native Object invoke_native(Object object, Class<?>[] argClassTypes, Object[] args);
     
     /**
      * Returns this meta method as Java reflection method.
      */
-    @io.qt.QtUninvokable
-    public final java.lang.reflect.Method toReflectedMethod() {
+    @QtUninvokable
+    public final java.lang.reflect.@Nullable Method toReflectedMethod() {
         if(isValid()) {
             switch(methodType()) {
             case Method:
@@ -15420,14 +15474,14 @@ class QMetaMethod___ {
         return null;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native java.lang.reflect.AccessibleObject toReflected();
     
     /**
      * Returns this meta method as Java reflection constructor.
      */
-    @io.qt.QtUninvokable
-    public final java.lang.reflect.Constructor<?> toReflectedConstructor() {
+    @QtUninvokable
+    public final java.lang.reflect.@Nullable Constructor<?> toReflectedConstructor() {
         if(isValid()) {
             if(methodType()==MethodType.Constructor) {
                 java.lang.reflect.AccessibleObject reflected = toReflected();
@@ -15449,8 +15503,8 @@ class QMetaMethod___ {
     /**
      * Returns this meta method as signal object.
      */
-    @io.qt.QtUninvokable
-    public final QMetaObject.AbstractSignal toSignal(QObject sender) {
+    @QtUninvokable
+    public final QMetaObject.@Nullable AbstractSignal toSignal(@StrictNonNull QObject sender) {
         if(isValid()) {
             if(methodType()==MethodType.Signal) {
                 QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(sender));
@@ -15462,7 +15516,7 @@ class QMetaMethod___ {
         return null;
     }
 
-    private QMetaObject.AbstractSignal findSignal(QObject sender) {
+    private QMetaObject.AbstractSignal findSignal(@StrictNonNull QObject sender) {
         int methodIndex = methodIndex();
         Class<?> cls = enclosingMetaObject().type();
         if(cls==null)
@@ -15508,10 +15562,10 @@ class QMetaMethod___ {
     /**
      * Returns corresponding meta method for given signal object.
      */
-    @io.qt.QtUninvokable
-    public static QMetaMethod fromSignal(QMetaObject.Signal signal) {
+    @QtUninvokable
+    public static @NonNull QMetaMethod fromSignal(QMetaObject.@StrictNonNull Signal signal) {
         QMetaMethod method = null;
-        io.qt.QtSignalEmitterInterface containingObject = signal.containingObject();
+        QtSignalEmitterInterface containingObject = signal.containingObject();
         if(containingObject instanceof QObject) {
             if(signal.methodIndex()>=0) {
                 method = ((QObject)containingObject).metaObject().method(signal.methodIndex());
@@ -15520,24 +15574,26 @@ class QMetaMethod___ {
                 method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));
             }
         }
+        if(method==null)
+            method = new QMetaMethod();
         return method;
     }
     
     /**
      * Returns corresponding meta method for given reflection constructor.
      */
-    public static QMetaMethod fromReflectedConstructor(java.lang.reflect.Constructor<?> constructor) {
+    public static @NonNull QMetaMethod fromReflectedConstructor(java.lang.reflect.@StrictNonNull Constructor<?> constructor) {
         QMetaObject mo = QMetaObject.forType(constructor.getDeclaringClass());
         if(mo!=null) {
             return mo.constructor(constructor.getParameterTypes());
         }
-        return null;
+        return new QMetaMethod();
     }
     
     /**
      * Returns corresponding meta method for given reflection method.
      */
-    public static QMetaMethod fromReflectedMethod(java.lang.reflect.Method method) {
+    public static @NonNull QMetaMethod fromReflectedMethod(java.lang.reflect.@StrictNonNull Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
         QMetaMethod qmethod = null;
         QMetaObject mo = QMetaObject.forType(declaringClass);
@@ -15551,6 +15607,8 @@ class QMetaMethod___ {
                 }
             }
         }
+        if(qmethod==null)
+            qmethod = new QMetaMethod();
         return qmethod;
     }
     
@@ -15566,146 +15624,146 @@ class QMetaMethod___ {
             if(info.reflectiveConstructor!=null)
                 return fromReflectedConstructor(info.reflectiveConstructor);
         }
-        return null;
+        return new QMetaMethod();
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <R> QMetaMethod fromMethod(QMetaObject.Method0<R> method) {
+    public static <R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method0<R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,R> QMetaMethod fromMethod(QMetaObject.Method1<A,R> method) {
+    public static <A,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method1<A,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,R> QMetaMethod fromMethod(QMetaObject.Method2<A,B,R> method) {
+    public static <A,B,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method2<A,B,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,R> QMetaMethod fromMethod(QMetaObject.Method3<A,B,C,R> method) {
+    public static <A,B,C,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method3<A,B,C,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,R> QMetaMethod fromMethod(QMetaObject.Method4<A,B,C,D,R> method) {
+    public static <A,B,C,D,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method4<A,B,C,D,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,R> QMetaMethod fromMethod(QMetaObject.Method5<A,B,C,D,E,R> method) {
+    public static <A,B,C,D,E,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method5<A,B,C,D,E,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,R> QMetaMethod fromMethod(QMetaObject.Method6<A,B,C,D,E,F,R> method) {
+    public static <A,B,C,D,E,F,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method6<A,B,C,D,E,F,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G,R> QMetaMethod fromMethod(QMetaObject.Method7<A,B,C,D,E,F,G,R> method) {
+    public static <A,B,C,D,E,F,G,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method7<A,B,C,D,E,F,G,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G,H,R> QMetaMethod fromMethod(QMetaObject.Method8<A,B,C,D,E,F,G,H,R> method) {
+    public static <A,B,C,D,E,F,G,H,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G,H,I,R> QMetaMethod fromMethod(QMetaObject.Method9<A,B,C,D,E,F,G,H,I,R> method) {
+    public static <A,B,C,D,E,F,G,H,I,R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static QMetaMethod fromMethod(QMetaObject.Slot0 method) {
+    public static @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot0 method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A> QMetaMethod fromMethod(QMetaObject.Slot1<A> method) {
+    public static <A> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot1<A> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B> QMetaMethod fromMethod(QMetaObject.Slot2<A,B> method) {
+    public static <A,B> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot2<A,B> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C> QMetaMethod fromMethod(QMetaObject.Slot3<A,B,C> method) {
+    public static <A,B,C> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot3<A,B,C> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D> QMetaMethod fromMethod(QMetaObject.Slot4<A,B,C,D> method) {
+    public static <A,B,C,D> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot4<A,B,C,D> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E> QMetaMethod fromMethod(QMetaObject.Slot5<A,B,C,D,E> method) {
+    public static <A,B,C,D,E> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot5<A,B,C,D,E> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F> QMetaMethod fromMethod(QMetaObject.Slot6<A,B,C,D,E,F> method) {
+    public static <A,B,C,D,E,F> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot6<A,B,C,D,E,F> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G> QMetaMethod fromMethod(QMetaObject.Slot7<A,B,C,D,E,F,G> method) {
+    public static <A,B,C,D,E,F,G> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot7<A,B,C,D,E,F,G> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaMethod fromMethod(QMetaObject.Slot8<A,B,C,D,E,F,G,H> method) {
+    public static <A,B,C,D,E,F,G,H> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method) {
         return fromMethodImpl(method);
     }
     
     /**
      * Returns corresponding meta method for given method handle.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaMethod fromMethod(QMetaObject.Slot9<A,B,C,D,E,F,G,H,I> method) {
+    public static <A,B,C,D,E,F,G,H,I> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method) {
         return fromMethodImpl(method);
     }
 }// class
@@ -15715,8 +15773,8 @@ class QMetaProperty___{
     /**
      * Returns the property notifier as signal object.
      */
-    @io.qt.QtUninvokable
-    public final QMetaObject.AbstractSignal notifySignal(QObject object) {
+    @QtUninvokable
+    public final QMetaObject.@Nullable AbstractSignal notifySignal(@StrictNonNull QObject object) {
         QMetaMethod notifySignal = notifySignal();
         return notifySignal==null ? null : notifySignal.toSignal(object);
     }
@@ -15724,24 +15782,24 @@ class QMetaProperty___{
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#resetOnGadget">QMetaProperty::resetOnGadget(const void *) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public native final boolean resetOnGadget(Object object);
+    @QtUninvokable
+    public native final boolean resetOnGadget(@StrictNonNull Object object);
     
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#readOnGadget">QMetaProperty::readOnGadget(const void *) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public native final Object readOnGadget(Object object);
+    @QtUninvokable
+    public native final Object readOnGadget(@StrictNonNull Object object);
     
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public native final boolean writeOnGadget(Object object, Object value);
+    @QtUninvokable
+    public native final boolean writeOnGadget(@StrictNonNull Object object, Object value);
     
     @Override
-    @io.qt.QtUninvokable
-    public final String toString() {
+    @QtUninvokable
+    public final @NonNull String toString() {
         return name();
     }
     
@@ -15750,7 +15808,7 @@ class QMetaProperty___{
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#metaType">QMetaProperty::metaType() const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Class<?> classType(){
         if(classType==null)
             classType = classType_native();
@@ -15759,77 +15817,77 @@ class QMetaProperty___{
         return classType;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native final Class<?> classType_native();
 }// class
 
 class QMetaEnum___{
     
     @Override
-    @io.qt.QtUninvokable
-    public final String toString() {
+    @QtUninvokable
+    public final @NonNull String toString() {
         return name();
     }
 
     /**
      * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public Integer keysToValue(String... keys) {
+    @QtUninvokable
+    public @Nullable Integer keysToValue(String... keys) {
         return keysToValue(new QStringList(keys).join('|'));
     }
     
     /**
      * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public Integer keysToValue(java.util.Collection<String> keys) {
+    @QtUninvokable
+    public @Nullable Integer keysToValue(java.util.@StrictNonNull Collection<@NonNull String> keys) {
         return keysToValue((keys instanceof QStringList ? (QStringList)keys : new QStringList(keys)).join('|'));
     }
 
     /**
      * Returns all enum entries of this enum type.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QtAbstractEnumerator[] entries() {
+    @QtUninvokable
+    public io.qt.@NonNull QtAbstractEnumerator @Nullable[] entries() {
         return enclosingMetaObject().enumEntries(this);
     }
     
     /**
      * Returns the enum entry of the given value.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QtAbstractEnumerator entry(int index) {
+    @QtUninvokable
+    public io.qt.@Nullable QtAbstractEnumerator entry(int index) {
         return enclosingMetaObject().enumEntry(this, index);
     }
     
     /**
      * Returns the enum entry of the given name.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QtAbstractEnumerator entry(String name) {
+    @QtUninvokable
+    public io.qt.@Nullable QtAbstractEnumerator entry(String name) {
         return enclosingMetaObject().enumEntry(this, name);
     }
     
     /**
      * Returns the java class of this enum type.
      */
-    @io.qt.QtUninvokable
-    public Class<?> type() {
+    @QtUninvokable
+    public @Nullable Class<?> type() {
         return enclosingMetaObject().enumType(this);
     }
     
-    @io.qt.QtUninvokable
-    @io.qt.NativeAccess
+    @QtUninvokable
+    @NativeAccess
     private static Class<?> flagsType(Class<?> enumType){
         try {
             Class<?> result = enumType.getMethod("asFlags").getReturnType();
-            if(result==io.qt.QFlags.class && enumType.getDeclaringClass()!=null) {
+            if(result==QFlags.class && enumType.getDeclaringClass()!=null) {
                 for(Class<?> cls : enumType.getDeclaringClass().getDeclaredClasses()) {
-                    if(io.qt.QFlags.class.isAssignableFrom(cls)) {
+                    if(QFlags.class.isAssignableFrom(cls)) {
                         if(cls.getGenericSuperclass() instanceof java.lang.reflect.ParameterizedType) {
                             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType)cls.getGenericSuperclass();
-                            if(pt.getRawType()==io.qt.QFlags.class) {
+                            if(pt.getRawType()==QFlags.class) {
                                 java.lang.reflect.Type[] types = pt.getActualTypeArguments();
                                 if(types.length==1 && types[0]==enumType)
                                     return cls;
@@ -15847,14 +15905,14 @@ class QMetaEnum___{
     /**
      * Returns flags for the given value.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QFlags<?> flags(int value) {
+    @QtUninvokable
+    public io.qt.@Nullable QFlags<?> flags(int value) {
         Class<?> enumType = type();
-        if(io.qt.QtFlagEnumerator.class.isAssignableFrom(enumType)) {
+        if(QtFlagEnumerator.class.isAssignableFrom(enumType)) {
             Class<?> flagsType = flagsType(enumType);
             if(flagsType!=null)
                 return flags(flagsType, value);
-        }else if(io.qt.QFlags.class.isAssignableFrom(enumType)) {
+        }else if(QFlags.class.isAssignableFrom(enumType)) {
             return flags(enumType, value);
         }
         return null;
@@ -15863,37 +15921,39 @@ class QMetaEnum___{
     /**
      * Returns flags for the given enum names.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QFlags<?> flags(String... names) {
+    @QtUninvokable
+    public io.qt.@Nullable QFlags<?> flags(String... names) {
         @SuppressWarnings("unchecked")
-        io.qt.QFlags<io.qt.QtFlagEnumerator> flags = (io.qt.QFlags<io.qt.QtFlagEnumerator>)flags(0);
-        for (String name : names) {
-            io.qt.QtAbstractEnumerator entry = entry(name);
-            if(entry instanceof io.qt.QtFlagEnumerator) {
-                flags.set((io.qt.QtFlagEnumerator)entry);
-            }else {
-                throw new io.qt.QNoSuchEnumValueException(name);
+        QFlags<QtFlagEnumerator> flags = (QFlags<QtFlagEnumerator>)flags(0);
+        if(flags!=null){
+            for (String name : names) {
+                QtAbstractEnumerator entry = entry(name);
+                if(entry instanceof QtFlagEnumerator) {
+                    flags.set((QtFlagEnumerator)entry);
+                }else {
+                    throw new QNoSuchEnumValueException(name);
+                }
             }
         }
         return flags;
     }
     
-    @io.qt.QtUninvokable
-    private static native io.qt.QFlags<? extends io.qt.QtFlagEnumerator> flags(Class<?> cls, int value);
+    @QtUninvokable
+    private static native QFlags<? extends QtFlagEnumerator> flags(Class<?> cls, int value);
     
     /**
      * Returns the enum entry of the given value.
      */
-    @io.qt.QtUninvokable
-    public io.qt.QtAbstractEnumerator resolve(int value) {
+    @QtUninvokable
+    public io.qt.@Nullable QtAbstractEnumerator resolve(int value) {
         Class<?> type = type();
         if(type.isEnum()) {
             byte bitSize = 4;
-            if(io.qt.QtByteEnumerator.class.isAssignableFrom(type)) {
+            if(QtByteEnumerator.class.isAssignableFrom(type)) {
                 bitSize = 1;
-            }else if(io.qt.QtShortEnumerator.class.isAssignableFrom(type)) {
+            }else if(QtShortEnumerator.class.isAssignableFrom(type)) {
                 bitSize = 2;
-            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(type)) {
+            }else if(QtLongEnumerator.class.isAssignableFrom(type)) {
                 bitSize = 8;
             }
             return resolveEntry(type, value, bitSize);
@@ -15902,14 +15962,14 @@ class QMetaEnum___{
         }
     }
     
-    @io.qt.QtUninvokable
-    private static native io.qt.QtAbstractEnumerator resolveEntry(Class<?> cls, int value, byte bitSize);
+    @QtUninvokable
+    private static native QtAbstractEnumerator resolveEntry(Class<?> cls, int value, byte bitSize);
 
 }// class
 
 class Qt___ extends Qt {
     
-    public final static QMetaObject staticMetaObject = QMetaObject.forType(Qt.class);
+    public final static @NonNull QMetaObject staticMetaObject = QMetaObject.forType(Qt.class);
     
 }// class
 
@@ -15922,9 +15982,9 @@ class QTimeZone___{
 
 class QCollatorSortKey___{
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @Override
-    public final int compareTo(io.qt.core.QCollatorSortKey key){
+    public final int compareTo(QCollatorSortKey key){
         return compare(key);
     }
     
@@ -15933,16 +15993,16 @@ class QCollatorSortKey___{
 class QCborValue_java__{
     
     /**
-     * Result class for {@link #fromCbor(io.qt.core.QByteArray)}
+     * Result class for {@link #fromCbor(QByteArray)}
      */
     public static final class FromCborResult{
-        private FromCborResult(io.qt.core.QCborValue value, io.qt.core.QCborParserError error) {
+        private FromCborResult(QCborValue value, QCborParserError error) {
             super();
             this.value = value;
             this.error = error;
         }
-        public final io.qt.core.QCborValue value;
-        public final io.qt.core.QCborParserError error;
+        public final QCborValue value;
+        public final QCborParserError error;
     }
 }// class
 
@@ -15952,26 +16012,26 @@ class QCborStreamReader_java__{
      * <p>See <a href="@docRoot/qcborstreamreader.html#QCborStreamReader-1">QCborStreamReader::QCborStreamReader(const char*,qsizetype)</a></p>
      */
     public QCborStreamReader(byte[] data){
-        this(new io.qt.core.QByteArray(data));
+        this(new QByteArray(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qcborstreamreader.html#addData">QCborStreamReader::addData(QByteArray)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void addData(byte[] data){
-        addData(new io.qt.core.QByteArray(data));
+        addData(new QByteArray(data));
     }
 }// class
 
 class QFactoryLoader_62_{
-    private QJsonValue getIID(int index){
+    private @NonNull QJsonValue getIID(int index){
         return metaData().get(index).value("IID");
     }
 }// class
 
 class QFactoryLoader_63_{
-    private QJsonValue getIID(int index){
+    private @NonNull QJsonValue getIID(int index){
         return metaData().get(index).toCbor().value(QtPluginMetaDataKeys.IID.value()).toJsonValue();
     }
 }// class
@@ -16993,8 +17053,8 @@ class QStaticPlugin_java__{
     /**
      * <p>See <a href="@docRoot/qstaticplugin.html#instance-var">QStaticPlugin::instance</a></p>
      */
-    @io.qt.QtUninvokable
-    public final native io.qt.core.QObject instance();
+    @QtUninvokable
+    public final native QObject instance();
 }// class
 
 class QThread___{    
@@ -17002,7 +17062,7 @@ class QThread___{
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, String name, long stackSize, io.qt.core.QObject parent) {
+    public QThread(ThreadGroup group, String name, long stackSize, QObject parent) {
         super((QPrivateConstructor)null);        
         initialize_native(this, parent);
         initialize(group);
@@ -17016,7 +17076,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable)
      */
-    public static QThread create(Runnable runnable) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable) {
         return create(null, runnable, null, -1, null);
     }
     
@@ -17024,7 +17084,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable)
      */
-    public static QThread create(Runnable runnable, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable QObject parent) {
         return create(null, runnable, null, -1, parent);
     }
     
@@ -17032,7 +17092,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(Runnable runnable, long stackSize) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, long stackSize) {
         return create(null, runnable, null, stackSize, null);
     }
     
@@ -17040,7 +17100,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(Runnable runnable, long stackSize, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, long stackSize, @Nullable QObject parent) {
         return create(null, runnable, null, stackSize, parent);
     }
     
@@ -17048,7 +17108,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, long stackSize) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, long stackSize) {
         return create(group, runnable, null, stackSize, null);
     }
     
@@ -17056,7 +17116,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, long stackSize, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, long stackSize, @Nullable QObject parent) {
         return create(group, runnable, null, stackSize, parent);
     }
     
@@ -17064,7 +17124,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, String name) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name) {
         return create(group, runnable, name, -1, null);
     }
     
@@ -17072,7 +17132,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, String name, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, @Nullable QObject parent) {
         return create(group, runnable, name, -1, parent);
     }
     
@@ -17080,7 +17140,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, String name, long stackSize) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, long stackSize) {
         return create(group, runnable, name, stackSize, null);
     }
     
@@ -17088,7 +17148,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable, String, long)
      */
-    public static QThread create(Runnable runnable, String name, long stackSize, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize, @Nullable QObject parent) {
         return create(null, runnable, name, stackSize, parent);
     }
     
@@ -17096,7 +17156,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable, String, long)
      */
-    public static QThread create(Runnable runnable, String name, long stackSize) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize) {
         return create(null, runnable, name, stackSize, null);
     }
     
@@ -17104,7 +17164,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable, String)
      */
-    public static QThread create(Runnable runnable, String name, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, @Nullable QObject parent) {
         return create(null, runnable, name, -1, parent);
     }
     
@@ -17112,7 +17172,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(Runnable, String)
      */
-    public static QThread create(Runnable runnable, String name) {
+    public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name) {
         return create(null, runnable, name, -1, null);
     }
     
@@ -17120,7 +17180,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable) {
         return create(group, runnable, null, -1, null);
     }
     
@@ -17128,7 +17188,7 @@ class QThread___{
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public static QThread create(ThreadGroup group, Runnable runnable, String name, long stackSize, io.qt.core.QObject parent) {
+    public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, long stackSize, @Nullable QObject parent) {
         return new Runner(group, runnable, name, stackSize, parent);
     }
     
@@ -17150,77 +17210,77 @@ class QThread___{
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(String name) {
+    public QThread(@Nullable String name) {
         this(null, name, -1, null);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group) {
+    public QThread(@Nullable ThreadGroup group) {
         this(group, null, -1, null);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(String name, io.qt.core.QObject parent) {
+    public QThread(@Nullable String name, @Nullable QObject parent) {
         this(null, name, -1, parent);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, io.qt.core.QObject parent) {
+    public QThread(ThreadGroup group, QObject parent) {
         this(group, null, -1, parent);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(String name, long stackSize) {
+    public QThread(@Nullable String name, long stackSize) {
         this(null, name, stackSize, null);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, long stackSize) {
+    public QThread(@Nullable ThreadGroup group, long stackSize) {
         this(group, null, stackSize, null);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(String name, long stackSize, io.qt.core.QObject parent) {
+    public QThread(@Nullable String name, long stackSize, @Nullable QObject parent) {
         this(null, name, stackSize, parent);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, long stackSize, io.qt.core.QObject parent) {
+    public QThread(@Nullable ThreadGroup group, long stackSize, @Nullable QObject parent) {
         this(group, null, stackSize, parent);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, String name, long stackSize) {
+    public QThread(@Nullable ThreadGroup group, @Nullable String name, long stackSize) {
         this(group, name, stackSize, null);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, String name, io.qt.core.QObject parent) {
+    public QThread(@Nullable ThreadGroup group, @Nullable String name, QObject parent) {
         this(group, name, -1, parent);
     }
     
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
-    public QThread(ThreadGroup group, String name) {
+    public QThread(@Nullable ThreadGroup group, @Nullable String name) {
         this(group, name, -1, null);
     }
     
@@ -17233,7 +17293,7 @@ class QThread___{
     /**
      * @see Thread#getThreadGroup()
      */
-    public final ThreadGroup getThreadGroup() {
+    public final @Nullable ThreadGroup getThreadGroup() {
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
         }
@@ -17245,7 +17305,7 @@ class QThread___{
     /**
      * @see Thread#setName(String)
      */
-    public void setName(String name) {
+    public void setName(@Nullable String name) {
         if(!isRunning() && javaThread==null)
             __qt_setName(name);
     }
@@ -17255,7 +17315,7 @@ class QThread___{
     /**
      * @see Thread#getName()
      */
-    public final String getName() {
+    public final @Nullable String getName() {
         if(javaThread!=null) {
             return javaThread.getName();
         }
@@ -17289,7 +17349,7 @@ class QThread___{
     /**
      * @see Thread#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
      */
-    public void setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+    public void setUncaughtExceptionHandler(Thread.@Nullable UncaughtExceptionHandler handler) {
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
         }else {
@@ -17302,7 +17362,7 @@ class QThread___{
     /**
      * @see Thread#getUncaughtExceptionHandler()
      */
-    public final Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
+    public final Thread.@Nullable UncaughtExceptionHandler getUncaughtExceptionHandler() {
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
         }
@@ -17314,7 +17374,7 @@ class QThread___{
     /**
      * @see Thread#setContextClassLoader(ClassLoader)
      */
-    public void setContextClassLoader(ClassLoader cl) {
+    public void setContextClassLoader(@Nullable ClassLoader cl) {
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
         }else {
@@ -17327,7 +17387,7 @@ class QThread___{
     /**
      * @see Thread#getContextClassLoader()
      */
-    public final ClassLoader getContextClassLoader() {
+    public final @Nullable ClassLoader getContextClassLoader() {
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
         }
@@ -17339,10 +17399,10 @@ class QThread___{
     private native void __qt_initialize(ThreadGroup group);
     private final Thread javaThread = null;
     
-    public final Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
+    public final @Nullable Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
     
     private native Thread __qt_javaThread();
-    public static native QThread thread(Thread thread);
+    public static native @Nullable QThread thread(@NonNull Thread thread);
     
     /**
      * @see Thread#isAlive()
@@ -17414,8 +17474,8 @@ class QSharedMemory_java__{
             cleanable.clean();
         }
         
-        @io.qt.QtUninvokable
-        public java.nio.ByteBuffer data() {
+        @QtUninvokable
+        public java.nio.@NonNull ByteBuffer data() {
             if(!sharedMemory.__qt_isInUse) {
                 throw new IllegalStateException();
             }
@@ -17431,7 +17491,7 @@ class QSharedMemory_java__{
     private AccessMode __qt_accessMode = AccessMode.ReadOnly;
     private boolean __qt_isInUse;
     
-    public DataAccess access() throws IllegalStateException{
+    public @NonNull DataAccess access() throws IllegalStateException{
         if(this.isAttached() && !__qt_isInUse && lock()) {
             __qt_isInUse = true;
             return new DataAccess(this);
@@ -17447,46 +17507,46 @@ class QSettings__{
 
 class QModelRoleData___{
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native final void setData(Object data);
     
 }// class
 
 class QDir__{
     /**
-     * <p>Overloaded function for {@link #entryInfoList(io.qt.core.QDir.Filters, io.qt.core.QDir.SortFlags)}
-     *  with <code>sort = new io.qt.core.QDir.SortFlags(-1)</code>.</p>
+     * <p>Overloaded function for {@link #entryInfoList(QDir.Filters, QDir.SortFlags)}
+     *  with <code>sort = new QDir.SortFlags(-1)</code>.</p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<io.qt.core.QFileInfo> entryInfoList(io.qt.core.QDir.Filter... filters) {
-        return entryInfoList(new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
+    @QtUninvokable
+    public final @NonNull QList<@NonNull QFileInfo> entryInfoList(QDir.@NonNull Filter @NonNull... filters) {
+        return entryInfoList(new QDir.Filters(filters), new QDir.SortFlags(-1));
     }
     
     /**
-     * <p>Overloaded function for {@link #entryList(io.qt.core.QDir.Filters, io.qt.core.QDir.SortFlags)}
-     *  with <code>sort = new io.qt.core.QDir.SortFlags(-1)</code>.</p>
+     * <p>Overloaded function for {@link #entryList(QDir.Filters, QDir.SortFlags)}
+     *  with <code>sort = new QDir.SortFlags(-1)</code>.</p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<java.lang.String> entryList(io.qt.core.QDir.Filter... filters) {
-        return entryList(new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
+    @QtUninvokable
+    public final @NonNull QStringList entryList(QDir.@NonNull Filter @NonNull... filters) {
+        return entryList(new QDir.Filters(filters), new QDir.SortFlags(-1));
     }
     
     /**
-     * <p>Overloaded function for {@link #entryList(java.util.Collection, io.qt.core.QDir.Filters, io.qt.core.QDir.SortFlags)}
-     *  with <code>sort = new io.qt.core.QDir.SortFlags(-1)</code>.</p>
+     * <p>Overloaded function for {@link #entryList(java.util.Collection, QDir.Filters, QDir.SortFlags)}
+     *  with <code>sort = new QDir.SortFlags(-1)</code>.</p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<java.lang.String> entryList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
-        return entryList(nameFilters, new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
+    @QtUninvokable
+    public final @NonNull QStringList entryList(java.util.Collection<java.lang.String> nameFilters, QDir.@NonNull Filter @NonNull... filters) {
+        return entryList(nameFilters, new QDir.Filters(filters), new QDir.SortFlags(-1));
     }
     
     /**
-     * <p>Overloaded function for {@link #entryInfoList(java.util.Collection, io.qt.core.QDir.Filters, io.qt.core.QDir.SortFlags)}
-     *  with <code>sort = new io.qt.core.QDir.SortFlags(-1)</code>.</p>
+     * <p>Overloaded function for {@link #entryInfoList(java.util.Collection, QDir.Filters, QDir.SortFlags)}
+     *  with <code>sort = new QDir.SortFlags(-1)</code>.</p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<io.qt.core.QFileInfo> entryInfoList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
-        return entryInfoList(nameFilters, new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
+    @QtUninvokable
+    public final @NonNull QList<@NonNull QFileInfo> entryInfoList(java.util.Collection<java.lang.String> nameFilters, QDir.@NonNull Filter @NonNull... filters) {
+        return entryInfoList(nameFilters, new QDir.Filters(filters), new QDir.SortFlags(-1));
     }
 }// class
 
@@ -17496,7 +17556,7 @@ class QFile__{
      */
     public static class TrashResult{
         public final boolean success;
-        public final String pathInTrash;
+        public final @NonNull String pathInTrash;
         private TrashResult(boolean success, String pathInTrash) {
             super();
             this.success = success;
@@ -17516,7 +17576,7 @@ class QUntypedPropertyBinding_java__{
     }
     private native static void initialize_native(QUntypedPropertyBinding instance, QPropertyBindingData bindingData);
     
-    QUntypedPropertyBinding(QUntypedPropertyBinding other){
+    QUntypedPropertyBinding(@NonNull QUntypedPropertyBinding other){
         super((QPrivateConstructor)null);
         initialize_native(this, other);
     }
@@ -17550,12 +17610,12 @@ size_t sizeof_QPropertyObserver_shell(){
 }// class
 
 class QUntypedBindable_java__{
-    QUntypedBindable(io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i){
+    QUntypedBindable(QUntypedPropertyData d, QBindableInterface i){
         super((QPrivateConstructor)null);
         initialize_native(this, d, i);
     }
     
-    private native static void initialize_native(QUntypedBindable instance, io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i);
+    private native static void initialize_native(QUntypedBindable instance, QUntypedPropertyData d, QBindableInterface i);
     
     /**
      * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
@@ -17566,8 +17626,8 @@ class QUntypedBindable_java__{
      * @return property change handler
      * @see QPropertyChangeHandler
      */
-    @io.qt.QtUninvokable
-    public final QPropertyChangeHandler onValueChanged(Runnable f)
+    @QtUninvokable
+    public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         QPropertyChangeHandler handler = new QPropertyChangeHandler(f);
         observe(handler);
@@ -17581,8 +17641,8 @@ class QUntypedBindable_java__{
      * @see QPropertyChangeHandler
      * @see #onValueChanged(Runnable)
      */
-    @io.qt.QtUninvokable
-    public final QPropertyChangeHandler subscribe(Runnable f)
+    @QtUninvokable
+    public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -17597,43 +17657,43 @@ class QUntypedBindable_java__{
      * @return property notifier
      * @see QPropertyNotifier
      */
-    @io.qt.QtUninvokable
-    public final QPropertyNotifier addNotifier(Runnable f)
+    @QtUninvokable
+    public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         QPropertyNotifier handler = new QPropertyNotifier(f);
         observe(handler);
         return handler;
     }
     
-    @io.qt.QtUninvokable
-    final io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QUntypedPropertyBinding binding){
+    @QtUninvokable
+    final QUntypedPropertyBinding overrideBinding(QUntypedPropertyBinding binding){
         return overrideBinding(this.iface(), this.data(), binding);
     }
     
-    @io.qt.QtUninvokable
-    private native io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QBindableInterface iface, io.qt.core.QUntypedPropertyData data, io.qt.core.QUntypedPropertyBinding binding);
+    @QtUninvokable
+    private native QUntypedPropertyBinding overrideBinding(QBindableInterface iface, QUntypedPropertyData data, QUntypedPropertyBinding binding);
     
 }// class
 
 class QBindableInterface__{
-    @io.qt.QtUninvokable
-    final native QMetaType metaType();
+    @QtUninvokable
+    final native @NonNull QMetaType metaType();
 }// class
 
 class QLoggingCategory__{
     private QByteArray __rcCategory;
     /**
-     * <p>Overloaded constructor for {@link #QLoggingCategory(java.lang.String, io.qt.core.QtMsgType)}
-     *  with <code>severityLevel = io.qt.core.QtMsgType.QtDebugMsg</code>.</p>
+     * <p>Overloaded constructor for {@link #QLoggingCategory(java.lang.String, QtMsgType)}
+     *  with <code>severityLevel = QtMsgType.QtDebugMsg</code>.</p>
      */
-    public QLoggingCategory(java.lang.String category){
+    public QLoggingCategory(java.lang.@NonNull String category){
         this(category==null ? null : new QByteArray(category));
     }
     
     /**
      * <p>See <a href="@docRoot/qloggingcategory.html#QLoggingCategory-1">QLoggingCategory::QLoggingCategory(const char*,QtMsgType)</a></p>
      */
-    public QLoggingCategory(java.lang.String category, io.qt.core.QtMsgType severityLevel){
+    public QLoggingCategory(java.lang.@NonNull String category, @NonNull QtMsgType severityLevel){
         this(category==null ? null : new QByteArray(category), severityLevel);
     }
     
@@ -17644,9 +17704,9 @@ class QFunctionPointer__{
      * Overloaded function for <code>invoke(void.class, arguments)</code>.
      * @param arguments
      */
-    @io.qt.QtDeclaredFinal
-    @io.qt.QtUninvokable
-    public void invoke(Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+    @QtDeclaredFinal
+    @QtUninvokable
+    public void invoke(Object... arguments) throws QUnsuccessfulInvocationException {
         invoke_native(this, void.class, arguments);
     }
     
@@ -17655,9 +17715,9 @@ class QFunctionPointer__{
      * @param returnType
      * @param arguments
      */
-    @io.qt.QtDeclaredFinal
-    @io.qt.QtUninvokable
-    public <R> R invoke(Class<R> returnType, Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+    @QtDeclaredFinal
+    @QtUninvokable
+    public <R> R invoke(@NonNull Class<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
         return invoke_native(this, returnType, arguments);
     }
     
@@ -17672,8 +17732,8 @@ class QFunctionPointer__{
      * @param returnType
      * @param arguments argument values or wrapped as QGenericArgument
      */
-    @io.qt.QtUninvokable
-    public <R> R invoke(QGenericReturnType<R> returnType, Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+    @QtUninvokable
+    public <R> R invoke(@NonNull QGenericReturnType<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
         if(arguments==null) {
             return invoke_native(this, returnType, null);
         }else {
@@ -17686,8 +17746,8 @@ class QFunctionPointer__{
      * @param functionalInterface
      * @return converted function pointer
      */
-    @io.qt.QtUninvokable
-    public <T extends io.qt.QtObjectInterface> T cast(Class<T> functionalInterface) {
+    @QtUninvokable
+    public <T extends QtObjectInterface> T cast(@NonNull Class<T> functionalInterface) {
         return cast(this, functionalInterface);
     }
     
@@ -17696,11 +17756,11 @@ class QFunctionPointer__{
      * @param functionalInterface
      * @return converted function pointer
      */
-    @io.qt.QtUninvokable
-    public native static <T extends io.qt.QtObjectInterface> T cast(io.qt.QtObjectInterface function, Class<T> functionalInterface);
+    @QtUninvokable
+    public native static <T extends QtObjectInterface> T cast(io.qt.@NonNull QtObjectInterface function, @NonNull Class<T> functionalInterface);
     
-    @io.qt.QtUninvokable
-    static native <R> R invoke_native(io.qt.QtObjectInterface function, Object returnType, Object[] arguments);
+    @QtUninvokable
+    static native <R> R invoke_native(QtObjectInterface function, Object returnType, Object[] arguments);
 }// class
 
 class QResource__{
@@ -17743,31 +17803,31 @@ class QCryptographicHash___{
     /**
      * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(const char*)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void addData(java.nio.ByteBuffer data){
-        addData(new io.qt.core.QByteArrayView(data));
+        addData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(const char*,QCryptographicHash::Algorithm)</a></p>
      */
-    public static io.qt.core.QByteArray hash(java.nio.ByteBuffer data, io.qt.core.QCryptographicHash.Algorithm method){
-        return hash(new io.qt.core.QByteArrayView(data), method);
+    public static QByteArray hash(java.nio.ByteBuffer data, QCryptographicHash.Algorithm method){
+        return hash(new QByteArrayView(data), method);
     }
     
     /**
      * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(QByteArray)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void addData(io.qt.core.QByteArray data){
-        addData(new io.qt.core.QByteArrayView(data));
+    @QtUninvokable
+    public final void addData(@NonNull QByteArray data){
+        addData(new QByteArrayView(data));
     }
     
     /**
      * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(QByteArray,QCryptographicHash::Algorithm)</a></p>
      */
-    public static io.qt.core.QByteArray hash(io.qt.core.QByteArray data, io.qt.core.QCryptographicHash.Algorithm method){
-        return hash(new io.qt.core.QByteArrayView(data), method);
+    public static @NonNull QByteArray hash(@NonNull QByteArray data, QCryptographicHash.@NonNull Algorithm method){
+        return hash(new QByteArrayView(data), method);
     }
 }// class
 
@@ -17775,7 +17835,7 @@ class QDataStream_5__{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    public final <T> QDataStream writeObject(T object){
+    public final <T> @NonNull QDataStream append(T object){
         int metaType = QMetaType.fromObject(object).id();
         if(!QMetaType.save(this, metaType, object)){
             this.setStatus(Status.WriteFailed);
@@ -17788,7 +17848,7 @@ class QDataStream_5__{
      * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
      */
     @SuppressWarnings("unchecked")
-    public final <T> T readObject(Class<T> cl, QMetaType...instantiations){
+    public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
         int metaType = QMetaType.fromType(cl, instantiations).id();
         java.util.Optional<Object> optional = QMetaType.load(this, metaType);
         if(!optional.isPresent()){
@@ -17803,7 +17863,7 @@ class QDataStream_6__{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    public final <T> QDataStream writeObject(T object){
+    public final <T> @NonNull QDataStream append(T object){
         QMetaType metaType = QMetaType.fromObject(object);
         if(!metaType.save(this, object)){
             this.setStatus(Status.WriteFailed);
@@ -17816,7 +17876,7 @@ class QDataStream_6__{
      * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
      */
     @SuppressWarnings("unchecked")
-    public final <T> T readObject(Class<T> cl, QMetaType...instantiations){
+    public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
         QMetaType metaType = QMetaType.fromType(cl, instantiations);
         java.util.Optional<Object> optional = metaType.load(this);
         if(!optional.isPresent()){
@@ -17832,40 +17892,40 @@ class QDataStream___{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T> QDataStream append(T t){
-        return writeObject(t);
+    @QtUninvokable
+    public final <T> @NonNull QDataStream writeObject(T t){
+        return append(t);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(java.lang.String s){
-        return writeString(s);
+    @QtUninvokable
+    public final @NonNull QDataStream writeString(java.lang.String s){
+        return append(s);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(double v){
-        return writeDouble(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeDouble(double v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(byte v){
-        return writeByte(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeByte(byte v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(byte[] v){
+    @QtUninvokable
+    public final @NonNull QDataStream append(byte[] v){
         writeBytes(v);
         return this;
     }
@@ -17873,41 +17933,49 @@ class QDataStream___{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(char v){
-        return writeChar(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeChar(char v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(float v){
-        return writeFloat(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeFloat(float v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(int v){
-        return writeInt(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeInt(int v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(long v){
-        return writeLong(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeLong(long v){
+        return append(v);
     }
     
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QDataStream append(short v){
-        return writeShort(v);
+    @QtUninvokable
+    public final @NonNull QDataStream writeShort(short v){
+        return append(v);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     */
+    @QtUninvokable
+    public final @NonNull QDataStream writeBoolean(boolean v){
+        return append(v);
     }
 }// class
 
@@ -17916,7 +17984,7 @@ class QString__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final char charAt(int index) {
         return at(index);
     }
@@ -17925,8 +17993,8 @@ class QString__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
-    public final QString subSequence(int start, int end) {
+    @QtUninvokable
+    public final @NonNull QString subSequence(int start, int end) {
         return mid(start, end-start);
     }
 
@@ -17934,16 +18002,16 @@ class QString__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
-    public final QString append(CharSequence csq, int start, int end) throws java.io.IOException {
+    @QtUninvokable
+    public final @NonNull QString append(CharSequence csq, int start, int end) throws java.io.IOException {
         return append(csq==null ? "null" : csq.subSequence(start, end));
     }
     
     /**
      * <p>See <a href="@docRoot/qstring.html#arg">QString::arg(Args &amp;&amp;... args) const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QString arg(Object... args){
+    @QtUninvokable
+    public final @NonNull QString arg(Object... args){
         QString _this = this.clone();
         for(Object arg : args) {
             if(arg instanceof Integer)
@@ -17976,13 +18044,13 @@ class QString__{
      * @param args arguments
      * @return formatted string
      */
-    @io.qt.QtUninvokable
-    public static io.qt.core.QString format(CharSequence format, Object... args){
-        io.qt.core.QString strg;
-        if(format instanceof io.qt.core.QString){
-            strg = (io.qt.core.QString)format;
+    @QtUninvokable
+    public static @NonNull QString format(CharSequence format, Object... args){
+        QString strg;
+        if(format instanceof QString){
+            strg = (QString)format;
         }else{
-            strg = new io.qt.core.QString(format);
+            strg = new QString(format);
         }
         return strg.arg(args);
     }
@@ -17992,24 +18060,24 @@ class QString__{
      * @param string
      * @return utf8
      */
-    @io.qt.QtUninvokable
-    public static native io.qt.core.QByteArray toUtf8(CharSequence string);
+    @QtUninvokable
+    public static native @NonNull QByteArray toUtf8(CharSequence string);
 
     /**
      * Static version of {@link QString#toLatin1()}
      * @param string
      * @return latin1
      */
-    @io.qt.QtUninvokable
-    public static native io.qt.core.QByteArray toLatin1(CharSequence string);
+    @QtUninvokable
+    public static native @NonNull QByteArray toLatin1(CharSequence string);
 
     /**
      * Static version of {@link QString#toLocal8Bit()}
      * @param string
      * @return local8Bit
      */
-    @io.qt.QtUninvokable
-    public static native io.qt.core.QByteArray toLocal8Bit(CharSequence string);
+    @QtUninvokable
+    public static native @NonNull QByteArray toLocal8Bit(CharSequence string);
 }// class
 
 class QtGlobal_5_ {
@@ -18049,3 +18117,4 @@ class QtGlobal_6_ {
      */
     public static native long qHashMultiCommutative(long seed, Object... objects) throws UnsupportedOperationException;
 }// class
+

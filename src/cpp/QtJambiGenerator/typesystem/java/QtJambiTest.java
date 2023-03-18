@@ -34,7 +34,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QBENCHMARK">QBENCHMARK</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QBENCHMARK(Runnable runnable) {
         for (QBenchmarkIterationController __iteration_controller = new QBenchmarkIterationController();
                         __iteration_controller.isDone() == false; __iteration_controller.next())
@@ -44,14 +44,14 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QBENCHMARK_ONCE">QBENCHMARK_ONCE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QBENCHMARK_ONCE(Runnable runnable) {
         for (QBenchmarkIterationController __iteration_controller = new QBenchmarkIterationController(QBenchmarkIterationController.RunMode.RunOnce);
                         __iteration_controller.isDone() == false; __iteration_controller.next())
             runnable.run();
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> boolean qCompare(T t1, T t2, java.lang.String actual, java.lang.String expected, java.lang.String file, int line){
         return QTest.compare_helper(t1==null ? t1!=null : t1.compareTo(t2)==0, "Compared values are not the same", 
                 "value1", 
@@ -61,7 +61,7 @@ class QTest__{
                 file, line);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> boolean qCompare(T t1, T t2, java.lang.String actual, java.lang.String expected, java.lang.String file, int line){
         return QTest.compare_helper(java.util.Objects.equals(t1, t2), "Compared values are not the same", 
                 "value1", 
@@ -74,7 +74,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE(T t1, T t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2,
@@ -87,7 +87,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QCOMPARE(T t1, T t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2,
@@ -100,7 +100,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(int t1, int t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -113,7 +113,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(double t1, double t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -126,7 +126,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(float t1, double t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -139,7 +139,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(double t1, float t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -152,7 +152,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(float t1, float t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -165,7 +165,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(String t1, String t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qCompare(t1, t2, 
@@ -178,7 +178,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QIcon t1, io.qt.gui.QIcon t2) throws AssertionError {
         if(t1==null)
             t1 = new io.qt.gui.QIcon();
@@ -195,7 +195,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QPixmap t1, io.qt.gui.QPixmap t2) throws AssertionError {
         if(t1==null)
             t1 = new io.qt.gui.QPixmap();
@@ -212,7 +212,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QImage t1, io.qt.gui.QImage t2) throws AssertionError {
         if(t1==null)
             t1 = new io.qt.gui.QImage();
@@ -229,7 +229,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QEXPECT_FAIL">QEXPECT_FAIL(dataIndex, comment, mode)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QEXPECT_FAIL(String dataIndex, String comment, QTest.TestFailMode mode) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qExpectFail(dataIndex, comment, mode, info.declaringClass.getName()+"."+info.methodName, info.lineNumber))
@@ -239,7 +239,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QFAIL">QFAIL(message)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QFAIL(String message) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTest.qFail(message, info.declaringClass.getName()+"."+info.methodName, info.lineNumber);
@@ -249,7 +249,7 @@ class QTest__{
     /**
      * @deprecated Use {@link #QFETCH(String, Class, io.qt.core.QMetaType...)} instead.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @Deprecated
     public static <T> T QFETCH(Class<T> type, String name) {
         return io.qt.core.QVariant.convert(qData(name, io.qt.core.QMetaType.fromType(type).id()), type);
@@ -258,7 +258,7 @@ class QTest__{
     /**
      * @deprecated Use {@link #QFETCH_GLOBAL(String, Class, io.qt.core.QMetaType...)} instead.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @Deprecated
     public static <T> T QFETCH_GLOBAL(Class<T> type, String name) {
         return io.qt.core.QVariant.convert(qGlobalData(name, io.qt.core.QMetaType.fromType(type).id()), type);
@@ -267,7 +267,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QFETCH">QFETCH(type, name)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> T QFETCH(String name, Class<T> type, io.qt.core.QMetaType...instantiations) {
         return io.qt.core.QVariant.convert(qData(name, io.qt.core.QMetaType.fromType(type, instantiations).id()), type);
     }
@@ -275,7 +275,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QFETCH_GLOBAL">QFETCH_GLOBAL(type, name)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> T QFETCH_GLOBAL(String name, Class<T> type, io.qt.core.QMetaType...instantiations) {
         return io.qt.core.QVariant.convert(qGlobalData(name, io.qt.core.QMetaType.fromType(type, instantiations).id()), type);
     }
@@ -283,7 +283,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static String QFINDTESTDATA(String basepath){
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         return QTest.qFindTestData(basepath, info.declaringClass.getName()+"."+info.methodName, info.lineNumber);
@@ -292,7 +292,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename,builddir)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static String QFINDTESTDATA(String basepath, java.lang.String builddir){
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         return QTest.qFindTestData(basepath, info.declaringClass.getName()+"."+info.methodName, info.lineNumber, builddir);
@@ -301,13 +301,13 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QSKIP">QSKIP(description)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QSKIP(String statement){
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTest.qSkip(statement, info.declaringClass.getName()+"."+info.methodName, info.lineNumber);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> boolean qTest(T actual, String elementName, String actualStr, String expected, String file, int line) {
         @SuppressWarnings("unchecked")
         Class<T> cls = (Class<T>)actual.getClass();
@@ -317,7 +317,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTEST">QTEST(actual, testElement)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QTEST(T actual, String testElement) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if(!QTest.qTest(actual, testElement, java.util.Objects.toString(actual), java.util.Objects.toString(actual), info.declaringClass.getName()+"."+info.methodName, info.lineNumber))
@@ -327,12 +327,12 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#qExec">QTest::qExec(QObject *, int, char **)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int qExec(io.qt.core.QObject testObject, String...args){
         return qExec(testObject, java.util.Arrays.asList(args));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static int QTRY_LOOP_IMPL(java.util.function.BooleanSupplier expr, int timeoutValue, int step) {
         if (!(expr.getAsBoolean())) {
             qWait(0);
@@ -344,7 +344,7 @@ class QTest__{
         return qt_test_i;
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void QTRY_TIMEOUT_DEBUG_IMPL(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier expr, int timeoutValue, int step) throws AssertionError {
         if (!(expr.getAsBoolean())) {
             int qt_test_i = QTRY_LOOP_IMPL(expr, (2 * timeoutValue), step);
@@ -356,7 +356,7 @@ class QTest__{
         }
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void QTRY_IMPL(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier expr, int timeout) throws AssertionError {
         int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50;
         int qt_test_timeoutValue = timeout;
@@ -364,7 +364,7 @@ class QTest__{
         QTRY_TIMEOUT_DEBUG_IMPL(info, ()->currentTestFailed() || (expr.getAsBoolean()), qt_test_timeoutValue, qt_test_step);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void QTRY_COMPARE_WITH_TIMEOUT_IMPL(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier expr, java.util.function.BooleanSupplier equals, int timeout) throws AssertionError {
         int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50;
         int qt_test_timeoutValue = timeout;
@@ -386,7 +386,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT">QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QTRY_COMPARE_WITH_TIMEOUT(T t1, T t2, int timeout) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_COMPARE_WITH_TIMEOUT_IMPL(info, ()->t1!=null, ()->t1.compareTo(t2)==0, timeout);
@@ -395,7 +395,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE">QTRY_COMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QTRY_COMPARE(T t1, T t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_COMPARE_WITH_TIMEOUT_IMPL(info, ()->t1!=null, ()->t1.compareTo(t2)==0, 5000);
@@ -404,7 +404,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT">QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QTRY_COMPARE_WITH_TIMEOUT(T t1, T t2, int timeout) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_COMPARE_WITH_TIMEOUT_IMPL(info, ()->t1!=null, ()->java.util.Objects.equals(t1, t2), timeout);
@@ -413,13 +413,13 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE">QTRY_COMPARE(actual, expected)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QTRY_COMPARE(T t1, T t2) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_COMPARE_WITH_TIMEOUT_IMPL(info, ()->t1!=null, ()->java.util.Objects.equals(t1, t2), 5000);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QTRY_VERIFY_WITH_TIMEOUT(java.util.function.BooleanSupplier expr, int timeout) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_IMPL(info, expr, timeout);
@@ -429,7 +429,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QTRY_VERIFY_WITH_TIMEOUT">QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QTRY_VERIFY_WITH_TIMEOUT(java.util.function.BooleanSupplier expr, String messageExpression, int timeout) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTRY_IMPL(info, expr, timeout);
@@ -439,7 +439,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QVERIFY">QVERIFY(condition)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QVERIFY(java.util.function.BooleanSupplier statement) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QVERIFY(info, statement);
@@ -448,7 +448,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QVERIFY">QVERIFY(condition)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void QVERIFY(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier statement) throws AssertionError {
         if (!qVerify(statement.getAsBoolean(), "", "", info.declaringClass.getName()+"."+info.methodName, info.lineNumber))
             throw new AssertionError();
@@ -457,7 +457,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QVERIFY2">QVERIFY2(condition,message)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QVERIFY(java.util.function.BooleanSupplier statement, String description) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QVERIFY(info, statement, description);
@@ -466,7 +466,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QVERIFY2">QVERIFY2(condition,message)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void QVERIFY(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier statement, String description) throws AssertionError {
         if(statement.getAsBoolean()) {
             if (!qVerify(true, "", description, info.declaringClass.getName()+"."+info.methodName, info.lineNumber))
@@ -480,7 +480,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html">QTest</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QWARN(String message){
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         QTest.qWarn(message, info.declaringClass.getName()+"."+info.methodName, info.lineNumber);
@@ -489,7 +489,7 @@ class QTest__{
     /**
      * <p>See <a href="@docRoot/qtest.html">QTest</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.core.QTemporaryDir QEXTRACTTESTDATA(String resourcePath){
         return QTest.qExtractTestData(resourcePath);
     }
@@ -498,7 +498,7 @@ class QTest__{
      * Use {@link #addColumn(String, Class, QMetaType...)} instead.
      */
     @Deprecated
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void addColumn(Class<?> type, String name){
         addColumn(name, type);
     }
@@ -507,7 +507,7 @@ class QTest__{
      * Place this macro-like method in the main method of the test class.
      * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN">QTEST_MAIN(TestClass)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @SuppressWarnings("unchecked")
     public static int QTEST_MAIN(String... args) {
         io.qt.InternalAccess.CallerContext context = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
@@ -520,7 +520,7 @@ class QTest__{
      * Place this macro-like method in the main method of the test class.
      * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN">QTEST_MAIN(TestClass)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @SuppressWarnings("unchecked")
     public static int QTEST_WIDGETLESS_MAIN(String... args) {
         io.qt.InternalAccess.CallerContext context = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
@@ -533,7 +533,7 @@ class QTest__{
      * Place this macro-like method in the main method of the test class.
      * <p>See <a href="@docRoot/qtest.html#QTEST_GUILESS_MAIN">QTEST_GUILESS_MAIN(TestClass)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @SuppressWarnings("unchecked")
     public static int QTEST_GUILESS_MAIN(String... args) {
         io.qt.InternalAccess.CallerContext context = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
@@ -546,7 +546,7 @@ class QTest__{
      * Place this macro-like method in the main method of the test class.
      * <p>See <a href="@docRoot/qtest.html#QTEST_APPLESS_MAIN">QTEST_APPLESS_MAIN(TestClass)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     @SuppressWarnings("unchecked")
     public static int QTEST_APPLESS_MAIN(String... args) {
         io.qt.InternalAccess.CallerContext context = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
@@ -573,7 +573,7 @@ class QTest__{
             if(io.qt.widgets.QApplication.instance()!=null) {
                 try {
                     io.qt.widgets.QApplication.setNavigationMode(io.qt.core.Qt.NavigationMode.NavigationModeNone);
-                } catch (io.qt.QNoImplementationException e) {}
+                } catch (QNoImplementationException e) {}
             }
         }else {
             String[] newArgs = new String[args.length+1];
@@ -603,7 +603,7 @@ class QTest_5__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device) {
         return touchEvent(window, device, true);
     }
@@ -611,13 +611,13 @@ class QTest_5__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device, boolean autoCommit);
     
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device) {
         return touchEvent(window, device, true);
     }
@@ -625,7 +625,7 @@ class QTest_5__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device, boolean autoCommit);
     
 }// class
@@ -635,7 +635,7 @@ class QTest_6__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QPointingDevice device) {
         return touchEvent(window, device, true);
     }
@@ -643,7 +643,7 @@ class QTest_6__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QPointingDevice device, boolean autoCommit){
         return new io.qt.test.QTest.QTouchEventSequence(window, device, autoCommit);
     }
@@ -651,7 +651,7 @@ class QTest_6__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static io.qt.test.QTest.QTouchEventWidgetSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QPointingDevice device) {
         return touchEvent(window, device, true);
     }
@@ -659,13 +659,13 @@ class QTest_6__{
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventWidgetSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QPointingDevice device, boolean autoCommit);
         
     /**
      * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename,builddir)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static String QFINDTESTDATA(String basepath, java.lang.String builddir, java.lang.String sourcedir){
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         return QTest.qFindTestData(basepath, info.declaringClass.getName()+"."+info.methodName, info.lineNumber, builddir, sourcedir);
@@ -674,7 +674,7 @@ class QTest_6__{
 }// class
 
 class QTest_64__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static <T> void QCOMPARE_OP_IMPL(java.util.function.BiPredicate<T, T> predicate, T lhs, T rhs, ComparisonOperation op) throws AssertionError {
         io.qt.InternalAccess.CallerContext info = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
         if (reportResult(predicate.test(lhs, rhs),
@@ -688,7 +688,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QCOMPARE_EQ(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL(java.util.Objects::equals, lhs, rhs, ComparisonOperation.Equal);
     }
@@ -696,7 +696,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void QCOMPARE_NE(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->!java.util.Objects.equals(l,r), lhs, rhs, ComparisonOperation.Equal);
     }
@@ -704,7 +704,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_EQ(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)==0, lhs, rhs, ComparisonOperation.Equal);
     }
@@ -712,7 +712,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_EQ(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l==r, lhs, rhs, ComparisonOperation.Equal);
     }
@@ -720,7 +720,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_EQ(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l==r, lhs, rhs, ComparisonOperation.Equal);
     }
@@ -728,7 +728,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_EQ(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l==r, lhs, rhs, ComparisonOperation.Equal);
     }
@@ -736,7 +736,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_NE(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)!=0, lhs, rhs, ComparisonOperation.NotEqual);
     }
@@ -744,7 +744,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_NE(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l!=r, lhs, rhs, ComparisonOperation.NotEqual);
     }
@@ -752,7 +752,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_NE(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l!=r, lhs, rhs, ComparisonOperation.NotEqual);
     }
@@ -760,7 +760,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_NE(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l!=r, lhs, rhs, ComparisonOperation.NotEqual);
     }
@@ -768,7 +768,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_LT(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)<0, lhs, rhs, ComparisonOperation.LessThan);
     }
@@ -776,7 +776,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LT(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<r, lhs, rhs, ComparisonOperation.LessThan);
     }
@@ -784,7 +784,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LT(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<r, lhs, rhs, ComparisonOperation.LessThan);
     }
@@ -792,7 +792,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LT(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<r, lhs, rhs, ComparisonOperation.LessThan);
     }
@@ -800,7 +800,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_LE(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)<=0, lhs, rhs, ComparisonOperation.LessThanOrEqual);
     }
@@ -808,7 +808,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LE(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<=r, lhs, rhs, ComparisonOperation.LessThanOrEqual);
     }
@@ -816,7 +816,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LE(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<=r, lhs, rhs, ComparisonOperation.LessThanOrEqual);
     }
@@ -824,7 +824,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_LE(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l<=r, lhs, rhs, ComparisonOperation.LessThanOrEqual);
     }
@@ -832,7 +832,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_GT(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)>0, lhs, rhs, ComparisonOperation.GreaterThan);
     }
@@ -840,7 +840,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GT(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>r, lhs, rhs, ComparisonOperation.GreaterThan);
     }
@@ -848,7 +848,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GT(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>r, lhs, rhs, ComparisonOperation.GreaterThan);
     }
@@ -856,7 +856,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GT(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>r, lhs, rhs, ComparisonOperation.GreaterThan);
     }
@@ -864,7 +864,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_GE(T lhs, T rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l.compareTo(r)>=0, lhs, rhs, ComparisonOperation.GreaterThanOrEqual);
     }
@@ -872,7 +872,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GE(int lhs, int rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>=r, lhs, rhs, ComparisonOperation.GreaterThanOrEqual);
     }
@@ -880,7 +880,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GE(double lhs, double rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>=r, lhs, rhs, ComparisonOperation.GreaterThanOrEqual);
     }
@@ -888,7 +888,7 @@ class QTest_64__{
     /**
      * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static void QCOMPARE_GE(long lhs, long rhs) throws AssertionError {
         QCOMPARE_OP_IMPL((l,r)->l>=r, lhs, rhs, ComparisonOperation.GreaterThanOrEqual);
     }
@@ -914,7 +914,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void forEach(Consumer<? super java.util.List<java.lang.Object>> action) {
         list().forEach(action);
     }
@@ -923,7 +923,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean addAll(Collection<? extends java.util.List<java.lang.Object>> c) {
         return list().addAll(c);
     }
@@ -932,7 +932,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean addAll(int index, Collection<? extends java.util.List<java.lang.Object>> c) {
         return list().addAll(index, c);
     }
@@ -941,7 +941,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public java.util.List<java.lang.Object> remove(int index) {
         return list().remove(index);
     }
@@ -950,7 +950,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public ListIterator<java.util.List<java.lang.Object>> listIterator() {
         return list().listIterator();
     }
@@ -959,7 +959,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public ListIterator<java.util.List<java.lang.Object>> listIterator(int index) {
         return list().listIterator(index);
     }
@@ -968,7 +968,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public List<java.util.List<java.lang.Object>> subList(int fromIndex, int toIndex) {
         return list().subList(fromIndex, toIndex);
     }
@@ -977,7 +977,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public Object[] toArray() {
         return list().toArray();
     }
@@ -986,7 +986,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <T> T[] toArray(T[] a) {
         return list().toArray(a);
     }
@@ -995,7 +995,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean containsAll(Collection<?> c) {
         return list().containsAll(c);
     }
@@ -1004,7 +1004,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public QList<java.util.List<java.lang.Object>> clone() {
         return list().clone();
     }
@@ -1012,7 +1012,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#append(java.util.Collection)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void append(java.util.Collection<java.util.List<java.lang.Object>> t) {
         list().append(t);
     }
@@ -1021,7 +1021,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean removeAll(Collection<?> c) {
         return list().removeAll(c);
     }
@@ -1030,7 +1030,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean retainAll(Collection<?> c) {
         return list().retainAll(c);
     }
@@ -1038,7 +1038,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#append(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void append(java.util.List<java.lang.Object> t) {
         list().append(t);
     }
@@ -1047,7 +1047,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public Iterator<java.util.List<java.lang.Object>> iterator() {
         return list().iterator();
     }
@@ -1056,7 +1056,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public String toString() {
         return list().toString();
     }
@@ -1064,7 +1064,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#at(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> at(int i) {
         return list().at(i);
     }
@@ -1073,7 +1073,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void clear() {
         list().clear();
     }
@@ -1082,7 +1082,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean contains(Object t) {
         return list().contains(t);
     }
@@ -1090,7 +1090,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#count()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int count() {
         return list().count();
     }
@@ -1098,7 +1098,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#count(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int count(java.util.List<java.lang.Object> t) {
         return list().count(t);
     }
@@ -1106,7 +1106,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#endsWith(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean endsWith(java.util.List<java.lang.Object> t) {
         return list().endsWith(t);
     }
@@ -1114,7 +1114,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#first()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> first() {
         return list().first();
     }
@@ -1122,7 +1122,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#indexOf(java.util.List,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int indexOf(java.util.List<java.lang.Object> t, int from) {
         return list().indexOf(t, from);
     }
@@ -1130,7 +1130,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#insert(int,java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void insert(int i, java.util.List<java.lang.Object> t) {
         list().insert(i, t);
     }
@@ -1139,7 +1139,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean isEmpty() {
         return list().isEmpty();
     }
@@ -1147,7 +1147,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#last()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> last() {
         return list().last();
     }
@@ -1156,7 +1156,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int lastIndexOf(Object t) {
         return list().lastIndexOf(t);
     }
@@ -1164,7 +1164,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#lastIndexOf(java.util.List,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int lastIndexOf(java.util.List<java.lang.Object> t, int from) {
         return list().lastIndexOf(t, from);
     }
@@ -1172,7 +1172,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#length()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int length() {
         return list().length();
     }
@@ -1180,7 +1180,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#mid(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QList<java.util.List<java.lang.Object>> mid(int pos) {
         return list().mid(pos);
     }
@@ -1188,7 +1188,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#mid(int,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QList<java.util.List<java.lang.Object>> mid(int pos, int length) {
         return list().mid(pos, length);
     }
@@ -1196,7 +1196,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#move(int,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void move(int from, int to) {
         list().move(from, to);
     }
@@ -1204,7 +1204,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#prepend(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void prepend(java.util.List<java.lang.Object> t) {
         list().prepend(t);
     }
@@ -1212,7 +1212,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#removeAll(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int removeAll(java.util.List<java.lang.Object> t) {
         return list().removeAll(t);
     }
@@ -1220,7 +1220,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#removeAt(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void removeAt(int i) {
         list().removeAt(i);
     }
@@ -1228,7 +1228,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#removeOnt(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean removeOne(java.util.List<java.lang.Object> t) {
         return list().removeOne(t);
     }
@@ -1236,7 +1236,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#replace(int,java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void replace(int i, java.util.List<java.lang.Object> t) {
         list().replace(i, t);
     }
@@ -1244,7 +1244,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#reserve(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void reserve(int size) {
         list().reserve(size);
     }
@@ -1253,7 +1253,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int size() {
         return list().size();
     }
@@ -1261,7 +1261,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#startsWith(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean startsWith(java.util.List<java.lang.Object> t) {
         return list().startsWith(t);
     }
@@ -1269,7 +1269,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#takeAt(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> takeAt(int i) {
         return list().takeAt(i);
     }
@@ -1277,7 +1277,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#takeFirst()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> takeFirst() {
         return list().takeFirst();
     }
@@ -1285,7 +1285,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#takeLast()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> takeLast() {
         return list().takeLast();
     }
@@ -1293,7 +1293,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#value(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> value(int i) {
         return list().value(i);
     }
@@ -1301,7 +1301,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#value(int,java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final java.util.List<java.lang.Object> value(int i, java.util.List<java.lang.Object> defaultValue) {
         return list().value(i, defaultValue);
     }
@@ -1310,7 +1310,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean equals(Object other) {
         return list().equals(other);
     }
@@ -1319,7 +1319,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public int hashCode() {
         return list().hashCode();
     }
@@ -1328,7 +1328,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean add(java.util.List<java.lang.Object> e) {
         return list().add(e);
     }
@@ -1337,7 +1337,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public void add(int index, java.util.List<java.lang.Object> e) {
         list().add(index, e);
     }
@@ -1346,7 +1346,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public java.util.List<java.lang.Object> set(int index, java.util.List<java.lang.Object> e) {
         return list().set(index, e);
     }
@@ -1355,7 +1355,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean remove(Object e) {
         return list().remove(e);
     }
@@ -1364,7 +1364,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public int indexOf(Object e) {
         return list().indexOf(e);
     }
@@ -1373,7 +1373,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public java.util.List<java.lang.Object> get(int index) {
         return list().get(index);
     }
@@ -1381,7 +1381,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#swapItemsAt(int,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void swapItemsAt(int i, int j) {
         list().swapItemsAt(i, j);
     }
@@ -1390,7 +1390,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void replaceAll(UnaryOperator<java.util.List<java.lang.Object>> operator) {
         list().replaceAll(operator);
     }
@@ -1398,7 +1398,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#writeTo(QDataStream)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public void writeTo(QDataStream stream) {
         list().writeTo(stream);
     }
@@ -1406,7 +1406,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#readFrom(QDataStream)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public void readFrom(QDataStream stream) {
         list().readFrom(stream);
     }
@@ -1415,7 +1415,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void sort(Comparator<? super java.util.List<java.lang.Object>> c) {
         list().sort(c);
     }
@@ -1424,7 +1424,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean removeIf(Predicate<? super java.util.List<java.lang.Object>> filter) {
         return list().removeIf(filter);
     }
@@ -1433,7 +1433,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Spliterator<java.util.List<java.lang.Object>> spliterator() {
         return list().spliterator();
     }
@@ -1442,7 +1442,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Stream<java.util.List<java.lang.Object>> stream() {
         return list().stream();
     }
@@ -1451,7 +1451,7 @@ class QSignalSpy__{
      * {@inheritDoc}
      */
     @Override
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final Stream<java.util.List<java.lang.Object>> parallelStream() {
         return list().parallelStream();
     }
@@ -1459,7 +1459,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#removeFirst()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void removeFirst() {
         list().removeFirst();
     }
@@ -1467,7 +1467,7 @@ class QSignalSpy__{
     /**
      * @see io.qt.core.QList#removeLast()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void removeLast() {
         list().removeLast();
     }
@@ -1477,7 +1477,7 @@ class QSignalSpy_5_{
     /**
      * @see io.qt.core.QList#toSet()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QSet<java.util.List<java.lang.Object>> toSet()    {
         return list().toSet();
     }
@@ -1487,7 +1487,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#fill(java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void fill(java.util.List<java.lang.Object> t) {
         list().fill(t);
     }
@@ -1495,7 +1495,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#fill(java.util.List,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void fill(java.util.List<java.lang.Object> t, int size) {
         list().fill(t, size);
     }
@@ -1503,7 +1503,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#insert(int,int,java.util.List)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void insert(int i, int n, java.util.List<java.lang.Object> t) {
         list().insert(i, n, t);
     }
@@ -1511,7 +1511,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#remove(int,int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void remove(int i, int n) {
         list().remove(i, n);
     }
@@ -1519,7 +1519,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#capacity()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final int capacity() {
         return list().capacity();
     }
@@ -1527,7 +1527,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#resize(int)
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void resize(int size) {
         list().resize(size);
     }
@@ -1535,7 +1535,7 @@ class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#squeeze()
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void squeeze() {
         list().squeeze();
     }

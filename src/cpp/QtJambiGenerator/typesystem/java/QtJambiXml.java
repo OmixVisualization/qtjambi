@@ -77,10 +77,10 @@ interface QXmlEntityResolver___ extends QXmlEntityResolver {
 
     public static final class ResolvedEntity {
 
-            public final @io.qt.NativeAccess boolean error;
-            public final @io.qt.NativeAccess QXmlInputSource inputSource;
+            public final @NativeAccess boolean error;
+            public final @NativeAccess QXmlInputSource inputSource;
 
-            @io.qt.NativeAccess
+            @NativeAccess
             public ResolvedEntity(boolean error, QXmlInputSource inputSource) {
 
                 this.error = error;
@@ -91,23 +91,4 @@ interface QXmlEntityResolver___ extends QXmlEntityResolver {
     }
 
 }// class
-
-class QXmlReader_parse___{
-    JniEnvironment __jni_env{300};
-    jmethodID method_id = __shell_javaMethod(10);
-    if(__jni_env && method_id) {
-        bool  __qt_return_value = false;
-        if(jobject __java_this = __shell()->getJavaObjectLocalRef(__jni_env)){
-            jobject __java_input0 = qtjambi_cast<jobject>(__jni_env, &input0);
-            QTJAMBI_INVALIDATE_AFTER_USE(__jni_env, __java_input0);
-            jboolean __java_return_value = __jni_env->CallBooleanMethod(__java_this, method_id, __java_input0);
-            JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-            __qt_return_value = bool(__java_return_value);
-        } else {
-            __shell()->warnForMethod("QXmlReader::parse(const QXmlInputSource& input)");
-        }
-        return __qt_return_value;
-    }
-}// class
-
 

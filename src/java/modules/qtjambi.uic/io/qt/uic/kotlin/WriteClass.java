@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.qt.core.QObject;
 import io.qt.core.QTextStream;
 import io.qt.uic.CustomWidgetsInfo;
 import io.qt.uic.Option;
@@ -193,6 +194,9 @@ public class WriteClass extends TreeWalker {
 							m_output.append(parameters[i].getName());
 							m_output.append(": ");
 							m_output.append(typeName);
+							if(QObject.class.isAssignableFrom(parameters[i].getType())) {
+								m_output.append("?");
+							}
 						}
 						m_output.append(") : super(");
 						for (int i = 0; i < parameters.length; i++) {
@@ -218,9 +222,9 @@ public class WriteClass extends TreeWalker {
 		}
 		
 		m_output.endl()
-				.append(m_option.indent).append("protected override fun changeEvent(e: io.qt.core.QEvent) {").endl()
+				.append(m_option.indent).append("protected override fun changeEvent(e: io.qt.core.QEvent?) {").endl()
 				.append(m_option.indent).append(m_option.indent).append("super.changeEvent(e)").endl()
-				.append(m_option.indent).append(m_option.indent).append("when (e.type()) {").endl()
+				.append(m_option.indent).append(m_option.indent).append("when (e?.type()) {").endl()
 				.append(m_option.indent).append(m_option.indent).append("io.qt.core.QEvent.Type.LanguageChange -> ui.retranslateUi(this)").endl()
 				.append(m_option.indent).append(m_option.indent).append("else -> {}").endl()
 				.append(m_option.indent).append(m_option.indent).append("}").endl()

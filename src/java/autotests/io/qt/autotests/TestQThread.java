@@ -517,21 +517,28 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteTopLevelRunnerThread() {
+	public void testDeleteTopLevelRunnerThread() throws Throwable {
 		WeakReference<QThread> reference;
 		{
 			boolean[] javaOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
+			Throwable[] exception = {null};
 			QThread thread = QThread.create(()->{
-				qtarray[0] = QThread.currentThread();
-				javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
-				javaThreads[0] = Thread.currentThread();
-				javaThreads[1] = qtarray[0].javaThread();
+				try {
+					qtarray[0] = QThread.currentThread();
+					javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
+					javaThreads[0] = Thread.currentThread();
+					javaThreads[1] = qtarray[0].javaThread();
+				}catch(Throwable t) {
+					exception[0] = t;
+				}
 			});
 			reference = new WeakReference<>(thread);
 			thread.start();
 			thread.join();
+			if(exception[0]!=null)
+				throw exception[0];
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(javaOwnership[0]);
@@ -544,22 +551,29 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteChildRunnerThread() throws InterruptedException {
+	public void testDeleteChildRunnerThread() throws Throwable {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
 		{
 			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
+			Throwable[] exception = {null};
 			QThread thread = QThread.create(()->{
-				qtarray[0] = QThread.currentThread();
-				cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
-				javaThreads[0] = Thread.currentThread();
-				javaThreads[1] = qtarray[0].javaThread();
+				try {
+					qtarray[0] = QThread.currentThread();
+					cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
+					javaThreads[0] = Thread.currentThread();
+					javaThreads[1] = qtarray[0].javaThread();
+				}catch(Throwable t) {
+					exception[0] = t;
+				}
 			}, parent);
 			reference = new WeakReference<>(thread);
 			thread.start();
 			thread.join();
+			if(exception[0]!=null)
+				throw exception[0];
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(cppOwnership[0]);
@@ -586,22 +600,28 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteTopLevelEventThread() {
+	public void testDeleteTopLevelEventThread() throws Throwable {
 		WeakReference<QThread> reference;
 		{
 			boolean[] javaOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			QThread thread = new QThread();
+			Throwable[] exception = {null};
 			QObject obj = new QObject() {
 				@Override
 				public boolean event(QEvent event) {
 					if(event.type()==QEvent.Type.DeferredDispose) {
-						qtarray[0] = QThread.currentThread();
-						javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
-						javaThreads[0] = Thread.currentThread();
-						javaThreads[1] = qtarray[0].javaThread();
-						qtarray[0].exit();
+						try {
+							qtarray[0] = QThread.currentThread();
+							javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
+							javaThreads[0] = Thread.currentThread();
+							javaThreads[1] = qtarray[0].javaThread();
+						}catch(Throwable t) {
+							exception[0] = t;
+						}finally {
+							qtarray[0].exit();
+						}
 					}
 					return super.event(event);
 				}
@@ -611,6 +631,8 @@ public class TestQThread extends ApplicationInitializer {
 			reference = new WeakReference<>(thread);
 			thread.start();
 			thread.join();
+			if(exception[0]!=null)
+				throw exception[0];
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(javaOwnership[0]);
@@ -623,23 +645,29 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteChildEventThread() {
+	public void testDeleteChildEventThread() throws Throwable {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
 		{
 			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
+			Throwable[] exception = {null};
 			QThread thread = new QThread(parent);
 			QObject obj = new QObject() {
 				@Override
 				public boolean event(QEvent event) {
 					if(event.type()==QEvent.Type.DeferredDispose) {
-						qtarray[0] = QThread.currentThread();
-						cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
-						javaThreads[0] = Thread.currentThread();
-						javaThreads[1] = qtarray[0].javaThread();
-						qtarray[0].exit();
+						try {
+							qtarray[0] = QThread.currentThread();
+							cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
+							javaThreads[0] = Thread.currentThread();
+							javaThreads[1] = qtarray[0].javaThread();
+						}catch(Throwable t) {
+							exception[0] = t;
+						}finally {
+							qtarray[0].exit();
+						}
 					}
 					return super.event(event);
 				}
@@ -649,6 +677,8 @@ public class TestQThread extends ApplicationInitializer {
 			reference = new WeakReference<>(thread);
 			thread.start();
 			thread.join();
+			if(exception[0]!=null)
+				throw exception[0];
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(cppOwnership[0]);
@@ -679,23 +709,32 @@ public class TestQThread extends ApplicationInitializer {
 	}
 	
 	@org.junit.Test
-	public void testDeleteAdoptedThread() throws InterruptedException {
+	public void testDeleteAdoptedThread() throws Throwable {
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
 			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
+			Throwable[] exception = {null};
 			Thread thread = new Thread(()->{
-				qtarray[0] = QThread.currentThread();
-				cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
-				javaThreads[0] = Thread.currentThread();
-				javaThreads[1] = qtarray[0].javaThread();
-				General.internalAccess.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
+				try {
+					qtarray[0] = QThread.currentThread();
+					cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
+					javaThreads[0] = Thread.currentThread();
+					javaThreads[1] = qtarray[0].javaThread();
+					General.internalAccess.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
+				}catch(Throwable t) {
+					exception[0] = t;
+				}finally {
+					qtarray[0].exit();
+				}
 			});
 			General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 			thread.start();
 			thread.join();
+			if(exception[0]!=null)
+				throw exception[0];
 			Assert.assertEquals(thread, javaThreads[0]);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertTrue(cppOwnership[0]);

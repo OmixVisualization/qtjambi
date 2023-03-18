@@ -196,44 +196,39 @@ class MetaAttributes {
 class MetaType {
     public:
         enum ReferenceType{
-            NoReference,
-            Reference,
-            RReference
+            NoReference = TypeInfo::NoReference,
+            Reference = TypeInfo::Reference,
+            RReference = TypeInfo::RReference
         };
         enum TypeUsagePattern {
             InvalidPattern,
             PrimitivePattern,
             FlagsPattern,
             EnumPattern,
+            CharStringPattern,
+            QStringPattern,
+            QLatin1StringPattern,
+            QLatin1StringViewPattern,
+            QStringViewPattern,
+            QAnyStringViewPattern,
+            QUtf8StringViewPattern,
+            QStringRefPattern,
+            QCharPattern,
+            NullptrPattern,
+            AutoPattern,
             ValuePattern,
-            StringPattern,
-            Latin1StringPattern,
-            Latin1StringViewPattern,
-            StringViewPattern,
-            AnyStringViewPattern,
-            Utf8StringViewPattern,
-            StringRefPattern,
-            CharPattern,
             ObjectPattern,
-            QObjectPattern,
             NativePointerPattern,
             FunctionalPattern,
             ContainerPattern,
             IteratorPattern,
             PointerContainerPattern,
             InitializerListPattern,
-            VariantPattern,
+            QVariantPattern,
             JObjectWrapperPattern,
-            JCollectionWrapperPattern,
-            JMapWrapperPattern,
-            JIteratorWrapperPattern,
-            JEnumWrapperPattern,
-            JQFlagsWrapperPattern,
             ArrayPattern,
             TemplateArgumentPattern,
-            RValuePattern,
-            NullptrPattern,
-            AutoPattern
+            RValuePattern
         };
 
         MetaType() :
@@ -320,7 +315,7 @@ class MetaType {
         bool isFunctional() const { return m_pattern == FunctionalPattern; }
 
         // returns true if the type is used as a QObject *
-        bool isQObject() const { return m_pattern == QObjectPattern; }
+        bool isQObject() const;
 
         // returns true if the type is used as an object, e.g. Xxx *
         bool isObject() const { return m_pattern == ObjectPattern; }
@@ -340,58 +335,45 @@ class MetaType {
         // returns true for more complex types...
         bool isNativePointer() const { return m_pattern == NativePointerPattern; }
 
-        bool isString() const {
-            return m_pattern == StringPattern
-                    || m_pattern == Latin1StringPattern
-                    || m_pattern == Latin1StringViewPattern
-                    || m_pattern == StringViewPattern
-                    || m_pattern == AnyStringViewPattern
-                    || m_pattern == Utf8StringViewPattern
-                    || m_pattern == StringRefPattern;
+        bool isJavaString() const {
+            return m_pattern == QStringPattern
+                    || m_pattern == QLatin1StringPattern
+                    || m_pattern == QLatin1StringViewPattern
+                    || m_pattern == QStringViewPattern
+                    || m_pattern == QAnyStringViewPattern
+                    || m_pattern == QUtf8StringViewPattern
+                    || m_pattern == QStringRefPattern;
         }
 
         // returns true if the type was originally a QString or const QString &
-        bool isTargetLangString() const { return m_pattern == StringPattern; }
+        bool isQString() const { return m_pattern == QStringPattern; }
+
+        bool isCharString() const { return m_pattern == CharStringPattern; }
 
         // returns true if the type was originally a QLatin1String
-        bool isTargetLangLatin1String() const { return m_pattern == Latin1StringPattern; }
+        bool isQLatin1String() const { return m_pattern == QLatin1StringPattern; }
 
         // returns true if the type was originally a QLatin1StringView
-        bool isTargetLangLatin1StringView() const { return m_pattern == Latin1StringViewPattern; }
+        bool isQLatin1StringView() const { return m_pattern == QLatin1StringViewPattern; }
 
         // returns true if the type was originally a QString or const QString & or equivalent for QLatin1String
-        bool isTargetLangStringView() const { return m_pattern == StringViewPattern; }
+        bool isQStringView() const { return m_pattern == QStringViewPattern; }
 
-        bool isTargetLangAnyStringView() const { return m_pattern == AnyStringViewPattern; }
+        bool isQAnyStringView() const { return m_pattern == QAnyStringViewPattern; }
 
-        bool isTargetLangUtf8StringView() const { return m_pattern == Utf8StringViewPattern; }
+        bool isQUtf8StringView() const { return m_pattern == QUtf8StringViewPattern; }
 
         // returns true if the type was originally a QStringRef or const QStringRef &
-        bool isTargetLangStringRef() const { return m_pattern == StringRefPattern; }
+        bool isQStringRef() const { return m_pattern == QStringRefPattern; }
 
         // returns true if the type was originally a QChar or const QChar &
-        bool isTargetLangChar() const { return m_pattern == CharPattern; }
+        bool isQChar() const { return m_pattern == QCharPattern; }
 
         // return true if the type was originally a QVariant or const QVariant &
-        bool isVariant() const { return m_pattern == VariantPattern; }
+        bool isQVariant() const { return m_pattern == QVariantPattern; }
 
         // return true if the type was originally a JObjectWrapper or const JObjectWrapper &
         bool isJObjectWrapper() const { return m_pattern == JObjectWrapperPattern; }
-
-        // return true if the type was originally a JMapWrapper or const JMapWrapper &
-        bool isJMapWrapper() const { return m_pattern == JMapWrapperPattern; }
-
-        // return true if the type was originally a JCollectionWrapper or const JCollectionWrapper &
-        bool isJCollectionWrapper() const { return m_pattern == JCollectionWrapperPattern; }
-
-        // return true if the type was originally a JIteratorWrapper or const JIteratorWrapper &
-        bool isJIteratorWrapper() const { return m_pattern == JIteratorWrapperPattern; }
-
-        // return true if the type was originally a JEnumWrapper or const JEnumWrapper &
-        bool isJEnumWrapper() const { return m_pattern == JEnumWrapperPattern; }
-
-        // return true if the type was originally a JQFlagsWrapper or const JQFlagsWrapper &
-        bool isJQFlagsWrapper() const { return m_pattern == JQFlagsWrapperPattern; }
 
         // returns true if the type was used as a container
         bool isContainer() const { return m_pattern == ContainerPattern; }
@@ -416,13 +398,13 @@ class MetaType {
 
         // Returns true if the type is to be implemented using Java enums, e.g. not plain ints.
         bool isTargetLangEnum() const { return isEnum() && !static_cast<const EnumTypeEntry *>(typeEntry())->forceInteger(); }
-        bool isIntegerEnum() const { return isEnum() && !isTargetLangEnum(); }
+        bool isIntegerEnum() const { return isEnum() && static_cast<const EnumTypeEntry *>(typeEntry())->forceInteger(); }
 
         // Returns true if the type is to be implemented using Java QFlags, e.g. not plain ints.
         bool isTargetLangFlags() const {
             return isFlags() && !static_cast<const FlagsTypeEntry *>(typeEntry())->forceInteger();
         }
-        bool isIntegerFlags() const { return isFlags() && !isTargetLangFlags(); }
+        bool isIntegerFlags() const { return isFlags() && static_cast<const FlagsTypeEntry *>(typeEntry())->forceInteger(); }
 
         int actualIndirections() const { return m_indirections.size() + (m_reference==Reference ? 1 : 0); }
         const QList<bool>& indirections() const { return m_indirections; }
@@ -446,7 +428,6 @@ class MetaType {
 
         void setOriginalTemplateType(const MetaType *type) { m_original_template_type = type; }
         const MetaType *originalTemplateType() const { return m_original_template_type; }
-
     private:
         const TypeEntry *m_type_entry;
         QList <const MetaType *> m_instantiations;
@@ -527,6 +508,8 @@ class MetaArgument : public MetaVariable {
 
         MetaArgument *copy() const;
 
+        bool isNullPointerDisabled(const MetaFunction* function) const;
+
     private:
         // Just to force people to call argumentName() And indexedName();
         QString name() const;
@@ -562,326 +545,343 @@ class MetaField : public MetaVariable, public MetaAttributes {
 
 class MetaFunction : public MetaAttributes {
     public:
-        enum FunctionType {
-            ConstructorFunction,
-            DestructorFunction,
-            NormalFunction,
-            SignalFunction,
-            PrivateSignalFunction,
-            EmptyFunction,
-            SlotFunction,
-            GlobalScopeFunction,
-            BaseClassDelegateFunction
-        };
+    enum FunctionType {
+        ConstructorFunction,
+        DestructorFunction,
+        NormalFunction,
+        SignalFunction,
+        PrivateSignalFunction,
+        EmptyFunction,
+        SlotFunction,
+        GlobalScopeFunction,
+        BaseClassDelegateFunction
+    };
 
-        enum CompareResult {
-            EqualName                   = 0x00000001,
-            EqualArguments              = 0x00000002,
-            EqualAttributes             = 0x00000004,
-            EqualImplementor            = 0x00000008,
-            EqualReturnType             = 0x00000010,
-            EqualDefaultValueOverload   = 0x00000020,
-            EqualModifiedName           = 0x00000040,
+    enum CompareResult {
+        EqualName                   = 0x00000001,
+        EqualArguments              = 0x00000002,
+        EqualAttributes             = 0x00000004,
+        EqualImplementor            = 0x00000008,
+        EqualReturnType             = 0x00000010,
+        EqualDefaultValueOverload   = 0x00000020,
+        EqualModifiedName           = 0x00000040,
 
-            NameLessThan                = 0x00001000,
+        NameLessThan                = 0x00001000,
 
-            PrettySimilar               = EqualName | EqualArguments,
-            Equal                       = 0x0000001f,
-            NotEqual                    = 0x00001000
-        };
+        PrettySimilar               = EqualName | EqualArguments,
+        Equal                       = 0x0000001f,
+        NotEqual                    = 0x00001000
+    };
 
-        MetaFunction()
-                :MetaAttributes(),
-                m_original_name(),
-                m_original_signature(),
-                m_function_type(NormalFunction),
-                m_type(nullptr),
-                m_class(nullptr),
-                m_implementing_class(nullptr),
-                m_declaring_class(nullptr),
-                m_interface_class(nullptr),
-                m_property_spec(nullptr),
-                m_constant(false),
-                m_variadics(false),
-                m_explicit(false),
-                m_invalid(false),
-                m_actualMinimumArgumentCount(-1),
-                m_accessedField(nullptr),
-                m_functionReferenceType(MetaType::NoReference),
-                m_functionTemplate(nullptr)
-        {
+    MetaFunction()
+            :MetaAttributes(),
+            m_original_name(),
+            m_original_signature(),
+            m_function_type(NormalFunction),
+            m_type(nullptr),
+            m_class(nullptr),
+            m_implementing_class(nullptr),
+            m_declaring_class(nullptr),
+            m_interface_class(nullptr),
+            m_property_spec(nullptr),
+            m_operatorType(OperatorType::None),
+            m_constant(false),
+            m_variadics(false),
+            m_explicit(false),
+            m_template(false),
+            m_invalid(false),
+            m_actualMinimumArgumentCount(-1),
+            m_accessedField(nullptr),
+            m_functionReferenceType(MetaType::NoReference),
+            m_functionTemplate(nullptr)
+    {
+    }
+
+    ~MetaFunction();
+
+    QString name() const { return m_name; }
+    void setName(const QString &name);
+
+    QString originalName() const { return m_original_name.isEmpty() ? name() : m_original_name; }
+    void setOriginalName(const QString &name) { m_original_name = name; }
+
+    QString modifiedName() const;
+
+    QString minimalSignature() const;
+    void setOriginalSignature(const QString &signature) { m_original_signature = signature; }
+    const QString& originalSignature() const { return m_original_signature; }
+
+    QString marshalledName() const;
+
+    // true if one or more of the arguments are of QtObject subclasses
+    bool argumentsHaveNativeId() const {
+        for(const MetaArgument *arg : m_arguments) {
+            if (arg->type()->hasNativeId())
+                return true;
         }
 
-        ~MetaFunction();
+        return false;
+    }
 
-        QString name() const { return m_name; }
-        void setName(const QString &name) { m_name = name; }
+    bool isModifiedRemoved(int types = TS::All) const;
 
-        QString originalName() const { return m_original_name.isEmpty() ? name() : m_original_name; }
-        void setOriginalName(const QString &name) { m_original_name = name; }
+    bool isProxyCall() const;
 
-        QString modifiedName() const;
+    MetaType *type() const { return m_type; }
+    void setType(MetaType *type) { m_type = type; }
 
-        QString minimalSignature() const;
-        void setOriginalSignature(const QString &signature) { m_original_signature = signature; }
-        const QString& originalSignature() const { return m_original_signature; }
+    // The class that has this function as a member.
+    const MetaClass *ownerClass() const { return m_class; }
+    void setOwnerClass(const MetaClass *cls) { m_class = cls; }
 
-        QString marshalledName() const;
+    // The first class in a hierarchy that declares the function
+    const MetaClass *declaringClass() const { return m_declaring_class; }
+    void setDeclaringClass(const MetaClass *cls) { m_declaring_class = cls; }
 
-        // true if one or more of the arguments are of QtObject subclasses
-        bool argumentsHaveNativeId() const {
-            for(const MetaArgument *arg : m_arguments) {
-                if (arg->type()->hasNativeId())
-                    return true;
-            }
+    // The class that actually implements this function
+    const MetaClass *implementingClass() const { return m_implementing_class; }
+    void setImplementingClass(const MetaClass *cls) { m_implementing_class = cls; }
 
-            return false;
+    bool needsCallThrough() const;
+
+    bool needsReturnScope() const;
+
+    const MetaArgumentList& arguments() const { return m_arguments; }
+    void setArguments(const MetaArgumentList &arguments);
+    void addArgument(MetaArgument *argument);
+    int actualMinimumArgumentCount() const;
+
+    void setInvalid(bool on) { m_invalid = on; }
+    bool isInvalid() const { return m_invalid; }
+    void setTemplate(bool on) { m_template = on; }
+    bool isTemplate() const { return m_template; }
+    bool isDeprecated() const;
+    bool isDestructor() const { return functionType() == DestructorFunction; }
+    bool isConstructor() const { return functionType() == ConstructorFunction; }
+
+    /**
+     *detects, if the constructor is of form T(const T&)
+     * @brief isCopyConstructor
+     * @return
+     */
+    bool isCopyConstructor() const;
+    bool hasRReferences() const;
+    bool isNormal() const { return functionType() == NormalFunction || isSlot() || isInGlobalScope() || isBaseClassDelegateFunction(); }
+    bool isInGlobalScope() const { return functionType() == GlobalScopeFunction; }
+    bool isSignal() const { return functionType() == SignalFunction || functionType() == PrivateSignalFunction; }
+    bool isPrivateSignal() const { return functionType() == PrivateSignalFunction; }
+    bool isSlot() const { return functionType() == SlotFunction; }
+    bool isEmptyFunction() const { return functionType() == EmptyFunction; }
+    bool isBaseClassDelegateFunction() const { return functionType() == BaseClassDelegateFunction; }
+    bool hasTemplateArgumentTypes() const{
+        for(const MetaArgument *arg : m_arguments) {
+            if (arg->type()->isTemplateArgument())
+                return true;
         }
-
-        bool isModifiedRemoved(int types = TS::All) const;
-
-        bool isProxyCall() const;
-
-        MetaType *type() const { return m_type; }
-        void setType(MetaType *type) { m_type = type; }
-
-        // The class that has this function as a member.
-        const MetaClass *ownerClass() const { return m_class; }
-        void setOwnerClass(const MetaClass *cls) { m_class = cls; }
-
-        // The first class in a hierarchy that declares the function
-        const MetaClass *declaringClass() const { return m_declaring_class; }
-        void setDeclaringClass(const MetaClass *cls) { m_declaring_class = cls; }
-
-        // The class that actually implements this function
-        const MetaClass *implementingClass() const { return m_implementing_class; }
-        void setImplementingClass(const MetaClass *cls) { m_implementing_class = cls; }
-
-        bool needsCallThrough() const;
-
-        const MetaArgumentList& arguments() const { return m_arguments; }
-        void setArguments(const MetaArgumentList &arguments) { m_arguments = arguments; m_actualMinimumArgumentCount = -1; }
-        void addArgument(MetaArgument *argument) { m_arguments << argument; m_actualMinimumArgumentCount = -1; }
-        int actualMinimumArgumentCount() const;
-
-        void setInvalid(bool on) { m_invalid = on; }
-        bool isInvalid() const { return m_invalid; }
-        bool isDeprecated() const;
-        bool isDestructor() const { return functionType() == DestructorFunction; }
-        bool isConstructor() const { return functionType() == ConstructorFunction; }
-
-        /**
-         *detects, if the constructor is of form T(const T&)
-         * @brief isCopyConstructor
-         * @return
-         */
-        bool isCopyConstructor() const;
-        bool hasRReferences() const;
-        bool isNormal() const { return functionType() == NormalFunction || isSlot() || isInGlobalScope() || isBaseClassDelegateFunction(); }
-        bool isInGlobalScope() const { return functionType() == GlobalScopeFunction; }
-        bool isSignal() const { return functionType() == SignalFunction || functionType() == PrivateSignalFunction; }
-        bool isPrivateSignal() const { return functionType() == PrivateSignalFunction; }
-        bool isSlot() const { return functionType() == SlotFunction; }
-        bool isEmptyFunction() const { return functionType() == EmptyFunction; }
-        bool isBaseClassDelegateFunction() const { return functionType() == BaseClassDelegateFunction; }
-        bool hasTemplateArgumentTypes() const{
-            for(const MetaArgument *arg : m_arguments) {
-                if (arg->type()->isTemplateArgument())
-                    return true;
-            }
-            return m_type && (m_type->isTemplateArgument() || m_type->typeUsagePattern()==MetaType::AutoPattern);
+        return m_type && (m_type->isTemplateArgument() || m_type->typeUsagePattern()==MetaType::AutoPattern);
+    }
+    bool hasTemplateTypes() const{
+        for(const MetaTemplateParameter *arg : m_templateParameters) {
+            if (arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
+                return true;
         }
-        bool hasTemplateTypes() const{
-            for(const MetaTemplateParameter *arg : m_templateParameters) {
-                if (arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
-                    return true;
-            }
-            return false;
-        }
-        FunctionType functionType() const { return m_function_type; }
-        void setFunctionType(FunctionType type) { m_function_type = type; }
+        return false;
+    }
+    FunctionType functionType() const { return m_function_type; }
+    void setFunctionType(FunctionType type) { m_function_type = type; }
 
-        QStringList introspectionCompatibleSignatures(const QStringList &resolvedArguments = QStringList()) const;
-        QString signature(bool skipName = false) const;
-        QString targetLangSignature(bool minimal = false) const;
-        bool shouldReturnThisObject() const { return QLatin1String("this") == argumentReplaced(0); }
+    QStringList introspectionCompatibleSignatures(const QStringList &resolvedArguments = QStringList()) const;
+    QString signature(bool skipName = false) const;
+    QString targetLangSignature(bool minimal = false) const;
+    bool shouldReturnThisObject() const { return QLatin1String("this") == argumentReplaced(0); }
 
-        bool isConstant() const { return m_constant; }
-        void setConstant(bool constant) { m_constant = constant; }
+    bool isConstant() const { return m_constant; }
+    void setConstant(bool constant) { m_constant = constant; }
 
-        QString toString() const { return m_name; }
+    QString toString() const { return m_name; }
 
-        uint compareTo(const MetaFunction *other) const;
+    uint compareTo(const MetaFunction *other) const;
 
-        bool operator <(const MetaFunction &a) const;
+    bool operator <(const MetaFunction &a) const;
 
-        MetaFunction *copy() const;
+    MetaFunction *copy() const;
 
-        QString replacedDefaultExpression(const MetaClass *cls, int idx) const;
-        bool removedDefaultExpression(const MetaClass *cls, int idx) const;
-        QString conversionRule(TS::Language language, int idx) const;
-        bool hasConversionRule(TS::Language language, int idx) const;
-        QList<ReferenceCount> referenceCounts(const MetaClass *cls, int idx = -2) const;
-        QList<TemplateInstantiation> templateInstantiations(const MetaClass *cls) const;
+    QString replacedDefaultExpression(const MetaClass *cls, int idx) const;
+    bool removedDefaultExpression(const MetaClass *cls, int idx) const;
+    QString conversionRule(TS::Language language, int idx) const;
+    bool hasConversionRule(TS::Language language, int idx) const;
+    QList<ReferenceCount> referenceCounts(const MetaClass *cls, int idx = -2) const;
+    QList<TemplateInstantiation> templateInstantiations(const MetaClass *cls) const;
 
-        bool nullPointersDisabled(const MetaClass *cls = nullptr, int argument_idx = 0) const;
-        QString nullPointerDefaultValue(const MetaClass *cls = nullptr, int argument_idx = 0) const;
+    bool nullPointersDisabled(const MetaClass *cls = nullptr, int argument_idx = 0) const;
+    QString nullPointerDefaultValue(const MetaClass *cls = nullptr, int argument_idx = 0) const;
 
-        bool resetObjectAfterUse(int argument_idx) const;
+    bool resetObjectAfterUse(int argument_idx) const;
 
-        bool valueAsPointer(int argument_idx) const;
+    bool valueAsPointer(int argument_idx) const;
 
-        // Returns the ownership rules for the given argument in the given context
-        OwnershipRule ownership(const MetaClass *cls, TS::Language language, int idx) const;
+    // Returns the ownership rules for the given argument in the given context
+    OwnershipRule ownership(const MetaClass *cls, TS::Language language, int idx) const;
 
-        bool isVirtualSlot() const;
-        bool isAllowedAsSlot() const;
-        bool isPaintMethod() const;
-        bool isThreadAffine() const;
-        bool isUIThreadAffine() const;
-        bool isPixmapThreadAffine() const;
+    bool isVirtualSlot() const;
+    bool isAllowedAsSlot() const;
+    bool isPaintMethod() const;
+    bool isThreadAffine() const;
+    bool isUIThreadAffine() const;
+    bool isPixmapThreadAffine() const;
 
-        int argumentTypeArrayLengthIndex(int argument_index) const;
-        int argumentTypeArrayLengthMinValue(int argument_index) const;
-        int argumentTypeArrayLengthMaxValue(int argument_index) const;
-        bool argumentTypeArrayDeref(int key) const;
-        bool argumentTypeArray(int key) const;
-        bool argumentTypeBuffer(int key) const;
-        bool argumentTypeArrayVarArgs(int key) const;
-        bool isNoExcept() const;
-        bool isBlockExceptions() const;
-        bool isRethrowExceptions() const;
-        QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
-        bool isRemovedFromAllLanguages(const MetaClass *) const;
-        bool isRemovedFrom(const MetaClass *, TS::Language language) const;
+    int argumentTypeArrayLengthIndex(int argument_index) const;
+    int argumentTypeArrayLengthMinValue(int argument_index) const;
+    int argumentTypeArrayLengthMaxValue(int argument_index) const;
+    bool argumentTypeArrayDeref(int key) const;
+    bool argumentTypeArray(int key) const;
+    bool argumentTypeBuffer(int key) const;
+    bool argumentTypeArrayVarArgs(int key) const;
+    bool isNoExcept() const;
+    bool isBlockExceptions() const;
+    bool isRethrowExceptions() const;
+    QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
+    bool isRemovedFromAllLanguages(const MetaClass *) const;
+    bool isRemovedFrom(const MetaClass *, TS::Language language) const;
 
-        ArgumentRemove argumentRemoved(int) const;
-        ThreadAffinity argumentThreadAffinity(int) const;
+    ArgumentRemove argumentRemoved(int) const;
+    ThreadAffinity argumentThreadAffinity(int) const;
 
-        QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments() const;
+    QList<Delegate> delegates() const;
 
-        QString proxyCall() const;
-        QString argumentReplaced(int key) const;
-        bool needsSuppressUncheckedWarning() const;
-        bool needsSuppressRawTypeWarning() const;
+    QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments() const;
 
-        bool hasModifications(const MetaClass *implementor) const;
-        FunctionModificationList modifications(const MetaClass *implementor) const;
-        bool hasCodeInjections(const MetaClass *implementor, TS::Language language, const QSet<CodeSnip::Position>& positions) const;
-        QString throws(const MetaClass *implementor = nullptr) const;
+    QString proxyCall() const;
+    QString argumentReplaced(int key) const;
+    bool isSelfReturningFunction() const;
+    bool needsSuppressUncheckedWarning() const;
+    bool needsSuppressRawTypeWarning() const;
 
-        // If this function stems from an interface, this returns the
-        // interface that declares it.
-        const MetaClass *interfaceClass() const { return m_interface_class; }
-        void setInterfaceClass(const MetaClass *cl) { m_interface_class = cl; }
+    bool hasModifications(const MetaClass *implementor) const;
+    bool hasModifications(const ComplexTypeEntry *entry) const;
+    FunctionModificationList modifications(const MetaClass *implementor) const;
+    FunctionModificationList modifications(const ComplexTypeEntry *entry) const;
+    FunctionModificationList modifications(const TypeSystemTypeEntry *entry) const;
+    bool hasCodeInjections(const MetaClass *implementor, TS::Language language, const QSet<CodeSnip::Position>& positions) const;
+    QString throws(const MetaClass *implementor = nullptr) const;
 
-        void setPropertySpec(QPropertySpec *spec) { m_property_spec = spec; }
-        QPropertySpec *propertySpec() const { return m_property_spec; }
+    // If this function stems from an interface, this returns the
+    // interface that declares it.
+    const MetaClass *interfaceClass() const { return m_interface_class; }
+    void setInterfaceClass(const MetaClass *cl) { m_interface_class = cl; }
 
-        const MetaTemplateParameterList & templateParameters() const {
-            return m_templateParameters;
-        }
+    void setPropertySpec(QPropertySpec *spec) { m_property_spec = spec; }
+    QPropertySpec *propertySpec() const { return m_property_spec; }
 
-        void setTemplateParameters(const MetaTemplateParameterList & templateParameters) {
-            m_templateParameters = templateParameters;
-        }
+    const MetaTemplateParameterList & templateParameters() const {
+        return m_templateParameters;
+    }
 
-        void addTemplateParameter(MetaTemplateParameter* templateParameter) {
-            m_templateParameters << templateParameter;
-        }
+    void setTemplateParameters(const MetaTemplateParameterList & templateParameters) {
+        m_templateParameters = templateParameters;
+    }
 
-        const MetaField *accessedField() const { return m_accessedField; }
+    void addTemplateParameter(MetaTemplateParameter* templateParameter) {
+        m_templateParameters << templateParameter;
+    }
 
-        void setAccessedField(const MetaField *accessedField) { m_accessedField = accessedField; }
-        void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
-        const QString& deprecatedComment() const { return m_deprecatedComment; }
+    const MetaField *accessedField() const { return m_accessedField; }
 
-        bool isVariadics() const { return m_variadics; }
-        void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
-        bool isExplicit() const { return m_explicit; }
-        void setExplicit(bool isExplicit) { m_explicit = isExplicit; }
+    void setAccessedField(const MetaField *accessedField) { m_accessedField = accessedField; }
+    void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
+    const QString& deprecatedComment() const { return m_deprecatedComment; }
 
-        MetaType::ReferenceType functionReferenceType() const{
-            return m_functionReferenceType;
-        }
+    bool isVariadics() const { return m_variadics; }
+    void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
+    bool isExplicit() const { return m_explicit; }
+    void setExplicit(bool isExplicit) { m_explicit = isExplicit; }
 
-        void setFunctionReferenceType(MetaType::ReferenceType functionReferenceType) {
-            m_functionReferenceType = functionReferenceType;
-        }
+    MetaType::ReferenceType functionReferenceType() const{
+        return m_functionReferenceType;
+    }
 
-        MetaFunction* functionTemplate() const{
-            return m_functionTemplate;
-        }
+    void setFunctionReferenceType(MetaType::ReferenceType functionReferenceType) {
+        m_functionReferenceType = functionReferenceType;
+    }
 
-        void setFunctionTemplate(MetaFunction* functionTemplate) {
-            m_functionTemplate = functionTemplate;
-        }
+    MetaFunction* functionTemplate() const{
+        return m_functionTemplate;
+    }
 
-        QList<Parameter> addedParameterTypes() const;
+    void setFunctionTemplate(MetaFunction* functionTemplate) {
+        m_functionTemplate = functionTemplate;
+    }
 
-    private:
-        QString m_name;
-        QString m_original_name;
-        QString m_original_signature;
-        mutable QString m_cached_full_signature;
-        mutable QString m_cached_full_signature_no_name;
-        mutable QString m_cached_minimal_signature;
-        mutable QString m_cached_minimal_template_signature;
-        mutable QString m_cached_modified_name;
+    QList<Parameter> addedParameterTypes() const;
 
-        FunctionType m_function_type;
-        MetaType *m_type;
-        const MetaClass *m_class;
-        const MetaClass *m_implementing_class;
-        const MetaClass *m_declaring_class;
-        const MetaClass *m_interface_class;
-        QPropertySpec *m_property_spec;
-        MetaArgumentList m_arguments;
-        MetaTemplateParameterList m_templateParameters;
-        uint m_constant          : 1;
-        uint m_variadics         : 1;
-        uint m_explicit          : 1;
-        uint m_invalid           : 1;
-        mutable int m_actualMinimumArgumentCount;
-        const MetaField *m_accessedField;
-        QString m_deprecatedComment;
-        MetaType::ReferenceType m_functionReferenceType;
-        MetaFunction* m_functionTemplate;
+    OperatorType operatorType() const{return m_operatorType;}
+
+    void setOperatorType(OperatorType operatorType){ m_operatorType = operatorType; }
+
+private:
+    QString m_name;
+    QString m_original_name;
+    QString m_original_signature;
+    mutable QString m_cached_full_signature;
+    mutable QString m_cached_full_signature_no_name;
+    mutable QString m_cached_minimal_signature;
+    mutable QString m_cached_modified_name;
+
+    FunctionType m_function_type;
+    MetaType *m_type;
+    const MetaClass *m_class;
+    const MetaClass *m_implementing_class;
+    const MetaClass *m_declaring_class;
+    const MetaClass *m_interface_class;
+    QPropertySpec *m_property_spec;
+    MetaArgumentList m_arguments;
+    MetaTemplateParameterList m_templateParameters;
+    OperatorType m_operatorType;
+    uint m_constant          : 1;
+    uint m_variadics         : 1;
+    uint m_explicit          : 1;
+    uint m_template          : 1;
+    uint m_invalid           : 1;
+    mutable int m_actualMinimumArgumentCount;
+    const MetaField *m_accessedField;
+    QString m_deprecatedComment;
+    MetaType::ReferenceType m_functionReferenceType;
+    MetaFunction* m_functionTemplate;
 };
 
 class MetaEnum;
 
 class MetaEnumValue {
-    public:
-        MetaEnumValue()
-                : m_value(), _M_deprecated(false) {
-        }
+public:
+    MetaEnumValue()
+            : m_value(), _M_deprecated(false) {
+    }
 
-        const QVariant& value() const { return m_value; }
-        void setValue(const QVariant& value) { m_value = value; }
+    const QVariant& value() const { return m_value; }
+    void setValue(const QVariant& value) { m_value = value; }
 
-        const QString& stringValue() const { return m_string_value; }
-        void setStringValue(const QString &v) { m_string_value = v; }
+    const QString& stringValue() const { return m_string_value; }
+    void setStringValue(const QString &v) { m_string_value = v; }
 
-        const QString& name() const { return m_name; }
-        void setName(const QString &name) { m_name = name; }
-        QString cppName() const;
+    const QString& name() const { return m_name; }
+    void setName(const QString &name) { m_name = name; }
+    QString cppName() const;
 
-        const MetaEnum * getEnum(){ return m_enum;}
-        void setEnum(const MetaEnum * enm) {m_enum = enm;}
-        bool deprecated() const { return _M_deprecated; }
-        void setDeprecated(bool value) { _M_deprecated = value; }
-        void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
-        const QString& deprecatedComment() const { return m_deprecatedComment; }
+    const MetaEnum * getEnum(){ return m_enum;}
+    void setEnum(const MetaEnum * enm) {m_enum = enm;}
+    bool deprecated() const { return _M_deprecated; }
+    void setDeprecated(bool value) { _M_deprecated = value; }
+    void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
+    const QString& deprecatedComment() const { return m_deprecatedComment; }
 
-    private:
-        const MetaEnum * m_enum;
-        QString m_name;
-        QString m_string_value;
+private:
+    const MetaEnum * m_enum;
+    QString m_name;
+    QString m_string_value;
 
-        QVariant m_value;
-        bool _M_deprecated;
-        QString m_deprecatedComment;
+    QVariant m_value;
+    bool _M_deprecated;
+    QString m_deprecatedComment;
 };
 
 
@@ -972,6 +972,7 @@ class MetaFunctional : public MetaAttributes {
         bool isRethrowExceptions() const;
         bool nullPointersDisabled(int argument_idx = 0) const;
         bool needsCallThrough() const;
+        bool needsReturnScope() const;
 
     private:
         QString m_base_type_name;
@@ -1019,64 +1020,17 @@ class MetaClass : public MetaAttributes {
             VirtualSlots           = 0x1000000     // Only functions that are set as virtual slots in the type system
         };
 
-        MetaClass()
-                : MetaAttributes(),
-                  m_namespace(false),
-                m_qobject(false),
-                m_has_virtuals(false),
-                m_has_nonpublic(false),
-                m_has_virtual_slots(false),
-                m_has_justprivateconstructors(false),
-                m_has_standardconstructor(0),
-                m_has_publicstandardconstructor(0),
-                m_has_explicitstandardconstructor(0),
-                m_has_publiccopyconstructor(0),
-                m_has_explicitcopyconstructor(0),
-                m_has_unimplmentablePureVirtualFunctions(false),
-                m_unimplmentablePureVirtualFunctions(),
-                m_functions_fixed(false),
-                m_has_public_destructor(true),
-                m_has_private_destructor(false),
-                m_has_metaObject(false),
-                m_has_metacall(false),
-                m_has_metacast(false),
-                m_has_private_metaObject(false),
-                m_has_private_metacall(false),
-                m_has_private_metacast(false),
-                m_has_virtual_destructor(false),
-                m_has_hash_function(false),
-                m_needs_hash_workaround(false),
-                m_has_equals_operator(false),
-                m_has_clone_operator(false),
-                m_is_type_alias(false),
-                m_has_Q_GADGET(false),
-                m_has_Q_OBJECT(false),
-                m_has_subClasses(false),
-                m_usingProtectedBaseConstructors(false),
-                m_usingPublicBaseConstructors(false),
-                m_enclosing_class(nullptr),
-                m_base_class(nullptr),
-                m_typeAliasType(nullptr),
-                m_template_base_class(nullptr),
-                m_template_base_class_instantiations(),
-                m_extracted_interface(nullptr),
-                m_extracted_interface_impl(nullptr),
-                m_primary_interface_implementor(nullptr),
-                m_type_entry(nullptr),
-                m_qDebug_stream_function(nullptr){
-        }
-
+        MetaClass();
         virtual ~MetaClass();
 
         MetaClass *extractInterface();
         MetaClass *extractInterfaceImpl();
         MetaClass *extractInterface()const;
         MetaClass *extractInterfaceImpl()const;
-        void fixFunctions(std::function<MetaArgument*(TypeEntry *)> argumentCreator);
         void fixUnimplmentablePureVirtualFunctions();
 
-        const MetaFunctionList& functions() const { return m_functions; }
-        const MetaFunctionList& invalidFunctions() const { return m_invalidfunctions; }
+        const MetaFunctionList& functions() const;
+        const MetaFunctionList& invalidFunctions() const;
         void setFunctions(const MetaFunctionList &functions);
         void addFunction(MetaFunction *function);
         bool hasFunction(const MetaFunction *f) const;
@@ -1219,8 +1173,8 @@ class MetaClass : public MetaAttributes {
         bool hasProtectedFieldAccessors() const;
 
         // only valid during metajavabuilder's run
-        const QList<QPair<QString,bool>>& baseClassNames() const { return m_base_class_names; }
-        void setBaseClassNames(const QList<QPair<QString,bool>> &names) { m_base_class_names = names; }
+        const QList<QPair<TypeInfo,bool>>& baseClassTypeInfo() const { return m_base_class_typeinfo; }
+        void setBaseClassTypeInfo(const QList<QPair<TypeInfo,bool>> &names) { m_base_class_typeinfo = names; }
 
         MetaClass *primaryInterfaceImplementor() const { return m_primary_interface_implementor; }
         void setPrimaryInterfaceImplementor(MetaClass *cl) { m_primary_interface_implementor = cl; }
@@ -1235,8 +1189,8 @@ class MetaClass : public MetaAttributes {
         void setNeedsHashWorkaround(bool on) { m_needs_hash_workaround = on; }
         bool needsHashWorkaround() const { return m_needs_hash_workaround; }
 
-        void setToStringCapability(FunctionModelItem fun) { m_qDebug_stream_function = fun; }
-        const FunctionModelItem& toStringCapability() const { return m_qDebug_stream_function; }
+        void setToStringCapability(const MetaFunction* fun) { m_qDebug_stream_function = fun; }
+        const MetaFunction* toStringCapability() const { return m_qDebug_stream_function; }
 
         virtual bool hasDefaultToStringFunction() const;
 
@@ -1318,10 +1272,18 @@ class MetaClass : public MetaAttributes {
         }
         const QMap<QString,MetaFunctional*>& functionalByUsing(){ return m_functionalByUsing; }
 
+        const QMap<QString,MetaFunction*>& functionBySignature(){ return m_functionsBySignature; }
+
         void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
         const QString& deprecatedComment() const { return m_deprecatedComment; }
+
+        void setQHashScope(const QString &qHashScope) { m_qHashScope = qHashScope; }
+        const QString& qHashScope() const { return m_qHashScope; }
+
         void setUsingProtectedBaseConstructors(bool usingBaseConstructors){m_usingProtectedBaseConstructors = usingBaseConstructors;}
         void setUsingPublicBaseConstructors(bool usingBaseConstructors){m_usingPublicBaseConstructors = usingBaseConstructors;}
+        bool usingProtectedBaseConstructors() const {return m_usingProtectedBaseConstructors;}
+        bool usingPublicBaseConstructors() const {return m_usingPublicBaseConstructors;}
         bool hasPaintMethod() const;
         bool hasQmlListProperty() const;
 private:
@@ -1342,7 +1304,6 @@ private:
     mutable int m_has_publicassignment : 2;
     uint m_has_unimplmentablePureVirtualFunctions : 1;
     QSet<QString> m_unimplmentablePureVirtualFunctions;
-    uint m_functions_fixed : 1;
     uint m_has_public_destructor : 1;
     uint m_has_private_destructor : 1;
     uint m_has_metaObject : 1;
@@ -1370,6 +1331,7 @@ private:
         const MetaClass *m_template_base_class;
         QList<const MetaType *> m_template_base_class_instantiations;
         MetaFunctionList m_functions;
+        QMap<QString,MetaFunction*> m_functionsBySignature;
         MetaFunctionList m_invalidfunctions;
         MetaFieldList m_fields;
         MetaEnumList m_enums;
@@ -1392,11 +1354,12 @@ private:
         MetaFunctionList m_beginFunctions;
         MetaFunctionList m_endFunctions;
 
-        QList<QPair<QString,bool>> m_base_class_names;
+        QList<QPair<TypeInfo,bool>> m_base_class_typeinfo;
         QList<TypeEntry *> m_template_args;
         ComplexTypeEntry *m_type_entry;
-        FunctionModelItem m_qDebug_stream_function;
+        const MetaFunction* m_qDebug_stream_function;
         QString m_deprecatedComment;
+        QString m_qHashScope;
 };
 
 class QPropertySpec {

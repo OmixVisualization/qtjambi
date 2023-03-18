@@ -186,11 +186,29 @@ public class OSInfo
     		crossOSArchName = null;    		
     	}else {
 	    	switch(qmakeXSpec) {
+	    	case "linux-arm-gnueabi-g++":
+	    		crossOS = OS.Linux;
+	    		crossOSArchName = K_LINUX_ARM32;
+	    		break;
+	    	case "linux-aarch64-gnu-g++":
+	    		crossOS = OS.Linux;
+	    		crossOSArchName = K_LINUX_ARM64;
+	    		break;
+	    	case "linux-g++-32":
+	    		crossOS = OS.Linux;
+	    		crossOSArchName = K_LINUX_X86;
+	    		break;
+	    	case "win32-arm64-msvc":
+	    		crossOS = OS.Windows;
+	    		crossOSArchName = K_WIN_ARM64;
+	    		break;
 	    	case "android-clang":
 	    		crossOS = OS.Android;
 	    		crossOSArchName = "android";
 	    		break;
 	    	case "macx-ios-clang":
+	    	case "macx-tvos-clang":
+	    	case "macx-watchos-clang":
 	    		crossOS = OS.IOS;
 	    		crossOSArchName = "ios";
 	    		break;

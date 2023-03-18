@@ -266,17 +266,6 @@ public class TestFuture extends ApplicationInitializer {
     	}
     	
     	{
-    		QFutureInterface<String> promise = new QFutureInterface<>();
-    		promise.reportStarted();
-    		QFuture<Integer> future = (QFuture<Integer>)(QFuture)promise.future();
-        	Assert.assertTrue(future.isStarted());
-        	future = FutureHandler.forwardInt(future);
-        	promise.reportResult("5");
-        	promise.reportFinished();
-        	Assert.assertEquals(Integer.valueOf(5), future.result());
-    	}
-    	
-    	{
     		QFutureInterface<Integer> promise = new QFutureInterface<>();
     		promise.reportStarted();
     		QFuture<QObject> future = (QFuture<QObject>)(QFuture)promise.future();
@@ -288,6 +277,18 @@ public class TestFuture extends ApplicationInitializer {
         	promise.reportFinished();
         	Assert.assertEquals(3, future.resultCount());
         	Assert.assertEquals(null, future.result());
+    	}
+    	
+    	{
+    		QFutureInterface<String> promise = new QFutureInterface<>();
+    		promise.reportStarted();
+    		QFuture<Integer> future = (QFuture<Integer>)(QFuture)promise.future();
+        	Assert.assertTrue(future.isStarted());
+        	future = FutureHandler.forwardInt(future);
+        	promise.reportResult("5");
+        	promise.reportFinished();
+        	Assert.assertEquals(1, future.resultCount());
+        	Assert.assertEquals(Integer.valueOf(5), future.result());
     	}
     }
     

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.location"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtLocation"
     module: "qtjambi.location"
     description: "Displays map, navigation, and place content in a QML application."
@@ -73,7 +73,6 @@ TypeSystem{
     
     EnumType{
         name: "QLocation::Visibility"
-        flags: "QLocation::VisibilityScope"
     }
     
     EnumType{
@@ -98,27 +97,22 @@ TypeSystem{
     
     EnumType{
         name: "QGeoServiceProvider::GeocodingFeature"
-        flags: "QGeoServiceProvider::GeocodingFeatures"
     }
     
     EnumType{
         name: "QGeoServiceProvider::MappingFeature"
-        flags: "QGeoServiceProvider::MappingFeatures"
     }
     
     EnumType{
         name: "QGeoServiceProvider::NavigationFeature"
-        flags: "QGeoServiceProvider::NavigationFeatures"
     }
     
     EnumType{
         name: "QGeoServiceProvider::PlacesFeature"
-        flags: "QGeoServiceProvider::PlacesFeatures"
     }
     
     EnumType{
         name: "QGeoServiceProvider::RoutingFeature"
-        flags: "QGeoServiceProvider::RoutingFeatures"
     }
     
     ObjectType{
@@ -220,13 +214,14 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+            since: 6
         }
         ModifyFunction{
             signature: "createGeocodingManagerEngine(const QMap<QString,QVariant> &,QGeoServiceProvider::Error *,QString *) const"
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.location.QGeoServiceProviderFactory$Result<QGeoCodingManagerEngine>"
+                    modifiedType: "io.qt.location.QGeoServiceProviderFactory$@NonNull Result<@Nullable QGeoCodingManagerEngine>"
                 }
                 DefineOwnership{
                     codeClass: CodeClass.Native
@@ -298,7 +293,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.location.QGeoServiceProviderFactory.Result<QGeoRoutingManagerEngine>"
+                    modifiedType: "io.qt.location.QGeoServiceProviderFactory$@NonNull Result<@Nullable QGeoRoutingManagerEngine>"
                 }
                 DefineOwnership{
                     codeClass: CodeClass.Native
@@ -370,7 +365,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.location.QGeoServiceProviderFactory.Result<QPlaceManagerEngine>"
+                    modifiedType: "io.qt.location.QGeoServiceProviderFactory$@NonNull Result<@Nullable QPlaceManagerEngine>"
                 }
                 DefineOwnership{
                     codeClass: CodeClass.Native
@@ -479,35 +474,18 @@ TypeSystem{
     
     ValueType{
         name: "QGeoRoute"
-        ModifyFunction{
-            signature: "operator=(const QGeoRoute &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QGeoRouteLeg"
-        ModifyFunction{
-            signature: "operator=(const QGeoRouteLeg &)"
-            remove: RemoveFlag.All
-            since: [5, 15]
-        }
     }
     
     ValueType{
         name: "QPlace"
-        ModifyFunction{
-            signature: "operator=(const QPlace &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceIcon"
-        ModifyFunction{
-            signature: "operator=(const QPlaceIcon &)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setManager(QPlaceManager *)"
             ModifyArgument{
@@ -526,42 +504,22 @@ TypeSystem{
     
     ValueType{
         name: "QGeoManeuver"
-        ModifyFunction{
-            signature: "operator=(const QGeoManeuver &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceAttribute"
-        ModifyFunction{
-            signature: "operator=(const QPlaceAttribute &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceCategory"
-        ModifyFunction{
-            signature: "operator=(const QPlaceCategory &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceContactDetail"
-        ModifyFunction{
-            signature: "operator=(const QPlaceContactDetail &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceMatchRequest"
-        ModifyFunction{
-            signature: "operator=(const QPlaceMatchRequest &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -570,10 +528,6 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceSearchResult"
-        ModifyFunction{
-            signature: "operator=(const QPlaceSearchResult &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -591,10 +545,6 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceContent"
-        ModifyFunction{
-            signature: "operator=(const QPlaceContent &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -611,10 +561,6 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceContentRequest"
-        ModifyFunction{
-            signature: "operator=(const QPlaceContentRequest &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -623,10 +569,6 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceRatings"
-        ModifyFunction{
-            signature: "operator=(const QPlaceRatings &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -635,72 +577,46 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceSearchRequest"
-        ModifyFunction{
-            signature: "operator=(const QPlaceSearchRequest &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceSupplier"
-        ModifyFunction{
-            signature: "operator=(const QPlaceSupplier &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPlaceUser"
-        ModifyFunction{
-            signature: "operator=(const QPlaceUser &)"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::FeatureType"
-        flags: "QGeoRouteRequest::FeatureTypes"
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::FeatureWeight"
-        flags: "QGeoRouteRequest::FeatureWeights"
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::ManeuverDetail"
-        flags: "QGeoRouteRequest::ManeuverDetails"
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::RouteOptimization"
-        flags: "QGeoRouteRequest::RouteOptimizations"
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::SegmentDetail"
-        flags: "QGeoRouteRequest::SegmentDetails"
-    }
-    
-    EnumType{
-        name: "QGeoRouteRequest::TravelMode"
-        flags: "QGeoRouteRequest::TravelModes"
     }
     
     ValueType{
         name: "QGeoRouteRequest"
-        ModifyFunction{
-            signature: "operator=(const QGeoRouteRequest &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "FeatureType"
+        }
+
+        EnumType{
+            name: "FeatureWeight"
+        }
+
+        EnumType{
+            name: "ManeuverDetail"
+        }
+
+        EnumType{
+            name: "RouteOptimization"
+        }
+
+        EnumType{
+            name: "SegmentDetail"
+        }
+
+        EnumType{
+            name: "TravelMode"
         }
     }
     
     ValueType{
         name: "QGeoRouteSegment"
-        ModifyFunction{
-            signature: "operator=(const QGeoRouteSegment &)"
-            remove: RemoveFlag.All
-        }
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::d', unmatched return type '*QExplicitlySharedDataPointer*'"}

@@ -45,8 +45,8 @@
 #include "typesystem/typedatabase.h"
 
 MetaInfoGenerator::MetaInfoGenerator(PriGenerator *pri):
-        JavaGenerator(pri->database()),
-        priGenerator(pri)
+        AbstractGenerator(),
+        priGenerator(pri), m_database(pri->database())
 
 {
     setFilenameStub("metainfo");
@@ -251,17 +251,17 @@ void MetaInfoGenerator::writeCppFile() {
             QTextStream& stream  = *buffer;
             buffers.insert(cls->targetTypeSystem(), buffer);
 
-            QSet<QString> dedupe = QSet<QString>();
-            writeInclude(stream, Include(Include::IncludePath, "QtJambi/MetaInfo"), dedupe);
+            QSet<QString> includes;
+            writeInclude(stream, Include(Include::IncludePath, "QtJambi/MetaInfo"), includes);
             //QString typeSystemName = cls->targetTypeSystem();
             TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(m_database->findType(cls->targetTypeSystem()));
             if(typeSystemEntry){
                 if(typeSystemEntry->include().type!=Include::TargetLangImport){
-                    writeInclude(stream, typeSystemEntry->include(), dedupe);
+                    writeInclude(stream, typeSystemEntry->include(), includes);
                 }
                 for(const Include& incl : typeSystemEntry->extraIncludes()){
                     if(incl.type!=Include::TargetLangImport){
-                        writeInclude(stream, incl, dedupe);
+                        writeInclude(stream, incl, includes);
                     }
                 }
             }
@@ -289,6 +289,7 @@ void MetaInfoGenerator::writeCppFile() {
                 if(functional->enclosingClass()){
                     if(!(!functional->enclosingClass()->isFake()
                          && functional->enclosingClass()->typeEntry()
+                         && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
                          && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
                         continue;
                     }
@@ -338,6 +339,7 @@ void MetaInfoGenerator::writeCppFile() {
                         if(functional->enclosingClass()){
                             if(!(!functional->enclosingClass()->isFake()
                                  && functional->enclosingClass()->typeEntry()
+                                 && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
                                  && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
                                 continue;
                             }
@@ -493,20 +495,33 @@ void MetaInfoGenerator::writeLibraryInitializers() {
             Indentor INDENT;
             s << INDENT << "package " << package << ";" << Qt::endl << Qt::endl;
 
-            QSet<QString> dedupe;
+            QSet<QString> imports;
+            imports.insert("io.qt.*");
+            s << "import io.qt.*;" << Qt::endl;
+            imports.insert("static io.qt.QtUtilities.*");
+            s << "import static io.qt.QtUtilities.*;" << Qt::endl;
+            if(package=="io.qt.internal"){
+                imports.insert("java.util.*");
+                s << "import java.util.*;" << Qt::endl;
+                imports.insert("static java.util.Arrays.*");
+                s << "import static java.util.Arrays.*;" << Qt::endl;
+                imports.insert("static java.util.Collections.*");
+                s << "import static java.util.Collections.*;" << Qt::endl;
+            }
+
             if(typeSystemEntry){
                 allTypeSystems[typeSystemEntry->module()].insert(typeSystemEntry);
                 //allTypeSystems[typeSystemEntry->module().isEmpty() ? typeSystemEntry->qtLibrary() : typeSystemEntry->module()].insert(typeSystemEntry);
                 if(typeSystemEntry->include().type==Include::TargetLangImport){
-                    writeInclude(s, typeSystemEntry->include(), dedupe);
+                    writeInclude(s, typeSystemEntry->include(), imports);
                 }
                 for(const Include& incl : typeSystemEntry->extraIncludes()){
                     if(incl.type==Include::TargetLangImport){
-                        writeInclude(s, incl, dedupe);
+                        writeInclude(s, incl, imports);
                     }
                 }
             }
-            if(!dedupe.isEmpty()){
+            if(!imports.isEmpty()){
                 s << Qt::endl;
             }
             s << INDENT << "final class QtJambi_LibraryUtilities {" << Qt::endl << Qt::endl;
@@ -516,7 +531,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                   << INDENT << "final static int qtMinorVersion = " << m_qtVersionMinor << ";" << Qt::endl << Qt::endl
                   << INDENT << "final static int qtJambiPatch = " << m_qtjambiVersionPatch << ";" << Qt::endl;
                 if(typeSystemEntry){
-                    s << Qt::endl << INDENT << "final static io.qt.InternalAccess internal;" << Qt::endl
+                    s << Qt::endl << INDENT << "final static InternalAccess internal;" << Qt::endl
                       << Qt::endl << INDENT << "static{" << Qt::endl;
                     {
                         INDENTATION(INDENT)
@@ -531,7 +546,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             if(!typeSystemID.isEmpty() && !typeSystemEntry->qtLibrary().isEmpty() && (!nativeLibs.contains(typeSystemEntry) || !nativeLibs[typeSystemEntry].contains(typeSystemEntry->qtLibrary())))
                                 nativeLibs[typeSystemEntry] << typeSystemEntry->qtLibrary();
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
-                            s << INDENT << "io.qt.QtUtilities.initializePackage(\"io.qt.internal\");" << Qt::endl;
+                            s << INDENT << "initializePackage(\"io.qt.internal\");" << Qt::endl;
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Position1, INDENT);
                             if(typeSystemID!="qtjambi")
                                 requiredTypeSystems[typeSystemEntry] << "qtjambi";
@@ -720,11 +735,11 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             expandedQtLibraries.take("QtQmlIntegration");
                             for(const QString& key : expandedQtLibraries.keys()){
                                 if(key.startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << key.mid(2);
+                                    s << INDENT << "loadQtLibrary(\"" << key.mid(2);
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << key;
+                                    s << INDENT << "loadUtilityLibrary(\"" << key;
                                 }
-                                s << "\", io.qt.QtUtilities.LibraryRequirementMode.ProvideOnly";
+                                s << "\", LibraryRequirementMode.ProvideOnly";
                                 for(const QString& pl : expandedQtLibraries[key]){
                                     if(!pl.isEmpty()){
                                         s << ", \"" << pl << "\"";
@@ -741,13 +756,13 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 switch(dep.mode){
                                 case Dependency::Mandatory:
                                     if(dep.entry.startsWith("Qt")){
-                                        append = ", io.qt.QtUtilities.LibraryRequirementMode.Mandatory";
+                                        append = ", LibraryRequirementMode.Mandatory";
                                     }else{
-                                        append = ", io.qt.QtUtilities.LibraryRequirementMode.Optional";
+                                        append = ", LibraryRequirementMode.Optional";
                                     }
                                     break;
-                                case Dependency::Optional: append = ", io.qt.QtUtilities.LibraryRequirementMode.Optional"; break;
-                                case Dependency::ProvideOnly: append = ", io.qt.QtUtilities.LibraryRequirementMode.ProvideOnly"; break;
+                                case Dependency::Optional: append = ", LibraryRequirementMode.Optional"; break;
+                                case Dependency::ProvideOnly: append = ", LibraryRequirementMode.ProvideOnly"; break;
                                 }
                                 bool isPlatformDependent = false;
                                 for(const QString& pl : dep.platforms){
@@ -760,9 +775,9 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                     loaded.insert(dep.entry);
                                 }
                                 if(dep.entry.startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << dep.entry.mid(2) << "\"" << append << ");" << Qt::endl;
+                                    s << INDENT << "loadQtLibrary(\"" << dep.entry.mid(2) << "\"" << append << ");" << Qt::endl;
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << dep.entry << "\"" << append << ");" << Qt::endl;
+                                    s << INDENT << "loadUtilityLibrary(\"" << dep.entry << "\"" << append << ");" << Qt::endl;
                                 }
                             }
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Position3, INDENT);
@@ -770,22 +785,22 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                     && typeSystemEntry->qtLibrary()!="QtCore"
                                     && !m_staticLibraries.contains(typeSystemEntry->qtLibrary())){
                                 if(typeSystemEntry->qtLibrary().startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\", io.qt.QtUtilities.LibraryRequirementMode.Mandatory);" << Qt::endl;
+                                    s << INDENT << "loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\", LibraryRequirementMode.Mandatory);" << Qt::endl;
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << typeSystemEntry->qtLibrary() << "\", io.qt.QtUtilities.LibraryRequirementMode.Mandatory);" << Qt::endl;
+                                    s << INDENT << "loadUtilityLibrary(\"" << typeSystemEntry->qtLibrary() << "\", LibraryRequirementMode.Mandatory);" << Qt::endl;
                                 }
                             }
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Position4, INDENT);
                             if(typeSystemEntry->qtLibrary().startsWith("Qt")){
                                 QString libName = typeSystemEntry->qtLibrary();
-                                s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << Qt::endl;
+                                s << INDENT << "loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << Qt::endl;
                             }else if(!typeSystemEntry->targetName().isEmpty()){
                                 if(typeSystemEntry->targetName().startsWith("QtJambi"))
-                                    s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << typeSystemEntry->targetName().mid(7) << "\");" << Qt::endl;
+                                    s << INDENT << "loadQtJambiLibrary(\"" << typeSystemEntry->targetName().mid(7) << "\");" << Qt::endl;
                                 else
-                                    s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << typeSystemEntry->targetName() << "\");" << Qt::endl;
+                                    s << INDENT << "loadJambiLibrary(\"" << typeSystemEntry->targetName() << "\");" << Qt::endl;
                             }else{
-                                s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
+                                s << INDENT << "loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
                             }
                             generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position5, INDENT);
                         }
@@ -813,12 +828,9 @@ void MetaInfoGenerator::writeLibraryInitializers() {
 
                         if(package=="io.qt.internal"){
                             s << Qt::endl
-                              << INDENT << "private final static java.util.Map<String,java.util.List<Dependency>> dependencies = new java.util.TreeMap<>();" << Qt::endl << Qt::endl
-                              << INDENT << "final static java.util.Map<String,java.util.List<Dependency>> getDependencies() {" << Qt::endl
-                              << INDENT << "    return java.util.Collections.unmodifiableMap(dependencies);" << Qt::endl
-                              << INDENT << "}" << Qt::endl << Qt::endl;
+                              << INDENT << "final static Map<String,List<Dependency>> dependencies;" << Qt::endl << Qt::endl;
                         }else{
-                            s << INDENT << "final static io.qt.InternalAccess internal;" << Qt::endl << Qt::endl;
+                            s << INDENT << "final static InternalAccess internal;" << Qt::endl << Qt::endl;
                         }
 
                         generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
@@ -826,13 +838,15 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         {
                             INDENTATION(INDENT)
                             if(package=="io.qt.internal"){
-                                for(TypeSystemTypeEntry* ts : m_database->typeSystemsByQtLibrary().values()){
+                                s << INDENT << "Map<String,List<Dependency>> _dependencies = new TreeMap<>();" << Qt::endl;
+                                const QList<TypeSystemTypeEntry*> typeSystems = m_database->typeSystems();
+                                for(TypeSystemTypeEntry* ts : typeSystems){
                                     if(ts->codeGeneration()!=TypeEntry::GenerateNothing && !m_staticLibraries.contains(ts->qtLibrary())){
                                         QString dependencyString;
                                         QSet<QString> deps{"QtCore"};
                                         {
                                             QTextStream s(&dependencyString);
-                                            s << INDENT << "dependencies.put(\"" << ts->qtLibrary() << "\", java.util.Arrays.asList(";
+                                            s << INDENT << "_dependencies.put(\"" << ts->qtLibrary() << "\", unmodifiableList(asList(";
                                             bool isFirst = true;
                                             for(const TypeSystemTypeEntry* entry : ts->requiredTypeSystems()){
                                                 if(entry->qtLibrary().isEmpty() || deps.contains(entry->qtLibrary()))
@@ -860,9 +874,9 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 }
                                                 QString append;
                                                 switch(dep.mode){
-                                                case Dependency::Mandatory: append = ", io.qt.QtUtilities.LibraryRequirementMode.Mandatory"; break;
-                                                case Dependency::Optional: append = ", io.qt.QtUtilities.LibraryRequirementMode.Optional"; break;
-                                                case Dependency::ProvideOnly: append = ", io.qt.QtUtilities.LibraryRequirementMode.ProvideOnly"; break;
+                                                case Dependency::Mandatory: append = ", LibraryRequirementMode.Mandatory"; break;
+                                                case Dependency::Optional: append = ", LibraryRequirementMode.Optional"; break;
+                                                case Dependency::ProvideOnly: append = ", LibraryRequirementMode.ProvideOnly"; break;
                                                 }
                                                 for(const QString& pl : dep.platforms){
                                                     if(!pl.isEmpty())
@@ -870,13 +884,13 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 }
                                                 s << "new Dependency(\"" << dep.entry << "\"" << append << ")";
                                             }
-                                            s << "));" << Qt::endl;
+                                            s << ")));" << Qt::endl;
                                         }
                                         if(deps.size()>1)
                                             s << dependencyString;
                                     }
                                 }
-                                s << Qt::endl;
+                                s << Qt::endl << INDENT << "dependencies = unmodifiableMap(_dependencies);" << Qt::endl;
                             }
                             generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position1, INDENT);
                             s << INDENT << "try {" << Qt::endl;
@@ -884,7 +898,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 INDENTATION(INDENT)
                                 generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position2, INDENT);
                                 if(package!="io.qt.internal")
-                                    s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
+                                    s << INDENT << "initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
                                 generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position3, INDENT);
                             }
                             s << INDENT << "} catch(Error t) {" << Qt::endl;
@@ -907,18 +921,18 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         s << INDENT << "}" << Qt::endl;
                         generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::End, INDENT);
                     }else if(package!="io.qt.internal"){
-                        s << INDENT << "static final io.qt.InternalAccess internal;" << Qt::endl << Qt::endl
+                        s << INDENT << "static final InternalAccess internal;" << Qt::endl << Qt::endl
                           << INDENT << "static{" << Qt::endl
-                          << INDENT << "    io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl
+                          << INDENT << "    initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl
                           << INDENT << "    internal = internalAccess();" << Qt::endl
                           << INDENT << "}" << Qt::endl;
                     }
                 }
                 if(package!="io.qt.internal"){
-                    s << INDENT << "private static native io.qt.InternalAccess internalAccess();" << Qt::endl << Qt::endl;
+                    s << INDENT << "private static native InternalAccess internalAccess();" << Qt::endl << Qt::endl;
                 }
                 s << INDENT << "static void initialize() { };" << Qt::endl << Qt::endl
-                  << INDENT << "private QtJambi_LibraryUtilities() throws java.lang.InstantiationError { throw new java.lang.InstantiationError(\"Cannot instantiate QtJambi_LibraryUtilities.\"); }" << Qt::endl;
+                  << INDENT << "private QtJambi_LibraryUtilities() throws InstantiationError { throw new InstantiationError(\"Cannot instantiate QtJambi_LibraryUtilities.\"); }" << Qt::endl;
             }
             s << INDENT << "}" << Qt::endl << Qt::endl;
 
@@ -983,7 +997,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position3, INDENT);
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::End, INDENT);
                         if(!typeSystem->isNoExports())
-                            for(const QString& e : exports[typeSystem])
+                            for(const QString& e : qAsConst(exports[typeSystem]))
                                 stream << "    exports " << e << ";" << Qt::endl;
                     }
                 }
@@ -1025,9 +1039,11 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 else
                     settings.setValue("qtjambi.jar.excludes", "");
 
-                m_database->typeSystemsByQtLibrary();
-                for(TypeSystemTypeEntry* ts : m_database->typeSystemsByQtLibrary().values()){
-                    if(ts && ts->codeGeneration()!=TypeEntry::GenerateNothing){
+                const QList<TypeSystemTypeEntry*> typeSystems = m_database->typeSystems();
+                for(TypeSystemTypeEntry* ts : typeSystems){
+                    if(ts
+                            && ts->codeGeneration()!=TypeEntry::GenerateForSubclass
+                            && ts->codeGeneration()!=TypeEntry::GenerateNothing){
                         QString qtJambiLibrary;
                         if(ts->qtLibrary().isEmpty()){
                             qtJambiLibrary = ts->targetName();

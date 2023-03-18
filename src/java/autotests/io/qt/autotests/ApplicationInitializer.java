@@ -69,6 +69,14 @@ import io.qt.widgets.QApplication;
 
 public abstract class ApplicationInitializer extends UnitTestInitializer{
 	
+	@org.junit.Rule public final org.junit.rules.TestRule testRule = new org.junit.rules.TestRule(){
+		@Override
+		public org.junit.runners.model.Statement apply(org.junit.runners.model.Statement base, org.junit.runner.Description description) {
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "Start test "+description.getClassName()+"."+description.getMethodName());
+			return base;
+		}
+	};
+	
 	protected static final List<WeakReference<QtObjectInterface>> instances = Collections.synchronizedList(new ArrayList<>());
 	
     @BeforeClass
@@ -87,7 +95,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     private static void testInitialize(int mode) throws Exception {
         try {
 			if(QCoreApplication.instance()==null) {
-				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testInitialize: begin");
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: BEGIN");
 				QResource.addClassPath(".");
 				QCoreApplication.setApplicationName("QtJambiUnitTest");
 				switch(mode){
@@ -102,7 +110,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					break;
 				}
 		        QThread.currentThread().setObjectName("main");
-			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testInitialize: done");
+			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: DONE");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -113,6 +121,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     @AfterClass
     public static void testDispose() throws Exception {
     	try {
+	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose: BEGIN");
     		Object currentThread = QThread.currentThread();
     		while(!instances.isEmpty()) {
     			WeakReference<QtObjectInterface> weak = instances.remove(0);
@@ -125,7 +134,6 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     				}
     			}
     		}
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: BEGIN");
 	        runGC();
 	
 	        // We are attempting to reach a point here where memory should be reclaimed
@@ -228,7 +236,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        TestUtility.flushErr();  // fflush(stderr)
 	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: end objectCount="+objectCount);
     	}finally {
-            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: DONE");
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose: DONE");
     	}
     }
     
@@ -247,58 +255,23 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     	String classPath;
     	String modulePath;
     	String executable = "";
-    	String platform;
     	String osName = System.getProperty("os.name").toLowerCase();
     	if(osName.startsWith("windows")) {
     		if(isDebug)
     			executable += "d";
     		executable += ".exe";
-    		platform = "windows";
-    		switch(System.getProperty("os.arch").toLowerCase()) {
-        	case "arm":
-        	case "arm32":
-        		platform += "-arm32"; break;
-        	case "arm64":
-        	case "aarch64":
-        		platform += "-arm64"; break;
-        	case "x86_64":
-        	case "x64":
-        	case "amd64":
-        		platform += "-x64"; break;
-    		default:
-        		platform += "-x86"; break;
-    		}
     	}else if(osName.startsWith("mac")) {
     		if(isDebug)
     			executable += "_debug";
     		executable += ".app";
-    		platform = "macos";
     	}else if(osName.startsWith("android")) {
     		Assume.assumeFalse("Cannot run on android", true);
     		return;
     	}else {
     		if(isDebug)
     			executable += "_debug";
-    		platform = "linux";
-    		switch(System.getProperty("os.arch").toLowerCase()) {
-        	case "arm":
-        	case "arm32":
-        		platform += "-arm32"; break;
-        	case "arm64":
-        	case "aarch64":
-        		platform += "-arm64"; break;
-        	case "x86_64":
-        	case "x64":
-        	case "amd64":
-        		platform += "-x64"; break;
-    		default:
-        		platform += "-x86"; break;
-    		}
     	}
     	String qtBinariesPath = TestUtility.qtLibraryPath();
-    	if(isDebug) {
-    		platform += "-debug";
-    	}
     	File utilitiesDir = new File(new File(testsDir.getParentFile(), "qtjambi"), "bin");
     	String macosPrefix = "";
     	if(osName.startsWith("mac")) {

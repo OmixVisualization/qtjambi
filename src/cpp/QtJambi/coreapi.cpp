@@ -531,14 +531,6 @@ void CoreAPI::registerDependentInterface(JNIEnv *env, jobject dependentObject, j
     }
 }
 
-void CoreAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID nativeId){
-    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaInterface(env, dependentObject);
-    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(nativeId);
-    if(_dependentLink && _ownerLink){
-        _ownerLink->registerDependentObject(_dependentLink);
-    }
-}
-
 void CoreAPI::registerDependentObject(JNIEnv *env, jobject dependentObject, jobject owner){
     QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaObject(env, dependentObject);
     QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::findLinkForJavaInterface(env, owner);
@@ -658,12 +650,12 @@ jobject CoreAPI::newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID construct
                 }else{
                     if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(constructor.enclosingMetaObject())){
                         if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, dynamicMetaObject->javaClass())){
-                            return QtJambiAPI::convertNativeToJavaObject(env, obj, dynamicMetaObject->javaClass(), false, false);
+                            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, obj, dynamicMetaObject->javaClass());
                         }else{
                             return reinterpret_cast<jobject>(obj);
                         }
                     }else if(const std::type_info* typeId = getTypeByQtName(constructor.enclosingMetaObject()->className())){
-                        return QtJambiAPI::convertNativeToJavaObject(env, obj, *typeId, false, false);
+                        return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, obj, *typeId);
                     }
                 }
             }
@@ -686,7 +678,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                     }
                     if(!targetTypePointer){
                         for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeid(QObject))){
-                            if(handler->m_targetTypeId==*targetTypeId){
+                            if(unique_id(handler->m_targetTypeId)==unique_id(*targetTypeId)){
                                 qintptr offset(0);
                                 if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
                                     targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
@@ -714,7 +706,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                                 if(isInterface(*sourceTypeId)){
                                     const std::type_info& qobjectId = typeid(QObject);
                                     for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(*sourceTypeId)){
-                                        if(handler->m_targetTypeId==qobjectId){
+                                        if(unique_id(handler->m_targetTypeId)==unique_id(qobjectId)){
                                             qintptr offset(0);
                                             if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
                                                 targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
@@ -760,7 +752,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                         }else return obj;
                     }
                 }
-                result = QtJambiAPI::convertNativeToJavaObject(env, targetTypePointer, *targetTypeId, false, false);
+                result = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, targetTypePointer, *targetTypeId);
                 if(QSharedPointer<QtJambiLink> newlink = QtJambiLink::findLinkForJavaObject(env, result)){
                     objectLink->registerDependentObject(newlink);
                     if(!newlink->isQObject()){
@@ -792,7 +784,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                             }else return obj;
                         }
                     }
-                    result = QtJambiAPI::convertNativeToJavaObject(env, interfacePointer, targetType, false, false);
+                    result = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, interfacePointer, targetType);
                     if(QSharedPointer<QtJambiLink> newlink = QtJambiLink::findLinkForJavaObject(env, result)){
                         objectLink->registerDependentObject(newlink);
                         if(!newlink->isQObject()){

@@ -35,8 +35,8 @@ class QChart___{
      * <li><code>series = null</code></li>
      * </ul>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<io.qt.charts.QAbstractAxis> axes(io.qt.core.Qt.Orientation... orientation) {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QList<io.qt.charts.@Nullable QAbstractAxis> axes(io.qt.core.Qt.@NonNull Orientation @NonNull... orientation) {
         return axes(orientation==null || orientation.length==0 ? new io.qt.core.Qt.Orientations(3) : new io.qt.core.Qt.Orientations(orientation), (io.qt.charts.QAbstractSeries)null);
     }
 }// class
@@ -48,8 +48,8 @@ class QPolarChart___{
      * <li><code>series = null</code></li>
      * </ul>
      */
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<io.qt.charts.QAbstractAxis> axes(PolarOrientation... orientation) {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QList<io.qt.charts.@Nullable QAbstractAxis> axes(@NonNull PolarOrientation @NonNull... orientation) {
         return axes(orientation==null || orientation.length==0 ? new PolarOrientations(3) : new PolarOrientations(orientation), (io.qt.charts.QAbstractSeries)null);
     }
 }// class

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.webengine.quick"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWebEngineQuick"
     module: "qtjambi.webenginequick"
     description: "Classes and functions for embedding web content in applications using the Chromium browser project."
@@ -102,7 +102,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "? extends io.qt.webengine.core.QWebEngineDownloadRequest"
+                    modifiedType: "? extends io.qt.webengine.core.@Nullable QWebEngineDownloadRequest"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -122,7 +122,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "? extends io.qt.webengine.core.QWebEngineDownloadRequest"
+                    modifiedType: "? extends io.qt.webengine.core.@Nullable QWebEngineDownloadRequest"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -156,5 +156,4 @@ TypeSystem{
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQuickWebEngineDownloadItem*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQuickWebEngineDownloadRequest*'"}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QXml*."}
 }

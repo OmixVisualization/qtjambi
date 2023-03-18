@@ -31,15 +31,15 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.quick"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQuick"
     module: "qtjambi.quick"
     description: "A declarative framework for building highly dynamic applications with custom user interfaces."
 
     InjectCode{
         position: Position.Position4
-        Text{content: "if(io.qt.QtUtilities.isAvailableQtLibrary(\"QmlWorkerScript\"))\n"+
-                      "    io.qt.QtUtilities.loadQtLibrary(\"QmlWorkerScript\");"}
+        Text{content: "if(QtUtilities.isAvailableQtLibrary(\"QmlWorkerScript\"))\n"+
+                      "    QtUtilities.loadQtLibrary(\"QmlWorkerScript\");"}
     }
     
     InjectCode{
@@ -70,7 +70,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.lang.Object"
+                    modifiedType: "java.lang.@Nullable Object"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -166,7 +166,7 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Invalidate
                 }
             }
@@ -195,120 +195,7 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QSGTexturePrivate"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_texture"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_mipmap_filtering"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_filtering"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_horizontal_wrap"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_vertical_wrap"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_anisotropy_level"
-    }
-    
-    Rejection{
-        className: "QSGOpaqueTextureMaterial"
-        fieldName: "m_reserved"
-    }
-    
-    Rejection{
-        className: "QQuickWindow"
-        enumName: "NativeObjectType"
-    }
-    
-    Rejection{
-        className: "QQuickWindow"
-        functionName: "createTextureFromNativeObject"
-    }
-    
-    Rejection{
-        className: "QSGMaterialRhiShader::RenderState"
-        functionName: "rhi"
-    }
-    
-    Rejection{
-        className: "QSGMaterialRhiShader::RenderState"
-        functionName: "resourceUpdateBatch"
-    }
-    
-    Rejection{
-        className: "QSGMaterialRhiShader"
-        functionName: "setShader"
-    }
-    
-    Rejection{
-        className: "QSGMaterialShader::RenderState"
-        functionName: "rhi"
-    }
-    
-    Rejection{
-        className: "QSGMaterialShader::RenderState"
-        functionName: "resourceUpdateBatch"
-    }
-    
-    Rejection{
-        className: "QSGMaterialShader"
-        functionName: "setShader"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "updateRhiTexture"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "setWorkResourceUpdateBatch"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "rhiTexture"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "removedFromAtlas"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "commitTextureOperations"
-    }
-    
-    Rejection{
         className: "PtrShaderCreateFunc"
-    }
-    
-    Rejection{
-        className: "QSGTexture::NativeTexture"
-    }
-    
-    Rejection{
-        className: "QSGTexture"
-        functionName: "nativeTexture"
     }
     
     Rejection{
@@ -323,193 +210,57 @@ TypeSystem{
         className: "QQuickKeyEvent"
     }
     
-    Rejection{
-        className: "QQuickGraphicsDevice"
-        functionName: "fromDeviceObjects"
-    }
-    
-    Rejection{
-        className: "QQuickGraphicsDevice"
-        functionName: "fromPhysicalDevice"
-    }
-    
-    Rejection{
-        className: "QQuickGraphicsDevice"
-        functionName: "fromDeviceAndContext"
-    }
-    
-    Rejection{
-        className: "QQuickGraphicsDevice"
-        functionName: "fromDeviceAndCommandQueue"
-    }
-    
-    EnumType{
-        name: "QQuickItem::Flag"
-        flags: "QQuickItem::Flags"
-    }
-    
-    EnumType{
-        name: "QQuickItem::ItemChange"
-    }
-    
-    EnumType{
-        name: "QQuickItem::TransformOrigin"
-    }
-    
-    EnumType{
-        name: "QQuickPaintedItem::PerformanceHint"
-        flags: "QQuickPaintedItem::PerformanceHints"
-    }
-    
-    EnumType{
-        name: "QQuickPaintedItem::RenderTarget"
-    }
-    
-    EnumType{
-        name: "QQuickView::ResizeMode"
-    }
-    
-    EnumType{
-        name: "QQuickView::Status"
-    }
-    
-    EnumType{
-        name: "QQuickWindow::CreateTextureOption"
-        flags: "QQuickWindow::CreateTextureOptions"
-    }
-    
-    EnumType{
-        name: "QSGNode::DirtyStateBit"
-        flags: "QSGNode::DirtyState"
-    }
-    
-    EnumType{
-        name: "QSGNode::Flag"
-        flags: "QSGNode::Flags"
-    }
-    
-    EnumType{
-        name: "QSGNode::NodeType"
-        generate: false
-    }
-    
-    EnumType{
-        name: "QSGGeometry::DataPattern"
-    }
-    
-    EnumType{
-        name: "QSGGeometry::Type"
-    }
-    
-    EnumType{
-        name: "QSGGeometry::DrawingMode"
-    }
-    
-    EnumType{
-        name: "QSGGeometry::AttributeType"
-    }
-    
-    EnumType{
-        name: "QSGMaterial::Flag"
-        flags: "QSGMaterial::Flags"
-        RejectEnumValue{
-            name: "CustomCompileStep"
-            since: [6, 3]
-        }
-    }
-    
-    EnumType{
-        name: "QSGTexture::Filtering"
-    }
-    
-    EnumType{
-        name: "QSGTexture::WrapMode"
-    }
-    
-    EnumType{
-        name: "QSGTexture::AnisotropyLevel"
-        since: [5, 9]
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::RenderState::DirtyState"
-        flags: "QSGMaterialShader::RenderState::DirtyStates"
-    }
-    
-    EnumType{
-        name: "QSGSimpleTextureNode::TextureCoordinatesTransformFlag"
-        flags: "QSGSimpleTextureNode::TextureCoordinatesTransformMode"
-    }
-    
-    EnumType{
-        name: "QQuickWindow::SceneGraphError"
-    }
-    
-    EnumType{
-        name: "QQuickWindow::RenderStage"
-    }
-    
-    EnumType{
-        name: "QQuickWindow::TextRenderType"
-        since: [5, 10]
-    }
-    
-    
-    
-    EnumType{
-        name: "QSGRendererInterface::GraphicsApi"
-        RejectEnumValue{
-            name: "OpenGLRhi"
-            since: 6
-        }
-        RejectEnumValue{
-            name: "Direct3D11Rhi"
-            since: 6
-        }
-        RejectEnumValue{
-            name: "VulkanRhi"
-            since: 6
-        }
-        RejectEnumValue{
-            name: "MetalRhi"
-            since: 6
-        }
-        RejectEnumValue{
-            name: "NullRhi"
-            since: 6
-        }
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QSGRendererInterface::Resource"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QSGRendererInterface::ShaderType"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QSGRendererInterface::RenderMode"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QSGRendererInterface::ShaderCompilationType"
-        flags: "QSGRendererInterface::ShaderCompilationTypes"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QSGRendererInterface::ShaderSourceType"
-        flags: "QSGRendererInterface::ShaderSourceTypes"
-        since: [5, 8]
-    }
-    
     InterfaceType{
         name: "QSGRendererInterface"
+        EnumType{
+            name: "GraphicsApi"
+            RejectEnumValue{
+                name: "OpenGLRhi"
+                since: 6
+            }
+            RejectEnumValue{
+                name: "Direct3D11Rhi"
+                since: 6
+            }
+            RejectEnumValue{
+                name: "VulkanRhi"
+                since: 6
+            }
+            RejectEnumValue{
+                name: "MetalRhi"
+                since: 6
+            }
+            RejectEnumValue{
+                name: "NullRhi"
+                since: 6
+            }
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "Resource"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "ShaderType"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "RenderMode"
+            since: 6
+        }
+
+        EnumType{
+            name: "ShaderCompilationType"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "ShaderSourceType"
+            since: [5, 8]
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QTextCodec"
@@ -524,21 +275,6 @@ TypeSystem{
         ModifyFunction{
             signature: "getResource(QQuickWindow *, const char *) const"
             remove: RemoveFlag.JavaAndNative
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, QLatin1String(%in));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray b1 = qtjambi_cast<QByteArray>(%env, %in);\n"+
-                                  "const char* %out = b1.data();"}
-                }
-            }
         }
         since: [5, 8]
     }
@@ -555,17 +291,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QPoint"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint* %out = qtjambi_cast<QPoint*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -573,17 +298,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QPoint"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint* %out = qtjambi_cast<QPoint*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -611,6 +325,16 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        EnumType{
+            name: "Flag"
+        }
+        EnumType{
+            name: "ItemChange"
+        }
+        EnumType{
+            name: "TransformOrigin"
+        }
+
         ModifyFunction{
             signature: "childMouseEventFilter(QQuickItem*,QEvent*)"
             ModifyArgument{
@@ -813,6 +537,14 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickPaintedItem"
+
+        EnumType{
+            name: "PerformanceHint"
+        }
+
+        EnumType{
+            name: "RenderTarget"
+        }
         ModifyFunction{
             signature: "antialiasing()const"
             rename: "paintAntialiasing"
@@ -864,7 +596,7 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Invalidate
                 }
             }
@@ -933,6 +665,13 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickView"
+
+        EnumType{
+            name: "ResizeMode"
+        }
+        EnumType{
+            name: "Status"
+        }
         ModifyFunction{
             signature: "QQuickView(const QUrl &, QWindow *)"
             blockExceptions: true
@@ -965,6 +704,35 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickWindow"
+        Rejection{
+            enumName: "NativeObjectType"
+        }
+
+        Rejection{
+            functionName: "createTextureFromNativeObject"
+        }
+
+        EnumType{
+            name: "CreateTextureOption"
+        }
+
+        EnumType{
+            name: "SceneGraphError"
+        }
+
+        EnumType{
+            name: "RenderStage"
+        }
+
+        EnumType{
+            name: "TextRenderType"
+            since: [5, 10]
+        }
+
+        ValueType{
+            name: "GraphicsStateInfo"
+            since: [5, 14]
+        }
         ModifyFunction{
             signature: "setRenderTarget(QOpenGLFramebufferObject*)"
             threadAffinity: false
@@ -1030,7 +798,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "createTextureFromImage(QImage,QFlags<QQuickWindow::CreateTextureOption>)const"
+            signature: "createTextureFromImage(QImage,QQuickWindow::CreateTextureOptions)const"
             threadAffinity: false
             ModifyArgument{
                 index: 0
@@ -1041,7 +809,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "createTextureFromId(uint,QSize,QFlags<QQuickWindow::CreateTextureOption>)const"
+            signature: "createTextureFromId(uint,QSize,QQuickWindow::CreateTextureOptions)const"
             threadAffinity: false
             ModifyArgument{
                 index: 0
@@ -1061,20 +829,28 @@ TypeSystem{
             }
         }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "public final void scheduleRenderJob(Runnable job, io.qt.quick.QQuickWindow.RenderStage schedule){\n"+
                           "    scheduleRenderJob(io.qt.core.QRunnable.of(job), schedule);\n"+
                           "}"}
         }
     }
     
-    ValueType{
-        name: "QQuickWindow::GraphicsStateInfo"
-        since: [5, 14]
-    }
-    
     ObjectType{
         name: "QSGNode"
+
+        EnumType{
+            name: "DirtyStateBit"
+        }
+
+        EnumType{
+            name: "Flag"
+        }
+
+        EnumType{
+            name: "NodeType"
+            generate: false
+        }
         ModifyFunction{
             signature: "QSGNode(QSGNode::NodeType)"
             remove: RemoveFlag.All
@@ -1258,32 +1034,12 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "matrix() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setRendererMatrix(const QMatrix4x4 *)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
                 ReferenceCount{
                     variableName: "__rcRendererMatrix"
                     action: ReferenceCount.Set
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
                 }
             }
         }
@@ -1389,7 +1145,6 @@ TypeSystem{
     
     EnumType{
         name: "QSGImageNode::TextureCoordinatesTransformFlag"
-        flags: "QSGImageNode::TextureCoordinatesTransformMode"
         since: [5, 8]
     }
     
@@ -1404,6 +1159,9 @@ TypeSystem{
     
     ObjectType{
         name: "QSGSimpleTextureNode"
+        EnumType{
+            name: "TextureCoordinatesTransformFlag"
+        }
         ModifyFunction{
             signature: "setTexture(QSGTexture*)"
             ModifyArgument{
@@ -1447,41 +1205,6 @@ TypeSystem{
             rename: "renderingFlags"
         }
         ModifyFunction{
-            signature: "matrix() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "projectionMatrix() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
-                }
-            }
-            since: [6,5]
-        }
-        ModifyFunction{
             signature: "render(const QSGRenderNode::RenderState*)"
             ModifyArgument{
                 index: 1
@@ -1493,68 +1216,18 @@ TypeSystem{
     ObjectType{
         name: "QSGRenderNode::RenderState"
         ModifyFunction{
-            signature: "projectionMatrix() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "clipRegion() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QRegion"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QRegion* %out = qtjambi_cast<QRegion*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "get(const char *) const"
             remove: RemoveFlag.JavaAndNative
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jstring>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const char* %out = qtjambi_cast<const char*>(%env, %scope, %in);"}
-                }
-            }
         }
     }
     
     EnumType{
         name: "QSGRenderNode::StateFlag"
-        flags: "QSGRenderNode::StateFlags"
         since: [5, 8]
     }
     
     EnumType{
         name: "QSGRenderNode::RenderingFlag"
-        flags: "QSGRenderNode::RenderingFlags"
         since: [5, 8]
     }
     
@@ -1612,6 +1285,133 @@ TypeSystem{
     
     ObjectType{
         name: "QSGGeometry"
+
+        EnumType{
+            name: "DataPattern"
+        }
+
+        EnumType{
+            name: "Type"
+        }
+
+        EnumType{
+            name: "DrawingMode"
+        }
+
+        EnumType{
+            name: "AttributeType"
+        }
+
+        ValueType{
+            name: "Point2D"
+        }
+
+        ValueType{
+            name: "TexturedPoint2D"
+        }
+
+        ValueType{
+            name: "Attribute"
+            ModifyFunction{
+                signature: "Attribute()"
+                remove: RemoveFlag.All
+            }
+            ModifyField{
+                name: "position"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "tupleSize"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "type"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "attributeType"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "isVertexCoordinate"
+                read: true
+                write: false
+                ReplaceType{
+                    modifiedType: "boolean"
+                }
+            }
+            ModifyField{
+                name: "reserved"
+                read: false
+                write: false
+            }
+        }
+
+        ObjectType{
+            name: "AttributeSet"
+            InjectCode{
+                target: CodeClass.DestructorFunction
+                Text{content: "delete[] %this->attributes;"}
+            }
+            ModifyFunction{
+                signature: "AttributeSet()"
+                AddArgument{
+                    name: "attributes"
+                    type: "io.qt.quick.QSGGeometry$Attribute[]"
+                }
+                AddArgument{
+                    name: "stride"
+                    type: "int"
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: "__qt_this->stride = stride;\n"+
+                                  "__qt_this->count = %env->GetArrayLength(attributes);\n"+
+                                  "QSGGeometry::Attribute* _attributes = new QSGGeometry::Attribute[size_t(__qt_this->count)];\n"+
+                                  "__qt_this->attributes = _attributes;\n"+
+                                  "for(jsize i=0; i<jsize(__qt_this->count); ++i){\n"+
+                                  "    jobject element = %env->GetObjectArrayElement(attributes, i);\n"+
+                                  "    _attributes[i] = qtjambi_cast<const QSGGeometry::Attribute&>(%env, element);\n"+
+                                  "}"}
+                }
+            }
+            ModifyField{
+                name: "attributes"
+                write: false
+                ReplaceType{
+                    modifiedType: "io.qt.quick.QSGGeometry$@Nullable Attribute @NonNull[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.NativeGetter
+                    Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->count);"}
+                }
+            }
+            ModifyField{
+                name: "count"
+                write: false
+            }
+            ModifyField{
+                name: "stride"
+                write: false
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiQuick.java"
+                    quoteAfterLine: "class QSGGeometry.AttributeSet__"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+        }
+
+        ValueType{
+            name: "ColoredPoint2D"
+        }
         ModifyFunction{
             signature: "indexData() const"
             remove: RemoveFlag.All
@@ -1671,7 +1471,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                    modifiedType: "java.nio.@Nullable Buffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1709,14 +1509,11 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.quick.QSGGeometry$Attribute[]"
+                    modifiedType: "io.qt.quick.QSGGeometry$@NonNull Attribute @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::toJObjectArray<QSGGeometry::Attribute>(%env, %in, __qt_this->attributeCount(),\n"+
-                                  "                                                        [](JNIEnv * env, const QSGGeometry::Attribute& item)->jobject{\n"+
-                                  "                                                            return qtjambi_cast<jobject>(env, item);\n"+
-                                  "                                                       });"}
+                    Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->attributeCount());"}
                 }
             }
         }
@@ -1726,7 +1523,7 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObject<QSGGeometry::AttributeSet>(%env, &%in, false);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
                 }
             }
         }
@@ -1736,7 +1533,7 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObject<QSGGeometry::AttributeSet>(%env, &%in, false);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
                 }
             }
         }
@@ -1746,7 +1543,7 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObject<QSGGeometry::AttributeSet>(%env, &%in, false);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
                 }
             }
         }
@@ -1778,6 +1575,14 @@ TypeSystem{
     
     ObjectType{
         name: "QSGMaterial"
+
+        EnumType{
+            name: "Flag"
+            RejectEnumValue{
+                name: "CustomCompileStep"
+                since: [6, 3]
+            }
+        }
         ModifyFunction{
             signature: "compare(const QSGMaterial*)const"
             ModifyArgument{
@@ -1825,6 +1630,53 @@ TypeSystem{
     
     ObjectType{
         name: "QSGMaterialShader"
+        Rejection{
+            functionName: "rhi"
+        }
+        Rejection{
+            functionName: "resourceUpdateBatch"
+        }
+        Rejection{
+            functionName: "setShader"
+        }
+        EnumType{
+            name: "Flag"
+            since: 6
+        }
+
+        EnumType{
+            name: "Stage"
+            since: 6
+        }
+
+        ValueType{
+            name: "RenderState"
+            EnumType{
+                name: "DirtyState"
+            }
+            ModifyFunction{
+                signature: "uniformData()"
+                remove: RemoveFlag.All
+                since: 6
+            }
+        }
+
+        ValueType{
+            name: "GraphicsPipelineState"
+            EnumType{
+                name: "BlendFactor"
+            }
+            EnumType{
+                name: "PolygonMode"
+            }
+            EnumType{
+                name: "ColorMaskComponent"
+            }
+            EnumType{
+                name: "CullMode"
+            }
+            since: 6
+        }
         ModifyFunction{
             signature: "updateState(QSGMaterialShader::RenderState,QSGMaterial*,QSGMaterial*)"
             ModifyArgument{
@@ -1874,7 +1726,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@Nullable String @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1974,34 +1826,10 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialShader::RenderState& %out = qtjambi_cast<QSGMaterialShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialShader$GraphicsPipelineState"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialShader::GraphicsPipelineState* %out = qtjambi_cast<QSGMaterialShader::GraphicsPipelineState*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 3
@@ -2018,19 +1846,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialShader::RenderState& %out = qtjambi_cast<QSGMaterialShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 2
@@ -2047,19 +1862,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialShader::RenderState& %out = qtjambi_cast<QSGMaterialShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 3
@@ -2082,6 +1884,27 @@ TypeSystem{
     
     ObjectType{
         name: "QSGOpaqueTextureMaterial"
+        Rejection{
+            fieldName: "m_texture"
+        }
+        Rejection{
+            fieldName: "m_mipmap_filtering"
+        }
+        Rejection{
+            fieldName: "m_filtering"
+        }
+        Rejection{
+            fieldName: "m_horizontal_wrap"
+        }
+        Rejection{
+            fieldName: "m_vertical_wrap"
+        }
+        Rejection{
+            fieldName: "m_anisotropy_level"
+        }
+        Rejection{
+            fieldName: "m_reserved"
+        }
         ModifyFunction{
             signature: "createShader() const"
             noExcept: true
@@ -2128,9 +1951,11 @@ TypeSystem{
             }
         }
     }
-    
-    
-    
+
+    Rejection{
+        className: "QSGTexturePrivate"
+    }
+
     ObjectType{
         name: "QSGTexture"
         ExtraIncludes{
@@ -2139,6 +1964,38 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        Rejection{
+            functionName: "updateRhiTexture"
+        }
+        Rejection{
+            functionName: "setWorkResourceUpdateBatch"
+        }
+        Rejection{
+            functionName: "rhiTexture"
+        }
+        Rejection{
+            functionName: "removedFromAtlas"
+        }
+        Rejection{
+            functionName: "commitTextureOperations"
+        }
+        Rejection{
+            className: "NativeTexture"
+        }
+        Rejection{
+            functionName: "nativeTexture"
+        }
+        EnumType{
+            name: "Filtering"
+        }
+        EnumType{
+            name: "WrapMode"
+        }
+        EnumType{
+            name: "AnisotropyLevel"
+            since: [5, 9]
+        }
         ModifyFunction{
             signature: "resolveInterface(const char *, int)const"
             rename: "nativeInterface"
@@ -2146,12 +2003,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -2265,122 +2125,8 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QMatrix4x4* %out = qtjambi_cast<QMatrix4x4*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
-    }
-    
-    ValueType{
-        name: "QSGGeometry::Attribute"
-        ModifyFunction{
-            signature: "Attribute()"
-            remove: RemoveFlag.All
-        }
-        ModifyField{
-            name: "position"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "tupleSize"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "type"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "attributeType"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "isVertexCoordinate"
-            read: true
-            write: false
-            ReplaceType{
-                modifiedType: "boolean"
-            }
-        }
-        ModifyField{
-            name: "reserved"
-            read: false
-            write: false
-        }
-    }
-    
-    ObjectType{
-        name: "QSGGeometry::AttributeSet"
-        InjectCode{
-            target: CodeClass.DestructorFunction
-            Text{content: "delete[] %this->attributes;"}
-        }
-        ModifyFunction{
-            signature: "AttributeSet()"
-            AddArgument{
-                name: "attributes"
-                type: "io.qt.quick.QSGGeometry$Attribute[]"
-            }
-            AddArgument{
-                name: "stride"
-                type: "int"
-            }
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.End
-                Text{content: "__qt_this->stride = stride;\n"+
-                              "__qt_this->count = %env->GetArrayLength(attributes);\n"+
-                              "QSGGeometry::Attribute* _attributes = new QSGGeometry::Attribute[size_t(__qt_this->count)];\n"+
-                              "__qt_this->attributes = _attributes;\n"+
-                              "for(jsize i=0; i<jsize(__qt_this->count); ++i){\n"+
-                              "    jobject element = %env->GetObjectArrayElement(attributes, i);\n"+
-                              "    _attributes[i] = qtjambi_cast<const QSGGeometry::Attribute&>(%env, element);\n"+
-                              "}"}
-            }
-        }
-        ModifyField{
-            name: "attributes"
-            write: false
-            ReplaceType{
-                modifiedType: "io.qt.quick.QSGGeometry$Attribute[]"
-            }
-            ConversionRule{
-                codeClass: CodeClass.NativeGetter
-                Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->count);"}
-            }
-        }
-        ModifyField{
-            name: "count"
-            write: false
-        }
-        ModifyField{
-            name: "stride"
-            write: false
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiQuick.java"
-                quoteAfterLine: "class QSGGeometry.AttributeSet__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-    }
-    
-    ValueType{
-        name: "QSGGeometry::ColoredPoint2D"
     }
     
     ValueType{
@@ -2416,10 +2162,6 @@ TypeSystem{
         }
     }
     
-    ValueType{
-        name: "QSGGeometry::Point2D"
-    }
-    
     ObjectType{
         name: "QQuickImageProvider"
         ModifyFunction{
@@ -2427,17 +2169,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QSize"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSize* %out = qtjambi_cast<QSize*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -2445,17 +2176,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QSize"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSize* %out = qtjambi_cast<QSize*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -2463,17 +2183,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QSize"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSize* %out = qtjambi_cast<QSize*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -2508,10 +2217,6 @@ TypeSystem{
         name: "QSGMaterialType"
     }
     
-    ValueType{
-        name: "QSGGeometry::TexturedPoint2D"
-    }
-    
     ObjectType{
         name: "QQuickItemGrabResult"
         ModifyFunction{
@@ -2525,7 +2230,7 @@ TypeSystem{
     ObjectType{
         name: "QSGAbstractRenderer"
         ModifyFunction{
-            signature: "nodeChanged(QSGNode*,QFlags<QSGNode::DirtyStateBit>)"
+            signature: "nodeChanged(QSGNode*,QSGNode::DirtyState)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
@@ -2546,13 +2251,11 @@ TypeSystem{
     
     EnumType{
         name: "QSGAbstractRenderer::ClearModeBit"
-        flags: "QSGAbstractRenderer::ClearMode"
         until: 5
     }
     
     EnumType{
         name: "QSGAbstractRenderer::MatrixTransformFlag"
-        flags: "QSGAbstractRenderer::MatrixTransformFlags"
         since: [5, 14]
         until: 5
     }
@@ -2600,7 +2303,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "createTextureFromImage(QImage,QFlags<QSGEngine::CreateTextureOption>)const"
+            signature: "createTextureFromImage(QImage,QSGEngine::CreateTextureOptions)const"
             ModifyArgument{
                 index: 0
                 DefineOwnership{
@@ -2610,7 +2313,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "createTextureFromId(uint,QSize,QFlags<QSGEngine::CreateTextureOption>)const"
+            signature: "createTextureFromId(uint,QSize,QSGEngine::CreateTextureOptions)const"
             ModifyArgument{
                 index: 0
                 DefineOwnership{
@@ -2624,7 +2327,6 @@ TypeSystem{
     
     EnumType{
         name: "QSGEngine::CreateTextureOption"
-        flags: "QSGEngine::CreateTextureOptions"
         until: 5
     }
     
@@ -2720,23 +2422,39 @@ TypeSystem{
     
     ValueType{
         name: "QQuickGraphicsDevice"
-        ModifyFunction{
-            signature: "operator=(QQuickGraphicsDevice)"
-            remove: RemoveFlag.All
+        Rejection{
+            functionName: "fromDeviceObjects"
+        }
+        Rejection{
+            functionName: "fromPhysicalDevice"
+        }
+        Rejection{
+            functionName: "fromDeviceAndContext"
+        }
+        Rejection{
+            functionName: "fromDeviceAndCommandQueue"
         }
         ModifyFunction{
-            signature: "fromAdapter(unsigned int, int, int)"
+            signature: "fromAdapter(quint32, qint32, int)"
             ppCondition: "defined(Q_OS_WIN)"
         }
         since: 6
     }
+
+    ObjectType{
+        name: "VkImage"
+        generate: false
+        since: [6, 2]
+    }
+
+    ObjectType{
+        name: "VkImageLayout"
+        generate: false
+        since: [6, 2]
+    }
     
     ValueType{
         name: "QQuickRenderTarget"
-        ModifyFunction{
-            signature: "operator=(QQuickRenderTarget)"
-            remove: RemoveFlag.All
-        }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -2865,39 +2583,53 @@ TypeSystem{
                           "    mutable QByteArray __qt_attributeNameByteArrays;\n"+
                           "    mutable QVector<const char *> __qt_attributeNames;"}
         }
+        Rejection{
+            functionName: "setShader"
+        }
+
+        EnumType{
+            name: "Flag"
+        }
+
+        EnumType{
+            name: "Stage"
+        }
+
+        ValueType{
+            name: "RenderState"
+            ModifyFunction{
+                signature: "uniformData()"
+                remove: RemoveFlag.All
+            }
+            Rejection{
+                functionName: "resourceUpdateBatch"
+            }
+            Rejection{
+                functionName: "rhi"
+            }
+        }
+
+        ValueType{
+            name: "GraphicsPipelineState"
+            EnumType{
+                name: "BlendFactor"
+            }
+            EnumType{
+                name: "ColorMaskComponent"
+            }
+            EnumType{
+                name: "CullMode"
+            }
+        }
         ModifyFunction{
             signature: "updateGraphicsPipelineState(QSGMaterialRhiShader::RenderState &, QSGMaterialRhiShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialRhiShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialRhiShader::RenderState& %out = qtjambi_cast<QSGMaterialRhiShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialRhiShader$GraphicsPipelineState"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialRhiShader::GraphicsPipelineState* %out = qtjambi_cast<QSGMaterialRhiShader::GraphicsPipelineState*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 3
@@ -2913,19 +2645,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialRhiShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialRhiShader::RenderState& %out = qtjambi_cast<QSGMaterialRhiShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 4
@@ -2950,19 +2669,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGMaterialRhiShader$RenderState"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSGMaterialRhiShader::RenderState& %out = qtjambi_cast<QSGMaterialRhiShader::RenderState&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
             ModifyArgument{
                 index: 2
@@ -2977,113 +2683,11 @@ TypeSystem{
         until: 5
     }
     
-    EnumType{
-        name: "QSGMaterialRhiShader::Flag"
-        flags: "QSGMaterialRhiShader::Flags"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGMaterialRhiShader::Stage"
-        since: [5, 14]
-        until: 5
-    }
-    
-    ValueType{
-        name: "QSGMaterialRhiShader::RenderState"
-        ModifyFunction{
-            signature: "uniformData()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 14]
-        until: 5
-    }
-    
-    ValueType{
-        name: "QSGMaterialRhiShader::GraphicsPipelineState"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGMaterialRhiShader::GraphicsPipelineState::BlendFactor"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGMaterialRhiShader::GraphicsPipelineState::ColorMaskComponent"
-        flags: "QSGMaterialRhiShader::GraphicsPipelineState::ColorMask"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGMaterialRhiShader::GraphicsPipelineState::CullMode"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::Flag"
-        flags: "QSGMaterialShader::Flags"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::Stage"
-        since: 6
-    }
-    
-    ValueType{
-        name: "QSGMaterialShader::RenderState"
-        ModifyFunction{
-            signature: "uniformData()"
-            remove: RemoveFlag.All
-            since: 6
-        }
-    }
-    
-    ValueType{
-        name: "QSGMaterialShader::GraphicsPipelineState"
-        since: 6
-    }
-    
     ValueType{
         name: "QQuickGraphicsConfiguration"
-        ModifyFunction{
-            signature: "operator=(QQuickGraphicsConfiguration)"
-            remove: RemoveFlag.All
-        }
         since: 6
     }
-    
-    EnumType{
-        name: "QSGMaterialShader::GraphicsPipelineState::BlendFactor"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::GraphicsPipelineState::PolygonMode"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::GraphicsPipelineState::ColorMaskComponent"
-        flags: "QSGMaterialShader::GraphicsPipelineState::ColorMask"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QSGMaterialShader::GraphicsPipelineState::CullMode"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QSGOpenGLTexture::TypeInfo"
-    }
-    
+        
     InterfaceType{
         name: "QNativeInterface::QSGOpenGLTexture"
         packageName: "io.qt.quick.nativeinterface"
@@ -3091,15 +2695,14 @@ TypeSystem{
         ppCondition: "QT_CONFIG(opengl)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QSGOpenGLTexture()"
             remove: RemoveFlag.All
         }
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QSGD3D11Texture::TypeInfo"
     }
     
     InterfaceType{
@@ -3109,6 +2712,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_WIN)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QSGD3D11Texture()"
             remove: RemoveFlag.All
@@ -3116,39 +2722,35 @@ TypeSystem{
         since: [6, 2]
     }
     
-    ValueType{
-        name: "VkImage"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "VkImageLayout"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
+    PrimitiveType{
         name: "VkFormat"
-        generate: false
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 4]
     }
     
-    ValueType{
+    PrimitiveType{
         name: "MTLTexture"
-        generate: false
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 2]
     }
     
-    ValueType{
+    PrimitiveType{
         name: "MTLDevice"
-        generate: false
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 2]
     }
     
-    ValueType{
+    PrimitiveType{
         name: "MTLCommandQueue"
-        generate: false
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 2]
     }
     
@@ -3167,10 +2769,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::QSGMetalTexture::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QSGMetalTexture"
         packageName: "io.qt.quick.nativeinterface"
@@ -3178,6 +2776,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_MACOS)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QSGMetalTexture()"
             remove: RemoveFlag.All
@@ -3199,12 +2800,21 @@ TypeSystem{
         ModifyFunction{
             signature: "nativeTexture() const"
             proxyCall: "qtjambi_QSGMetalTexture_nativeTexture"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.@Nullable QNativePointer"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, 1);"}
+                }
+            }
         }
         ModifyFunction{
-            signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QFlags<QQuickWindow::CreateTextureOption>)"
+            signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGMetalTexture_fromNative"
             ModifyArgument{
                 index: 1
+                replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in, 0);"}
@@ -3214,10 +2824,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::QSGVulkanTexture::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QSGVulkanTexture"
         packageName: "io.qt.quick.nativeinterface"
@@ -3225,6 +2831,10 @@ TypeSystem{
         ppCondition: "QT_CONFIG(vulkan)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
+
         ModifyFunction{
             signature: "QSGVulkanTexture()"
             remove: RemoveFlag.All
@@ -3235,7 +2845,7 @@ TypeSystem{
             Text{content: "QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jlong image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
         }
         ModifyFunction{
-            signature: "fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QFlags<QQuickWindow::CreateTextureOption>)"
+            signature: "fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGVulkanTexture_fromNative"
             ModifyArgument{
                 index: 1

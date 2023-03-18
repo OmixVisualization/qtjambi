@@ -90,11 +90,13 @@ public:
 
     jobject value(JNIEnv * env, const void* ptr) override {
         const Iterator* iterator = static_cast<const Iterator*>(ptr);
-        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(iterator->value())>::type>::cast(env, iterator->value(), nullptr, nullptr);
+        const auto& value = iterator->value();
+        return qtjambi_scoped_cast<false,jobject,decltype(value)>::cast(env, value, nullptr, nullptr);
     }
     jobject key(JNIEnv * env, const void* ptr) override {
         const Iterator* iterator = static_cast<const Iterator*>(ptr);
-        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(iterator->key())>::type>::cast(env, iterator->key(), nullptr, nullptr);
+        const auto& key = iterator->key();
+        return qtjambi_scoped_cast<false,jobject,decltype(key)>::cast(env, key, nullptr, nullptr);
     }
 };
 

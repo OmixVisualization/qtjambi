@@ -49,6 +49,7 @@ INCLUDEPATH += $$QTJAMBIPATH
 DEPENDPATH += $$QTJAMBIPATH
 
 macx:{
+	CONFIG+=no_default_rpath no_qt_rpath
     INCLUDEPATH += $$JAVA_HOME_TARGET/include
     INCLUDEPATH += $$JAVA_HOME_TARGET/include/darwin
     # this option is necessary to properly compile on mountain lion because of std::string to char* casts

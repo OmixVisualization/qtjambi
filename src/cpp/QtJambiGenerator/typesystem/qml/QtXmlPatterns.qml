@@ -31,30 +31,10 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.xmlpatterns"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtXmlPatterns"
     module: "qtjambi.xmlpatterns"
     description: "Support for XPath, XQuery, XSLT and XML schema validation."
-    
-    EnumType{
-        name: "QXmlNodeModelIndex::NodeKind"
-    }
-    
-    EnumType{
-        name: "QXmlNodeModelIndex::DocumentOrder"
-    }
-    
-    EnumType{
-        name: "QAbstractXmlNodeModel::NodeCopySetting"
-    }
-    
-    EnumType{
-        name: "QAbstractXmlNodeModel::SimpleAxis"
-    }
-    
-    EnumType{
-        name: "QXmlQuery::QueryLanguage"
-    }
     
     ObjectType{
         name: "QAbstractMessageHandler"
@@ -64,55 +44,26 @@ TypeSystem{
         name: "QAbstractUriResolver"
     }
     
-    
-    Rejection{
-        className: "QPatternist::NodeIndexStorage"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "mapToItem"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "mapToSequence"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "sequencedTypedValue"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "sendNamespaces"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "iterate"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "copyNodeTo"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlNodeModel"
-        functionName: "type"
-    }
-    
     ObjectType{
         name: "QAbstractXmlNodeModel"
-        implementing: "java.lang.Cloneable"
+
+        Rejection{functionName: "mapToItem"}
+        Rejection{functionName: "mapToSequence"}
+        Rejection{functionName: "sequencedTypedValue"}
+        Rejection{functionName: "sendNamespaces"}
+        Rejection{functionName: "iterate"}
+        Rejection{functionName: "copyNodeTo"}
+        Rejection{functionName: "type"}
+
+        EnumType{name: "NodeCopySetting"}
+        EnumType{name: "SimpleAxis"}
+
         ModifyFunction{
-            signature: "createIndex(void *, long long) const"
+            signature: "createIndex(void *, qint64) const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "namespaceForPrefix(QXmlNodeModelIndex,short) const"
+            signature: "namespaceForPrefix(QXmlNodeModelIndex,qint16) const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -121,39 +72,20 @@ TypeSystem{
         }
     }
     
-    Rejection{
-        className: "QAbstractXmlReceiver"
-        functionName: "item"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlReceiver"
-        functionName: "sendAsNode"
-    }
-    
-    Rejection{
-        className: "QAbstractXmlReceiver"
-        fieldName: "d_ptr"
-    }
-    
     ObjectType{
         name: "QAbstractXmlReceiver"
+
+        Rejection{functionName: "item"}
+        Rejection{functionName: "sendAsNode"}
+        Rejection{fieldName: "d_ptr"}
     }
     
     ValueType{
         name: "QSourceLocation"
-        ModifyFunction{
-            signature: "operator=(QSourceLocation)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QXmlSchema"
-        ModifyFunction{
-            signature: "operator=(const QXmlSchema&)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setMessageHandler(QAbstractMessageHandler*)"
             ModifyArgument{
@@ -229,20 +161,12 @@ TypeSystem{
     
     ValueType{
         name: "QXmlItem"
-        ModifyFunction{
-            signature: "operator=(QXmlItem)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QXmlName"
         ModifyFunction{
-            signature: "operator=(QXmlName)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QXmlName(short,short,short)"
+            signature: "QXmlName(qint16,qint16,qint16)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -270,77 +194,38 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setPrefix(const short)"
+            signature: "setPrefix(qint16)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setNamespaceURI(const short)"
+            signature: "setNamespaceURI(qint16)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setLocalName(const short)"
+            signature: "setLocalName(qint16)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "code()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "QXmlName(QXmlNamePool&,QString,QString,QString)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.xmlpatterns.QXmlNamePool"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QXmlNamePool& %out = qtjambi_cast<QXmlNamePool&>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QXmlNamePool"
-        ModifyFunction{
-            signature: "operator=(QXmlNamePool)"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    Rejection{
-        className: "QXmlNodeModelIndex"
-        functionName: "sequencedTypedValue"
-    }
-    
-    Rejection{
-        className: "QXmlNodeModelIndex"
-        functionName: "sendNamespaces"
-    }
-    
-    Rejection{
-        className: "QXmlNodeModelIndex"
-        functionName: "iterate"
-    }
-    
-    Rejection{
-        className: "QXmlNodeModelIndex"
-        functionName: "type"
-    }
-    
-    Rejection{
-        className: "QXmlNodeModelIndex"
-        enumName: "Axis"
     }
     
     ValueType{
         name: "QXmlNodeModelIndex"
-        ModifyFunction{
-            signature: "operator=(const QXmlNodeModelIndex &)"
-            remove: RemoveFlag.All
-        }
+
+        Rejection{functionName: "sequencedTypedValue"}
+        Rejection{functionName: "sendNamespaces"}
+        Rejection{functionName: "iterate"}
+        Rejection{functionName: "type"}
+        Rejection{enumName: "Axis"}
+
+        EnumType{name: "NodeKind"}
+        EnumType{name: "DocumentOrder"}
         ModifyFunction{
             signature: "name() const"
             remove: RemoveFlag.All
@@ -374,7 +259,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "namespaceForPrefix(short) const"
+            signature: "namespaceForPrefix(qint16) const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -401,6 +286,8 @@ TypeSystem{
     
     ObjectType{
         name: "QXmlQuery"
+        EnumType{name: "QueryLanguage"}
+
         ModifyFunction{
             signature: "setFocus(QIODevice*)"
             ModifyArgument{
@@ -452,12 +339,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QXmlQuery &)"
-            rename: "set"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -501,7 +385,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.util.Collection<java.lang.String>"
+                    modifiedType: "java.util.@Nullable Collection<java.lang.@NonNull String>"
                 }
                 NoNullPointer{
                 }
@@ -586,25 +470,26 @@ TypeSystem{
     
     ObjectType{
         name: "QSimpleXmlNodeModel"
-        implementing: "java.lang.Cloneable"
-        ModifyFunction{
-            signature: "namePool()const"
-            rename: "namePool_private"
-            access: Modification.Private
-        }
         ModifyFunction{
             signature: "namePool()const"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.xmlpatterns.QXmlNamePool"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObject(%env, &%in, \"io/qt/xmlpatterns/QXmlNamePool\", false);"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
+    }
+
+    Rejection{
+        className: "QPatternist::NodeIndexStorage"
+    }
+    Rejection{
+        className: "QPatternist::Item"
+    }
+    Rejection{
+        className: "QPatternist::NamePool"
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type ''"}

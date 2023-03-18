@@ -66,9 +66,21 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
     typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
     typeInfo.setIndirections(decl_cc.indirection());
     typeInfo.setArrayElements(decl_cc.arrayElements());
+    typeInfo.setArguments(type_cc.templateArgumentTypes());
     typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
     typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
-    typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+    if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+        typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+    if(decl_cc.isFunction()){
+        TypeInfo fpTypeInfo;
+        fpTypeInfo.setFunctionPointer(true);
+        fpTypeInfo.setFunctionalReturnType(typeInfo);
+        for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
+            fpTypeInfo.addFunctionalArgumentType(p.type);
+            fpTypeInfo.addFunctionalArgumentName(p.name);
+        }
+        typeInfo = fpTypeInfo;
+    }
 
     return typeInfo;
 }

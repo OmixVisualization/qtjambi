@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.webchannel"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWebChannel"
     module: "qtjambi.webchannel"
     description: "Provides access to QObject or QML objects from HTML clients for seamless integration of Qt applications with HTML/JavaScript clients."
@@ -65,7 +65,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.util.SortedMap<java.lang.String, java.lang.Object>"
+                    modifiedType: "java.util.@Nullable SortedMap<java.lang.@NonNull String, java.lang.@Nullable Object>"
                 }
             }
         }

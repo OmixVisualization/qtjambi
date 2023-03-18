@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.nfc"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtNfc"
     module: "qtjambi.nfc"
     description: "Provides access to Near-Field communication (NFC) hardware."
@@ -51,19 +51,16 @@ TypeSystem{
         className: "RequestIdPrivate"
     }
     
-    EnumType{
-        name: "QNearFieldShareManager::ShareError"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNearFieldShareManager::ShareMode"
-        flags: "QNearFieldShareManager::ShareModes"
-        until: 5
-    }
-    
     ObjectType{
         name: "QNearFieldShareManager"
+
+        EnumType{
+            name: "ShareError"
+        }
+
+        EnumType{
+            name: "ShareMode"
+        }
         until: 5
     }
     
@@ -71,21 +68,24 @@ TypeSystem{
         name: "QNearFieldShareTarget"
     }
     
-    EnumType{
-        name: "QNearFieldTarget::AccessMethod"
-        flags: "QNearFieldTarget::AccessMethods"
-    }
-    
-    EnumType{
-        name: "QNearFieldTarget::Error"
-    }
-    
-    EnumType{
-        name: "QNearFieldTarget::Type"
-    }
-    
     ObjectType{
         name: "QNearFieldTarget"
+
+        EnumType{
+            name: "AccessMethod"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Type"
+        }
+
+        ValueType{
+            name: "RequestId"
+        }
         ModifyFunction{
             signature: "disconnect()"
             rename: "disconnectFromTarget"
@@ -104,79 +104,40 @@ TypeSystem{
         }
     }
     
-    ValueType{
-        name: "QNearFieldTarget::RequestId"
-        ModifyFunction{
-            signature: "operator=(const QNearFieldTarget::RequestId &)"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    EnumType{
-        name: "QNearFieldManager::AdapterState"
-    }
-    
-    EnumType{
-        name: "QNearFieldManager::TargetAccessMode"
-        flags: "QNearFieldManager::TargetAccessModes"
-    }
-    
     ObjectType{
         name: "QNearFieldManager"
-        ModifyFunction{
-            signature: "registerNdefMessageHandler(QObject *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
+
+        EnumType{
+            name: "AdapterState"
         }
-        ModifyFunction{
-            signature: "registerNdefMessageHandler(QNdefRecord::TypeNameFormat, const QByteArray &, QObject *, const char *)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "registerNdefMessageHandler(const QNdefFilter &, QObject *, const char *)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
+
+        EnumType{
+            name: "TargetAccessMode"
         }
     }
     
     ValueType{
         name: "QNdefFilter"
-        ModifyFunction{
-            signature: "operator=(const QNdefFilter &)"
-            remove: RemoveFlag.All
+
+        ValueType{
+            name: "Record"
         }
         ModifyFunction{
             signature: "appendRecord<T>(unsigned int, unsigned int)"
             remove: RemoveFlag.All
         }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "public final void appendRecord(Class<? extends QNdefRecord> type) {\n"+
                           "    appendRecord(type, 1, 1);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final void appendRecord(Class<? extends QNdefRecord> type, int min) {\n"+
                           "    appendRecord(type, min, 1);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final void appendRecord(Class<? extends QNdefRecord> type, int min, int max) {\n"+
                           "    if(type==QNdefRecord.class) {\n"+
                           "        QNdefRecord record = new QNdefRecord();\n"+
@@ -209,16 +170,7 @@ TypeSystem{
     }
     
     ValueType{
-        name: "QNdefFilter::Record"
-    }
-    
-    ValueType{
         name: "QNdefMessage"
-        ModifyFunction{
-            signature: "operator=(const QNdefMessage &)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -233,31 +185,22 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QNdefNfcSmartPosterRecord::Action"
-    }
-    
     ValueType{
         name: "QNdefNfcSmartPosterRecord"
-        polymorphicIdExpression: "%1->isRecordType<QNdefNfcSmartPosterRecord>()"
-        ModifyFunction{
-            signature: "operator=(const QNdefNfcSmartPosterRecord &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "Action"
         }
-    }
-    
-    EnumType{
-        name: "QNdefNfcTextRecord::Encoding"
+        polymorphicIdExpression: "%1->isRecordType<QNdefNfcSmartPosterRecord>()"
     }
     
     ValueType{
         name: "QNdefNfcTextRecord"
-        polymorphicIdExpression: "%1->isRecordType<QNdefNfcTextRecord>()"
-        ModifyFunction{
-            signature: "operator=(const QNdefNfcTextRecord &)"
-            remove: RemoveFlag.All
-            until: 5
+
+        EnumType{
+            name: "Encoding"
         }
+        polymorphicIdExpression: "%1->isRecordType<QNdefNfcTextRecord>()"
     }
     
     ValueType{
@@ -270,18 +213,14 @@ TypeSystem{
         polymorphicIdExpression: "%1->isRecordType<QNdefNfcIconRecord>()"
     }
     
-    EnumType{
-        name: "QNdefRecord::TypeNameFormat"
-    }
-    
     ValueType{
         name: "QNdefRecord"
+
+        EnumType{
+            name: "TypeNameFormat"
+        }
         isPolymorphicBase: true
         polymorphicIdExpression: "%1->isRecordType%lt;QNdefRecord>()"
-        ModifyFunction{
-            signature: "operator=(const QNdefRecord &)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "isRecordType<T>() const"
             remove: RemoveFlag.All
@@ -292,13 +231,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QQmlNdefRecord::TypeNameFormat"
-        until: 5
-    }
-    
     ObjectType{
         name: "QQmlNdefRecord"
+
+        EnumType{
+            name: "TypeNameFormat"
+        }
         until: 5
     }
     

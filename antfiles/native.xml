@@ -292,7 +292,7 @@
     <if>
         <available file="${plugins.builddir}/${platformjar.configuration}/plugins/containeraccess" type="dir"/>
         <then>
-			<create-native-deployment outputDirectory="${deploymentdir}/native/${qtjambi.osname}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true"/>
+			<create-native-deployment outputDirectory="${deploymentdir}/native/${qtjambi.osname}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true" forcedebuginfo="${qtjambi.force.debug.info}"/>
 			<jar destfile="${deploymentdir}/qtjambi-plugin-containeraccess-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 				<manifest>
 					<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
@@ -338,6 +338,9 @@
 								<pathelement location="${tools.qt.libdir}"/>
 							</path>
 						</pathconvert>
+						<condition property="force" value="--force-debug-info" else="--">
+							<istrue value="${qtjambi.force.debug.info}"/>
+						</condition>
 						<java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
 							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
@@ -357,6 +360,7 @@
 							<arg value="--resources=${qtjambi.qt.resourcesdir}" />
 							<arg value="--translations=${qtjambi.qt.translationsdir}" />
 							<arg value="--qml=${qtjambi.qt.qmlmodulesdir}" />
+							<arg value="${force}" />
 							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
 							<classpath>
 								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,qtjambi-deployer-native-*-${qtjambi.jar.version}.jar"/>

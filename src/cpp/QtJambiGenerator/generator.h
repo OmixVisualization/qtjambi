@@ -160,6 +160,9 @@ public:
     QString generateTypeSystemQML() const;
     void setGenerateTypeSystemQML(const QString& newGenerateTypeSystemQML);
 
+    bool nullness() const;
+    void setNullability(bool newNullability);
+
 signals:
     void headerFileNameChanged();
 
@@ -205,6 +208,8 @@ signals:
 
     void generateTypeSystemQMLChanged();
 
+    void nullnessChanged();
+
 private:
     bool preprocess(QIODevice& target, const std::function<void(std::string,std::string,const QFileInfo&,bool)>& featureRegistry);
 
@@ -234,7 +239,9 @@ private:
     bool m_noJava;
     bool m_noCppHeaders;
     bool m_noCppImpl;
+    bool m_noKotlinDelegates;
     bool m_noMetainfo;
+    bool m_nullness;
     bool m_astToXml;
     bool m_dumpObjectTree;
     QString m_generateTypeSystemQML;
@@ -263,6 +270,7 @@ private:
     Q_PROPERTY(bool dumpObjectTree READ isDumpObjectTree WRITE setDumpObjectTree NOTIFY dumpObjectTreeChanged)
     Q_PROPERTY(bool useNativeIds READ useNativeIds WRITE setUseNativeIds NOTIFY useNativeIdsChanged)
     Q_PROPERTY(QString generateTypeSystemQML READ generateTypeSystemQML WRITE setGenerateTypeSystemQML NOTIFY generateTypeSystemQMLChanged)
+    Q_PROPERTY(bool nullness READ nullness WRITE setNullability NOTIFY nullnessChanged)
 };
 
 #endif

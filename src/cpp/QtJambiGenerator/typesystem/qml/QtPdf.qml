@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.pdf"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtPdf"
     module: "qtjambi.pdf"
     description: "Classes and functions for rendering PDF documents."
@@ -39,44 +39,21 @@ TypeSystem{
         name: "QtNetwork"
     }
     
-    EnumType{
-        name: "QPdfSearchModel::Role"
-    }
-    
-    EnumType{
-        name: "QPdfDocument::DocumentError"
-        until: [6, 3]
-    }
-    
-    EnumType{
-        name: "QPdfDocument::Error"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QPdfDocument::PageModelRole"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QPdfBookmarkModel::StructureMode"
-    }
-    
-    EnumType{
-        name: "QPdfBookmarkModel::Role"
-    }
-    
     ValueType{
         name: "QPdfLink"
-        ModifyFunction{
-            signature: "operator=(QPdfLink)"
-            remove: RemoveFlag.All
-        }
         since: [6, 4]
     }
     
     ObjectType{
         name: "QPdfBookmarkModel"
+
+        EnumType{
+            name: "StructureMode"
+        }
+
+        EnumType{
+            name: "Role"
+        }
         ModifyFunction{
             signature: "setDocument(QPdfDocument *)"
             ModifyArgument{
@@ -99,10 +76,6 @@ TypeSystem{
         noMetaType: true
         generate: "no-shell"
         ModifyFunction{
-            signature: "operator=(QPdfDestination)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "QPdfDestination()"
             remove: RemoveFlag.All
         }
@@ -116,20 +89,45 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QPdfDocument::MetaDataField"
-    }
-    
-    EnumType{
-        name: "QPdfDocument::Status"
-    }
-    
     ObjectType{
         name: "QPdfDocument"
+
+        EnumType{
+            name: "DocumentError"
+            until: [6, 3]
+        }
+
+        EnumType{
+            name: "Error"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "PageModelRole"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "MetaDataField"
+        }
+
+        EnumType{
+            name: "Status"
+        }
     }
     
     ValueType{
         name: "QPdfDocumentRenderOptions"
+
+        EnumType{
+            name: "RenderFlag"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "Rotation"
+            since: [6, 4]
+        }
     }
     
     ObjectType{
@@ -166,6 +164,10 @@ TypeSystem{
     
     ObjectType{
         name: "QPdfSearchModel"
+
+        EnumType{
+            name: "Role"
+        }
         ModifyFunction{
             signature: "setDocument(QPdfDocument *)"
             ModifyArgument{
@@ -203,37 +205,21 @@ TypeSystem{
             signature: "QPdfSelection(QPdfSelection)"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(QPdfSelection)"
-            remove: RemoveFlag.All
-        }
     }
     
     NamespaceType{
         name: "QPdf"
+
+        EnumType{
+            name: "RenderFlag"
+            until: [6, 3]
+        }
+
+        EnumType{
+            name: "Rotation"
+            until: [6, 3]
+        }
         until: [6, 3]
-    }
-    
-    EnumType{
-        name: "QPdf::RenderFlag"
-        flags: "QPdf::RenderFlags"
-        until: [6, 3]
-    }
-    
-    EnumType{
-        name: "QPdf::Rotation"
-        until: [6, 3]
-    }
-    
-    EnumType{
-        name: "QPdfDocumentRenderOptions::RenderFlag"
-        flags: "QPdfDocumentRenderOptions::RenderFlags"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QPdfDocumentRenderOptions::Rotation"
-        since: [6, 4]
     }
     
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QPdfDestination' is missing a default constructor.*"}

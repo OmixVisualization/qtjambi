@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.test"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtTest"
     module: "qtjambi.test"
     description: "Classes for unit testing Qt applications and libraries."
@@ -59,11 +59,6 @@ TypeSystem{
         name: "QtWidgets"
     }
     
-    Rejection{
-        className: "QTest"
-        functionName: "compare_ptr_helper"
-    }
-    
     
     Rejection{
         className: "QTestData"
@@ -78,40 +73,6 @@ TypeSystem{
     Rejection{
         className: "QSignalSpy"
         functionName: "qt_metacall"
-    }
-    
-    
-    EnumType{
-        name: "QTest::ComparisonOperation"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QTest::AttributeIndex"
-    }
-    
-    EnumType{
-        name: "QTest::KeyAction"
-    }
-    
-    EnumType{
-        name: "QTest::LogElementType"
-    }
-    
-    EnumType{
-        name: "QTest::MouseAction"
-    }
-    
-    EnumType{
-        name: "QTest::QBenchmarkMetric"
-    }
-    
-    EnumType{
-        name: "QTest::SkipMode"
-    }
-    
-    EnumType{
-        name: "QTest::TestFailMode"
     }
     
     NamespaceType{
@@ -138,6 +99,47 @@ TypeSystem{
                 location: Include.Local
             }
         }
+
+
+        Rejection{functionName: "compare_ptr_helper"}
+
+        EnumType{
+            name: "ComparisonOperation"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "AttributeIndex"
+        }
+
+        EnumType{
+            name: "KeyAction"
+        }
+
+        EnumType{
+            name: "LogElementType"
+        }
+
+        EnumType{
+            name: "MouseAction"
+        }
+
+        EnumType{
+            name: "QBenchmarkMetric"
+        }
+
+        EnumType{
+            name: "SkipMode"
+        }
+
+        EnumType{
+            name: "TestFailMode"
+        }
+        ModifyFunction{
+            signature: "qTest<T>(T,const char*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+        }
+
         ModifyFunction{
             signature: "qRun()"
             noExcept: true
@@ -190,68 +192,23 @@ TypeSystem{
             remove: RemoveFlag.All
             since: [6, 4]
         }
+
+        Rejection{functionName: "toString"}
+        Rejection{functionName: "_q_compareSequence"}
         ModifyFunction{
-            signature: "toString(const char*)"
+            signature: "qCompare(quint64,quint32,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "toString(const void*)"
+            signature: "qCompare(qint64,quint32,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "toString(const QObject*)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "toString(QSizePolicy)"
+            signature: "qCompare(quint32,quint64,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "toString(QGeoAreaMonitorInfo)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "toString(QGeoPositionInfo)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "toString(QGeoSatelliteInfo)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "toString(QSizePolicy::ControlType)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(QSizePolicy::Policy)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(QNetworkReply::NetworkError)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(QFlags<QSizePolicy::ControlType>)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(QList<QNetworkCookie>)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(QNetworkCookie)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString(std::nullptr_t)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "toString<T1,T2>(const QPair<T1, T2> &)"
+            signature: "qCompare(quint32,qint64,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -352,39 +309,42 @@ TypeSystem{
             since: 6
         }
         ModifyFunction{
-            signature: "failOnWarning(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            since: [6, 3]
+            signature: "qCompare<T,N>(QList<T>,T,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+            since: 6
         }
         ModifyFunction{
-            signature: "qCaught(const char*,const char*,const char*,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            since: [6, 3]
+            signature: "qCompare<T1,T2>(T1*,T2*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "createTouchDevice(QInputDevice::DeviceType,QFlags<QInputDevice::Capability>)"
+            signature: "qCompare<T>(std::nullptr_t,T*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "qCompare<T>(T*,std::nullptr_t,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "qCompare<T>(T*,T*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "qCompare<T>(T,T,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+            until: 5
+        }
+        ModifyFunction{
+            signature: "qCompare<T>(const T*,const T*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "qCompare<T1,T2>(T1,T2,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "createTouchDevice(QInputDevice::DeviceType,QInputDevice::Capabilities)"
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -458,332 +418,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "qFail(const char *,const char *,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "currentTestFunction()"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "ignoreMessage(QtMsgType,const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setMainSourcePath(const char *, const char *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qFindTestData(const QString&, const char*, int, const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "qFindTestData(const QString&, const char*, int, const char*, const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "qVerify(bool,const char *,const char *,const char *,int)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qSkip(const char*,const char*,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qWarn(const char *,const char *,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(int, int, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(double, double, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(float, double, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(float, float, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(double, float, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(QPixmap, QPixmap, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(QIcon, QIcon, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(QImage, QImage, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qCompare(QStringView, QStringView, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "qWaitFor<Functor>(Functor,int)"
             Instantiation{
                 Argument{
@@ -795,6 +429,7 @@ TypeSystem{
                     ReplaceType{
                         modifiedType: "java.util.function.BooleanSupplier"
                     }
+                    NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
@@ -827,12 +462,6 @@ TypeSystem{
                     type: "io.qt.core.QMetaType..."
                 }
                 ModifyArgument{
-                    index: 1
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
-                ModifyArgument{
                     index: 2
                     RemoveArgument{
                     }
@@ -850,24 +479,7 @@ TypeSystem{
                     type: "QString"
                     isImplicit: true
                 }
-                ModifyArgument{
-                    index: 3
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
-                ModifyArgument{
-                    index: 4
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
-                ModifyArgument{
-                    index: 5
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
+                since: 6
             }
             Instantiation{
                 Argument{
@@ -880,31 +492,13 @@ TypeSystem{
                 ModifyArgument{
                     index: 1
                     ReplaceType{
-                        modifiedType: "io.qt.core.QList<T>"
+                        modifiedType: "io.qt.core.@NonNull QList<T>"
                     }
                 }
                 ModifyArgument{
                     index: 2
                     ReplaceType{
-                        modifiedType: "io.qt.core.QList<T>"
-                    }
-                }
-                ModifyArgument{
-                    index: 3
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
-                ModifyArgument{
-                    index: 4
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
-                    }
-                }
-                ModifyArgument{
-                    index: 5
-                    ReplaceType{
-                        modifiedType: "java.lang.String"
+                        modifiedType: "io.qt.core.@NonNull QList<T>"
                     }
                 }
             }
@@ -912,12 +506,6 @@ TypeSystem{
         ModifyFunction{
             signature: "compare_helper(bool,const char *,char *,char *,const char *,const char *,const char *,int)"
             ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 ReplaceType{
                     modifiedType: "java.lang.String"
@@ -939,122 +527,11 @@ TypeSystem{
                     Text{content: "jsize %in_length = %env->GetStringUTFLength(%in);\n"+
                                   "char* %out = new char[size_t(%in_length)];\n"+
                                   "%env->GetStringUTFRegion(%in, 0, %in_length, %out);"}
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "compare_helper(bool, const char *, const char *, const char *, const char *, int)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %in_length = %env->GetStringUTFLength(%in);\n"+
-                                  "char* %out = new char[size_t(%in_length)];\n"+
-                                  "%env->GetStringUTFRegion(%in, 0, %in_length, %out);"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %in_length = %env->GetStringUTFLength(%in);\n"+
-                                  "char* %out = new char[size_t(%in_length)];\n"+
-                                  "%env->GetStringUTFRegion(%in, 0, %in_length, %out);"}
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "qExpectFail(const char *,const char *,QTest::TestFailMode,const char *,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "currentAppName()"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "currentDataTag()"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "currentTestFunction()"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
         }
         ModifyFunction{
             signature: "qData(const char *,int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: "return"
                 ReplaceType{
@@ -1083,12 +560,6 @@ TypeSystem{
         ModifyFunction{
             signature: "qElementData(const char *,int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: "return"
                 ReplaceType{
                     modifiedType: "java.lang.Object"
@@ -1116,12 +587,6 @@ TypeSystem{
         ModifyFunction{
             signature: "qGlobalData(const char *,int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: "return"
                 ReplaceType{
                     modifiedType: "java.lang.Object"
@@ -1147,15 +612,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addColumnInternal(int,const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "asciiToKey(char)"
             ModifyArgument{
                 index: 1
@@ -1171,7 +627,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyClick(QWindow *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyClick(QWindow *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1186,7 +642,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyClick(QWidget *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyClick(QWidget *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1201,7 +657,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyPress(QWindow *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyPress(QWindow *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1216,7 +672,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyPress(QWidget *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyPress(QWidget *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1231,7 +687,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyRelease(QWindow *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyRelease(QWindow *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1246,7 +702,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyRelease(QWidget *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyRelease(QWidget *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -1261,7 +717,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyEvent(QTest::KeyAction, QWindow *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyEvent(QTest::KeyAction, QWindow *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
@@ -1276,7 +732,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "keyEvent(QTest::KeyAction, QWidget *, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "keyEvent(QTest::KeyAction, QWidget *, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
@@ -1291,7 +747,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "sendKeyEvent(QTest::KeyAction, QWidget *, Qt::Key, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "sendKeyEvent(QTest::KeyAction, QWidget *, Qt::Key, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 4
                 ReplaceType{
@@ -1306,7 +762,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "sendKeyEvent(QTest::KeyAction, QWindow *, Qt::Key, char, QFlags<Qt::KeyboardModifier>, int)"
+            signature: "sendKeyEvent(QTest::KeyAction, QWindow *, Qt::Key, char, Qt::KeyboardModifiers, int)"
             ModifyArgument{
                 index: 4
                 ReplaceType{
@@ -1323,15 +779,9 @@ TypeSystem{
         ModifyFunction{
             signature: "compare_helper(bool,const char*,qxp::function_ref<const char*()>,qxp::function_ref<const char*()>,const char*,const char*,const char*,int)"
             ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.util.function.Supplier<String>"
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
                 }
                 NoNullPointer{
                 }
@@ -1345,7 +795,7 @@ TypeSystem{
             ModifyArgument{
                 index: 4
                 ReplaceType{
-                    modifiedType: "java.util.function.Supplier<String>"
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
                 }
                 NoNullPointer{
                 }
@@ -1354,24 +804,6 @@ TypeSystem{
                     InsertTemplate{
                         name: "test.stringsupplier.function"
                     }
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
             since: [6, 4]
@@ -1381,7 +813,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.util.function.Supplier<String>"
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
                 }
                 NoNullPointer{
                 }
@@ -1395,7 +827,7 @@ TypeSystem{
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.util.function.Supplier<String>"
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
                 }
                 NoNullPointer{
                 }
@@ -1404,24 +836,6 @@ TypeSystem{
                     InsertTemplate{
                         name: "test.stringsupplier.function"
                     }
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
             since: [6, 4]
@@ -1499,90 +913,27 @@ TypeSystem{
             since: 6
         }
         ModifyFunction{
-            signature: "stationary(int)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "point(int)"
             ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QEventPoint"
-                    since: 6
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTouchEvent$TouchPoint"
-                    until: 5
-                }
-                ConversionRule{
+                index: 0
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, &%in);"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
         ModifyFunction{
             signature: "pointOrPreviousPoint(int)"
             ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QEventPoint"
-                    since: 6
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTouchEvent$TouchPoint"
-                    until: 5
-                }
-                ConversionRule{
+                index: 0
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, &%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "move(int, QPoint, QWindow *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "press(int, QPoint, QWindow *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "release(int, QPoint, QWindow *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
+                    ownership: Ownership.Dependent
                 }
             }
         }
         ModifyFunction{
             signature: "move(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
             ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
@@ -1593,13 +944,6 @@ TypeSystem{
         ModifyFunction{
             signature: "press(int, QPoint, QWidget *)"
             ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
                 }
@@ -1608,13 +952,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "release(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventSequence"
-                }
-            }
             ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
@@ -1647,24 +984,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "stationary(int)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventWidgetSequence"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "move(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventWidgetSequence"
-                }
-            }
             ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
@@ -1674,13 +994,6 @@ TypeSystem{
         ModifyFunction{
             signature: "press(int, QPoint, QWidget *)"
             ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventWidgetSequence"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
                 }
@@ -1688,13 +1001,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "release(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.test.QTest$QTouchEventWidgetSequence"
-                }
-            }
             ModifyArgument{
                 index: 3
                 RemoveDefaultExpression{
@@ -1707,7 +1013,7 @@ TypeSystem{
     
     ObjectType{
         name: "QSignalSpy"
-        implementing: "List<java.util.List<java.lang.Object>>"
+        implementing: "List<@NonNull List<@Nullable Object>>"
         DelegateBaseClass{
             baseClass: "QList<QList<QVariant>>"
             delegate: "list"
@@ -1725,15 +1031,6 @@ TypeSystem{
         ModifyFunction{
             signature: "wait(int)"
             rename: "waitForTimeout"
-        }
-        ModifyFunction{
-            signature: "QSignalSpy(const QObject *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         ExtraIncludes{
             Include{
@@ -1776,6 +1073,16 @@ TypeSystem{
     
     ObjectType{
         name: "QTestEventLoop"
+        ModifyFunction{
+            signature: "instance()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
     }
     
     EnumType{
@@ -1956,13 +1263,6 @@ TypeSystem{
     GlobalFunction{
         signature: "qt_sendShortcutOverrideEvent(QObject*, ulong, int, Qt::KeyboardModifiers, QString, bool, ushort)"
         targetType: "QTest"
-    }
-    
-    FunctionalType{
-        name: "QTest::Supplier"
-        generate: false
-        using: "qxp::function_ref<const char*()>"
-        since: [6, 4]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"}

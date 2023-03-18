@@ -97,45 +97,46 @@ inline bool operator==(const QAnimationClipData &lhs, const QAnimationClipData &
 #ifndef QTJAMBI_GENERATOR_RUNNING
 inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
 {
-    hash_type hashCode = seed;
-    hashCode = hashCode * 31 + qHash(value.coordinates());
-    hashCode = hashCode * 31 + ::qHash(value.interpolationType());
-    hashCode = hashCode * 31 + qHash(value.leftControlPoint());
-    hashCode = hashCode * 31 + qHash(value.rightControlPoint());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.coordinates());
+    seed = hash(seed, value.interpolationType());
+    seed = hash(seed, value.leftControlPoint());
+    seed = hash(seed, value.rightControlPoint());
+    return seed;
 }
 
 inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
 {
-    hash_type hashCode = seed;
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + ::qHash(value.keyFrameCount());
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.keyFrameCount());
     for(const QKeyFrame & f : value){
-        hashCode = hashCode * 31 + qHash(f);
+        seed = hash(seed, f);
     }
-    return hashCode;
+    return seed;
 }
 
 inline hash_type qHash(const QChannel &value, hash_type seed = 0)
 {
+    QtPrivate::QHashCombine hash;
     hash_type hashCode = seed;
-    hashCode = hashCode * 31 + qHash(value.name());
+    seed = hash(seed, value.name());
     hashCode = hashCode * 31 + ::qHash(value.channelComponentCount());
     for(const QChannelComponent & c : value){
-        hashCode = hashCode * 31 + qHash(c);
+        seed = hash(seed, c);
     }
     return hashCode;
 }
 
 inline hash_type qHash(const QAnimationClipData &value, hash_type seed = 0)
 {
-    hash_type hashCode = seed;
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + ::qHash(value.channelCount());
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.channelCount());
     for(const QChannel & c : value){
-        hashCode = hashCode * 31 + qHash(c);
+        seed = hash(seed, c);
     }
-    return hashCode;
+    return seed;
 }
 
 #endif

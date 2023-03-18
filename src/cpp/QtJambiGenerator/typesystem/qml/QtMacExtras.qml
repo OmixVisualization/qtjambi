@@ -31,13 +31,13 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.macextras"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtMacExtras"
     module: "qtjambi.macextras"
     description: "Provides platform-specific APIs for macOS."
 
     InjectCode{
-        Text{content: "io.qt.QtUtilities.initializePackage(\"io.qt.widgets\");"}
+        Text{content: "QtUtilities.initializePackage(\"io.qt.widgets\");"}
     }
     
     Rejection{

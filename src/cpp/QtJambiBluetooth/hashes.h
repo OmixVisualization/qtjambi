@@ -39,175 +39,186 @@ namespace QtJambiPrivate {
     template<> struct supports_qHash<QBluetoothServiceInfo::Sequence> : supports_qHash<QList<QVariant>>{};
 }
 
-hash_type qHash(const QLowEnergyCharacteristicData &value);
+hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed = 0);
 
-inline hash_type qHash(const QBluetoothUuid &value)
+inline hash_type qHash(const QBluetoothUuid &value, hash_type seed = 0)
 {
-    return qHash(value.toByteArray());
+    return qHash(value.toByteArray(), seed);
 }
 
-inline hash_type qHash(const QBluetoothAddress &value)
+inline hash_type qHash(const QBluetoothAddress &value, hash_type seed = 0)
 {
-    return qHash(value.toString());
+    return qHash(value.toString(), seed);
 }
 
-inline hash_type qHash(const QBluetoothDeviceInfo &value)
+inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.rssi());
-    hashCode = hashCode * 31 + qHash(value.address());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.isCached());
-    hashCode = hashCode * 31 + qHash(value.deviceUuid());
-    hashCode = hashCode * 31 + qHash(value.serviceUuids());
-    hashCode = hashCode * 31 + qHash(value.serviceClasses());
-    hashCode = hashCode * 31 + qHash(value.majorDeviceClass());
-    hashCode = hashCode * 31 + qHash(value.minorDeviceClass());
-    hashCode = hashCode * 31 + qHash(value.coreConfigurations());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.rssi());
+    seed = hash(seed, value.address());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.isCached());
+    seed = hash(seed, value.deviceUuid());
+    seed = hash(seed, value.serviceUuids());
+    seed = hash(seed, value.serviceClasses());
+    seed = hash(seed, value.majorDeviceClass());
+    seed = hash(seed, value.minorDeviceClass());
+    seed = hash(seed, value.coreConfigurations());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.serviceUuidsCompleteness());
+    seed = hash(seed, value.serviceUuidsCompleteness());
 #else
-    hashCode = hashCode * 31 + qHash(value.manufacturerData());
-    hashCode = hashCode * 31 + qHash(value.coreConfigurations());
+    seed = hash(seed, value.manufacturerData());
+    seed = hash(seed, value.coreConfigurations());
 #endif
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QBluetoothHostInfo &value)
+inline hash_type qHash(const QBluetoothHostInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.address());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.address());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyDescriptor &value)
+inline hash_type qHash(const QLowEnergyDescriptor &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.uuid());
-    hashCode = hashCode * 31 + qHash(value.value());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.uuid());
+    seed = hash(seed, value.value());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.handle());
+    seed = hash(seed, value.handle());
 #endif
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyAdvertisingData &value)
+inline hash_type qHash(const QLowEnergyAdvertisingData &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.rawData());
-    hashCode = hashCode * 31 + qHash(value.services());
-    hashCode = hashCode * 31 + qHash(value.localName());
-    hashCode = hashCode * 31 + qHash(value.manufacturerId());
-    hashCode = hashCode * 31 + qHash(value.discoverability());
-    hashCode = hashCode * 31 + qHash(value.manufacturerData());
-    hashCode = hashCode * 31 + qHash(value.includePowerLevel());
-    hashCode = hashCode * 31 + qHash(value.invalidManufacturerId());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.rawData());
+    seed = hash(seed, value.services());
+    seed = hash(seed, value.localName());
+    seed = hash(seed, value.manufacturerId());
+    seed = hash(seed, value.discoverability());
+    seed = hash(seed, value.manufacturerData());
+    seed = hash(seed, value.includePowerLevel());
+    seed = hash(seed, value.invalidManufacturerId());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyServiceData &value)
+inline hash_type qHash(const QLowEnergyServiceData &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.uuid());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.characteristics());
-    hashCode = hashCode * 31 + qHash(value.includedServices());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.uuid());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.characteristics());
+    seed = hash(seed, value.includedServices());
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QBluetoothTransferRequest &value)
+inline hash_type qHash(const QBluetoothTransferRequest &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.address());
-    return hashCode;
+    return qHash(value.address(), seed);
 }
 #endif
 
-inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value)
+inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.type);
-    hashCode = hashCode * 31 + qHash(value.address);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type);
+    seed = hash(seed, value.address);
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyAdvertisingParameters &value)
+inline hash_type qHash(const QLowEnergyAdvertisingParameters &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.mode());
-    hashCode = hashCode * 31 + qHash(value.filterPolicy());
-    hashCode = hashCode * 31 + qHash(value.maximumInterval());
-    hashCode = hashCode * 31 + qHash(value.minimumInterval());
-    hashCode = hashCode * 31 + qHash(value.whiteList());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.mode());
+    seed = hash(seed, value.filterPolicy());
+    seed = hash(seed, value.maximumInterval());
+    seed = hash(seed, value.minimumInterval());
+    seed = hash(seed, value.whiteList());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyDescriptorData &value)
+inline hash_type qHash(const QLowEnergyDescriptorData &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.uuid());
-    hashCode = hashCode * 31 + qHash(value.value());
-    hashCode = hashCode * 31 + qHash(int(value.readConstraints()));
-    hashCode = hashCode * 31 + qHash(int(value.writeConstraints()));
-    hashCode = hashCode * 31 + qHash(value.isReadable());
-    hashCode = hashCode * 31 + qHash(value.isWritable());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.uuid());
+    seed = hash(seed, value.value());
+    seed = hash(seed, int(value.readConstraints()));
+    seed = hash(seed, int(value.writeConstraints()));
+    seed = hash(seed, value.isReadable());
+    seed = hash(seed, value.isWritable());
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyCharacteristicData &value)
+inline hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed)
 {
-    hash_type hashCode = qHash(value.uuid());
-    hashCode = hashCode * 31 + qHash(value.value());
-    hashCode = hashCode * 31 + qHash(int(value.properties()));
-    hashCode = hashCode * 31 + qHash(int(value.readConstraints()));
-    hashCode = hashCode * 31 + qHash(int(value.writeConstraints()));
-    hashCode = hashCode * 31 + qHash(value.minimumValueLength());
-    hashCode = hashCode * 31 + qHash(value.maximumValueLength());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.descriptors());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.uuid());
+    seed = hash(seed, value.value());
+    seed = hash(seed, int(value.properties()));
+    seed = hash(seed, int(value.readConstraints()));
+    seed = hash(seed, int(value.writeConstraints()));
+    seed = hash(seed, value.minimumValueLength());
+    seed = hash(seed, value.maximumValueLength());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.descriptors());
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyCharacteristic &value)
+inline hash_type qHash(const QLowEnergyCharacteristic &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.uuid());
-    hashCode = hashCode * 31 + qHash(value.value());
-    hashCode = hashCode * 31 + qHash(int(value.properties()));
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.descriptors());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.uuid());
+    seed = hash(seed, value.value());
+    seed = hash(seed, int(value.properties()));
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.descriptors());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.handle());
+    seed = hash(seed, value.handle());
 #else
-    hashCode = hashCode * 31 + qHash(value.clientCharacteristicConfiguration());
+    seed = hash(seed, value.clientCharacteristicConfiguration());
 #endif
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QLowEnergyConnectionParameters &value)
+inline hash_type qHash(const QLowEnergyConnectionParameters &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.minimumInterval());
-    hashCode = hashCode * 31 + qHash(value.maximumInterval());
-    hashCode = hashCode * 31 + qHash(value.latency());
-    hashCode = hashCode * 31 + qHash(value.supervisionTimeout());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.minimumInterval());
+    seed = hash(seed, value.maximumInterval());
+    seed = hash(seed, value.latency());
+    seed = hash(seed, value.supervisionTimeout());
+    return seed;
 }
 
-inline hash_type qHash(const QBluetoothServiceInfo &value)
+inline hash_type qHash(const QBluetoothServiceInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.serviceName());
-    hashCode = hashCode * 31 + qHash(value.serviceDescription());
-    hashCode = hashCode * 31 + qHash(value.serviceProvider());
-    hashCode = hashCode * 31 + qHash(value.serverChannel());
-    hashCode = hashCode * 31 + qHash(value.protocolServiceMultiplexer());
-    hashCode = hashCode * 31 + qHash(int(value.socketProtocol()));
-    hashCode = hashCode * 31 + qHash(value.device());
-    hashCode = hashCode * 31 + qHash(value.isComplete());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.serviceAvailability());
-    hashCode = hashCode * 31 + qHash(value.serviceUuid());
-    hashCode = hashCode * 31 + qHash(value.isRegistered());
-    hashCode = hashCode * 31 + qHash(value.serviceClassUuids());
-    hashCode = hashCode * 31 + qHash(value.attributes());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.serviceName());
+    seed = hash(seed, value.serviceDescription());
+    seed = hash(seed, value.serviceProvider());
+    seed = hash(seed, value.serverChannel());
+    seed = hash(seed, value.protocolServiceMultiplexer());
+    seed = hash(seed, int(value.socketProtocol()));
+    seed = hash(seed, value.device());
+    seed = hash(seed, value.isComplete());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.serviceAvailability());
+    seed = hash(seed, value.serviceUuid());
+    seed = hash(seed, value.isRegistered());
+    seed = hash(seed, value.serviceClassUuids());
+    seed = hash(seed, value.attributes());
+    return seed;
 }
 
 #endif // QTJAMI_BLUETOOTH_HASHES_H

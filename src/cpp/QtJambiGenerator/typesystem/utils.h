@@ -119,6 +119,7 @@ namespace TS {
         TargetLangOwnership,
         CppOwnership,
         IgnoreOwnership,
+        RegisterDependency,
         Invalidate
     };
 
@@ -208,10 +209,13 @@ namespace TS {
 
 class TypesystemException : public QException{
 public:
+    ~TypesystemException() = default;
+    TypesystemException *clone() const override;
     char const* what() const noexcept override;
+    void raise() const override;
     static void raise(const QString& message);
 private:
-    TypesystemException(const QString& message);
+    TypesystemException(const QByteArray& message);
     QByteArray m_message;
 };
 

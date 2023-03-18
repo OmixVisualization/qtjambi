@@ -30,13 +30,13 @@
 ****************************************************************************/
 
 class QQuickTest___{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, java.util.function.Supplier<io.qt.core.QObject> setupSupplier){
         io.qt.core.QObject setup = setupSupplier.get();
         return quickTestMainWithSetup(args, name, null, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, Class<? extends io.qt.core.QObject> setupType)
     {
         io.qt.core.QObject setup;
@@ -54,18 +54,18 @@ class QQuickTest___{
         return quickTestMainWithSetup(args, name, null, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, io.qt.core.QObject setup){
         return quickTestMainWithSetup(args, name, null, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, String sourceDir, java.util.function.Supplier<io.qt.core.QObject> setupSupplier){
         io.qt.core.QObject setup = setupSupplier.get();
         return quickTestMainWithSetup(args, name, sourceDir, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, String sourceDir, Class<? extends io.qt.core.QObject> setupType)
     {
         io.qt.core.QObject setup;
@@ -83,21 +83,21 @@ class QQuickTest___{
         return quickTestMainWithSetup(args, name, sourceDir, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMainWithSetup(String[] args, String name, String sourceDir, io.qt.core.QObject setup){
         return quickTestMainWithSetup(args, name, sourceDir, QtJambi_LibraryUtilities.internal.checkedNativeId(setup));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMain(String[] args, String name, String sourceDir){
         return quickTestMainWithSetup(args, name, sourceDir, 0);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int quickTestMain(String[] args, String name){
         return quickTestMainWithSetup(args, name, null, 0);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static native int quickTestMainWithSetup(String[] args, String name, String sourceDir, long setupId);
 }// class

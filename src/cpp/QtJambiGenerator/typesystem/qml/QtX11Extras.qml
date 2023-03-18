@@ -31,19 +31,20 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.x11extras"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtX11Extras"
     module: "qtjambi.x11extras"
     description: "Provides platform-specific APIs for X11."
-
-    EnumType{
-        name: "QX11Info::PeekOption"
-        flags: "QX11Info::PeekOptions"
-        since: [5, 10]
-    }
     
     ObjectType{
         name: "QX11Info"
+
+        Rejection{className: "PeekerCallback"}
+
+        EnumType{
+            name: "PeekOption"
+            since: [5, 10]
+        }
     }
     
     Rejection{
@@ -56,10 +57,6 @@ TypeSystem{
     
     Rejection{
         className: "QWaylandWindowFunctions::SetWindowSync"
-    }
-    
-    Rejection{
-        className: "QX11Info::PeekerCallback"
     }
     
     Rejection{

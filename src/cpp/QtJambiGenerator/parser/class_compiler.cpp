@@ -47,6 +47,76 @@
 #include "class_compiler.h"
 #include "lexer.h"
 #include "binder.h"
+#include "tokens.h"
 
+ClassCompiler::ClassCompiler(Binder *binder): m_isClass(false), _M_binder(binder),
+        _M_token_stream(binder->tokenStream()),
+        name_cc(_M_binder),
+        type_cc(_M_binder) {
+}
+
+ClassCompiler::~ClassCompiler() {}
+
+const QString& ClassCompiler::name() const { return _M_name; }
+const QList<TypeInfo>& ClassCompiler::templateArgumentTypes() const { return _M_templateArgumentTypes; }
+const QList<QPair<TypeInfo,bool>>& ClassCompiler::baseClasses() const { return _M_base_classes; }
+
+void ClassCompiler::run(ClassSpecifierAST *node){
+    m_isClass = _M_token_stream->kind(node->class_key)==Token_class;
+    name_cc.run(node->name);
+    _M_name = name_cc.name();
+    _M_templateArgumentTypes = name_cc.templateArgumentTypes();
+    _M_base_classes.clear();
+
+    visit(node->base_clause);
+}
+
+void ClassCompiler::visitBaseSpecifier(BaseSpecifierAST *node) {
+    name_cc.run(node->name);
+    QString name = name_cc.name();
+    if (! name.isEmpty()){
+        TypeInfo info;
+        info.setQualifiedName(name_cc.qualifiedName());
+        info.setArguments(name_cc.templateArgumentTypes());
+        if(node->access_specifier>0){
+            switch(_M_token_stream->kind(node->access_specifier)){
+            case Token_protected:
+                _M_base_classes.append({info, false});
+                break;
+            case Token_public:
+                _M_base_classes.append({info, true});
+                break;
+            default:break;
+            }
+        }else if(!m_isClass){
+            _M_base_classes.append({info, true});
+        }
+    }
+}
+
+EnumCompiler::EnumCompiler(Binder *binder): _M_binder(binder),
+        _M_token_stream(binder->tokenStream()),
+        name_cc(_M_binder),
+        type_cc(_M_binder) {
+}
+
+EnumCompiler::~EnumCompiler() {}
+
+const QString& EnumCompiler::name() const { return _M_name; }
+const TypeInfo& EnumCompiler::baseType() const { return _M_base_type; }
+
+
+void EnumCompiler::run(EnumSpecifierAST *node){
+    name_cc.run(node->name);
+    _M_name = name_cc.name();
+    _M_base_type = TypeInfo();
+
+    if(node->base_type){
+        type_cc.run(node->base_type);
+        _M_base_type.setQualifiedName(type_cc.qualifiedName());
+        _M_base_type.setConstant(type_cc.isConstant());
+        _M_base_type.setVolatile(type_cc.isVolatile());
+    }
+}
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

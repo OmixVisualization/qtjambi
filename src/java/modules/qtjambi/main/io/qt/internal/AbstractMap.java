@@ -43,10 +43,6 @@ import io.qt.core.QPair;
 
 public abstract class AbstractMap<K,V> extends AbstractAssociativeContainer<K,V> implements NavigableMap<K,V> {
 
-	protected AbstractMap() {
-		super();
-	}
-
     protected AbstractMap(QPrivateConstructor p) {
 		super(p);
 	}

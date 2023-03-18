@@ -187,11 +187,7 @@ public class TestConnections extends ApplicationInitializer
 
         QNoSuchSlotException f = null;
         try {
-        	if(!hasSerializableLambdas) {
-        		sas.signal1.connect(sas, "non_slot()test_javaToJavaConnect");
-        	}else {
-        		sas.signal1.connect(sas::non_slot);
-        	}
+    		sas.signal1.connect(sas, "non_slot()");
         } catch (QNoSuchSlotException e) {
             f = e;
         }

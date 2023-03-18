@@ -72,6 +72,7 @@ import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QResource;
 import io.qt.core.QSize;
+import io.qt.core.QString;
 import io.qt.core.QTimer;
 import io.qt.core.QUuid;
 import io.qt.core.Qt;
@@ -740,9 +741,11 @@ public class TestClassFunctionality extends ApplicationInitializer {
         public int receivedPos;
 
         @Override
-        public String fixup(String input) {
-            receivedString = input;
-            return "As aught of " + input.substring(2, 8) + " birth";
+        public void fixup(QString input) {
+            receivedString = input.toString();
+            input.assign("As aught of ");
+            input.append(receivedString.substring(2, 8));
+            input.append(" birth");
         }
 
         @Override

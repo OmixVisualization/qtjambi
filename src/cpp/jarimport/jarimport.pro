@@ -40,6 +40,7 @@ macx:{
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
     QMAKE_EXTENSION_SHLIB = dylib
 
+    CONFIG+=no_default_rpath no_qt_rpath
     QMAKE_RPATHDIR =  @loader_path/../lib
     QMAKE_RPATHDIR += @loader_path/../../lib
     QMAKE_RPATHDIR += @loader_path/../../../lib

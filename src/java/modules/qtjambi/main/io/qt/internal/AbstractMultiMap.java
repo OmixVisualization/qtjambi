@@ -45,10 +45,6 @@ import io.qt.core.QPair;
 
 public abstract class AbstractMultiMap<K,V> extends AbstractMultiAssociativeContainer<K,V> implements NavigableMap<K,List<V>> {
 
-	protected AbstractMultiMap() {
-		super();
-	}
-
     protected AbstractMultiMap(QPrivateConstructor p) {
 		super(p);
 	}

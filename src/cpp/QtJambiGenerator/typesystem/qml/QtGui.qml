@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gui"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtGui"
     module: "qtjambi"    
 
@@ -2413,7 +2413,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                    modifiedType: "java.nio.@Nullable Buffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2794,6 +2794,15 @@ TypeSystem{
     
     TemplateType{
         name: "QOpenGLFunctions_3_2"
+        ModifyFunction{
+            signature: "glFenceSync(GLenum,GLbitfield)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
         ModifyFunction{
             signature: "glGetSynciv(__GLsync *, GLenum, GLsizei, GLsizei *, GLint *)"
             ModifyArgument{
@@ -3295,11 +3304,11 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                    modifiedType: "java.nio.@Nullable Buffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, INT_MAX);"}
+                    Text{content: "%out = %in ? %env->NewDirectByteBuffer(%in, INT_MAX) : nullptr;"}
                 }
             }
         }
@@ -3430,7 +3439,7 @@ TypeSystem{
                       "    this(wrap(values));\n"+
                       "}\n"+
                       "\n"+
-                      "@io.qt.QtUninvokable\n"+
+                      "@QtUninvokable\n"+
                       "public final void copyDataTo(float[] values)    {\n"+
                       "    copyDataTo(wrap(values));\n"+
                       "}"}
@@ -3439,7 +3448,7 @@ TypeSystem{
     Template{
         name: "gui.getter_returning_nativepointer"
         Text{content: "public final %RETURN_TYPE %FUNCTION_NAME() {\n"+
-                      "    io.qt.QNativePointer np = %FUNCTION_NAME_private();\n"+
+                      "    QNativePointer np = %FUNCTION_NAME_private();\n"+
                       "    %RETURN_TYPE tmp = np == null || np.isNull() ? null : np.object(%RETURN_TYPE.class);\n"+
                       "    return tmp == null ? null : new %RETURN_TYPE(tmp);\n"+
                       "}"}
@@ -3520,18 +3529,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator*=(float)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator/=(float)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
     }
     
@@ -3723,30 +3724,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QColor::CT"
-    }
-    
-    Rejection{
-        className: "QWindowsWindowFunctions::SetTouchWindowTouchType"
-    }
-    
-    Rejection{
-        className: "QWindowsWindowFunctions::SetHasBorderInFullScreen"
-    }
-    
-    Rejection{
-        className: "QWindowsWindowFunctions::SetHasBorderInFullScreenDefault"
-    }
-    
-    Rejection{
-        className: "QWindowsWindowFunctions::SetWindowActivationBehaviorType"
-    }
-    
-    Rejection{
-        className: "QWindowsWindowFunctions::IsTabletModeType"
-    }
-    
-    Rejection{
         className: "QEglFSFunctions::SwitchLangType"
     }
     
@@ -3794,23 +3771,6 @@ TypeSystem{
     Rejection{
         className: "QAccessibleActionInterface"
         functionName: "trUtf8"
-    }
-    
-    
-    
-    Rejection{
-        className: "QAccessibleInterface"
-        functionName: "cast_helper"
-    }
-    
-    Rejection{
-        className: "QAccessibleInterface"
-        functionName: "virtual_hook"
-    }
-    
-    Rejection{
-        className: "QAccessibleInterface"
-        functionName: "interface_cast"
     }
     
     Rejection{
@@ -3872,11 +3832,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QMatrix4x4"
-        functionName: "toGenericMatrix"
-    }
-    
-    Rejection{
         className: "QPaintEngine"
         functionName: "fix_neg_rect"
     }
@@ -3917,48 +3872,9 @@ TypeSystem{
         className: "QPolygon"
         functionName: "point"
     }
-    
+
     Rejection{
         className: "QRegionData"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "cleanUp"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "cbegin"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "rbegin"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "crbegin"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "cend"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "rend"
-    }
-    
-    Rejection{
-        className: "QRegion"
-        functionName: "crend"
-    }
-    
-    Rejection{
-        className: "QRegion::QRegionData"
     }
     
     Rejection{
@@ -3972,16 +3888,6 @@ TypeSystem{
     
     Rejection{
         className: "QTextFrameLayoutData"
-    }
-    
-    Rejection{
-        className: "QPixelFormat"
-        functionName: "get"
-    }
-    
-    Rejection{
-        className: "QPixelFormat"
-        functionName: "set"
     }
     
     Rejection{
@@ -4076,17 +3982,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QGradient"
-        enumName: "Type"
-    }
-    
-    
-    Rejection{
-        className: "QGradient"
-        functionName: "type"
-    }
-    
-    Rejection{
         className: "QActionGroup"
         functionName: "selected"
         since: 6
@@ -4154,13 +4049,6 @@ TypeSystem{
     
     EnumType{
         name: "QInputMethodEvent::AttributeType"
-    }
-    
-    EnumType{
-        name: "QClipboard::Mode"
-        RejectEnumValue{
-            name: "LastMode"
-        }
     }
     
     EnumType{
@@ -4259,7 +4147,6 @@ TypeSystem{
     
     EnumType{
         name: "QImageIOHandler::Transformation"
-        flags: "QImageIOHandler::Transformations"
     }
     
     EnumType{
@@ -4272,7 +4159,6 @@ TypeSystem{
     
     EnumType{
         name: "QImageIOPlugin::Capability"
-        flags: "QImageIOPlugin::Capabilities"
     }
     
     EnumType{
@@ -4309,12 +4195,10 @@ TypeSystem{
     
     EnumType{
         name: "QPaintEngine::DirtyFlag"
-        flags: "QPaintEngine::DirtyFlags"
     }
     
     EnumType{
         name: "QPaintEngine::PaintEngineFeature"
-        flags: "QPaintEngine::PaintEngineFeatures"
     }
     
     EnumType{
@@ -4326,24 +4210,6 @@ TypeSystem{
         upperBound: "QPaintEngine.MaxUser"
         lowerBound: "QPaintEngine.User"
         extensible: true
-    }
-    
-    EnumType{
-        name: "QPainter::CompositionMode"
-    }
-    
-    EnumType{
-        name: "QPainter::RenderHint"
-        flags: "QPainter::RenderHints"
-    }
-    
-    EnumType{
-        name: "QPainterPath::ElementType"
-    }
-    
-    EnumType{
-        name: "QPainter::PixmapFragmentHint"
-        flags: "QPainter::PixmapFragmentHints"
     }
     
     EnumType{
@@ -4375,10 +4241,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QRegion::RegionType"
-    }
-    
-    EnumType{
         name: "QStandardItem::ItemType"
     }
     
@@ -4388,7 +4250,6 @@ TypeSystem{
     
     EnumType{
         name: "QSurfaceFormat::FormatOption"
-        flags: "QSurfaceFormat::FormatOptions"
     }
     
     EnumType{
@@ -4442,7 +4303,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextDocument::FindFlag"
-        flags: "QTextDocument::FindFlags"
     }
     
     EnumType{
@@ -4459,7 +4319,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextDocument::MarkdownFeature"
-        flags: "QTextDocument::MarkdownFeatures"
         since: [5, 14]
     }
     
@@ -4469,7 +4328,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextFormat::PageBreakFlag"
-        flags: "QTextFormat::PageBreakFlags"
     }
     
     EnumType{
@@ -4482,7 +4340,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextItem::RenderFlag"
-        flags: "QTextItem::RenderFlags"
     }
     
     EnumType{
@@ -4507,7 +4364,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextOption::Flag"
-        flags: "QTextOption::Flags"
     }
     
     EnumType{
@@ -4541,17 +4397,12 @@ TypeSystem{
     
     EnumType{
         name: "QTouchDevice::CapabilityFlag"
-        flags: "QTouchDevice::Capabilities"
         until: 5
     }
     
     EnumType{
         name: "QTouchDevice::DeviceType"
         until: 5
-    }
-    
-    EnumType{
-        name: "QTransform::TransformationType"
     }
     
     EnumType{
@@ -4568,22 +4419,7 @@ TypeSystem{
     
     EnumType{
         name: "QTouchEvent::TouchPoint::InfoFlag"
-        flags: "QTouchEvent::TouchPoint::InfoFlags"
         until: 5
-    }
-    
-    EnumType{
-        name: "QGradient::Spread"
-        upperBound: "QGradient.RepeatSpread"
-        lowerBound: "QGradient.PadSpread"
-    }
-    
-    EnumType{
-        name: "QGradient::CoordinateMode"
-    }
-    
-    EnumType{
-        name: "QGradient::Preset"
     }
     
     EnumType{
@@ -4624,18 +4460,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QPageLayout::Mode"
-    }
-    
-    EnumType{
-        name: "QPageLayout::Orientation"
-    }
-    
-    EnumType{
-        name: "QPageLayout::Unit"
-    }
-    
-    EnumType{
         name: "QPageSize::PageSizeId"
         RejectEnumValue{
             name: "Letter"
@@ -4671,118 +4495,25 @@ TypeSystem{
         name: "QPageSize::Unit"
     }
     
-    EnumType{
-        name: "QPixelFormat::AlphaPosition"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::AlphaPremultiplied"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::AlphaUsage"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::ByteOrder"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::ColorModel"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::TypeInterpretation"
-    }
-    
-    EnumType{
-        name: "QPixelFormat::YUVLayout"
-    }
-    
-    EnumType{
-        name: "QGradient::InterpolationMode"
-    }
-    
-    ValueType{
-        name: "QInputMethodEvent::Attribute"
-        Include{
-            fileName: "QInputMethodEvent"
-            location: Include.Global
-        }
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QInputMethodEvent::Attribute(copy->type, copy->start, copy->length, copy->value);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);\n"+
-                          "}"}
-        }
-        CustomConstructor{
-            type: CustomConstructor.Copy
-            Text{content: "new(placement) QInputMethodEvent::Attribute(copy->type, copy->start, copy->length, copy->value);"}
-        }
-        CustomConstructor{
-            type: CustomConstructor.Default
-            Text{content: "new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);"}
-        }
-    }
-    
     ValueType{
         name: "QPageLayout"
-        ModifyFunction{
-            signature: "operator=(const QPageLayout&)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "Mode"
+        }
+        EnumType{
+            name: "Orientation"
+        }
+        EnumType{
+            name: "Unit"
         }
     }
     
     NamespaceType{
         name: "QColorConstants"
-    }
-    
-    NamespaceType{
-        name: "QColorConstants::Svg"
-    }
-    
-    
-    EnumType{
-        name: "QAccessible::Event"
-    }
-    
-    
-    EnumType{
-        name: "QAccessible::RelationFlag"
-        flags: "QAccessible::Relation"
-    }
-    
-    EnumType{
-        name: "QAccessible::Role"
-        RejectEnumValue{
-            name: "PushButton"
+
+        NamespaceType{
+            name: "Svg"
         }
-    }
-    
-    InterfaceType{
-        name: "QAccessible::ActivationObserver"
-    }
-    
-    EnumType{
-        name: "QAccessible::InterfaceType"
-    }
-    
-    EnumType{
-        name: "QAccessible::TextBoundaryType"
-    }
-    
-    
-    ValueType{
-        name: "QAccessible::State"
-    }
-    
-    EnumType{
-        name: "QAccessible::Text"
-    }
-    
-    EnumType{
-        name: "QAccessibleTableModelChangeEvent::ModelChangeType"
     }
     
     EnumType{
@@ -4792,6 +4523,75 @@ TypeSystem{
     
     ObjectType{
         name: "QAccessible"
+
+        EnumType{
+            name: "Event"
+        }
+
+        EnumType{
+            name: "RelationFlag"
+        }
+
+        EnumType{
+            name: "Role"
+            RejectEnumValue{
+                name: "PushButton"
+            }
+        }
+
+        InterfaceType{
+            name: "ActivationObserver"
+        }
+
+        EnumType{
+            name: "InterfaceType"
+        }
+
+        EnumType{
+            name: "TextBoundaryType"
+        }
+
+        ValueType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "Text"
+        }
+
+        FunctionalType{
+            name: "InterfaceFactory"
+            ExtraIncludes{
+                Include{
+                    fileName: "QAccessible"
+                    location: Include.Global
+                }
+                since: [6, 4]
+            }
+        }
+
+        FunctionalType{
+            name: "RootObjectHandler"
+            ExtraIncludes{
+                Include{
+                    fileName: "QAccessible"
+                    location: Include.Global
+                }
+                since: [6, 4]
+            }
+        }
+
+        FunctionalType{
+            name: "UpdateHandler"
+            ExtraIncludes{
+                Include{
+                    fileName: "QAccessible"
+                    location: Include.Global
+                }
+                since: [6, 4]
+            }
+        }
+
         ModifyFunction{
             signature: "cleanup()"
             remove: RemoveFlag.All
@@ -4847,38 +4647,14 @@ TypeSystem{
                 }
             }
         }
-    }
-    
-    FunctionalType{
-        name: "QAccessible::InterfaceFactory"
-        ExtraIncludes{
-            Include{
-                fileName: "QAccessible"
-                location: Include.Global
+        ModifyFunction{
+            signature: "accessibleInterface(QAccessible::Id)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
-            since: [6, 4]
-        }
-    }
-    
-    FunctionalType{
-        name: "QAccessible::RootObjectHandler"
-        ExtraIncludes{
-            Include{
-                fileName: "QAccessible"
-                location: Include.Global
-            }
-            since: [6, 4]
-        }
-    }
-    
-    FunctionalType{
-        name: "QAccessible::UpdateHandler"
-        ExtraIncludes{
-            Include{
-                fileName: "QAccessible"
-                location: Include.Global
-            }
-            since: [6, 4]
         }
     }
     
@@ -4972,11 +4748,119 @@ TypeSystem{
     
     InterfaceType{
         name: "QAccessibleInterface"
+        Rejection{
+            functionName: "cast_helper"
+        }
+        Rejection{
+            functionName: "virtual_hook"
+        }
+        Rejection{
+            functionName: "interface_cast"
+        }
         ModifyFunction{
             signature: "indexOfChild(const QAccessibleInterface*)const"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "actionInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "editableTextInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "imageInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "tableCellInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "tableInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "textInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "valueInterface()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusChild()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parent()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "childAt(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "child(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
     }
@@ -5017,6 +4901,15 @@ TypeSystem{
     
     InterfaceType{
         name: "QAccessibleTableCellInterface"
+        ModifyFunction{
+            signature: "table()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     InterfaceType{
@@ -5026,6 +4919,33 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "caption()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "cellAt(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "summary()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
     }
@@ -5224,10 +5144,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    
-    
-    
-    
     ObjectType{
         name: "QAccessiblePlugin"
         ModifyFunction{
@@ -5248,12 +5164,34 @@ TypeSystem{
     
     ObjectType{
         name: "QInputMethodEvent"
+
+        ValueType{
+            name: "Attribute"
+            Include{
+                fileName: "QInputMethodEvent"
+                location: Include.Global
+            }
+            CustomConstructor{
+                Text{content: "if(copy){\n"+
+                              "    return new(placement) QInputMethodEvent::Attribute(copy->type, copy->start, copy->length, copy->value);\n"+
+                              "}else{\n"+
+                              "    return new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);\n"+
+                              "}"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Copy
+                Text{content: "new(placement) QInputMethodEvent::Attribute(copy->type, copy->start, copy->length, copy->value);"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Default
+                Text{content: "new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);"}
+            }
+        }
         ModifyFunction{
             signature: "operator=(const QInputMethodEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5277,10 +5215,9 @@ TypeSystem{
         name: "QActionEvent"
         ModifyFunction{
             signature: "operator=(const QActionEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5351,10 +5288,9 @@ TypeSystem{
         name: "QNativeGestureEvent"
         ModifyFunction{
             signature: "operator=(const QNativeGestureEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -5400,6 +5336,16 @@ TypeSystem{
             rename: "intValue"
         }
         ModifyFunction{
+            signature: "device()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
             signature: "clone()const"
             ModifyArgument{
                 index: "return"
@@ -5415,7 +5361,7 @@ TypeSystem{
             since: 6
         }
         ModifyFunction{
-            signature: "QNativeGestureEvent(Qt::NativeGestureType, const QPointingDevice *, int, QPointF, QPointF, QPointF, qreal, QPointF, unsigned long long)"
+            signature: "QNativeGestureEvent(Qt::NativeGestureType, const QPointingDevice *, int, QPointF, QPointF, QPointF, qreal, QPointF, quint64)"
             ModifyArgument{
                 index: 9
                 ReplaceDefaultExpression{
@@ -5430,10 +5376,9 @@ TypeSystem{
         name: "QCloseEvent"
         ModifyFunction{
             signature: "operator=(const QCloseEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5475,10 +5420,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QContextMenuEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5541,10 +5485,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QInputEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5568,10 +5511,9 @@ TypeSystem{
         name: "QInputMethodQueryEvent"
         ModifyFunction{
             signature: "operator=(const QInputMethodQueryEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5634,10 +5576,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QMouseEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5673,10 +5614,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QMoveEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5712,10 +5652,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QResizeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5775,10 +5714,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QShortcutEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5829,10 +5767,9 @@ TypeSystem{
         name: "QStatusTipEvent"
         ModifyFunction{
             signature: "operator=(const QStatusTipEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -5933,10 +5870,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QTabletEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6025,10 +5961,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QWheelEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6052,10 +5987,9 @@ TypeSystem{
         name: "QWindowStateChangeEvent"
         ModifyFunction{
             signature: "operator=(const QWindowStateChangeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6079,10 +6013,9 @@ TypeSystem{
         name: "QWhatsThisClickedEvent"
         ModifyFunction{
             signature: "operator=(const QWhatsThisClickedEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6124,10 +6057,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QPaintEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6151,10 +6083,9 @@ TypeSystem{
         name: "QScrollEvent"
         ModifyFunction{
             signature: "operator=(const QScrollEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6178,10 +6109,9 @@ TypeSystem{
         name: "QScrollPrepareEvent"
         ModifyFunction{
             signature: "operator=(const QScrollPrepareEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6201,20 +6131,20 @@ TypeSystem{
         }
     }
     
-    ValueType{
-        name: "QAbstractTextDocumentLayout::PaintContext"
-        Include{
-            fileName: "QAbstractTextDocumentLayout"
-            location: Include.Global
-        }
-    }
-    
-    ValueType{
-        name: "QAbstractTextDocumentLayout::Selection"
-    }
-    
     ObjectType{
         name: "QAbstractTextDocumentLayout"
+
+        ValueType{
+            name: "PaintContext"
+            Include{
+                fileName: "QAbstractTextDocumentLayout"
+                location: Include.Global
+            }
+        }
+
+        ValueType{
+            name: "Selection"
+        }
         forceAbstract: true
         ModifyFunction{
             signature: "setPaintDevice(QPaintDevice*)"
@@ -6223,6 +6153,16 @@ TypeSystem{
                 ReferenceCount{
                     variableName: "__rcPaintDevice"
                     action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "paintDevice()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -6257,35 +6197,27 @@ TypeSystem{
             rename: "_unregisterHandler"
             access: Modification.Private
         }
+        ModifyFunction{
+            signature: "handlerForObject(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
     }
     
     ValueType{
         name: "QBitmap"
         threadAffinity: "pixmap"
         ModifyFunction{
-            signature: "operator=(const QPixmap &)"
+            signature: "operator=(QPixmap)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator=(const QBitmap &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "QBitmap(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "fromData(QSize,const unsigned char*,QImage::Format)"
+            signature: "fromData(QSize,const uchar*,QImage::Format)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -6301,16 +6233,22 @@ TypeSystem{
     
     ObjectType{
         name: "QBackingStore"
+        ModifyFunction{
+            signature: "paintDevice()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ValueType{
         name: "QBrush"
         ModifyFunction{
             signature: "QBrush(Qt::GlobalColor, Qt::BrushStyle)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QBrush &)"
             remove: RemoveFlag.All
         }
         ExtraIncludes{
@@ -6326,19 +6264,6 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
-        ModifyFunction{
-            signature: "gradient()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QGradient"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -6351,6 +6276,12 @@ TypeSystem{
             Include{
                 fileName: "QPixmap"
                 location: Include.Global
+            }
+        }
+        EnumType{
+            name: "Mode"
+            RejectEnumValue{
+                name: "LastMode"
             }
         }
         ModifyFunction{
@@ -6390,6 +6321,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.gui.QClipboard$Text"
                 }
@@ -6407,14 +6339,11 @@ TypeSystem{
             signature: "operator quint64()const"
             rename: "toRgba64"
         }
-        ModifyFunction{
-            signature: "operator=(unsigned long long)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QColor"
+        Rejection{className: "CT"}
         ModifyFunction{
             signature: "QColor(QColor::Spec)"
             remove: RemoveFlag.All
@@ -6434,16 +6363,6 @@ TypeSystem{
             signature: "QColor(QStringView)"
             remove: RemoveFlag.All
             since: [5, 8]
-        }
-        ModifyFunction{
-            signature: "operator=(QColor)"
-            remove: RemoveFlag.All
-            since: [5, 8]
-            until: 5
-        }
-        ModifyFunction{
-            signature: "operator=(Qt::GlobalColor)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "setNamedColor(QLatin1String)"
@@ -6580,7 +6499,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "fromRgba64(unsigned short,unsigned short,unsigned short,unsigned short)"
+            signature: "fromRgba64(ushort,ushort,ushort,ushort)"
             ModifyArgument{
                 index: 4
                 ReplaceDefaultExpression{
@@ -6641,7 +6560,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(QCursor)"
-            remove: RemoveFlag.All
+            threadAffinity: Affinity.Pixmap
         }
         ModifyFunction{
             signature: "setPos(QScreen*,QPoint)"
@@ -6660,34 +6579,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-        }
-        ModifyFunction{
-            signature: "bitmap()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QBitmap"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            until: [5, 14]
-        }
-        ModifyFunction{
-            signature: "mask()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QBitmap"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            until: [5, 14]
         }
         ModifyFunction{
             signature: "bitmap()const"
@@ -6801,7 +6692,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "start(QFlags<Qt::DropAction>)"
+            signature: "start(Qt::DropActions)"
             remove: RemoveFlag.All
             until: 5
         }
@@ -6811,10 +6702,9 @@ TypeSystem{
         name: "QDragEnterEvent"
         ModifyFunction{
             signature: "operator=(const QDragEnterEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6838,10 +6728,9 @@ TypeSystem{
         name: "QDragLeaveEvent"
         ModifyFunction{
             signature: "operator=(const QDragLeaveEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6865,10 +6754,9 @@ TypeSystem{
         name: "QDragMoveEvent"
         ModifyFunction{
             signature: "operator=(const QDragMoveEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -6906,10 +6794,9 @@ TypeSystem{
         name: "QDropEvent"
         ModifyFunction{
             signature: "operator=(const QDropEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -7023,10 +6910,9 @@ TypeSystem{
         name: "QEnterEvent"
         ModifyFunction{
             signature: "operator=(const QEnterEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -7068,10 +6954,9 @@ TypeSystem{
         name: "QExposeEvent"
         ModifyFunction{
             signature: "operator=(const QExposeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -7099,6 +6984,10 @@ TypeSystem{
     
     ObjectType{
         name: "QPlatformSurfaceEvent"
+
+        EnumType{
+            name: "SurfaceEventType"
+        }
         ModifyField{
             name: "m_surfaceEventType"
             read: false
@@ -7107,10 +6996,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QPlatformSurfaceEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7130,18 +7018,13 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QPlatformSurfaceEvent::SurfaceEventType"
-    }
-    
     ObjectType{
         name: "QFileOpenEvent"
         ModifyFunction{
             signature: "operator=(const QFileOpenEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7165,10 +7048,9 @@ TypeSystem{
         name: "QFocusEvent"
         ModifyFunction{
             signature: "operator=(const QFocusEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7192,10 +7074,9 @@ TypeSystem{
         name: "QHelpEvent"
         ModifyFunction{
             signature: "operator=(const QHelpEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7219,10 +7100,9 @@ TypeSystem{
         name: "QHideEvent"
         ModifyFunction{
             signature: "operator=(const QHideEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7272,10 +7152,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QHoverEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7299,10 +7178,9 @@ TypeSystem{
         name: "QIconDragEvent"
         ModifyFunction{
             signature: "operator=(const QIconDragEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyFunction{
@@ -7371,6 +7249,9 @@ TypeSystem{
             read: false
             write: true
             rename: "autoRepeat"
+            ReplaceType{
+                modifiedType: "boolean"
+            }
         }
         ModifyField{
             name: "m_autoRepeat"
@@ -7383,12 +7264,12 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QKeyEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
+
         ModifyFunction{
             signature: "clone()const"
             ModifyArgument{
@@ -7404,16 +7285,26 @@ TypeSystem{
             }
             since: 6
         }
+
+        ModifyFunction{
+            signature: "operator==(QKeySequence::StandardKey)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+    }
+    GlobalFunction{
+        signature: "operator==(QKeyEvent*,QKeySequence::StandardKey)"
+        remove: RemoveFlag.All
+        until: 5
     }
     
     ObjectType{
         name: "QTouchEvent"
         ModifyFunction{
             signature: "operator=(const QTouchEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -7487,18 +7378,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QAccessibleEvent::Event"
-    }
-    
     ObjectType{
         name: "QAccessibleEvent"
+
+        EnumType{
+            name: "Event"
+        }
         ModifyFunction{
             signature: "operator=(const QAccessibleEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                deprecated: true
+                name: "set"
             }
         }
         ModifyField{
@@ -7520,6 +7410,15 @@ TypeSystem{
             name: "m_uniqueId"
             read: false
             write: false
+        }
+        ModifyFunction{
+            signature: "accessibleInterface()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
     }
     
@@ -7559,6 +7458,10 @@ TypeSystem{
     
     ObjectType{
         name: "QAccessibleTableModelChangeEvent"
+
+        EnumType{
+            name: "ModelChangeType"
+        }
     }
     
     ValueType{
@@ -7578,10 +7481,6 @@ TypeSystem{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontInfo(QFont());"}
         }
-        ModifyFunction{
-            signature: "operator=(QFontInfo)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -7591,10 +7490,6 @@ TypeSystem{
                 fileName: "QStringList"
                 location: Include.Global
             }
-        }
-        ModifyFunction{
-            signature: "operator=(QFont)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "QFont(const QFont &, QPaintDevice*)"
@@ -7639,22 +7534,6 @@ TypeSystem{
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetricsF(QFont());"}
-        }
-        ModifyFunction{
-            signature: "operator!=(const QFontMetricsF &)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QFontMetricsF &)const"
-            access: Modification.Private
-        }
-        ModifyFunction{
-            signature: "operator=(QFontMetrics)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QFontMetricsF)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "boundingRect(QRectF,int,QString,int,int*)const"
@@ -7710,18 +7589,6 @@ TypeSystem{
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetrics(QFont());"}
-        }
-        ModifyFunction{
-            signature: "operator!=(const QFontMetrics &)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QFontMetrics &)const"
-            access: Modification.Private
-        }
-        ModifyFunction{
-            signature: "operator=(QFontMetrics)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "boundingRect(int,int,int,int,int,QString,int,int*)const"
@@ -7781,62 +7648,64 @@ TypeSystem{
     
     ValueType{
         name: "QGlyphRun"
-        ModifyFunction{
-            signature: "operator=(const QGlyphRun&)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "GlyphRunFlag"
         }
         ModifyFunction{
-            signature: "setRawData(const unsigned int *, const QPointF *, int)"
+            signature: "setRawData(const quint32 *, const QPointF *, int)"
             remove: RemoveFlag.All
         }
-    }
-    
-    EnumType{
-        name: "QGlyphRun::GlyphRunFlag"
-        flags: "QGlyphRun::GlyphRunFlags"
     }
     
     ValueType{
         name: "QRawFont"
+
+        EnumType{
+            name: "AntialiasingType"
+        }
+
+        EnumType{
+            name: "LayoutFlag"
+        }
         ModifyFunction{
-            signature: "operator=(const QRawFont&)"
+            signature: "advancesForGlyphIndexes(const quint32 *, QPointF *, int, QRawFont::LayoutFlags) const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "advancesForGlyphIndexes(const uint *, QPointF *, int, QFlags<QRawFont::LayoutFlag>) const"
+            signature: "advancesForGlyphIndexes(const quint32 *, QPointF *, int) const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "advancesForGlyphIndexes(const uint *, QPointF *, int) const"
+            signature: "glyphIndexesForChars(const QChar *, int, quint32 *, int *) const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "glyphIndexesForChars(const QChar *, int, unsigned int *, int *) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "fontTable(const char *) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-    }
-    
-    EnumType{
-        name: "QRawFont::AntialiasingType"
-    }
-    
-    EnumType{
-        name: "QRawFont::LayoutFlag"
-        flags: "QRawFont::LayoutFlags"
     }
     
     
     ValueType{
         name: "QGradient"
+        Rejection{enumName: "Type"}
+        Rejection{functionName: "type"}
+
+        EnumType{
+            name: "Spread"
+            upperBound: "QGradient.RepeatSpread"
+            lowerBound: "QGradient.PadSpread"
+        }
+
+        EnumType{
+            name: "CoordinateMode"
+        }
+
+        EnumType{
+            name: "Preset"
+        }
+
+        EnumType{
+            name: "InterpolationMode"
+        }
+
         isPolymorphicBase: true
         polymorphicIdExpression: "%1->type() == QGradient::NoGradient"
         CustomConstructor{
@@ -8035,9 +7904,6 @@ TypeSystem{
             signature: "overrideCursor()"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QCursor"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
@@ -8050,12 +7916,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -8123,10 +7992,6 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
-        }
-        ModifyFunction{
-            signature: "operator=(QIcon)"
-            remove: RemoveFlag.All
         }
     }
     
@@ -8210,34 +8075,30 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator=(QImage)"
+            signature: "QImage(uchar *, int, int, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "QImage(unsigned char *, int, int, QImage::Format, QImageCleanupFunction, void *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QImage(const unsigned char *, int, int, QImage::Format, QImageCleanupFunction, void *)"
+            signature: "QImage(const uchar *, int, int, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.JavaAndNative
         }
         ModifyFunction{
-            signature: "QImage(unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
+            signature: "QImage(uchar *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
-            signature: "QImage(unsigned char *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
+            signature: "QImage(uchar *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
             since: 6
         }
         ModifyFunction{
-            signature: "QImage(const unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
+            signature: "QImage(const uchar *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
-            signature: "QImage(const unsigned char *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
+            signature: "QImage(const uchar *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
             since: 6
         }
@@ -8284,73 +8145,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "QImage(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "load(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "load(QIODevice*,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "fromData(QByteArray,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "fromData(QByteArrayView,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "fromData(const unsigned char*,int,const char*)"
+            signature: "fromData(const uchar*,int,const char*)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -8367,19 +8162,9 @@ TypeSystem{
                 RemoveArgument{
                 }
             }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
         }
         ModifyFunction{
-            signature: "loadFromData(const unsigned char*,int,const char*)"
+            signature: "loadFromData(const uchar*,int,const char*)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -8394,69 +8179,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 RemoveArgument{
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "loadFromData(QByteArray,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "loadFromData(QByteArrayView,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "save(const QString &, const char *, int) const"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "save(QIODevice *, const char *, int) const"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
                 }
             }
         }
@@ -8467,6 +8189,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.ByteBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(reinterpret_cast<jbyte*>(const_cast<unsigned char*>(%in)), __qt_this->sizeInBytes());\n"+
@@ -8482,6 +8205,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "qsizetype sizeInBytes = __qt_this->sizeInBytes();\n"+
@@ -8498,7 +8222,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -8579,7 +8303,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.gui.QImage"
+                    modifiedType: "io.qt.gui.@Nullable QImage"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -8593,38 +8317,13 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "allocateImage(QSize, QImage::Format, QImage *)"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QImage __image;\n"+
-                                  "QImage* %out = &__image;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QImage"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "bool %out = __java_return_value!=nullptr;\n"+
-                                  "if(%out && %3)\n"+
-                                  "    *%1 = qtjambi_cast<const QImage&>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, __image) : nullptr;"}
-                }
-            }
+        InjectCode{
             since: 6
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
+                quoteAfterLine: "class QImageIOHandler_6__"
+                quoteBeforeLine: "}// class"
+            }
         }
     }
     
@@ -8721,14 +8420,6 @@ TypeSystem{
     
     ValueType{
         name: "QKeySequence"
-        ModifyFunction{
-            signature: "operator=(QKeySequence)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator[](uint)const"
-            access: Modification.Private
-        }
         InjectCode{
             until: 5
             ImportFile{
@@ -8796,6 +8487,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -8812,24 +8504,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix4x3 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix4x3 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -8842,6 +8520,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -8860,6 +8539,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(12);\n"+
@@ -8874,6 +8554,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 12);\n"+
@@ -8911,6 +8592,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -8927,24 +8609,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix4x2 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix4x2 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -8957,6 +8625,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -8975,6 +8644,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(8);\n"+
@@ -8989,6 +8659,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 8);\n"+
@@ -9026,6 +8697,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9042,24 +8714,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix3x4 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x4"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix3x4 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x4"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9072,6 +8730,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9090,6 +8749,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(12);\n"+
@@ -9104,6 +8764,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 12);\n"+
@@ -9141,6 +8802,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9157,24 +8819,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix3x3 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix3x3 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9187,6 +8835,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9205,6 +8854,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(9);\n"+
@@ -9219,6 +8869,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 9);\n"+
@@ -9256,6 +8907,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9272,24 +8924,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix3x2 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix3x2 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix3x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9302,6 +8940,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9320,6 +8959,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(6);\n"+
@@ -9334,6 +8974,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 6);\n"+
@@ -9371,6 +9012,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9387,24 +9029,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix2x4 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x4"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix2x4 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x4"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9417,6 +9045,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9435,6 +9064,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(8);\n"+
@@ -9449,6 +9079,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 8);\n"+
@@ -9486,6 +9117,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9502,24 +9134,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix2x3 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix2x3 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x3"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9532,6 +9150,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9550,6 +9169,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(6);\n"+
@@ -9564,6 +9184,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 6);\n"+
@@ -9601,6 +9222,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9617,24 +9239,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator+=(const QMatrix2x2 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix2x2 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix2x2"
-                }
-            }
         }
         ModifyFunction{
             signature: "constData()const"
@@ -9647,6 +9255,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9665,6 +9274,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(4);\n"+
@@ -9679,6 +9289,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 4);\n"+
@@ -9701,14 +9312,16 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QMatrix4x4::Flag"
-        flags: "QMatrix4x4::Flags"
-        since: 6
-    }
-    
     ValueType{
         name: "QMatrix4x4"
+        Rejection{
+            functionName: "toGenericMatrix"
+        }
+
+        EnumType{
+            name: "Flag"
+            since: 6
+        }
         ModifyFunction{
             signature: "data()"
             remove: RemoveFlag.All
@@ -9733,6 +9346,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9750,6 +9364,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);\n"+
@@ -9763,26 +9378,14 @@ TypeSystem{
         ModifyFunction{
             signature: "operator*=(const QMatrix4x4 &)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QMatrix4x4 &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QMatrix4x4 &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "inverted(bool *)const"
@@ -9815,6 +9418,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferData %out(%env, %in);\n"+
@@ -9833,6 +9437,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "float[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewFloatArray(16);\n"+
@@ -9847,6 +9452,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.FloatBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewDirectByteBuffer(%in, 16);\n"+
@@ -9868,6 +9474,26 @@ TypeSystem{
             }
         }
     }
+
+    /*GlobalFunction{
+        signature: "operator*(const QMatrix4x4&, const QPoint&)"
+        targetType: "QMatrix4x4"
+    }
+
+    GlobalFunction{
+        signature: "operator*(const QMatrix4x4&, const QPointf&)"
+        targetType: "QMatrix4x4"
+    }
+
+    GlobalFunction{
+        signature: "operator*(const QMatrix4x4&, const QVector3D&)"
+        targetType: "QMatrix4x4"
+    }
+
+    GlobalFunction{
+        signature: "operator*(const QMatrix4x4&, const QVector4D&)"
+        targetType: "QMatrix4x4"
+    }*/
     
     ObjectType{
         name: "QMovie"
@@ -10005,12 +9631,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -10042,12 +9671,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -10126,29 +9758,38 @@ TypeSystem{
                           "}"}
         }
         ModifyFunction{
-            signature: "redirected(QPoint*)const"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QPoint"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint *%out = qtjambi_cast<QPoint *>(%env, %scope, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "devicePixelRatio()const"
             ModifyArgument{
                 index: "return"
                 ReplaceType{
                     modifiedType: "double"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "paintEngine()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "redirected(QPoint*)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "sharedPainter()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -10312,6 +9953,24 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "paintDevice()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "painter()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -10322,21 +9981,22 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        ModifyFunction{
+            signature: "painter()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ValueType{
         name: "QPainterPath"
-        ModifyFunction{
-            signature: "operator=(QPainterPath)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-(const QPainterPath &)const"
-            rename: "minus"
-        }
-        ModifyFunction{
-            signature: "operator+(const QPainterPath &)const"
-            rename: "plus"
+
+        EnumType{
+            name: "ElementType"
         }
         ModifyFunction{
             signature: "operator|(const QPainterPath &)const"
@@ -10353,22 +10013,10 @@ TypeSystem{
         ModifyFunction{
             signature: "operator-=(const QPainterPath &)"
             rename: "subtract"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QPainterPath &)"
             rename: "unite"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator&=(const QPainterPath &)"
@@ -10428,6 +10076,36 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+        }
+
+        EnumType{
+            name: "CompositionMode"
+        }
+
+        EnumType{
+            name: "RenderHint"
+        }
+
+        EnumType{
+            name: "PixmapFragmentHint"
+        }
+        ModifyFunction{
+            signature: "device()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "paintEngine()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
         ModifyFunction{
@@ -10631,7 +10309,7 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "drawPixmapFragments(const QPainter::PixmapFragment *, int, const QPixmap &, QFlags<QPainter::PixmapFragmentHint>)"
+            signature: "drawPixmapFragments(const QPainter::PixmapFragment *, int, const QPixmap &, QPainter::PixmapFragmentHints)"
             ModifyArgument{
                 index: 1
                 ArrayType{
@@ -10781,69 +10459,22 @@ TypeSystem{
         ModifyFunction{
             signature: "redirected(const QPaintDevice*,QPoint*)"
             ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+            ModifyArgument{
                 index: 1
                 NoNullPointer{
                 }
             }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.core.QPoint"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint* %out = qtjambi_cast<QPoint*>(%env, %in);"}
-                }
-            }
             until: 5
-        }
-        ModifyFunction{
-            signature: "drawText(QRect,int,QString,QRect*)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.core.QRect"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRect* %out = qtjambi_cast<QRect*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "drawText(QRectF,int,QString,QRectF*)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.core.QRectF"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRectF* %out = qtjambi_cast<QRectF*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "drawText(int,int,int,int,int,QString,QRect*)"
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.core.QRect"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRect* %out = qtjambi_cast<QRect*>(%env, %in);"}
-                }
-            }
         }
     }
     
     ValueType{
         name: "QPalette"
-        ModifyFunction{
-            signature: "operator=(const QPalette&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -10853,56 +10484,6 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator=(QPicture)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "pictureFormat(QString)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "load(QIODevice*,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "load(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "save(QIODevice*,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "save(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setData(const char*,uint)"
             ModifyArgument{
                 index: 1
@@ -10910,16 +10491,6 @@ TypeSystem{
                     lengthParameter: 2
                 }
             }
-        }
-        ModifyFunction{
-            signature: "pictureFormat(QString)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "data()const"
@@ -11029,65 +10600,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "defineIOHandler(const char *, const char *, const char *, picture_io_handler, picture_io_handler)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "format()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewStringUTF(%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "parameters()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewStringUTF(%in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setFormat(const char*)"
             access: Modification.Private
             ModifyArgument{
@@ -11107,19 +10619,6 @@ TypeSystem{
                 target: CodeClass.Java
                 position: Position.End
                 Text{content: "__rc_format = arg__1;"}
-            }
-        }
-        ModifyFunction{
-            signature: "setParameters(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
             }
         }
         until: 5
@@ -11143,20 +10642,21 @@ TypeSystem{
     
     ValueType{
         name: "QRegion"
-        ModifyFunction{
-            signature: "operator=(QRegion)"
-            remove: RemoveFlag.All
+
+        Rejection{functionName: "cleanUp"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "crend"}
+        Rejection{className: "QRegionData"}
+
+        EnumType{
+            name: "RegionType"
         }
         ModifyFunction{
             signature: "operator&=(QRegion)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator+=(QRegion)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-=(QRegion)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -11172,20 +10672,8 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator+(QRegion)const"
-            rename: "plus"
-        }
-        ModifyFunction{
             signature: "operator&(QRect)const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator+(QRect)const"
-            rename: "plus"
-        }
-        ModifyFunction{
-            signature: "operator-(QRegion)const"
-            rename: "minus"
         }
         ModifyFunction{
             signature: "operator^(QRegion)const"
@@ -11196,11 +10684,19 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator&=(QRect)"
+            signature: "operator+=(QRect)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator+=(QRect)"
+            signature: "operator+=(QRegion)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator-=(QRegion)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator&=(QRect)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -11239,10 +10735,6 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "operator=(QPen)"
-            remove: RemoveFlag.All
-        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
@@ -11254,10 +10746,6 @@ TypeSystem{
     
     ValueType{
         name: "QPixmapCache::Key"
-        ModifyFunction{
-            signature: "operator=(QPixmapCache::Key)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -11265,10 +10753,6 @@ TypeSystem{
         threadAffinity: "pixmap"
         ModifyFunction{
             signature: "devType() const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QPixmap)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -11282,11 +10766,7 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "operator!()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "fromImageInPlace(QImage &, QFlags<Qt::ImageConversionFlag>)"
+            signature: "fromImageInPlace(QImage &, Qt::ImageConversionFlags)"
             remove: RemoveFlag.All
         }
         InjectCode{
@@ -11294,15 +10774,6 @@ TypeSystem{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QPixmap___"
                 quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "QPixmap(QString,const char*,QFlags<Qt::ImageConversionFlag>)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
         }
         ModifyFunction{
@@ -11327,32 +10798,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "scroll(int, int, int, int, int, int, QRegion *)"
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QRegion"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRegion *%out = qtjambi_cast<QRegion *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "scroll(int, int, const QRect &, QRegion *)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QRegion"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRegion *%out = qtjambi_cast<QRegion *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "fill(const QColor &)"
             ModifyArgument{
                 index: 1
@@ -11362,53 +10807,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "save(QIODevice *, const char *, int) const"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "save(const QString &, const char *, int) const"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "load(QString,const char*,QFlags<Qt::ImageConversionFlag>)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "loadFromData(const unsigned char*,uint,const char*,QFlags<Qt::ImageConversionFlag>)"
+            signature: "loadFromData(const uchar*,uint,const char*,Qt::ImageConversionFlags)"
             ModifyArgument{
                 index: 1
                 ArrayType{
                     lengthParameter: 2
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "loadFromData(QByteArray,const char*,QFlags<Qt::ImageConversionFlag>)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
         }
@@ -11418,8 +10821,7 @@ TypeSystem{
         name: "QPixmapCache"
         ModifyFunction{
             signature: "find(QString)"
-            Remove{
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
@@ -11427,61 +10829,17 @@ TypeSystem{
             remove: RemoveFlag.All
             until: 5
         }
-        ModifyFunction{
-            signature: "find(QString,QPixmap*)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPixmap pixmap;\n"+
-                                  "QPixmap* %out = &pixmap;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPixmap"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, pixmap) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "find(QPixmapCache::Key,QPixmap*)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPixmap pixmap;\n"+
-                                  "QPixmap* %out = &pixmap;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPixmap"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, pixmap) : nullptr;"}
-                }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
+                quoteAfterLine: "class QPixmapCache___"
+                quoteBeforeLine: "}// class"
             }
         }
     }
     
     ValueType{
         name: "QPolygon"
-        ModifyFunction{
-            signature: "operator=(const QPolygon &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         ExtraIncludes{
             Include{
                 fileName: "io.qt.core.QPoint"
@@ -11509,11 +10867,6 @@ TypeSystem{
     
     ValueType{
         name: "QPolygonF"
-        ModifyFunction{
-            signature: "operator=(const QPolygonF &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         ExtraIncludes{
             Include{
                 fileName: "io.qt.core.QPointF"
@@ -11544,57 +10897,22 @@ TypeSystem{
         ModifyFunction{
             signature: "operator*=(const QQuaternion &)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator*=(float)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QQuaternion &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QQuaternion &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(float)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion"
-                }
-            }
         }
         ModifyFunction{
             signature: "getAxes(QVector3D *, QVector3D *, QVector3D *) const"
@@ -11630,6 +10948,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.gui.QQuaternion$Axes"
                 }
@@ -11663,6 +10982,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.gui.QQuaternion$AxisAndAngle"
                 }
@@ -11706,6 +11026,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.gui.QQuaternion$EulerAngles"
                 }
@@ -11722,6 +11043,11 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
+    }
+
+    GlobalFunction{
+        signature: "operator*(const QQuaternion&, const QVector3D&)"
+        targetType: "QQuaternion"
     }
     
     ValueType{
@@ -11781,8 +11107,8 @@ TypeSystem{
                           "                const char* __qt_name0 = info.name;\n"+
                           "                int __qt_revision1 = info.revision;\n"+
                           "                void* __qt_return_value = resolveInterface(__qt_name0, static_cast<int>(__qt_revision1));\n"+
-                          "                jobject __java_return_value = QtJambiAPI::convertNativeToJavaObject(__jni_env, __qt_return_value, name0, false, false);\n"+
-                          "                CoreAPI::registerDependency(__jni_env, __java_return_value, __this_nativeId);\n"+
+                          "                jobject __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, __qt_return_value, name0);\n"+
+                          "                QtJambiAPI::registerDependency(__jni_env, __java_return_value, __this_nativeId);\n"+
                           "                return __java_return_value;\n"+
                           "            }\n"+
                           "        };\n"+
@@ -11800,36 +11126,18 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             since: [6, 2]
-            Text{content: "@io.qt.QtUninvokable\n"+
-                          "public final <QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(java.lang.Class<QNativeInterface> name){\n"+
+            Text{content: "@QtUninvokable\n"+
+                          "public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(java.lang.Class<QNativeInterface> name){\n"+
                           "    return nativeInterface(QtJambi_LibraryUtilities.internal.nativeId(this), name);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
-                          "private native <QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class<QNativeInterface> name);"}
+                          "@QtUninvokable\n"+
+                          "private native <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class<QNativeInterface> name);"}
         }
     }
     
     ObjectType{
         name: "QStandardItem"
-        ModifyFunction{
-            signature: "operator=(QStandardItem)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "read(QDataStream&)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "write(QDataStream&)const"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
         ModifyFunction{
             signature: "appendColumn(const QList<QStandardItem *> &)"
             ModifyArgument{
@@ -12144,10 +11452,6 @@ TypeSystem{
     
     ValueType{
         name: "QStaticText"
-        ModifyFunction{
-            signature: "operator=(QStaticText)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -12156,10 +11460,6 @@ TypeSystem{
     
     ValueType{
         name: "QSurfaceFormat"
-        ModifyFunction{
-            signature: "operator=(const QSurfaceFormat&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -12189,10 +11489,6 @@ TypeSystem{
     ValueType{
         name: "QTextBlock"
         implementing: "java.lang.Iterable<QTextFragment>"
-        ModifyFunction{
-            signature: "operator=(QTextBlock)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setUserData(QTextBlockUserData *)"
             ModifyArgument{
@@ -12240,10 +11536,6 @@ TypeSystem{
     
     ValueType{
         name: "QTextFormat"
-        ModifyFunction{
-            signature: "operator=(QTextFormat)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "isValid()const"
             access: Modification.NonFinal
@@ -12366,10 +11658,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator=(QTextCursor)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "createList(QTextListFormat::Style)"
             ModifyArgument{
                 index: 0
@@ -12446,6 +11734,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.gui.QTextCursor$SelectedTableCells"
                 }
@@ -12472,10 +11761,6 @@ TypeSystem{
                 fileName: "QTextCursor"
                 location: Include.Global
             }
-        }
-        ModifyFunction{
-            signature: "operator=(QTextTableCell)"
-            remove: RemoveFlag.All
         }
     }
     
@@ -12571,7 +11856,6 @@ TypeSystem{
 
     EnumType{
         name: "QTextLayout::GlyphRunRetrievalFlag"
-        flags: "QTextLayout::GlyphRunRetrievalFlags"
         since: [6,5]
     }
     
@@ -12635,32 +11919,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "undo(QTextCursor *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTextCursor"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTextCursor *%out = qtjambi_cast<QTextCursor *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "redo(QTextCursor *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTextCursor"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTextCursor *%out = qtjambi_cast<QTextCursor *>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -12706,10 +11964,6 @@ TypeSystem{
     
     ValueType{
         name: "QTextFragment"
-        ModifyFunction{
-            signature: "operator=(QTextFragment)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -12724,18 +11978,10 @@ TypeSystem{
     
     ValueType{
         name: "QTextDocumentFragment"
-        ModifyFunction{
-            signature: "operator=(QTextDocumentFragment)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QTextOption"
-        ModifyFunction{
-            signature: "operator=(const QTextOption &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -12786,9 +12032,9 @@ TypeSystem{
     
     ValueType{
         name: "QTransform"
-        ModifyFunction{
-            signature: "operator=(QTransform)"
-            remove: RemoveFlag.All
+        Rejection{functionName: "asAffineMatrix"}
+        EnumType{
+            name: "TransformationType"
         }
         ModifyFunction{
             signature: "map(int,int,int*,int*)const"
@@ -12801,34 +12047,18 @@ TypeSystem{
         ModifyFunction{
             signature: "operator*=(qreal)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator+=(qreal)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator-=(qreal)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator/=(qreal)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator*(QTransform)const"
@@ -12837,10 +12067,6 @@ TypeSystem{
         ModifyFunction{
             signature: "operator*=(QTransform)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "inverted(bool*)const"
@@ -12862,121 +12088,11 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "rotate(qreal,Qt::Axis)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-        }
-        ModifyFunction{
-            signature: "rotateRadians(qreal,Qt::Axis)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-        }
-        ModifyFunction{
-            signature: "rotate(qreal,Qt::Axis,qreal)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-            since: [6,5]
-        }
-        ModifyFunction{
-            signature: "rotateRadians(qreal,Qt::Axis,qreal)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-            since: [6,5]
-        }
-        ModifyFunction{
-            signature: "scale(qreal,qreal)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-        }
-        ModifyFunction{
-            signature: "shear(qreal,qreal)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-        }
-        ModifyFunction{
-            signature: "translate(qreal,qreal)"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-        }
-        ModifyFunction{
-            signature: "quadToQuad(QPolygonF,QPolygonF,QTransform&)"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTransform %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTransform"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, __qt_%3) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "quadToSquare(QPolygonF,QTransform&)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTransform %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTransform"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, __qt_%2) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "squareToQuad(QPolygonF,QTransform&)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTransform %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QTransform"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, __qt_%2) : nullptr;"}
-                }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
+                quoteAfterLine: "class QTransform___"
+                quoteBeforeLine: "}// class"
             }
         }
     }
@@ -12994,38 +12110,6 @@ TypeSystem{
             Include{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "fixup(QString&)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %out = qtjambi_cast<QString>(%env, %in);\n"+
-                                  "QString *__qt_converted = &%out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, *__qt_converted);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%1 = qtjambi_cast<QString>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -13108,112 +12192,53 @@ TypeSystem{
         name: "QVector2D"
         ModifyFunction{
             signature: "operator[](int)"
-            remove: RemoveFlag.All
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>2)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator[](int)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-()"
-            rename: "unaryMinus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator-(QVector2D)"
-            rename: "minus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator+(QVector2D)"
-            rename: "plus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(QVector2D)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(float)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(QVector2D)"
-            rename: "div"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(float)"
-            rename: "div"
-            since: 6
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>2)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator*=(const QVector2D &)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator*=(float)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QVector2D &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QVector2D &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(float)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(QVector2D)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector2D"
-                }
-            }
         }
     }
     
@@ -13221,112 +12246,53 @@ TypeSystem{
         name: "QVector3D"
         ModifyFunction{
             signature: "operator[](int)"
-            remove: RemoveFlag.All
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>3)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator[](int)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-()"
-            rename: "unaryMinus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator-(QVector3D)"
-            rename: "minus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator+(QVector3D)"
-            rename: "plus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(QVector3D)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(float)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(QVector3D)"
-            rename: "div"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(float)"
-            rename: "div"
-            since: 6
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>3)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator*=(const QVector3D &)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator*=(float)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QVector3D &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QVector3D &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(float)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(QVector3D)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector3D"
-                }
-            }
         }
     }
     
@@ -13334,112 +12300,53 @@ TypeSystem{
         name: "QVector4D"
         ModifyFunction{
             signature: "operator[](int)"
-            remove: RemoveFlag.All
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>4)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator[](int)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-()"
-            rename: "unaryMinus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator-(QVector4D)"
-            rename: "minus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator+(QVector4D)"
-            rename: "plus"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(QVector4D)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator*(float)"
-            rename: "times"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(QVector4D)"
-            rename: "div"
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator/(float)"
-            rename: "div"
-            since: 6
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "i"
+                }
+                Text{content: "if(i<0 || i>4)\n"+
+                              "    throw new IndexOutOfBoundsException(i);"}
+            }
         }
         ModifyFunction{
             signature: "operator*=(const QVector4D &)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator*=(float)"
             rename: "multiply"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator+=(const QVector4D &)"
             rename: "add"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator-=(const QVector4D &)"
             rename: "subtract"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(float)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
         ModifyFunction{
             signature: "operator/=(QVector4D)"
             rename: "divide"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QVector4D"
-                }
-            }
         }
     }
     
@@ -13490,7 +12397,7 @@ TypeSystem{
             threadAffinity: true
         }
         ModifyFunction{
-            signature: "setWindowStates(QFlags<Qt::WindowState>)"
+            signature: "setWindowStates(Qt::WindowStates)"
             threadAffinity: true
         }
         ModifyFunction{
@@ -13712,12 +12619,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -13746,10 +12656,6 @@ TypeSystem{
     
     ValueType{
         name: "QTouchEvent::TouchPoint"
-        ModifyFunction{
-            signature: "operator=(QTouchEvent::TouchPoint)"
-            remove: RemoveFlag.All
-        }
         until: 5
     }
     
@@ -13779,18 +12685,10 @@ TypeSystem{
     
     ValueType{
         name: "QPageSize"
-        ModifyFunction{
-            signature: "operator=(const QPageSize&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QPageRanges"
-        ModifyFunction{
-            signature: "operator=(const QPageRanges&)"
-            remove: RemoveFlag.All
-        }
         since: 6
     }
     
@@ -13801,6 +12699,37 @@ TypeSystem{
     
     ValueType{
         name: "QPixelFormat"
+
+        Rejection{functionName: "get"}
+        Rejection{functionName: "set"}
+
+        EnumType{
+            name: "AlphaPosition"
+        }
+
+        EnumType{
+            name: "AlphaPremultiplied"
+        }
+
+        EnumType{
+            name: "AlphaUsage"
+        }
+
+        EnumType{
+            name: "ByteOrder"
+        }
+
+        EnumType{
+            name: "ColorModel"
+        }
+
+        EnumType{
+            name: "TypeInterpretation"
+        }
+
+        EnumType{
+            name: "YUVLayout"
+        }
         CustomConstructor{
             Text{content: "if(copy) return new(placement) QPixelFormat(*copy); else return new(placement) QPixelFormat();"}
         }
@@ -13874,10 +12803,9 @@ TypeSystem{
         name: "QApplicationStateChangeEvent"
         ModifyFunction{
             signature: "operator=(const QApplicationStateChangeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -13901,10 +12829,9 @@ TypeSystem{
         name: "QScreenOrientationChangeEvent"
         ModifyFunction{
             signature: "operator=(const QScreenOrientationChangeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -13924,24 +12851,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QXcbWindowFunctions::WmWindowType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWindowsWindowFunctions::TouchWindowTouchType"
-        flags: "QWindowsWindowFunctions::TouchWindowTouchTypes"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWindowsWindowFunctions::WindowActivationBehavior"
-        until: 5
-    }
-    
     NamespaceType{
         name: "QXcbWindowFunctions"
+
+        EnumType{
+            name: "WmWindowType"
+        }
         ModifyFunction{
             signature: "setWmWindowTypeIdentifier()"
             remove: RemoveFlag.All
@@ -14001,6 +12916,20 @@ TypeSystem{
     
     NamespaceType{
         name: "QWindowsWindowFunctions"
+
+        Rejection{className: "SetTouchWindowTouchType"}
+        Rejection{className: "SetHasBorderInFullScreen"}
+        Rejection{className: "SetHasBorderInFullScreenDefault"}
+        Rejection{className: "SetWindowActivationBehaviorType"}
+        Rejection{className: "IsTabletModeType"}
+
+        EnumType{
+            name: "TouchWindowTouchType"
+        }
+
+        EnumType{
+            name: "WindowActivationBehavior"
+        }
         ModifyFunction{
             signature: "setTouchWindowTouchTypeIdentifier()"
             remove: RemoveFlag.All
@@ -14027,7 +12956,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setTouchWindowTouchType(QWindow*,QFlags<QWindowsWindowFunctions::TouchWindowTouchType>)"
+            signature: "setTouchWindowTouchType(QWindow*,QWindowsWindowFunctions::TouchWindowTouchTypes)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -14134,19 +13063,11 @@ TypeSystem{
         CustomConstructor{
             Text{content: "return new(placement) QColorSpace(copy->primaries(), copy->transferFunction(), copy->gamma());"}
         }
-        ModifyFunction{
-            signature: "operator=(QColorSpace)"
-            remove: RemoveFlag.All
-        }
         since: [5, 14]
     }
     
     ValueType{
         name: "QColorTransform"
-        ModifyFunction{
-            signature: "operator=(QColorTransform)"
-            remove: RemoveFlag.All
-        }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -14309,7 +13230,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 1
                     ReplaceType{
-                        modifiedType: "io.qt.widgets.QMenu"
+                        modifiedType: "io.qt.widgets.@Nullable QMenu"
                     }
                     ReferenceCount{
                         variableName: "__rcMenu"
@@ -14336,7 +13257,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.widgets.QMenu"
+                        modifiedType: "io.qt.widgets.@Nullable QMenu"
                     }
                 }
             }
@@ -14351,7 +13272,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.widgets.QWidget"
+                        modifiedType: "io.qt.widgets.@Nullable QWidget"
                     }
                 }
             }
@@ -14366,7 +13287,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.core.QList<io.qt.widgets.QWidget>"
+                        modifiedType: "io.qt.core.@NonNull QList<io.qt.widgets.@Nullable QWidget>"
                     }
                 }
             }
@@ -14381,7 +13302,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.core.QList<io.qt.widgets.QGraphicsWidget>"
+                        modifiedType: "io.qt.core.@NonNull QList<io.qt.widgets.@Nullable QGraphicsWidget>"
                     }
                 }
             }
@@ -14511,6 +13432,24 @@ TypeSystem{
     ObjectType{
         name: "QShortcut"
         ModifyFunction{
+            signature: "QShortcut<Func1>(QKeySequence::StandardKey,QWidget*,Func1,Qt::ShortcutContext)"
+            remove: RemoveFlag.All
+            until: 5
+        }
+        ModifyFunction{
+            signature: "QShortcut<Func1>(QKeySequence,QWidget*,Func1,Qt::ShortcutContext)"
+            remove: RemoveFlag.All
+            until: 5
+        }
+        ModifyFunction{
+            signature: "QShortcut<Func1>(QKeySequence::StandardKey,QObject*,Func1,Qt::ShortcutContext)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QShortcut<Func1>(QKeySequence,QObject*,Func1,Qt::ShortcutContext)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
             signature: "QShortcut(QKeySequence::StandardKey,QObject*,const char*,const char*,Qt::ShortcutContext)"
             access: Modification.Private
             ModifyArgument{
@@ -14590,7 +13529,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.widgets.QWidget"
+                        modifiedType: "io.qt.widgets.@Nullable QWidget"
                     }
                 }
             }
@@ -14628,19 +13567,16 @@ TypeSystem{
     
     EnumType{
         name: "QFileSystemModel::Option"
-        flags: "QFileSystemModel::Options"
         since: 6
     }
     
     EnumType{
         name: "QInputDevice::DeviceType"
-        flags: "QInputDevice::DeviceTypes"
         since: 6
     }
     
     EnumType{
         name: "QInputDevice::Capability"
-        flags: "QInputDevice::Capabilities"
         since: 6
     }
     
@@ -14651,7 +13587,6 @@ TypeSystem{
     
     EnumType{
         name: "QPointingDevice::PointerType"
-        flags: "QPointingDevice::PointerTypes"
         since: 6
     }
     
@@ -14667,7 +13602,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setCapabilities(QFlags<QInputDevice::Capability>)"
+            signature: "setCapabilities(QInputDevice::Capabilities)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -14681,12 +13616,9 @@ TypeSystem{
         name: "QEventPoint"
         ModifyFunction{
             signature: "operator=(QEventPoint)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -14852,10 +13784,9 @@ TypeSystem{
         name: "QPointerEvent"
         ModifyFunction{
             signature: "operator=(const QPointerEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -14877,26 +13808,28 @@ TypeSystem{
             signature: "point(qsizetype)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QEventPoint"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "const QEventPoint& ptr = %in;\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, ptr);"}
+                    ownership: Ownership.Dependent
                 }
+            }
+            InjectCode{
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "%COUNT"
+                }
+                Text{content: "if(pointCount() <= %COUNT)\n"+
+                              "    throw new IndexOutOfBoundsException(\"Index out of range: \"+%COUNT);"}
             }
         }
         ModifyFunction{
             signature: "pointById(int)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QEventPoint"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -14942,14 +13875,6 @@ TypeSystem{
     
     ObjectType{
         name: "QSinglePointEvent"
-        ModifyFunction{
-            signature: "operator=(const QSinglePointEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
-            }
-        }
         ModifyField{
             name: "m_reserved"
             read: false
@@ -15038,7 +13963,6 @@ TypeSystem{
     
     EnumType{
         name: "QEventPoint::State"
-        flags: "QEventPoint::States"
         since: 6
     }
     
@@ -15129,7 +14053,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLBuffer::RangeAccessFlag"
-        flags: "QOpenGLBuffer::RangeAccessFlags"
         until: 5
     }
     
@@ -15145,7 +14068,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Severity"
-        flags: "QOpenGLDebugMessage::Severities"
         RejectEnumValue{
             name: "LastSeverity"
         }
@@ -15154,7 +14076,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Source"
-        flags: "QOpenGLDebugMessage::Sources"
         RejectEnumValue{
             name: "LastSource"
         }
@@ -15163,7 +14084,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Type"
-        flags: "QOpenGLDebugMessage::Types"
         RejectEnumValue{
             name: "LastType"
         }
@@ -15182,12 +14102,10 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLFunctions::OpenGLFeature"
-        flags: "QOpenGLFunctions::OpenGLFeatures"
     }
     
     EnumType{
         name: "QOpenGLShader::ShaderTypeBit"
-        flags: "QOpenGLShader::ShaderType"
         until: 5
     }
     
@@ -15208,7 +14126,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLTexture::Feature"
-        flags: "QOpenGLTexture::Features"
         until: 5
     }
     
@@ -15283,20 +14200,12 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QOpenGLContext::OpenGLModuleType"
-    }
-    
-    EnumType{
         name: "QOpenGLVersionStatus::OpenGLStatus"
         until: 5
     }
     
     ValueType{
         name: "QOpenGLBuffer"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLBuffer &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
@@ -15335,7 +14244,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -15344,11 +14253,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "mapRange(int, int, QFlags<QOpenGLBuffer::RangeAccessFlag>)"
+            signature: "mapRange(int, int, QOpenGLBuffer::RangeAccessFlags)"
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -15361,6 +14270,9 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLContext"
+        EnumType{
+            name: "OpenGLModuleType"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/CoreAPI"
@@ -15380,6 +14292,33 @@ TypeSystem{
             Include{
                 fileName: "QSet"
                 location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "extraFunctions()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "functions()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "surface()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
         ModifyFunction{
@@ -15409,15 +14348,6 @@ TypeSystem{
         ModifyFunction{
             signature: "makeCurrent(QSurface *)"
             threadAffinity: true
-        }
-        ModifyFunction{
-            signature: "getProcAddress(const char*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         InjectCode{
             target: CodeClass.Native
@@ -15456,7 +14386,7 @@ TypeSystem{
                 }
                 AddTypeParameter{
                     name: "T"
-                    extending: "io.qt.gui.QAbstractOpenGLFunctions"
+                    extending: "io.qt.gui.@Nullable QAbstractOpenGLFunctions"
                 }
                 AddArgument{
                     index: 1
@@ -15473,12 +14403,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends io.qt.@Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -15521,7 +14454,6 @@ TypeSystem{
     
     EnumType{
         name: "QAbstractFileIconProvider::Option"
-        flags: "QAbstractFileIconProvider::Options"
         since: 6
     }
     
@@ -15532,27 +14464,11 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLDebugMessage"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLDebugMessage&)"
-            remove: RemoveFlag.All
-        }
         until: 5
     }
     
     ValueType{
         name: "QOpenGLFramebufferObjectFormat"
-        ModifyFunction{
-            signature: "operator!=(const QOpenGLFramebufferObjectFormat &) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QOpenGLFramebufferObjectFormat &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QOpenGLFramebufferObjectFormat &) const"
-            access: Modification.Private
-        }
         until: 5
     }
     
@@ -15567,15 +14483,6 @@ TypeSystem{
             Include{
                 fileName: "QtCore/QSharedPointer"
                 location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glBindAttribLocation(GLuint,GLuint,const char*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
         }
         ModifyFunction{
@@ -15698,15 +14605,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "glGetAttribLocation(GLuint, const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "glGetProgramInfoLog(GLuint, GLsizei, GLsizei*, char*)"
             ModifyArgument{
                 index: 3
@@ -15795,15 +14693,6 @@ TypeSystem{
                 index: 6
                 ArrayType{
                     asBuffer: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetUniformLocation(GLuint, const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
         }
@@ -15900,6 +14789,15 @@ TypeSystem{
                                   "                                    return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
                                   "                                }\n"+
                                   "                            );"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "glFenceSync(GLenum,GLbitfield)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -18534,7 +17432,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLShaderProgram"
         ModifyFunction{
-            signature: "addCacheableShaderFromSourceCode(QFlags<QOpenGLShader::ShaderTypeBit>, const char *)"
+            signature: "addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -18566,7 +17464,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "addShaderFromSourceCode(QFlags<QOpenGLShader::ShaderTypeBit>, const char *)"
+            signature: "addShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -18616,12 +17514,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const GLfloat *, int, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
@@ -18658,12 +17550,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector2D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -18673,12 +17559,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector3D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -18687,12 +17567,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector4D *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -18716,12 +17590,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, GLenum, const void *, int, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 ReplaceType{
                     modifiedType: "java.nio.Buffer"
@@ -18742,323 +17610,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAttributeBuffer ( const char *, GLenum, int, int, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "disableAttributeArray ( const char * )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "enableAttributeArray ( const char * )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue(const char *, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , GLfloat , GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char *, GLfloat, GLfloat, GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , GLfloat , GLfloat , GLfloat , GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector2D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector3D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector4D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char *, const QColor )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setAttributeValue ( const char * , const GLfloat * , int , int )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QPointF )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QSize )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QSizeF )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QTransform )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLint)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector2D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector3D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector4D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QPoint )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QColor )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
         }
@@ -19199,12 +17755,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const GLint *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
@@ -19213,12 +17763,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19229,12 +17773,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector2D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19243,12 +17781,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector3D *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19259,12 +17791,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector4D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19273,12 +17799,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x4 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19289,12 +17809,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x2 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19303,12 +17817,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x2 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19319,12 +17827,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x2 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19333,12 +17835,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x3 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19349,12 +17845,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x3 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19363,12 +17853,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x3 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19379,12 +17863,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x4 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -19393,12 +17871,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x4 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -19417,10 +17889,6 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLVersionProfile"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLVersionProfile &)"
-            remove: RemoveFlag.All
-        }
         until: 5
     }
     
@@ -19435,7 +17903,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             Text{content: "@Override\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final void close(){\n"+
                           "    dispose();\n"+
                           "}"}
@@ -19531,20 +17999,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 14
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -19553,20 +18007,6 @@ TypeSystem{
                 index: 12
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 13
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
             since: [5, 14]
@@ -19579,20 +18019,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 12
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -19601,20 +18027,6 @@ TypeSystem{
                 index: 10
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 11
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
             since: [5, 14]
@@ -19627,20 +18039,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 10
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -19649,20 +18047,6 @@ TypeSystem{
                 index: 6
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -19674,20 +18058,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 8
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
@@ -19695,20 +18065,6 @@ TypeSystem{
                 index: 5
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -19720,20 +18076,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
@@ -19741,16 +18083,6 @@ TypeSystem{
                 index: 3
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -19762,16 +18094,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
@@ -19779,16 +18101,6 @@ TypeSystem{
                 index: 5
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -19800,16 +18112,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)"
@@ -19817,16 +18119,6 @@ TypeSystem{
                 index: 3
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -19838,26 +18130,12 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         until: 5
     }
     
     ValueType{
         name: "QOpenGLPixelTransferOptions"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLPixelTransferOptions&)"
-            remove: RemoveFlag.All
-        }
         until: 5
     }
     
@@ -19874,18 +18152,6 @@ TypeSystem{
             isPaintMethod: true
         }
         until: 5
-    }
-    
-    ValueType{
-        name: "xcb_connection_t"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "Display"
-        generate: false
-        since: [6, 2]
     }
     
     ValueType{
@@ -20118,20 +18384,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::Private::QWindowsApplication::TypeInfo"
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QWindowsApplication"
-        functionName: "registerMime"
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QWindowsApplication"
-        functionName: "unregisterMime"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::Private::QWindowsApplication"
         packageName: "io.qt.gui.nativeinterface"
@@ -20139,6 +18391,30 @@ TypeSystem{
         ppCondition: "defined(Q_OS_WIN)"
         isNativeInterface: true
         generate: "no-shell"
+
+        Rejection{
+            className: "TypeInfo"
+        }
+
+        Rejection{
+            functionName: "registerMime"
+        }
+
+        Rejection{
+            functionName: "unregisterMime"
+        }
+
+        EnumType{
+            name: "WindowActivationBehavior"
+        }
+
+        EnumType{
+            name: "DarkModeHandlingFlag"
+        }
+
+        EnumType{
+            name: "TouchWindowTouchType"
+        }
         ModifyFunction{
             signature: "QWindowsApplication()"
             remove: RemoveFlag.All
@@ -20151,26 +18427,21 @@ TypeSystem{
         }
         since: [6, 2]
     }
-    
-    EnumType{
-        name: "QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior"
+
+    PrimitiveType{
+        name: "xcb_connection_t"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 2]
     }
-    
-    EnumType{
-        name: "QNativeInterface::Private::QWindowsApplication::DarkModeHandlingFlag"
-        flags: "QNativeInterface::Private::QWindowsApplication::DarkModeHandling"
+
+    PrimitiveType{
+        name: "Display"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
         since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QNativeInterface::Private::QWindowsApplication::TouchWindowTouchType"
-        flags: "QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QX11Application::TypeInfo"
     }
     
     InterfaceType{
@@ -20180,6 +18451,10 @@ TypeSystem{
         ppCondition: "QT_CONFIG(xcb)"
         isNativeInterface: true
         generate: "no-shell"
+
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QX11Application()"
             remove: RemoveFlag.All
@@ -20193,10 +18468,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::Private::QXcbWindow::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::Private::QXcbWindow"
         packageName: "io.qt.gui.nativeinterface"
@@ -20204,6 +18475,13 @@ TypeSystem{
         ppCondition: "QT_CONFIG(xcb)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
+
+        EnumType{
+            name: "WindowType"
+        }
         ModifyFunction{
             signature: "QXcbWindow()"
             remove: RemoveFlag.All
@@ -20226,29 +18504,19 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QNativeInterface::Private::QXcbWindow::WindowType"
-        flags: "QNativeInterface::Private::QXcbWindow::WindowTypes"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QAndroidOffscreenSurface::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QAndroidOffscreenSurface"
         ppCondition: "defined(Q_OS_ANDROID)"
         generate: "no-shell"
+
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QAndroidOffscreenSurface()"
             remove: RemoveFlag.All
         }
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QXcbScreen::TypeInfo"
     }
     
     InterfaceType{
@@ -20258,6 +18526,10 @@ TypeSystem{
         ppCondition: "QT_CONFIG(xcb)"
         isNativeInterface: true
         generate: "no-shell"
+
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QXcbScreen()"
             remove: RemoveFlag.All
@@ -20271,15 +18543,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::Private::QVsp2Screen::TypeInfo"
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QVsp2Screen"
-        functionName: "addBlendListener"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::Private::QVsp2Screen"
         packageName: "io.qt.gui.nativeinterface"
@@ -20287,6 +18550,13 @@ TypeSystem{
         ppCondition: "QT_CONFIG(vsp2)"
         isNativeInterface: true
         generate: false
+        Rejection{
+            className: "TypeInfo"
+        }
+
+        Rejection{
+            functionName: "addBlendListener"
+        }
         ModifyFunction{
             signature: "QVsp2Screen()"
             remove: RemoveFlag.All
@@ -20300,15 +18570,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::Private::QWebOSScreen::TypeInfo"
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QWebOSScreen"
-        functionName: "addFlipListener"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::Private::QWebOSScreen"
         packageName: "io.qt.gui.nativeinterface"
@@ -20316,6 +18577,13 @@ TypeSystem{
         ppCondition: "defined(Q_OS_WEBOS)"
         isNativeInterface: true
         generate: false
+        Rejection{
+            className: "TypeInfo"
+        }
+
+        Rejection{
+            functionName: "addFlipListener"
+        }
         ModifyFunction{
             signature: "QWebOSScreen()"
             remove: RemoveFlag.All
@@ -20329,8 +18597,52 @@ TypeSystem{
         since: [6, 2]
     }
 
-    Rejection{
-        className: "QNativeInterface::QWaylandApplication::TypeInfo"
+    PrimitiveType{
+        name: "wl_seat"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
+    }
+
+    PrimitiveType{
+        name: "wl_keyboard"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
+    }
+
+    PrimitiveType{
+        name: "wl_display"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
+    }
+
+    PrimitiveType{
+        name: "wl_pointer"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
+    }
+
+    PrimitiveType{
+        name: "wl_compositor"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
+    }
+
+    PrimitiveType{
+        name: "wl_touch"
+        javaName: "io.qt.QNativePointer"
+        jniName: "jobject"
+        preferredConversion: false
+        since: [6, 2]
     }
 
     InterfaceType{
@@ -20340,6 +18652,10 @@ TypeSystem{
         ppCondition: "defined(Q_OS_UNIX)"
         isNativeInterface: true
         generate: false
+        Rejection{
+            className: "TypeInfo"
+        }
+
         ModifyFunction{
             signature: "QWaylandApplication()"
             remove: RemoveFlag.All
@@ -20603,7 +18919,7 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'VkImage' inherits from unknown base class 'quint64'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value of argument in function 'doAction', class 'QAccessibleInterface'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: object type 'QAccessible' extended by interface type 'QAbstractAccessibleFactory'. The resulting API will be less expressive than the original."}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: class 'QAccessibleEvent' has polymorphic id but does not inherit a polymorphic class"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'QAccessibleEvent' has polymorphic id but does not inherit a polymorphic class"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleTableCellInterface'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'Display' inherits from unknown base class '_XDisplay'"}
 }

@@ -30,35 +30,35 @@
 class QHttpServer___ {
     private QHttpServerRouter __rcRouter;
 
-    @io.qt.QtUninvokable
-    public void afterRequest(java.util.function.Function<QHttpServerResponse, QHttpServerResponse> action) {
+    @QtUninvokable
+    public void afterRequest(java.util.function.@Nullable Function<@NonNull QHttpServerResponse, @NonNull QHttpServerResponse> action) {
         afterRequest(QtJambi_LibraryUtilities.internal.nativeId(this), false, action);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public void afterRequest(
-            java.util.function.BiFunction<QHttpServerResponse, QHttpServerRequest, QHttpServerResponse> action) {
+            java.util.function.@Nullable BiFunction<@NonNull QHttpServerResponse, @NonNull QHttpServerRequest, @NonNull QHttpServerResponse> action) {
         afterRequest(QtJambi_LibraryUtilities.internal.nativeId(this), true, action);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void afterRequest(long __this__nativeId, boolean isBi, Object action);
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void missingHandler(long __this__nativeId, long request, long argX);
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native boolean handleRequest(long __this__nativeId, long request, long argX);
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void sendResponse(long __this__nativeId, long response, long request, long argX);
 
     public interface GenericViewHandler {
-        void invoke(Object[] args, QHttpServerResponder responder, QHttpServerRequest request);
+        void invoke(@Nullable Object @NonNull[] args, @NonNull QHttpServerResponder responder, @NonNull QHttpServerRequest request);
     }
 
-    private Object[] values(io.qt.core.QRegularExpressionMatch rem, io.qt.core.QMetaType[] metaTypes,
-            Object... requestResponder) {
+    private @Nullable Object @NonNull[] values(io.qt.core.@NonNull QRegularExpressionMatch rem, io.qt.core.@NonNull QMetaType @StrictNonNull[] metaTypes,
+            @Nullable Object @StrictNonNull... requestResponder) {
         Object[] values = new Object[metaTypes.length + requestResponder.length];
         for (int i = 0; i < metaTypes.length; i++) {
             String cpt = rem.captured(i + 1);
@@ -70,10 +70,10 @@ class QHttpServer___ {
         return values;
     }
 
-    @io.qt.QtUninvokable
-    private <R> QHttpServerRouterRule.RouterHandler createRouterHandler(
-            java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    private <R> QHttpServerRouterRule.@NonNull RouterHandler createRouterHandler(
+            java.util.function.@Nullable BiFunction<@Nullable Object @NonNull[], @NonNull QHttpServerRequest, R> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             R result = viewHandler.apply(values, request);
@@ -81,9 +81,9 @@ class QHttpServer___ {
         };
     }
 
-    @io.qt.QtUninvokable
-    private <R> QHttpServerRouterRule.RouterHandler createRouterHandler(
-            java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    private <R> QHttpServerRouterRule.@NonNull RouterHandler createRouterHandler(
+            java.util.function.Function<@Nullable Object @NonNull[], R> viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             R result = viewHandler.apply(values);
@@ -91,9 +91,9 @@ class QHttpServer___ {
         };
     }
 
-    @io.qt.QtUninvokable
-    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequest(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.@NonNull RouterHandler createRouterHandlerRequest(
+            @NonNull ViewHandler viewHandler, @StrictNonNull SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes, request);
             Object result;
@@ -108,9 +108,9 @@ class QHttpServer___ {
         };
     }
 
-    @io.qt.QtUninvokable
-    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandler(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.@NonNull RouterHandler createRouterHandler(
+            @NonNull ViewHandler viewHandler, @StrictNonNull SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             Object result;
@@ -125,26 +125,26 @@ class QHttpServer___ {
         };
     }
 
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, GenericViewHandler viewHandler, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public boolean route(@NonNull String pathPattern, @NonNull GenericViewHandler viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(new QHttpServerRouterRule(pathPattern, createRouterHandler(viewHandler, metaTypes)),
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean route(
-            java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory,
-            GenericViewHandler viewHandler, io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@StrictNonNull Function<io.qt.httpserver.QHttpServerRouterRule.@NonNull RouterHandler, @NonNull QHttpServerRouterRule> ruleFactory,
+            @NonNull GenericViewHandler viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(ruleFactory.apply(createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods,
-            GenericViewHandler viewHandler, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public boolean route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods,
+            @NonNull GenericViewHandler viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(
@@ -152,30 +152,30 @@ class QHttpServer___ {
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <R> boolean route(
-            java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory,
-            java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@StrictNonNull Function<io.qt.httpserver.QHttpServerRouterRule.@NonNull RouterHandler, @NonNull QHttpServerRouterRule> ruleFactory,
+            java.util.function.@Nullable BiFunction<@Nullable Object @NonNull[], @NonNull QHttpServerRequest, R> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(ruleFactory.apply(createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern,
-            java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public <R> boolean route(@NonNull String pathPattern,
+            java.util.function.@Nullable BiFunction<@Nullable Object @NonNull[], @NonNull QHttpServerRequest, R> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(new QHttpServerRouterRule(pathPattern, createRouterHandler(viewHandler, metaTypes)),
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods,
-            java.util.function.BiFunction<Object[], QHttpServerRequest, R> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public <R> boolean route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods,
+            java.util.function.@Nullable BiFunction<@Nullable Object @NonNull[], @NonNull QHttpServerRequest, R> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(
@@ -183,29 +183,29 @@ class QHttpServer___ {
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public boolean route(
-            java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory,
-            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@StrictNonNull Function<io.qt.httpserver.QHttpServerRouterRule.@NonNull RouterHandler, @NonNull QHttpServerRouterRule> ruleFactory,
+            java.util.function.@Nullable BiConsumer<@Nullable Object @NonNull[], @NonNull QHttpServerResponder> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(ruleFactory.apply(createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public boolean route(@NonNull String pathPattern, java.util.function.@Nullable BiConsumer<@Nullable Object @NonNull[], @NonNull QHttpServerResponder> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(new QHttpServerRouterRule(pathPattern, createRouterHandler(viewHandler, metaTypes)),
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods,
-            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public boolean route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods,
+            java.util.function.@Nullable BiConsumer<@Nullable Object @NonNull[], @NonNull QHttpServerResponder> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(
@@ -213,27 +213,27 @@ class QHttpServer___ {
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <R> boolean route(
-            java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory,
-            java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@StrictNonNull Function<io.qt.httpserver.QHttpServerRouterRule.@NonNull RouterHandler, @NonNull QHttpServerRouterRule> ruleFactory,
+            java.util.function.@Nullable Function<@Nullable Object @NonNull[], R> viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(ruleFactory.apply(createRouterHandler(viewHandler, metaTypes)), metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern, java.util.function.Function<Object[], R> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public <R> boolean route(@NonNull String pathPattern, java.util.function.@Nullable Function<@Nullable Object @NonNull[], R> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(new QHttpServerRouterRule(pathPattern, createRouterHandler(viewHandler, metaTypes)),
                 metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    public <R> boolean route(String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods,
-            java.util.function.Function<Object[], R> viewHandler, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    public <R> boolean route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods,
+            java.util.function.@Nullable Function<@Nullable Object @NonNull[], R> viewHandler, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         if (pathPattern == null || viewHandler == null || metaTypes == null)
             return false;
         return router().addRule(
@@ -371,8 +371,8 @@ class QHttpServer___ {
         return info;
     }
 
-    @io.qt.QtUninvokable
-    public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(String pathPattern,
+    @QtUninvokable
+    public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(@NonNull String pathPattern,
             ViewHandler viewHandler) {
         InvokableTypeInfo<ViewHandler> info = type(viewHandler);
         if (info.slotInvoker == null)
@@ -447,10 +447,10 @@ class QHttpServer___ {
         }
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(
-            java.util.function.Function<io.qt.httpserver.QHttpServerRouterRule.RouterHandler, QHttpServerRouterRule> ruleFactory,
-            ViewHandler viewHandler) {
+            java.util.function.@StrictNonNull Function<io.qt.httpserver.QHttpServerRouterRule.@NonNull RouterHandler, @NonNull QHttpServerRouterRule> ruleFactory,
+            @NonNull ViewHandler viewHandler) {
         InvokableTypeInfo<ViewHandler> info = type(viewHandler);
         if (info.slotInvoker == null)
             return false;
@@ -526,9 +526,9 @@ class QHttpServer___ {
         }
     }
 
-    @io.qt.QtUninvokable
-    public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(String pathPattern,
-            io.qt.httpserver.QHttpServerRequest.Methods methods, ViewHandler viewHandler) {
+    @QtUninvokable
+    public <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> boolean route(@NonNull String pathPattern,
+            io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, @NonNull ViewHandler viewHandler) {
         InvokableTypeInfo<ViewHandler> info = type(viewHandler);
         if (info.slotInvoker == null)
             return false;
@@ -605,28 +605,28 @@ class QHttpServer___ {
 
 class QHttpServer_64__ {
     @Override
-    protected void missingHandler(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+    protected void missingHandler(@NonNull QHttpServerRequest request, io.qt.network.@Nullable QTcpSocket socket) {
         missingHandler(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(socket));
     }
 
     @Override
-    protected boolean handleRequest(QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
+    protected boolean handleRequest(@NonNull QHttpServerRequest request, io.qt.network.@Nullable QTcpSocket socket) {
         return handleRequest(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(socket));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void sendResponse(QHttpServerResponse response, QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
         sendResponse(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(response),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(socket));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(socket));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void sendResponse(Object result, QHttpServerRequest request, io.qt.network.QTcpSocket socket) {
         if (result instanceof QHttpServerResponse)
             sendResponse((QHttpServerResponse) result, request, socket);
@@ -644,28 +644,28 @@ class QHttpServer_64__ {
             sendResponse(new QHttpServerResponse(result.toString()), request, socket);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private QHttpServerRouterRule.RouterHandler createRouterHandler(GenericViewHandler viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, socket) -> {
             Object[] values = values(rem, metaTypes);
             viewHandler.invoke(values, makeResponder(request, socket), request);
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private QHttpServerRouterRule.RouterHandler createRouterHandler(
-            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@Nullable BiConsumer<@Nullable Object @NonNull[], @NonNull QHttpServerResponder> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, socket) -> {
             Object[] values = values(rem, metaTypes);
             viewHandler.accept(values, makeResponder(request, socket));
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, socket) -> {
             Object[] values = values(rem, metaTypes, makeResponder(request, socket));
             try {
@@ -678,9 +678,9 @@ class QHttpServer_64__ {
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequestResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, socket) -> {
             Object[] values = values(rem, metaTypes, request, makeResponder(request, socket));
             try {
@@ -693,9 +693,9 @@ class QHttpServer_64__ {
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponderRequest(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, socket) -> {
             Object[] values = values(rem, metaTypes, makeResponder(request, socket), request);
             try {
@@ -711,41 +711,41 @@ class QHttpServer_64__ {
 
 class QHttpServer_65__ {
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native void sendResponseFuture(long __this__nativeId, io.qt.core.QFuture<QHttpServerResponse> response, long request, long responder);
 
     @Override
-    protected void missingHandler(QHttpServerRequest request, QHttpServerResponder responder) {
+    protected void missingHandler(@NonNull QHttpServerRequest request, @NonNull QHttpServerResponder responder) {
         missingHandler(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
     }
 
     @Override
-    protected boolean handleRequest(QHttpServerRequest request, QHttpServerResponder responder) {
+    protected boolean handleRequest(@NonNull QHttpServerRequest request, @NonNull QHttpServerResponder responder) {
         return handleRequest(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void sendResponse(QHttpServerResponse response, QHttpServerRequest request, QHttpServerResponder responder) {
         sendResponse(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(response),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(responder));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void sendResponse(io.qt.core.QFuture<QHttpServerResponse> response, QHttpServerRequest request, QHttpServerResponder responder) {
         sendResponseFuture(QtJambi_LibraryUtilities.internal.nativeId(this),
                 response,
                 QtJambi_LibraryUtilities.internal.checkedNativeId(request),
-                QtJambi_LibraryUtilities.internal.nativeId(responder));
+                QtJambi_LibraryUtilities.internal.checkedNativeId(responder));
     }
 
     @SuppressWarnings("unchecked")
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void sendResponse(Object result, QHttpServerRequest request, QHttpServerResponder responder) {
         if (result instanceof QHttpServerResponse)
             sendResponse((QHttpServerResponse) result, request, responder);
@@ -765,28 +765,28 @@ class QHttpServer_65__ {
             sendResponse(new QHttpServerResponse(result.toString()), request, responder);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private QHttpServerRouterRule.RouterHandler createRouterHandler(GenericViewHandler viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             viewHandler.invoke(values, responder, request);
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private QHttpServerRouterRule.RouterHandler createRouterHandler(
-            java.util.function.BiConsumer<Object[], QHttpServerResponder> viewHandler,
-            io.qt.core.QMetaType... metaTypes) {
+            java.util.function.@Nullable BiConsumer<@Nullable Object @NonNull[], @NonNull QHttpServerResponder> viewHandler,
+            io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes);
             viewHandler.accept(values, responder);
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes, responder);
             try {
@@ -799,9 +799,9 @@ class QHttpServer_65__ {
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerRequestResponder(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes, request, responder);
             try {
@@ -814,9 +814,9 @@ class QHttpServer_65__ {
         };
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private <ViewHandler extends io.qt.core.QMetaObject.AbstractSlot> QHttpServerRouterRule.RouterHandler createRouterHandlerResponderRequest(
-            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.QMetaType... metaTypes) {
+            ViewHandler viewHandler, SlotInvoker<ViewHandler> slotInvoker, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         return (rem, request, responder) -> {
             Object[] values = values(rem, metaTypes, responder, request);
             try {
@@ -832,206 +832,206 @@ class QHttpServer_65__ {
 
 class QHttpServerRouter___ {
 
-    @io.qt.QtUninvokable
-    public final void addConverter(Class<?> type, java.lang.String regexp) {
+    @QtUninvokable
+    public final void addConverter(@NonNull Class<?> type, java.lang.@NonNull String regexp) {
         io.qt.core.QMetaType metaType = io.qt.core.QMetaType.fromType(type);
         addConverter(metaType, regexp);
     }
 
-    @io.qt.QtUninvokable
-    public final void removeConverter(Class<?> type) {
+    @QtUninvokable
+    public final void removeConverter(@NonNull Class<?> type) {
         io.qt.core.QMetaType metaType = io.qt.core.QMetaType.fromType(type);
         removeConverter(metaType);
     }
 
-    @io.qt.QtUninvokable
-    boolean addRule(QHttpServerRouterRule rule, io.qt.core.QMetaType... metaTypes) {
+    @QtUninvokable
+    boolean addRule(@NonNull QHttpServerRouterRule rule, io.qt.core.@NonNull QMetaType @NonNull... metaTypes) {
         io.qt.core.QList<io.qt.core.QMetaType> _metaTypes = new io.qt.core.QList<>(io.qt.core.QMetaType.class);
         _metaTypes.append(java.util.Arrays.asList(metaTypes));
         return addRule(rule, _metaTypes);
     }
 
-    @io.qt.QtUninvokable
-    boolean addRule(QHttpServerRouterRule rule, io.qt.core.QList<io.qt.core.QMetaType> metaTypes) {
+    @QtUninvokable
+    boolean addRule(@NonNull QHttpServerRouterRule rule, io.qt.core.QList<io.qt.core.QMetaType> metaTypes) {
         return addRuleImpl(QtJambi_LibraryUtilities.internal.nativeId(this),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(rule),
                 QtJambi_LibraryUtilities.internal.checkedNativeId(metaTypes));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native boolean addRuleImpl(long __this__nativeId, long rule, long metaTypes);
 }// class
 
 class QAbstractHttpServer___ {
     @SuppressWarnings({ "exports" })
-    @io.qt.QtUninvokable
-    public final int listen(io.qt.network.QHostAddress.SpecialAddress address, int port) {
+    @QtUninvokable
+    public final int listen(io.qt.network.QHostAddress.@NonNull SpecialAddress address, int port) {
         return listen(new io.qt.network.QHostAddress(address), port);
     }
 
-    @io.qt.QtUninvokable
-    public final int listen(String address, int port) {
+    @QtUninvokable
+    public final int listen(@NonNull String address, int port) {
         return listen(new io.qt.network.QHostAddress(address), port);
     }
 }// class
 
 class QHttpServerResponder___ {
-    @io.qt.QtUninvokable
-    public final void write(String data, String mimeType) {
+    @QtUninvokable
+    public final void write(@NonNull String data, @NonNull String mimeType) {
         write(io.qt.core.QString.toUtf8(data), io.qt.core.QString.toUtf8(mimeType));
     }
 
-    @io.qt.QtUninvokable
-    public final void write(String data, String mimeType, io.qt.httpserver.QHttpServerResponder.StatusCode status) {
+    @QtUninvokable
+    public final void write(@NonNull String data, @NonNull String mimeType, io.qt.httpserver.QHttpServerResponder.@NonNull StatusCode status) {
         write(io.qt.core.QString.toUtf8(data), io.qt.core.QString.toUtf8(mimeType), status);
     }
 
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QIODevice data, String mimeType) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QIODevice data, @NonNull String mimeType) {
         write(data, io.qt.core.QString.toUtf8(mimeType));
     }
 
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QIODevice data, String mimeType,
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QIODevice data, @NonNull String mimeType,
             io.qt.httpserver.QHttpServerResponder.StatusCode status) {
         write(data, io.qt.core.QString.toUtf8(mimeType), status);
     }
 
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QByteArray data, String mimeType) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QByteArray data, @NonNull String mimeType) {
         write(data, io.qt.core.QString.toUtf8(mimeType));
     }
 
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QByteArray data, String mimeType,
-            io.qt.httpserver.QHttpServerResponder.StatusCode status) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QByteArray data, @NonNull String mimeType,
+            io.qt.httpserver.QHttpServerResponder.@NonNull StatusCode status) {
         write(data, io.qt.core.QString.toUtf8(mimeType), status);
     }
 
-    @io.qt.QtUninvokable
-    public final void writeBody(byte[] body) {
+    @QtUninvokable
+    public final void writeBody(byte @NonNull[] body) {
         writeBody(new io.qt.core.QByteArray(body));
     }
 
-    @io.qt.QtUninvokable
-    public final void writeHeader(io.qt.core.QByteArray key, String value) {
+    @QtUninvokable
+    public final void writeHeader(io.qt.core.@NonNull QByteArray key, @NonNull String value) {
         writeHeader(key, io.qt.core.QString.toUtf8(value));
     }
 
-    @io.qt.QtUninvokable
-    public final void writeHeader(String key, io.qt.core.QByteArray value) {
+    @QtUninvokable
+    public final void writeHeader(@NonNull String key, io.qt.core.@NonNull QByteArray value) {
         writeHeader(io.qt.core.QString.toUtf8(key), value);
     }
 
     @SafeVarargs
-    @io.qt.QtUninvokable
-    public final io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>[] headerList(
-            io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>... pairs) {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray>[] headerList(
+            io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray> @NonNull... pairs) {
         return pairs;
     }
 
     @SafeVarargs
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QByteArray data,
-            io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>... headers) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QByteArray data,
+            io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray> @NonNull... headers) {
         write(data, headers, io.qt.httpserver.QHttpServerResponder.StatusCode.Ok);
     }
 
     @SafeVarargs
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QIODevice data,
-            io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>... headers) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QIODevice data,
+            io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray> @NonNull... headers) {
         write(data, headers, io.qt.httpserver.QHttpServerResponder.StatusCode.Ok);
     }
 
     @SafeVarargs
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QJsonDocument document,
-            io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>... headers) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QJsonDocument document,
+            io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray> @NonNull... headers) {
         write(document, headers, io.qt.httpserver.QHttpServerResponder.StatusCode.Ok);
     }
 
     @SafeVarargs
-    @io.qt.QtUninvokable
-    public final void write(io.qt.core.QPair<io.qt.core.QByteArray, io.qt.core.QByteArray>... headers) {
+    @QtUninvokable
+    public final void write(io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray, io.qt.core.@NonNull QByteArray> @NonNull... headers) {
         write(headers, io.qt.httpserver.QHttpServerResponder.StatusCode.Ok);
     }
 }// class
 
 class QHttpServerResponse___ {
-    @io.qt.QtUninvokable
-    public final void addHeader(io.qt.core.QByteArray key, String value) {
+    @QtUninvokable
+    public final void addHeader(io.qt.core.@NonNull QByteArray key, @NonNull String value) {
         addHeader(key, io.qt.core.QString.toUtf8(value));
     }
 
-    @io.qt.QtUninvokable
-    public final void addHeader(String key, io.qt.core.QByteArray value) {
+    @QtUninvokable
+    public final void addHeader(@NonNull String key, io.qt.core.@NonNull QByteArray value) {
         addHeader(io.qt.core.QString.toUtf8(key), value);
     }
 
-    @io.qt.QtUninvokable
-    public final void setHeader(io.qt.core.QByteArray key, String value) {
+    @QtUninvokable
+    public final void setHeader(io.qt.core.@NonNull QByteArray key, @NonNull String value) {
         setHeader(key, io.qt.core.QString.toUtf8(value));
     }
 
-    @io.qt.QtUninvokable
-    public final void setHeader(String key, io.qt.core.QByteArray value) {
+    @QtUninvokable
+    public final void setHeader(@NonNull String key, io.qt.core.@NonNull QByteArray value) {
         setHeader(io.qt.core.QString.toUtf8(key), value);
     }
 
-    @io.qt.QtUninvokable
-    public final void clearHeader(String key) {
+    @QtUninvokable
+    public final void clearHeader(@NonNull String key) {
         clearHeader(io.qt.core.QString.toUtf8(key));
     }
 
-    @io.qt.QtUninvokable
-    public final boolean hasHeader(String name) {
+    @QtUninvokable
+    public final boolean hasHeader(@NonNull String name) {
         return hasHeader(io.qt.core.QString.toUtf8(name));
     }
 
-    @io.qt.QtUninvokable
-    public final boolean hasHeader(String name, io.qt.core.QByteArray value) {
+    @QtUninvokable
+    public final boolean hasHeader(@NonNull String name, io.qt.core.@NonNull QByteArray value) {
         return hasHeader(io.qt.core.QString.toUtf8(name), value);
     }
 
-    @io.qt.QtUninvokable
-    public final boolean hasHeader(String name, String value) {
+    @QtUninvokable
+    public final boolean hasHeader(@NonNull String name, @NonNull String value) {
         return hasHeader(io.qt.core.QString.toUtf8(name), io.qt.core.QString.toUtf8(value));
     }
 
-    @io.qt.QtUninvokable
-    public final io.qt.core.QList<io.qt.core.QByteArray> headers(String name) {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QList<io.qt.core.@NonNull QByteArray> headers(String name) {
         return headers(io.qt.core.QString.toUtf8(name));
     }
 
-public QHttpServerResponse(String mimeType, io.qt.core.QByteArray data) {
+    public QHttpServerResponse(@NonNull String mimeType, io.qt.core.@NonNull QByteArray data) {
         this(io.qt.core.QString.toUtf8(mimeType), data);
     }
 
-public QHttpServerResponse(String mimeType, String data) {
+    public QHttpServerResponse(@NonNull String mimeType, @NonNull String data) {
         this(io.qt.core.QString.toUtf8(mimeType), io.qt.core.QString.toUtf8(data));
     }
 
-public QHttpServerResponse(io.qt.core.QByteArray mimeType, String data) {
+    public QHttpServerResponse(io.qt.core.@NonNull QByteArray mimeType, @NonNull String data) {
         this(mimeType, io.qt.core.QString.toUtf8(data));
     }
 
-public QHttpServerResponse(String mimeType, io.qt.core.QByteArray data, io.qt.httpserver.QHttpServerResponder.StatusCode status) {
+    public QHttpServerResponse(@NonNull String mimeType, io.qt.core.@NonNull QByteArray data, io.qt.httpserver.QHttpServerResponder.@NonNull StatusCode status) {
         this(io.qt.core.QString.toUtf8(mimeType), data, status);
     }
 
-public QHttpServerResponse(String mimeType, String data, io.qt.httpserver.QHttpServerResponder.StatusCode status) {
+    public QHttpServerResponse(@NonNull String mimeType, @NonNull String data, io.qt.httpserver.QHttpServerResponder.@NonNull StatusCode status) {
         this(io.qt.core.QString.toUtf8(mimeType), io.qt.core.QString.toUtf8(data), status);
     }
 
-public QHttpServerResponse(io.qt.core.QByteArray mimeType, String data, io.qt.httpserver.QHttpServerResponder.StatusCode status) {
+    public QHttpServerResponse(io.qt.core.@NonNull QByteArray mimeType, @NonNull String data, io.qt.httpserver.QHttpServerResponder.@NonNull StatusCode status) {
         this(mimeType, io.qt.core.QString.toUtf8(data), status);
     }
 }// class
 
 class QHttpServerRequest___ {
-    @io.qt.QtUninvokable
-    public final io.qt.core.QByteArray value(String key) {
+    @QtUninvokable
+    public final io.qt.core.@NonNull QByteArray value(@NonNull String key) {
         return value(io.qt.core.QString.toUtf8(key));
     }
 }// class

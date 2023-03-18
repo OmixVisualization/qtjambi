@@ -48,7 +48,6 @@ import io.qt.core.Qt;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
-import io.qt.widgets.QDialog;
 import io.qt.widgets.QWizard;
 import io.qt.widgets.QWizardPage;
 

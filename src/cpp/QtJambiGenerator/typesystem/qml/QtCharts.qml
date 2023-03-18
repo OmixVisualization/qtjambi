@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.charts"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtCharts"
     module: "qtjambi.charts"
     description: "UI Components for displaying visually pleasing charts, driven by static or dynamic data models."
@@ -54,21 +54,20 @@ TypeSystem{
         until: 5
     }
     
-    EnumType{
-        name: "QtCharts::QAbstractAxis::AxisType"
-        flags: "QtCharts::QAbstractAxis::AxisTypes"
-    }
-    
     ObjectType{
         name: "QtCharts::QAbstractAxis"
-    }
-    
-    EnumType{
-        name: "QtCharts::QAbstractBarSeries::LabelsPosition"
+
+        EnumType{
+            name: "AxisType"
+        }
     }
     
     ObjectType{
         name: "QtCharts::QAbstractBarSeries"
+
+        EnumType{
+            name: "LabelsPosition"
+        }
         ModifyFunction{
             signature: "append(QtCharts::QBarSet *)"
             threadAffinity: true
@@ -129,12 +128,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QAbstractSeries::SeriesType"
-    }
-    
     ObjectType{
         name: "QtCharts::QAbstractSeries"
+
+        EnumType{
+            name: "SeriesType"
+        }
         ModifyFunction{
             signature: "attachAxis(QtCharts::QAbstractAxis *)"
             threadAffinity: true
@@ -226,10 +225,6 @@ TypeSystem{
             signature: "operator<<(qreal)"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator[](const int)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -299,18 +294,14 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QBoxSet::ValuePositions"
-    }
-    
     ObjectType{
         name: "QtCharts::QBoxSet"
-        ModifyFunction{
-            signature: "operator<<(qreal)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "ValuePositions"
         }
         ModifyFunction{
-            signature: "operator[](const int)const"
+            signature: "operator<<(qreal)"
             remove: RemoveFlag.All
         }
     }
@@ -437,39 +428,38 @@ TypeSystem{
         name: "QtCharts::QCandlestickSet"
     }
     
-    EnumType{
-        name: "QtCharts::QCategoryAxis::AxisType"
-    }
-    
-    EnumType{
-        name: "QtCharts::QCategoryAxis::AxisLabelsPosition"
-    }
-    
     ObjectType{
         name: "QtCharts::QCategoryAxis"
-    }
-    
-    EnumType{
-        name: "QtCharts::QChart::AnimationOption"
-        flags: "QtCharts::QChart::AnimationOptions"
-    }
-    
-    EnumType{
-        name: "QtCharts::QChart::ChartTheme"
-    }
-    
-    EnumType{
-        name: "QtCharts::QChart::ChartType"
+
+        EnumType{
+            name: "AxisType"
+        }
+
+        EnumType{
+            name: "AxisLabelsPosition"
+        }
     }
     
     ObjectType{
         name: "QtCharts::QChart"
+
+        EnumType{
+            name: "AnimationOption"
+        }
+
+        EnumType{
+            name: "ChartTheme"
+        }
+
+        EnumType{
+            name: "ChartType"
+        }
         ModifyFunction{
             signature: "scroll(qreal,qreal)"
             rename: "scrollBy"
         }
         ModifyFunction{
-            signature: "axes(QFlags<Qt::Orientation>, QtCharts::QAbstractSeries *)const"
+            signature: "axes(Qt::Orientations, QtCharts::QAbstractSeries *)const"
             ModifyArgument{
                 index: 1
                 RemoveDefaultExpression{
@@ -477,7 +467,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addAxis(QtCharts::QAbstractAxis *, QFlags<Qt::AlignmentFlag>)"
+            signature: "addAxis(QtCharts::QAbstractAxis *, Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -565,13 +555,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QChartView::RubberBand"
-        flags: "QtCharts::QChartView::RubberBands"
-    }
-    
     ObjectType{
         name: "QtCharts::QChartView"
+
+        EnumType{
+            name: "RubberBand"
+        }
         ModifyFunction{
             signature: "setChart(QtCharts::QChart *)"
             threadAffinity: true
@@ -881,12 +870,12 @@ TypeSystem{
         name: "QtCharts::QHorizontalStackedBarSeries"
     }
     
-    EnumType{
-        name: "QtCharts::QLegend::MarkerShape"
-    }
-    
     ObjectType{
         name: "QtCharts::QLegend"
+
+        EnumType{
+            name: "MarkerShape"
+        }
         ModifyFunction{
             signature: "setFont(QFont)"
             rename: "setLegendFont"
@@ -897,12 +886,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QLegendMarker::LegendMarkerType"
-    }
-    
     ObjectType{
         name: "QtCharts::QLegendMarker"
+
+        EnumType{
+            name: "LegendMarkerType"
+        }
     }
     
     ObjectType{
@@ -984,23 +973,22 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QPieSlice::LabelPosition"
-    }
-    
     ObjectType{
         name: "QtCharts::QPieSlice"
-    }
-    
-    EnumType{
-        name: "QtCharts::QPolarChart::PolarOrientation"
-        flags: "QtCharts::QPolarChart::PolarOrientations"
+
+        EnumType{
+            name: "LabelPosition"
+        }
     }
     
     ObjectType{
         name: "QtCharts::QPolarChart"
+
+        EnumType{
+            name: "PolarOrientation"
+        }
         ModifyFunction{
-            signature: "axes(QFlags<QtCharts::QPolarChart::PolarOrientation>, QtCharts::QAbstractSeries *)const"
+            signature: "axes(QtCharts::QPolarChart::PolarOrientations, QtCharts::QAbstractSeries *)const"
             ModifyArgument{
                 index: 1
                 RemoveDefaultExpression{
@@ -1031,12 +1019,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QScatterSeries::MarkerShape"
-    }
-    
     ObjectType{
         name: "QtCharts::QScatterSeries"
+
+        EnumType{
+            name: "MarkerShape"
+        }
         ModifyFunction{
             signature: "brush()const"
             remove: RemoveFlag.All
@@ -1167,12 +1155,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtCharts::QValueAxis::TickType"
-    }
-    
     ObjectType{
         name: "QtCharts::QValueAxis"
+
+        EnumType{
+            name: "TickType"
+        }
     }
     
     ObjectType{
@@ -1183,13 +1171,13 @@ TypeSystem{
         name: "QtCharts::QXYLegendMarker"
     }
     
-    EnumType{
-        name: "QtCharts::QXYSeries::PointConfiguration"
-        since: [6, 2]
-    }
-    
     ObjectType{
         name: "QtCharts::QXYSeries"
+
+        EnumType{
+            name: "PointConfiguration"
+            since: [6, 2]
+        }
         ModifyFunction{
             signature: "markerSize() const"
             access: Modification.NonFinal

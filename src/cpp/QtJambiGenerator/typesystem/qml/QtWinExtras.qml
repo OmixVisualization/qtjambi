@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.winextras"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWinExtras"
     module: "qtjambi.winextras"
     description: "Provides platform-specific APIs for Windows."
@@ -62,6 +62,10 @@ TypeSystem{
     
     NamespaceType{
         name: "QtWin"
+
+        EnumType{name: "HBitmapFormat"}
+        EnumType{name: "WindowFlip3DPolicy"}
+
         ModifyFunction{
             signature: "setWindowFlip3DPolicy(QWidget*,QtWin::WindowFlip3DPolicy)"
             ModifyArgument{
@@ -139,6 +143,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.winextras.QtWin$ColorizationColorInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWinExtras::QtWin$ColorizationColorInfo::newInstance(%env, qtjambi_cast<jobject>(%env, %in), jboolean(ok));"}
@@ -152,22 +157,6 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    EnumType{
-        name: "QtWin::HBitmapFormat"
-    }
-    
-    EnumType{
-        name: "QWinJumpListCategory::Type"
-    }
-    
-    EnumType{
-        name: "QWinJumpListItem::Type"
-    }
-    
-    EnumType{
-        name: "QtWin::WindowFlip3DPolicy"
     }
     
     ObjectType{
@@ -218,6 +207,7 @@ TypeSystem{
     
     ObjectType{
         name: "QWinJumpListCategory"
+        EnumType{name: "Type"}
         ModifyFunction{
             signature: "addItem(QWinJumpListItem*)"
             ModifyArgument{
@@ -239,6 +229,8 @@ TypeSystem{
     
     ObjectType{
         name: "QWinJumpListItem"
+
+        EnumType{name: "Type"}
     }
     
     

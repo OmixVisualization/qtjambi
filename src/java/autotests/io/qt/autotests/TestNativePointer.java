@@ -357,14 +357,6 @@ public class TestNativePointer extends ApplicationInitializer {
             assertEquals(returned, 14);
             assertEquals(np_int.intValue(), 15);
         }
-
-        {
-            QNativePointer np_string = new QNativePointer(QNativePointer.Type.String);
-            np_string.setStringValue("First");
-            String returned = npt.testString(np_string, "Second");
-            assertEquals(returned, "First");
-            assertEquals(np_string.stringValue(), "Second");
-        }
     }
     
     @Test

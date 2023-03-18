@@ -43,6 +43,7 @@
 #include <functional>
 #include <QString>
 #include <QFileInfo>
+#include <QSet>
 
 #include "pp-macro.h"
 
@@ -105,6 +106,8 @@ namespace rpp {
 
             void log(const std::string &message) const;
 
+            bool pragmaOnce();
+
             QFileInfo current_file;
             int current_line;
 
@@ -120,6 +123,7 @@ namespace rpp {
             std::vector<pp_macro*> _M_macros;
             pp_macro **_M_base;
             std::size_t _M_hash_size;
+            QSet<QString> _M_pragmaOnceFiles;
             std::function<void(std::string,std::string,const QFileInfo&,bool)> _M_featureRegistry;
     };
 

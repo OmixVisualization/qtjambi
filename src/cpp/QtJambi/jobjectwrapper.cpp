@@ -1280,7 +1280,7 @@ QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj){
     if(JniEnvironment env{200}){
         QtJambiExceptionHandler __exnhandler;
         try{
-            jobject jstream = QtJambiAPI::convertNativeToJavaObject(env, &out, typeid(QDataStream), false);
+            jobject jstream = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &out, typeid(QDataStream));
             QTJAMBI_INVALIDATE_AFTER_USE(env, jstream);
             Java::QtJambi::MetaTypeUtility::writeSerializableJavaObject(env, jstream, myObj.object());
         }catch(const JavaException& exn){
@@ -1294,7 +1294,7 @@ QDataStream &operator>>(QDataStream &in, JObjectWrapper &myObj){
     if(JniEnvironment env{200}){
         QtJambiExceptionHandler __exnhandler;
         try{
-            jobject jstream = QtJambiAPI::convertNativeToJavaObject(env, &in, typeid(QDataStream), false);
+            jobject jstream = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &in, typeid(QDataStream));
             QTJAMBI_INVALIDATE_AFTER_USE(env, jstream);
             jobject res = Java::QtJambi::MetaTypeUtility::readSerializableJavaObject(env, jstream);
             if(!res){
@@ -1349,7 +1349,7 @@ QDebug operator<<(QDebug out, const JObjectWrapper &myObj){
     if(JniEnvironment env{200}){
         QtJambiExceptionHandler __exnhandler;
         try{
-            jobject dstream = QtJambiAPI::convertNativeToJavaObject(env, &out, typeid(QDebug), false);
+            jobject dstream = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &out, typeid(QDebug));
             QTJAMBI_INVALIDATE_AFTER_USE(env, dstream);
             Java::QtJambi::MetaTypeUtility::debugObject(env, dstream, myObj.object());
         }catch(const JavaException& exn){
@@ -1359,12 +1359,14 @@ QDebug operator<<(QDebug out, const JObjectWrapper &myObj){
     return out;
 }
 
-hash_type qHash(const JObjectWrapper &value)
+hash_type qHash(const JObjectWrapper &value, hash_type seed)
 {
     if(JniEnvironment env{200}){
         if(value.object()){
-            return hash_type(Java::Runtime::Object::hashCode(env, value.object()));
+            if(seed)
+                return qHash(Java::Runtime::Object::hashCode(env, value.object()), seed);
+            else return hash_type(Java::Runtime::Object::hashCode(env, value.object()));
         }
     }
-    return 0;
+    return seed;
 }

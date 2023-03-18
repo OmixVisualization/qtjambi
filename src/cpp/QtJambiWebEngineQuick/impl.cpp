@@ -57,7 +57,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineS
         QObject *_object = qtjambi_cast<QObject*>(env, object);
         if(QQuickWebEngineSettings* settings = qobject_cast<QQuickWebEngineSettings*>(_object)){
             QWebEngineSettings* wSettings = QQuickWebEngineViewPrivate::getWebEngineSettings(settings);
-            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wSettings, false);
+            __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, wSettings);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -75,7 +75,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineS
         QObject *_object = qtjambi_cast<QObject*>(env, object);
         if(QQuickWebEngineScriptCollection* collection = qobject_cast<QQuickWebEngineScriptCollection*>(_object)){
             QWebEngineScriptCollection* wCollection = QQuickWebEngineViewPrivate::getWebEngineScriptCollection(collection);
-            __java_return_value = QtJambiAPI::convertNativeToJavaObject(env, wCollection, false);
+            __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, wCollection);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }
     }QTJAMBI_CATCH(const JavaException& exn){

@@ -417,7 +417,7 @@ final class ContainerAccessGenerator {
 		       		for(String target : targets) {
 		       			targetArray.append(new QJsonValue(target));
 		       		}
-		       		metaData.setValue("Keys", new QJsonValue(targetArray));
+		       		metaData.insert("Keys", new QJsonValue(targetArray));
 		       		cborValue.setValue(/*QtPluginMetaDataKeys::MetaData*/ 4, new QCborValue(QCborMap.fromJsonObject(metaData)));
 		       		QByteArray cborData = cborValue.toCborValue().toCbor();
 		       		byte[] data = cborData.toByteArray();

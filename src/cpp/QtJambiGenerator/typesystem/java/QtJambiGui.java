@@ -222,7 +222,7 @@ class QShortcut__{
     /**
      * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> T parent(Class<T> type) {
         return type.cast(parent());
     }
@@ -283,7 +283,7 @@ class QDesktopServices___ extends QDesktopServices {
                     this.urlHandler = urlHandler;
                 }
 
-                @io.qt.NativeAccess
+                @NativeAccess
                 public void handleUrl(io.qt.core.QUrl url) {
                     urlHandler.handleUrl(url);
                 }
@@ -309,11 +309,11 @@ class QDesktopServices___ extends QDesktopServices {
 
 class QGuiApplication___ extends QGuiApplication {
 
-        public static QGuiApplication initialize(String args[]) {
+        public static @NonNull QGuiApplication initialize(String args @StrictNonNull[]) {
             return io.qt.core.QCoreApplication.initialize(null, args, QGuiApplication::new);
         }
 
-        public static QGuiApplication initialize(String applicationName, String args[]) {
+        public static @NonNull QGuiApplication initialize(String applicationName, String args @StrictNonNull[]) {
             return io.qt.core.QCoreApplication.initialize(applicationName, args, QGuiApplication::new);
         }
 
@@ -321,7 +321,7 @@ class QGuiApplication___ extends QGuiApplication {
             io.qt.core.QCoreApplication.shutdown();
         }
         
-        public static QGuiApplication instance() {
+        public static @Nullable QGuiApplication instance() {
             io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
             if (app instanceof QGuiApplication)
                 return (QGuiApplication) app;
@@ -402,7 +402,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 }// class
 
 class QPointerEvent___{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final native void setPoint(long i, QEventPoint point);
 }// class
 
@@ -412,18 +412,18 @@ class QPointerEvent_native__{
 
 class QKeySequence_5__ extends QKeySequence {
 
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final int at(int i) {
-            return operator_subscript(i);
+            return get(i);
         }
 
 }// class
 
 class QKeySequence_6__ extends QKeySequence {
 
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QKeyCombination at(int i) {
-            return operator_subscript(i);
+            return get(i);
         }
 
 }// class
@@ -434,32 +434,32 @@ class QPainter_redir__ extends QPainter {
 
 class QPainter___ extends QPainter {
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setBrush(QColor color) {
         setBrush(new QBrush(color));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setBrush(io.qt.core.Qt.GlobalColor color) {
         setBrush(new QBrush(new QColor(color)));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setBrush(QGradient gradient) {
         setBrush(new QBrush(gradient));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setBrush(QPixmap pm) {
         setBrush(new QBrush(pm));
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void beginPaint(QPaintDevice paintedWidget){
         __paintedDevices.put(paintedWidget, java.util.Collections.emptyList());
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static void endPaint(QPaintDevice paintedWidget){
         java.util.List<QPainter> painters = __paintedDevices.remove(paintedWidget);
         if(painters!=null){
@@ -472,7 +472,7 @@ class QPainter___ extends QPainter {
         }
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private void initialize(QPaintDevice device, boolean inConstructor){
         if(device instanceof io.qt.core.QObject){
             io.qt.core.QObject object = (io.qt.core.QObject)device;
@@ -480,9 +480,9 @@ class QPainter___ extends QPainter {
                 java.util.List<QPainter> painters = __paintedDevices.get(device);
                 if(painters==null){
                     if(inConstructor) {
-                        if(QPaintDevice.Impl.getSharedPainter(device)!=null)
+                        if(QPaintDevice.Impl.sharedPainter(device)!=null)
                             return;
-                        QPaintDevice rpd = QPaintDevice.Impl.getRedirected(device, null);
+                        QPaintDevice rpd = QPaintDevice.Impl.redirected(device, null);
                         if(rpd!=null && rpd.paintEngine()!=null)
                             return;
                         throw new QPaintingOutsidePaintEventException();
@@ -507,21 +507,21 @@ class QPainter___ extends QPainter {
         }
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static native void threadCheck(io.qt.core.QObject object);
     
     private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
 }// class
 
 class QPaintDevice___{
-    @io.qt.QtUninvokable
-    static io.qt.gui.QPainter getSharedPainter(QPaintDevice instance){
+    @QtUninvokable
+    static io.qt.gui.QPainter sharedPainter(QPaintDevice instance){
         return sharedPainter_native_constfct(QtJambi_LibraryUtilities.internal.nativeId(instance));
     }
     
-    @io.qt.QtUninvokable
-    static io.qt.gui.QPaintDevice getRedirected(QPaintDevice instance, io.qt.core.QPoint offset){
-        return redirected_native_QPoint_ptr_constfct(QtJambi_LibraryUtilities.internal.nativeId(instance), offset);
+    @QtUninvokable
+    static io.qt.gui.QPaintDevice redirected(QPaintDevice instance, io.qt.core.QPoint offset){
+        return redirected_native_QPoint_ptr_constfct(QtJambi_LibraryUtilities.internal.nativeId(instance), QtJambi_LibraryUtilities.internal.checkedNativeId(offset));
     }
 }// class
 
@@ -553,7 +553,7 @@ class QPixmapFilter___ extends QPixmapFilter {
         public final void setConvolutionKernel(double[] kernel, int rows, int columns) {
             int length = rows * columns;
 
-            io.qt.QNativePointer kernelPtr = new io.qt.QNativePointer(io.qt.QNativePointer.Type.double, length);
+            QNativePointer kernelPtr = new QNativePointer(QNativePointer.Type.double, length);
             for (int i = 0; i < length; ++i)
                 kernelPtr.setdoubleAt(i, kernel[i]);
 
@@ -601,14 +601,14 @@ class QTextBlock___ extends QTextBlock {
 }// class
 
 class QPolygon___ extends QPolygon {
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final void append(int x, int y) {
             append(new QPoint(x, y));
         }
 }// class
 
 class QPolygonF___ extends QPolygonF {
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final void append(double x, double y) {
             append(new QPointF(x, y));
         }
@@ -616,16 +616,26 @@ class QPolygonF___ extends QPolygonF {
 
 class QValidator___ extends QValidator {
 
-        public static class QValidationData {
-                @io.qt.NativeAccess
-                public QValidationData(String input, int pos) {
-                    string = input;
-                    position = pos;
-                }
+    public static class QValidationData {
+            @NativeAccess
+            public QValidationData(String input, int pos) {
+                string = input;
+                position = pos;
+            }
 
-                public @io.qt.NativeAccess String string;
-                public @io.qt.NativeAccess int position;
-        }
+            public @NativeAccess String string;
+            public @NativeAccess int position;
+    }
+
+    /**
+     * @see #fixup(io.qt.core.QString)
+     */
+    @QtUninvokable
+    public final java.lang.@NonNull String fixup(java.lang.@Nullable String string){
+        io.qt.core.QString _string = new io.qt.core.QString(string);
+        fixup(_string);
+        return _string.toString();
+    }
 
 }// class
 
@@ -655,20 +665,20 @@ class QMatrix___ extends QMatrix {
          *             If this matrix is not invertible.
          */
         public final QMatrix inverted() {
-            io.qt.QNativePointer ok = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+            QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
             QMatrix returned = inverted(ok);
             if (!ok.booleanValue())
                 throw new IllegalArgumentException("Matrix is not invertible");
             return returned;
         }
 
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QMatrix multiply(QMatrix other) {
             operator_multiply_assign(other);
             return this;
         }
 
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public final QMatrix multiplied(QMatrix other) {
             return operator_multiply(other);
         }
@@ -721,12 +731,12 @@ class QOpenGLFunctions_ES2___{
 }// class
 
 class QGradient_java__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static QGradient create(io.qt.gui.QGradient.Preset preset){
         return create(preset.value());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private native static QGradient create(int preset);
 }// class
 
@@ -735,7 +745,7 @@ class QWindow___ extends QWindow {
      * <p>Overloaded function for {@link #parent(io.qt.gui.QWindow.AncestorMode)}
      *  with <code>mode = io.qt.gui.QWindow.AncestorMode.ExcludeTransients</code>.</p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final io.qt.gui.QWindow nonTransientParent(){
         return parent(io.qt.gui.QWindow.AncestorMode.ExcludeTransients);
     }
@@ -780,7 +790,7 @@ class QAction___ extends QAction {
     /**
      * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> T parent(Class<T> type) {
         io.qt.core.QObject result = parent();
         while (result!=null && !type.isInstance(result))
@@ -791,13 +801,81 @@ class QAction___ extends QAction {
     /**
      * <p>Type-casting overload of <a href="@docRoot/qaction.html#associatedObjects">QAction::associatedObjects()const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> io.qt.core.QList<T> associatedObjects(Class<T> type) {
         io.qt.core.QList<T> result = new io.qt.core.QList<>(type);
         for (io.qt.core.QObject object : associatedObjects())
             if (type.isInstance(object))
                 result.add(type.cast(object));
         return result;
+    }
+}// class
+
+class QTransform___{
+
+    /**
+     * @see #squareToQuad(QPolygonF, QTransform)
+     */
+    public static io.qt.gui.@Nullable QTransform squareToQuad(io.qt.gui.@NonNull QPolygonF square){
+        QTransform transform = new QTransform();
+        if(squareToQuad(square, transform))
+            return transform;
+        else return null;
+    }
+
+    /**
+     * @see #quadToSquare(QPolygonF, QTransform)
+     */
+    public static io.qt.gui.@Nullable QTransform quadToSquare(io.qt.gui.@NonNull QPolygonF quad){
+        QTransform transform = new QTransform();
+        if(quadToSquare(quad, transform))
+            return transform;
+        else return null;
+    }
+
+    /**
+     * @see #quadToQuad(QPolygonF, QPolygonF, QTransform)
+     */
+    public static io.qt.gui.@Nullable QTransform quadToQuad(io.qt.gui.@NonNull QPolygonF one, io.qt.gui.@NonNull QPolygonF two){
+        QTransform transform = new QTransform();
+        if(quadToQuad(one, two, transform))
+            return transform;
+        else return null;
+    }
+}// class
+
+class QPixmapCache___{
+    /**
+     * @see #find(io.qt.gui.QPixmapCache.Key,QPixmap)
+     */
+    public static io.qt.gui.@Nullable QPixmap find(io.qt.gui.QPixmapCache.@NonNull Key key){
+        QPixmap pm = new QPixmap();
+        if(find(key, pm))
+            return pm;
+        else return null;
+    }
+
+    /**
+     * @see #find(io.qt.gui.QPixmapCache.Key,String)
+     */
+    public static io.qt.gui.@Nullable QPixmap find(java.lang.@NonNull String key){
+        QPixmap pm = new QPixmap();
+        if(find(key, pm))
+            return pm;
+        else return null;
+    }
+}// class
+
+class QImageIOHandler_6__{
+
+    /**
+     * @see #allocateImage(io.qt.core.QSize, io.qt.gui.QImage.Format, io.qt.gui.QImage)
+     */
+    public static io.qt.gui.@io.qt.Nullable QImage allocateImage(io.qt.core.@io.qt.NonNull QSize size, io.qt.gui.QImage.@io.qt.NonNull Format format){
+        io.qt.gui.QImage im = new io.qt.gui.QImage();
+        if(allocateImage(size, format, im))
+            return im;
+        else return null;
     }
 }// class
 

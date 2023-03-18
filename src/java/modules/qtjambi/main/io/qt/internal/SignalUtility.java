@@ -2774,8 +2774,6 @@ abstract class SignalUtility {
 							QMetaMethod method = QMetaMethod.fromReflectedMethod(reflectiveMethod);
 			            	if(method.isValid()) {
 			            		reflectiveMethod = method.toReflectedMethod();
-			            	}else {
-			            		throw new QUninvokableSlotException(reflectiveMethod);
 			            	}
 						}
 						Object[] lambdaArgs = null;

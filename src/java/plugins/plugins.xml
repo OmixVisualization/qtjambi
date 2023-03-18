@@ -311,7 +311,7 @@
 											</then>
 											<else>
 												<property name="jar-includes" value="plugins/${plugin-subdir}/*,qtjambi-deployment.xml"/>
-												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${plugin-subdir}" plugin="true"/>
+												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${plugin-subdir}" plugin="true" forcedebuginfo="${qtjambi.force.debug.info}"/>
 											</else>
 										</if>
 									</else>

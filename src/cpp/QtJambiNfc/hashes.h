@@ -34,20 +34,22 @@
 #include <QtNfc/QNdefMessage>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QNearFieldTarget::RequestId &value)
+inline hash_type qHash(const QNearFieldTarget::RequestId &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.refCount());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.refCount());
+    return seed;
 }
 
-inline hash_type qHash(const QNdefMessage &value)
+inline hash_type qHash(const QNdefMessage &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.size());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.size());
     for(const QNdefRecord& record : value){
-        hashCode = hashCode * 31 + qHash(record);
+        seed = hash(seed, record);
     }
-    return hashCode;
+    return seed;
 }
 
 #endif // QTJAMBINFC_HASHES_H

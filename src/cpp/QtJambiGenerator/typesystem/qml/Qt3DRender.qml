@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.render"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DRender"
     module: "qtjambi.qt3drender"
     description: "Contains classes that enable 2D and 3D rendering"
@@ -41,6 +41,12 @@ TypeSystem{
     RequiredLibrary{
         name: "QtShaderTools"
         mode: RequiredLibrary.ProvideOnly
+    }
+
+    NamespacePrefix{
+        prefix: "Qt3DRender"
+        namespace: "Qt3DRender"
+        namingPolicy: NamespacePrefix.Cut
     }
 
     NamespaceType{
@@ -57,181 +63,113 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        Rejection{
+            functionName: "functorTypeId"
+        }
+
+        Rejection{
+            functionName: "functor_cast"
+        }
+
+        Rejection{
+            functionName: "operator=="
+        }
+
+        Rejection{
+            functionName: "operator!="
+        }
+
+        Rejection{
+            functionName: "swap"
+        }
+
+        EnumType{
+            name: "API"
+        }
         since: [5, 15]
-    }
-    
-    TypeAliasType{
-        name: "Qt3DRender::QAbstractRayCaster::Hits"
     }
     
     Rejection{
         className: "QCameraPrivate"
     }
-    
+
+    Rejection{
+        className: "Qt3DRender::Sphere"
+    }
+
     Rejection{
         className: "Qt3DRender::QLevelOfDetailPrivate"
     }
-    
+
     Rejection{
         className: "Qt3DRender::QAbstractRayCasterPrivate"
     }
-    
+
     Rejection{
         className: "Qt3DRender::QAbstractRayCasterPrivate"
     }
-    
-    Rejection{
-        className: "Qt3DRender"
-        functionName: "functorTypeId"
-        since: [5, 15]
-    }
-    
-    Rejection{
-        className: "Qt3DRender"
-        functionName: "functor_cast"
-        since: [5, 15]
-    }
-    
-    Rejection{
-        className: "Qt3DRender::QAbstractFunctor"
-        functionName: "functor_cast"
-        since: [5, 15]
-    }
-    
-    Rejection{
-        className: "Qt3DRender"
-        functionName: "operator=="
-        since: [5, 15]
-    }
-    
-    Rejection{
-        className: "Qt3DRender"
-        functionName: "operator!="
-        since: [5, 15]
-    }
-    
-    Rejection{
-        className: "Qt3DRender"
-        functionName: "swap"
-        since: [5, 15]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::API"
-        since: [5, 15]
-    }
-    
+
     Rejection{
         className: "Qt3DRender::FunctorType"
     }
-    
+
     Rejection{
         className: "Qt3DRender::QFrameGraphNodeCreatedChange"
     }
-    
-    Rejection{
-        className: "Qt3DRender::QStencilTest"
-        functionName: "front"
-        until: [5, 6]
-    }
-    
-    Rejection{
-        className: "Qt3DRender::QStencilTest"
-        functionName: "back"
-        until: [5, 6]
-    }
-    
+
     Rejection{
         className: "Qt3DRender::QStencilTestSeparate"
     }
     
-    Rejection{
-        className: "Qt3DRender::QTechnique"
-        functionName: "graphicsApiFilter"
-    }
-    
-    Rejection{
-        className: "Qt3DRender::QGeometry"
-        functionName: "boundingVolumeSpecifier"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRenderAspect::RenderType"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRenderAspect::SubmissionType"
-        since: 6
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QShaderProgram::Format"
-        since: [5, 15]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QRenderAspect"
-        javaName: "QRenderAspect"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QMemoryBarrier::Operation"
-        flags: "Qt3DRender::QMemoryBarrier::Operations"
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QMemoryBarrier"
-        javaName: "QMemoryBarrier"
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QScreenRayCaster"
-        javaName: "QScreenRayCaster"
-        ModifyFunction{
-            signature: "pick(QPoint)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QList<io.qt.qt3d.render.QRayCasterHit>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<Qt3DRender::QAbstractRayCaster::Hits*>(%env, %in);"}
-                }
-            }
+
+        EnumType{
+            name: "RenderType"
+        }
+
+        EnumType{
+            name: "SubmissionType"
             since: 6
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QSetFence::HandleType"
+    ObjectType{
+        name: "Qt3DRender::QMemoryBarrier"
+
+        EnumType{
+            name: "Operation"
+        }
+    }
+    
+    ObjectType{
+        name: "Qt3DRender::QScreenRayCaster"
+        ModifyFunction{
+            signature: "pick(QPoint)"
+            since: 6
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QSetFence"
-        javaName: "QSetFence"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QWaitFence::HandleType"
+        EnumType{
+            name: "HandleType"
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QWaitFence"
-        javaName: "QWaitFence"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QLevelOfDetail::ThresholdType"
+        EnumType{
+            name: "HandleType"
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QLevelOfDetail"
-        javaName: "QLevelOfDetail"
+        EnumType{
+            name: "ThresholdType"
+        }
         ModifyFunction{
             signature: "setCamera(Qt3DRender::QCamera*)"
             ModifyArgument{
@@ -246,16 +184,14 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QLevelOfDetailSwitch"
-        javaName: "QLevelOfDetailSwitch"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBlitFramebuffer::InterpolationMethod"
     }
     
     ObjectType{
         name: "Qt3DRender::QBlitFramebuffer"
-        javaName: "QBlitFramebuffer"
+
+        EnumType{
+            name: "InterpolationMethod"
+        }
         ModifyFunction{
             signature: "setDestination(Qt3DRender::QRenderTarget*)"
             ModifyArgument{
@@ -278,12 +214,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QBufferCapture"
-        javaName: "QBufferCapture"
     }
     
     ObjectType{
         name: "Qt3DRender::QEnvironmentLight"
-        javaName: "QEnvironmentLight"
         ModifyFunction{
             signature: "setIrradiance(Qt3DRender::QAbstractTexture*)"
             ModifyArgument{
@@ -306,7 +240,6 @@ TypeSystem{
     
     ValueType{
         name: "Qt3DRender::QLevelOfDetailBoundingSphere"
-        javaName: "QLevelOfDetailBoundingSphere"
         ModifyFunction{
             signature: "operator=(const Qt3DRender::QLevelOfDetailBoundingSphere &)"
             remove: RemoveFlag.All
@@ -315,18 +248,15 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QFrameGraphNodeCreatedChangeBase"
-        javaName: "QFrameGraphNodeCreatedChange"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QLineWidth"
-        javaName: "QLineWidth"
     }
     
     ObjectType{
         name: "Qt3DRender::QDiffuseMapMaterial"
-        javaName: "QDiffuseMapMaterial"
         ModifyFunction{
             signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
             ModifyArgument{
@@ -342,7 +272,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QDiffuseSpecularMapMaterial"
-        javaName: "QDiffuseSpecularMapMaterial"
         ModifyFunction{
             signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
             ModifyArgument{
@@ -368,7 +297,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QForwardRenderer"
-        javaName: "QForwardRenderer"
         ModifyFunction{
             signature: "setCamera(Qt3DCore::QEntity*)"
             ModifyArgument{
@@ -382,13 +310,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QNormalDiffuseMapAlphaMaterial"
-        javaName: "QNormalDiffuseMapAlphaMaterial"
         until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QNormalDiffuseMapMaterial"
-        javaName: "QNormalDiffuseMapMaterial"
         ModifyFunction{
             signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
             ModifyArgument{
@@ -414,7 +340,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QNormalDiffuseSpecularMapMaterial"
-        javaName: "QNormalDiffuseSpecularMapMaterial"
         ModifyFunction{
             signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
             ModifyArgument{
@@ -450,13 +375,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QPhongMaterial"
-        javaName: "QPhongMaterial"
         until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QMaterial"
-        javaName: "QMaterial"
         ModifyFunction{
             signature: "setEffect(Qt3DRender::QEffect*)"
             ModifyArgument{
@@ -500,13 +423,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QSkyboxEntity"
-        javaName: "QSkyboxEntity"
         until: [5, 6]
     }
     
     InterfaceType{
         name: "Qt3DRender::QAbstractMeshFunctor"
-        javaName: "QAbstractMeshFunctor"
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QAbstractMeshFunctor &) const"
             rename: "equals"
@@ -525,7 +446,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -542,27 +463,19 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QAbstractMesh"
-        javaName: "QAbstractMesh"
     }
     
     NamespaceType{
         name: "Qt3DRender::Render"
-        javaName: "Qt3DRenderer"
         generate: false
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractSceneLoader::Status"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QGeometryRenderer::PrimitiveType"
     }
     
     ObjectType{
         name: "Qt3DRender::QGeometryRenderer"
-        javaName: "QGeometryRenderer"
+
+        EnumType{
+            name: "PrimitiveType"
+        }
         ModifyFunction{
             signature: "setGeometry(Qt3DRender::QGeometry *)"
             ModifyArgument{
@@ -589,7 +502,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QGeometry"
-        javaName: "QGeometry"
+
+        Rejection{
+            functionName: "boundingVolumeSpecifier"
+        }
         ModifyFunction{
             signature: "addAttribute(Qt3DRender::QAttribute *)"
             ModifyArgument{
@@ -659,13 +575,14 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QAbstractSceneLoader"
-        javaName: "QAbstractSceneLoader"
+        EnumType{
+            name: "Status"
+        }
         until: [5, 6]
     }
     
     InterfaceType{
         name: "Qt3DRender::QTextureDataFunctor"
-        javaName: "QTextureDataFunctor"
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QTextureDataFunctor &) const"
             rename: "equals"
@@ -684,7 +601,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -701,7 +618,6 @@ TypeSystem{
     
     InterfaceType{
         name: "Qt3DRender::QGeometryFunctor"
-        javaName: "QGeometryFunctor"
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QGeometryFunctor &) const"
             rename: "equals"
@@ -720,7 +636,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -738,7 +654,11 @@ TypeSystem{
     
     InterfaceType{
         name: "Qt3DRender::QAbstractFunctor"
-        javaName: "QAbstractFunctor"
+
+        Rejection{
+            functionName: "functor_cast"
+            since: [5, 15]
+        }
         ModifyFunction{
             signature: "id()const"
             remove: RemoveFlag.JavaAndNative
@@ -758,7 +678,6 @@ TypeSystem{
     
     InterfaceType{
         name: "Qt3DRender::QBufferFunctor"
-        javaName: "QBufferFunctor"
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QBufferFunctor &) const"
             rename: "equals"
@@ -777,7 +696,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -794,12 +713,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QAbstractTextureImage"
-        javaName: "QAbstractTextureImage"
     }
     
     ObjectType{
         name: "Qt3DRender::QPaintedTextureImage"
-        javaName: "QPaintedTextureImage"
         ModifyFunction{
             signature: "paint(QPainter*)"
             ModifyArgument{
@@ -811,52 +728,42 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QRenderCapture"
-        javaName: "QRenderCapture"
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderCaptureReply"
-        javaName: "QRenderCaptureReply"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::Status"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::Target"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::TextureFormat"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::Filter"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::CubeMapFace"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::ComparisonFunction"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTextureProvider::ComparisonMode"
-        until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QAbstractTextureProvider"
-        javaName: "QAbstractTextureProvider"
+        EnumType{
+            name: "Status"
+        }
+
+        EnumType{
+            name: "Target"
+        }
+
+        EnumType{
+            name: "TextureFormat"
+        }
+
+        EnumType{
+            name: "Filter"
+        }
+
+        EnumType{
+            name: "CubeMapFace"
+        }
+
+        EnumType{
+            name: "ComparisonFunction"
+        }
+
+        EnumType{
+            name: "ComparisonMode"
+            until: [5, 6]
+        }
         ModifyFunction{
             signature: "addTextureImage(Qt3DRender::QAbstractTextureImage*)"
             ModifyArgument{
@@ -887,49 +794,40 @@ TypeSystem{
         until: [5, 6]
     }
     
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::Status"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::Target"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::TextureFormat"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::Filter"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::CubeMapFace"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::ComparisonFunction"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::ComparisonMode"
-        since: []
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractTexture::HandleType"
-        since: [5, 12]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QAbstractTexture"
-        javaName: "QAbstractTexture"
+        EnumType{
+            name: "Status"
+        }
+
+        EnumType{
+            name: "Target"
+        }
+
+        EnumType{
+            name: "TextureFormat"
+        }
+
+        EnumType{
+            name: "Filter"
+        }
+
+        EnumType{
+            name: "CubeMapFace"
+        }
+
+        EnumType{
+            name: "ComparisonFunction"
+        }
+
+        EnumType{
+            name: "ComparisonMode"
+        }
+
+        EnumType{
+            name: "HandleType"
+            since: [5, 12]
+        }
         ModifyFunction{
             signature: "addTextureImage(Qt3DRender::QAbstractTextureImage*)"
             ModifyArgument{
@@ -957,18 +855,15 @@ TypeSystem{
                 }
             }
         }
-        since: []
     }
     
     ObjectType{
         name: "Qt3DRender::QSharedGLTexture"
-        javaName: "QSharedGLTexture"
         since: [5, 13]
     }
     
     ObjectType{
         name: "Qt3DRender::QAlphaCoverage"
-        javaName: "QAlphaCoverage"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -976,19 +871,16 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QAlphaTest::AlphaFunc"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAlphaTest::AlphaFunction"
-        since: [5, 7]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QAlphaTest"
-        javaName: "QAlphaTest"
+        EnumType{
+            name: "AlphaFunc"
+        }
+
+        EnumType{
+            name: "AlphaFunction"
+            since: [5, 7]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -998,54 +890,47 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QAnnotation"
-        javaName: "QAnnotation"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBlendEquation::BlendMode"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBlendEquation::BlendFunction"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QBlendEquation"
-        javaName: "QBlendEquation"
+        EnumType{
+            name: "BlendMode"
+            until: [5, 6]
+        }
+
+        EnumType{
+            name: "BlendFunction"
+            since: [5, 7]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
             until: [5, 6]
         }
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBlendState::Blending"
-        RejectEnumValue{
-            name: "OneMinusSrcAlpha"
-        }
-        RejectEnumValue{
-            name: "DstAlpha"
-        }
-        until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QBlendState"
-        javaName: "QBlendState"
+
+        EnumType{
+            name: "Blending"
+            RejectEnumValue{
+                name: "OneMinusSrcAlpha"
+            }
+            RejectEnumValue{
+                name: "DstAlpha"
+            }
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
-            until: [5, 6]
         }
         until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QColorMask"
-        javaName: "QColorMask"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1060,16 +945,14 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QCuboidMesh"
-        javaName: "QCuboidMesh"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QCullFace::CullingMode"
     }
     
     ObjectType{
         name: "Qt3DRender::QCullFace"
-        javaName: "QCullFace"
+
+        EnumType{
+            name: "CullingMode"
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1079,12 +962,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QCylinderMesh"
-        javaName: "QCylinderMesh"
     }
     
     ObjectType{
         name: "Qt3DRender::QDepthMask"
-        javaName: "QDepthMask"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1092,19 +973,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QDepthTest::DepthFunc"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QDepthTest::DepthFunction"
-        since: [5, 7]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QDepthTest"
-        javaName: "QDepthTest"
+
+        EnumType{
+            name: "DepthFunc"
+        }
+
+        EnumType{
+            name: "DepthFunction"
+            since: [5, 7]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1114,12 +993,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QDirectionalLight"
-        javaName: "QDirectionalLight"
     }
     
     ObjectType{
         name: "Qt3DRender::QDithering"
-        javaName: "QDithering"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1129,7 +1006,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QEffect"
-        javaName: "QEffect"
         ModifyFunction{
             signature: "addParameter(Qt3DRender::QParameter*)"
             ModifyArgument{
@@ -1170,7 +1046,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QAttribute"
-        javaName: "QAttribute"
         ModifyFunction{
             signature: "setBuffer(Qt3DRender::QBuffer*)"
             ModifyArgument{
@@ -1180,56 +1055,50 @@ TypeSystem{
                 }
             }
         }
-        until: 5
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAttribute::AttributeType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAttribute::VertexBaseType"
+
+        EnumType{
+            name: "AttributeType"
+        }
+
+        EnumType{
+            name: "VertexBaseType"
+        }
         until: 5
     }
     
     ObjectType{
         name: "Qt3DRender::QAbstractAttribute"
-        javaName: "QAbstractAttribute"
         ModifyFunction{
             signature: "buffer() const"
             access: Modification.NonFinal
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QFrontFace::FaceDir"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QFrontFace::WindingDirection"
-        since: [5, 7]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QFrontFace"
-        javaName: "QFrontFace"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
             until: [5, 6]
         }
+
+        EnumType{
+            name: "FaceDir"
+            until: [5, 6]
+        }
+
+        EnumType{
+            name: "WindingDirection"
+            since: [5, 7]
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QAbstractBuffer"
-        javaName: "QAbstractBuffer"
     }
     
     ObjectType{
         name: "Qt3DRender::QBuffer"
-        javaName: "QBuffer"
         ModifyFunction{
             signature: "QBuffer(Qt3DRender::QBuffer::BufferType, Qt3DCore::QNode *)"
             ModifyArgument{
@@ -1239,28 +1108,24 @@ TypeSystem{
                 }
             }
         }
-        until: 5
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBuffer::BufferType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBuffer::UsageType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBuffer::AccessType"
-        since: [5, 9]
+
+        EnumType{
+            name: "BufferType"
+        }
+
+        EnumType{
+            name: "UsageType"
+        }
+
+        EnumType{
+            name: "AccessType"
+            since: [5, 9]
+        }
         until: 5
     }
     
     ObjectType{
         name: "Qt3DRender::QItemModelBuffer"
-        javaName: "QItemModelBuffer"
         ModifyFunction{
             signature: "setModel(QAbstractItemModel*)"
             ModifyArgument{
@@ -1275,49 +1140,39 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QLayer"
-        javaName: "QLayer"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QMesh::Status"
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DRender::QMesh"
-        javaName: "QMesh"
+        EnumType{
+            name: "Status"
+            since: [5, 11]
+        }
     }
-    
     
     ObjectType{
         name: "Qt3DRender::QParameter"
-        javaName: "QParameter"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QParameterMapping::Binding"
-        until: [5, 9]
     }
     
     ObjectType{
         name: "Qt3DRender::QParameterMapping"
-        javaName: "QParameterMapping"
+
+        EnumType{
+            name: "Binding"
+        }
         until: [5, 9]
     }
     
     ObjectType{
         name: "Qt3DRender::QPlaneMesh"
-        javaName: "QPlaneMesh"
     }
     
     ObjectType{
         name: "Qt3DRender::QPointLight"
-        javaName: "QPointLight"
     }
     
     ObjectType{
         name: "Qt3DRender::QPolygonOffset"
-        javaName: "QPolygonOffset"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1325,19 +1180,16 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QRenderAttachment::RenderAttachmentType"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRenderAttachment::CubeMapFace"
-        until: [5, 6]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QRenderAttachment"
-        javaName: "QRenderAttachment"
+
+        EnumType{
+            name: "RenderAttachmentType"
+        }
+
+        EnumType{
+            name: "CubeMapFace"
+        }
         ModifyFunction{
             signature: "setTexture(Qt3DRender::QAbstractTextureProvider*)"
             ModifyArgument{
@@ -1352,7 +1204,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QRenderPass"
-        javaName: "QRenderPass"
         ModifyFunction{
             signature: "glslNameForParameter(QString) const"
             remove: RemoveFlag.All
@@ -1463,19 +1314,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QRenderState::Type"
-    }
-    
     ObjectType{
         name: "Qt3DRender::QRenderState"
-        javaName: "QRenderState"
+
+        EnumType{
+            name: "Type"
+        }
         forceAbstract: true
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderTarget"
-        javaName: "QRenderTarget"
         ModifyFunction{
             signature: "addAttachment(Qt3DRender::QRenderAttachment*)"
             ModifyArgument{
@@ -1516,18 +1365,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QSceneLoader::Status"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QSceneLoader::ComponentType"
-        since: [5, 9]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QSceneLoader"
-        javaName: "QSceneLoader"
+
+        EnumType{
+            name: "Status"
+        }
+
+        EnumType{
+            name: "ComponentType"
+            since: [5, 9]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1537,7 +1385,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QScissorTest"
-        javaName: "QScissorTest"
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1545,13 +1392,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QShaderData::TransformType"
-    }
-    
     ObjectType{
         name: "Qt3DRender::QShaderData"
-        javaName: "QShaderData"
+
+        EnumType{
+            name: "TransformType"
+        }
         ModifyFunction{
             signature: "event(QEvent*)"
             ModifyArgument{
@@ -1561,68 +1407,71 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QAbstractLight::Type"
-    }
-    
     ObjectType{
         name: "Qt3DRender::QAbstractLight"
-        javaName: "QAbstractLight"
+        EnumType{
+            name: "Type"
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QLight"
-        javaName: "QLight"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QLight::Type"
+        EnumType{
+            name: "Type"
+        }
         until: [5, 6]
     }
     
     InterfaceType{
         name: "Qt3DRender::PropertyReaderInterface"
-        javaName: "PropertyReaderInterface"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QShaderProgram::Status"
-        since: [5, 9]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QShaderProgram::ShaderType"
     }
     
     ObjectType{
         name: "Qt3DRender::QShaderProgram"
-        javaName: "QShaderProgram"
+
+        EnumType{
+            name: "Status"
+            since: [5, 9]
+        }
+        EnumType{
+            name: "ShaderType"
+        }
+        EnumType{
+            name: "Format"
+            since: [5, 15]
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::QSphereMesh"
-        javaName: "QSphereMesh"
     }
     
     ObjectType{
         name: "Qt3DRender::QSpotLight"
-        javaName: "QSpotLight"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilTest::StencilFaceMode"
-        until: [5, 6]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilTest::StencilFunc"
-        until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilTest"
-        javaName: "QStencilTest"
+
+        Rejection{
+            functionName: "front"
+            until: [5, 6]
+        }
+
+        Rejection{
+            functionName: "back"
+            until: [5, 6]
+        }
+
+        EnumType{
+            name: "StencilFaceMode"
+            until: [5, 6]
+        }
+
+        EnumType{
+            name: "StencilFunc"
+            until: [5, 6]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1632,7 +1481,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QTechnique"
-        javaName: "QTechnique"
+
+        Rejection{
+            functionName: "graphicsApiFilter"
+        }
         ModifyFunction{
             signature: "addPass(Qt3DRender::QRenderPass*)"
             ModifyArgument{
@@ -1733,7 +1585,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QTextureImage"
-        javaName: "QTextureImage"
+
+        EnumType{
+            name: "Status"
+            since: [5, 7]
+        }
         ModifyFunction{
             signature: "doClone() const"
             remove: RemoveFlag.All
@@ -1743,122 +1599,81 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QTexture1D"
-        javaName: "QTexture1D"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexture1DArray"
-        javaName: "QTexture1DArray"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexture2D"
-        javaName: "QTexture2D"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexture2DArray"
-        javaName: "QTexture2DArray"
     }
-    
+
     ObjectType{
         name: "Qt3DRender::QTexture3D"
-        javaName: "QTexture3D"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureCubeMap"
-        javaName: "QTextureCubeMap"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureCubeMapArray"
-        javaName: "QTextureCubeMapArray"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexture2DMultisample"
-        javaName: "QTexture2DMultisample"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexture2DMultisampleArray"
-        javaName: "QTexture2DMultisampleArray"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureRectangle"
-        javaName: "QTextureRectangle"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureBuffer"
-        javaName: "QTextureBuffer"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureLoader"
-        javaName: "QTextureLoader"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureData"
-        javaName: "QTextureData"
-        ModifyFunction{
-            signature: "addImageData(const QSharedPointer<Qt3DRender::QTextureImageData> &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.qt3d.render.QTextureImageData"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "imageData() const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.util.List<QTextureImageData>"
-                }
-            }
-        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QTorusMesh"
-        javaName: "QTorusMesh"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QTextureWrapMode::WrapMode"
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureWrapMode"
-        javaName: "QTextureWrapMode"
-    }
-    
-    
-    Rejection{
-        className: "Qt3DRender::Sphere"
+
+        EnumType{
+            name: "WrapMode"
+        }
     }
     
     ObjectType{
         name: "Qt3DRender::Attribute"
-        javaName: "Attribute"
     }
     
     ObjectType{
         name: "Qt3DRender::Buffer"
-        javaName: "Buffer"
     }
     
     
     ObjectType{
         name: "Qt3DRender::TexImageData"
-        javaName: "TexImageData"
         ModifyFunction{
             signature: "setCompressedData(QByteArray, QOpenGLTexture::PixelFormat)"
             remove: RemoveFlag.All
@@ -1867,7 +1682,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QCameraSelector"
-        javaName: "QCameraSelector"
         ModifyFunction{
             signature: "setCamera(Qt3DCore::QEntity*)"
             ModifyArgument{
@@ -1879,20 +1693,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QClearBuffer::BufferType"
-        until: [5, 6]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QClearBuffer"
-        javaName: "QClearBuffer"
+
+        EnumType{
+            name: "BufferType"
+        }
         until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QFrameGraph"
-        javaName: "QFrameGraph"
         ModifyFunction{
             signature: "setActiveFrameGraph(Qt3DRender::QFrameGraphNode*)"
             ModifyArgument{
@@ -1907,7 +1718,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QFrameGraphNode"
-        javaName: "QFrameGraphNode"
         ModifyFunction{
             signature: "isEnabled() const"
             rename: "isFrameGraphEnabled"
@@ -1922,26 +1732,23 @@ TypeSystem{
     
     InterfaceType{
         name: "Qt3DRender::QFrameGraphSelectorFunctor"
-        javaName: "QFrameGraphSelectorFunctor"
         ModifyFunction{
             signature: "operator()()"
-            rename: "call"
+            Delegate{name: "call"}
         }
     }
     
     ObjectType{
         name: "Qt3DRender::QFrameGraphSelector"
-        javaName: "QFrameGraphSelector"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QLayerFilter::FilterMode"
-        since: [5, 5]
     }
     
     ObjectType{
         name: "Qt3DRender::QLayerFilter"
-        javaName: "QLayerFilter"
+
+        EnumType{
+            name: "FilterMode"
+            since: [5, 5]
+        }
         ModifyFunction{
             signature: "addLayer(Qt3DRender::QLayer*)"
             ModifyArgument{
@@ -1965,12 +1772,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QNoDraw"
-        javaName: "QNoDraw"
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderPassFilter"
-        javaName: "QRenderPassFilter"
         ModifyFunction{
             signature: "addInclude(Qt3DRender::QAnnotation*)"
             ModifyArgument{
@@ -2031,7 +1836,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QRenderTargetSelector"
-        javaName: "QRenderTargetSelector"
         ModifyFunction{
             signature: "setTarget(Qt3DRender::QRenderTarget*)"
             ModifyArgument{
@@ -2043,20 +1847,17 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "Qt3DRender::QSortCriterion::SortType"
-        until: [5, 6]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QSortCriterion"
-        javaName: "QSortCriterion"
+
+        EnumType{
+            name: "SortType"
+        }
         until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QSortMethod"
-        javaName: "QSortMethod"
         ModifyFunction{
             signature: "addCriterion(Qt3DRender::QSortCriterion*)"
             ModifyArgument{
@@ -2079,7 +1880,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QStateSet"
-        javaName: "QStateSet"
         ModifyFunction{
             signature: "addRenderState(Qt3DRender::QRenderState*)"
             ModifyArgument{
@@ -2102,7 +1902,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QTechniqueFilter"
-        javaName: "QTechniqueFilter"
         ModifyFunction{
             signature: "addParameter(Qt3DRender::QParameter*)"
             ModifyArgument{
@@ -2163,17 +1962,14 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QViewport"
-        javaName: "QViewport"
     }
     
     ObjectType{
         name: "Qt3DRender::QWindow"
-        javaName: "QWindow"
     }
     
     ObjectType{
         name: "Qt3DRender::QTexImageData"
-        javaName: "QTexImageData"
         ModifyFunction{
             signature: "operator=(const Qt3DRender::QTexImageData &)"
             remove: RemoveFlag.All
@@ -2182,19 +1978,16 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QDispatchCompute"
-        javaName: "QDispatchCompute"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QFrustumCulling"
-        javaName: "QFrustumCulling"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QClearBuffers"
-        javaName: "QClearBuffers"
         ModifyFunction{
             signature: "setColorBuffer(Qt3DRender::QRenderTargetOutput *)"
             ModifyArgument{
@@ -2205,17 +1998,15 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QClearBuffers::BufferType"
+
+        EnumType{
+            name: "BufferType"
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderStateSet"
-        javaName: "QRenderStateSet"
         ModifyFunction{
             signature: "addRenderState(Qt3DRender::QRenderState*)"
             ModifyArgument{
@@ -2239,7 +2030,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QRenderSurfaceSelector"
-        javaName: "QRenderSurfaceSelector"
         ModifyFunction{
             signature: "setSurface(QObject *)"
             ModifyArgument{
@@ -2255,7 +2045,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QSortPolicy"
-        javaName: "QSortPolicy"
         ModifyFunction{
             signature: "sortTypesChanged(const QVector<int> &)"
             rename: "sortTypesIntChanged"
@@ -2264,71 +2053,65 @@ TypeSystem{
             signature: "setSortTypes(const QVector<int> &)"
             rename: "setSortTypesInt"
         }
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QSortPolicy::SortType"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QCamera::CameraTranslationOption"
+
+        EnumType{
+            name: "SortType"
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QCamera"
-        javaName: "QCamera"
+
+        EnumType{
+            name: "CameraTranslationOption"
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QCameraLens"
-        javaName: "QCameraLens"
+
+        EnumType{
+            name: "ProjectionType"
+        }
         since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QCameraLens::ProjectionType"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QComputeCommand::RunType"
-        since: [5, 12]
     }
     
     ObjectType{
         name: "Qt3DRender::QComputeCommand"
-        javaName: "QComputeCommand"
+
+        EnumType{
+            name: "RunType"
+            since: [5, 12]
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickingSettings"
-        javaName: "QPickingSettings"
         since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QPickingSettings::PickMethod"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QPickingSettings::PickResultMode"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QPickingSettings::FaceOrientationPickingMode"
-        since: [5, 8]
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderSettings"
-        javaName: "QRenderSettings"
+
+        EnumType{
+            name: "PickMethod"
+        }
+
+        EnumType{
+            name: "PickResultMode"
+        }
+
+        EnumType{
+            name: "FaceOrientationPickingMode"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "RenderPolicy"
+        }
         ModifyFunction{
             signature: "setActiveFrameGraph(Qt3DRender::QFrameGraphNode*)"
             ModifyArgument{
@@ -2341,14 +2124,12 @@ TypeSystem{
         since: [5, 7]
     }
     
-    EnumType{
-        name: "Qt3DRender::QRenderSettings::RenderPolicy"
-        since: [5, 7]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QRenderTargetOutput"
-        javaName: "QRenderTargetOutput"
+
+        EnumType{
+            name: "AttachmentPoint"
+        }
         ModifyFunction{
             signature: "setTexture(Qt3DRender::QAbstractTexture*)"
             ModifyArgument{
@@ -2361,14 +2142,8 @@ TypeSystem{
         since: [5, 7]
     }
     
-    EnumType{
-        name: "Qt3DRender::QRenderTargetOutput::AttachmentPoint"
-        since: [5, 7]
-    }
-    
     InterfaceType{
         name: "Qt3DRender::QBufferDataGenerator"
-        javaName: "QBufferDataGenerator"
         ExtraIncludes{
             Include{
                 fileName: "Qt3DRender/qabstractfunctor.h"
@@ -2394,14 +2169,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
         }
         since: [5, 7]
     }
     
     InterfaceType{
         name: "Qt3DRender::QGeometryFactory"
-        javaName: "QGeometryFactory"
         ExtraIncludes{
             Include{
                 fileName: "Qt3DRender/qabstractfunctor.h"
@@ -2427,7 +2201,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -2445,7 +2219,6 @@ TypeSystem{
     
     InterfaceType{
         name: "Qt3DRender::QTextureGenerator"
-        javaName: "QTextureGenerator"
         ExtraIncludes{
             Include{
                 fileName: "Qt3DRender/qabstractfunctor.h"
@@ -2470,14 +2243,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
         }
         since: [5, 7]
     }
     
     InterfaceType{
         name: "Qt3DRender::QTextureImageDataGenerator"
-        javaName: "QTextureImageDataGenerator"
         ExtraIncludes{
             Include{
                 fileName: "Qt3DRender/qabstractfunctor.h"
@@ -2503,12 +2275,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator()()"
-            rename: "get"
+            Delegate{name: "get"}
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.qt3d.render.QTextureImageData"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
@@ -2520,60 +2289,61 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QFilterKey"
-        javaName: "QFilterKey"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QGraphicsApiFilter"
-        javaName: "QGraphicsApiFilter"
-        ModifyFunction{
-            signature: "operator==(const Qt3DRender::QGraphicsApiFilter &,const Qt3DRender::QGraphicsApiFilter &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "OpenGLProfile"
+        }
+
+        EnumType{
+            name: "Api"
+            RejectEnumValue{
+                name: "Vulkan"
+            }
         }
         since: [5, 7]
     }
-    
-    EnumType{
-        name: "Qt3DRender::QGraphicsApiFilter::OpenGLProfile"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QGraphicsApiFilter::Api"
-        RejectEnumValue{
-            name: "Vulkan"
-        }
-        since: [5, 7]
+    GlobalFunction{
+        signature: "operator==(const Qt3DRender::QGraphicsApiFilter &,const Qt3DRender::QGraphicsApiFilter &)"
+        remove: RemoveFlag.All
     }
     
     ObjectType{
         name: "Qt3DRender::QObjectPicker"
-        javaName: "QObjectPicker"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickEvent"
-        javaName: "QPickEvent"
+
+        EnumType{
+            name: "Buttons"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "Modifiers"
+            since: [5, 8]
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickLineEvent"
-        javaName: "QPickLineEvent"
         since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickPointEvent"
-        javaName: "QPickPointEvent"
         since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DRender::QProximityFilter"
-        javaName: "QProximityFilter"
         ModifyFunction{
             signature: "setEntity(Qt3DCore::QEntity*)"
             ModifyArgument{
@@ -2588,7 +2358,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QShaderProgramBuilder"
-        javaName: "QShaderProgramBuilder"
         ModifyFunction{
             signature: "setShaderProgram(Qt3DRender::QShaderProgram*)"
             ModifyArgument{
@@ -2601,154 +2370,114 @@ TypeSystem{
         since: [5, 10]
     }
     
-    EnumType{
-        name: "Qt3DRender::QPickEvent::Buttons"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QPickEvent::Modifiers"
-        since: [5, 8]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QPickTriangleEvent"
-        javaName: "QPickTriangleEvent"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QBlendEquationArguments"
-        javaName: "QBlendEquationArguments"
+
+        EnumType{
+            name: "Blending"
+            RejectEnumValue{
+                name: "Source1Alpha"
+            }
+            RejectEnumValue{
+                name: "Source1Color"
+            }
+            RejectEnumValue{
+                name: "OneMinusSource1Color0"
+                since: [5, 8]
+            }
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QClipPlane"
-        javaName: "QClipPlane"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QMultiSampleAntiAliasing"
-        javaName: "QMultiSampleAntiAliasing"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QNoDepthMask"
-        javaName: "QNoDepthMask"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QPointSize"
-        javaName: "QPointSize"
+
+        EnumType{
+            name: "SizeMode"
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QSeamlessCubemap"
-        javaName: "QSeamlessCubemap"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilMask"
-        javaName: "QStencilMask"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilOperation"
-        javaName: "QStencilOperation"
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilOperationArguments"
-        javaName: "QStencilOperationArguments"
+
+        EnumType{
+            name: "FaceMode"
+        }
+
+        EnumType{
+            name: "Operation"
+        }
         since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilTestArguments"
-        javaName: "QStencilTestArguments"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QBlendEquationArguments::Blending"
-        RejectEnumValue{
-            name: "Source1Alpha"
+        EnumType{
+            name: "StencilFaceMode"
         }
-        RejectEnumValue{
-            name: "Source1Color"
+        EnumType{
+            name: "StencilFunction"
         }
-        RejectEnumValue{
-            name: "OneMinusSource1Color0"
-            since: [5, 8]
-        }
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QPointSize::SizeMode"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilOperationArguments::FaceMode"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilOperationArguments::Operation"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilTestArguments::StencilFaceMode"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QStencilTestArguments::StencilFunction"
-        since: [5, 7]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QTextureImage::Status"
         since: [5, 7]
     }
     
     ValueType{
         name: "Qt3DRender::QTextureImageData"
-        javaName: "QTextureImageData"
-        ModifyFunction{
-            signature: "operator=(const Qt3DRender::QTextureImageData &)"
-            remove: RemoveFlag.All
+
+        FunctionalType{
+            name: "DataConverter"
+            using: "std::function<QByteArray(QByteArray,int,int,int)>"
+            since: 6
         }
         since: [5, 7]
     }
     
-    FunctionalType{
-        name: "Qt3DRender::QTextureImageData::DataConverter"
-        using: "std::function<QByteArray(QByteArray,int,int,int)>"
-        since: 6
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractRayCaster::RunMode"
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QAbstractRayCaster::FilterMode"
-    }
-    
     ObjectType{
         name: "Qt3DRender::QAbstractRayCaster"
-        javaName: "QAbstractRayCaster"
+
+        EnumType{
+            name: "RunMode"
+        }
+
+        EnumType{
+            name: "FilterMode"
+        }
         ModifyFunction{
             signature: "addLayer(Qt3DRender::QLayer*)"
             ModifyArgument{
@@ -2767,95 +2496,53 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "hitsChanged(const Qt3DRender::QAbstractRayCaster::Hits &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QList<io.qt.qt3d.render.QRayCasterHit>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const Qt3DRender::QAbstractRayCaster::Hits& %out = qtjambi_cast<const Qt3DRender::QAbstractRayCaster::Hits&>(%env, %scope, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "hits() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QList<io.qt.qt3d.render.QRayCasterHit>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
         name: "Qt3DRender::QRayCaster"
-        javaName: "QRayCaster"
-        ModifyFunction{
-            signature: "pick(QVector3D,QVector3D,float)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QList<io.qt.qt3d.render.QRayCasterHit>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<Qt3DRender::QAbstractRayCaster::Hits*>(%env, %in);"}
-                }
-            }
-            since: 6
-        }
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRayCasterHit::HitType"
     }
     
     ValueType{
         name: "Qt3DRender::QRayCasterHit"
-        javaName: "QRayCasterHit"
-        ModifyFunction{
-            signature: "operator=(const Qt3DRender::QRayCasterHit &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "HitType"
         }
     }
     
     ObjectType{
         name: "Qt3DRender::QDepthRange"
-        javaName: "QDepthRange"
         since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QNoPicking"
-        javaName: "QNoPicking"
         since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QRasterMode"
-        javaName: "QRasterMode"
+
+        EnumType{
+            name: "FaceMode"
+        }
+
+        EnumType{
+            name: "RasterMode"
+        }
         since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QShaderImage"
-        javaName: "QShaderImage"
+
+        EnumType{
+            name: "Access"
+        }
+
+        EnumType{
+            name: "ImageFormat"
+        }
         ModifyFunction{
             signature: "setTexture(Qt3DRender::QAbstractTexture*)"
             ModifyArgument{
@@ -2870,46 +2557,37 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QSubtreeEnabler"
-        javaName: "QSubtreeEnabler"
+
+        EnumType{
+            name: "Enablement"
+        }
         since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderCapabilities"
-        javaName: "QRenderCapabilities"
+
+        EnumType{
+            name: "API"
+        }
+
+        EnumType{
+            name: "Profile"
+        }
         since: [5, 15]
     }
     
     ObjectType{
         name: "Qt3DRender::QDebugOverlay"
-        javaName: "QDebugOverlay"
-        since: [5, 15]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRenderCapabilities::API"
-        since: [5, 15]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRenderCapabilities::Profile"
         since: [5, 15]
     }
     
     ValueType{
         name: "Qt3DRender::QTextureDataUpdate"
-        javaName: "QTextureDataUpdate"
-        ModifyFunction{
-            signature: "operator=(const Qt3DRender::QTextureDataUpdate &)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setData(const QSharedPointer<Qt3DRender::QTextureImageData> &)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.qt3d.render.QTextureImageData"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QSharedPointer<Qt3DRender::QTextureImageData> %out = qtjambi_cast<QSharedPointer<Qt3DRender::QTextureImageData>>(%env, %in);"}
@@ -2920,9 +2598,6 @@ TypeSystem{
             signature: "data()const"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.qt3d.render.QTextureImageData"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
@@ -2932,34 +2607,8 @@ TypeSystem{
         since: [5, 14]
     }
     
-    EnumType{
-        name: "Qt3DRender::QRasterMode::FaceMode"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QRasterMode::RasterMode"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QShaderImage::Access"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QShaderImage::ImageFormat"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "Qt3DRender::QSubtreeEnabler::Enablement"
-        since: [5, 14]
-    }
-    
     ObjectType{
         name: "Qt3DRender::QPickingProxy"
-        javaName: "QPickingProxy"
         since: 6
     }
     

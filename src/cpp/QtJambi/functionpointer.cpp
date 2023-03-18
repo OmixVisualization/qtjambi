@@ -100,14 +100,16 @@ public:
 void register_file_by_function(struct LibraryFile* libFile, QFunctionPointer fn);
 void unregister_file_by_function(QFunctionPointer fn);
 
+typedef std::vector<QFunctionPointer>::size_type index_type;
+
 struct LibraryFile : public QSharedData{
     LibraryFile(const QString& _name,
-                QVector<LibraryFunction>&& _libFunctions,
-                QSet<size_type>&& _freeIndexes,
+                std::vector<LibraryFunction>&& _libFunctions,
+                QSet<index_type>&& _freeIndexes,
                 std::unique_ptr<QLibrary>& _library):
         name(_name),
-        libFunctions(_libFunctions),
-        freeIndexes(_freeIndexes),
+        libFunctions(std::move(_libFunctions)),
+        freeIndexes(std::move(_freeIndexes)),
         usedIndexes(),
         library(_library.release()){
     }
@@ -121,7 +123,7 @@ struct LibraryFile : public QSharedData{
                                   QFunctionPointer caller){
         if(freeIndexes.isEmpty())
             return nullptr;
-        size_type freeIndex = *freeIndexes.cbegin();
+        index_type freeIndex = *freeIndexes.cbegin();
         freeIndexes.erase(freeIndexes.cbegin());
         LibraryFunction& lf = libFunctions[freeIndex];
         lf.enable(disposer, caller);
@@ -131,7 +133,7 @@ struct LibraryFile : public QSharedData{
     }
     bool disposeFunction(QFunctionPointer fn){
         if(usedIndexes.contains(quintptr(fn))){
-            size_type usedIndex = usedIndexes.take(quintptr(fn));
+            index_type usedIndex = usedIndexes.take(quintptr(fn));
             LibraryFunction& lf = libFunctions[usedIndex];
             lf.disable();
             freeIndexes << usedIndex;
@@ -141,8 +143,8 @@ struct LibraryFile : public QSharedData{
     }
     const QString name;
 private:
-    QVector<LibraryFunction> libFunctions;
-    QSet<size_type> freeIndexes;
+    std::vector<LibraryFunction> libFunctions;
+    QSet<index_type> freeIndexes;
     QHash<quintptr,size_type> usedIndexes;
     QLibrary* library;
     Q_DISABLE_COPY_MOVE(LibraryFile);
@@ -255,10 +257,10 @@ QFunctionPointer extractFunction(
                 std::vector<QFunctionPointer> functions;
                 QFunctionPointer* callers = initialize(on_null_ptr, functions);
                 Q_ASSERT(callers);
-                QSet<size_type> freeIndexes;
-                QVector<LibraryFunction> libFunctions;
+                QSet<index_type> freeIndexes;
+                std::vector<LibraryFunction> libFunctions;
                 libFunctions.resize(functions.size());
-                for(std::vector<QFunctionPointer>::size_type i=0; i<functions.size(); ++i){
+                for(index_type i=0; i<functions.size(); ++i){
                     freeIndexes << i;
                     LibraryFunction& lf = libFunctions[i];
                     lf.initialize(callers + i, functions[i]);

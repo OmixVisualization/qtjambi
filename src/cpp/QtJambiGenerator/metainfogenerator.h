@@ -43,7 +43,7 @@
 #include "cppgenerator.h"
 #include "typedatabase.h"
 
-class MetaInfoGenerator : public JavaGenerator {
+class MetaInfoGenerator : public AbstractGenerator {
     public:
         MetaInfoGenerator(PriGenerator *pri);
 
@@ -79,6 +79,13 @@ class MetaInfoGenerator : public JavaGenerator {
         }
         void setIncludeDirectories(const QStringList &newIncludeDirectories);
 
+        QString javaOutputDirectory() const {
+            if (!m_java_out_dir.isNull())
+                return m_java_out_dir;
+            return outputDirectory() + QLatin1String("/java");
+        }
+        void setJavaOutputDirectory(const QString &javaOutDir) { m_java_out_dir = javaOutDir; }
+
 private:
         void writeCppFile();
         void buildSkipList();
@@ -87,6 +94,7 @@ private:
         QMap<QString, quint8> m_packageGenerationPolicies;
         QMap<QString, QString> m_typeSystemByPackage;
         QString m_filenameStub;
+        QString m_java_out_dir;
 
         PriGenerator *priGenerator;
 
@@ -94,6 +102,7 @@ private:
         QStringList m_includeDirectories;
 
         QStringList m_staticLibraries;
+        TS::TypeDatabase* m_database;
 };
 
 #endif // METAINFOGENERATOR_H

@@ -40,4 +40,11 @@ namespace QtCore {
 }
 }
 
+jobject qtjambi_setReading(JNIEnv *env,
+                           class QSensorBackend *__qt_this,
+                           jobject readingClass);
+
+jobject qtjambi_setReading(JNIEnv *env,
+                           class QSensorBackend *__qt_this,
+                           jclass readingClass);
 #endif // UTILS_P_H

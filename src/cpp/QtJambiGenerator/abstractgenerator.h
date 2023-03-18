@@ -100,6 +100,8 @@ class AbstractGenerator : public QObject {
             NoEnumAsInts                    = 0x2000000000,
             NoSuppressExports               = 0x4000000000,
             JNIProxyFunction                = 0x8000000000,
+            NoNullness                      = 0x10000000000,
+            StrictNonNull                   = 0x20000000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };
@@ -142,6 +144,8 @@ class AbstractGenerator : public QObject {
     protected:
         void writeInclude(QTextStream &s, const TS::Include &inc, QSet<QString> &dedupe);
         void verifyDirectoryFor(const QFile &file);
+        static QString annotationFreeTypeName(QString typeName);
+        static bool isCharSequenceSubstitute(const MetaType* type);
 
         MetaClassList m_classes;
         int m_num_generated;

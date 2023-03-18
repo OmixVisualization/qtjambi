@@ -37,13 +37,12 @@ enum class QtJambiNativeID : jlong;
 class QTJAMBI_EXPORT InvalidateAfterUse{
 public:
     InvalidateAfterUse(JNIEnv *env, jobject object, bool checkJavaOwnership = true);
+    InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId);
     ~InvalidateAfterUse();
     static void invalidate(JNIEnv *env, jobject java_object, bool checkJavaOwnership = true);
     static void invalidate(JNIEnv *env, QtJambiNativeID nativeId);
 private:
-    JNIEnv *m_env;
-    jobject m_object;
-    bool m_checkJavaOwnership;
+    struct InvalidateAfterUsePrivate* p;
     Q_DISABLE_COPY_MOVE(InvalidateAfterUse)
 };
 

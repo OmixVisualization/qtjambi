@@ -50,6 +50,7 @@
 
 #include <cctype>
 #include <iostream>
+#include <QFileInfo>
 
 scan_fun_ptr Lexer::s_scan_keyword_table[] = {
     &Lexer::scanKeyword0, &Lexer::scanKeyword0,
@@ -125,6 +126,9 @@ void LocationManager::positionAt(std::size_t offset, int *line, int *column,
 
     location_table.positionAt(offset, line, column);
     *line = base_line + *line - line2  - 1;
+    if(filename){
+        *filename = QFileInfo(*filename).canonicalFilePath();
+    }
 }
 
 scan_fun_ptr Lexer::s_scan_table[256];
@@ -201,6 +205,7 @@ void Lexer::initialize_scan_table() {
             s_scan_table[i] = &Lexer::scan_invalid_input;
     }
 
+    s_scan_table[int('@')] = &Lexer::scan_identifier_or_keyword;
     s_scan_table[int('L')] = &Lexer::scan_identifier_or_literal;
     s_scan_table[int('u')] = &Lexer::scan_identifier_or_literal;
     s_scan_table[int('U')] = &Lexer::scan_identifier_or_literal;
@@ -383,6 +388,8 @@ void Lexer::scan_identifier_or_literal() {
 
 void Lexer::scan_identifier_or_keyword() {
     const unsigned char *skip = cursor;
+    if(*cursor == '@')
+        ++skip;
     while (isalnum(*skip) || *skip == '_' || *skip == '$')
         ++skip;
 
@@ -441,7 +448,7 @@ void Lexer::scan_remainder() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_rem_assign;
     } else {
         token_stream[index++].kind = '%';
     }
@@ -457,7 +464,7 @@ void Lexer::scan_and() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_and_eq;
     } else if (*cursor == '&') {
         ++cursor;
         token_stream[index++].kind = Token_and;
@@ -486,7 +493,7 @@ void Lexer::scan_star() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_times_assign;
     } else {
         token_stream[index++].kind = '*';
     }
@@ -502,7 +509,7 @@ void Lexer::scan_plus() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_plus_assign;
     } else if (*cursor == '+') {
         ++cursor;
         token_stream[index++].kind = Token_incr;
@@ -527,7 +534,7 @@ void Lexer::scan_minus() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_minus_assign;
     } else if (*cursor == '-') {
         ++cursor;
         token_stream[index++].kind = Token_decr;
@@ -570,7 +577,7 @@ void Lexer::scan_divide() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_div_assign;
     } else {
         token_stream[index++].kind = '/';
     }
@@ -629,9 +636,9 @@ void Lexer::scan_less() {
         ++cursor;
         if (*cursor == '=') {
             ++cursor;
-            token_stream[index++].kind = Token_assign;
+            token_stream[index++].kind = Token_left_shift_assign;
         } else {
-            token_stream[index++].kind = Token_shift;
+            token_stream[index++].kind = Token_left_shift;
         }
     } else {
         token_stream[index++].kind = '<';
@@ -666,10 +673,10 @@ void Lexer::scan_greater() {
         ++cursor;
         token_stream[index++].kind = Token_geq;
     } else if (*cursor == '>') {
-        ++cursor;
-        if (*cursor == '=') {
+        if (*(cursor+1) == '=') {
             ++cursor;
-            token_stream[index++].kind = Token_assign;
+            ++cursor;
+            token_stream[index++].kind = Token_right_shift_assign;
         } else {
             token_stream[index++].kind = '>';
         }
@@ -702,7 +709,7 @@ void Lexer::scan_xor() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_xor_eq;
     } else {
         token_stream[index++].kind = '^';
     }
@@ -722,7 +729,7 @@ void Lexer::scan_or() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_assign;
+        token_stream[index++].kind = Token_or_eq;
     } else if (*cursor == '|') {
         ++cursor;
         token_stream[index++].kind = Token_or;
@@ -1584,6 +1591,19 @@ void Lexer::scanKeyword8() {
 
 void Lexer::scanKeyword9() {
     switch (*cursor) {
+    case '@': // @protocol objective-C-keyword mapping to class
+        if (*(cursor + 1) == 'p' &&
+                *(cursor + 2) == 'r' &&
+                *(cursor + 3) == 'o' &&
+                *(cursor + 4) == 't' &&
+                *(cursor + 5) == 'o' &&
+                *(cursor + 6) == 'c' &&
+                *(cursor + 7) == 'o' &&
+                *(cursor + 8) == 'l') {
+            token_stream[index++].kind = Token_class;
+            return;
+        }
+        break;
     case 'c':
         if (*(cursor + 1) == 'o' &&
                 *(cursor + 2) == 'n' &&
@@ -1596,6 +1616,7 @@ void Lexer::scanKeyword9() {
             token_stream[index++].kind = Token_constexpr;
             return;
         }
+        break;
     break;
         case 'p':
             if (*(cursor + 1) == 'r' &&

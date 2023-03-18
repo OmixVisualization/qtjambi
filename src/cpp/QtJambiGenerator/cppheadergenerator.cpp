@@ -36,13 +36,16 @@
 ****************************************************************************/
 
 #include "cppheadergenerator.h"
-#include "typesystem/typedatabase.h"
 
 #include <QtCore/QDir>
 
 #include <qdebug.h>
 
 static Indentor INDENT;
+
+CppHeaderGenerator::CppHeaderGenerator(PriGenerator *pri)
+    : CppGenerator(pri){
+}
 
 QString CppHeaderGenerator::fileNameForClass(const MetaClass *java_class) const {
     if(java_class->typeEntry()->designatedInterface()){
@@ -165,6 +168,9 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     writeInclude(s, java_class->typeEntry()->include(), included);
     writeInclude(s, Include(Include::IncludePath, "QtJambi/QtJambiAPI"), included);
     writeInclude(s, Include(Include::IncludePath, "QtJambi/FunctionalBase"), included);
+    if(java_class->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
+        writeInclude(s, Include(Include::IncludePath, "QtJambi/FunctionPointer"), included);
+    }
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
     for(const Include &inc : list) {
@@ -264,12 +270,22 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         if(java_class->typeEntry()->designatedInterface()){
             includes << java_class->typeEntry()->designatedInterface()->extraIncludes();
         }
-        for(const Include& icl : includes){
+        for(const Include& icl : qAsConst(includes)){
             if(icl.suppressed)
                 writeInclude(s, icl, included);
         }
     }
     writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+
+    QList<const MetaFunction *> returnScopeRequired;
+    for(const MetaFunction *function : java_class->functionsInShellClass()) {
+        if((!function->isFinalInCpp() || function->isVirtualSlot()) && !function->wasPrivate() && function->needsReturnScope())
+            returnScopeRequired << function;
+    }
+
+    if(!returnScopeRequired.isEmpty())
+        writeInclude(s, Include(Include::IncludePath, "memory"), included);
+
     bool hasDeprecation = java_class->isDeclDeprecated();
     if(!hasDeprecation){
         for(const MetaFunction* f : java_class->functions()){
@@ -447,8 +463,17 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
 
         s << "private:" << Qt::endl;
-        for(const MetaFunction *function : privatePureVirtuals) {
+        for(const MetaFunction *function : qAsConst(privatePureVirtuals)) {
             writeFunction(s, function);
+        }
+        for(const MetaFunction *function : qAsConst(returnScopeRequired)) {
+            s << "    ";
+            if(function->isConstant())
+                s << "mutable ";
+            s << "std::unique_ptr<QtJambiScope> __returnScope__" << function->name();
+            if(function->isConstant())
+                s << "_const";
+            s << ";" << Qt::endl;
         }
         if(java_class->instantiateShellClass()){
             s << "    QtJambiShell* __shell() const";
@@ -489,7 +514,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
 
         if(needsAccess && java_class->generateShellClass()){
-            s << "struct " << java_class->name() + "_access"
+            s << "struct " << (java_class->typeEntry()->designatedInterface() ? java_class->extractInterface()->name() : java_class->name()) << "_access"
               << " : public " << java_class->qualifiedCppName() << Qt::endl
               << "{" << Qt::endl;
             {
@@ -560,8 +585,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                                     return fentry->targetLangName();
                                 }
                             }();
-                            QString qtFlagsAliasName = fentry->originalName();
-                            s << INDENT << "return RegistryAPI::registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\", \"" << qtFlagName << "\", \"" << qtFlagsAliasName << "\", \"" << javaFlagName << "\");" << Qt::endl;
+                            QString qtFlagsTemplateName = fentry->flagsTemplate();
+                            s << INDENT << "return RegistryAPI::registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\", \"" << qtFlagName << "\", \"" << qtFlagsTemplateName << "\", \"" << javaFlagName << "\");" << Qt::endl;
                         }else{
                             s << INDENT << "return RegistryAPI::registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\");" << Qt::endl;
                         }
@@ -661,4 +686,23 @@ void CppHeaderGenerator::writeInjectedCode(QTextStream &s, const MetaFunctional 
             s << cs.code() << Qt::endl;
         }
     }
+}
+
+bool CppHeaderGenerator::shouldGenerateHeaders(const MetaClass *java_class){
+    return (java_class->generateShellClass()
+            && shouldGenerateCpp(java_class)
+            && !(java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell))
+           /*|| (  !java_class->isFake()
+               && !java_class->isInterface()
+               && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
+                 && !(java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell))*/;
+}
+
+bool CppHeaderGenerator::shouldGenerate(const MetaClass *java_class) const {
+    return shouldGenerateHeaders(java_class);
+}
+
+bool CppHeaderGenerator::shouldGenerate(const MetaFunctional *functional) const {
+    return (!(functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
+                && CppGenerator::shouldGenerate(functional));
 }

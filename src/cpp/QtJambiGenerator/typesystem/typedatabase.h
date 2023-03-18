@@ -55,19 +55,19 @@ public:
 
     QList<Include> extraIncludes(const QString &className);
 
-    TypeSystemTypeEntry *findTypeSystem(const QString &name);
-    ComplexTypeEntry *findComplexType(const QString &name);
-    FunctionalTypeEntry *findFunctionalType(const QString &name);
-    FunctionalTypeEntry *findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using);
-    PrimitiveTypeEntry *findPrimitiveType(const QString &name);
-    ObjectTypeEntry *findObjectType(const QString &name);
-    NamespaceTypeEntry *findNamespaceType(const QString &name);
+    TypeSystemTypeEntry *findTypeSystem(const QString &name) const;
+    ComplexTypeEntry *findComplexType(const QString &name) const;
+    FunctionalTypeEntry *findFunctionalType(const QString &name) const;
+    FunctionalTypeEntry *findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using) const;
+    PrimitiveTypeEntry *findPrimitiveType(const QString &name) const;
+    ObjectTypeEntry *findObjectType(const QString &name) const;
+    NamespaceTypeEntry *findNamespaceType(const QString &name) const;
 
-    ContainerTypeEntry *findContainerType(const QString &name);
-    IteratorTypeEntry *findIteratorType(const QString &name);
-    IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container);
-    PointerContainerTypeEntry *findPointerContainerType(const QString &name);
-    InitializerListTypeEntry *findInitializerListType(const QString &name);
+    ContainerTypeEntry *findContainerType(const QString &name) const;
+    IteratorTypeEntry *findIteratorType(const QString &name) const;
+    IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container) const;
+    PointerContainerTypeEntry *findPointerContainerType(const QString &name) const;
+    InitializerListTypeEntry *findInitializerListType(const QString &name) const;
 
     bool isPixmapType(const TypeEntry *e) const{
         return e==m_pixmapType || e==m_bitmapType;
@@ -85,7 +85,7 @@ public:
 
     SingleTypeEntryHash entries();
 
-    PrimitiveTypeEntry *findTargetLangPrimitiveType(const QString &java_name);
+    PrimitiveTypeEntry *findTargetLangPrimitiveType(const QString &java_name) const;
 
     void addRejection(const QString &class_name, const QString &function_name,
                       const QString &field_name, const QString &enum_name);
@@ -107,7 +107,7 @@ public:
     FlagsTypeEntry *findFlagsType(const QString &name) const;
 
     void addFlagsType(FlagsTypeEntry *fte) {
-        m_flags_entries[fte->originalName()] = fte;
+        m_flags_entries[fte->flagsTemplate()] = fte;
     }
 
     TemplateEntry *findTemplate(const QString &name) {
@@ -159,6 +159,8 @@ public:
 
     const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary() const { return m_typeSystemsByQtLibrary; }
 
+    QList<TypeSystemTypeEntry*> typeSystems() const;
+
     inline const QVersionNumber& qtVersion() const {return m_qtVersion;}
 
     ComplexTypeEntry * qvariantType() const{
@@ -197,6 +199,7 @@ private:
 
     DefinedPtr m_defined;
     QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;
+    QList<TypeSystemTypeEntry*> m_otherTypeSystems;
     ComplexTypeEntry * m_pixmapType;
     ComplexTypeEntry * m_bitmapType;
     ComplexTypeEntry * m_qstringType;

@@ -128,6 +128,7 @@ void TypeCompiler::visitName(NameAST *node) {
     }
     _M_type << name_cc.qualifiedName();
     _M_functionalReturnType = name_cc.functionalReturnType();
+    _M_templateArgumentTypes = name_cc.templateArgumentTypes();
     _M_functionalArgumentTypes = name_cc.functionalArgumentTypes();
     _M_functionalArgumentNames = name_cc.functionalArgumentNames();
 }

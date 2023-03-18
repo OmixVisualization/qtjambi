@@ -302,15 +302,15 @@ public class TestFileEngine extends ApplicationInitializer {
 		        QDir dirtwo = new QDir("classpath:TestClassFunctionality_dirtwo/");
 		        assertTrue(dirtwo.exists());
 		        // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
-		        List<String> direntList = dirtwo.entryList(); 
+		        QStringList direntList = dirtwo.entryList(); 
 		        int direntCount = direntList.size();
 		        if(direntCount == 2) {
 		            assertEquals(direntList.size(), 2);
-		            assertTrue(direntList.get(0).equals(".."));
-		            assertTrue(direntList.get(1).equals("TestClassFunctionality_dir22"));
+		            assertEquals("..", direntList.get(0));
+		            assertEquals("TestClassFunctionality_dir22", direntList.get(1));
 		        } else {
 		            assertEquals(direntList.size(), 1);
-		            assertTrue(direntList.get(0).equals("TestClassFunctionality_dir22"));
+		            assertEquals("TestClassFunctionality_dir22", direntList.get(0));
 		        }
 
 		        List<QFileInfo> dirTwoEntryInfoList = dirtwo.entryInfoList();

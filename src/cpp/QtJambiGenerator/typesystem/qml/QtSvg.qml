@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.svg"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSvg"
     module: "qtjambi.svg"
     description: "Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard."

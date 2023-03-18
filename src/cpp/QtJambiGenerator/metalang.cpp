@@ -62,6 +62,8 @@ MetaType *MetaType::copy() const {
     return cpy;
 }
 
+bool MetaType::isQObject() const { return m_pattern == ObjectPattern && static_cast<const ComplexTypeEntry *>(m_type_entry)->isQObject(); }
+
 QString MetaType::cppSignature() const {
     QString s;
 
@@ -125,6 +127,21 @@ MetaArgument *MetaArgument::copy() const {
     cpy->setArgumentIndex(argumentIndex());
 
     return cpy;
+}
+
+bool MetaArgument::isNullPointerDisabled(const MetaFunction* java_function) const{
+    if(java_function->nullPointersDisabled(java_function->declaringClass(), argumentIndex() + 1))
+        return true;
+    QString typeReplaced = java_function->typeReplaced(argumentIndex() + 1);
+    if(typeReplaced.isEmpty()
+        && ((type()->indirections().isEmpty() && type()->isObject())
+            || (type()->getReferenceType()==MetaType::Reference && !type()->isConstant() && type()->isObject())
+            || (type()->getReferenceType()==MetaType::Reference && !type()->isConstant() && type()->isValue())
+            || (type()->getReferenceType()==MetaType::Reference && !type()->isConstant() && type()->isQVariant())
+            || (type()->getReferenceType()==MetaType::Reference && !type()->isConstant() && type()->isQString()))){
+        return true;
+    }
+    return typeReplaced.contains("@StrictNonNull");
 }
 
 QString MetaArgument::argumentName() const {
@@ -238,7 +255,7 @@ bool MetaFunction::needsCallThrough() const {
             || isConstructor()
             || (((ownerClass()->typeEntry()->designatedInterface() && !this->isAbstract()) || implementingClass()->typeEntry()->isNativeIdBased()) && !isStatic()))
         return true;
-    if(this->argumentReplaced(0)=="this" && implementingClass()->typeEntry()->isNativeIdBased())
+    if(this->isSelfReturningFunction() && implementingClass()->typeEntry()->isNativeIdBased())
         return true;
 
     for(const MetaArgument *arg : arguments()) {
@@ -279,6 +296,18 @@ bool MetaFunction::needsCallThrough() const {
         cls = cls->baseClass();
     }
 
+    return false;
+}
+
+bool MetaFunction::needsReturnScope() const {
+    if(type()
+            && (
+                type()->isCharString() // -> returning const char* from jstring
+                || (type()->isQString() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QString* from jstring
+                || (type()->isQVariant() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QVariant* from jobject
+                )){
+        return true;
+    }
     return false;
 }
 
@@ -342,8 +371,11 @@ QString MetaFunction::marshalledName() const {
                 qualifiedCppName = "double";
             returned += "_" + qualifiedCppName
                     .replace("::", "_")
+                    .replace("(*)", "_fptr")
                     .replace("<", "_")
                     .replace(">", "_")
+                    .replace("(", "_")
+                    .replace(")", "_")
                     .replace(",", "_")
                     .replace(".", "_")
                     .replace("*", "_ptr")
@@ -460,7 +492,9 @@ MetaFunction *MetaFunction::copy() const {
     cpy->setDeclaringClass(declaringClass());
     if (type())
         cpy->setType(type()->copy());
+    cpy->setOperatorType(operatorType());
     cpy->setConstant(isConstant());
+    cpy->setFunctionReferenceType(functionReferenceType());
     cpy->setOriginalAttributes(originalAttributes());
     cpy->setDeprecatedComment(deprecatedComment());
     cpy->setHref(href());
@@ -611,6 +645,24 @@ QList<ReferenceCount> MetaFunction::referenceCounts(const MetaClass *cls, int id
     return returned;
 }
 
+void MetaFunction::setArguments(const MetaArgumentList &arguments) {
+    m_arguments = arguments;
+    m_actualMinimumArgumentCount = -1;
+    m_cached_minimal_signature.clear();
+}
+void MetaFunction::addArgument(MetaArgument *argument) {
+    m_arguments << argument;
+    m_actualMinimumArgumentCount = -1;
+    m_cached_minimal_signature.clear();
+}
+
+
+void MetaFunction::setName(const QString &name) {
+    m_name = name;
+    m_cached_minimal_signature.clear();
+}
+
+
 QList<TemplateInstantiation> MetaFunction::templateInstantiations(const MetaClass *cls) const{
     QList<TemplateInstantiation> returned;
 
@@ -666,7 +718,34 @@ bool MetaFunction::resetObjectAfterUse(int argument_idx) const {
                 return true;
         }
     }
-
+    if(argument_idx>0
+            && argument_idx>=m_arguments.size()
+            && ownership(declaringClass(), TS::ShellCode, argument_idx).ownership==TS::InvalidOwnership
+            && ownership(declaringClass(), TS::NativeCode, argument_idx).ownership==TS::InvalidOwnership
+            && ownership(declaringClass(), TS::TargetLangCode, argument_idx).ownership==TS::InvalidOwnership
+            && !hasConversionRule(TS::NativeCode, argument_idx)
+            && !hasConversionRule(TS::ShellCode, argument_idx)
+            && typeReplaced(argument_idx).isEmpty()
+            && argumentRemoved(argument_idx)==ArgumentRemove_No
+            && !argumentTypeArray(argument_idx)
+            && !argumentTypeBuffer(argument_idx)){
+        const MetaArgument *argument = m_arguments[argument_idx-1];
+        if(argument->type()->isObject()
+            || (argument->type()->isValue()
+                 && !argument->type()->isConstant()
+                 && argument->type()->actualIndirections()>0)
+            || (argument->type()->isContainer()
+                 && !argument->type()->isConstant()
+                 && argument->type()->actualIndirections()>0)
+            || (argument->type()->isQVariant()
+                 && !argument->type()->isConstant()
+                 && argument->type()->actualIndirections()>0)
+            || (argument->type()->isJavaString()
+                 && !argument->type()->isConstant()
+                 && argument->type()->actualIndirections()>0)
+            )
+            return true;
+    }
     return false;
 }
 
@@ -718,6 +797,17 @@ QString MetaFunction::nullPointerDefaultValue(const MetaClass *mainClass, int ar
 
     return QString();
 
+}
+
+bool MetaFunctional::needsReturnScope() const {
+    if(type()
+            && (
+                type()->isCharString() // -> returning const char* from jstring
+                || (type()->isQString() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QString* from jstring
+                )){
+        return true;
+    }
+    return false;
 }
 
 bool MetaFunctional::needsCallThrough() const{
@@ -902,6 +992,22 @@ QString MetaFunction::proxyCall() const {
     return {};
 }
 
+bool MetaFunction::isSelfReturningFunction() const{
+    QString trepl = typeReplaced(0);
+    QString arepl = argumentReplaced(0);
+    if(arepl.isEmpty()
+            && trepl.isEmpty()
+            && !isStatic()
+            && type()
+            && !type()->isConstant()
+            && type()->indirections().isEmpty()
+            && type()->getReferenceType()==MetaType::Reference
+            && type()->typeEntry()==implementingClass()->typeEntry()){
+        return true;
+    }
+    return arepl=="this";
+}
+
 QString MetaFunction::argumentReplaced(int key) const {
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
@@ -938,6 +1044,23 @@ QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> MetaFunction::
     return result;
 }
 
+QList<Delegate> MetaFunction::delegates() const{
+    QSet<QString> names;
+    QList<Delegate> result;
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const Delegate& dlg : modification.delegates){
+            if(!names.contains(dlg.name)){
+                result << dlg;
+                names.insert(dlg.name);
+            }
+        }
+    }
+    return result;
+}
+
 QList<Parameter> MetaFunction::addedParameterTypes() const
 {
     QList<Parameter> result;
@@ -947,7 +1070,7 @@ QList<Parameter> MetaFunction::addedParameterTypes() const
     for(const FunctionModification& modification : modifications) {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type==ArgumentModification::TypeParameter){
-                result << Parameter{{}, argument_modification.modified_name, argument_modification.modified_type};
+                result << Parameter{{}, argument_modification.modified_name, argument_modification.modified_type,false};
             }
         }
     }
@@ -972,13 +1095,6 @@ ArgumentRemove MetaFunction::argumentRemoved(int key) const {
             }
         }
     }
-    if(arguments().size()>=key){
-        MetaType* type = arguments()[key-1]->type();
-        if(type && type->isNullPtr()){
-            return ArgumentRemove_Remove;
-        }
-    }
-
     return ArgumentRemove_No;
 }
 
@@ -1102,7 +1218,14 @@ bool MetaFunction::isDeprecated() const {
 
 OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language language, int key) const {
     if(m_accessedField){
-        if(key==1 && (this->attributes() & MetaAttributes::SetterFunction) == MetaAttributes::SetterFunction){
+        if(key==1 && ((this->attributes() & MetaAttributes::SetterFunction) == MetaAttributes::SetterFunction)){
+            for(const FieldModification& modification : m_accessedField->modifications()) {
+                OwnershipRule o = modification.ownerships.value(language, OwnershipRule{TS::InvalidOwnership, QString()});
+                if(o.ownership!=TS::InvalidOwnership)
+                    return o;
+            }
+        }
+        if(key==0 && ((this->attributes() & MetaAttributes::GetterFunction) == MetaAttributes::GetterFunction)){
             for(const FieldModification& modification : m_accessedField->modifications()) {
                 OwnershipRule o = modification.ownerships.value(language, OwnershipRule{TS::InvalidOwnership, QString()});
                 if(o.ownership!=TS::InvalidOwnership)
@@ -1439,34 +1562,31 @@ QString MetaFunction::minimalSignature() const {
     if (!m_cached_minimal_signature.isEmpty())
         return m_cached_minimal_signature;
 
-    QString tmpl;
-    for(int i=0; i<m_templateParameters.size(); i++){
-        MetaTemplateParameter* param = m_templateParameters[i];
+    QStringList args;
+    for(MetaTemplateParameter* param : m_templateParameters){
         if(param->type()){
-            if(!tmpl.isEmpty()){
-                tmpl += ",";
-            }
-            QTextStream s2(&tmpl);
+            QString strg;
+            QTextStream s2(&strg);
             writeTypeInfo(s2, param->type());
+            s2.flush();
+            args << strg;
         }else{
-            tmpl.clear();
+            args.clear();
             break;
         }
     }
-    if(!tmpl.isEmpty())
-        tmpl = "<" + tmpl.trimmed() + ">";
+    QString tmpl;
+    if(!args.isEmpty())
+        tmpl = "<" + args.join(",") + ">";
     QString minimalSignature = originalName() + tmpl + "(";
     const MetaArgumentList& arguments = this->arguments();
 
+    args.clear();
     for (int i = 0; i < arguments.count(); ++i) {
-        MetaType *t = arguments.at(i)->type();
-
-        if (i > 0)
-            minimalSignature += ",";
-
-        minimalSignature += t->minimalSignature();
+        MetaType *t = arguments[i]->type();
+        args << t->minimalSignature();
     }
-    minimalSignature += ")";
+    minimalSignature += args.join(",") + ")";
     if (isConstant())
         minimalSignature += "const";
 
@@ -1493,31 +1613,50 @@ bool MetaFunction::hasCodeInjections(const MetaClass *implementor, TS::Language 
 }
 
 FunctionModificationList MetaFunction::modifications(const MetaClass *implementor) const {
-    Q_ASSERT(implementor);
-    FunctionModificationList result = implementor->typeEntry()->functionModifications(minimalSignature());
-    if(result.isEmpty() && (implementor->qualifiedCppName().startsWith("QOpenGLFunctions") || implementor->qualifiedCppName()=="QOpenGLExtraFunctions")){
-        const MetaArgumentList& arguments = this->arguments();
-        QList<ArgumentModification> argumentMods;
-        for (int i = 0; i < arguments.count(); ++i) {
-            MetaType *t = arguments.at(i)->type();
-            if(t->isNativePointer() && (t->typeEntry()->isPrimitive() || t->typeEntry()->isVoid()) && t->typeEntry()->qualifiedCppName()!="GLboolean" && t->indirections().size()==1){
-                ArgumentModification mod(i+1);
-                mod.useAsArrayType |= AsArrayType::Yes;
-                mod.useAsArrayType |= AsArrayType::Buffer;
-                argumentMods << mod;
+    if(implementor)
+        return modifications(implementor->typeEntry());
+    return {};
+}
+
+FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *entry) const{
+    FunctionModificationList result;
+    if(entry){
+        result = entry->functionModifications(minimalSignature());
+        if(result.isEmpty() && (entry->qualifiedCppName().startsWith("QOpenGLFunctions") || entry->qualifiedCppName()=="QOpenGLExtraFunctions")){
+            const MetaArgumentList& arguments = this->arguments();
+            QList<ArgumentModification> argumentMods;
+            for (int i = 0; i < arguments.count(); ++i) {
+                MetaType *t = arguments.at(i)->type();
+                if(t->isNativePointer() && (t->typeEntry()->isPrimitive() || t->typeEntry()->isVoid()) && t->typeEntry()->qualifiedCppName()!="GLboolean" && t->indirections().size()==1){
+                    ArgumentModification mod(i+1);
+                    mod.useAsArrayType |= AsArrayType::Yes;
+                    mod.useAsArrayType |= AsArrayType::Buffer;
+                    argumentMods << mod;
+                }
             }
-        }
-        if(!argumentMods.isEmpty()){
-            FunctionModification mod;
-            mod.signature = minimalSignature();
-            mod.argument_mods = argumentMods;
-            result << mod;
+            if(!argumentMods.isEmpty()){
+                FunctionModification mod;
+                mod.signature = minimalSignature();
+                mod.argument_mods = argumentMods;
+                result << mod;
+            }
         }
     }
     return result;
 }
 
+FunctionModificationList MetaFunction::modifications(const TypeSystemTypeEntry *entry) const{
+    if(entry)
+        return entry->functionModifications(minimalSignature());
+    return {};
+}
+
 bool MetaFunction::hasModifications(const MetaClass *implementor) const {
+    FunctionModificationList mods = modifications(implementor);
+    return mods.count() > 0;
+}
+
+bool MetaFunction::hasModifications(const ComplexTypeEntry *implementor) const {
     FunctionModificationList mods = modifications(implementor);
     return mods.count() > 0;
 }
@@ -1659,22 +1798,6 @@ MetaClass *MetaClass::extractInterface() {
 
         iface->setTypeEntry(typeEntry()->designatedInterface());
 
-        for(MetaFunction *function : functions()) {
-            if (!function->isConstructor())
-                iface->addFunction(function->copy());
-        }
-
-//         iface->setEnums(enums());
-//         setEnums(AbstractMetaEnumList());
-
-        for(const MetaField *field : fields()) {
-            if (field->isPublic()) {
-                MetaField *new_field = field->copy();
-                new_field->setEnclosingClass(iface);
-                iface->addField(new_field);
-            }
-        }
-
         if(iface->isInterface()){
             m_extracted_interface = iface;
             addInterface(iface);
@@ -1714,7 +1837,7 @@ MetaClass *MetaClass::extractInterfaceImpl() {
         ifaceImpl->setHasVirtualSlots(hasVirtualSlots());
         ifaceImpl->setHas_Q_GADGET(has_Q_GADGET());
         ifaceImpl->setHas_Q_OBJECT(has_Q_OBJECT());
-        ifaceImpl->setBaseClassNames(this->baseClassNames());
+        ifaceImpl->setBaseClassTypeInfo(this->baseClassTypeInfo());
         ifaceImpl->setHref(href());
         ifaceImpl->setBrief(brief());
         itype->origin()->setInclude(itype->include());
@@ -1723,30 +1846,6 @@ MetaClass *MetaClass::extractInterfaceImpl() {
         setPrimaryInterfaceImplementor(ifaceImpl);
 
         ifaceImpl->setTypeEntry(itype->origin());
-
-        for(MetaFunction *function : functions()) {
-//            if (!function->isConstructor())
-                function = function->copy();
-                if (function->isConstructor())
-                    function->setName(InterfaceTypeEntry::implName("X").split("::").last());
-                else
-                    *function += MetaAttributes::InterfaceFunction;
-                function->setInterfaceClass(this);
-                function->setImplementingClass(ifaceImpl);
-                function->setDeclaringClass(ifaceImpl);
-                ifaceImpl->addFunction(function);
-        }
-
-//         iface->setEnums(enums());
-//         setEnums(AbstractMetaEnumList());
-
-        for(const MetaField *field : fields()) {
-//            if (field->isPublic()) {
-                MetaField *new_field = field->copy();
-                new_field->setEnclosingClass(ifaceImpl);
-                ifaceImpl->addField(new_field);
-//            }
-        }
 
         if(!ifaceImpl->isInterface()){
             ifaceImpl->addInterface(this);
@@ -1980,30 +2079,23 @@ const ContainerTypeEntry* MetaClass::findContainerSuperClass(QList<const MetaTyp
 void MetaClass::setBaseClass(MetaClass *base_class) {
     m_base_class = base_class;
     if(base_class){
+        if(base_class->typeEntry()->isQObject())
+            m_type_entry->setQObject(true);
+        if(base_class->typeEntry()->isQWidget())
+            m_type_entry->setQWidget(true);
+        if(base_class->typeEntry()->isQWindow())
+            m_type_entry->setQWindow(true);
+        if(base_class->typeEntry()->isQCoreApplication())
+            m_type_entry->setQCoreApplication(true);
+        if(base_class->typeEntry()->isQAction())
+            m_type_entry->setQAction(true);
         base_class->m_has_subClasses = true;
-        if(m_usingProtectedBaseConstructors || m_usingPublicBaseConstructors){
-            for(const MetaFunction* fun : base_class->functions()){
-                if(fun->isConstructor()){
-                    MetaFunction* constructor = fun->copy();
-                    constructor->setImplementingClass(this);
-                    constructor->setDeclaringClass(this);
-                    constructor->setName(qualifiedCppName().split("::").last());
-                    constructor->setOriginalName(constructor->name());
-                    if(m_usingPublicBaseConstructors){
-                        constructor->setVisibility(MetaAttributes::Public);
-                    }else{
-                        constructor->setVisibility(MetaAttributes::Protected);
-                    }
-                    addFunction(constructor);
-                }
-            }
-        }
     }
 }
 
 void MetaClass::setFunctions(const MetaFunctionList &functions) {
     m_functions = functions;
-    sortFunctions();
+    //sortFunctions();
 
     // Functions must be sorted by name before next loop
     QString currentName;
@@ -2136,7 +2228,7 @@ bool MetaClass::hasHashFunction() const {
             bool has_hash = true;
             for(auto instantiation : m_template_base_class_instantiations){
                 if(instantiation->indirections().isEmpty()){
-                    if(instantiation->typeEntry()->isVariant()){
+                    if(instantiation->typeEntry()->isQVariant()){
                         has_hash = false;
                     }
                 }
@@ -2155,7 +2247,7 @@ bool MetaClass::hasEqualsOperator() const {
             bool has_eq = true;
             for(auto instantiation : m_template_base_class_instantiations){
                 if(instantiation->indirections().isEmpty()){
-                    if(instantiation->typeEntry()->isVariant()){
+                    if(instantiation->typeEntry()->isQVariant()){
                         has_eq = false;
                     }
                 }
@@ -2196,6 +2288,7 @@ void MetaClass::addFunction(MetaFunction *function) {
 
     if (!function->isDestructor()){
         m_functions << function;
+        m_functionsBySignature[function->minimalSignature()] = function;
         if(function->type() && function->type()->isNativePointer() && function->type()->typeEntry()->isValue() && function->valueAsPointer(0)){
             function->type()->setTypeUsagePattern(MetaType::ObjectPattern);
         }
@@ -2204,7 +2297,7 @@ void MetaClass::addFunction(MetaFunction *function) {
                 arg->type()->setTypeUsagePattern(MetaType::ObjectPattern);
             }
         }
-        sortFunctions();
+        //sortFunctions();
     }
 
     m_has_virtual_slots |= function->isVirtualSlot();
@@ -2220,6 +2313,7 @@ void MetaClass::addFunction(MetaFunction *function) {
              && function->arguments()[2]->type()->cppSignature()=="void**"){
         m_has_private_metacall = true;
     }
+    //printf("Adding function: %s::%s\n", qPrintable(qualifiedCppName()), qPrintable(function->minimalSignature()));
 }
 
 void MetaClass::addInvalidFunction(MetaFunction *function) {
@@ -2296,15 +2390,11 @@ bool MetaClass::instantiateShellClass() const {
 
 bool MetaClass::generateShellClass() const {
     return !isFinal()
-            //&& !m_has_private_metacall
-            //&& !m_has_private_metaObject
             && !(typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
             && (hasVirtualFunctions()
                 || hasVirtualDestructor()
                 || hasProtectedFunctions()
                 || hasProtectedFieldAccessors()
-            //    || typeEntry()->designatedInterface()
-            //    || typeEntry()->isInterface()
             );
 }
 
@@ -2376,7 +2466,7 @@ MetaField *MetaField::copy() const {
     return returned;
 }
 
-static QString upCaseFirst(const QString &str) {
+QString upCaseFirst(const QString &str) {
     Q_ASSERT(!str.isEmpty());
     QString s = str;
     s[0] = s.at(0).toUpper();
@@ -2523,7 +2613,12 @@ const MetaFunction *MetaField::getter() const {
                 && (
                     type()->isPrimitive()
                     || type()->isEnum()
-                    || type()->isTargetLangString()
+                    || type()->isQString()
+                    || type()->isCharString()
+                    || type()->isQStringRef()
+                    || type()->isQStringView()
+                    || type()->isQAnyStringView()
+                    || type()->isQUtf8StringView()
                     )){
             m_getter->setVisibility(MetaAttributes::Private);
         }
@@ -2650,6 +2745,55 @@ bool MetaClass::hasPublicAssignment() const {
     }
     return m_has_publicassignment>0;
 }
+
+MetaClass::MetaClass()
+        : MetaAttributes(),
+          m_namespace(false),
+        m_qobject(false),
+        m_has_virtuals(false),
+        m_has_nonpublic(false),
+        m_has_virtual_slots(false),
+        m_has_justprivateconstructors(false),
+        m_has_standardconstructor(0),
+        m_has_publicstandardconstructor(0),
+        m_has_explicitstandardconstructor(0),
+        m_has_publiccopyconstructor(0),
+        m_has_explicitcopyconstructor(0),
+        m_has_unimplmentablePureVirtualFunctions(false),
+        m_unimplmentablePureVirtualFunctions(),
+        m_has_public_destructor(true),
+        m_has_private_destructor(false),
+        m_has_metaObject(false),
+        m_has_metacall(false),
+        m_has_metacast(false),
+        m_has_private_metaObject(false),
+        m_has_private_metacall(false),
+        m_has_private_metacast(false),
+        m_has_virtual_destructor(false),
+        m_has_hash_function(false),
+        m_needs_hash_workaround(false),
+        m_has_equals_operator(false),
+        m_has_clone_operator(false),
+        m_is_type_alias(false),
+        m_has_Q_GADGET(false),
+        m_has_Q_OBJECT(false),
+        m_has_subClasses(false),
+        m_usingProtectedBaseConstructors(false),
+        m_usingPublicBaseConstructors(false),
+        m_enclosing_class(nullptr),
+        m_base_class(nullptr),
+        m_typeAliasType(nullptr),
+        m_template_base_class(nullptr),
+        m_template_base_class_instantiations(),
+        m_extracted_interface(nullptr),
+        m_extracted_interface_impl(nullptr),
+        m_primary_interface_implementor(nullptr),
+        m_type_entry(nullptr),
+        m_qDebug_stream_function(nullptr){
+}
+
+const MetaFunctionList& MetaClass::functions() const { return m_functions; }
+const MetaFunctionList& MetaClass::invalidFunctions() const { return m_invalidfunctions; }
 
 bool MetaClass::hasExplicitCopyConstructor() const {
     if(m_has_explicitcopyconstructor==0){
@@ -2864,29 +3008,6 @@ void MetaClass::addInterface(MetaClass *interface) {
         m_extracted_interface->addInterface(interface);
     if (interface!=this && m_extracted_interface_impl && !m_extracted_interface_impl->interfaces().contains(interface))
         m_extracted_interface_impl->addInterface(interface);
-
-    for(MetaFunction *function : interface->functions()) {
-        if (!hasFunction(function) && !function->isConstructor()) {
-            MetaFunction *cpy = function->copy();
-
-            // Setup that this function is an interface class.
-            cpy->setInterfaceClass(interface);
-            *cpy += MetaAttributes::InterfaceFunction;
-
-            // Copy the modifications in interface into the implementing classes.
-            FunctionModificationList mods = function->modifications(interface);
-            for(const FunctionModification &mod : mods) {
-                m_type_entry->addFunctionModification(mod);
-            }
-
-            // It should be mostly safe to assume that when we implement an interface
-            // we don't "pass on" pure virtual functions to our sublcasses...
-//                 *cpy -= AbstractMetaAttributes::Abstract;
-
-            cpy->setImplementingClass(this);
-            addFunction(cpy);
-        }
-    }
 }
 
 
@@ -3016,306 +3137,8 @@ QString MetaEnumValue::cppName() const {
     return m_enum && m_enum->typeEntry()->isScopedEnum() ? m_enum->typeEntry()->name() + "::" + m_name : m_name;
 }
 
-void add_extra_include_for_type(MetaClass *meta_class, const MetaType *type) {
-
-    if (!type)
-        return;
-
-    Q_ASSERT(meta_class);
-    const TypeEntry *entry = (type ? type->typeEntry() : nullptr);
-    if (entry && entry->isComplex()) {
-        const ComplexTypeEntry *centry = static_cast<const ComplexTypeEntry *>(entry);
-        ComplexTypeEntry *class_entry = meta_class->typeEntry();
-        if (class_entry && centry->include().isValid())
-            class_entry->addExtraInclude(centry->include());
-    }
-
-    if (type->hasInstantiations()) {
-        for(const MetaType *instantiation : type->instantiations())
-            add_extra_include_for_type(meta_class, instantiation);
-    }
-}
-
-void add_extra_includes_for_function(MetaClass *meta_class, const MetaFunction *meta_function) {
-    Q_ASSERT(meta_class);
-    Q_ASSERT(meta_function);
-    add_extra_include_for_type(meta_class, meta_function->type());
-
-    for(MetaArgument *argument : meta_function->arguments())
-        add_extra_include_for_type(meta_class, argument->type());
-}
-
 void MetaClass::fixUnimplmentablePureVirtualFunctions(){
     this->m_has_unimplmentablePureVirtualFunctions = !getAllUnimplmentablePureVirtualFunctions().isEmpty();
-}
-
-void MetaClass::fixFunctions(std::function<MetaArgument*(TypeEntry *)> argumentCreator) {
-    if (m_functions_fixed)
-        return;
-    else
-        m_functions_fixed = true;
-
-    MetaClass *super_class = baseClass();
-    MetaFunctionList funcs = functions();
-
-//     printf("fix functions for %s\n", qPrintable(name()));
-
-    if (super_class)
-        super_class->fixFunctions(argumentCreator);
-    int iface_idx = 0;
-
-    while (super_class || iface_idx < interfaces().size()) {
-//         printf(" - base: %s\n", qPrintable(super_class->name()));
-
-        // Since we always traverse the complete hierarchy we are only
-        // interrested in what each super class implements, not what
-        // we may have propagated from their base classes again.
-        MetaFunctionList super_funcs;
-        if (super_class) {
-            bool pullDown = super_class->isPullProtectedMethodsDown();
-            // Super classes can never be final
-            if (super_class->isFinalInTargetLang()) {
-                ReportHandler::warning("Final class '" + super_class->name() + "' set to non-final, as it is extended by other classes");
-                *super_class -= MetaAttributes::FinalInTargetLang;
-                *super_class += MetaAttributes::PullProtectedMethodsDown;
-                pullDown = true;
-            }
-            if(pullDown){
-                // when a class cannot be subclassed from external but has subclasses inside Qt,
-                // the protected functions of the class must be pulled down to the subclasses.
-                super_funcs = super_class->queryFunctions(MetaClass::Protected | MetaClass::NormalFunctions);
-                for (int sfi = 0; sfi < super_funcs.size(); ++sfi) {
-                    MetaFunction *sf = super_funcs.at(sfi);
-                    if(!sf->isAbstract() && !sf->isConstructor() && !sf->isEmptyFunction() && !sf->isInvalid()){
-                        MetaFunction *sfcopy = sf->copy();
-                        sfcopy->setDeclaringClass(this);
-                        this->addFunction(sfcopy);
-                    }
-                }
-            }
-            super_funcs = super_class->queryFunctions(MetaClass::ClassImplements);
-        } else {
-            super_funcs = interfaces().at(iface_idx)->queryFunctions(MetaClass::NormalFunctions);
-        }
-
-        QSet<MetaFunction *> funcs_to_add;
-        for (int sfi = 0; sfi < super_funcs.size(); ++sfi) {
-            MetaFunction *sf = super_funcs.at(sfi);
-
-            if (sf->isRemovedFromAllLanguages(sf->implementingClass()))
-                continue;
-
-            // we generally don't care about private functions, but we have to get the ones that are
-            // virtual in case they override abstract functions.
-            bool add = (sf->isNormal() || sf->isSignal() || sf->isEmptyFunction());
-            for (int fi = 0; fi < funcs.size(); ++fi) {
-                MetaFunction *f = funcs.at(fi);
-                if (f->isRemovedFromAllLanguages(f->implementingClass()))
-                    continue;
-
-                const uint cmp = f->compareTo(sf);
-
-                if (cmp & MetaFunction::EqualModifiedName) {
-//                     printf("   - %s::%s similar to %s::%s %x vs %x\n",
-//                            qPrintable(sf->implementingClass()->typeEntry()->qualifiedCppName()),
-//                            qPrintable(sf->name()),
-//                            qPrintable(f->implementingClass()->typeEntry()->qualifiedCppName()),
-//                            qPrintable(f->name()),
-//                            sf->attributes(),
-//                            f->attributes());
-
-                    add = sf->isSignal();
-                    if (cmp & MetaFunction::EqualArguments) {
-
-//                         if (!(cmp & AbstractMetaFunction::EqualReturnType)) {
-//                             ReportHandler::warning(QString("%1::%2 and %3::%4 differ in retur type")
-//                                                    .arg(sf->implementingClass()->name())
-//                                                    .arg(sf->name())
-//                                                    .arg(f->implementingClass()->name())
-//                                                    .arg(f->name()));
-//                         }
-
-                        // Same function, propegate virtual...
-                        if (!(cmp & MetaFunction::EqualAttributes)) {
-                            if (!f->isEmptyFunction()) {
-                                if (!sf->isFinalInCpp() && f->isFinalInCpp() && !f->isDeclaredFinalInCpp()) {
-                                    *f -= MetaAttributes::FinalInCpp;
-                                    //                                 printf("   --- inherit virtual\n");
-                                }
-                                if (!sf->isFinalInTargetLang() && f->isFinalInTargetLang() && !f->isDeclaredFinalInCpp()) {
-                                    *f -= MetaAttributes::FinalInTargetLang;
-                                    //                                 printf("   --- inherit virtual\n");
-                                }
-                                if (!f->isFinalInTargetLang() && f->isPrivate() && !sf->isPrivate()) {
-                                    f->setFunctionType(MetaFunction::EmptyFunction);
-                                    f->setVisibility(MetaAttributes::Protected);
-                                    *f += MetaAttributes::FinalInTargetLang;
-                                    ReportHandler::warning(QString("private virtual function '%1' in '%2'")
-                                                           .arg(f->signature())
-                                                           .arg(f->implementingClass()->name()));
-                                }
-                            }
-                        }
-
-                        if (f->visibility() != sf->visibility()) {
-                            QString warn = QString("visibility of function '%1' modified in class '%2'")
-                                           .arg(f->name()).arg(name());
-                            ReportHandler::warning(warn);
-
-                            // If new visibility is private, we can't
-                            // do anything. If it isn't, then we
-                            // prefer the parent class's visibility
-                            // setting for the function.
-                            if (!f->isPrivate() && !sf->isPrivate())
-                                f->setVisibility(sf->visibility());
-
-                            // Private overrides of abstract functions have to go into the class or
-                            // the subclasses will not compile as non-abstract classes.
-                            // But they don't need to be implemented, since they can never be called.
-                            if (f->isPrivate() && sf->isAbstract()) {
-                                f->setFunctionType(MetaFunction::EmptyFunction);
-                                f->setVisibility(sf->visibility());
-                                *f += MetaAttributes::FinalInTargetLang;
-                                *f += MetaAttributes::FinalInCpp;
-                            }
-                        }
-
-                        // Set the class which first declares this function, afawk
-                        f->setDeclaringClass(sf->declaringClass());
-
-                        if (sf->isFinalInTargetLang() && !sf->isPrivate() && !f->isPrivate() && !sf->isStatic() && !f->isStatic() && !f->isSignal()) {
-                            // Shadowed funcion, need to make base class
-                            // function non-virtual
-                            if (f->implementingClass() != sf->implementingClass() && f->implementingClass()->inheritsFrom(sf->implementingClass())) {
-
-                                // Check whether the superclass method has been redefined to non-final
-
-                                bool hasNonFinalModifier = false;
-                                bool isBaseImplPrivate = false;
-                                FunctionModificationList mods = sf->modifications(sf->implementingClass());
-                                for(const FunctionModification& mod : mods) {
-                                    if (mod.isNonFinal()) {
-                                        hasNonFinalModifier = true;
-                                        break;
-                                    } else if (mod.isPrivate()) {
-                                        isBaseImplPrivate = true;
-                                        break;
-                                    }
-                                }
-
-                                QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments;
-                                if (!hasNonFinalModifier
-                                        && !isBaseImplPrivate
-                                        && ( addedArguments = f->addedArguments() ).first.isEmpty()
-                                        && addedArguments.second.isEmpty()
-                                        && (f->implementingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang)
-                                        && (sf->implementingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang)) {
-                                    ReportHandler::warning(QString::fromLatin1("Shadowing: %1::%2 and %3::%4; Java code will not compile")
-                                                           .arg(sf->implementingClass()->qualifiedCppName())
-                                                           .arg(sf->signature())
-                                                           .arg(f->implementingClass()->qualifiedCppName())
-                                                           .arg(f->signature()));
-                                }
-                            }
-                        }
-
-                    }
-
-                    if (!f->isPrivate() && cmp & MetaFunction::EqualDefaultValueOverload) {
-                        const MetaArgumentList& arguments = f->arguments().size() < sf->arguments().size() ? sf->arguments() : f->arguments();
-
-                        for (int i = 0; i < arguments.size(); ++i)
-                            arguments[i]->setDefaultValueExpression(QString());
-                    }
-
-
-                    // Otherwise we have function shadowing and we can
-                    // skip the thing...
-                } else if (cmp & MetaFunction::EqualName && !sf->isSignal()) {
-
-                    // In the case of function shadowing where the function name has been altered to
-                    // avoid conflict, we don't copy in the original.
-                    add = false;
-                }
-
-                // this feature is necessary because
-                // Q_DECL_FINAL (meaning the shell must not override the method)
-                // is not yet recognized by generator.
-                // Example: Qt3D::QColorMask::copy(const Qt3D::QNode *) Q_DECL_FINAL
-
-                FunctionModificationList mods = f->modifications(this);
-                for(const FunctionModification& mod : mods) {
-                    if (mod.isDeclaredFinal()) {
-                        *f += MetaAttributes::FinalInTargetLang;
-                        *f += MetaAttributes::FinalInCpp;
-//                        ReportHandler::warning(QString("final overriding method %1 in class %2").arg(f->signature()).arg(f->implementingClass()->qualifiedCppName()));
-                        break;
-                    }
-                }
-            }
-
-            if (add)
-                funcs_to_add << sf;
-        }
-
-        for(MetaFunction *f : funcs_to_add)
-            funcs << f->copy();
-
-        if (super_class)
-            super_class = super_class->baseClass();
-        else
-            iface_idx++;
-    }
-
-    bool hasPrivateConstructors = false;
-    bool hasPublicConstructors = false;
-    for(MetaFunction *func : funcs) {
-        FunctionModificationList mods = func->modifications(this);
-        for(const FunctionModification &mod : mods) {
-            if (mod.isRenameModifier()) {
-                func->setName(mod.renamedTo());
-            }
-        }
-
-        // Make sure class is abstract if one of the functions is
-        if (func->isAbstract()) {
-            (*this) += MetaAttributes::Abstract;
-            (*this) -= MetaAttributes::Final;
-        }
-
-        if (func->isConstructor()) {
-            if (func->isPrivate())
-                hasPrivateConstructors = true;
-            else
-                hasPublicConstructors = true;
-        }
-    }
-
-    if (hasPrivateConstructors && !hasPublicConstructors) {
-        (*this) += MetaAttributes::Abstract;
-        (*this) -= MetaAttributes::Final;
-    }
-
-    for(MetaFunction *f1 : funcs) {
-        for(MetaFunction *f2 : funcs) {
-            if (f1 != f2) {
-                uint cmp = f1->compareTo(f2);
-                if ((cmp & MetaFunction::EqualName)
-                        && !f1->isFinalInCpp()
-                        && f2->isFinalInCpp()) {
-                    *f2 += MetaAttributes::FinalOverload;
-                }
-            }
-        }
-    }
-
-    setFunctions(funcs);
-    for(MetaFunction *func : m_functions) {
-        // Make sure that we include files for all classes that are in use
-
-        if (!func->isRemovedFrom(this, TS::ShellCode))
-            add_extra_includes_for_function(this, func);
-    }
 }
 
 QString MetaType::minimalSignature() const {

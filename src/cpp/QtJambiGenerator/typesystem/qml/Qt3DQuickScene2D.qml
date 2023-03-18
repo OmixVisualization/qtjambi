@@ -31,23 +31,27 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.render.quick.scene2d"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuickScene2D"
     module: "qtjambi.qt3dquickscene2d"
     description: "Qt 3D Scene2D Module"
+
+    NamespacePrefix{
+        prefix: "Qt3DRender::Quick"
+        namespace: "Qt3DRender::Quick"
+        namingPolicy: NamespacePrefix.Cut
+    }
 
     NamespaceType{
         name: "Qt3DRender::Quick"
         generate: false
     }
     
-    EnumType{
-        name: "Qt3DRender::Quick::QScene2D::RenderPolicy"
-    }
-    
     ObjectType{
         name: "Qt3DRender::Quick::QScene2D"
-        javaName: "QScene2D"
+        EnumType{
+            name: "RenderPolicy"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/QmlAPI"

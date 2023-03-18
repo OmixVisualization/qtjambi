@@ -62,7 +62,7 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaArrayList(env, jint(_in.size()));
-        for(decltype(*(_in.begin())) entry : _in){
+        for(const auto& entry : _in){
             jobject _entry = qtjambi_scoped_cast<has_scope,jobject,decltype(entry)>::cast(env, entry, nullptr, scope);
             QtJambiAPI::addToJavaCollection(env, list, _entry);
         }
@@ -112,7 +112,7 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaArrayList(env, jint(_in.size()));
-        for(decltype(*(_in.begin())) entry : _in){
+        for(const auto& entry : _in){
             jobject _entry = qtjambi_scoped_cast<has_scope,jobject,decltype(entry)>::cast(env, entry, nullptr, scope);
             QtJambiAPI::addToJavaCollection(env, list, _entry);
         }
@@ -163,7 +163,7 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaArrayList(env, jint(_in.size()));
-        for(decltype(*(_in.begin())) entry : _in){
+        for(const auto& entry : _in){
             jobject _entry = qtjambi_scoped_cast<has_scope,jobject,decltype(entry)>::cast(env, entry, nullptr, scope);
             QtJambiAPI::addToJavaCollection(env, list, _entry);
         }
@@ -358,7 +358,7 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        return QtJambiAPI::convertNativeToJavaObject(env, &_in, typeid(QUrl::FormattingOptions), true, false);
+        return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &_in, typeid(QUrl::FormattingOptions));
     }
 };
 

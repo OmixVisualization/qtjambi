@@ -389,8 +389,12 @@ static void addRemoveFunctionToTemplates(TypeDatabase *db)
 
 }
 
-TypesystemException::TypesystemException(const QString& message) : QException(), m_message(message.toUtf8())
+TypesystemException::TypesystemException(const QByteArray& message) : QException(), m_message(message)
 {
+}
+
+TypesystemException *TypesystemException::clone() const{
+    return new TypesystemException(this->m_message);
 }
 
 char const* TypesystemException::what() const noexcept{
@@ -398,6 +402,11 @@ char const* TypesystemException::what() const noexcept{
 }
 
 void TypesystemException::raise(const QString& message) {
-    TypesystemException e(message);
+    TypesystemException e(message.toUtf8());
+    throw e;
+}
+
+void TypesystemException::raise() const {
+    TypesystemException e(this->m_message);
     throw e;
 }

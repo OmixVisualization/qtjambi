@@ -176,8 +176,8 @@ public class MakeTask extends Task {
         			break;
         		}
         	}
-        	if(!hasJArg) {
-        		commandArray.add("-j"+Runtime.getRuntime().availableProcessors()*2);
+        	if(!hasJArg && Runtime.getRuntime().availableProcessors()>1) {
+        		commandArray.add("-j"+Runtime.getRuntime().availableProcessors());
         	}
         }
 

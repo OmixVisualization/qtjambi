@@ -39,7 +39,7 @@ class QSsl___{
     /**
      * Determines the availability of ssl on this platform.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public native static boolean isAvailable();
 }// class
 
@@ -47,7 +47,7 @@ class QHostInfo___ extends QHostInfo {
     /**
      * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, Functor)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int lookupHost(String name, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
         io.qt.core.QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
@@ -73,7 +73,7 @@ class QHostInfo___ extends QHostInfo {
     /**
      * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, QObject, Functor)</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int lookupHost(String name, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot){
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
         if(metaMethod!=null && metaMethod.isValid()) {
@@ -100,7 +100,7 @@ class QHostInfo___ extends QHostInfo {
      * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, Functor)</a></p>
      */
     @SuppressWarnings("unchecked")
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static int lookupHost(String name, io.qt.core.QMetaObject.Connectable1<QHostInfo> signal) {
         io.qt.core.QObject context = null;
         if(signal.containingObject() instanceof io.qt.core.QObject){
@@ -129,7 +129,7 @@ class QHostInfo___ extends QHostInfo {
             throw new IllegalArgumentException("Signal is not emitable.");
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private static native int lookupHost(String name, long context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot);
 }// class
 
@@ -137,7 +137,7 @@ class QAbstractSocket___ extends QAbstractSocket {
 }// class
 
 class Server___ {
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean waitForNewConnection() throws QTimeoutException {
         return waitForNewConnection(0);
     }
@@ -191,7 +191,7 @@ class QNetworkReply___ extends QNetworkReply {
     /**
      * <p>See <a href="@docRoot/qnetworkreply.html#rawHeader">QNetworkReply::rawHeader(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final io.qt.core.QByteArray rawHeader(String headerName){
         return rawHeader(new io.qt.core.QByteArray(headerName));
     }
@@ -199,7 +199,7 @@ class QNetworkReply___ extends QNetworkReply {
     /**
      * <p>See <a href="@docRoot/qnetworkreply.html#hasRawHeader">QNetworkReply::hasRawHeader(QByteArray)const</a></p>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean hasRawHeader(String headerName){
         return hasRawHeader(new io.qt.core.QByteArray(headerName));
     }

@@ -42,7 +42,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QMediaService$Result,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QMediaService$ListResult,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/util/List;Z)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QList;Z)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAbstractVideoBuffer$MapResult,

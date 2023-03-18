@@ -31,9 +31,8 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.uic.ui4"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     targetName: "QtJambiUIC"
-    noExports: true
     module: "qtjambi.uic"
     description: "QtJambi User Interface Compiler"
     InjectCode{
@@ -161,6 +160,116 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementButtonGroups()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementConnections()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementCustomWidgets()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDesignerdata()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementIncludes()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementLayoutDefault()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementLayoutFunction()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementResources()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSlots()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementTabStops()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementWidget()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -366,6 +475,46 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "elementHeader()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementPropertyspecifications()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSizeHint()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSlots()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setElementHeader(DomHeader*)"
             ModifyArgument{
                 index: 1
@@ -426,6 +575,7 @@ TypeSystem{
     
     ObjectType{
         name: "DomLayoutItem"
+        EnumType{name: "Kind"}
         ModifyFunction{
             signature: "takeElementLayout()"
             ModifyArgument{
@@ -453,6 +603,36 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementLayout()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSpacer()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementWidget()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -527,6 +707,16 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "elementColor()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setElementColor(DomColor*)"
             ModifyArgument{
                 index: 1
@@ -544,6 +734,7 @@ TypeSystem{
     
     ObjectType{
         name: "DomBrush"
+        EnumType{name: "Kind"}
         ModifyFunction{
             signature: "setElementColor(DomColor*)"
             ModifyArgument{
@@ -604,6 +795,66 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "elementColor()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementGradient()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementTexture()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementColor()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementGradient()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementTexture()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -625,6 +876,16 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementBrush()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -667,6 +928,36 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementActive()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDisabled()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementInactive()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -825,6 +1116,86 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "elementActiveOff()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementActiveOn()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDisabledOff()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDisabledOn()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementNormalOff()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementNormalOn()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSelectedOff()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSelectedOn()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setElementSelectedOn(DomResourcePixmap*)"
             ModifyArgument{
                 index: 1
@@ -939,6 +1310,16 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "elementString()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setElementString(DomString*)"
             ModifyArgument{
                 index: 1
@@ -952,6 +1333,8 @@ TypeSystem{
     
     ObjectType{
         name: "DomProperty"
+
+        EnumType{name: "Kind"}
         ModifyFunction{
             signature: "takeElementBrush()"
             ModifyArgument{
@@ -1159,6 +1542,216 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementBrush()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementChar()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementColor()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDate()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementDateTime()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementFont()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementIconSet()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementLocale()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementPalette()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementPixmap()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementPoint()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementPointF()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementRect()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementRectF()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSize()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSizeF()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementSizePolicy()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementString()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementStringList()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementTime()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "elementUrl()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -1391,6 +1984,16 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "elementHints()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setElementHints(DomConnectionHints*)"
             ModifyArgument{
                 index: 1
@@ -1428,17 +2031,5 @@ TypeSystem{
     
     ObjectType{
         name: "DomStringPropertySpecification"
-    }
-    
-    EnumType{
-        name: "DomProperty::Kind"
-    }
-    
-    EnumType{
-        name: "DomLayoutItem::Kind"
-    }
-    
-    EnumType{
-        name: "DomBrush::Kind"
     }
 }

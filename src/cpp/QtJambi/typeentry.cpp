@@ -51,7 +51,7 @@ QT_WARNING_DISABLE_DEPRECATED
 
 bool isQObject(const std::type_info& typeId);
 
-typedef QMap<size_t, QMap<QByteArray,const QtJambiTypeEntry*>> TypeEntryHash;
+typedef QMap<size_t, QMap<QByteArray,QtJambiTypeEntryPtr>> TypeEntryHash;
 Q_GLOBAL_STATIC(TypeEntryHash, gTypeEntryHash)
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gTypeEntryLock, (QReadWriteLock::Recursive))
 
@@ -60,24 +60,24 @@ QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info
 
 void clear_type_entry(const std::type_info& typeId)
 {
-    QWriteLocker locker(gTypeEntryLock());
-    Q_UNUSED(locker)
-    if(gTypeEntryHash()->contains(unique_id(typeId))){
-        for(const QtJambiTypeEntry* entry : gTypeEntryHash()->take(unique_id(typeId)).values()){
-            delete entry;
+    QMap<QByteArray,QtJambiTypeEntryPtr> typeEntries;
+    {
+        QWriteLocker locker(gTypeEntryLock());
+        if(gTypeEntryHash()->contains(unique_id(typeId))){
+            typeEntries = gTypeEntryHash()->take(unique_id(typeId));
         }
     }
 }
 
-const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId, bool recursive, const char* qtName)
+QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bool recursive, const char* qtName)
 {
     {
         QReadLocker locker(gTypeEntryLock());
         Q_UNUSED(locker)
         if(gTypeEntryHash()->contains(unique_id(typeId))){
-            const QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[unique_id(typeId)];
+            const QMap<QByteArray,QtJambiTypeEntryPtr>& entries = (*gTypeEntryHash())[unique_id(typeId)];
             if(qtName){
-                if(const QtJambiTypeEntry* result = entries.value(qtName)){
+                if(QtJambiTypeEntryPtr result = entries.value(qtName)){
                     return result;
                 }
             }else if(!entries.isEmpty()){
@@ -85,7 +85,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             }
         }
     }
-    const QtJambiTypeEntry* result = nullptr;
+    QtJambiTypeEntryPtr result;
     const char *qt_name = nullptr;
     EntryTypes entryType = getEntryType(typeId);
     if(entryType!=EntryTypes::Unspecific){
@@ -101,7 +101,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         jclass java_class = JavaAPI::resolveClass(env, java_name);
         if(!java_class){
             JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-            return nullptr;
+            return QtJambiTypeEntryPtr();
         }
 
         switch(entryType){
@@ -110,8 +110,9 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             if(recursive){
                 const std::type_info* flagId = getFlagForEnum(typeId);
                 if(flagId){
-                    if(const FlagsTypeEntry* flagsType = dynamic_cast<const FlagsTypeEntry*>(QtJambiTypeEntry::getTypeEntry(env, *flagId))){
-                        return flagsType->enumType();
+                    QtJambiTypeEntryPtr e = QtJambiTypeEntry::getTypeEntry(env, *flagId);
+                    if(const FlagsTypeEntry* flagsType = dynamic_cast<const FlagsTypeEntry*>(e.data())){
+                        return QtJambiTypeEntryPtr(flagsType->enumType());
                     }
                 }
             }
@@ -141,7 +142,8 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             if(exceptionOccurred)
                 JavaException(env, exceptionOccurred).raise();
             Q_ASSERT(creator_method);
-            result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, dynamic_cast<const EnumTypeEntry*>(get_type_entry(env, *flagId, false, nullptr)));
+            auto e = get_type_entry(env, *flagId, false, nullptr);
+            result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, dynamic_cast<const EnumTypeEntry*>(e.data()));
             break;
         }
         case EntryTypes::FunctionalTypeInfo:
@@ -155,7 +157,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                 java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
                 if(!java_impl_class){
                     JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
                 int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
                 if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
@@ -175,7 +177,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
             if(!creator_method){
                 JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                return nullptr;
+                return QtJambiTypeEntryPtr();
             }
             const QVector<const FunctionInfo>* _virtualFunctions = virtualFunctions(typeId);
             Destructor destructor = registeredDestructor(typeId);
@@ -195,11 +197,9 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::ObjectTypeInfo:
         {
             const std::type_info* super_type = nullptr; // TODO
-            QList<const std::type_info*> interface_types; // TODO
             size_t value_size = getValueSize(typeId);
             InterfaceOffsetInfo interfaceOffsetInfo;
             registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QMap<size_t, uint>& interface_offsets = interfaceOffsetInfo.offsets;
             size_t shell_size = getShellSize(typeId);
             PtrDeleterFunction _deleter = deleter(typeId);
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
@@ -218,36 +218,48 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
                         JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                        return nullptr;
+                        return QtJambiTypeEntryPtr();
                     }
                 }
-                result = new ObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                     interface_types, interface_offsets,
+                if(interfaceOffsetInfo.offsets.isEmpty()){
+                    result = new ObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
                                                      shell_size, _deleter, owner_function, _virtualFunctions,
                                                      destructor, polymorphicIdHandlers, java_wrapper_class
                                                  );
+                }else{
+                    result = new ObjectAbstractIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                     shell_size, _deleter, owner_function, _virtualFunctions,
+                                                     destructor, polymorphicIdHandlers, java_wrapper_class,
+                                                     interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                 );
+                }
             }else{
                 jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                 if(!creator_method){
                     JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
-                result = new ObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                     interface_types, interface_offsets,
-                                                     shell_size, _deleter, owner_function, _virtualFunctions,
-                                                     destructor, polymorphicIdHandlers
-                                                 );
+                if(interfaceOffsetInfo.offsets.isEmpty()){
+                    result = new ObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                 shell_size, _deleter, owner_function, _virtualFunctions,
+                                                 destructor, polymorphicIdHandlers
+                                             );
+                }else{
+                    result = new ObjectIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                   shell_size, _deleter, owner_function, _virtualFunctions,
+                                                   destructor, polymorphicIdHandlers,
+                                                   interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                );
+                }
             }
             break;
         }
         case EntryTypes::ValueTypeInfo:
         {
             const std::type_info* super_type = nullptr; // TODO
-            QList<const std::type_info*> interface_types; // TODO
             size_t value_size = getValueSize(typeId);
             InterfaceOffsetInfo interfaceOffsetInfo;
             registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QMap<size_t, uint>& interface_offsets = interfaceOffsetInfo.offsets;
             size_t shell_size = getShellSize(typeId);
             NewContainerAccessFunction containerAccessFactory = getSequentialContainerAccessFactory(typeId);
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
@@ -268,69 +280,110 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
                         JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                        return nullptr;
+                        return QtJambiTypeEntryPtr();
                     }
                 }
                 if(containerAccessFactory){
                     Q_ASSERT(qt_meta_type.isValid());
-                    result = new ObjectAbstractContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                         interface_types, interface_offsets,
-                                                         shell_size, containerAccessFactory, owner_function, _virtualFunctions,
-                                                         destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class
-                                                     );
-                }else{
-                    if(qt_meta_type.isValid()){
-                        result = new ObjectAbstractValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             interface_types, interface_offsets,
-                                                             shell_size, owner_function, _virtualFunctions,
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new ObjectAbstractContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
                                                              destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class
                                                          );
                     }else{
+                        result = new ObjectAbstractContainerIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                             destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class,
+                                                             interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                         );
+                    }
+                }else{
+                    if(qt_meta_type.isValid()){
+                        if(interfaceOffsetInfo.offsets.isEmpty()){
+                            result = new ObjectAbstractValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class
+                                                             );
+                        }else{
+                            result = new ObjectAbstractValueIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class,
+                                                                 interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                             );
+                        }
+                    }else{
                         PtrDeleterFunction _deleter = deleter(typeId);
                         Q_ASSERT(_deleter);
-                        result = new ObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             interface_types, interface_offsets,
-                                                             shell_size, _deleter, owner_function, _virtualFunctions,
-                                                             destructor, polymorphicIdHandlers, java_wrapper_class
-                                                         );
+                        if(interfaceOffsetInfo.offsets.isEmpty()){
+                            result = new ObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers, java_wrapper_class
+                                                             );
+                        }else{
+                            result = new ObjectAbstractIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers, java_wrapper_class,
+                                                                 interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                             );
+                        }
                     }
                 }
             }else{
                 jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                 if(!creator_method){
                     JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
                 if(containerAccessFactory){
                     Q_ASSERT(qt_meta_type.isValid());
-                    result = new ObjectContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                      interface_types, interface_offsets,
-                                                      shell_size, containerAccessFactory, owner_function, _virtualFunctions,
-                                                      destructor, polymorphicIdHandlers, qt_meta_type
-                                                     );
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new ObjectContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                             destructor, polymorphicIdHandlers, qt_meta_type
+                                                         );
+                    }else{
+                        result = new ObjectContainerIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                                destructor, polymorphicIdHandlers, qt_meta_type,
+                                                                interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                         );
+                    }
                 }else{
                     if(qt_meta_type.isValid()){
                         if(unique_id(typeId)==unique_id(typeid(QModelIndex))){
                             result = new QModelIndexTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                              interface_types, interface_offsets,
                                                               shell_size, owner_function, _virtualFunctions,
                                                               destructor, polymorphicIdHandlers, qt_meta_type
                                                              );
                         }else{
-                            result = new ObjectValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                              interface_types, interface_offsets,
-                                                              shell_size, owner_function, _virtualFunctions,
-                                                              destructor, polymorphicIdHandlers, qt_meta_type
-                                                             );
+                            if(interfaceOffsetInfo.offsets.isEmpty()){
+                                result = new ObjectValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                  shell_size, owner_function, _virtualFunctions,
+                                                                  destructor, polymorphicIdHandlers, qt_meta_type
+                                                                 );
+                            }else{
+                                result = new ObjectValueIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                    shell_size, owner_function, _virtualFunctions,
+                                                                    destructor, polymorphicIdHandlers, qt_meta_type,
+                                                                    interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                                 );
+                            }
                         }
                     }else{
                         PtrDeleterFunction _deleter = deleter(typeId);
                         Q_ASSERT(_deleter);
-                        result = new ObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             interface_types, interface_offsets,
-                                                             shell_size, _deleter, owner_function, _virtualFunctions,
-                                                             destructor, polymorphicIdHandlers
-                                                         );
+                        if(interfaceOffsetInfo.offsets.isEmpty()){
+                            result = new ObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers
+                                                             );
+                        }else{
+                            result = new ObjectIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
+                                                                 destructor, polymorphicIdHandlers,
+                                                                 interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                             );
+                        }
                     }
                 }
             }
@@ -339,12 +392,11 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::InterfaceTypeInfo:
         {
             const std::type_info* super_type = nullptr; // TODO
-            QList<const std::type_info*> interface_types; // TODO
             size_t value_size = getValueSize(typeId);
             jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
             if(!java_impl_class){
                 JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-                return nullptr;
+                return QtJambiTypeEntryPtr();
             }
             jclass java_wrapper_class = nullptr;
             int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
@@ -352,7 +404,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                 java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(java_name)));
                 if(!java_wrapper_class){
                     JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
             }else{
                 java_wrapper_class = java_impl_class;
@@ -360,11 +412,10 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
             if(!creator_method){
                 JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                return nullptr;
+                return QtJambiTypeEntryPtr();
             }
             InterfaceOffsetInfo interfaceOffsetInfo;
             registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QMap<size_t, uint>& interface_offsets = interfaceOffsetInfo.offsets;
             size_t shell_size = getShellSize(typeId);
             PtrDeleterFunction _deleter = deleter(typeId);
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
@@ -377,22 +428,30 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                     polymorphicIdHandlers << handler;
                 }
             }
-            result = new InterfaceTypeEntry(env, typeId,
-                                        qt_name, java_name, java_class, creator_method,
-                                        value_size, java_impl_class, java_wrapper_class,
-                                        super_type, interface_types, interface_offsets, shell_size,
-                                        _deleter, owner_function, _virtualFunctions, destructor, polymorphicIdHandlers );
+            if(interfaceOffsetInfo.offsets.isEmpty()){
+                result = new InterfaceTypeEntry(env, typeId,
+                                            qt_name, java_name, java_class, creator_method,
+                                            value_size, java_impl_class, java_wrapper_class,
+                                            super_type, shell_size,
+                                            _deleter, owner_function, _virtualFunctions, destructor, polymorphicIdHandlers );
+            }else{
+                result = new InterfaceIFTypeEntry(env, typeId,
+                                            qt_name, java_name, java_class, creator_method,
+                                            value_size, java_impl_class, java_wrapper_class,
+                                            super_type, shell_size,
+                                            _deleter, owner_function, _virtualFunctions, destructor, polymorphicIdHandlers,
+                                            interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces );
+            }
             break;
         }
         case EntryTypes::InterfaceValueTypeInfo:
         {
             const std::type_info* super_type = nullptr; // TODO
-            QList<const std::type_info*> interface_types; // TODO
             size_t value_size = getValueSize(typeId);
             jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
             if(!java_impl_class){
                 JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-                return nullptr;
+                return QtJambiTypeEntryPtr();
             }
             jclass java_wrapper_class = nullptr;
             int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
@@ -400,7 +459,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                 java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(java_name)));
                 if(!java_wrapper_class){
                     JavaException::raiseError(env, "class cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
             }else{
                 java_wrapper_class = java_impl_class;
@@ -408,11 +467,10 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
             if(!creator_method){
                 JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                return nullptr;
+                return QtJambiTypeEntryPtr();
             }
             InterfaceOffsetInfo interfaceOffsetInfo;
             registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QMap<size_t, uint>& interface_offsets = interfaceOffsetInfo.offsets;
             size_t shell_size = getShellSize(typeId);
             PtrDeleterFunction _deleter = deleter(typeId);
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
@@ -428,23 +486,29 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                 }
             }
 
-            result = new InterfaceValueTypeEntry(env, typeId,
-                                        qt_name, java_name, java_class, creator_method,
-                                        value_size, java_impl_class, java_wrapper_class,
-                                        super_type, interface_types, interface_offsets,
-                                        shell_size, _deleter, owner_function, _virtualFunctions,
-                                        destructor, polymorphicIdHandlers, qt_meta_type );
+            if(interfaceOffsetInfo.offsets.isEmpty()){
+                result = new InterfaceValueTypeEntry(env, typeId,
+                                            qt_name, java_name, java_class, creator_method,
+                                            value_size, java_impl_class, java_wrapper_class,
+                                            super_type, shell_size, _deleter, owner_function, _virtualFunctions,
+                                            destructor, polymorphicIdHandlers, qt_meta_type );
+            }else{
+                result = new InterfaceValueIFTypeEntry(env, typeId,
+                                            qt_name, java_name, java_class, creator_method,
+                                            value_size, java_impl_class, java_wrapper_class,
+                                            super_type, shell_size, _deleter, owner_function, _virtualFunctions,
+                                            destructor, polymorphicIdHandlers, qt_meta_type,
+                                            interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces );
+            }
             break;
         }
         case EntryTypes::QObjectTypeInfo:
         {
             const std::type_info* super_type = nullptr; // TODO
-            QList<const std::type_info*> interface_types; // TODO
             size_t value_size = getValueSize(typeId);
             size_t shell_size = getShellSize(typeId);
             InterfaceOffsetInfo interfaceOffsetInfo;
             registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QMap<size_t, uint>& interface_offsets = interfaceOffsetInfo.offsets;
             const QVector<const FunctionInfo>* _virtualFunctions = virtualFunctions(typeId);
             const QMetaObject* original_meta_object = registeredOriginalMetaObject(typeId);
             int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
@@ -466,41 +530,74 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
                         JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                        return nullptr;
+                        return QtJambiTypeEntryPtr();
                     }
                 }
                 if(polymorphicIdHandlers.isEmpty()){
-                    result = new QObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets, shell_size,
-                                                  _virtualFunctions, original_meta_object, java_wrapper_class
-                                             );
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new QObjectAbstractTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type, shell_size,
+                                                      _virtualFunctions, original_meta_object, java_wrapper_class
+                                                 );
+                    }else{
+                        result = new QObjectAbstractIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type, shell_size,
+                                                      _virtualFunctions, original_meta_object, java_wrapper_class,
+                                                                interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                 );
+                    }
                 }else{
-                    result = new QObjectAbstractPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets, shell_size,
-                                                  _virtualFunctions, original_meta_object, polymorphicIdHandlers, java_wrapper_class
-                                             );
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new QObjectAbstractPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type, shell_size,
+                                                      _virtualFunctions, original_meta_object, polymorphicIdHandlers, java_wrapper_class
+                                                 );
+                    }else{
+                        result = new QObjectAbstractPolymorphicIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                                          value_size, super_type, shell_size,
+                                                                          _virtualFunctions, original_meta_object, polymorphicIdHandlers, java_wrapper_class,
+                                                                           interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                 );
+                    }
                 }
             }else{
                 jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                 if(!creator_method){
                     JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                    return nullptr;
+                    return QtJambiTypeEntryPtr();
                 }
                 if(Java::QtCore::QThread::isAssignableFrom(env, java_class))
                     result = new QThreadTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets,
+                                                  value_size, super_type,
                                                   shell_size, _virtualFunctions, original_meta_object
                                              );
                 else if(polymorphicIdHandlers.isEmpty()){
-                    result = new QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets,
-                                                  shell_size, _virtualFunctions, original_meta_object
-                                             );
-                }else
-                    result = new QObjectPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                  value_size, super_type, interface_types, interface_offsets,
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type,
+                                                      shell_size, _virtualFunctions, original_meta_object
+                                                 );
+                    }else{
+                        result = new QObjectIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                      value_size, super_type,
+                                                      shell_size, _virtualFunctions, original_meta_object,
+                                                        interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                                 );
+                    }
+                }else{
+                    if(interfaceOffsetInfo.offsets.isEmpty()){
+                        result = new QObjectPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                  value_size, super_type,
                                                   shell_size, _virtualFunctions, original_meta_object, polymorphicIdHandlers
                                              );
+                    }else{
+                        result = new QObjectPolymorphicIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
+                                                                  value_size, super_type,
+                                                                  shell_size, _virtualFunctions, original_meta_object, polymorphicIdHandlers,
+                                                                   interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
+                                             );
+                    }
+                }
             }
             break;
         }
@@ -566,7 +663,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
             break;
         }
         default:
-            return nullptr;
+            return QtJambiTypeEntryPtr();
         }
     }
 
@@ -575,13 +672,14 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         Q_UNUSED(locker)
 
         if(gTypeEntryHash()->contains(unique_id(typeId))){
-            QMap<QByteArray,const QtJambiTypeEntry*>& entries = (*gTypeEntryHash())[unique_id(typeId)];
+            QMap<QByteArray,QtJambiTypeEntryPtr>& entries = (*gTypeEntryHash())[unique_id(typeId)];
             if(qtName){
-                if(const QtJambiTypeEntry* altresult = entries.value(qtName, nullptr)){
+                if(QtJambiTypeEntryPtr altresult = entries.value(qtName)){
                     return altresult;
                 }
             }else if(!entries.isEmpty()){
-                return entries.first();
+                QtJambiTypeEntryPtr e = entries.first();
+                return e;
             }
         }
         (*gTypeEntryHash())[unique_id(typeId)][qt_name] = result;
@@ -597,53 +695,48 @@ void clearTypeHandlersAtShutdown(JNIEnv *){
         if(!gTypeEntryHash.isDestroyed())
             typeEntryHash.swap(*gTypeEntryHash);
     }
-    for(const QMap<QByteArray,const QtJambiTypeEntry*>& map : typeEntryHash){
-        for(const QtJambiTypeEntry* entry : map){
-            delete entry;
-        }
-    }
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_info& typeId)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_info& typeId)
 {
     return get_type_entry(env, typeId, true, nullptr);
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName)
 {
     return get_type_entry(env, typeId, true, qtName);
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const char* java_name)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const char* java_name)
 {
     const std::type_info* typeId = getTypeByJavaName(java_name);
     if(typeId)
         return getTypeEntry(env, *typeId);
-    else return nullptr;
+    else return QtJambiTypeEntryPtr();
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const QString& java_name)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const QString& java_name)
 {
     const std::type_info* typeId = getTypeByJavaName(java_name);
     if(typeId)
         return getTypeEntry(env, *typeId);
-    else return nullptr;
+    else return QtJambiTypeEntryPtr();
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntryByQtName(JNIEnv* env, const char* qt_name)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByQtName(JNIEnv* env, const char* qt_name)
 {
     const std::type_info* typeId = getTypeByQtName(qt_name);
     if(typeId)
         return getTypeEntry(env, *typeId, qt_name);
-    else  return nullptr;
+    else  return QtJambiTypeEntryPtr();
 }
 
-const QtJambiTypeEntry* QtJambiTypeEntry::getTypeEntryByIID(JNIEnv* env, const char* iid)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByIID(JNIEnv* env, const char* iid)
 {
     const std::type_info* typeId = getInterfaceTypeForIID(iid);
     if(typeId)
         return getTypeEntry(env, *typeId);
-    else  return nullptr;
+    else  return QtJambiTypeEntryPtr();
 }
 
 bool QtJambiTypeEntry::isEnum() const {return false;}
@@ -666,6 +759,12 @@ const QVector<const FunctionInfo>* ObjectTypeEntry::virtualFunctions() const { r
 const QVector<const FunctionInfo>* QObjectTypeEntry::virtualFunctions() const { return m_virtualFunctions; }
 const QVector<const FunctionInfo>* InterfaceTypeEntry::virtualFunctions() const { return m_virtualFunctions; }
 const QVector<const FunctionInfo>* FunctionalTypeEntry::virtualFunctions() const { return m_virtualFunctions; }
+
+QtJambiTypeEntry::NativeToJavaResult::NativeToJavaResult(bool success) : m_success(success) {}
+QtJambiTypeEntry::NativeToJavaResult::NativeToJavaResult(const QSharedPointer<QtJambiLink>& link) : m_link(link), m_success(true) {}
+QtJambiTypeEntry::NativeToJavaResult::operator bool() const{return m_success;}
+bool QtJambiTypeEntry::NativeToJavaResult::operator!() const{return !m_success;}
+const QSharedPointer<QtJambiLink>& QtJambiTypeEntry::NativeToJavaResult::link() const{return m_link;}
 
 const FlagsTypeEntry* EnumTypeEntry::flagType() const
 {
@@ -696,12 +795,6 @@ const std::type_info* QtJambiTypeEntry::superType() const
     return nullptr;
 }
 
-const QList<const std::type_info*>& QtJambiTypeEntry::interfaceTypes() const
-{
-    static QList<const std::type_info*> emptyList = QList<const std::type_info*>();
-    return emptyList;
-}
-
 jclass QtJambiTypeEntry::javaClass() const
 {
     return m_java_class;
@@ -722,19 +815,9 @@ const std::type_info* ObjectTypeEntry::superType() const
     return m_super_type;
 }
 
-const QList<const std::type_info*>& ObjectTypeEntry::interfaceTypes() const
-{
-    return m_interface_types;
-}
-
 const std::type_info* QObjectTypeEntry::superType() const
 {
     return m_super_type;
-}
-
-const QList<const std::type_info*>& QObjectTypeEntry::interfaceTypes() const
-{
-    return m_interface_types;
 }
 
 const std::type_info* InterfaceTypeEntry::superType() const
@@ -762,11 +845,6 @@ size_t QObjectTypeEntry::shellSize() const
     return m_shell_size;
 }
 
-const QList<const std::type_info*>& InterfaceTypeEntry::interfaceTypes() const
-{
-    return m_interface_types;
-}
-
 const char *QtJambiTypeEntry::qtName() const
 {
     return m_qt_name;
@@ -782,7 +860,17 @@ jclass QObjectAbstractTypeEntry::creatableClass() const
     return m_java_wrapper_class;
 }
 
+jclass QObjectAbstractIFTypeEntry::creatableClass() const
+{
+    return m_java_wrapper_class;
+}
+
 jclass ObjectAbstractValueTypeEntry::creatableClass() const
+{
+    return m_java_wrapper_class;
+}
+
+jclass ObjectAbstractValueIFTypeEntry::creatableClass() const
 {
     return m_java_wrapper_class;
 }
@@ -792,7 +880,17 @@ jclass QObjectAbstractPolymorphicTypeEntry::creatableClass() const
     return m_java_wrapper_class;
 }
 
+jclass QObjectAbstractPolymorphicIFTypeEntry::creatableClass() const
+{
+    return m_java_wrapper_class;
+}
+
 jclass ObjectAbstractTypeEntry::creatableClass() const
+{
+    return m_java_wrapper_class;
+}
+
+jclass ObjectAbstractIFTypeEntry::creatableClass() const
 {
     return m_java_wrapper_class;
 }
@@ -805,16 +903,6 @@ jclass InterfaceTypeEntry::creatableClass() const
 jclass InterfaceTypeEntry::implementationClass() const
 {
     return m_java_impl_class;
-}
-
-const QMap<size_t, uint>& ObjectTypeEntry::interfaceOffsets() const
-{
-    return m_interface_offsets;
-}
-
-const QMap<size_t, uint>& InterfaceTypeEntry::interfaceOffsets() const
-{
-    return m_interface_offsets;
 }
 
 Destructor ObjectTypeEntry::destructor() const
@@ -837,16 +925,16 @@ const QMetaObject* QObjectTypeEntry::originalMetaObject() const
     return m_original_meta_object;
 }
 
-uint InterfaceTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(unique_id(toType), 0);
+uint InterfaceIFTypeEntry::offset(const std::type_info& toType) const{
+    return m_interfaceOffsets.value(unique_id(toType), 0);
 }
 
-uint ObjectTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(unique_id(toType), 0);
+uint ObjectIFTypeEntry::offset(const std::type_info& toType) const{
+    return m_interfaceOffsets.value(unique_id(toType), 0);
 }
 
-uint QObjectTypeEntry::offset(const std::type_info& toType) const{
-    return m_interface_offsets.value(unique_id(toType), 0);
+uint QObjectIFTypeEntry::offset(const std::type_info& toType) const{
+    return m_interfaceOffsets.value(unique_id(toType), 0);
 }
 
 FunctionalResolver FunctionalTypeEntry::registeredFunctionalResolver() const
@@ -901,8 +989,6 @@ InterfaceTypeEntry::InterfaceTypeEntry(JNIEnv* env, const std::type_info& typeId
                    jclass java_impl_class,
                    jclass java_wrapper_class,
                    const std::type_info* super_type,
-                   const QList<const std::type_info*>& interface_types,
-                   const QMap<size_t, uint>& interface_offsets,
                    size_t shell_size,
                    PtrDeleterFunction deleter,
                    PtrOwnerFunction owner_function,
@@ -914,14 +1000,41 @@ InterfaceTypeEntry::InterfaceTypeEntry(JNIEnv* env, const std::type_info& typeId
       m_java_impl_class(java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr),
       m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr),
       m_super_type(super_type),
-      m_interface_types(interface_types),
-      m_interface_offsets(interface_offsets),
       m_shell_size(shell_size),
       m_deleter(deleter),
       m_owner_function(owner_function),
       m_virtualFunctions(virtualFunctions),
       m_destructor(destructor),
       m_polymorphicIdHandlers(polymorphicHandlers)
+{
+
+}
+
+InterfaceIFTypeEntry::InterfaceIFTypeEntry(JNIEnv* env, const std::type_info& typeId,
+                   const char *qt_name,
+                   const char *java_name,
+                   jclass java_class,
+                   jmethodID creator_method,
+                   size_t value_size,
+                   jclass java_impl_class,
+                   jclass java_wrapper_class,
+                   const std::type_info* super_type,
+                   size_t shell_size,
+                   PtrDeleterFunction deleter,
+                   PtrOwnerFunction owner_function,
+                   const QVector<const FunctionInfo>* virtualFunctions,
+                   Destructor destructor,
+                   const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                   const QMap<size_t,uint>& interfaceOffsets,
+                   const QSet<size_t>& interfaceTypes,
+                   const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                )
+    : InterfaceTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, java_impl_class, java_wrapper_class,
+                       super_type, shell_size, deleter, owner_function, virtualFunctions, destructor,
+                       polymorphicHandlers),
+      m_interfaceOffsets(interfaceOffsets),
+      m_interfaceTypes(interfaceTypes),
+      m_inheritedInterfaces(inheritedInterfaces)
 {
 
 }
@@ -935,8 +1048,6 @@ InterfaceValueTypeEntry::InterfaceValueTypeEntry(JNIEnv* env, const std::type_in
                    jclass java_impl_class,
                    jclass java_wrapper_class,
                    const std::type_info* super_type,
-                   const QList<const std::type_info*>& interface_types,
-                   const QMap<size_t, uint>& interface_offsets,
                    size_t shell_size,
                    PtrDeleterFunction deleter,
                    PtrOwnerFunction owner_function,
@@ -946,7 +1057,7 @@ InterfaceValueTypeEntry::InterfaceValueTypeEntry(JNIEnv* env, const std::type_in
                    const QMetaType& qt_meta_type
                 )
     : InterfaceTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, java_impl_class, java_wrapper_class,
-                         super_type, interface_types, interface_offsets, shell_size, deleter, owner_function, virtualFunctions, destructor,
+                         super_type, shell_size, deleter, owner_function, virtualFunctions, destructor,
                          polymorphicHandlers),
       m_qt_meta_type(qt_meta_type
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -1001,8 +1112,6 @@ ObjectTypeEntry::ObjectTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
@@ -1012,8 +1121,6 @@ ObjectTypeEntry::ObjectTypeEntry(JNIEnv* env,
             )
     : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size),
       m_super_type(super_type),
-      m_interface_types(interface_types),
-      m_interface_offsets(interface_offsets),
       m_shell_size(shell_size),
       m_deleter(deleter),
       m_owner_function(owner_function),
@@ -1032,8 +1139,6 @@ ObjectAbstractTypeEntry::ObjectAbstractTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
@@ -1050,8 +1155,6 @@ ObjectAbstractTypeEntry::ObjectAbstractTypeEntry(JNIEnv* env,
                      creator_method,
                      value_size,
                      super_type,
-                     interface_types,
-                     interface_offsets,
                      shell_size,
                      deleter,
                      owner_function,
@@ -1072,8 +1175,6 @@ ObjectValueTypeEntry::ObjectValueTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
@@ -1089,8 +1190,6 @@ ObjectValueTypeEntry::ObjectValueTypeEntry(JNIEnv* env,
                      creator_method,
                      value_size,
                      super_type,
-                     interface_types,
-                     interface_offsets,
                      shell_size,
                      nullptr,
                      owner_function,
@@ -1107,6 +1206,90 @@ ObjectValueTypeEntry::ObjectValueTypeEntry(JNIEnv* env,
 
 }
 
+ObjectContainerIFTypeEntry::ObjectContainerIFTypeEntry(JNIEnv* env,
+                                                       const std::type_info& typeId,
+                                                       const char *qt_name,
+                                                       const char *java_name,
+                                                       jclass java_class,
+                                                       jmethodID creator_method,
+                                                       size_t value_size,
+                                                       const std::type_info* super_type,
+                                                       size_t shell_size,
+                                                       NewContainerAccessFunction containerAccessFactory,
+                                                       PtrOwnerFunction owner_function,
+                                                       const QVector<const FunctionInfo>* virtualFunctions,
+                                                       Destructor destructor,
+                                                       const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                                                       const QMetaType& qt_meta_type,
+                                                       const QMap<size_t,uint>& interfaceOffsets,
+                                                       const QSet<size_t>& interfaceTypes,
+                                                       const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                                                   )
+                                           : ObjectValueIFTypeEntry(env,
+                                                            typeId,
+                                                            qt_name,
+                                                            java_name,
+                                                            java_class,
+                                                            creator_method,
+                                                            value_size,
+                                                            super_type,
+                                                            shell_size,
+                                                            owner_function,
+                                                            virtualFunctions,
+                                                            destructor,
+                                                            polymorphicHandlers,
+                                                            qt_meta_type,
+                                                            interfaceOffsets,
+                                                            interfaceTypes,
+                                                            inheritedInterfaces
+                                                        ),
+                                             m_containerAccessFactory(containerAccessFactory)
+{
+
+}
+
+ObjectAbstractValueIFTypeEntry::ObjectAbstractValueIFTypeEntry(JNIEnv* env,
+                const std::type_info& typeId,
+                const char *qt_name,
+                const char *java_name,
+                jclass java_class,
+                jmethodID creator_method,
+                size_t value_size,
+                const std::type_info* super_type,
+                size_t shell_size,
+                PtrOwnerFunction owner_function,
+                const QVector<const FunctionInfo>* virtualFunctions,
+                Destructor destructor,
+                const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                const QMetaType& qt_meta_type,
+                jclass java_wrapper_class,
+                const QMap<size_t,uint>& interfaceOffsets,
+                const QSet<size_t>& interfaceTypes,
+                const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+            )
+    : ObjectValueIFTypeEntry(env,
+                     typeId,
+                     qt_name,
+                     java_name,
+                     java_class,
+                     creator_method,
+                     value_size,
+                     super_type,
+                     shell_size,
+                     owner_function,
+                     virtualFunctions,
+                     destructor,
+                     polymorphicHandlers,
+                     qt_meta_type,
+                     interfaceOffsets,
+                     interfaceTypes,
+                     inheritedInterfaces
+                 ),
+      m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
+{
+
+}
+
 ObjectAbstractValueTypeEntry::ObjectAbstractValueTypeEntry(JNIEnv* env,
                 const std::type_info& typeId,
                 const char *qt_name,
@@ -1115,8 +1298,6 @@ ObjectAbstractValueTypeEntry::ObjectAbstractValueTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
@@ -1133,8 +1314,6 @@ ObjectAbstractValueTypeEntry::ObjectAbstractValueTypeEntry(JNIEnv* env,
                      creator_method,
                      value_size,
                      super_type,
-                     interface_types,
-                     interface_offsets,
                      shell_size,
                      owner_function,
                      virtualFunctions,
@@ -1155,20 +1334,39 @@ QObjectTypeEntry::QObjectTypeEntry(JNIEnv* env,
                  jmethodID creator_method,
                  size_t value_size,
                  const std::type_info* super_type,
-                 const QList<const std::type_info*>& interface_types,
-                 const QMap<size_t, uint>& interface_offsets,
                  size_t shell_size,
                  const QVector<const FunctionInfo>* virtualFunctions,
                  const QMetaObject* original_meta_object
             )
     : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size),
       m_super_type(super_type),
-      m_interface_types(interface_types),
-      m_interface_offsets(interface_offsets),
       m_shell_size(shell_size),
       m_virtualFunctions(virtualFunctions),
       m_original_meta_object(original_meta_object),
       m_superTypeForCustomMetaObject(superTypeForCustomMetaObject(typeId))
+{
+}
+
+QObjectIFTypeEntry::QObjectIFTypeEntry(JNIEnv* env,
+                 const std::type_info& typeId,
+                 const char *qt_name,
+                 const char *java_name,
+                 jclass java_class,
+                 jmethodID creator_method,
+                 size_t value_size,
+                 const std::type_info* super_type,
+                 size_t shell_size,
+                 const QVector<const FunctionInfo>* virtualFunctions,
+                 const QMetaObject* original_meta_object,
+                 const QMap<size_t,uint>& interfaceOffsets,
+                 const QSet<size_t>& interfaceTypes,
+                 const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+            )
+    : QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
+                       super_type, shell_size, virtualFunctions, original_meta_object),
+      m_interfaceOffsets(interfaceOffsets),
+      m_interfaceTypes(interfaceTypes),
+      m_inheritedInterfaces(inheritedInterfaces)
 {
 }
 
@@ -1180,15 +1378,12 @@ QThreadTypeEntry::QThreadTypeEntry(JNIEnv* env,
                  jmethodID creator_method,
                  size_t value_size,
                  const std::type_info* super_type,
-                 const QList<const std::type_info*>& interface_types,
-                 const QMap<size_t, uint>& interface_offsets,
                  size_t shell_size,
                  const QVector<const FunctionInfo>* virtualFunctions,
                  const QMetaObject* original_meta_object
             )
     : QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                       super_type, interface_types, interface_offsets,
-                       shell_size, virtualFunctions, original_meta_object)
+                       super_type, shell_size, virtualFunctions, original_meta_object)
 {
 }
 
@@ -1196,9 +1391,9 @@ namespace ThreadPrivate{
     jobject fromQThread(JNIEnv * env, jobject java_qthread, QThread *thread);
 }
 
-bool QThreadTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const
+QtJambiTypeEntry::NativeToJavaResult QThreadTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const
 {
-    bool result = QObjectTypeEntry::convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, valueType);
+    QtJambiTypeEntry::NativeToJavaResult result = QObjectTypeEntry::convertToJava(env, qt_object, makeCopyOfValues, output, valueType);
     if(result){
         QThread* thread = const_cast<QThread*>(reinterpret_cast<const QThread*>(qt_object));
         if (thread){
@@ -1240,16 +1435,37 @@ QObjectAbstractTypeEntry::QObjectAbstractTypeEntry(JNIEnv* env,
                  jmethodID creator_method,
                  size_t value_size,
                  const std::type_info* super_type,
-                 const QList<const std::type_info*>& interface_types,
-                 const QMap<size_t, uint>& interface_offsets,
                  size_t shell_size,
                  const QVector<const FunctionInfo>* virtualFunctions,
                  const QMetaObject* original_meta_object,
                  jclass java_wrapper_class
             )
     : QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                      super_type, interface_types, interface_offsets,
-                      shell_size, virtualFunctions, original_meta_object),
+                      super_type, shell_size, virtualFunctions, original_meta_object),
+      m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
+{
+
+}
+
+QObjectAbstractIFTypeEntry::QObjectAbstractIFTypeEntry(JNIEnv* env,
+                 const std::type_info& typeId,
+                 const char *qt_name,
+                 const char *java_name,
+                 jclass java_class,
+                 jmethodID creator_method,
+                 size_t value_size,
+                 const std::type_info* super_type,
+                 size_t shell_size,
+                 const QVector<const FunctionInfo>* virtualFunctions,
+                 const QMetaObject* original_meta_object,
+                 jclass java_wrapper_class,
+                 const QMap<size_t,uint>& interfaceOffsets,
+                 const QSet<size_t>& interfaceTypes,
+                 const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+            )
+    : QObjectIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
+                      super_type, shell_size, virtualFunctions, original_meta_object,
+                      interfaceOffsets, interfaceTypes, inheritedInterfaces),
       m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
 {
 
@@ -1263,8 +1479,6 @@ QObjectAbstractPolymorphicTypeEntry::QObjectAbstractPolymorphicTypeEntry(JNIEnv*
                  jmethodID creator_method,
                  size_t value_size,
                  const std::type_info* super_type,
-                 const QList<const std::type_info*>& interface_types,
-                 const QMap<size_t, uint>& interface_offsets,
                  size_t shell_size,
                  const QVector<const FunctionInfo>* virtualFunctions,
                  const QMetaObject* original_meta_object,
@@ -1272,8 +1486,32 @@ QObjectAbstractPolymorphicTypeEntry::QObjectAbstractPolymorphicTypeEntry(JNIEnv*
                  jclass java_wrapper_class
             )
     : QObjectPolymorphicTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                      super_type, interface_types, interface_offsets,
-                      shell_size, virtualFunctions, original_meta_object, polymorphicIdHandlers),
+                      super_type, shell_size, virtualFunctions, original_meta_object, polymorphicIdHandlers),
+      m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
+{
+
+}
+
+QObjectAbstractPolymorphicIFTypeEntry::QObjectAbstractPolymorphicIFTypeEntry(JNIEnv* env,
+                 const std::type_info& typeId,
+                 const char *qt_name,
+                 const char *java_name,
+                 jclass java_class,
+                 jmethodID creator_method,
+                 size_t value_size,
+                 const std::type_info* super_type,
+                 size_t shell_size,
+                 const QVector<const FunctionInfo>* virtualFunctions,
+                 const QMetaObject* original_meta_object,
+                 const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers,
+                 jclass java_wrapper_class,
+                 const QMap<size_t,uint>& interfaceOffsets,
+                 const QSet<size_t>& interfaceTypes,
+                 const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+            )
+    : QObjectPolymorphicIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
+                      super_type, shell_size, virtualFunctions, original_meta_object, polymorphicIdHandlers,
+                                    interfaceOffsets, interfaceTypes, inheritedInterfaces),
       m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
 {
 
@@ -1287,16 +1525,37 @@ QObjectPolymorphicTypeEntry::QObjectPolymorphicTypeEntry(JNIEnv* env,
                  jmethodID creator_method,
                  size_t value_size,
                  const std::type_info* super_type,
-                 const QList<const std::type_info*>& interface_types,
-                 const QMap<size_t, uint>& interface_offsets,
                  size_t shell_size,
                  const QVector<const FunctionInfo>* virtualFunctions,
                  const QMetaObject* original_meta_object,
                  const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers
             )
     : QObjectTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                       super_type, interface_types, interface_offsets,
-                       shell_size, virtualFunctions, original_meta_object),
+                       super_type, shell_size, virtualFunctions, original_meta_object),
+      m_polymorphicIdHandlers(polymorphicIdHandlers)
+{
+
+}
+
+QObjectPolymorphicIFTypeEntry::QObjectPolymorphicIFTypeEntry(JNIEnv* env,
+                 const std::type_info& typeId,
+                 const char *qt_name,
+                 const char *java_name,
+                 jclass java_class,
+                 jmethodID creator_method,
+                 size_t value_size,
+                 const std::type_info* super_type,
+                 size_t shell_size,
+                 const QVector<const FunctionInfo>* virtualFunctions,
+                 const QMetaObject* original_meta_object,
+                 const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers,
+                 const QMap<size_t,uint>& interfaceOffsets,
+                 const QSet<size_t>& interfaceTypes,
+                 const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+            )
+    : QObjectIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
+                       super_type, shell_size, virtualFunctions, original_meta_object,
+                         interfaceOffsets, interfaceTypes, inheritedInterfaces),
       m_polymorphicIdHandlers(polymorphicIdHandlers)
 {
 
@@ -1317,7 +1576,7 @@ const std::type_info* qtjambi_resolve_polymorphy(const QList<const PolymorphicId
     return nullptr;
 }
 
-bool InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
@@ -1335,9 +1594,9 @@ bool InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool 
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             uint offset = typeEntry->offset(type());
-            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValueTypes, cppOwnership, output, javaType);
+            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
@@ -1346,7 +1605,7 @@ bool InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool 
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 output->l,
                 const_cast<void*>(qt_object),
@@ -1354,12 +1613,10 @@ bool InterfaceTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool 
                 false,
                 false,
                 m_deleter,
-                m_owner_function
+                m_owner_function,
+                QtJambiLink::Ownership::None
             );
-        if(cppOwnership){
-            link->setCppOwnership(env);
-        }// split ownership
-        return true;
+        return {link};
     }
 }
 
@@ -1417,7 +1674,7 @@ bool InterfaceTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_share
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
             uint offset = typeEntry->offset(type());
             if(offset>0){
@@ -1491,14 +1748,62 @@ bool InterfaceTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, 
     return true;
 }
 
-bool InterfaceValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult InterfaceIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
         output->l = nullptr;
         return true;
     }
-    if(!makeCopyOfValueTypes){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(obj && env->IsInstanceOf(obj, javaClass())){
+                output->l = obj;
+                return true;
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            uint offset = typeEntry->offset(type());
+            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+                env,
+                output->l,
+                const_cast<void*>(qt_object),
+                LINK_NAME_ARG(qtName())
+                false,
+                false,
+                m_deleter,
+                m_owner_function,
+                QtJambiLink::Ownership::None,
+                m_interfaceOffsets,
+                m_interfaceTypes,
+                m_inheritedInterfaces
+            );
+        Q_UNUSED(link)
+        return true;
+    }
+}
+
+QtJambiTypeEntry::NativeToJavaResult InterfaceValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+    if(!makeCopyOfValues){
         for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
@@ -1511,14 +1816,14 @@ bool InterfaceValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, 
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             uint offset = typeEntry->offset(type());
-            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValueTypes, cppOwnership, output, javaType);
+            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
     }else{
-        void *copy = makeCopyOfValueTypes ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
         if (!copy){
             output->l = nullptr;
             return true;
@@ -1527,21 +1832,17 @@ bool InterfaceValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, 
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 output->l,
                 copy,
                 m_qt_meta_type,
                 false,
                 false,
-                m_owner_function
+                m_owner_function,
+                makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
             );
-        if(makeCopyOfValueTypes){
-            link->setJavaOwnership(env);
-        }else if(cppOwnership){
-            link->setCppOwnership(env);
-        }
-        return true;
+        return {link};
     }
 }
 
@@ -1600,13 +1901,13 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(unique_id(type()), 0);
-            if(offset>0){
-                _sharedPointerGetter = [sharedPointerGetter,offset](const void* sharedPtr)-> void* {
+            uint _offset = typeEntry->offset(type());
+            if(_offset>0){
+                _sharedPointerGetter = [sharedPointerGetter,_offset](const void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
-                    return reinterpret_cast<void*>( qintptr(ptr) - offset );
+                    return reinterpret_cast<void*>( qintptr(ptr) - _offset );
                 };
             }
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, _sharedPointerGetter, output, javaType);
@@ -1634,7 +1935,104 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
     }
 }
 
-bool ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+InterfaceValueIFTypeEntry::InterfaceValueIFTypeEntry(JNIEnv* env, const std::type_info& typeId,
+                          const char *qt_name,
+                          const char *java_name,
+                          jclass java_class,
+                          jmethodID creator_method,
+                          size_t value_size,
+                          jclass java_impl_class,
+                          jclass java_wrapper_class,
+                          const std::type_info* super_type,
+                          size_t shell_size,
+                          PtrDeleterFunction deleter,
+                          PtrOwnerFunction owner_function,
+                          const QVector<const FunctionInfo>* virtualFunctions,
+                          Destructor destructor,
+                          const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                          const QMetaType& qt_meta_type,
+                          const QMap<size_t,uint>& interfaceOffsets,
+                          const QSet<size_t>& interfaceTypes,
+                          const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces)
+    : InterfaceIFTypeEntry(env,
+                           typeId,
+                           qt_name,
+                           java_name,
+                           java_class,
+                           creator_method,
+                           value_size,
+                           java_impl_class,
+                           java_wrapper_class,
+                           super_type,
+                           shell_size,
+                           deleter,
+                           owner_function,
+                           virtualFunctions,
+                           destructor,
+                           polymorphicHandlers,
+                           interfaceOffsets,
+                           interfaceTypes,
+                           inheritedInterfaces
+          ),
+      m_qt_meta_type(qt_meta_type
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            .id()
+#endif
+                     ){}
+
+QtJambiTypeEntry::NativeToJavaResult InterfaceValueIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+    if(!makeCopyOfValues){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+            if(link){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, javaClass())){
+                    output->l = obj;
+                    return true;
+                }
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            uint offset = typeEntry->offset(type());
+            return typeEntry->convertToJava(env, reinterpret_cast<const void*>( qintptr(qt_object) - offset ), makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        if (!copy){
+            output->l = nullptr;
+            return true;
+        }
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return QtJambiLink::createLinkForNativeObject(
+                env,
+                output->l,
+                copy,
+                m_qt_meta_type,
+                false,
+                false,
+                m_owner_function,
+                makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                m_interfaceOffsets,
+                m_interfaceTypes,
+                m_inheritedInterfaces
+            );
+    }
+}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
@@ -1652,8 +2050,8 @@ bool ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool mak
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-            return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
@@ -1662,7 +2060,7 @@ bool ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool mak
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+        return QtJambiLink::createLinkForNativeObject(
                 env,
                 output->l,
                 const_cast<void*>(qt_object),
@@ -1670,12 +2068,9 @@ bool ObjectTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool mak
                 false,
                 false,
                 m_deleter,
-                m_owner_function
+                m_owner_function,
+                QtJambiLink::Ownership::None
             );
-        if(cppOwnership){
-            link->setCppOwnership(env);
-        } // split ownership
-        return true;
     }
 }
 
@@ -1733,13 +2128,13 @@ bool ObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_p
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
-            if(offset>0){
-                _sharedPointerGetter = [sharedPointerGetter,offset](const void* sharedPtr)-> void* {
+            uint _offset = typeEntry->offset(type());
+            if(_offset>0){
+                _sharedPointerGetter = [sharedPointerGetter,_offset](const void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
-                    return reinterpret_cast<void*>( qintptr(ptr) - offset );
+                    return reinterpret_cast<void*>( qintptr(ptr) - _offset );
                 };
             }
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
@@ -1781,14 +2176,135 @@ bool ObjectTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jVa
     }else return false;
 }
 
-bool ObjectValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+ObjectIFTypeEntry::ObjectIFTypeEntry(JNIEnv* env,
+                const std::type_info& typeId,
+                const char *qt_name,
+                const char *java_name,
+                jclass java_class,
+                jmethodID creator_method,
+                size_t value_size,
+                const std::type_info* super_type,
+                size_t shell_size,
+                PtrDeleterFunction deleter,
+                PtrOwnerFunction owner_function,
+                const QVector<const FunctionInfo>* virtualFunctions,
+                Destructor destructor,
+                const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                const QMap<size_t,uint>& interfaceOffsets,
+                const QSet<size_t>& interfaceTypes,
+                const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces)
+    :    ObjectTypeEntry(env,
+                         typeId,
+                         qt_name,
+                         java_name,
+                         java_class,
+                         creator_method,
+                         value_size,
+                         super_type,
+                         shell_size,
+                         deleter,
+                         owner_function,
+                         virtualFunctions,
+                         destructor,
+                         polymorphicHandlers
+                     ),
+      m_interfaceOffsets(interfaceOffsets),
+      m_interfaceTypes(interfaceTypes),
+      m_inheritedInterfaces(inheritedInterfaces){
+}
+
+ObjectAbstractIFTypeEntry::ObjectAbstractIFTypeEntry(JNIEnv* env,
+                const std::type_info& typeId,
+                const char *qt_name,
+                const char *java_name,
+                jclass java_class,
+                jmethodID creator_method,
+                size_t value_size,
+                const std::type_info* super_type,
+                size_t shell_size,
+                PtrDeleterFunction deleter,
+                PtrOwnerFunction owner_function,
+                const QVector<const FunctionInfo>* virtualFunctions,
+                Destructor destructor,
+                const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                jclass java_wrapper_class,
+                const QMap<size_t,uint>& interfaceOffsets,
+                const QSet<size_t>& interfaceTypes,
+                const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces)
+    :     ObjectIFTypeEntry(env,
+                            typeId,
+                            qt_name,
+                            java_name,
+                            java_class,
+                            creator_method,
+                            value_size,
+                            super_type,
+                            shell_size,
+                            deleter,
+                            owner_function,
+                            virtualFunctions,
+                            destructor,
+                            polymorphicHandlers,
+                            interfaceOffsets,
+                            interfaceTypes,
+                            inheritedInterfaces
+                        ),
+      m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr)
+{}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
         output->l = nullptr;
         return true;
     }
-    if(!makeCopyOfValueTypes){
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(obj && env->IsInstanceOf(obj, javaClass())){
+                output->l = obj;
+                return true;
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return QtJambiLink::createLinkForNativeObject(
+                env,
+                output->l,
+                const_cast<void*>(qt_object),
+                LINK_NAME_ARG(qtName())
+                false,
+                false,
+                m_deleter,
+                m_owner_function,
+                QtJambiLink::Ownership::None,
+                m_interfaceOffsets,
+                m_interfaceTypes,
+                m_inheritedInterfaces
+            );
+    }
+}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+    if(!makeCopyOfValues){
         for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
@@ -1801,13 +2317,13 @@ bool ObjectValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, boo
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-            return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
     }else{
-        void *copy = makeCopyOfValueTypes ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
         if (!copy){
             output->l = nullptr;
             return true;
@@ -1816,30 +2332,25 @@ bool ObjectValueTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, boo
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link =
-                m_owner_function ?
-                    QtJambiLink::createLinkForObject(
+        return m_owner_function ?
+                    QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
                         m_qt_meta_type,
                         false,
                         false,
-                        m_owner_function
-                    ) : QtJambiLink::createLinkForObject(
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    ) : QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
                         m_qt_meta_type,
                         false,
-                        false
+                        makeCopyOfValues,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
                     );
-        if(makeCopyOfValueTypes){
-            link->setJavaOwnership(env);
-        }else if(cppOwnership){
-            link->setCppOwnership(env);
-        }
-        return true;
     }
 }
 
@@ -1897,13 +2408,13 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
-            if(offset>0){
-                _sharedPointerGetter = [sharedPointerGetter,offset](const void* sharedPtr)-> void* {
+            uint _offset = typeEntry->offset(type());
+            if(_offset>0){
+                _sharedPointerGetter = [sharedPointerGetter,_offset](const void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
-                    return reinterpret_cast<void*>( qintptr(ptr) - offset );
+                    return reinterpret_cast<void*>( qintptr(ptr) - _offset );
                 };
             }
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
@@ -1931,6 +2442,110 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
     }
 }
 
+ObjectValueIFTypeEntry::ObjectValueIFTypeEntry(JNIEnv* env,
+                                                   const std::type_info& typeId,
+                                                   const char *qt_name,
+                                                   const char *java_name,
+                                                   jclass java_class,
+                                                   jmethodID creator_method,
+                                                   size_t value_size,
+                                                   const std::type_info* super_type,
+                                                   size_t shell_size,
+                                                   PtrOwnerFunction owner_function,
+                                                   const QVector<const FunctionInfo>* virtualFunctions,
+                                                   Destructor destructor,
+                                                   const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                                                   const QMetaType& qt_meta_type,
+                                                   const QMap<size_t,uint>& interfaceOffsets,
+                                                   const QSet<size_t>& interfaceTypes,
+                                                   const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                                                   )
+    : ObjectIFTypeEntry(env,
+                        typeId,
+                        qt_name,
+                        java_name,
+                        java_class,
+                        creator_method,
+                        value_size,
+                        super_type,
+                        shell_size,
+                        nullptr,
+                        owner_function,
+                        virtualFunctions,
+                        destructor,
+                        polymorphicHandlers,
+                        interfaceOffsets,
+                        interfaceTypes,
+                        inheritedInterfaces),
+        m_qt_meta_type(qt_meta_type
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                    .id()
+#endif
+                       ){}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectValueIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+    if(!makeCopyOfValues){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+            if(link){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, javaClass())){
+                    output->l = obj;
+                    return true;
+                }
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        if (!copy){
+            output->l = nullptr;
+            return true;
+        }
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return m_owner_function ?
+                    QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    ) : QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+    }
+}
+
 ObjectContainerTypeEntry::ObjectContainerTypeEntry(JNIEnv* env,
                 const std::type_info& typeId,
                 const char *qt_name,
@@ -1939,8 +2554,6 @@ ObjectContainerTypeEntry::ObjectContainerTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 NewContainerAccessFunction containerAccessFactory,
                 PtrOwnerFunction owner_function,
@@ -1956,8 +2569,6 @@ ObjectContainerTypeEntry::ObjectContainerTypeEntry(JNIEnv* env,
                            creator_method,
                            value_size,
                            super_type,
-                           interface_types,
-                           interface_offsets,
                            shell_size,
                            owner_function,
                            virtualFunctions,
@@ -1975,8 +2586,6 @@ ObjectAbstractContainerTypeEntry::ObjectAbstractContainerTypeEntry(JNIEnv* env,
                 jmethodID creator_method,
                 size_t value_size,
                 const std::type_info* super_type,
-                const QList<const std::type_info*>& interface_types,
-                const QMap<size_t, uint>& interface_offsets,
                 size_t shell_size,
                 NewContainerAccessFunction containerAccessFactory,
                 PtrOwnerFunction owner_function,
@@ -1993,8 +2602,6 @@ ObjectAbstractContainerTypeEntry::ObjectAbstractContainerTypeEntry(JNIEnv* env,
                            creator_method,
                            value_size,
                            super_type,
-                           interface_types,
-                           interface_offsets,
                            shell_size,
                            owner_function,
                            virtualFunctions,
@@ -2005,14 +2612,14 @@ ObjectAbstractContainerTypeEntry::ObjectAbstractContainerTypeEntry(JNIEnv* env,
       m_containerAccessFactory(containerAccessFactory)
 {}
 
-bool ObjectContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult ObjectContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
         output->l = nullptr;
         return true;
     }
-    if(!makeCopyOfValueTypes){
+    if(!makeCopyOfValues){
         for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
@@ -2025,13 +2632,13 @@ bool ObjectContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object,
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-            return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
     }else{
-        void *copy = makeCopyOfValueTypes ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
         if (!copy){
             output->l = nullptr;
             return true;
@@ -2040,21 +2647,16 @@ bool ObjectContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object,
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(
+        return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
                         m_qt_meta_type,
                         false,
                         false,
-                        m_containerAccessFactory()
+                        m_containerAccessFactory(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
                     );
-        if(makeCopyOfValueTypes){
-            link->setJavaOwnership(env);
-        }else if(cppOwnership){
-            link->setCppOwnership(env);
-        }
-        return true;
     }
 }
 
@@ -2104,13 +2706,13 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
-            if(offset>0){
-                _sharedPointerGetter = [sharedPointerGetter,offset](const void* sharedPtr)-> void* {
+            uint _offset = typeEntry->offset(type());
+            if(_offset>0){
+                _sharedPointerGetter = [sharedPointerGetter,_offset](const void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
-                    return reinterpret_cast<void*>( qintptr(ptr) - offset );
+                    return reinterpret_cast<void*>( qintptr(ptr) - _offset );
                 };
             }
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
@@ -2136,14 +2738,14 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
     }
 }
 
-bool ObjectAbstractContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult ObjectContainerIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     if (!qt_object){
         output->l = nullptr;
         return true;
     }
-    if(!makeCopyOfValueTypes){
+    if(!makeCopyOfValues){
         for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
                 jobject obj = link->getJavaObjectLocalRef(env);
@@ -2156,13 +2758,13 @@ bool ObjectAbstractContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-            return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
     }else{
-        void *copy = makeCopyOfValueTypes ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
         if (!copy){
             output->l = nullptr;
             return true;
@@ -2171,21 +2773,67 @@ bool ObjectAbstractContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(
+        return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
                         m_qt_meta_type,
                         false,
                         false,
-                        m_containerAccessFactory()
+                        m_containerAccessFactory(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
                     );
-        if(makeCopyOfValueTypes){
-            link->setJavaOwnership(env);
-        }else if(cppOwnership){
-            link->setCppOwnership(env);
-        }
+    }
+}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectAbstractContainerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
         return true;
+    }
+    if(!makeCopyOfValues){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+            if(link){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, javaClass())){
+                    output->l = obj;
+                    return true;
+                }
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        if (!copy){
+            output->l = nullptr;
+            return true;
+        }
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_containerAccessFactory(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
     }
 }
 
@@ -2235,13 +2883,13 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
     }
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             SmartPointerGetterFunction _sharedPointerGetter = sharedPointerGetter;
-            uint offset = m_interface_offsets.value(unique_id(*_typeId), 0);
-            if(offset>0){
-                _sharedPointerGetter = [sharedPointerGetter,offset](const void* sharedPtr)-> void* {
+            uint _offset = typeEntry->offset(type());
+            if(_offset>0){
+                _sharedPointerGetter = [sharedPointerGetter,_offset](const void* sharedPtr)-> void* {
                     void* ptr = sharedPointerGetter(sharedPtr);
-                    return reinterpret_cast<void*>( qintptr(ptr) - offset );
+                    return reinterpret_cast<void*>( qintptr(ptr) - _offset );
                 };
             }
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
@@ -2267,7 +2915,98 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
     }
 }
 
-bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+ObjectAbstractContainerIFTypeEntry::ObjectAbstractContainerIFTypeEntry(JNIEnv* env,
+                const std::type_info& typeId,
+                const char *qt_name,
+                const char *java_name,
+                jclass java_class,
+                jmethodID creator_method,
+                size_t value_size,
+                const std::type_info* super_type,
+                size_t shell_size,
+                NewContainerAccessFunction containerAccessFactory,
+                PtrOwnerFunction owner_function,
+                const QVector<const FunctionInfo>* virtualFunctions,
+                Destructor destructor,
+                const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                const QMetaType& qt_meta_type,
+                jclass java_wrapper_class,
+                const QMap<size_t,uint>& interfaceOffsets,
+                const QSet<size_t>& interfaceTypes,
+                const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces)
+    : ObjectAbstractValueIFTypeEntry(env,
+                           typeId,
+                           qt_name,
+                           java_name,
+                           java_class,
+                           creator_method,
+                           value_size,
+                           super_type,
+                           shell_size,
+                           owner_function,
+                           virtualFunctions,
+                           destructor,
+                           polymorphicHandlers,
+                           qt_meta_type,
+                           java_wrapper_class,
+                           interfaceOffsets,
+                           interfaceTypes,
+                           inheritedInterfaces),
+      m_containerAccessFactory(containerAccessFactory)
+{}
+
+QtJambiTypeEntry::NativeToJavaResult ObjectAbstractContainerIFTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+    if(!makeCopyOfValues){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+            if(link){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, javaClass())){
+                    output->l = obj;
+                    return true;
+                }
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        if (!copy){
+            output->l = nullptr;
+            return true;
+        }
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_containerAccessFactory(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+    }
+}
+
+QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
@@ -2349,8 +3088,8 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
                 mo = mo->superClass();
             }
             if(*typeId!=type()){
-                if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
-                    return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+                if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+                    return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
                 }else{
                     return false;
                 }
@@ -2361,8 +3100,7 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
         JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
     output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    QtJambiLink::createLinkForQObject(env, output->l, qt_object, false, false, m_superTypeForCustomMetaObject);
-    return true;
+    return QtJambiLink::createLinkForNativeQObject(env, output->l, qt_object, false, false, m_superTypeForCustomMetaObject);
 }
 
 bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
@@ -2477,7 +3215,7 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
                 mo = mo->superClass();
             }
             if(*typeId!=type()){
-                if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+                if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
                     return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
                 }else{
                     return false;
@@ -2493,7 +3231,106 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
     return true;
 }
 
-bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult QObjectIFTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
+        // Since QObjects are created in a class based on virtual function calls,
+        // if they at some point during their constructor are converted to Java,
+        // the Java object will get the wrong class. In order to fix this as well
+        // as possible, we replace the java object if it turns out it has previously
+        // been created using a different metaObject than the current. This should
+        // at least make the brokeness identical to that of C++, and we can't do this
+        // better than C++ since we depend on C++ to do it.
+        if(!link->createdByJava()){
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
+            if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
+                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                locker.unlock();
+                delete p;
+                // It should already be split ownership, but in case it has been changed, we need to make sure the c++
+                // object isn't deleted.
+                Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
+                link->setSplitOwnership(env);
+                link.clear();
+                locker.relock();
+            }
+        }
+        if(link){
+            output->l = link->getJavaObjectLocalRef(env);
+            if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
+                {
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            delete p;
+                            isInvalidated = true;
+                            locker.relock();
+                        }
+                    }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
+                }
+            }else return true;
+        }
+    }
+
+    if(this->m_original_meta_object){
+        const QMetaObject *mo = QtJambiMetaObject::findFirstStaticMetaObject(qt_object->metaObject());
+        if(this->m_original_meta_object!=mo){
+            const std::type_info* typeId = &type();
+            // Search the hierarchy of classes for a class that has been mapped to Java.
+            // Prefer the requested class if no other can be found.
+            // Only return objects of subclasses of the requested class
+            // If the requested class is not in the object's hierarchy, then we prefer
+            // the requested class (this means it's basically a proper subclass of the
+            // requested class, and thus probably the concrete wrapper, but atleast a
+            // more specific version than anything we can find)
+            while (mo) {
+                const std::type_info* _typeId = getTypeByMetaObject(mo);
+                if(_typeId){
+                    if(*typeId==*_typeId){
+                        // Never go further down the hierarchy than the requested class
+                        break;
+                    }else{
+                        typeId = _typeId;
+                        break;
+                    }
+                }
+                mo = mo->superClass();
+            }
+            if(*typeId!=type()){
+                if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+                    return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+                }else{
+                    return false;
+                }
+            }
+        }
+    }
+    if(!creatableClass() || !creatorMethod())
+        JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+    output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    return QtJambiLink::createLinkForNativeQObject(env, output->l, qt_object,
+                                            false, false, m_superTypeForCustomMetaObject,
+                                            m_interfaceOffsets, m_interfaceTypes, m_inheritedInterfaces);
+}
+
+QtJambiTypeEntry::NativeToJavaResult QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
@@ -2552,8 +3389,8 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
 
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-            return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
         }else{
             return false;
         }
@@ -2583,8 +3420,8 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
             mo = mo->superClass();
         }
         if(*typeId!=type()){
-            if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
-                return typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, javaType);
+            if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+                return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
             }else{
                 return false;
             }
@@ -2594,8 +3431,7 @@ bool QObjectPolymorphicTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bo
         JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
     output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    QtJambiLink::createLinkForQObject(env, output->l, qt_object, false, false, m_superTypeForCustomMetaObject);
-    return true;
+    return QtJambiLink::createLinkForNativeQObject(env, output->l, qt_object, false, false, m_superTypeForCustomMetaObject);
 }
 
 bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
@@ -2687,7 +3523,7 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
 
     const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
     if(_typeId && *_typeId!=type()){
-        if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
             return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
         }else{
             return false;
@@ -2718,7 +3554,7 @@ bool QObjectPolymorphicTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *
             mo = mo->superClass();
         }
         if(*typeId!=type()){
-            if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+            if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
                 return typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, output, javaType);
             }else{
                 return false;
@@ -2747,11 +3583,114 @@ bool QObjectTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jV
     }else return false;
 }
 
-bool FunctionalTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult QObjectPolymorphicIFTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
+    }
+
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object)){
+        jobject nativeLink = link->nativeLink(env);
+        QScopedPointer<JObjectSynchronizer> synchronizer(new JObjectSynchronizer(env, nativeLink));
+        // Since QObjects are created in a class based on virtual function calls,
+        // if they at some point during their constructor are converted to Java,
+        // the Java object will get the wrong class. In order to fix this as well
+        // as possible, we replace the java object if it turns out it has previously
+        // been created using a different metaObject than the current. This should
+        // at least make the brokeness identical to that of C++, and we can't do this
+        // better than C++ since we depend on C++ to do it.
+        if(!link->createdByJava()){
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
+            if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
+                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                locker.unlock();
+                delete p;
+                // It should already be split ownership, but in case it has been changed, we need to make sure the c++
+                // object isn't deleted.
+                Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
+                link->setSplitOwnership(env);
+                link.clear();
+                locker.relock();
+            }
+        }
+        if(link){
+            output->l = link->getJavaObjectLocalRef(env);
+            if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
+                {
+                    bool isInvalidated = false;
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
+                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
+                            locker.unlock();
+                            isInvalidated = true;
+                            delete p;
+                            locker.relock();
+                        }
+                    }
+                    if(!isInvalidated)
+                        link->invalidate(env);
+                    link.clear();
+                }
+            }else return true;
+        }
+    }
+
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }
+
+    const QMetaObject *mo = QtJambiMetaObject::findFirstStaticMetaObject(qt_object->metaObject());
+    if(this->originalMetaObject() && this->originalMetaObject()!=mo){
+        const std::type_info* typeId = &type();
+        // Search the hierarchy of classes for a class that has been mapped to Java.
+        // Prefer the requested class if no other can be found.
+        // Only return objects of subclasses of the requested class
+        // If the requested class is not in the object's hierarchy, then we prefer
+        // the requested class (this means it's basically a proper subclass of the
+        // requested class, and thus probably the concrete wrapper, but atleast a
+        // more specific version than anything we can find)
+        while (mo) {
+            const std::type_info* _typeId = getTypeByMetaObject(mo);
+            if(_typeId){
+                if(*typeId==*_typeId){
+                    // Never go further down the hierarchy than the requested class
+                    break;
+                }else{
+                    typeId = _typeId;
+                    break;
+                }
+            }
+            mo = mo->superClass();
+        }
+        if(*typeId!=type()){
+            if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
+                return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+            }else{
+                return false;
+            }
+        }
+    }
+    if(!creatableClass() || !creatorMethod())
+        JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+    output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    return QtJambiLink::createLinkForNativeQObject(env, output->l, qt_object, false, false, m_superTypeForCustomMetaObject,
+                                            m_interfaceOffsets, m_interfaceTypes, m_inheritedInterfaces);
+}
+
+QtJambiTypeEntry::NativeToJavaResult FunctionalTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert functional type" QTJAMBI_STACKTRACEINFO );
-    Q_UNUSED(makeCopyOfValueTypes)
-    Q_UNUSED(cppOwnership)
     if(m_registered_functional_resolver){
         output->l = m_registered_functional_resolver(env, m_is_std_function ? qt_object : &qt_object);
         if(output->l)
@@ -2761,19 +3700,19 @@ bool FunctionalTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool
         JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
     output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    QtJambiLink::createLinkForObject(
+    return QtJambiLink::createLinkForNativeObject(
             env,
             output->l,
             m_qt_meta_type.create(m_is_std_function ? qt_object : &qt_object),
             m_qt_meta_type,
             false,
-            false
-        )->setJavaOwnership(env);
-    return true;
+            false,
+            QtJambiLink::Ownership::Java
+        );
 }
 
 bool FunctionalTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *qt_object, SmartPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
-    return convertToJava(env, sharedPointerGetter(qt_object), true, false, output, javaType);
+    return convertToJava(env, sharedPointerGetter(qt_object), true, output, javaType);
 }
 
 bool FunctionalTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope*) const{
@@ -2813,7 +3752,7 @@ bool FunctionalTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value,
     return true;
 }
 
-bool EnumTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult EnumTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     switch (javaType) {
     case jValueType::l:
         if(!creatableClass() || !creatorMethod())
@@ -2853,7 +3792,7 @@ bool EnumTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool
 }
 
 bool EnumTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *qt_object, SmartPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
-    return convertToJava(env, sharedPointerGetter(qt_object), true, false, output, javaType);
+    return convertToJava(env, sharedPointerGetter(qt_object), true, output, javaType);
 }
 
 bool EnumTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope*) const{
@@ -2974,7 +3913,7 @@ bool EnumTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValu
     return true;
 }
 
-bool FlagsTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult FlagsTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     switch (javaType) {
     case jValueType::l:
         if(!creatableClass() || !creatorMethod())
@@ -2994,7 +3933,7 @@ bool FlagsTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, boo
 }
 
 bool FlagsTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *qt_object, SmartPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
-    return convertToJava(env, sharedPointerGetter(qt_object), true, false, output, javaType);
+    return convertToJava(env, sharedPointerGetter(qt_object), true, output, javaType);
 }
 
 bool FlagsTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope*) const{
@@ -3033,7 +3972,7 @@ AbstractSimpleTypeEntry::AbstractSimpleTypeEntry(JNIEnv* env, const std::type_in
 }
 
 bool AbstractSimpleTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *qt_object, SmartPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType javaType) const{
-    return convertToJava(env, sharedPointerGetter(qt_object), true, false, output, javaType);
+    return convertToJava(env, sharedPointerGetter(qt_object), true, output, javaType);
 }
 
 JLongTypeEntry::JLongTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
@@ -3046,7 +3985,7 @@ StringTypeEntry::StringTypeEntry(JNIEnv* env, const std::type_info& typeId, cons
 {
 }
 
-bool StringTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult StringTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const QString* strg = reinterpret_cast<const QString*>(qt_object);
     switch (javaType) {
     case jValueType::l:
@@ -3109,12 +4048,12 @@ QCborValueRefTypeEntry::QCborValueRefTypeEntry(JNIEnv* env, const std::type_info
 {
 }
 
-bool QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
     const QCborValueRef* vref = reinterpret_cast<const QCborValueRef*>(qt_object);
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QCborValue), "QCborValue");
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QCborValue), "QCborValue");
     Q_ASSERT(typeEntry);
     QCborValue value = *vref;
-    return typeEntry->convertToJava(env, &value, makeCopyOfValueTypes, cppOwnership, output, javaType);
+    return typeEntry->convertToJava(env, &value, makeCopyOfValues, output, javaType);
 }
 
 bool QCborValueRefTypeEntry::convertToNative(JNIEnv *env, const jvalue&, jValueType, void *, QtJambiScope*) const{
@@ -3128,7 +4067,7 @@ StringUtilTypeEntry::StringUtilTypeEntry(JNIEnv* env, const std::type_info& type
 {
 }
 
-bool StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     if(unique_id(type())==unique_id(typeid(QStringView))){
         const QStringView* sref = reinterpret_cast<const QStringView*>(qt_object);
         if(sref){
@@ -3278,22 +4217,23 @@ MetaUtilTypeEntry::MetaUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, 
 {
 }
 
-bool MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
     if(qt_object){
         if(unique_id(type())==unique_id(typeid(QMetaObject::Connection))){
             static QMetaType metaTypeId(registeredMetaTypeID(typeid(QMetaObject::Connection)));
             output->l = Java::QtJambi::SignalUtility$NativeConnection::newInstance(env, nullptr);
-            const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+            const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                     env,
                     output->l,
                     new QMetaObject::Connection(*reinterpret_cast<const QMetaObject::Connection*>(qt_object)),
                     metaTypeId,
                     false,
-                    false
+                    false,
+                    QtJambiLink::Ownership::Java
                 );
-            link->setJavaOwnership(env);
+            Q_UNUSED(link)
         }else if(unique_id(type())==unique_id(typeid(QMetaObject))){
             output->l = QtJambiMetaObject::convertToJavaObject(env, reinterpret_cast<const QMetaObject*>(qt_object));
         }else if(unique_id(type())==unique_id(typeid(JIteratorWrapper))
@@ -3350,8 +4290,6 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                                            jmethodID creator_method,
                                            size_t value_size,
                                            const std::type_info* super_type,
-                                           const QList<const std::type_info*>& interface_types,
-                                           const QMap<size_t, uint>& interface_offsets,
                                            size_t shell_size,
                                            PtrOwnerFunction owner_function,
                                            const QVector<const FunctionInfo>* virtualFunctions,
@@ -3366,8 +4304,6 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                            creator_method,
                            value_size,
                            super_type,
-                           interface_types,
-                           interface_offsets,
                            shell_size,
                            owner_function,
                            virtualFunctions,
@@ -3377,14 +4313,85 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
 {
 }
 
-bool QModelIndexTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const{
-    bool result = ObjectValueTypeEntry::convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, output, valueType);
-    if(valueType==jValueType::l && result && qt_object){
-        const QModelIndex* index = reinterpret_cast<const QModelIndex*>(qt_object);
-        if(index->model())
-            QtJambiLink::registerDependentObject(index->model(), QtJambiLink::findLinkForJavaObject(env, output->l));
+QtJambiTypeEntry::NativeToJavaResult QModelIndexTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType javaType) const{
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+    if (!qt_object){
+        output->l = nullptr;
+        return true;
     }
-    return result;
+    if(!makeCopyOfValues){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+            if(link){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, javaClass())){
+                    output->l = obj;
+                    return true;
+                }
+            }
+        }
+    }
+    const std::type_info* _typeId = qtjambi_resolve_polymorphy(m_polymorphicIdHandlers, qt_object);
+    if(_typeId && *_typeId!=type()){
+        if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+            return typeEntry->convertToJava(env, qt_object, makeCopyOfValues, output, javaType);
+        }else{
+            return false;
+        }
+    }else{
+        void *copy = makeCopyOfValues ? m_qt_meta_type.create(qt_object) : const_cast<void*>(qt_object);
+        if (!copy){
+            output->l = nullptr;
+            return true;
+        }
+        if(!creatableClass() || !creatorMethod())
+            JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
+        const QModelIndex* index = reinterpret_cast<const QModelIndex*>(qt_object);
+        output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return index->model() ?
+                (m_owner_function ?
+                    QtJambiLink::createLinkForDependentObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_owner_function,
+                        index->model(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    ) : QtJambiLink::createLinkForDependentObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        index->model(),
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    ))
+                  :
+                    (m_owner_function ?
+                     QtJambiLink::createLinkForNativeObject(
+                         env,
+                         output->l,
+                         copy,
+                         m_qt_meta_type,
+                         false,
+                         false,
+                         m_owner_function,
+                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                     ) : QtJambiLink::createLinkForNativeObject(
+                         env,
+                         output->l,
+                         copy,
+                         m_qt_meta_type,
+                         false,
+                         false,
+                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                     ));
+    }
 }
 
 bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const{
@@ -3403,7 +4410,7 @@ QVariantTypeEntry::QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, 
 {
 }
 
-bool QVariantTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult QVariantTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert QVariant to primitive value" QTJAMBI_STACKTRACEINFO );
     output->l = QtJambiAPI::convertQVariantToJavaObject(env, *reinterpret_cast<const QVariant*>(qt_object));
@@ -3417,7 +4424,7 @@ bool QVariantTypeEntry::convertToNative(JNIEnv *env, const jvalue& java_value, j
     return true;
 }
 
-bool JLongTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JLongTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jlong* value = reinterpret_cast<const jlong*>(qt_object);
     if(value){
         switch (javaType) {
@@ -3499,7 +4506,7 @@ JIntTypeEntry::JIntTypeEntry(JNIEnv* env, const std::type_info& typeId, const ch
 {
 }
 
-bool JIntTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JIntTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jint* value = reinterpret_cast<const jint*>(qt_object);
     if(value){
         switch (javaType) {
@@ -3580,7 +4587,7 @@ JShortTypeEntry::JShortTypeEntry(JNIEnv* env, const std::type_info& typeId, cons
 {
 }
 
-bool JShortTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JShortTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jshort* value = reinterpret_cast<const jshort*>(qt_object);
     if(value){
         switch (javaType) {
@@ -3661,7 +4668,7 @@ JByteTypeEntry::JByteTypeEntry(JNIEnv* env, const std::type_info& typeId, const 
 {
 }
 
-bool JByteTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JByteTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jbyte* value = reinterpret_cast<const jbyte*>(qt_object);
     if(value){
         switch (javaType) {
@@ -3742,7 +4749,7 @@ JCharTypeEntry::JCharTypeEntry(JNIEnv* env, const std::type_info& typeId, const 
 {
 }
 
-bool JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     if(unique_id(type())==unique_id(typeid(wchar_t)) || unique_id(type())==unique_id(typeid(jchar))){
         const jchar* value = reinterpret_cast<const jchar*>(qt_object);
         if(value){
@@ -3961,7 +4968,7 @@ JBooleanTypeEntry::JBooleanTypeEntry(JNIEnv* env, const std::type_info& typeId, 
 {
 }
 
-bool JBooleanTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JBooleanTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jboolean* value = reinterpret_cast<const jboolean*>(qt_object);
     if(value){
         switch (javaType) {
@@ -4040,7 +5047,7 @@ JDoubleTypeEntry::JDoubleTypeEntry(JNIEnv* env, const std::type_info& typeId, co
 {
 }
 
-bool JDoubleTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JDoubleTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jdouble* value = reinterpret_cast<const jdouble*>(qt_object);
     if(value){
         switch (javaType) {
@@ -4119,7 +5126,7 @@ JFloatTypeEntry::JFloatTypeEntry(JNIEnv* env, const std::type_info& typeId, cons
 {
 }
 
-bool JFloatTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, bool, jvalue* output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult JFloatTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, bool, jvalue* output, jValueType javaType) const{
     const jfloat* value = reinterpret_cast<const jfloat*>(qt_object);
     if(value){
         switch (javaType) {
@@ -4201,7 +5208,7 @@ NullptrTypeEntry::NullptrTypeEntry(JNIEnv* env, const std::type_info& typeId, co
 {
 }
 
-bool NullptrTypeEntry::convertToJava(JNIEnv *, const void *, bool, bool, jvalue* output, jValueType) const{
+QtJambiTypeEntry::NativeToJavaResult NullptrTypeEntry::convertToJava(JNIEnv *, const void *, bool, jvalue* output, jValueType) const{
     output->l = nullptr;
     return true;
 }

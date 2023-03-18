@@ -389,7 +389,7 @@
 											</then>
 											<else>
 												<property name="jar-includes" value="qml/${qml-usc}/*,qtjambi-deployment.xml"/>
-												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${qml-subdir}" plugin="true"/>
+												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${qml-subdir}" plugin="true" forcedebuginfo="${qtjambi.force.debug.info}"/>
 											</else>
 										</if>
 									</else>

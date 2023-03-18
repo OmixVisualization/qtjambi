@@ -31,23 +31,29 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.core.quick"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuick"
     module: "qtjambi.qt3dquick"
     description: "Qt3DQuick Contains classes used for implementing QML functionality into Qt3D applications."
+
+    NamespacePrefix{
+        prefix: "Qt3DCore::Quick"
+        namespace: "Qt3DCore::Quick"
+        namingPolicy: NamespacePrefix.Cut
+    }
+
     NamespaceType{
         name: "Qt3DCore::Quick"
         javaName: "Qt3DQuick"
         generate: false
     }
     
-    EnumType{
-        name: "Qt3DCore::Quick::QQmlAspectEngine::Status"
-    }
-    
     ObjectType{
         name: "Qt3DCore::Quick::QQmlAspectEngine"
-        javaName: "QQmlAspectEngine"
+
+        EnumType{
+            name: "Status"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/QmlAPI"
@@ -62,7 +68,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DCore::Quick::Quick3DConfiguration"
-        javaName: "Quick3DConfiguration"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -83,7 +88,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DCore::Quick::Quick3DEntity"
-        javaName: "Quick3DEntity"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -94,7 +98,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DCore::Quick::Quick3DEntityLoader"
-        javaName: "Quick3DEntityLoader"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -105,7 +108,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DCore::Quick::Quick3DNode"
-        javaName: "Quick3DNode"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -116,7 +118,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DCore::Quick::Quick3DTransform"
-        javaName: "Quick3DTransform"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"

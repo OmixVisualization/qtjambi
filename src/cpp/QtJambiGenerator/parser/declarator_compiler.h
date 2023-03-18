@@ -79,6 +79,8 @@ class DeclaratorCompiler: protected DefaultVisitor {
         inline ReferenceType getReferenceType() const { return _M_reference_type; }
         inline const QList<bool>& indirection() const { return _M_indirection; }
         inline const QList<Parameter>& parameters() const { return _M_parameters; }
+        OperatorType operatorType() const { return _M_operatorType; }
+        const TypeInfo& operatorCastType() const { return _M_operatorCastType; }
 
     protected:
         virtual void visitPtrOperator(PtrOperatorAST *node);
@@ -98,6 +100,8 @@ class DeclaratorCompiler: protected DefaultVisitor {
          */
         QList<bool> _M_indirection;
         QString _M_id;
+        OperatorType _M_operatorType;
+        TypeInfo _M_operatorCastType;
         QStringList _M_array;
         QList<Parameter> _M_parameters;
 };

@@ -49,45 +49,45 @@ hash_type qHash(const Qt3DRender::QTextureDataUpdate& p, hash_type seed = 0);
 namespace Qt3DRender{
 	typedef Qt3DCore::QNode QNode;
     inline hash_type qHash(const QLevelOfDetailBoundingSphere& p, hash_type seed = 0){
-        hash_type hashCode = seed;
-        hashCode = hashCode * 31 + qHash(p.center());
-        hashCode = hashCode * 31 + ::qHash(p.radius());
-        return hashCode;
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, p.center());
+        seed = hash(seed, p.radius());
+        return seed;
     }
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
     inline hash_type qHash(const QTextureImageData& p, hash_type seed = 0){
-        hash_type hashCode = seed;
-        hashCode = hashCode * 31 + ::qHash(p.width());
-        hashCode = hashCode * 31 + ::qHash(p.height());
-        hashCode = hashCode * 31 + ::qHash(p.depth());
-        hashCode = hashCode * 31 + ::qHash(p.layers());
-        hashCode = hashCode * 31 + ::qHash(p.mipLevels());
-        hashCode = hashCode * 31 + ::qHash(p.faces());
-        hashCode = hashCode * 31 + ::qHash(p.target());
-        hashCode = hashCode * 31 + ::qHash(p.format());
-        hashCode = hashCode * 31 + ::qHash(p.pixelType());
-        hashCode = hashCode * 31 + ::qHash(p.pixelFormat());
+        QtPrivate::QHashCombineCommutative hash;
+        seed = hash(seed, p.width());
+        seed = hash(seed, p.height());
+        seed = hash(seed, p.depth());
+        seed = hash(seed, p.layers());
+        seed = hash(seed, p.mipLevels());
+        seed = hash(seed, p.faces());
+        seed = hash(seed, p.target());
+        seed = hash(seed, p.format());
+        seed = hash(seed, p.pixelType());
+        seed = hash(seed, p.pixelFormat());
         for(int i=0; i<p.layers(); ++i){
             for(int j=0; j<p.faces(); ++j){
                 for(int k=0; k<p.mipLevels(); ++k){
-                    hashCode = hashCode * 31 + qHash(p.data(i,j,k));
+                    seed = hash(seed, p.data(i,j,k));
                 }
             }
         }
-        return hashCode;
+        return seed;
     }
 
     inline hash_type qHash(const QTextureDataUpdate& p, hash_type seed = 0){
-        hash_type hashCode = seed;
-        hashCode = hashCode * 31 + ::qHash(p.x());
-        hashCode = hashCode * 31 + ::qHash(p.y());
-        hashCode = hashCode * 31 + ::qHash(p.z());
-        hashCode = hashCode * 31 + ::qHash(p.layer());
-        hashCode = hashCode * 31 + ::qHash(p.mipLevel());
-        hashCode = hashCode * 31 + ::qHash(p.face());
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, p.x());
+        seed = hash(seed, p.y());
+        seed = hash(seed, p.z());
+        seed = hash(seed, p.layer());
+        seed = hash(seed, p.mipLevel());
+        seed = hash(seed, p.face());
         if(p.data())
-            hashCode = hashCode * 31 + qHash(*p.data().get());
-        return hashCode;
+            seed = hash(seed, *p.data().get());
+        return seed;
     }
 #endif
 };

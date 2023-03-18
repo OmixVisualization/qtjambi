@@ -67,6 +67,7 @@ namespace rpp {
             pp_skip_blanks skip_blanks;
             pp_skip_whitespaces skip_whitespaces;
             bool hasUnexpandedFunctionMacro;
+            bool skip_backslash;
 
             std::string const *resolve_formal(pp_fast_string const *__name);
 
@@ -75,8 +76,8 @@ namespace rpp {
             int generated_lines;
 
         public:
-            pp_macro_expander(pp_environment &__env, pp_frame *__frame = nullptr) :
-                    env(__env), frame(__frame), hasUnexpandedFunctionMacro(false), lines(0), generated_lines(0) {
+            pp_macro_expander(pp_environment &__env, pp_frame *__frame = nullptr, bool _skip_backslash = false) :
+                    env(__env), frame(__frame), hasUnexpandedFunctionMacro(false), skip_backslash(_skip_backslash), lines(0), generated_lines(0) {
                 if(frame && frame->expanding_macro && frame->expanding_macro->definition){
                     if(QByteArray(frame->expanding_macro->definition->begin()).contains("__VA_ARGS__")){
                         hasUnexpandedFunctionMacro = true;
@@ -104,7 +105,10 @@ namespace rpp {
                 lines = skip_blanks.lines;
 
                 while (first != last) {
-                    if (*first == '\n') {
+                    if (*first == '\\' && skip_backslash) {
+                        first = skip_blanks(++first, last);
+                        lines += skip_blanks.lines;
+                    }else if (*first == '\n') {
                         *result++ = *first;
                         ++lines;
 
@@ -145,8 +149,38 @@ namespace rpp {
 
                             *result++ = '\"';
                             first = end_id;
-                        } else
-                            *result++ = '#'; // ### warning message?
+                        } else {
+                            bool ok = false;
+                            if(frame && frame->actuals && frame->expanding_macro
+                                    && frame->actuals->size()>0
+                                    && frame->expanding_macro->variadics && fast_name=="__VA_ARGS__"){
+                                *result++ = '\"';
+                                bool comma = false;
+                                for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
+                                    if(comma){
+                                        *result++ = ',';
+                                        *result++ = ' ';
+                                    }else comma = true;
+                                    for (std::string::const_iterator it = skip_whitespaces(frame->actuals->at(i).begin(), frame->actuals->at(i).end());
+                                            it != frame->actuals->at(i).end(); ++it) {
+                                        if (*it == '"') {
+                                            *result++ = '\\';
+                                            *result++ = *it;
+                                        } else if (*it == '\n') {
+                                            *result++ = '"';
+                                            *result++ = '\n';
+                                            *result++ = '"';
+                                        } else
+                                            *result++ = *it;
+                                    }
+                                }
+                                ok = true;
+                                *result++ = '\"';
+                                first = end_id;
+                            }
+                            if(!ok)
+                                *result++ = '#'; // ### warning message?
+                        }
                     } else if (*first == '\"') {
                         _InputIterator next_pos = skip_string_literal(first, last);
                         lines += skip_string_literal.lines;
@@ -309,7 +343,7 @@ namespace rpp {
                         actuals.reserve(5);
                         ++arg_it; // skip '('
 
-                        pp_macro_expander expand_actual(env, frame);
+                        pp_macro_expander expand_actual(env, frame, true);
 
                         //_InputIterator arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
                         _InputIterator arg_end = skip_argument(arg_it, last);
@@ -332,6 +366,8 @@ namespace rpp {
                                 expand_actual(actual.begin(), actual.end(), std::back_inserter(actuals.back()));
                             }
                             arg_it = arg_end;
+                        }else if(arg_it != last && *arg_end == ','){
+                            actuals.push_back(std::string{});
                         }
 
                         while (arg_it != last && *arg_end == ',') {

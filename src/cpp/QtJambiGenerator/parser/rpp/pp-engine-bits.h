@@ -174,7 +174,7 @@ namespace rpp {
              * data to _OutputIterator result.
              */
             template <typename _InputIterator, typename _OutputIterator>
-            void operator()(_InputIterator first, _InputIterator last, _OutputIterator result) {
+            void process(_InputIterator first, _InputIterator last, _OutputIterator result) {
 #ifndef PP_NO_SMART_HEADER_PROTECTION
                 std::string protection;
                 protection.reserve(255);
@@ -190,7 +190,7 @@ namespace rpp {
                 env.current_line = 1;
                 char buffer[512];
 
-                while (true) {
+                while (!m_M_skipFile) {
                     first = skip_blanks(first, last);
                     env.current_line += skip_blanks.lines;
 
@@ -244,10 +244,13 @@ namespace rpp {
                 qDebug() << "Reading file: " << fileInfo.absoluteFilePath();
                 QFile qfile(fileInfo.absoluteFilePath());
                 if (qfile.open(QIODevice::ReadOnly)) {
+                    bool skipFile = m_M_skipFile;
+                    m_M_skipFile = false;
                     QFileInfo was = env.current_file;
                     env.current_file = fileInfo;
                     file(qfile, __result);
                     env.current_file = was;
+                    m_M_skipFile = skipFile;
                 } else {
                     env.log(QString("File '%1' not found!").arg(fileInfo.absoluteFilePath()).toStdString());
                 }
@@ -267,7 +270,7 @@ namespace rpp {
                 }
                 file.close();
                 if (!data.isEmpty()) {
-                    this->operator()(data.constData(), (data.constData() + data.size()), result);
+                    process(data.constData(), (data.constData() + data.size()), result);
                 }
             }
 
@@ -327,6 +330,7 @@ namespace rpp {
             int _M_true_test[MAX_LEVEL];
             int iflevel;
             int verbose;
+            bool m_M_skipFile;
 
         private:
             pp_environment &env;
@@ -410,7 +414,10 @@ namespace rpp {
                         return handle_ifdef(true, first, last);
                     case PP_ERROR:
                         return handle_error(first, last);
-                    break;
+                    case PP_PRAGMA:
+                        if (! skipping())
+                            return handle_pragma(first, last);
+                        break;
                     default:
                         break;
                 }
@@ -485,6 +492,7 @@ namespace rpp {
                             "string.h",
                             "stdarg.h",
                             "string",
+                            "string_view",
                             "iterator",
                             "list",
                             "stdlib.h",
@@ -513,6 +521,7 @@ namespace rpp {
                             "xcb/xcb.h",
                             "CoreFoundation/CoreFoundation.h",
                             "qplatformdefs.h",
+                            "QtActiveQt/QtActiveQtDepends",
                             "QtMacExtras/QtMacExtrasDepends",
                             "QtX11Extras/QtX11ExtrasDepends",
                             "QtWinExtras/QtWinExtrasDepends",
@@ -1233,6 +1242,20 @@ namespace rpp {
                     _M_skipping[iflevel] = !value;
                 }
 
+                return __first;
+            }
+
+            template <typename _InputIterator>
+            _InputIterator handle_pragma(_InputIterator __first, _InputIterator __last) {
+                pp_macro_expander expand_condition(env);
+                std::string condition;
+                condition.reserve(255);
+                expand_condition(skip_blanks(__first, __last), __last, std::back_inserter(condition));
+                if(condition=="once"){
+                    if(env.pragmaOnce()){
+                        m_M_skipFile = true;
+                    }
+                }
                 return __first;
             }
 

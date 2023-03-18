@@ -37,7 +37,7 @@ class QRemoteObjectNode___ {
      * <li><code>action = io.qt.remoteobjects.QtRemoteObjects.InitialAction.FetchRootSize</code></li>
      * </ul>
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final io.qt.remoteobjects.QAbstractItemModelReplica acquireModel(java.lang.String name, int...rolesHint) {
         return acquireModel(name, io.qt.remoteobjects.QtRemoteObjects.InitialAction.FetchRootSize, rolesHint);
     }
@@ -45,7 +45,7 @@ class QRemoteObjectNode___ {
     /**
      * <p>Overloaded function for {@link #acquireModel(java.lang.String, io.qt.remoteobjects.QtRemoteObjects.InitialAction, java.util.Collection)}.
      */
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final io.qt.remoteobjects.QAbstractItemModelReplica acquireModel(java.lang.String name, io.qt.remoteobjects.QtRemoteObjects.InitialAction action, int...rolesHint) {
         java.util.List<Integer> _rolesHint = new java.util.ArrayList<>();
         for (int hint : rolesHint) {
@@ -54,7 +54,7 @@ class QRemoteObjectNode___ {
         return acquireModel(name, action, _rolesHint);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final io.qt.core.QStringList instances(Class<? extends io.qt.core.QObject> type){
         for(io.qt.core.QPair<String, String> info : io.qt.core.QMetaObject.forType(type).classInfos()) {
             if("RemoteObject Type".equals(info.first)) {
@@ -64,22 +64,22 @@ class QRemoteObjectNode___ {
         return new io.qt.core.QStringList();
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(java.util.function.BiFunction<QRemoteObjectNode, String, T> replicaConstructor) {
         return acquire(replicaConstructor, null);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(java.util.function.BiFunction<QRemoteObjectNode, String, T> replicaConstructor, String name) {
         return replicaConstructor.apply(this, name);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(Class<T> type) throws NoSuchMethodException{
         return acquire(type, null);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(Class<T> type, java.lang.String name) throws NoSuchMethodException{
         if(type==QRemoteObjectDynamicReplica.class) {
             return type.cast(acquireDynamic(name));
@@ -114,7 +114,7 @@ class QtRemoteObjects___ {
         public final io.qt.core.QMetaObject metaObject;
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static TypeNameAndMetaobject getTypeNameAndMetaobjectFromClassInfo(io.qt.core.QMetaObject metaObject){
         String typeName = metaObject.classInfo("RemoteObject Type");
         if (typeName!=null) { //We have an object created from repc or at least with QCLASSINFO defined
@@ -131,19 +131,19 @@ class QtRemoteObjects___ {
         return new TypeNameAndMetaobject(typeName, metaObject);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void copyStoredProperties(T src, T dst)
     {
         if(src!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(src), src, dst);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void copyStoredProperties(T src, io.qt.core.QDataStream dst)
     {
         if(src!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(src), src, dst);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public static <T> void copyStoredProperties(io.qt.core.QDataStream src, T dst)
     {
         if(dst!=null)QtRemoteObjects.<T>copyStoredProperties(QtJambi_LibraryUtilities.internal.getClass(dst), src, dst);
@@ -171,8 +171,8 @@ class QRemoteObjectPendingCall___{
      * <p>Overloaded function for {@link #waitForFinished(int)}
      *  with <code>timeout = 30000</code>.</p>
      */
-    @io.qt.QtDeclaredFinal
-    @io.qt.QtUninvokable
+    @QtDeclaredFinal
+    @QtUninvokable
     public default void waitForFinished() {
         waitForFinished((int)30000);
     }

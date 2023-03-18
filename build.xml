@@ -22,7 +22,6 @@
         Import files containing tasks for the compilation.
     -->
 
-    <import file="antfiles/setenv.xml"/>
     <import file="antfiles/generator.xml"/>
     <import file="antfiles/native.xml"/>
     <import file="antfiles/java.xml"/>
@@ -33,6 +32,7 @@
          but no one is expected to change them.
          -->
     <property name="antjardir"                   location="antjar"/>
+    <property name="extjardir"                   location="extjars"/>
     <property name="java.srcdir"                   location="src/java"/>
     <!--
         Initialization tasks. Note that the init.taskdef task depends on a jar
@@ -183,15 +183,15 @@ Further options:
         <antcall inheritAll="false" target="${proxy.target}"/>
    </target>
 
-    <target name="javadocs" depends="log, setenv, init.taskdef" description="Generates the Java Doc pages for QtJambi">
+    <target name="javadocs" depends="log, init.taskdef" description="Generates the Java Doc pages for QtJambi">
         <foreach-version targets="javadocs-impl"/>
     </target>
     
-    <target name="single.javadocs" depends="log, setenv, init.taskdef" description="Generates the Java Doc pages for QtJambi">
+    <target name="single.javadocs" depends="log, init.taskdef" description="Generates the Java Doc pages for QtJambi">
         <foreach-version targets="single.javadocs-impl"/>
     </target>
     
-    <target name="generator.make" depends="log, setenv, init.taskdef"
+    <target name="generator.make" depends="log, init.taskdef"
         description="Compiles the generator.">
         <foreach-version targets="generator.make-impl"/>
     </target>
@@ -199,13 +199,13 @@ Further options:
         <antcall target="finished"/>
     </target>
 
-    <target name="generate" depends="log, setenv, init.taskdef"
+    <target name="generate" depends="log, init.taskdef"
         description="Compiles and runs the Qt Jambi Generator.">
         <foreach-version targets="generate-impl"/>
     </target>
     <target name="generate-impl" depends="tools.generator.make, tools.generator.run"/>
 
-    <target name="generator.run" depends="log, setenv, init.taskdef"
+    <target name="generator.run" depends="log, init.taskdef"
         description="Runs the Qt Jambi generator on the Qt headers">
         <foreach-version targets="generator.run-impl"/>
     </target>
@@ -213,165 +213,165 @@ Further options:
         <antcall target="finished"/>
     </target>
 
-    <target name="library.native" depends="log, setenv, init.taskdef"
+    <target name="library.native" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi native libraries.">
         <foreach-version targets="library.native-impl"/>
     </target>
     <target name="library.native-impl" depends="library.native.qmake-impl, library.native.make-impl, library.native.bundle-impl"/>
     
-    <target name="library.native.qmake" depends="log, setenv, init.taskdef" description="Runs qmake on the Qt Jambi native library">
+    <target name="library.native.qmake" depends="log, init.taskdef" description="Runs qmake on the Qt Jambi native library">
         <foreach-version targets="library.native.qmake-impl"/>
     </target>
     
-    <target name="library.native.make" depends="log, setenv, init.taskdef" description="Runs make on the Qt Jambi native library">
+    <target name="library.native.make" depends="log, init.taskdef" description="Runs make on the Qt Jambi native library">
         <foreach-version targets="library.native.make-impl"/>
     </target>
     
-    <target name="library.native.compile" depends="log, setenv, init.taskdef">
+    <target name="library.native.compile" depends="log, init.taskdef">
         <foreach-version targets="library.native.compile-impl"/>
     </target>
 	
-    <target name="library.native.makebundle" depends="log, setenv, init.taskdef">
+    <target name="library.native.makebundle" depends="log, init.taskdef">
         <foreach-version targets="library.native.makebundle-impl"/>
     </target>
     
-    <target name="library.native.bundle" depends="log, setenv, init.taskdef">
+    <target name="library.native.bundle" depends="log, init.taskdef">
         <foreach-version targets="library.native.bundle-impl"/>
     </target>
 
-    <target name="library.native.bundle.plugins" depends="log, setenv, init.taskdef">
+    <target name="library.native.bundle.plugins" depends="log, init.taskdef">
         <foreach-version targets="library.native.bundle.plugins-impl"/>
     </target>
 	
-    <target name="bundle.qtlib" depends="log, setenv, init.taskdef">
+    <target name="bundle.qtlib" depends="log, init.taskdef">
         <foreach-version targets="bundle.qtlib-impl"/>
     </target>
 
-    <target name="library.java" depends="log, setenv, init.taskdef"
+    <target name="library.java" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi java libraries.">
         <foreach-version targets="library.java-impl"/>
     </target>
     <target name="library.java-impl" depends="init.build, javac.excludes, java.build.qtjambi"/>
 
-    <target name="plugins.java" depends="log, setenv, init.taskdef"
+    <target name="plugins.java" depends="log, init.taskdef"
         description="Compiles the Qt Jambi plugins.">
         <foreach-version targets="plugins.java-impl"/>
     </target>
     <target name="plugins.java-impl" depends="init.build, javac.excludes, java.build.qtjambiplugins"/>
     
-    <target name="plugins" depends="log, setenv, init.taskdef"
+    <target name="plugins" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi plugins.">
         <foreach-version targets="plugins-impl"/>
     </target>
     <target name="plugins-impl" depends="init.build, javac.excludes, java.build.qtjambiplugins, library.native.bundle.plugins-impl"/>
 
-    <target name="library" depends="log, setenv, init.taskdef"
+    <target name="library" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi libraries.">
         <foreach-version targets="library-impl"/>
     </target>
     <target name="library-impl" depends="library.native.qmake-impl, library.native.make-impl, library.java-impl, library.native.bundle-impl"/>
 
-    <target name="all" depends="log, setenv, init.taskdef"
+    <target name="all" depends="log, init.taskdef"
         description="Generates, builds and bundles the Qt Jambi libraries.">
         <foreach-version targets="all-impl"/>
     </target>
     <target name="all-impl" depends="generate-impl, library-impl"/>
     
-    <target name="clean" depends="log, setenv, init.taskdef"
+    <target name="clean" depends="log, init.taskdef"
         description="Cleans everything">
         <foreach-version targets="clean-impl"/>
     </target>
     
-    <target name="tests.clean" depends="log, setenv, init.taskdef"
+    <target name="tests.clean" depends="log, init.taskdef"
         description="Cleans built test files">
         <foreach-version targets="tests.clean-impl"/>
     </target>
 
-    <target name="tests.generate" depends="log, setenv, init.taskdef"
+    <target name="tests.generate" depends="log, init.taskdef"
          description="Generates and builds all tests">
         <foreach-version targets="tests.generate-impl"/>
     </target>
 
-    <target name="tests.compile" depends="log, setenv, init.taskdef"
+    <target name="tests.compile" depends="log, init.taskdef"
           description="Builds all tests without recalling generator">
         <foreach-version targets="tests.compile-impl"/>
     </target>
 
-    <target name="tests.compile.native" depends="log, setenv, init.taskdef"
+    <target name="tests.compile.native" depends="log, init.taskdef"
           description="Builds native test components">
         <foreach-version targets="tests.compile.native-impl"/>
     </target>
 
-    <target name="tests.compile.java" depends="log, setenv, init.taskdef"
+    <target name="tests.compile.java" depends="log, init.taskdef"
           description="Builds java test components">
         <foreach-version targets="tests.compile.java-impl"/>
     </target>
 
-    <target name="tests.compile.plugins" depends="log, setenv, init.taskdef"
+    <target name="tests.compile.plugins" depends="log, init.taskdef"
           description="Builds plugins test components">
         <foreach-version targets="tests.compile.plugins-impl"/>
     </target>
 
-    <target name="tests.run" depends="log, setenv, init.taskdef"
+    <target name="tests.run" depends="log, init.taskdef"
            description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run-impl"/>
     </target>
 	
-    <target name="tests.run.all" depends="log, setenv, init.taskdef"
+    <target name="tests.run.all" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run.all-impl"/>
     </target>
 
-    <target name="tests.release.run" depends="log, setenv, init.taskdef"
+    <target name="tests.release.run" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run-impl"/>
     </target>
 
-    <target name="tests.debug.run" depends="log, setenv, init.taskdef"
+    <target name="tests.debug.run" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run-impl"/>
     </target>
 
-    <target name="tests.release.run8" depends="log, setenv, init.taskdef"
+    <target name="tests.release.run8" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run8-impl"/>
     </target>
 
-    <target name="tests.debug.run8" depends="log, setenv, init.taskdef"
+    <target name="tests.debug.run8" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run8-impl"/>
     </target>
     
-    <target name="tests.release.run.all" depends="log, setenv, init.taskdef"
+    <target name="tests.release.run.all" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run.all-impl"/>
     </target>
     
-    <target name="tests.debug.run.all" depends="log, setenv, init.taskdef"
+    <target name="tests.debug.run.all" depends="log, init.taskdef"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run.all-impl"/>
     </target>
 
-    <target name="deploy.snapshot" depends="log, setenv, init.taskdef"
+    <target name="deploy.snapshot" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact snapshot.">
         <foreach-version targets="init.build,deploy-snapshot"/>
     </target>
         
-    <target name="deploy.release" depends="log, setenv, init.taskdef"
+    <target name="deploy.release" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact.">
         <foreach-version targets="init.build,deploy-release"/>
     </target>
         
-    <target name="deploy.bundle" depends="log, setenv, init.taskdef"
+    <target name="deploy.bundle" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact.">
         <foreach-version targets="init.build,deploy-bundle"/>
     </target>
     
-    <target name="deploy.bundle.release" depends="log, setenv, init.taskdef"
+    <target name="deploy.bundle.release" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact.">
         <foreach-version targets="init.build,deploy-release,deploy-bundle"/>
     </target>
-    <target name="test" depends="log, setenv, init.taskdef"
+    <target name="test" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact.">
         <foreach-version targets="init.build,finished"/>
     </target>

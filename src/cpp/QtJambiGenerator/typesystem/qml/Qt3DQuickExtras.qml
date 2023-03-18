@@ -31,10 +31,16 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.extras.quick"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuickExtras"
     module: "qtjambi.qt3dquickextras"
     description: ""
+
+    NamespacePrefix{
+        prefix: "Qt3DExtras::Quick"
+        namespace: "Qt3DExtras::Quick"
+        namingPolicy: NamespacePrefix.Cut
+    }
 
     NamespaceType{
         name: "Qt3DExtras::Quick"
@@ -42,14 +48,11 @@ TypeSystem{
         since: [5, 7]
     }
     
-    EnumType{
-        name: "Qt3DExtras::Quick::Qt3DQuickWindow::CameraAspectRatioMode"
-        since: [5, 7]
-    }
-    
     ObjectType{
         name: "Qt3DExtras::Quick::Qt3DQuickWindow"
-        javaName: "Qt3DQuickWindow"
+        EnumType{
+            name: "CameraAspectRatioMode"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/QmlAPI"

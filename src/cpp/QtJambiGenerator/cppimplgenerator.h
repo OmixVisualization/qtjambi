@@ -52,8 +52,7 @@ class CppImplGenerator : public CppGenerator {
             StandardJNISignature = JNIExport | ReturnType | ExternC
         };
 
-        CppImplGenerator(PriGenerator *pri) : CppGenerator(pri) {
-        }
+        CppImplGenerator(PriGenerator *pri);
 
         void generateFake(const MetaClass *) override;
 
@@ -251,23 +250,14 @@ class CppImplGenerator : public CppGenerator {
         bool hasCustomDestructor(const MetaClass *java_class) const;
 
         QString jniReturnName(const MetaFunction *java_function) const;
-        bool shouldGenerate(const MetaClass *java_class) const override {
-            return /*(!java_class->isNamespace() || java_class->functionsInTargetLang().size() > 0)
-                   &&*/ !java_class->isInterface()
-                   && !java_class->typeEntry()->isVariant()
-                   && !java_class->typeEntry()->isIterator()
-                   && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
-                   && !java_class->isFake();
-        }
-        QString default_return_statement_qt(const MetaType *java_type,
-                                            AbstractGenerator::Option options = AbstractGenerator::NoOption);
-        void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QSet<QString>>& containerBaseClasses) { m_containerBaseClasses = containerBaseClasses; }
+        bool shouldGenerate(const MetaClass *java_class) const override;
+        QString default_return_statement_qt(const MetaType *java_type, AbstractGenerator::Option options = AbstractGenerator::NoOption);
+        void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QList<QPair<TypeInfo,bool>>>& containerBaseClasses);
     private:
         QByteArray callXxxMethod(const QString &name) const;
         QByteArray callXxxMethod(const MetaType *java_type) const;
-        QMap<QString,QSet<QString>> javaToQtConverterInfos;
-        QMap<QString,QSet<QString>> qtToJavaConverterInfos;
-        QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
+        QMap<QString,QMap<QString,const MetaClass*>> javaToQtConverterInfos;
+        QMap<QString,QMap<QString,const MetaClass*>> qtToJavaConverterInfos;
 };
 
 #endif // CPPIMPLGENERATOR_H

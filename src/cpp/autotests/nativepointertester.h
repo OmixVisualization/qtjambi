@@ -55,12 +55,6 @@ public:
         i = to;
         return tmp;
     }
-
-    QString testString(QString &s, const QString &to) {
-        QString tmp = s;
-        s = to;
-        return tmp;
-    }
 };
 
 #endif // NATIVEPOINTERTESTER_H

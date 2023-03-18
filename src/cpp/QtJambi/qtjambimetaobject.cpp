@@ -311,7 +311,7 @@ void static_metacall_QObject(const QtJambiMetaObject* q, QObject * o, QMetaObjec
 void static_metacall_QtSubType(const QtJambiMetaObject* q, QObject * o, QMetaObject::Call cl, int idx, void ** argv)
 {
     if(JniEnvironment env{200}){
-        if(jobject object = o ? QtJambiAPI::convertNativeToJavaObject(env, o, q->javaClass(), false, false) : nullptr){
+        if(jobject object = o ? QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, o, q->javaClass()) : nullptr){
             switch(cl){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             case QMetaObject::QueryPropertyUser:
@@ -1406,12 +1406,14 @@ jobject QtJambiMetaObject::toReflected(JNIEnv * env, const QMetaMethod& method)
     return nullptr;
 }
 
-hash_type qHash(const QMetaMethod& method){
+hash_type qHash(const QMetaMethod& method, hash_type seed = 0){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    return qHashMulti(0, method.enclosingMetaObject(), method.methodIndex());
+    return qHashMulti(seed, method.enclosingMetaObject(), method.methodIndex());
 #else
-    QList<quintptr> range{quintptr(method.enclosingMetaObject()),quintptr(method.methodIndex())};
-    return qHashRange(range.begin(), range.end());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, qintptr(method.enclosingMetaObject()));
+    seed = hash(seed, method.methodIndex());
+    return seed;
 #endif
 }
 

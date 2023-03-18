@@ -41,10 +41,6 @@ import io.qt.core.QPair;
 
 public abstract class AbstractMultiHash<K, V> extends AbstractMultiAssociativeContainer<K, V> {
 
-	protected AbstractMultiHash() {
-		super();
-	}
-
 	protected AbstractMultiHash(QPrivateConstructor p) {
 		super(p);
 	}

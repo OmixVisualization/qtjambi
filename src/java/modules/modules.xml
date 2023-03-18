@@ -115,21 +115,20 @@
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
-        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
+        <copy todir="${java.outdir}/${module}" includeemptydirs="false" overwrite="true">
                 <multirootfileset basedirs="${multiroot.basedirs}"
                                   excludes="**/.*,
                                                     pom.xml,
                                                     build.xml,
                                                     build.properties,
                                                     **/*.java,
-                                                    **/*.jui,
                                                     ${jar.excludes},
                                                     ${qtjambi.jar.excludes}"/>
         </copy>
         <condition property="module.info.exclude" value="" else="module-info.java">
             <istrue value="${java.module.based}"/>
         </condition>
-        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
+        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false" overwrite="true">
             <multirootfileset basedirs="${multiroot.basedirs}" 
                               excludes="pom.xml,
                                                     build.xml,
@@ -148,32 +147,54 @@
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <javac source="8" target="8" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="false"
-                        excludes="${module.excludes},module-info.java"
-                        srcdir="${sourcedirs2}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module,-options" />
-                    <classpath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
-                    </classpath>
-                </javac>
-                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="false"
-                        includes="module-info.java"
-                        srcdir="${sourcedirs2}"
-                        destdir="${java.outdir}/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module,-options" />
-                    <modulepath>
-                        <filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
-                    </modulepath>
-                </javac>
+				<if>
+					<istrue value="${qtjambi.no.jsr305}"/>
+					<then>
+						<javac source="8" target="8" debug="true" deprecation="true"
+								fork="true" memorymaximumsize="1024m" verbose="false"
+								includeantruntime="false"
+								excludes="${module.excludes},module-info.java"
+								srcdir="${sourcedirs2}"
+								destdir="${java.outdir}/${module}">
+							<compilerarg value="-Xlint:deprecation" />
+							<compilerarg value="-Xlint:unchecked" />
+							<compilerarg value="-Xlint:-module,-options" />
+							<classpath>
+								<filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
+							</classpath>
+						</javac>
+					</then>
+					<else>
+						<javac source="8" target="8" debug="true" deprecation="true"
+								fork="true" memorymaximumsize="1024m" verbose="false"
+								includeantruntime="false"
+								excludes="${module.excludes},module-info.java"
+								srcdir="${sourcedirs2}"
+								destdir="${java.outdir}/${module}">
+							<compilerarg value="-Xlint:deprecation" />
+							<compilerarg value="-Xlint:unchecked" />
+							<compilerarg value="-Xlint:-module,-options" />
+							<classpath>
+								<filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
+								<pathelement location="${extjardir}/jsr305.jar"/>
+								<pathelement location="${extjardir}/kotlin-annotations-jvm.jar"/>
+							</classpath>
+						</javac>
+					</else>
+				</if>
+				<javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+						fork="true" memorymaximumsize="1024m" verbose="false"
+						includeantruntime="false"
+						includes="module-info.java"
+						srcdir="${sourcedirs2}"
+						destdir="${java.outdir}/${module}">
+					<compilerarg value="-Xlint:deprecation" />
+					<compilerarg value="-Xlint:unchecked" />
+					<compilerarg value="-Xlint:-module,-options" />
+					<modulepath>
+						<filelist dir="${deploymentdir}" files="${qtjambi.dependencies}"/>
+					</modulepath>
+				</javac>
             </then>
             <else>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
@@ -442,7 +463,7 @@
                 </jar>
             </then>
         </if>
-		<create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" debug="${platformjar.debug}" module="${module}" libraries="${qtjambi.bundle.libraries}"/>
+		<create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" debug="${platformjar.debug}" module="${module}" libraries="${qtjambi.bundle.libraries}" forcedebuginfo="${qtjambi.force.debug.info}"/>
         <if>
 			<not>
 				<equals arg1="${library.includes}" arg2=""/>

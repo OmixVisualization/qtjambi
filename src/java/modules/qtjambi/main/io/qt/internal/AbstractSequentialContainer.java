@@ -40,10 +40,6 @@ import io.qt.QtUninvokable;
 
 public abstract class AbstractSequentialContainer<E> extends QtObject implements Collection<E> {
 	
-	protected AbstractSequentialContainer() {
-		super();
-	}
-
     protected AbstractSequentialContainer(QPrivateConstructor p) {
 		super(p);
 	}

@@ -140,6 +140,7 @@ final class BundleGenerator {
 		QCommandLineOption versionOption = new QCommandLineOption(QStringList.of("target-version"), "Qt version", "version");
 	    QCommandLineOption utilitiesOption = new QCommandLineOption(QStringList.of("utilities"), "Path to android utilities.\nExamples:\n--utilities=utilities/QtAndroidBindings.jar", "file");
 	    QCommandLineOption utilitiesLocationOption = new QCommandLineOption(QStringList.of("utilities-location"), "Directory containing android utilities", "path");
+	    QCommandLineOption forceDebugInfoOption = new QCommandLineOption(QStringList.of("force-debug-info"), "Forces to also bundle release debug info if available");
 		parser.addOptions(Arrays.asList(platformOption, dirOption, 
 				configurationOption, 
 				qtdirOption, 
@@ -153,6 +154,7 @@ final class BundleGenerator {
 				translationsOption,
 				versionOption, 
 				utilitiesOption, 
+				forceDebugInfoOption,
 				utilitiesLocationOption));
     	parser.process(new QStringList(args));
 		QStringList unusedArguments = new QStringList(parser.positionalArguments());
@@ -161,6 +163,7 @@ final class BundleGenerator {
 		if(unusedArguments.size()>1)
 			throw new Error("Qt bundle generation, illegal argument: "+unusedArguments.join(", "));
 		boolean isDebug = parser.isSet(configurationOption) && parser.value(configurationOption).equals("debug");
+		boolean isForceDebugInfo = parser.isSet(forceDebugInfoOption);
 		File targetDir = new File(parser.isSet(dirOption) ? parser.value(dirOption) : System.getProperty("user.dir"));
 		File qtdir = null;
 		File qtbase = null;
@@ -452,7 +455,7 @@ final class BundleGenerator {
 				if(!targetDir.exists())
 					targetDir.mkdirs();
 				for (QPair<String, File> qPair : qtdirs) {
-					generateBundles(targetDir, qPair.second, qPair.first, androidBindingsURL, isDebug, isMinGWBuilt, version);
+					generateBundles(targetDir, qPair.second, qPair.first, androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
 				}
 			}else if(parser.isSet(qtbaseOption)) {
 				throw new Error(String.format("Qt bundle generation: Unable to find Qt in directory specified by --%1$s.", qtbaseOption.valueName()));
@@ -507,12 +510,12 @@ final class BundleGenerator {
 			else
 				version = null;
 			if("android".equals(osArchName)) {
-				generateBundles(targetDir, qtdir, "android-arm64", androidBindingsURL, isDebug, isMinGWBuilt, version);
-				generateBundles(targetDir, qtdir, "android-arm", androidBindingsURL, isDebug, isMinGWBuilt, version);
-				generateBundles(targetDir, qtdir, "android-x64", androidBindingsURL, isDebug, isMinGWBuilt, version);
-				generateBundles(targetDir, qtdir, "android-x86", androidBindingsURL, isDebug, isMinGWBuilt, version);
+				generateBundles(targetDir, qtdir, "android-arm64", androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
+				generateBundles(targetDir, qtdir, "android-arm", androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
+				generateBundles(targetDir, qtdir, "android-x64", androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
+				generateBundles(targetDir, qtdir, "android-x86", androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
 			}else {
-				generateBundles(targetDir, qtdir, osArchName, androidBindingsURL, isDebug, isMinGWBuilt, version);
+				generateBundles(targetDir, qtdir, osArchName, androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
 			}
 		}else if(parser.isSet(binsOption)
 				|| parser.isSet(libsOption)
@@ -559,7 +562,7 @@ final class BundleGenerator {
 			if(isMinGWBuilt==null) {
 				isMinGWBuilt = binDir.getParentFile().getName().startsWith("mingw");
 			}
-			generateBundles(targetDir, binDir, libDir, pluginsDir, qmlDir, libExecDir, resourcesDir, translationsDir, osArchName, androidBindingsURL, isDebug, isMinGWBuilt, version);
+			generateBundles(targetDir, binDir, libDir, pluginsDir, qmlDir, libExecDir, resourcesDir, translationsDir, osArchName, androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
 		}else {
 			if(args.length==1)
 				parser.showHelp();
@@ -606,7 +609,7 @@ final class BundleGenerator {
 		return null;
 	}
 	
-	private static void generateBundles(File targetDir, File qtdir, String osArchName, URL androidBindingsURL, boolean isDebug, boolean isMinGWBuilt, QVersionNumber version) {
+	private static void generateBundles(File targetDir, File qtdir, String osArchName, URL androidBindingsURL, boolean isDebug, boolean isForceDebugInfo, boolean isMinGWBuilt, QVersionNumber version) {
 		File binDir = new File(qtdir, "bin");
 		File libDir = new File(qtdir, "lib");
 		File pluginsDir = new File(qtdir, "plugins");
@@ -614,7 +617,7 @@ final class BundleGenerator {
 		File libexecDir = new File(qtdir, "libexec");
 		File resourcesDir = new File(qtdir, "resources");
 		File translationsDir = new File(qtdir, "translations");
-		generateBundles(targetDir, binDir, libDir, pluginsDir, qmlDir, libexecDir, resourcesDir, translationsDir, osArchName, androidBindingsURL, isDebug, isMinGWBuilt, version);
+		generateBundles(targetDir, binDir, libDir, pluginsDir, qmlDir, libexecDir, resourcesDir, translationsDir, osArchName, androidBindingsURL, isDebug, isForceDebugInfo, isMinGWBuilt, version);
 	}
 	
 	private static void generateBundles(File targetDir, 
@@ -627,7 +630,8 @@ final class BundleGenerator {
 										File translationsDir,
 										String osArchName, 
 										URL androidBindingsURL, 
-										boolean isDebug, 
+										boolean isDebug,
+										boolean isForceDebugInfo, 
 										boolean isMinGWBuilt, 
 										QVersionNumber version) {
 		if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
@@ -1073,7 +1077,7 @@ final class BundleGenerator {
 											libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libName+".framework.dSYM");
 											doc.getDocumentElement().appendChild(libraryElement);									
 										}else if(debugSym.isDirectory()) {
-											copyDirectory(debugSym, jarFile, jarUtilFile, libraryFile.getParentFile().getName(), osArchName, isDebug, doc);
+											copyDirectory(debugSym, jarFile, jarUtilFile, libraryFile.getParentFile().getName(), osArchName, isDebug, isForceDebugInfo, doc);
 										}
 									}
 									String libFilePath = libraryFile.getName()+(version.majorVersion()==5 ? "/Versions/5" : "/Versions/A");
@@ -1085,10 +1089,10 @@ final class BundleGenerator {
 									doc.getDocumentElement().appendChild(libraryElement);
 									File macResourcesDir = new File(versionDir, "Resources");
 									if(macResourcesDir.isDirectory())
-										copyDirectory(macResourcesDir, jarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, doc);
+										copyDirectory(macResourcesDir, jarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, isForceDebugInfo, doc);
 									File helpersDir = new File(versionDir, "Helpers");
 									if(helpersDir.isDirectory())
-										copyDirectory(helpersDir, jarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, doc);
+										copyDirectory(helpersDir, jarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, isForceDebugInfo, doc);
 									Element symlinkElement = doc.createElement("symlink");
 									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current");
 									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libFilePath);
@@ -1225,7 +1229,7 @@ final class BundleGenerator {
 																								String plugin = libResource.getParentFile().getName();
 																								File pluginFile = plugins.remove(plugin);
 																								if(pluginFile!=null) {
-																									copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins", osArchName, isDebug, doc);
+																									copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, doc);
 																								}
 																							}
 																						}
@@ -1253,7 +1257,7 @@ final class BundleGenerator {
 								libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
 								doc.getDocumentElement().appendChild(libraryElement);
 								
-								if(isDebug) {
+								if(isDebug || isForceDebugInfo) {
 									File pdb = new File(libraryFile.getParentFile(), libraryFile.getName().substring(0, libraryFile.getName().length()-3)+"pdb");
 									if(pdb.exists()) {
 										jarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
@@ -1262,7 +1266,7 @@ final class BundleGenerator {
 										libraryElement = doc.createElement("file");
 										libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
 										doc.getDocumentElement().appendChild(libraryElement);
-									}else {
+									}else if(isDebug){
 										pdb = new File(libraryFile.getParentFile(), libraryFile.getName()+".debug");
 										if(pdb.exists()) {
 											jarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
@@ -1279,11 +1283,11 @@ final class BundleGenerator {
 							switch(libPair.getKey()) {
 							case "webenginecore": {
 									if(resourcesDir.isDirectory()) {
-										copyDirectory(resourcesDir, jarFile, jarUtilFile, "", osArchName, isDebug, doc);
+										copyDirectory(resourcesDir, jarFile, jarUtilFile, "", osArchName, isDebug, isForceDebugInfo, doc);
 									}
 									File qtwebengine_locales;
 									if(translationsDir.isDirectory() && (qtwebengine_locales = new File(translationsDir, "qtwebengine_locales")).isDirectory()) {
-										copyDirectory(qtwebengine_locales, jarFile, jarUtilFile, "translations/", osArchName, isDebug, doc);
+										copyDirectory(qtwebengine_locales, jarFile, jarUtilFile, "translations/", osArchName, isDebug, isForceDebugInfo, doc);
 									}
 									File exe = null;
 									String path = null;
@@ -1318,6 +1322,12 @@ final class BundleGenerator {
 																if(pluginFile.getName().endsWith("d.pdb")) {
 																	String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
 																	if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																		continue;
+																}else continue;
+															}else if(isForceDebugInfo) {
+																if(pluginFile.getName().endsWith("d.pdb")) {
+																	String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																	if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
 																		continue;
 																}else continue;
 															}else {
@@ -1360,7 +1370,7 @@ final class BundleGenerator {
 													libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
 													doc.getDocumentElement().appendChild(libraryElement);
 												}else if(pluginFile.getName().endsWith("dSYM") && isDebug) {
-													copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, doc);
+													copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, isForceDebugInfo, doc);
 												}
 											}
 										}
@@ -1379,6 +1389,12 @@ final class BundleGenerator {
 															if(pluginFile.getName().endsWith("d.pdb")) {
 																String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
 																if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																	continue;
+															}else continue;
+														}else if(isForceDebugInfo) {
+															if(pluginFile.getName().endsWith("d.pdb")) {
+																String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
 																	continue;
 															}else continue;
 														}else {
@@ -1421,7 +1437,7 @@ final class BundleGenerator {
 												libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
 												doc.getDocumentElement().appendChild(libraryElement);
 											}else if(pluginFile.getName().endsWith("dSYM") && isDebug) {
-												copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, doc);
+												copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, isForceDebugInfo, doc);
 											}
 										}
 									}
@@ -1436,28 +1452,28 @@ final class BundleGenerator {
 							for(String plugin : associatedPlugins) {
 								File pluginFile = plugins.remove(plugin);
 								if(pluginFile!=null && pluginFile.isDirectory()) {
-									copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins", osArchName, isDebug, doc);
+									copyDirectory(pluginFile, jarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, doc);
 								}
 							}
 						}
 						if("pdfquick".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/Pdf"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/Pdf"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("waylandclient".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Client"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Client"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("waylandcompositor".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Compositor"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Compositor"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("virtualkeyboard".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/VirtualKeyboard"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/VirtualKeyboard"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("qml".equals(libPair.getKey())) {
 							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/LocalStorage",
 									"QtQml",
 									"QtQuick/Window",
-									"QtQuick/tooling"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+									"QtQuick/tooling"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 							if(version.majorVersion()==5) {
-								copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/LocalStorage"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+								copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/LocalStorage"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 							}
 						}else if("qt3dcore".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/Scene2D", "QtQuick/Scene3D"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/Scene2D", "QtQuick/Scene3D"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("quick".equals(libPair.getKey())) {
 							copyQmlPaths(qmllibs, Arrays.asList(
 									"QtQuick/NativeStyle",
@@ -1470,7 +1486,7 @@ final class BundleGenerator {
 									"QtQuick/Controls",
 									"QtQuick/Dialogs",
 									"QtQuick/Layouts",
-									"QtQuick/Timeline"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+									"QtQuick/Timeline"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 							if(version.majorVersion()==5) {
 								copyQmlPaths(qmllibs, Arrays.asList("QtGraphicalEffects",
 										"QtQuick/Window.2",
@@ -1479,12 +1495,12 @@ final class BundleGenerator {
 										"QtQuick/Particles.2",
 										"QtQuick.2",
 										"QtQuick/Extras",
-										"QtQuick/PrivateWidgets"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+										"QtQuick/PrivateWidgets"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 							}
 						}else if("webenginequick".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWebEngine"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtWebEngine"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("xmlpatterns".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/XmlListModel"), jarFile, jarUtilFile, osArchName, isDebug, doc);
+							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/XmlListModel"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}
 						if(!"core".equals(libPair.getKey())) {
 							for(String key : new ArrayList<>(qmllibs.keySet())) {
@@ -1529,7 +1545,7 @@ final class BundleGenerator {
 								if(libName.equals(libPair.getKey())) {
 									if(!libraries.containsKey(libPair.getKey()+"qml")
 											&& !libraries.containsKey(libPair.getKey()+"quick")) {
-										copyQmlPaths(qmllibs, Collections.singletonList(key), jarFile, jarUtilFile, osArchName, isDebug, doc);
+										copyQmlPaths(qmllibs, Collections.singletonList(key), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 									}
 								}
 							}
@@ -1615,7 +1631,7 @@ final class BundleGenerator {
 						doc.getDocumentElement().setAttribute("system", osArchName);
 						doc.getDocumentElement().setAttribute("version", version.toString());
 						doc.getDocumentElement().setAttribute("configuration", isDebug ? "debug" : "release");
-						copyDirectory(libPair.getValue(), jarFile, jarUtilFile, "plugins", osArchName, isDebug, doc);
+						copyDirectory(libPair.getValue(), jarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, doc);
 						jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
 						manifest.write(jarFile);
 						jarFile.closeEntry();
@@ -1671,7 +1687,7 @@ final class BundleGenerator {
 						path.add("qml");
 						path.addAll(Arrays.asList(libPair.getKey().split("/")));
 						path.remove(path.size()-1);
-						copyDirectory(libPair.getValue(), jarFile, jarUtilFile, String.join("/", path), osArchName, isDebug, doc);
+						copyDirectory(libPair.getValue(), jarFile, jarUtilFile, String.join("/", path), osArchName, isDebug, isForceDebugInfo, doc);
 						jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
 						manifest.write(jarFile);
 						jarFile.closeEntry();
@@ -1693,7 +1709,7 @@ final class BundleGenerator {
 		}
 	}
 	
-	private static void copyQmlPaths(Map<String,File> qmllibs, Iterable<String> paths, JarOutputStream jarFile, JarOutputStream jarUtilFile, String osArchName, boolean isDebug, Document doc) throws IOException {
+	private static void copyQmlPaths(Map<String,File> qmllibs, Iterable<String> paths, JarOutputStream jarFile, JarOutputStream jarUtilFile, String osArchName, boolean isDebug, boolean isForceDebugInfo, Document doc) throws IOException {
 		for (String path : paths) {
 			File qmlLib = qmllibs.remove(path);
 			if(qmlLib!=null && qmlLib.isDirectory()) {
@@ -1701,12 +1717,12 @@ final class BundleGenerator {
 				_path.add("qml");
 				_path.addAll(Arrays.asList(path.split("/")));
 				_path.remove(_path.size()-1);
-				copyDirectory(qmlLib, jarFile, jarUtilFile, String.join("/", _path), osArchName, isDebug, doc);
+				copyDirectory(qmlLib, jarFile, jarUtilFile, String.join("/", _path), osArchName, isDebug, isForceDebugInfo, doc);
 			}
 		}
 	}
 	
-	private static void copyDirectory(File dir, JarOutputStream jarFile, JarOutputStream jarUtilFile, String path, String osArchName, boolean isDebug, Document doc) throws IOException {
+	private static void copyDirectory(File dir, JarOutputStream jarFile, JarOutputStream jarUtilFile, String path, String osArchName, boolean isDebug, boolean isForceDebugInfo, Document doc) throws IOException {
 		if(osArchName.equals("macos") && !isDebug && dir.getName().endsWith(".dSYM"))
 			return;
 		if(path==null)
@@ -1741,7 +1757,7 @@ final class BundleGenerator {
 					continue;
 				if(osArchName.equals("macos") && !isDebug && file.getName().endsWith(".dSYM"))
 					continue;
-				copyDirectory(file, jarFile, jarUtilFile, path + dir.getName() + "/", osArchName, isDebug, doc);
+				copyDirectory(file, jarFile, jarUtilFile, path + dir.getName() + "/", osArchName, isDebug, isForceDebugInfo, doc);
 			}else {
 				if(file.getName().contains("qsvg") || file.getName().contains("qtvirtualkeyboardplugin")) {
 					continue;
@@ -1755,7 +1771,13 @@ final class BundleGenerator {
 						if(isDebug) {
 							if(file.getName().endsWith("d.pdb")) {
 								String libNoSuffix = file.getName().substring(0, file.getName().length()-5);
-								if(new File(dir, libNoSuffix+"dd.pdb").exists())
+								if(new File(file.getParentFile(), libNoSuffix+"dd.pdb").exists())
+									continue;
+							}else continue;
+						}else if(isForceDebugInfo) {
+							if(file.getName().endsWith("d.pdb")) {
+								String libNoSuffix = file.getName().substring(0, file.getName().length()-5);
+								if(new File(file.getParentFile(), libNoSuffix+".pdb").exists())
 									continue;
 							}else continue;
 						}else {

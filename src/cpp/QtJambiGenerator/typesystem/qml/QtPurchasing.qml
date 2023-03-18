@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.purchasing"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtPurchasing"
     module: "qtjambi.purchasing"
     description: "Enables in-app purchase of products in Qt applications."

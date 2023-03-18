@@ -165,7 +165,8 @@ struct Modification {
         NoExcept =              0x02000000,
         BlockExcept =           0x10000000,
         RethrowExcept =         0x20000000,
-        IsPaintMethod =         0x20000000
+        IsPaintMethod =         0x40000000,
+        NoKotlinGetter =        0x80000000
     };
 
     Modification() : modifiers(0) { }
@@ -193,6 +194,7 @@ struct Modification {
     bool isNoExcept() const { return modifiers & NoExcept; }
     bool isBlockExceptions() const { return modifiers & BlockExcept; }
     bool isRethrowExceptions() const { return modifiers & RethrowExcept; }
+    bool isNoKotlinGetter() const { return modifiers & NoKotlinGetter; }
 
     void setRenamedTo(const QString &name) { renamedToName = name; }
     QString renamedTo() const { return renamedToName; }
@@ -200,6 +202,22 @@ struct Modification {
 
     uint modifiers;
     QString renamedToName;
+};
+
+struct Delegate{
+    QString name;
+    bool isDeprecated;
+    bool isSelfReturning;
+    uint modifiers;
+    CodeSnipList snips;
+
+    Modification::Modifiers accessModifier() const { return Modification::Modifiers(modifiers & Modification::AccessModifierMask); }
+    bool isPrivate() const { return accessModifier() == Modification::Private; }
+    bool isProtected() const { return accessModifier() == Modification::Protected; }
+    bool isPublic() const { return accessModifier() == Modification::Public; }
+    bool isFriendly() const { return accessModifier() == Modification::Friendly; }
+    bool isFinal() const { return modifiers & Modification::Final; }
+    bool isNonFinal() const { return modifiers & Modification::NonFinal && !(modifiers & Modification::NativeDeclFinal); }
 };
 
 struct AbstractFunctionModification: public Modification {
@@ -213,6 +231,7 @@ struct AbstractFunctionModification: public Modification {
     QString targetType;
     QString proxyCall;
     QList<ArgumentModification> argument_mods;
+    QList<Delegate> delegates;
 };
 
 struct Parameter{

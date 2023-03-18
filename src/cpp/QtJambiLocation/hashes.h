@@ -34,179 +34,196 @@
 #include <QtLocation/QtLocation>
 #include <QtJambiPositioning/hashes.h>
 
-inline hash_type qHash(const QPlaceUser &value)
+inline hash_type qHash(const QPlaceUser &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.userId());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.userId());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceContentRequest &value)
+inline hash_type qHash(const QPlaceContentRequest &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.placeId());
-    hashCode = hashCode * 31 + qHash(value.limit());
-    hashCode = hashCode * 31 + qHash(value.contentType());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.placeId());
+    seed = hash(seed, value.limit());
+    seed = hash(seed, value.contentType());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceRatings &value)
+inline hash_type qHash(const QPlaceRatings &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.count());
-    hashCode = hashCode * 31 + qHash(value.average());
-    hashCode = hashCode * 31 + qHash(value.maximum());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.count());
+    seed = hash(seed, value.average());
+    seed = hash(seed, value.maximum());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceIcon &value)
+inline hash_type qHash(const QPlaceIcon &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.url());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.url());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceSearchResult &value)
+inline hash_type qHash(const QPlaceSearchResult &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.icon());
-    hashCode = hashCode * 31 + qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.title());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.icon());
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.title());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceContactDetail &value)
+inline hash_type qHash(const QPlaceContactDetail &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.label());
-    hashCode = hashCode * 31 + qHash(value.value());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.label());
+    seed = hash(seed, value.value());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceCategory &value)
+inline hash_type qHash(const QPlaceCategory &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.icon());
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.categoryId());
-    hashCode = hashCode * 31 + qHash(value.visibility());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.icon());
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.categoryId());
+    seed = hash(seed, value.visibility());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceAttribute &value)
+inline hash_type qHash(const QPlaceAttribute &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.label());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.text());
+    seed = hash(seed, value.label());
+    seed = hash(seed, value.isEmpty());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceSupplier &value)
+inline hash_type qHash(const QPlaceSupplier &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.url());
-    hashCode = hashCode * 31 + qHash(value.icon());
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.supplierId());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.url());
+    seed = hash(seed, value.icon());
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.supplierId());
+    seed = hash(seed, value.isEmpty());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoRouteRequest &value)
+inline hash_type qHash(const QGeoRouteRequest &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.waypoints());
-    hashCode = hashCode * 31 + qHash(value.travelModes());
-    hashCode = hashCode * 31 + qHash(value.excludeAreas());
-    hashCode = hashCode * 31 + qHash(value.featureTypes());
-    hashCode = hashCode * 31 + qHash(value.departureTime());
-    hashCode = hashCode * 31 + qHash(value.segmentDetail());
-    hashCode = hashCode * 31 + qHash(value.maneuverDetail());
-    hashCode = hashCode * 31 + qHash(value.routeOptimization());
-    hashCode = hashCode * 31 + qHash(value.numberAlternativeRoutes());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.waypoints());
+    seed = hash(seed, value.travelModes());
+    seed = hash(seed, value.excludeAreas());
+    seed = hash(seed, value.featureTypes());
+    seed = hash(seed, value.departureTime());
+    seed = hash(seed, value.segmentDetail());
+    seed = hash(seed, value.maneuverDetail());
+    seed = hash(seed, value.routeOptimization());
+    seed = hash(seed, value.numberAlternativeRoutes());
+    return seed;
 }
 
-inline hash_type qHash(const QPlace &value)
+inline hash_type qHash(const QPlace &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.icon());
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.placeId());
-    hashCode = hashCode * 31 + qHash(value.ratings());
-    hashCode = hashCode * 31 + qHash(value.location());
-    hashCode = hashCode * 31 + qHash(value.supplier());
-    hashCode = hashCode * 31 + qHash(value.categories());
-    hashCode = hashCode * 31 + qHash(value.primaryFax());
-    hashCode = hashCode * 31 + qHash(value.visibility());
-    hashCode = hashCode * 31 + qHash(value.attribution());
-    hashCode = hashCode * 31 + qHash(value.contactTypes());
-    hashCode = hashCode * 31 + qHash(value.primaryEmail());
-    hashCode = hashCode * 31 + qHash(value.primaryPhone());
-    hashCode = hashCode * 31 + qHash(value.detailsFetched());
-    hashCode = hashCode * 31 + qHash(value.primaryWebsite());
-    hashCode = hashCode * 31 + qHash(value.extendedAttributeTypes());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.icon());
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.placeId());
+    seed = hash(seed, value.ratings());
+    seed = hash(seed, value.location());
+    seed = hash(seed, value.supplier());
+    seed = hash(seed, value.categories());
+    seed = hash(seed, value.primaryFax());
+    seed = hash(seed, value.visibility());
+    seed = hash(seed, value.attribution());
+    seed = hash(seed, value.contactTypes());
+    seed = hash(seed, value.primaryEmail());
+    seed = hash(seed, value.primaryPhone());
+    seed = hash(seed, value.detailsFetched());
+    seed = hash(seed, value.primaryWebsite());
+    seed = hash(seed, value.extendedAttributeTypes());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceMatchRequest &value)
+inline hash_type qHash(const QPlaceMatchRequest &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.places());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.places());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceSearchRequest &value)
+inline hash_type qHash(const QPlaceSearchRequest &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.limit());
-    hashCode = hashCode * 31 + qHash(value.categories());
-    hashCode = hashCode * 31 + qHash(value.searchArea());
-    hashCode = hashCode * 31 + qHash(value.searchTerm());
-    hashCode = hashCode * 31 + qHash(value.relevanceHint());
-    hashCode = hashCode * 31 + qHash(value.visibilityScope());
-    hashCode = hashCode * 31 + qHash(value.recommendationId());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.limit());
+    seed = hash(seed, value.categories());
+    seed = hash(seed, value.searchArea());
+    seed = hash(seed, value.searchTerm());
+    seed = hash(seed, value.relevanceHint());
+    seed = hash(seed, value.visibilityScope());
+    seed = hash(seed, value.recommendationId());
+    return seed;
 }
 
-inline hash_type qHash(const QPlaceContent &value)
+inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.user());
-    hashCode = hashCode * 31 + qHash(value.supplier());
-    hashCode = hashCode * 31 + qHash(value.attribution());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.user());
+    seed = hash(seed, value.supplier());
+    seed = hash(seed, value.attribution());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoManeuver &value)
+inline hash_type qHash(const QGeoManeuver &value, hash_type seed = 0)
 {
     if(!value.isValid())
-        return 0;
-    hash_type hashCode = qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.waypoint());
-    hashCode = hashCode * 31 + qHash(value.instructionText());
-    hashCode = hashCode * 31 + qHash(value.timeToNextInstruction());
-    hashCode = hashCode * 31 + qHash(value.distanceToNextInstruction());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.waypoint());
+    seed = hash(seed, value.instructionText());
+    seed = hash(seed, value.timeToNextInstruction());
+    seed = hash(seed, value.distanceToNextInstruction());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoRouteSegment &value)
+inline hash_type qHash(const QGeoRouteSegment &value, hash_type seed = 0)
 {
     if(!value.isValid())
-        return 0;
-    hash_type hashCode = qHash(value.path());
-    hashCode = hashCode * 31 + qHash(value.maneuver());
-    hashCode = hashCode * 31 + qHash(value.travelTime());
-    hashCode = hashCode * 31 + qHash(value.distance());
-    hashCode = hashCode * 31 + qHash(value.isLegLastSegment());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.path());
+    seed = hash(seed, value.maneuver());
+    seed = hash(seed, value.travelTime());
+    seed = hash(seed, value.distance());
+    seed = hash(seed, value.isLegLastSegment());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoRoute &value)
+inline hash_type qHash(const QGeoRoute &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.path());
-    hashCode = hashCode * 31 + qHash(value.bounds());
-    hashCode = hashCode * 31 + qHash(value.request());
-    hashCode = hashCode * 31 + qHash(value.routeId());
-    hashCode = hashCode * 31 + qHash(value.distance());
-    hashCode = hashCode * 31 + qHash(value.routeLegs());
-    hashCode = hashCode * 31 + qHash(value.travelMode());
-    hashCode = hashCode * 31 + qHash(value.travelTime());
-    hashCode = hashCode * 31 + qHash(value.firstRouteSegment());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.path());
+    seed = hash(seed, value.bounds());
+    seed = hash(seed, value.request());
+    seed = hash(seed, value.routeId());
+    seed = hash(seed, value.distance());
+    seed = hash(seed, value.routeLegs());
+    seed = hash(seed, value.travelMode());
+    seed = hash(seed, value.travelTime());
+    seed = hash(seed, value.firstRouteSegment());
+    return seed;
 }
 
 #endif // QTJAMBI_LOCATION_HASHES_H

@@ -5,10 +5,13 @@
 
     <target name="tools.generator.run" unless="${skip-generate}">
         <mkdir dir="${generator.outputdir}"/>
+		<!--options="- - debug-level=full"-->
         <generator dir="${generator.builddir}/../bin"
                 importdirectories="${basedir}/src/cpp/QtJambiGenerator"
                 outputDirectory="${generator.outputdir}"
                 generatorDirectory="${generator.builddir}/../bin"
+                nullness="${qtjambi.generate.nullness}"
+                kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
                 qtdocdirectory="${qtjambi.qt.docdir}"
                 qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
                 qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"

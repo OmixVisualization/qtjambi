@@ -75,10 +75,6 @@ public abstract class AbstractAssociativeContainer<K,V> extends QtObject impleme
 		return constBegin().toJavaMapIterator();
 	}
 	
-    protected AbstractAssociativeContainer() {
-		super();
-	}
-
     protected AbstractAssociativeContainer(QPrivateConstructor p) {
 		super(p);
 	}

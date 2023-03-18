@@ -48,7 +48,7 @@
 #include <qdebug.h>
 
 DeclaratorCompiler::DeclaratorCompiler(Binder *binder)
-        : _M_binder(binder), _M_token_stream(binder->tokenStream()) {
+        : _M_binder(binder), _M_token_stream(binder->tokenStream()), _M_operatorType(OperatorType::None) {
 }
 
 void DeclaratorCompiler::run(DeclaratorAST *node) {
@@ -71,6 +71,8 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
 
         name_cc.run(decl->id);
         _M_id = name_cc.name();
+        _M_operatorType = name_cc.operatorType();
+        _M_operatorCastType = name_cc.operatorCastType();
         _M_function = (node->parameter_declaration_clause != nullptr);
         if (node->parameter_declaration_clause && node->parameter_declaration_clause->ellipsis)
             _M_variadics = true;
@@ -125,7 +127,7 @@ void DeclaratorCompiler::visitPtrOperator(PtrOperatorAST *node) {
 void DeclaratorCompiler::visitParameterDeclaration(ParameterDeclarationAST *node) {
     Parameter p;
 
-    TypeCompiler type_cc(_M_binder);
+    //TypeCompiler type_cc(_M_binder);
     DeclaratorCompiler decl_cc(_M_binder);
 
     decl_cc.run(node->declarator);

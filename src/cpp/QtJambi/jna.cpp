@@ -188,15 +188,16 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                                                   0,
                                                                   __jni_env->NewStringUTF("UTF-8"));
                     ptr = *reinterpret_cast<QFunctionPointer*>(peer);
-                    QtJambiLink::createLinkForObject(
+                    QtJambiLink::createLinkForNativeObject(
                             __jni_env,
                             val,
                             new QFunctionPointer(ptr),
                             LINK_NAME_ARG(nullptr)
                             false,
                             false,
-                            &delete_callback_pointer
-                        )->setJavaOwnership(__jni_env);
+                            &delete_callback_pointer,
+                            QtJambiLink::Ownership::Java
+                        );
                     {
                         QWriteLocker locker(gPointerLock());
                         (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(__jni_env, val);
@@ -412,7 +413,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     successActions.append([array, control, length, val, typeId](JNIEnv * env){
                                         for(jsize i = 0; i<length; ++i){
                                             if(control[i] != array[i]){
-                                                env->SetObjectArrayElement(jobjectArray(val), i, QtJambiAPI::convertNativeToJavaObject(env, array[i], nullptr, *typeId, false, false));
+                                                env->SetObjectArrayElement(jobjectArray(val), i, internal_convertNativeToJavaObject(env, array[i], *typeId, nullptr, NativeToJavaConversionMode::None));
                                             }
                                         }
                                     });
@@ -444,7 +445,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                 successActions.append([array, control, length, val, typeId](JNIEnv * env){
                                     for(jsize i = 0; i<length; ++i){
                                         if(control[i] != array[i]){
-                                            env->SetObjectArrayElement(jobjectArray(val), i, QtJambiAPI::convertNativeToJavaObject(env, array[i], nullptr, *typeId, false, false));
+                                            env->SetObjectArrayElement(jobjectArray(val), i, internal_convertNativeToJavaObject(env, array[i], *typeId, nullptr, NativeToJavaConversionMode::None));
                                         }
                                     }
                                 });
@@ -515,7 +516,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                             continue;
                                         }
                                     }
-                                    jobject newObj = QtJambiAPI::convertNativeToJavaObject(env, array+size_t(i)*size, nullptr, *typeId, true, false);
+                                    jobject newObj = internal_convertNativeToJavaObject(env, array+size_t(i)*size, *typeId, nullptr, NativeToJavaConversionMode::MakeCopyOfValues);
                                     if(!Java::Runtime::Objects::equals(env, obj, newObj)){
                                         env->SetObjectArrayElement(jobjectArray(val), i, newObj);
                                     }
@@ -555,7 +556,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     successActions.append([array, control, length, val, typeId](JNIEnv * env){
                                         for(jsize i = 0; i<length; ++i){
                                             if(control[i] != array[i]){
-                                                env->SetObjectArrayElement(jobjectArray(val), i, QtJambiAPI::convertNativeToJavaObject(env, array[i], nullptr, *typeId, false, false));
+                                                env->SetObjectArrayElement(jobjectArray(val), i, internal_convertNativeToJavaObject(env, array[i], *typeId, nullptr, NativeToJavaConversionMode::None));
                                             }
                                         }
                                     });
@@ -563,7 +564,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     successActions.append([array, control, length, val, argClassType](JNIEnv * env){
                                         for(jsize i = 0; i<length; ++i){
                                             if(control[i] != array[i]){
-                                                env->SetObjectArrayElement(jobjectArray(val), i, QtJambiAPI::convertNativeToJavaObject(env, array[i], argClassType, false, false));
+                                                env->SetObjectArrayElement(jobjectArray(val), i, QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, array[i], argClassType));
                                             }
                                         }
                                     });
@@ -627,7 +628,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                                     continue;
                                                 }
                                             }
-                                            jobject newObj = QtJambiAPI::convertNativeToJavaObject(env, array+size_t(i)*size, nullptr, *typeId, true, false);
+                                            jobject newObj = internal_convertNativeToJavaObject(env, array+size_t(i)*size, *typeId, nullptr, NativeToJavaConversionMode::MakeCopyOfValues);
                                             if(!Java::Runtime::Objects::equals(env, obj, newObj)){
                                                 env->SetObjectArrayElement(jobjectArray(val), i, newObj);
                                             }
@@ -645,7 +646,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                                     continue;
                                                 }
                                             }
-                                            jobject newObj = QtJambiAPI::convertNativeToJavaObject(env, array+size_t(i)*size, argClassType, true, false);
+                                            jobject newObj = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, array+size_t(i)*size, argClassType);
                                             if(!Java::Runtime::Objects::equals(env, obj, newObj)){
                                                 env->SetObjectArrayElement(jobjectArray(val), i, newObj);
                                             }
@@ -1569,24 +1570,24 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
              || AbstractContainerAccess::isPointerType(QMetaType(registerMetaType(__jni_env, returnClassType, false, false)))){
         switch(length){
         case 0:
-            return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)()>(*__qt_this)(), returnClassType, false);
+            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)()>(*__qt_this)(), returnClassType);
         case 1:
             {
                 jobject arg = __jni_env->GetObjectArrayElement(arguments, 0);
                 if(Java::Runtime::Byte::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Short::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Integer::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Long::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Double::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Float::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Boolean::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType, false);
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
                 }else{
                     const QMetaType* metaType = qtjambi_cast<const QMetaType*>(__jni_env, Java::QtCore::QGenericArgument::metaType(__jni_env, arg));
                     if(Java::QtCore::QGenericArgument::isInstanceOf(__jni_env, arg))
@@ -1601,7 +1602,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
 #endif
                                                                 )){
                             void*const* ptr = reinterpret_cast<void*const*>(variant.data());
-                            return QtJambiAPI::convertNativeToJavaObject(__jni_env, reinterpret_cast<void*(*)(const void*)>(*__qt_this)(*ptr), returnClassType, false);
+                            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, reinterpret_cast<void*(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
                         }
                     }
                 }
@@ -1785,9 +1786,13 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
         }
 #endif
         if(returnTypeId){
-            result = QtJambiAPI::convertNativeToJavaObject(__jni_env, ptr, nullptr, *returnTypeId, !isAllocated, false);
+            result = internal_convertNativeToJavaObject(__jni_env, ptr, *returnTypeId, nullptr, !isAllocated ? NativeToJavaConversionMode::MakeCopyOfValues : NativeToJavaConversionMode::None);
         }else {
-            result = QtJambiAPI::convertNativeToJavaObject(__jni_env, ptr, returnClassType, !isAllocated, false);
+            if(!isAllocated){
+                result = QtJambiAPI::convertNativeToJavaObjectAsCopy(__jni_env, ptr, returnClassType);
+            }else{
+                result = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, ptr, returnClassType);
+            }
         }
         if(result && returnClassType && __jni_env->IsInstanceOf(result, returnClassType)){
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, result)){
@@ -1832,15 +1837,16 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                     }
                     if(!resolved){
                         result = Java::QtCore::QFunctionPointerUtil::createProxy(__jni_env, returnClassType);
-                        QtJambiLink::createLinkForObject(
+                        QtJambiLink::createLinkForNativeObject(
                                 __jni_env,
                                 result,
                                 new QFunctionPointer(fp),
                                 LINK_NAME_ARG(nullptr)
                                 false,
                                 false,
-                                &delete_callback_pointer
-                            )->setJavaOwnership(__jni_env);
+                                &delete_callback_pointer,
+                                QtJambiLink::Ownership::Java
+                            );
                         QWriteLocker locker(gPointerLock());
                         (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
                     }
@@ -1850,9 +1856,13 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                         _ptr = &ptr;
                     }
                     if(returnTypeId){
-                        result = QtJambiAPI::convertNativeToJavaObject(__jni_env, _ptr, nullptr, *returnTypeId, isFunctionPointer || (!isReferenceMetaType && (returnPointerOrReference==0 || returnPointerOrReference==-2)), false);
+                        result = internal_convertNativeToJavaObject(__jni_env, _ptr, *returnTypeId, nullptr, isFunctionPointer || (!isReferenceMetaType && (returnPointerOrReference==0 || returnPointerOrReference==-2)) ? NativeToJavaConversionMode::MakeCopyOfValues : NativeToJavaConversionMode::None);
                     }else {
-                        result = QtJambiAPI::convertNativeToJavaObject(__jni_env, _ptr, returnClassType, isFunctionPointer || (!isReferenceMetaType && (returnPointerOrReference==0 || returnPointerOrReference==-2)), false);
+                        if(isFunctionPointer || (!isReferenceMetaType && (returnPointerOrReference==0 || returnPointerOrReference==-2))){
+                            result = QtJambiAPI::convertNativeToJavaObjectAsCopy(__jni_env, _ptr, returnClassType);
+                        }else{
+                            result = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, _ptr, returnClassType);
+                        }
                     }
                 }
             }
@@ -2131,15 +2141,16 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                                                               __jni_env->NewStringUTF("UTF-8"));
                 ptr = *reinterpret_cast<QFunctionPointer*>(peer);
                 QFunctionPointer fp = reinterpret_cast<QFunctionPointer>(ptr);
-                QtJambiLink::createLinkForObject(
+                QtJambiLink::createLinkForNativeObject(
                         __jni_env,
                         result,
                         new QFunctionPointer(ptr),
                         LINK_NAME_ARG(nullptr)
                         false,
                         false,
-                        &delete_callback_pointer
-                    )->setJavaOwnership(__jni_env);
+                        &delete_callback_pointer,
+                        QtJambiLink::Ownership::Java
+                    );
                 {
                     QWriteLocker locker(gPointerLock());
                     (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
@@ -2956,15 +2967,16 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                         }
                         if(!resolved){
                             convertedValue = Java::QtCore::QFunctionPointerUtil::createProxy(__jni_env, argClassType);
-                            QtJambiLink::createLinkForObject(
+                            QtJambiLink::createLinkForNativeObject(
                                     __jni_env,
                                     convertedValue,
                                     new QFunctionPointer(fp),
                                     LINK_NAME_ARG(nullptr)
                                     false,
                                     false,
-                                    &delete_callback_pointer
-                                )->setJavaOwnership(__jni_env);
+                                    &delete_callback_pointer,
+                                    QtJambiLink::Ownership::Java
+                                );
                             QWriteLocker locker(gPointerLock());
                             (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, convertedValue);
                         }
@@ -2974,9 +2986,13 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                             _ptr = &ptr;
                         }
                         if(typeId){
-                            convertedValue = QtJambiAPI::convertNativeToJavaObject(__jni_env, _ptr, nullptr, *typeId, isFunctionPointer || (!isReferenceMetaType && (argPointerOrReference==0 || argPointerOrReference==-2)), false);
+                            convertedValue = internal_convertNativeToJavaObject(__jni_env, _ptr, *typeId, nullptr, isFunctionPointer || (!isReferenceMetaType && (argPointerOrReference==0 || argPointerOrReference==-2)) ? NativeToJavaConversionMode::MakeCopyOfValues : NativeToJavaConversionMode::None);
                         }else {
-                            convertedValue = QtJambiAPI::convertNativeToJavaObject(__jni_env, _ptr, argClassType, isFunctionPointer || (!isReferenceMetaType && (argPointerOrReference==0 || argPointerOrReference==-2)), false);
+                            if(isFunctionPointer || (!isReferenceMetaType && (argPointerOrReference==0 || argPointerOrReference==-2))){
+                                convertedValue = QtJambiAPI::convertNativeToJavaObjectAsCopy(__jni_env, _ptr, argClassType);
+                            }else{
+                                convertedValue = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, _ptr, argClassType);
+                            }
                         }
                     }
                 }else if(Java::QtJambi::QtEnumerator::isAssignableFrom(__jni_env, argClassType)){
@@ -3162,7 +3178,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                                     }
                                                 }
                                             }
-                                            jobject result = QtJambiAPI::convertNativeToJavaObject(env, &ptr, nullptr, *targetTypeId, true, false);
+                                            jobject result = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &ptr, *targetTypeId);
                                             QWriteLocker locker(gPointerLock());
                                             (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
                                             return result;
@@ -3213,15 +3229,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                         exn2.raise();
                                     }
                                     jobject result = Java::QtCore::QFunctionPointerUtil::createProxy(env, functionalInterface);
-                                    QtJambiLink::createLinkForObject(
+                                    QtJambiLink::createLinkForNativeObject(
                                             env,
                                             result,
                                             new QFunctionPointer(ptr),
                                             LINK_NAME_ARG(nullptr)
                                             false,
                                             false,
-                                            &delete_callback_pointer
-                                        )->setJavaOwnership(env);
+                                            &delete_callback_pointer,
+                                            QtJambiLink::Ownership::Java
+                                        );
                                     QWriteLocker locker(gPointerLock());
                                     (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
                                     return result;
@@ -3266,15 +3283,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                 exn2.raise();
                             }
                             jobject result = Java::QtCore::QFunctionPointerUtil::createProxy(env, functionalInterface);
-                            QtJambiLink::createLinkForObject(
+                            QtJambiLink::createLinkForNativeObject(
                                     env,
                                     result,
                                     new QFunctionPointer(*ptr),
                                     LINK_NAME_ARG(nullptr)
                                     false,
                                     false,
-                                    &delete_callback_pointer
-                                )->setJavaOwnership(env);
+                                    &delete_callback_pointer,
+                                    QtJambiLink::Ownership::Java
+                                );
                             QWriteLocker locker(gPointerLock());
                             (*gObjectsByFunctionPointer())[quintptr(*ptr)] << JObjectWrapper(env, result);
                             return result;

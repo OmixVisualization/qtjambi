@@ -121,9 +121,20 @@ void General::qtjambi_jni_test(jobject object){
     }
 }
 
+struct BoolList : QList<bool>{
+};
+
+inline BoolList& operator<<(BoolList& list, bool v){
+    list.append(v);
+    if(!v){
+        list.begin();
+    }
+    return list;
+}
+
 QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text){
     QtJambiScope scope(nullptr);
-    QList<bool> results;
+    BoolList results;
     if(JniEnvironment env{300}){
 #ifndef QTJAMBI_NO_WIDGETS
         {
@@ -327,7 +338,7 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             //results << (qtjambi_cast<const QMap<QString,QFileInfo>&>(env, o)==qmap); // this does not work because of returning a reference to local variable.
         }
         {
-            FunctionalTest::TestFunction1 f1 = [](int i,bool b)->int{ return b ? i : -i; };
+            const FunctionalTest::TestFunction1 f1 = [](int i,bool b)->int{ return b ? i : -i; };
             jobject o = qtjambi_cast<jobject>(env, f1, "FunctionalTest::TestFunction1");
             QtJambiAPI::addToJavaCollection(env, list, o);
             FunctionalTest::TestFunction1 _f1 = qtjambi_cast<FunctionalTest::TestFunction1>(env, o, "FunctionalTest::TestFunction1");
@@ -582,7 +593,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << container.isSharedWith(qtjambi_cast<QMultiHash<const QGraphicsItem*, int>&>(env, scope, o));
         }
 #endif
-
         {
             std::initializer_list<int> container{1,2,3,4,5,6,7,8,9};
             jobject o = qtjambi_cast<jobject>(env, scope, container);
@@ -590,7 +600,7 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << (qtjambi_cast<std::initializer_list<int>>(env, scope, o)==container);
         }
         {
-            std::initializer_list<QList<QMap<QString,int>>> container{
+            const std::initializer_list<QList<QMap<QString,int>>> container{
                 /*QList*/{
                     /*QMap*/{
                         {"A", 5}, {"B", 123}, {"C", 9}

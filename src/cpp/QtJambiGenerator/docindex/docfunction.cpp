@@ -9,6 +9,13 @@ const QString& DocFunction::name() const {
     return m_name;
 }
 
+const QString& DocFunction::minimalSignature() const {
+    if(m_minimalSignature.isEmpty()){
+        m_minimalSignature = QLatin1String(QMetaObject::normalizedSignature(qPrintable(m_name + "(" + m_parameters.join(", ") + (m_const ? ") const" : ")"))));
+    }
+    return m_minimalSignature;
+}
+
 const QString& DocFunction::type() const {
     return m_type;
 }

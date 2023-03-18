@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.network.auth"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtNetworkAuth"
     module: "qtjambi.networkauth"
     description: "Provides support for OAuth-based authorization to online services."
@@ -61,10 +61,6 @@ TypeSystem{
     
     ValueType{
         name: "QOAuth1Signature"
-        ModifyFunction{
-            signature: "operator=(const QOAuth1Signature &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -90,21 +86,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "prepareRequest(QNetworkRequest *, const QByteArray &, const QByteArray &)"
+            signature: "prepareRequest(QNetworkRequest*,QByteArray,QByteArray)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.network.QNetworkRequest"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QNetworkRequest *%out = qtjambi_cast<QNetworkRequest *>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
+                invalidateAfterUse: true
             }
+            since: 6
         }
     }
     
@@ -118,40 +105,6 @@ TypeSystem{
     
     ObjectType{
         name: "QOAuth1"
-        ModifyFunction{
-            signature: "setup(QNetworkRequest *, const QMap<QString, QVariant> &, QNetworkAccessManager::Operation)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.network.QNetworkRequest"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QNetworkRequest *%out = qtjambi_cast<QNetworkRequest *>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setup(QNetworkRequest *, const QMap<QString, QVariant> &, const QByteArray &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.network.QNetworkRequest"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QNetworkRequest *%out = qtjambi_cast<QNetworkRequest *>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -161,7 +114,7 @@ TypeSystem{
     ObjectType{
         name: "QOAuthHttpServerReplyHandler"
         ModifyFunction{
-            signature: "listen(const QHostAddress &, unsigned short)"
+            signature: "listen(const QHostAddress &, quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{

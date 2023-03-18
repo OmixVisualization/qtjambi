@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.serialbus"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSerialBus"
     module: "qtjambi.serialbus"
     description: "Provides access to serial industrial bus interface. Currently the module supports the CAN bus and Modbus protocols."
@@ -43,33 +43,22 @@ TypeSystem{
     RequiredLibrary{
         name: "QtSerialPort"
     }
-    
-    Rejection{
-        className: "QModbusPdu::IsType"
-    }
 
     NamespaceType{
         name: "QtCanBus"
-        since: [6,5]
-    }
 
-    EnumType{
-        name: "QtCanBus::DataSource"
-        since: [6,5]
-    }
-
-    EnumType{
-        name: "QtCanBus::DataFormat"
-        since: [6,5]
-    }
-
-    EnumType{
-        name: "QtCanBus::DataEndian"
-        since: [6,5]
-    }
-
-    EnumType{
-        name: "QtCanBus::MultiplexState"
+        EnumType{
+            name: "DataSource"
+        }
+        EnumType{
+            name: "DataFormat"
+        }
+        EnumType{
+            name: "DataEndian"
+        }
+        EnumType{
+            name: "MultiplexState"
+        }
         since: [6,5]
     }
     
@@ -80,17 +69,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusDataUnit"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusDataUnit* %out = qtjambi_cast<QModbusDataUnit*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -98,17 +76,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusDataUnit"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusDataUnit* %out = qtjambi_cast<QModbusDataUnit*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -234,29 +201,36 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QCanBusDevice::CanBusDeviceState"
-    }
-    
-    EnumType{
-        name: "QCanBusDevice::CanBusError"
-    }
-    
-    EnumType{
-        name: "QCanBusDevice::CanBusStatus"
-    }
-    
-    EnumType{
-        name: "QCanBusDevice::ConfigurationKey"
-    }
-    
-    EnumType{
-        name: "QCanBusDevice::Direction"
-        flags: "QCanBusDevice::Directions"
-    }
-    
     ObjectType{
         name: "QCanBusDevice"
+
+        ValueType{
+            name: "Filter"
+
+            EnumType{
+                name: "FormatFilter"
+            }
+        }
+
+        EnumType{
+            name: "CanBusDeviceState"
+        }
+
+        EnumType{
+            name: "CanBusError"
+        }
+
+        EnumType{
+            name: "CanBusStatus"
+        }
+
+        EnumType{
+            name: "ConfigurationKey"
+        }
+
+        EnumType{
+            name: "Direction"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JObjectWrapper"
@@ -268,7 +242,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "clear(QFlags<QCanBusDevice::Direction>)"
+            signature: "clear(QCanBusDevice::Directions)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
@@ -276,12 +250,18 @@ TypeSystem{
                 }
             }
         }
+
+        FunctionalType{
+            name: "ResetControllerFunction"
+            generate: false
+            using: "std::function<void()>"
+        }
         ModifyFunction{
             signature: "setResetControllerFunction(std::function<void()>)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.lang.Runnable"
+                    modifiedType: "java.lang.@Nullable Runnable"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -292,12 +272,18 @@ TypeSystem{
             }
             until: 5
         }
+
+        FunctionalType{
+            name: "CanBusStatusGetter"
+            generate: false
+            using: "std::function<QCanBusDevice::CanBusStatus()>"
+        }
         ModifyFunction{
             signature: "setCanBusStatusGetter(std::function<QCanBusDevice::CanBusStatus()>)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.util.function.Supplier<CanBusStatus>"
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull CanBusStatus>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -312,15 +298,6 @@ TypeSystem{
             }
             until: 5
         }
-    }
-    
-    EnumType{
-        name: "QCanBusDevice::Filter::FormatFilter"
-        flags: "QCanBusDevice::Filter::FormatFilters"
-    }
-    
-    ValueType{
-        name: "QCanBusDevice::Filter"
     }
     
     ValueType{
@@ -351,10 +328,6 @@ TypeSystem{
                           "    }\n"+
                           "};\n"+
                           "new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());"}
-        }
-        ModifyFunction{
-            signature: "operator=(const QCanBusDeviceInfo &)"
-            remove: RemoveFlag.All
         }
     }
     
@@ -602,50 +575,49 @@ TypeSystem{
         until: 5
     }
     
-    EnumType{
-        name: "QCanBusFrame::FrameError"
-        flags: "QCanBusFrame::FrameErrors"
-    }
-    
-    EnumType{
-        name: "QCanBusFrame::FrameType"
-    }
-    
     ValueType{
         name: "QCanBusFrame"
+
+        EnumType{
+            name: "FrameError"
+        }
+
+        EnumType{
+            name: "FrameType"
+        }
     }
     
     ValueType{
         name: "QCanBusFrame::TimeStamp"
     }
     
-    EnumType{
-        name: "QModbusDataUnit::RegisterType"
-    }
-    
     ValueType{
         name: "QModbusDataUnit"
-    }
-    
-    EnumType{
-        name: "QModbusDevice::IntermediateError"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QModbusDevice::ConnectionParameter"
-    }
-    
-    EnumType{
-        name: "QModbusDevice::Error"
-    }
-    
-    EnumType{
-        name: "QModbusDevice::State"
+
+        EnumType{
+            name: "RegisterType"
+        }
     }
     
     ObjectType{
         name: "QModbusDevice"
+
+        EnumType{
+            name: "IntermediateError"
+            since: [6, 2]
+        }
+
+        EnumType{
+            name: "ConnectionParameter"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "State"
+        }
     }
     
     EnumType{
@@ -664,16 +636,20 @@ TypeSystem{
         name: "QModbusDeviceIdentification"
     }
     
-    EnumType{
-        name: "QModbusPdu::ExceptionCode"
-    }
-    
-    EnumType{
-        name: "QModbusPdu::FunctionCode"
-    }
-    
     ValueType{
         name: "QModbusPdu"
+
+        Rejection{
+            className: "IsType"
+        }
+
+        EnumType{
+            name: "ExceptionCode"
+        }
+
+        EnumType{
+            name: "FunctionCode"
+        }
         CustomConstructor{
             Text{content: "void* create_QModbusPdu(void* placement, const void * copy);\n"+
                           "return create_QModbusPdu(placement, copy);"}
@@ -684,15 +660,23 @@ TypeSystem{
                           "create_QModbusPdu(placement, copy);"}
         }
         ModifyFunction{
-            signature: "operator=(const QModbusPdu &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "operator<<(QDataStream &,QModbusPdu)"
             access: Modification.NonFinal
         }
+        ModifyFunction{
+            signature: "encodeData<Args...>(Args)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "decodeData<Args...>(Args&&)const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QModbusPdu<Args...>(QModbusPdu::FunctionCode,Args)"
+            remove: RemoveFlag.All
+        }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "public void encodeData(Number...data) {\n"+
                           "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
@@ -709,7 +693,7 @@ TypeSystem{
                           "    setData(byteArray);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public void encodeData(short...data) {\n"+
                           "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
@@ -720,7 +704,7 @@ TypeSystem{
                           "    setData(byteArray);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public void encodeData(byte...data) {\n"+
                           "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
@@ -731,7 +715,7 @@ TypeSystem{
                           "    setData(byteArray);\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public void decodeData(byte[] data) {\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
                           "    for (int i = 0; i < data.length; ++i) {\n"+
@@ -740,7 +724,7 @@ TypeSystem{
                           "    stream.dispose();\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public void decodeData(short[] data) {\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
                           "    for (int i = 0; i < data.length; ++i) {\n"+
@@ -749,7 +733,7 @@ TypeSystem{
                           "    stream.dispose();\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public void decodeData(Number[][] data) {\n"+
                           "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
                           "    for (int i = 0; i < data.length; ++i) {\n"+
@@ -767,67 +751,41 @@ TypeSystem{
         }
     }
     
-    FunctionalType{
-        name: "QModbusRequestCalculatorFunction"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
-        }
-    }
-    
-    FunctionalType{
-        name: "QModbusResponseCalculatorFunction"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
-        }
-    }
-    
-    FunctionalType{
-        name: "QModbusRequest::CalcFuncPtr"
-        generate: false
-    }
-    
-    FunctionalType{
-        name: "QModbusResponse::CalcFuncPtr"
-        generate: false
-    }
-    
     ValueType{
         name: "QModbusRequest"
+
+        FunctionalType{
+            name: "CalcFunction"
+            using: "int(*)(const QModbusRequest &)"
+        }
+
+        FunctionalType{
+            name: "CalcFuncPtr"
+            javaName: "CalcFunction"
+            generate: false
+        }
         ModifyFunction{
-            signature: "registerDataSizeCalculator(QModbusPdu::FunctionCode, QModbusRequest::CalcFuncPtr)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusRequestCalculatorFunction"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusRequest::CalcFuncPtr %out = qtjambi_cast<QModbusRequest::CalcFuncPtr>(%env, %in);"}
-                }
-            }
+            signature: "QModbusRequest<Args...>(QModbusPdu::FunctionCode,Args)"
+            remove: RemoveFlag.All
         }
     }
     
     ValueType{
         name: "QModbusResponse"
+
+        FunctionalType{
+            name: "CalcFunction"
+            using: "int(*)(const QModbusResponse &)"
+        }
+
+        FunctionalType{
+            name: "CalcFuncPtr"
+            javaName: "CalcFunction"
+            generate: false
+        }
         ModifyFunction{
-            signature: "registerDataSizeCalculator(QModbusPdu::FunctionCode, QModbusResponse::CalcFuncPtr)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusResponseCalculatorFunction"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusResponse::CalcFuncPtr %out = qtjambi_cast<QModbusResponse::CalcFuncPtr>(%env, %in);"}
-                }
-            }
+            signature: "QModbusResponse<Args...>(QModbusPdu::FunctionCode,Args)"
+            remove: RemoveFlag.All
         }
     }
     
@@ -835,12 +793,12 @@ TypeSystem{
         name: "QModbusExceptionResponse"
     }
     
-    EnumType{
-        name: "QModbusReply::ReplyType"
-    }
-    
     ObjectType{
         name: "QModbusReply"
+
+        EnumType{
+            name: "ReplyType"
+        }
     }
     
     ObjectType{
@@ -863,24 +821,17 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QModbusServer::Option"
-    }
-    
     ObjectType{
         name: "QModbusServer"
+
+        EnumType{
+            name: "Option"
+        }
         ModifyFunction{
             signature: "data(QModbusDataUnit *) const"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusDataUnit"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusDataUnit* %out = qtjambi_cast<QModbusDataUnit*>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -888,21 +839,10 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.serialbus.QModbusDataUnit"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QModbusDataUnit* %out = qtjambi_cast<QModbusDataUnit*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
-            signature: "data(QModbusDataUnit::RegisterType,unsigned short,unsigned short*)const"
+            signature: "data(QModbusDataUnit::RegisterType,quint16,quint16*)const"
             ModifyArgument{
                 index: 3
                 ArrayType{
@@ -954,7 +894,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.network.QTcpSocket"
+                    modifiedType: "io.qt.network.@Nullable QTcpSocket"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -962,7 +902,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObject(%env, reinterpret_cast<void*>(%in), \"io/qt/network/QTcpSocket\", false, false);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, reinterpret_cast<void*>(%in), Java::QtNetwork::QTcpSocket::getClass(%env));"}
                 }
             }
         }
@@ -986,7 +926,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.network.QTcpSocket"
+                    modifiedType: "io.qt.network.@Nullable QTcpSocket"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -994,87 +934,56 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, reinterpret_cast<void*>(%in), \"io/qt/network/QTcpSocket\", false, false);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, reinterpret_cast<void*>(%in), Java::QtNetwork::QTcpSocket::getClass(%env));"}
                 }
             }
         }
     }
-    
-    FunctionalType{
-        name: "QCanBusDevice::ResetControllerFunction"
-        generate: false
-        using: "std::function<void()>"
-    }
-    
-    FunctionalType{
-        name: "QCanBusDevice::CanBusStatusGetter"
-        generate: false
-        using: "std::function<QCanBusDevice::CanBusStatus()>"
-    }
 
     ObjectType{
         name: "QCanDbcFileParser"
-        since: [6,5]
-    }
 
-    EnumType{
-        name: "QCanDbcFileParser::Error"
-        since: [6,5]
-    }
-
-    ValueType{
-        name: "QCanFrameProcessor"
-        ModifyFunction{
-            signature: "operator=(const QCanFrameProcessor &)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "Error"
         }
         since: [6,5]
     }
 
-    EnumType{
-        name: "QCanFrameProcessor::Error"
-        since: [6,5]
-    }
+    ObjectType{
+        name: "QCanFrameProcessor"
 
-    ValueType{
-        name: "QCanFrameProcessor::ParseResult"
+        EnumType{
+            name: "Error"
+        }
+
+        ValueType{
+            name: "ParseResult"
+        }
         since: [6,5]
     }
 
     ValueType{
         name: "QCanMessageDescription"
-        ModifyFunction{
-            signature: "operator=(const QCanMessageDescription &)"
-            remove: RemoveFlag.All
-        }
         since: [6,5]
     }
 
     ValueType{
         name: "QCanSignalDescription"
-        ModifyFunction{
-            signature: "operator=(const QCanSignalDescription &)"
-            remove: RemoveFlag.All
+        ValueType{
+            name: "MultiplexValueRange"
+            /*ModifyFunction{
+                signature: "operator<<(QDebug, const QCanSignalDescription::MultiplexValueRange &)"
+                remove: RemoveFlag.All
+            }*/
         }
         since: [6,5]
     }
 
     ValueType{
         name: "QCanUniqueIdDescription"
-        ModifyFunction{
-            signature: "operator=(const QCanUniqueIdDescription &)"
-            remove: RemoveFlag.All
-        }
         since: [6,5]
     }
     
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: function '*::CalcFuncPtr' is specified in typesystem, but not declared"}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusDataUnit."}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusDeviceIdentification."}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QModbusPdu."}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QCanBus*."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode*', unmatched parameter type 'const QList*'"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QCanBusDeviceInfo' is missing a default constructor. The resulting C++ code will not compile.*"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class function '*::CalcFuncPtr' is specified in typesystem, but not declared"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode', unmatched parameter type '*'"}
 }

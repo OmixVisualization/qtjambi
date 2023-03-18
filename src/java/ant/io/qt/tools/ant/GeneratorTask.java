@@ -60,6 +60,8 @@ public class GeneratorTask extends Task {
     private String generatorExe;
     private String includeDirectories;
 	private String qtjambiVersion;
+	private String nullness;
+	private String kotlinPropertyDelegates;
     private List<String> commandList = new ArrayList<String>();
 
     private List<String> searchPath(boolean generator_debug) {
@@ -124,6 +126,14 @@ public class GeneratorTask extends Task {
         	// replace path separator since linux/mac does not accept semicolon
         	commandList.add("--include-directories=" + includeDirectories.replace(";", File.pathSeparator));
         }
+        
+        if("false".equalsIgnoreCase(nullness)) {
+        	commandList.add("--no-nullness");
+        }
+        
+        if("false".equalsIgnoreCase(kotlinPropertyDelegates)) {
+        	commandList.add("--no-kotlin-property-delegates");
+        }
 
         if(qtDocDirectory != null){
         	// replace path separator since linux/mac does not accept semicolon
@@ -158,6 +168,9 @@ public class GeneratorTask extends Task {
 		o = AntUtil.getProperty(props, Constants.GENERATOR_STATICLIBS);
 		if(o instanceof String && !o.toString().isEmpty())
 			commandList.add("--static="+o);
+		o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_FILE);
+		if(o instanceof String && !o.toString().isEmpty())
+			commandList.add("--output-preprocess-file="+o);
 
         if(typesystem!=null && !typesystem.isEmpty()) {
 	        File typesystemFile = Util.makeCanonical(typesystem);
@@ -317,5 +330,21 @@ public class GeneratorTask extends Task {
 
 	public void setQtjambiVersion(String qtjambiVersion) {
 		this.qtjambiVersion = qtjambiVersion;
+	}
+
+	public String getNullness() {
+		return nullness;
+	}
+
+	public void setNullness(String nullness) {
+		this.nullness = nullness;
+	}
+
+	public String getKotlinPropertyDelegates() {
+		return kotlinPropertyDelegates;
+	}
+
+	public void setKotlinPropertyDelegates(String kotlinPropertyDelegates) {
+		this.kotlinPropertyDelegates = kotlinPropertyDelegates;
 	}
 }

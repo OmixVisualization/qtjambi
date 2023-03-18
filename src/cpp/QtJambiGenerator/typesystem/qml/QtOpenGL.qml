@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.opengl"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtOpenGL"
     module: "qtjambi.opengl"
     description: "Classes that make it easy to use OpenGL in Qt applications."
@@ -2394,7 +2394,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                    modifiedType: "java.nio.@Nullable Buffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -3485,7 +3485,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLBuffer::RangeAccessFlag"
-        flags: "QOpenGLBuffer::RangeAccessFlags"
     }
     
     EnumType{
@@ -3498,7 +3497,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Severity"
-        flags: "QOpenGLDebugMessage::Severities"
         RejectEnumValue{
             name: "LastSeverity"
         }
@@ -3506,7 +3504,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Source"
-        flags: "QOpenGLDebugMessage::Sources"
         RejectEnumValue{
             name: "LastSource"
         }
@@ -3514,7 +3511,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLDebugMessage::Type"
-        flags: "QOpenGLDebugMessage::Types"
         RejectEnumValue{
             name: "LastType"
         }
@@ -3530,7 +3526,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLShader::ShaderTypeBit"
-        flags: "QOpenGLShader::ShaderType"
     }
     
     EnumType{
@@ -3547,7 +3542,6 @@ TypeSystem{
     
     EnumType{
         name: "QOpenGLTexture::Feature"
-        flags: "QOpenGLTexture::Features"
     }
     
     EnumType{
@@ -3616,10 +3610,6 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLBuffer"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLBuffer &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
@@ -3667,7 +3657,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "mapRange(int, int, QFlags<QOpenGLBuffer::RangeAccessFlag>)"
+            signature: "mapRange(int, int, QOpenGLBuffer::RangeAccessFlags)"
             ModifyArgument{
                 index: 0
                 ReplaceType{
@@ -3687,26 +3677,10 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLDebugMessage"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLDebugMessage&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QOpenGLFramebufferObjectFormat"
-        ModifyFunction{
-            signature: "operator!=(const QOpenGLFramebufferObjectFormat &) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QOpenGLFramebufferObjectFormat &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QOpenGLFramebufferObjectFormat &) const"
-            access: Modification.Private
-        }
     }
     
     ObjectType{
@@ -3780,7 +3754,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_0>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
@@ -3789,7 +3763,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_1>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
@@ -3801,7 +3775,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_2"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_2>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
@@ -3813,7 +3787,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_3"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_3>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
@@ -3825,7 +3799,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_4"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_4>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_4A"
@@ -3840,7 +3814,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_1_5"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_5>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_1_4A"
@@ -3861,7 +3835,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_2_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_2_0>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3876,7 +3850,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_2_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_2_1>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3891,7 +3865,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_0>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3909,7 +3883,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_1>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3927,7 +3901,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_2_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_2_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3948,7 +3922,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_2_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_2_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3969,7 +3943,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_3_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_3_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -3990,7 +3964,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_3_3_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_3_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4011,7 +3985,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_0_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4032,7 +4006,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_0_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4053,7 +4027,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_1_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_1_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4074,7 +4048,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_1_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_1_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4095,7 +4069,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_2_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_2_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4116,7 +4090,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_2_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_2_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4137,7 +4111,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_3_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_3_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4158,7 +4132,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_3_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_3_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0A"
@@ -4179,7 +4153,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_4_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_4_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0B"
@@ -4200,7 +4174,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_4_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0B"
@@ -4221,7 +4195,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_5_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_5_Compatibility>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0B"
@@ -4242,7 +4216,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_4_5_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)"
+        ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_5_Core>)"
         targetType: "final class"
         Import{
             template: "QOpenGLFunctions_2_0B"
@@ -4263,7 +4237,7 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFunctions_ES2"
-        ppCondition: "QT_CONFIG(opengles2)"
+        ppCondition: "QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_ES2>)"
         targetType: "final class"
         ModifyFunction{
             signature: "glBindAttribLocation(GLuint,GLuint,const GLchar*)"
@@ -4560,7 +4534,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addCacheableShaderFromSourceCode(QFlags<QOpenGLShader::ShaderTypeBit>, const char *)"
+            signature: "addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -4592,7 +4566,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "addShaderFromSourceCode(QFlags<QOpenGLShader::ShaderTypeBit>, const char *)"
+            signature: "addShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -4642,12 +4616,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const GLfloat *, int, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
@@ -4684,12 +4652,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector2D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -4699,12 +4661,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector3D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -4713,12 +4669,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setAttributeArray(const char *, const QVector4D *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -4742,12 +4692,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setAttributeArray(const char *, GLenum, const void *, int, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 ReplaceType{
                     modifiedType: "java.nio.Buffer"
@@ -4768,323 +4712,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAttributeBuffer ( const char *, GLenum, int, int, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "disableAttributeArray ( const char * )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "enableAttributeArray ( const char * )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue(const char *, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , GLfloat , GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char *, GLfloat, GLfloat, GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , GLfloat , GLfloat , GLfloat , GLfloat )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector2D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector3D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const QVector4D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char *, const QColor )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setAttributeValue ( const char * , const GLfloat * , int , int )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QPointF )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QSize )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QSizeF )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix2x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix3x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x2 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x3 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QMatrix4x4 )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char *, const QTransform )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLint)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, GLfloat, GLfloat, GLfloat, GLfloat)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector2D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector3D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QVector4D )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QPoint )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValue ( const char *, QColor )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
                 }
             }
         }
@@ -5225,12 +4857,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const GLint *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     asBuffer: true
@@ -5239,12 +4865,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5255,12 +4875,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector2D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5269,12 +4883,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector3D *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5285,12 +4893,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector4D *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5299,12 +4901,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x4 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5315,12 +4911,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x2 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5329,12 +4919,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x2 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5345,12 +4929,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x2 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5359,12 +4937,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x3 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5375,12 +4947,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x3 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5389,12 +4955,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix4x3 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5405,12 +4965,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix2x4 *, int)"
             ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     lengthParameter: 3
@@ -5419,12 +4973,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QMatrix3x4 *, int)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             ModifyArgument{
                 index: 2
                 ArrayType{
@@ -5441,10 +4989,6 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLVersionProfile"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLVersionProfile &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -5457,7 +5001,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             Text{content: "@Override\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final void close(){\n"+
                           "    dispose();\n"+
                           "}"}
@@ -5526,20 +5070,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 14
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -5548,20 +5078,6 @@ TypeSystem{
                 index: 12
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 13
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
             since: [5, 14]
@@ -5574,20 +5090,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 12
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -5596,20 +5098,6 @@ TypeSystem{
                 index: 10
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 11
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
             since: [5, 14]
@@ -5622,20 +5110,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 10
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
             since: [5, 14]
         }
         ModifyFunction{
@@ -5644,20 +5118,6 @@ TypeSystem{
                 index: 6
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -5669,20 +5129,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 8
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
@@ -5690,20 +5136,6 @@ TypeSystem{
                 index: 5
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -5715,20 +5147,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
@@ -5736,16 +5154,6 @@ TypeSystem{
                 index: 3
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -5757,16 +5165,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
@@ -5774,16 +5172,6 @@ TypeSystem{
                 index: 5
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -5795,16 +5183,6 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)"
@@ -5812,16 +5190,6 @@ TypeSystem{
                 index: 3
                 ArrayType{
                     asBuffer: true
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
                 }
             }
         }
@@ -5833,25 +5201,11 @@ TypeSystem{
                     asBuffer: true
                 }
             }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.opengl.QOpenGLPixelTransferOptions"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QOpenGLPixelTransferOptions *%out = qtjambi_cast<QOpenGLPixelTransferOptions *>(%env, %in);"}
-                }
-            }
         }
     }
     
     ValueType{
         name: "QOpenGLPixelTransferOptions"
-        ModifyFunction{
-            signature: "operator=(const QOpenGLPixelTransferOptions&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{

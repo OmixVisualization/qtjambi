@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.sensors"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSensors"
     module: "qtjambi.sensors"
     description: "Provides access to sensor hardware and motion gesture recognition."
@@ -103,10 +103,6 @@ TypeSystem{
         until: 5
     }
     
-    EnumType{
-        name: "QAccelerometer::AccelerationMode"
-    }
-    
     ObjectType{
         name: "QAccelerometer"
         ModifyField{
@@ -116,6 +112,10 @@ TypeSystem{
         ModifyField{
             name: "sensorType"
             read: false
+        }
+
+        EnumType{
+            name: "AccelerationMode"
         }
     }
     
@@ -139,12 +139,12 @@ TypeSystem{
         name: "QAltimeterReading"
     }
     
-    EnumType{
-        name: "QAmbientLightReading::LightLevel"
-    }
-    
     ObjectType{
         name: "QAmbientLightReading"
+
+        EnumType{
+            name: "LightLevel"
+        }
     }
     
     ObjectType{
@@ -317,10 +317,10 @@ TypeSystem{
     
     ObjectType{
         name: "QOrientationReading"
-    }
-    
-    EnumType{
-        name: "QOrientationReading::Orientation"
+
+        EnumType{
+            name: "Orientation"
+        }
     }
     
     ObjectType{
@@ -371,12 +371,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QTapReading::TapDirection"
-    }
-    
     ObjectType{
         name: "QTapReading"
+
+        EnumType{
+            name: "TapDirection"
+        }
     }
     
     ObjectType{
@@ -407,16 +407,16 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QSensor::AxesOrientationMode"
-    }
-    
-    EnumType{
-        name: "QSensor::Feature"
-    }
-    
     ObjectType{
         name: "QSensor"
+
+        EnumType{
+            name: "AxesOrientationMode"
+        }
+
+        EnumType{
+            name: "Feature"
+        }
         ModifyFunction{
             signature: "addFilter(QSensorFilter*)"
             ModifyArgument{
@@ -445,6 +445,21 @@ TypeSystem{
     
     ObjectType{
         name: "QSensorReading"
+        ModifyFunction{
+            signature: "QSensorReading(QObject *, QSensorReadingPrivate *)"
+            InjectCode{
+                target: CodeClass.Native
+                ArgumentMap{
+                    index: 2
+                    metaName: "%2"
+                }
+                Text{content: "QSensorReadingPrivate * __qt_%2 = nullptr;"}
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+            }
+        }
     }
     
     ObjectType{
@@ -472,12 +487,86 @@ TypeSystem{
     
     ObjectType{
         name: "QSensorBackend"
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
         ModifyFunction{
             signature: "setDataRates(const QSensor*)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
                     action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setReading<T>(T*)"
+            Instantiation{
+                proxyCall: "qtjambi_setReading"
+                Argument{
+                    type: "QSensorReading"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "T"
+                        modifiedJniType: "jobject"
+                    }
+                    NoNullPointer{}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReferenceCount{
+                        action: ReferenceCount.Ignore
+                    }
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "T"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "jobject %out = %in;"}
+                    }
+                }
+                AddTypeParameter{
+                    name: "T"
+                    extending: "io.qt.sensors.QSensorReading"
+                }
+            }
+
+            Instantiation{
+                proxyCall: "qtjambi_setReading"
+                Argument{
+                    type: "QObject"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "T"
+                        modifiedJniType: "jobject"
+                    }
+                    NoNullPointer{}
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReferenceCount{
+                        action: ReferenceCount.Ignore
+                    }
+                    ReplaceType{
+                        modifiedType: "java.lang.Class<T>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "jclass %out = %in;"}
+                    }
+                }
+                AddTypeParameter{
+                    name: "T"
+                    extending: "io.qt.sensors.QSensorReading"
                 }
             }
         }

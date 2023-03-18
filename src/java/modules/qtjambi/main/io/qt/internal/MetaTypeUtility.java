@@ -401,56 +401,56 @@ public final class MetaTypeUtility {
 				s.writeInt(BYTE_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeByte(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==short[].class) {
 				short[] array = (short[])o;
 				s.writeInt(SHORT_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeShort(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==int[].class) {
 				int[] array = (int[])o;
 				s.writeInt(INT_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeInt(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==long[].class) {
 				long[] array = (long[])o;
 				s.writeInt(LONG_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeLong(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==float[].class) {
 				float[] array = (float[])o;
 				s.writeInt(FLOAT_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeFloat(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==double[].class) {
 				double[] array = (double[])o;
 				s.writeInt(DOUBLE_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeDouble(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==boolean[].class) {
 				boolean[] array = (boolean[])o;
 				s.writeInt(BOOLEAN_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeBoolean(array[i]);
+					s.append(array[i]);
 				}
 			}else if(objectClass==char[].class) {
 				char[] array = (char[])o;
 				s.writeInt(CHAR_ARRAY_MAGIC);
 				s.writeInt(array.length);
 				for (int i = 0; i < array.length; i++) {
-					s.writeChar(array[i]);
+					s.append(array[i]);
 				}
 			}else {
 				Object[] array = (Object[])o;

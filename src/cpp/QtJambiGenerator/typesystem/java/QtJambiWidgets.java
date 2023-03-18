@@ -33,7 +33,7 @@
 package generator;
 
 import io.qt.*;
-import io.qt.QtUtilities;
+import QtUtilities;
 import io.qt.internal.QtJambiObject.QPrivateConstructor;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QPoint;
@@ -295,14 +295,14 @@ class QAbstractButton___ extends QAbstractButton {
 }// class
 
 class QLayout___ extends QLayout {
-    @io.qt.QtUninvokable
-    public final void addWidget(io.qt.widgets.QWidget w){
+    @QtUninvokable
+    public final void addWidget(io.qt.widgets.@Nullable QWidget w){
         add_widget(w);
     }
 }// class
 
 class QBoxLayout___ extends QBoxLayout {
-    @io.qt.QtUninvokable
+    @QtUninvokable
     void add_widget(QWidget widget){
         addWidget(widget, 0);
     }
@@ -330,8 +330,8 @@ class QColorDialog__java_{
     /**
      * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedSlot) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.gui.@NonNull QColor> selectedSlot) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect slot for given handle.");
@@ -352,8 +352,8 @@ class QColorDialog__java_{
     /**
      * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Connectable1<io.qt.gui.QColor> selectedSignal) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<io.qt.gui.@NonNull QColor> selectedSignal) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect signal for given handle.");
@@ -377,8 +377,8 @@ class QFontDialog__java_ extends QFontDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QFont> selectedSlot) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.gui.@NonNull QFont> selectedSlot) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect slot for given handle.");
@@ -399,8 +399,8 @@ class QFontDialog__java_ extends QFontDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Connectable1<io.qt.gui.QFont> selectedSignal) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<io.qt.gui.@NonNull QFont> selectedSignal) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect signal for given handle.");
@@ -430,7 +430,7 @@ class QFileDialog__java_ extends QFileDialog {
      * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>.
      */
     public static final class Result<R> {
-        @io.qt.NativeAccess
+        @NativeAccess
         private Result(R result, String selectedFilter) {
             this.result = result;
             this.selectedFilter = selectedFilter;
@@ -443,36 +443,36 @@ class QFileDialog__java_ extends QFileDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getExistingDirectoryUrl">QFileDialog::getExistingDirectoryUrl(QWidget*,QString,QUrl,Options,QStringList)</a></p>
      */
-    public static io.qt.core.QUrl getExistingDirectoryUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+    public static io.qt.core.@NonNull QUrl getExistingDirectoryUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getExistingDirectoryUrl(parent, caption, dir, new io.qt.widgets.QFileDialog.Options(options), supportedSchemes);
     }
     
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl">QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
      */
-    public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getOpenFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+    public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QUrl> getOpenFileUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getOpenFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls">QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
      */
-    public static io.qt.widgets.QFileDialog.Result<java.util.List<io.qt.core.QUrl>> getOpenFileUrls(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+    public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QList<io.qt.core.@NonNull QUrl>> getOpenFileUrls(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getOpenFileUrls(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
      */
-    public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getSaveFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+    public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QUrl> getSaveFileUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getSaveFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> selectedSlot) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect slot for given handle.");
@@ -499,8 +499,8 @@ class QFileDialog__java_ extends QFileDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Connectable1<?> selectedSignal) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<?> selectedSignal) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect signal for given handle.");
@@ -530,8 +530,8 @@ class QInputDialog__java_ extends QInputDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot0 selectedSlot) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot0 selectedSlot) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect slot for given handle.");
@@ -549,8 +549,8 @@ class QInputDialog__java_ extends QInputDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> selectedSlot) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(selectedSlot));
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect slot for given handle.");
@@ -574,8 +574,8 @@ class QInputDialog__java_ extends QInputDialog {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final void open(io.qt.core.QMetaObject.Connectable1<?> selectedSignal) {
+    @QtUninvokable
+    public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<?> selectedSignal) {
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(selectedSignal);
         if(metaMethod==null || !metaMethod.isValid()) {
             throw new IllegalArgumentException("Unable to detect signal for given handle.");
@@ -611,7 +611,7 @@ class QSplitter___ extends QSplitter {
          * Result class for <a href="https://doc.qt.io/qt/qsplitter.html#getRange">QSplitter::getRange(int,int*,int*)const</a>.
          */
         public static final class Range {
-            @io.qt.NativeAccess
+            @NativeAccess
             private Range(int min, int max) {
                 minimum = min;
                 maximum = max;
@@ -661,11 +661,11 @@ class QAction___ extends QAction {
 
 class QApplication___ extends QApplication {
 
-        public static QApplication initialize(String args[]) {
+        public static @NonNull QApplication initialize(String args @StrictNonNull[]) {
             return io.qt.core.QCoreApplication.initialize(null, args, QApplication::new);
         }
 
-        public static QApplication initialize(String applicationName, String args[]) {
+        public static @NonNull QApplication initialize(String applicationName, String args @StrictNonNull[]) {
             return io.qt.core.QCoreApplication.initialize(applicationName, args, QApplication::new);
         }
 
@@ -673,7 +673,7 @@ class QApplication___ extends QApplication {
             io.qt.core.QCoreApplication.shutdown();
         }
         
-        public static QApplication instance() {
+        public static @Nullable QApplication instance() {
             io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
             if (app instanceof QApplication)
                 return (QApplication) app;
@@ -702,448 +702,12 @@ class QGraphicsWidget___ extends QGraphicsWidget {
         /**
          * @see #getWindowFrameMargins(double[])
          */
-        @io.qt.QtUninvokable
-        public final io.qt.core.QMarginsF windowFrameMargins() {
+        @QtUninvokable
+        public final io.qt.core.@NonNull QMarginsF windowFrameMargins() {
             double[] mrg = {0.0, 0.0, 0.0, 0.0};
             getWindowFrameMargins(mrg);
             return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);
         }
-}// class
-
-class QListWidget___ extends QListWidget {
-
-        /**
-         * Inserts an item with the text label at the end of the list widget.
-         *
-         * @param label The text of the new item.
-         */
-        public final void addItem(String label) {
-            addItem(new QListWidgetItem(label, this));
-        }
-
-        /**
-         * Inserts items with the text labels at the end of the list widget.
-         *
-         * @param labels The collection of labels for the new items.
-         */
-        public final void addItems(java.util.List<String> labels) {
-        for (String label : labels)
-                addItem(label);
-        }
-
-        /**
-         * This is an overloaded member function, provided for convenience.
-         * Inserts an item with the text label in the list widget at the position given by row.
-         *
-         * @param row The position in which to insert the new item.
-         * @param label The text of the new item.
-         */
-        public final void insertItem(int row, String label) {
-            insertItem(row, new QListWidgetItem(label, this));
-        }
-
-        /**
-         * Inserts items from the list of labels into the list, starting at the given row.
-         *
-         * @param row The position in which to insert the new items.
-         * @param labels The collection of labels for the new items.
-         */
-        public final void insertItems(int row, java.util.List<String> labels) {
-        for (String label : labels)
-                insertItem(row++, label);
-        }
-}// class
-
-class QGraphicsScene___ extends QGraphicsScene {
-        /**
-         * Equivalent to addEllipse(rect, null, null)
-         */
-        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect) {
-            return addEllipse(rect, null);
-        }
-
-        /**
-         * Equivalent to addEllipse(rect, pen, null)
-         */
-        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect, QPen pen) {
-            return addEllipse(rect, pen, null);
-        }
-
-
-        /**
-         * Creates and adds an ellipse item to the scene, and returns the item
-         * reference. The geometry of the ellipse is defined by rect, and its pen
-         * and brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
-         * QGraphicsScene will emit changed() once control goes back to the event
-         * loop.
-         *
-         * @param rect The bounding rectangle of the ellipse.
-         * @param pen The pen for the resulting QGraphicsEllipseItem.
-         * @param brush The brush for the resulting QGraphicsEllipseItem.
-         * @return The resulting item.
-         */
-        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect, QPen pen, QBrush brush) {
-            return addEllipse(rect.x(), rect.y(), rect.width(), rect.height(), pen, brush);
-        }
-
-        /**
-         * Equivalent to addEllipse(x, y, w, h, null, null)
-         */
-        public final QGraphicsEllipseItem addEllipse(double x, double y, double w, double h) {
-            return addEllipse(x, y, w, h, null);
-        }
-
-        /**
-         * Equivalent to addEllipse(x, y, w, h, pen, null)
-         */
-        public final QGraphicsEllipseItem addEllipse(double x, double y, double w, double h, QPen pen) {
-            return addEllipse(x, y, w, h, pen, null);
-        }
-
-        /**
-         * Creates and adds an ellipse item to the scene, and returns the item
-         * reference. The geometry of the ellipse is defined by x, y, w, h, and its pen
-         * and brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param x The left horizontal coordinate of the ellipse's bounding rectangle.
-         * @param y The top vertical coordinate of the ellipse's bounding rectangle.
-         * @param w The width of the ellipse's bounding rectangle.
-         * @param h The height of the ellipse's bounding rectangle.
-         * @param pen The pen for the resulting QGraphicsEllipseItem.
-         * @param brush The brush for the resulting QGraphicsEllipseItem.
-         * @return The resulting item.
-         */
-        public final QGraphicsEllipseItem addEllipse(double x, double y, double w, double h, QPen pen, QBrush brush) {
-            QGraphicsEllipseItem item = new QGraphicsEllipseItem(x, y, w, h);
-            item.setPen(pen);
-            item.setBrush(brush);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Equivalent to addLine(line, null)
-         */
-        public final QGraphicsLineItem addLine(QLineF line) {
-            return addLine(line, null);
-        }
-
-        /**
-         * Creates and adds a line item to the scene, and returns the item
-         * reference. The geometry of the line is defined by line, and its pen
-         * is initialized to pen.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param line The definition of the line.
-         * @param pen The pen with which to draw the line.
-         * @return The resulting item.
-         */
-        public final QGraphicsLineItem addLine(QLineF line, QPen pen) {
-            return addLine(line.x1(), line.y1(), line.x2(), line.y2(), pen);
-        }
-
-        /**
-         * Equivalent to addLine(x1, y1, x2, y2, null)
-         */
-        public final QGraphicsLineItem addLine(double x1, double y1, double x2, double y2) {
-            return addLine(x1, y1, x2, y2, null);
-        }
-
-        /**
-         * Creates and adds a line item to the scene, and returns the item
-         * reference. The geometry of the line is defined by x1, y1, x2, y2, and its pen
-         * is initialized to pen.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param x1 The first horizontal coordinate of the line.
-         * @param y1 The first vertical coordinate of the line.
-         * @param x2 The second horizontal coordinate of the line.
-         * @param y2 The second vertical coordinate of the line.
-         * @param pen The pen with which to draw the line.
-         * @return The resulting item.
-         */
-        public final QGraphicsLineItem addLine(double x1, double y1, double x2, double y2, QPen pen) {
-            QGraphicsLineItem item = new QGraphicsLineItem(x1, y1, x2, y2);
-            item.setPen(pen);
-
-            addItem(item);
-
-            return item;
-        }
-
-
-        /**
-         * Equivalent to addPath(path, null, null)
-         */
-        public final QGraphicsPathItem addPath(QPainterPath path) {
-            return addPath(path, null);
-        }
-
-        /**
-         * Equivalent to addPath(path, pen, null)
-         */
-        public final QGraphicsPathItem addPath(QPainterPath path, QPen pen) {
-            return addPath(path, pen, null);
-        }
-        /**
-         * Creates and adds a path item to the scene, and returns the item
-         * reference. The geometry of the path is defined by path, and its pen and
-         * brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param path The definition of the path.
-         * @param pen The pen for drawing the path.
-         * @param brush The brush for drawing the path.
-         * @return The resulting item.
-         */
-        public final QGraphicsPathItem addPath(QPainterPath path, QPen pen, QBrush brush) {
-            QGraphicsPathItem item = new QGraphicsPathItem(path);
-            item.setPen(pen);
-            item.setBrush(brush);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Creates and adds a pixmap item to the scene, and returns the item
-         * reference. The pixmap is defined by pixmap.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param pixmap The pixmap for which to create a graphics item.
-         * @return The resulting item.
-         */
-        public final QGraphicsPixmapItem addPixmap(QPixmap pixmap) {
-            QGraphicsPixmapItem item = new QGraphicsPixmapItem(pixmap);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Equivalent to addPolygon(polygon, null, null)
-         */
-        public final QGraphicsPolygonItem addPolygon(QPolygonF polygon) {
-            return addPolygon(polygon, null);
-        }
-
-        /**
-         * Equivalent to addPolygon(polygon, pen, null)
-         */
-        public final QGraphicsPolygonItem addPolygon(QPolygonF polygon, QPen pen) {
-            return addPolygon(polygon, pen, null);
-        }
-
-        /**
-         * Creates and adds a polygon item to the scene, and returns the item
-         * reference. The polygon is defined by polygon, and its pen and
-         * brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param polygon The definition of the polygon.
-         * @param pen The pen with which to draw the polygon.
-         * @param brush The brush with which to draw the polygon.
-         * @return The resulting item.
-         */
-        public final QGraphicsPolygonItem addPolygon(QPolygonF polygon, QPen pen, QBrush brush) {
-            QGraphicsPolygonItem item = new QGraphicsPolygonItem(polygon);
-            item.setPen(pen);
-            item.setBrush(brush);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Equivalent to addRect(rect, null, null)
-         */
-        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect) {
-            return addRect(rect, null);
-        }
-
-        /**
-         * Equivalent to addRect(rect, pen, null)
-         */
-        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect, QPen pen) {
-            return addRect(rect, pen, null);
-        }
-
-        /**
-         * Creates and adds a rectangle item to the scene, and returns the item
-         * reference. The geometry of the rectangle is defined by rect, and its pen
-         * and brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0). For example, if a QRect(50, 50, 100,
-         * 100) is added, its top-left corner will be at (50, 50) relative to the
-         * origin in the item's coordinate system.
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param rect The definition of the rectangle.
-         * @param pen The pen with which to draw the rectangle.
-         * @param brush The brush with which to draw the rectangle.
-         * @return The resulting item.
-         */
-        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect, QPen pen, QBrush brush) {
-            return addRect(rect.x(), rect.y(), rect.width(), rect.height(), pen, brush);
-        }
-
-        /**
-         * Equivalent to addRect(x, y, w, h, null, null)
-         */
-        public final QGraphicsRectItem addRect(double x, double y, double w, double h) {
-            return addRect(x, y, w, h, null);
-        }
-
-        /**
-         * Equivalent to addRect(x, y, w, h, pen, null)
-         */
-        public final QGraphicsRectItem addRect(double x, double y, double w, double h, QPen pen) {
-            return addRect(x, y, w, h, pen, null);
-        }
-
-        /**
-         * Creates and adds a rectangle item to the scene, and returns the item
-         * reference. The geometry of the rectangle is defined by x, y, w, h, and its pen
-         * and brush are initialized to pen and brush.
-         *
-         * Note that the item's geometry is provided in item coordinates, and its
-         * position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param x The left horizontal coordinate of the rectangle.
-         * @param y The top vertical coordinate of the rectangle.
-         * @param w The width of the rectangle.
-         * @param h The height of the rectangle.
-         * @param pen The pen with which to draw the rectangle.
-         * @param brush The brush with which to draw the rectangle.
-         * @return The resulting item.
-         */
-        public final QGraphicsRectItem addRect(double x, double y, double w, double h, QPen pen, QBrush brush) {
-            QGraphicsRectItem item = new QGraphicsRectItem(x, y, w, h);
-            item.setPen(pen);
-            item.setBrush(brush);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Equivalent to addSimpleText(text, null)
-         */
-        public final QGraphicsSimpleTextItem addSimpleText(String text) {
-            return addSimpleText(text, null);
-        }
-
-        /**
-         * Creates and adds a QGraphicsSimpleTextItem to the scene, and returns the
-         * item reference. The text string is initialized to text, and its font is
-         * initialized to font.
-         *
-         * The item's position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param text The text to add to the scene.
-         * @param font The font to use for displaying the text.
-         * @return The resulting item.
-         */
-        public final QGraphicsSimpleTextItem addSimpleText(String text, QFont font) {
-            QGraphicsSimpleTextItem item = new QGraphicsSimpleTextItem(text);
-            item.setFont(font);
-
-            addItem(item);
-
-            return item;
-        }
-
-        /**
-         * Equivalent to addText(text, null)
-         */
-        public final QGraphicsTextItem addText(String text) {
-            return addText(text, null);
-        }
-
-        /**
-         * Creates and adds a text item to the scene, and returns the item
-         * reference. The text string is initialized to text, and its font
-         * is initialized to font.
-         *
-         * The item's position is initialized to (0, 0).
-         *
-         * If the item is visible (i.e., QGraphicsItem.isVisible() returns true),
-         * QGraphicsScene will emit changed once control goes back to the event
-         * loop.
-         *
-         * @param text The text to add to the scene.
-         * @param font The font to use for displaying the text.
-         * @return The resulting item.
-         */
-        public final QGraphicsTextItem addText(String text, QFont font) {
-            QGraphicsTextItem item = new QGraphicsTextItem(text);
-            item.setFont(font);
-
-            addItem(item);
-
-            return item;
-        }
-
 }// class
 
 class QGraphicsItem___{
@@ -1158,13 +722,13 @@ class QGraphicsItem___{
             this.modalPanel = modalPanel;
         }
         public final boolean isBlockedByModalPanel;
-        public final QGraphicsItem modalPanel;
+        public final @Nullable QGraphicsItem modalPanel;
     }
 }// class
 
 class QStyle___{
-    @io.qt.QtUninvokable
-    private static SubControl findSubControl(int control, int subControl) {
+    @QtUninvokable
+    private static @NonNull SubControl findSubControl(int control, int subControl) {
         SubControl[] subControls = SubControl.values();
         ComplexControl complexControl = ComplexControl.resolve(control);
         String complexControlName;
@@ -1184,6 +748,19 @@ class QStyle___{
         return SubControl.resolve(subControl);
     }
 }// class
+
+class QAbstractSpinBox___{
+    /**
+     * @see #fixup(io.qt.core.QString)
+     */
+    @QtUninvokable
+    public final java.lang.@NonNull String fixup(java.lang.@Nullable String string){
+        io.qt.core.QString _string = new io.qt.core.QString(string);
+        fixup(_string);
+        return _string.toString();
+    }
+}// class
+
 
 
 

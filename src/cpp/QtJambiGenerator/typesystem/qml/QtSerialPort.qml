@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.serialport"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSerialPort"
     module: "qtjambi.serialport"
     description: "Provides access to hardware and virtual serial ports."
@@ -49,7 +49,6 @@ TypeSystem{
     
     EnumType{
         name: "QSerialPort::Direction"
-        flags: "QSerialPort::Directions"
     }
     
     EnumType{
@@ -62,7 +61,6 @@ TypeSystem{
     
     EnumType{
         name: "QSerialPort::PinoutSignal"
-        flags: "QSerialPort::PinoutSignals"
     }
     
     EnumType{
@@ -88,10 +86,6 @@ TypeSystem{
     
     ValueType{
         name: "QSerialPortInfo"
-        ModifyFunction{
-            signature: "operator=(const QSerialPortInfo&)"
-            remove: RemoveFlag.All
-        }
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'QSerialPort::DataErrorPolicy'"}

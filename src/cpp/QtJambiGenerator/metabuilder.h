@@ -69,9 +69,9 @@ class MetaBuilder {
         const MetaFunctionalList& functionals() const { return m_meta_functionals; }
         MetaClassList classesTopologicalSorted() const;
 
-        ScopeModelItem popScope() { return m_scopes.takeLast(); }
+        ScopeModelItem popScope() { Q_ASSERT(m_scopes.size()); return m_scopes.takeLast(); }
         void pushScope(ScopeModelItem item) { m_scopes << item; }
-        ScopeModelItem currentScope() const { return m_scopes.last(); }
+        ScopeModelItem currentScope() const { Q_ASSERT(m_scopes.size()); return m_scopes.last(); }
 
         void dumpLog();
 
@@ -83,53 +83,81 @@ class MetaBuilder {
         QVariant figureOutEnumValue(const uint size, const QString &name, QVariant value, MetaClass *global, MetaEnum *meta_enum, MetaFunction *meta_function = nullptr, QSet<QString> *warnings = nullptr);
         void figureOutEnumValues();
         void figureOutDefaultEnumArguments();
-        void figureOutFunctionsInNamespace(const NamespaceModelItem &item);
 
-        void addAbstractMetaClass(MetaClass *cls);
-        void addAbstractMetaFunctional(MetaFunctional *cls);
+        void addClass(MetaClass *cls);
+        void addFunctional(MetaFunctional *cls);
         MetaClass *traverseTypeAlias(TypeAliasModelItem item);
         MetaFunctional *traverseFunctional(TypeAliasModelItem item);
-        MetaClass *traverseClass(ClassModelItem item);
-        bool setupInheritance(MetaClass *meta_class);
-        bool setupTemplateInstantiations(MetaClass *meta_class);
-        MetaClass *traverseNamespace(NamespaceModelItem item);
+        struct PendingClass{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            PendingClass() = default;
+            PendingClass(const PendingClass&) = default;
+            inline PendingClass(ScopeModelItem _scope, MetaClass* _metaClass, const QList<ScopeModelItem>& _scopes)
+                : scope(_scope), metaClass(_metaClass), scopes(_scopes) {}
+#endif
+            ScopeModelItem scope;
+            MetaClass* metaClass = nullptr;
+            QList<ScopeModelItem> scopes;
+        };
+
+        struct PendingFunctional{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            PendingFunctional() = default;
+            PendingFunctional(const PendingFunctional&) = default;
+            inline PendingFunctional(TypeAliasModelItem _scope, MetaClass* _metaClass, const QList<ScopeModelItem>& _scopes)
+                : scope(_scope), metaClass(_metaClass), scopes(_scopes) {}
+#endif
+            TypeAliasModelItem scope;
+            MetaClass* metaClass = nullptr;
+            QList<ScopeModelItem> scopes;
+        };
+
+        struct PendingHiddenBaseType{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            PendingHiddenBaseType() = default;
+            PendingHiddenBaseType(const PendingHiddenBaseType&) = default;
+            inline PendingHiddenBaseType(MetaClass *_subclass, const MetaClass *_hidden_base_class, const TypeInfo& _info)
+                : subclass(_subclass), hidden_base_class(_hidden_base_class), info(_info) {}
+#endif
+            MetaClass *subclass = nullptr;
+            const MetaClass *hidden_base_class = nullptr;
+            TypeInfo info;
+        };
+
+        MetaClass *traverseClass(ClassModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
+        void setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages);
+        bool setupFunctionTemplateInstantiations(MetaClass *meta_class);
+        MetaClass *traverseNamespace(NamespaceModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
         MetaEnum *traverseEnum(EnumModelItem item, MetaClass *enclosing, const QSet<QString> &metaEnums, const QMap<QString,QString>& flagByEnums);
         MetaClass * instantiateIterator(IteratorTypeEntry *iteratorTypeEntry, MetaClass *subclass, const QList<const MetaType *>& template_types, const QHash<const TypeEntry *,const MetaType *>& template_types_by_name);
         void traverseEnums(ScopeModelItem item, MetaClass *parent, const QSet<QString> &metaEnums, const QMap<QString,QString>& flagByEnums);
-        void traverseFunctions(ScopeModelItem item, MetaClass *parent);
-        void traverseFields(ScopeModelItem item, MetaClass *parent);
-        void traverseStreamOperator(FunctionModelItem function_item);
-        void traverseCompareOperator(FunctionModelItem item);
-        MetaFunction *traverseFunction(FunctionModelItem function);
-        MetaField *traverseField(VariableModelItem field, const MetaClass *cls);
+        void traverseFunctions(ScopeModelItem item);
+        void traverseFields(ScopeModelItem item);
+        MetaFunction *traverseFunction(FunctionModelItem function, const QString& _function_name, const QStringList& tparams);
+        MetaField *traverseField(VariableModelItem field);
         void checkFunctionModifications();
-        void registerHashFunction(FunctionModelItem function_item);
-        void registerToStringCapability(FunctionModelItem function_item);
 
         void parseQ_Property(MetaClass *meta_class, const QStringList &declarations);
         void setupEquals(MetaClass *meta_class);
         void setupBeginEnd(MetaClass *meta_class);
         void setupComparable(MetaClass *meta_class);
         void setupClonable(MetaClass *cls);
-        void setupFunctionDefaults(MetaFunction *meta_function, MetaClass *meta_class);
 
         QString translateDefaultValue(const QString& defaultValueExpression, MetaType *type,
                                       MetaFunction *fnc, MetaClass *,
                                       int argument_index);
-        MetaType *translateType(const TypeInfo& type_info, bool* ok, const QString &contextString = QString(),
+        MetaType *translateType(TypeInfo type_info, bool* ok, const QString &contextString = QString(),
                                       bool resolveType = true, bool resolveScope = true, bool prependScope = true);
 
         static void decideUsagePattern(MetaType *type);
 
-        bool inheritHiddenBaseType(MetaClass *subclass,
+        void inheritHiddenBaseType(MetaClass *subclass,
                              const MetaClass *template_class,
-                             const TypeParser::Info &info);
+                             const TypeInfo &info, QList<MetaClass *>& pendingConstructorUsages);
         MetaType *inheritTemplateType(const QList<const MetaType *> &template_types, const MetaType *meta_type, bool *ok = nullptr);
 
         bool isClass(const QString &qualified_name, const QString& className);
         bool isEnum(const QStringList &qualified_name);
-
-        void fixQObjectForScope(NamespaceModelItem item);
 
         const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
@@ -141,19 +169,24 @@ class MetaBuilder {
             m_qtjambiVersionPatch = qtjambiVersionPatch;
         }
         const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage() const { return m_typeSystemByPackage; }
-        const QMap<TypeSystemTypeEntry *,QSet<QString>>& containerBaseClasses() const { return m_containerBaseClasses; }
         const QStringList &getIncludePathsList() const;
         void setIncludePathsList(const QStringList &newIncludePathsList);
 
         const QString &generateTypeSystemQML() const;
         void setGenerateTypeSystemQML(const QString &newGenerateTypeSystemQML);
+        const QMap<QString,QStringList>& requiredFeatures() const { return _M_requiredFeatures; }
+        void setRequiredFeatures(const QMap<QString,QStringList>& requiredFeatures) { _M_requiredFeatures = requiredFeatures; }
 
 protected:
         MetaType* exchangeTemplateTypes(const MetaType* type, bool isReturn, const QMap<QString,MetaType*>& templateTypes);
-        MetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
+        MetaClass *argumentToClass(const MetaType* type);
+        void addInclude(TS::TypeEntry * entry, QString fileName, bool extra = false);
+        void addInclude(TS::ComplexTypeEntry * entry, const MetaType* includedType);
 
+        void fixFunctions(MetaClass * cls);
     private:
         TypeInfo analyzeTypeInfo(MetaClass *cls, QString strg);
+        TypeInfo convertInfo(MetaClass *cls, const TypeParser::Info& ti);
         MetaFunctional * findFunctional(MetaClass *cls, const FunctionalTypeEntry * fentry);
         void fixMissingIterator();
         void sortLists();
@@ -162,17 +195,11 @@ protected:
                               MetaEnum *meta_enum,
                               MetaFunction *meta_function, QSet<QString> *warnings = nullptr);
 
-        struct RenamedOperator{
-            QString newName;
-            TypeEntry *castType;
-            bool skip;
-        };
-
-        RenamedOperator rename_operator(const QString &oper);
-
         QString m_out_dir;
 
         MetaClassList m_meta_classes;
+        QMap<QString,QHashDummyValue> m_classNames;
+        QMap<QString,MetaClass*> m_globals;
         MetaFunctionalList m_meta_functionals;
         MetaClassList m_templates;
         MetaClassList m_template_iterators;
@@ -214,15 +241,16 @@ protected:
         QList<MissingIterator> m_missing_iterators;
         const QMap<QString, QString>* m_features;
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
-        QMap<TypeSystemTypeEntry *,QSet<QString>> m_containerBaseClasses;
         QList<MetaEnum *> m_scopeChangedEnums;
         QStringList m_includePathsList;
+        QMap<QString,QStringList> _M_requiredFeatures;
         uint m_qtVersionMajor;
         uint m_qtVersionMinor;
         uint m_qtVersionPatch;
         uint m_qtjambiVersionPatch;
         TS::TypeDatabase* m_database;
         QString m_generateTypeSystemQML;
+        QSet<MetaClass*> m_functions_fixed;
 };
 
 struct Operator {

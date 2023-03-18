@@ -73,6 +73,10 @@ TypeSystem{
             fileName: "tulip.h"
             location: Include.Local
         }
+    
+		FunctionalType{
+			name: "TestStdFunction"
+		}
     }
     
     ValueType{
@@ -117,7 +121,6 @@ TypeSystem{
     
     EnumType{
         name: "TheGlobalFlag"
-        flags: "TheGlobalFlags"
     }
     
     EnumType{
@@ -156,43 +159,40 @@ TypeSystem{
     
     NamespaceType{
         name: "EnumNamespace"
-    }
+		EnumType{
+			name: "NSFlag"
+		}
     
-    EnumType{
-        name: "EnumNamespace::NSFlag"
-        flags: "EnumNamespace::NSFlags"
-    }
-    
-    EnumType{
-        name: "EnumNamespace::NSEnumClass"
-        RejectEnumValue{
-            name: "Repeat1"
-        }
-        RejectEnumValue{
-            name: "Repeat2"
-        }
-        RejectEnumValue{
-            name: "Repeat3"
-        }
-    }
-    
-    EnumType{
-        name: "EnumNamespace::NSClassFlag"
-        flags: "EnumNamespace::NSClassFlags"
-    }
-    
-    EnumType{
-        name: "GlobalEnumTest::ScopedEnum"
-    }
-    
-    EnumType{
-        name: "GlobalEnumTest::ScopedEnumClass"
+		EnumType{
+			name: "NSEnumClass"
+			RejectEnumValue{
+				name: "Repeat1"
+			}
+			RejectEnumValue{
+				name: "Repeat2"
+			}
+			RejectEnumValue{
+				name: "Repeat3"
+			}
+		}
+		
+		EnumType{
+			name: "NSClassFlag"
+		}
     }
     
     ObjectType{
         name: "GlobalEnumTest"
+    
+		EnumType{
+			name: "ScopedEnum"
+		}
+		
+		EnumType{
+			name: "ScopedEnumClass"
+		}
         ModifyFunction{
-            signature: "testGlobalFlags(QFlags<TheGlobalFlag>)"
+            signature: "testGlobalFlags(TheGlobalFlags)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
@@ -688,12 +688,6 @@ TypeSystem{
         ModifyFunction{
             signature: "callValidate(QString *, int *)"
             ModifyArgument{
-                index: 1
-                ArrayType{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ArrayType{
                     minLength: 1
@@ -897,62 +891,62 @@ TypeSystem{
     }
     
     NamespaceType{
-        name: "NameSpace::NameSpace2"
-    }
-    
-    NamespaceType{
-        name: "NameSpace::NameSpace2::NameSpace3"
-    }
-    
-    ObjectType{
-        name: "NameSpace::NameSpace2::NameSpace3::ObjectC"
-    }
-    
-    ObjectType{
-        name: "NameSpace::NameSpace2::NameSpace3::ObjectD"
-    }
-    
-    ValueType{
-        name: "NameSpace::NameSpace2::NameSpace3::ValueB"
-    }
-    
-    InterfaceType{
-        name: "NameSpace::NameSpace2::NameSpace3::InterfaceA"
-    }
-    
-    NamespaceType{
         name: "NameSpace"
         Include{
             fileName: "namespace.h"
             location: Include.Local
         }
-    }
     
-    ObjectType{
-        name: "NameSpace::ObjectA"
-        Include{
-            fileName: "namespace.h"
-            location: Include.Local
-        }
-    }
+		NamespaceType{
+			name: "NameSpace2"
     
-    ObjectType{
-        name: "NameSpace::ObjectB"
-        Include{
-            fileName: "namespace.h"
-            location: Include.Local
-        }
-    }
+			NamespaceType{
+				name: "NameSpace3"
     
-    ValueType{
-        name: "NameSpace::ValueA"
-        Include{
-            fileName: "namespace.h"
-            location: Include.Local
-        }
-        ModifyFunction{
-            signature: "operator=(NameSpace::ValueA)"
-			remove: RemoveFlag.All
+				ObjectType{
+					name: "ObjectC"
+				}
+				
+				ObjectType{
+					name: "ObjectD"
+				}
+				
+				ValueType{
+					name: "ValueB"
+				}
+				
+				InterfaceType{
+					name: "InterfaceA"
+				}
+			}
+		}
+    
+		ObjectType{
+			name: "ObjectA"
+			Include{
+				fileName: "namespace.h"
+				location: Include.Local
+			}
+		}
+		
+		ObjectType{
+			name: "ObjectB"
+			Include{
+				fileName: "namespace.h"
+				location: Include.Local
+			}
+		}
+		
+		ValueType{
+			name: "ValueA"
+			Include{
+				fileName: "namespace.h"
+				location: Include.Local
+			}
+			ModifyFunction{
+				signature: "operator=(NameSpace::ValueA)"
+				remove: RemoveFlag.All
+			}
 		}
     }
     
@@ -1424,6 +1418,14 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
     
     ObjectType{
         name: "FunctionManager"
+    
+		FunctionalType{
+			name: "StringSupplier"
+		}
+		
+		FunctionalType{
+			name: "StringConsumer"
+		}
     }
     
     ObjectType{
@@ -1434,28 +1436,16 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
         name: "ExceptionTest"
     }
     
-    FunctionalType{
-        name: "FunctionManager::StringSupplier"
-    }
-    
-    FunctionalType{
-        name: "FunctionManager::StringConsumer"
-    }
-    
     ObjectType{
         name: "FunctionalTest"
-    }
     
-    FunctionalType{
-        name: "FunctionalTest::TestFunction1"
-    }
-    
-    FunctionalType{
-        name: "FunctionalTest::TestFunction2"
-    }
-    
-    FunctionalType{
-        name: "Tulip::TestStdFunction"
+		FunctionalType{
+			name: "TestFunction1"
+		}
+		
+		FunctionalType{
+			name: "TestFunction2"
+		}
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'abstractFunction(const QString*)' in 'AnotherNonAbstractSubclass'"}

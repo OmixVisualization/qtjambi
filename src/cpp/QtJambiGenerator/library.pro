@@ -153,9 +153,9 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 # These option changes are recommended since at least: win32-msvc.net
 win32-msvc* {
-    QMAKE_CXXFLAGS += -Zm500
-    QMAKE_CXXFLAGS -= -Zm200
-    QMAKE_CFLAGS -= -Zm200
+#    QMAKE_CXXFLAGS += -Zm500
+ #   QMAKE_CXXFLAGS -= -Zm200
+  #  QMAKE_CFLAGS -= -Zm200
     CONFIG += embed_manifest_dll force_embed_manifest
 }
 

@@ -52,7 +52,7 @@ public:
                                  );
     }
 
-    QtJambiTypeInfo(const QtJambiTypeInfo& info)
+    inline QtJambiTypeInfo(const QtJambiTypeInfo& info)
         :
           isPointer(info.isPointer)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -78,77 +78,69 @@ private:
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           {}
 };
-
-typedef int(*SignalMethodIndexProvider)();
-
-struct SignalMetaInfo
+struct QTJAMBI_EXPORT SignalMetaInfo
 {
-    inline SignalMetaInfo():
-        signal_name(nullptr),
-        signal_signature(nullptr),
-        signal_argumentcount(0),
-        signal_method_index_provider(nullptr){}
-    inline SignalMetaInfo(const SignalMetaInfo& copy):
-        signal_name(copy.signal_name),
-        signal_signature(copy.signal_signature),
-        signal_argumentcount(copy.signal_argumentcount),
-        signal_method_index_provider(copy.signal_method_index_provider)
-    {}
-    inline SignalMetaInfo(const char * _signal_name,
+    typedef int(*SignalMethodIndexProvider)();
+    SignalMetaInfo();
+    SignalMetaInfo(const SignalMetaInfo& other);
+    SignalMetaInfo(SignalMetaInfo&& other);
+    SignalMetaInfo& operator=(const SignalMetaInfo& other);
+    SignalMetaInfo& operator=(SignalMetaInfo&& other);
+    SignalMetaInfo(const char * _signal_name,
                             const char * _signal_signature,
                             const int _signal_argumentcount,
-                            SignalMethodIndexProvider _signal_method_index_provider):
-        signal_name(_signal_name),
-        signal_signature(_signal_signature),
-        signal_argumentcount(_signal_argumentcount),
-        signal_method_index_provider(_signal_method_index_provider)
-    {}
+                            SignalMethodIndexProvider _signal_method_index_provider);
     const char * signal_name;
     const char * signal_signature;
     int signal_argumentcount;
     SignalMethodIndexProvider signal_method_index_provider;
 };
 
-struct FunctionInfo{
+struct QTJAMBI_EXPORT FunctionInfo{
     enum Flags : quint8{
         None = 0,
         Abstract = 0x01,
         Private = 0x02,
     };
-    inline FunctionInfo(): name(nullptr),signature(nullptr),flags(None){}
-    inline FunctionInfo(const FunctionInfo& copy): name(copy.name),signature(copy.signature),flags(copy.flags){}
-    inline FunctionInfo(const char *_name, const char *_signature, Flags _flags = None): name(_name),signature(_signature),flags(_flags){}
+    FunctionInfo();
+    FunctionInfo(const FunctionInfo& other);
+    FunctionInfo(FunctionInfo&& other);
+    FunctionInfo(const char *_name, const char *_signature, Flags _flags = None);
+    FunctionInfo& operator=(const FunctionInfo& other);
+    FunctionInfo& operator=(FunctionInfo&& other);
     const char * name;
     const char * signature;
     Flags flags;
 };
 
-struct ConstructorInfo{
+struct QTJAMBI_EXPORT ConstructorInfo{
     typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*);
-    inline ConstructorInfo(): constructorFunction(nullptr),signature(nullptr){}
-    inline ConstructorInfo(const ConstructorInfo& copy): constructorFunction(copy.constructorFunction),signature(copy.signature){}
-    inline ConstructorInfo(Constructor _constructorFunction, const char *_signature): constructorFunction(_constructorFunction),signature(_signature){}
+    ConstructorInfo();
+    ConstructorInfo(const ConstructorInfo& other);
+    ConstructorInfo(Constructor _constructorFunction, const char *_signature);
+    ConstructorInfo(ConstructorInfo&& other);
+    ConstructorInfo& operator=(const ConstructorInfo& other);
+    ConstructorInfo& operator=(ConstructorInfo&& other);
     Constructor constructorFunction;
     const char *signature;
 };
 
 class QtJambiScope;
 
-struct ParameterInfo{
+struct QTJAMBI_EXPORT ParameterInfo{
     typedef bool(*QtToJavaConverterFunction)(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType);
     typedef bool(*JavaToQtConverterFunction)(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType);
     int metaTypeId = 0;
     const char* javaClass = nullptr;
     QtToJavaConverterFunction qtToJavaConverterFunction = nullptr;
     JavaToQtConverterFunction javaToQtConverterFunction = nullptr;
-    ParameterInfo() = default;
-    ParameterInfo(const ParameterInfo&) = default;
-    ParameterInfo(int _metaTypeId):metaTypeId(_metaTypeId){}
-    ParameterInfo(int _metaTypeId, const char* _javaClass, QtToJavaConverterFunction _qtToJavaConverterFunction, JavaToQtConverterFunction _javaToQtConverterFunction)
-        : metaTypeId(_metaTypeId),
-          javaClass(_javaClass),
-          qtToJavaConverterFunction(_qtToJavaConverterFunction),
-          javaToQtConverterFunction(_javaToQtConverterFunction){}
+    ParameterInfo();
+    ParameterInfo(const ParameterInfo& other);
+    ParameterInfo& operator=(const ParameterInfo& other);
+    ParameterInfo(ParameterInfo&& other);
+    ParameterInfo& operator=(ParameterInfo&& other);
+    ParameterInfo(int _metaTypeId);
+    ParameterInfo(int _metaTypeId, const char* _javaClass, QtToJavaConverterFunction _qtToJavaConverterFunction, JavaToQtConverterFunction _javaToQtConverterFunction);
 };
 
 typedef bool (*ParameterInfoProvider)(const QMetaMethod& method, QList<ParameterInfo>& infos);
@@ -193,7 +185,7 @@ constexpr const char * interfaceIID(){
 
 template<typename T, bool = QtJambiPrivate::supports_qHash<T>::value>
 struct RegistryHelper{
-    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(T), [](const void* ptr, hash_type seed)->hash_type{ return !ptr ? 0 : ::qHash(*reinterpret_cast<const T*>(ptr), seed); }); }
+    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(T), [](const void* ptr, hash_type seed)->hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const T*>(ptr), seed); }); }
 };
 
 template<typename T>
@@ -631,25 +623,45 @@ int registerMetaType(const char *typeName,
                             );
 }
 
+namespace Private{
+
+template<typename T, bool = QMetaTypeId<T>::Defined>
+struct MetaTypeUtil{
+    static int registerMetaType(const char *typeName){
+        return RegistryAPI::registerMetaType<T>(typeName,
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                  QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
+                                  QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
+    #else
+                                  QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                                  QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                                  QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                                  QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
+                                  QtPrivate::QEqualityOperatorForType<T>::equals,
+                                  QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                                  QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
+                                  QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
+                                  QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn
+    #endif
+                                );
+    }
+};
+
+template<typename T>
+struct MetaTypeUtil<T,true>{
+    static int registerMetaType(const char *){
+        registerOperators<T>();
+        registerMetaTypeID(typeid(T), QMetaTypeId<T>::qt_metatype_id());
+        return QMetaTypeId<T>::qt_metatype_id();
+    }
+};
+
+}
+
 template<typename T>
 int registerMetaType(const char *typeName)
 {
-    return registerMetaType<T>(typeName,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                              QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
-                              QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
-#else
-                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
-                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
-                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
-                              QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
-                              QtPrivate::QEqualityOperatorForType<T>::equals,
-                              QtPrivate::QLessThanOperatorForType<T>::lessThan,
-                              QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
-                              QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
-                              QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn
-#endif
-                            );
+    return Private::MetaTypeUtil<T>::registerMetaType(typeName);
 }
 
 template<typename T>

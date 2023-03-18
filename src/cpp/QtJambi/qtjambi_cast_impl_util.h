@@ -610,6 +610,30 @@ struct create_container_pointer<false, false, true, false, Container, has_defaul
     }
 };
 
+template<typename NativeType, bool is_const, bool is_movable = std::is_move_constructible<NativeType>::value>
+struct qtjambi_move_or_copy_decider{
+    constexpr static jobject cast(JNIEnv * env, const NativeType& in, const char* nativeTypeName, QtJambiScope*){
+        return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType), nativeTypeName);
+    }
+};
+
+template<typename NativeType>
+struct qtjambi_move_or_copy_decider<NativeType,false,true>{
+    static jobject cast(JNIEnv * env, NativeType& in, const char* nativeTypeName, QtJambiScope*){
+        NativeType* ptr = new NativeType(std::move(in));
+        try{
+            jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr, typeid(NativeType), nativeTypeName);
+            if(!out)
+                delete ptr;
+            return out;
+        }catch(const JavaException& exn){
+            delete ptr;
+            exn.raise();
+            return nullptr;
+        }
+    }
+};
+
 } // namespace QtJambiPrivate
 
 #endif // QTJAMBI_CAST_IMPL_UTIL_H

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.concurrent"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtConcurrent"
     module: "qtjambi.concurrent"
     description: "Classes for writing multi-threaded programs without using low-level threading primitives."
@@ -44,732 +44,6 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_util();"}
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        enumName: "enum_1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "operator|"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "run"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "runWithPromise"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "task"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startFiltered"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "selectIteration"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "blockingFiltered"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startMap"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startMappedReduced"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startMapped"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startThreadEngine"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "startFilteredReduced"
-    }
-    
-    Rejection{
-        className: "QtConcurrent"
-        functionName: "filterInternal"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::BlockSizeManager"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::BlockSizeManagerV2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::BlockSizeManagerV2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ConstMemberFunctionWrapper"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::Exception"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FilterKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FilteredEachKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FilteredReducedKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FunctionWrapper0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FunctionWrapper1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FunctionWrapper2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::IntermediateResults"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::DefaultValueContainer"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::IterateKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MapKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MappedEachKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MappedReducedKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::Median"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MemberFunctionWrapper"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MemberFunctionWrapper1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::qValueType"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ReduceKernel"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultItem"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultIterator"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultIteratorBase"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultReporter"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultStore"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ResultStoreBase"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::RunFunctionTask"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::RunFunctionTaskBase"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectSpecialization"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredConstMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredFunctorPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SelectStoredMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SequenceHolder1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::SequenceHolder2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredConstMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngine"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngineSemaphore"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngineStarter"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngineStarterBase"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::UnhandledException"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredConstMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredFunctorPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall0"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall1"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall2"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall3"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall4"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::VoidStoredMemberFunctionPointerCall5"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::internal"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctorCall"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FunctionResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::FunctionResolverHelper"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::InvokeResult"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::MemberFunctionResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::NonMemberFunctionResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::NonPromiseTaskResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::PromiseTaskResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::QTaskBuilder"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctionCall"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::StoredFunctionCallWithPromise"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::TaskResolver"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::TaskResolverHelper"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::TaskStartParameters"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngineBarrier"
-    }
-    
-    Rejection{
-        className: "QtConcurrent::ThreadEngineBase"
-    }
-    
-    Rejection{
-        className: "QtPrivate::ExceptionStore"
     }
     
     NamespaceType{
@@ -795,6 +69,700 @@ TypeSystem{
                 location: Include.Java
             }
         }
+
+        Rejection{enumName: "enum_1"}
+        Rejection{functionName: "operator|"}
+        Rejection{functionName: "run"}
+        Rejection{functionName: "runWithPromise"}
+        Rejection{functionName: "task"}
+        Rejection{functionName: "startFiltered"}
+        Rejection{functionName: "selectIteration"}
+        Rejection{functionName: "blockingFiltered"}
+        Rejection{functionName: "startMap"}
+        Rejection{functionName: "startMappedReduced"}
+        Rejection{functionName: "startMapped"}
+        Rejection{functionName: "startThreadEngine"}
+        Rejection{functionName: "startFilteredReduced"}
+        Rejection{functionName: "filterInternal"}
+        Rejection{functionName: "blockingMappedReduced"}
+        Rejection{functionName: "blockingFilter"}
+        Rejection{functionName: "mappedReduced"}
+        Rejection{functionName: "mapped"}
+        Rejection{functionName: "filter"}
+        Rejection{functionName: "blockingMapped"}
+        Rejection{functionName: "filtered"}
+        Rejection{functionName: "filteredReduced"}
+        Rejection{functionName: "blockingMap"}
+        Rejection{functionName: "map"}
+        Rejection{functionName: "blockingFilteredReduced"}
+        Rejection{
+            className: "BlockSizeManager"
+        }
+
+        Rejection{
+            className: "BlockSizeManagerV2"
+        }
+
+        Rejection{
+            className: "BlockSizeManagerV2"
+        }
+
+        Rejection{
+            className: "ConstMemberFunctionWrapper"
+        }
+
+        Rejection{
+            className: "Exception"
+        }
+
+        Rejection{
+            className: "FilterKernel"
+        }
+
+        Rejection{
+            className: "FilteredEachKernel"
+        }
+
+        Rejection{
+            className: "FilteredReducedKernel"
+        }
+
+        Rejection{
+            className: "FunctionWrapper0"
+        }
+
+        Rejection{
+            className: "FunctionWrapper1"
+        }
+
+        Rejection{
+            className: "FunctionWrapper2"
+        }
+
+        Rejection{
+            className: "IntermediateResults"
+        }
+
+        Rejection{
+            className: "DefaultValueContainer"
+        }
+
+        Rejection{
+            className: "IterateKernel"
+        }
+
+        Rejection{
+            className: "MapKernel"
+        }
+
+        Rejection{
+            className: "MappedEachKernel"
+        }
+
+        Rejection{
+            className: "MappedReducedKernel"
+        }
+
+        Rejection{
+            className: "Median"
+        }
+
+        Rejection{
+            className: "MemberFunctionWrapper"
+        }
+
+        Rejection{
+            className: "MemberFunctionWrapper1"
+        }
+
+        Rejection{
+            className: "qValueType"
+        }
+
+        Rejection{
+            className: "ReduceKernel"
+        }
+
+        Rejection{
+            className: "ResultItem"
+        }
+
+        Rejection{
+            className: "ResultIterator"
+        }
+
+        Rejection{
+            className: "ResultIteratorBase"
+        }
+
+        Rejection{
+            className: "ResultReporter"
+        }
+
+        Rejection{
+            className: "ResultStore"
+        }
+
+        Rejection{
+            className: "ResultStoreBase"
+        }
+
+        Rejection{
+            className: "RunFunctionTask"
+        }
+
+        Rejection{
+            className: "RunFunctionTaskBase"
+        }
+
+        Rejection{
+            className: "SelectSpecialization"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredConstMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorCall5"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredFunctorPointerCall5"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "SelectStoredMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "SequenceHolder1"
+        }
+
+        Rejection{
+            className: "SequenceHolder2"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "StoredConstMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall0"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall1"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall2"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall3"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall4"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall5"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall0"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall1"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall2"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall3"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall4"
+        }
+
+        Rejection{
+            className: "StoredFunctorPointerCall5"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "StoredMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "ThreadEngine"
+        }
+
+        Rejection{
+            className: "ThreadEngineSemaphore"
+        }
+
+        Rejection{
+            className: "ThreadEngineStarter"
+        }
+
+        Rejection{
+            className: "ThreadEngineStarterBase"
+        }
+
+        Rejection{
+            className: "UnhandledException"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredConstMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorCall5"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredFunctorPointerCall5"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionCall5"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall0"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall1"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall2"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall3"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall4"
+        }
+
+        Rejection{
+            className: "VoidStoredMemberFunctionPointerCall5"
+        }
+
+        Rejection{
+            className: "internal"
+        }
+
+        Rejection{
+            className: "StoredFunctorCall"
+        }
+
+        Rejection{
+            className: "FunctionResolver"
+        }
+
+        Rejection{
+            className: "FunctionResolverHelper"
+        }
+
+        Rejection{
+            className: "InvokeResult"
+        }
+
+        Rejection{
+            className: "MemberFunctionResolver"
+        }
+
+        Rejection{
+            className: "NonMemberFunctionResolver"
+        }
+
+        Rejection{
+            className: "NonPromiseTaskResolver"
+        }
+
+        Rejection{
+            className: "PromiseTaskResolver"
+        }
+
+        Rejection{
+            className: "QTaskBuilder"
+        }
+
+        Rejection{
+            className: "StoredFunctionCall"
+        }
+
+        Rejection{
+            className: "StoredFunctionCallWithPromise"
+        }
+
+        Rejection{
+            className: "TaskResolver"
+        }
+
+        Rejection{
+            className: "TaskResolverHelper"
+        }
+
+        Rejection{
+            className: "TaskStartParameters"
+        }
+
+        Rejection{
+            className: "ThreadEngineBarrier"
+        }
+
+        Rejection{
+            className: "ThreadEngineBase"
+        }
+
+        EnumType{
+            name: "ReduceOption"
+        }
+
+        EnumType{
+            name: "ThreadFunctionResult"
+        }
+
+        EnumType{
+            name: "FutureResult"
+        }
+
+        ObjectType{
+            name: "MedianDouble"
+        }
+
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -821,23 +789,6 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    EnumType{
-        name: "QtConcurrent::ReduceOption"
-        flags: "QtConcurrent::ReduceOptions"
-    }
-    
-    EnumType{
-        name: "QtConcurrent::ThreadFunctionResult"
-    }
-    
-    EnumType{
-        name: "QtConcurrent::FutureResult"
-    }
-    
-    ObjectType{
-        name: "QtConcurrent::MedianDouble"
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::selectIteration', unmatched parameter type 'T'"}

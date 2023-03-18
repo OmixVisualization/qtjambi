@@ -36,256 +36,276 @@
 #include <QtJambiGui/hashes.h>
 #include <QtJambiNetwork/hashes.h>
 
-hash_type qHash(const QAudioFormat& value);
+hash_type qHash(const QAudioFormat& value, hash_type seed = 0);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QVideoFrame::PaintOptions& value){
-    return qHashMulti(0, value.backgroundColor, int(value.aspectRatioMode));
+inline hash_type qHash(const QVideoFrame::PaintOptions& value, hash_type seed = 0){
+    return qHashMulti(seed, value.backgroundColor, int(value.aspectRatioMode));
 }
 
 inline bool operator==(const QVideoFrame::PaintOptions& value1, const QVideoFrame::PaintOptions& value2){
     return value1.backgroundColor==value2.backgroundColor && value1.aspectRatioMode==value2.aspectRatioMode;
 }
 
-inline hash_type qHash(const QVideoFrameFormat& value){
+inline hash_type qHash(const QVideoFrameFormat& value, hash_type seed = 0){
     if(!value.isValid())
-        return 0;
-    hash_type hashCode = qHash(int(value.pixelFormat()));
-    hashCode = hashCode * 31 + qHash(value.frameWidth());
-    hashCode = hashCode * 31 + qHash(value.frameHeight());
-    hashCode = hashCode * 31 + qHash(value.planeCount());
-    hashCode = hashCode * 31 + qHash(value.viewport());
-    hashCode = hashCode * 31 + qHash(int(value.scanLineDirection()));
-    hashCode = hashCode * 31 + qHash(int(value.frameRate()));
-    hashCode = hashCode * 31 + qHash(int(value.yCbCrColorSpace()));
-    hashCode = hashCode * 31 + qHash(value.isMirrored());
-    hashCode = hashCode * 31 + qHash(value.vertexShaderFileName());
-    hashCode = hashCode * 31 + qHash(value.fragmentShaderFileName());
-    return hashCode;
+        return seed;
+    return qHashMulti(seed, int(value.pixelFormat()), value.frameWidth(),
+               value.frameHeight(), value.planeCount(), value.viewport(),
+               int(value.scanLineDirection()), int(value.frameRate()),
+               int(value.yCbCrColorSpace()), value.isMirrored(), value.vertexShaderFileName(),
+               value.fragmentShaderFileName());
 }
 
-inline hash_type qHash(const QAudioDevice& value){
+inline hash_type qHash(const QAudioDevice& value, hash_type seed = 0){
     if(!value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.id());
-    hashCode = hashCode * 31 + qHash(value.description());
-    hashCode = hashCode * 31 + qHash(value.isDefault());
-    hashCode = hashCode * 31 + qHash(int(value.mode()));
-    hashCode = hashCode * 31 + qHash(value.preferredFormat());
-    hashCode = hashCode * 31 + qHash(value.minimumSampleRate());
-    hashCode = hashCode * 31 + qHash(value.maximumSampleRate());
-    hashCode = hashCode * 31 + qHash(value.minimumChannelCount());
-    hashCode = hashCode * 31 + qHash(value.maximumChannelCount());
-    hashCode = hashCode * 31 + qHash(value.supportedSampleFormats());
-    return hashCode;
+        return seed;
+    return qHashMulti(seed, value.id(),
+                            value.description(),
+                            value.isDefault(),
+                            int(value.mode()),
+                            value.preferredFormat(),
+                            value.minimumSampleRate(),
+                            value.maximumSampleRate(),
+                            value.minimumChannelCount(),
+                            value.maximumChannelCount(),
+                            value.supportedSampleFormats());
 }
 
-inline hash_type qHash(const QCameraFormat& value){
+inline hash_type qHash(const QCameraFormat& value, hash_type seed = 0){
     if(!value.isNull())
-        return 0;
-    hash_type hashCode = qHash(int(value.pixelFormat()));
-    hashCode = hashCode * 31 + qHash(value.resolution());
-    hashCode = hashCode * 31 + qHash(value.minFrameRate());
-    hashCode = hashCode * 31 + qHash(value.maxFrameRate());
-    return hashCode;
+        return seed;
+    return qHashMulti(seed, int(value.pixelFormat()),
+                            value.resolution(),
+                            value.minFrameRate(),
+                            value.maxFrameRate());
 }
 
-inline hash_type qHash(const QCameraDevice& value){
+inline hash_type qHash(const QCameraDevice& value, hash_type seed = 0){
     if(!value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.id());
-    hashCode = hashCode * 31 + qHash(value.description());
-    hashCode = hashCode * 31 + qHash(value.isDefault());
-    hashCode = hashCode * 31 + qHash(int(value.position()));
-    hashCode = hashCode * 31 + qHash(value.photoResolutions());
-    hashCode = hashCode * 31 + qHash(value.videoFormats());
-    return hashCode;
+        return seed;
+    return qHashMulti(seed, value.id(),
+                            value.description(),
+                            value.isDefault(),
+                            int(value.position()),
+                            value.photoResolutions(),
+                            value.videoFormats());
 }
 
-inline hash_type qHash(const QMediaTimeRange::Interval& value){
-    return qHashMulti(0, value.start(), value.end(), value.isNormal());
+inline hash_type qHash(const QMediaTimeRange::Interval& value, hash_type seed = 0){
+    return qHashMulti(seed, value.start(), value.end(), value.isNormal());
 }
 
-inline hash_type qHash(const QMediaFormat& value){
-    return qHashMulti(0, value.fileFormat(), int(value.audioCodec()), int(value.videoCodec()));
+inline hash_type qHash(const QMediaFormat& value, hash_type seed = 0){
+    return qHashMulti(seed, value.fileFormat(), int(value.audioCodec()), int(value.videoCodec()));
 }
 #endif
 
 
-inline hash_type qHash(const QVideoFrame& value){
+inline hash_type qHash(const QVideoFrame& value, hash_type seed = 0){
     if(!value.isValid())
-        return 0;
-    hash_type hashCode = qHash(value.size());
-    hashCode = hashCode * 31 + qHash(value.width());
-    hashCode = hashCode * 31 + qHash(value.height());
-    hashCode = hashCode * 31 + qHash(value.endTime());
-    hashCode = hashCode * 31 + qHash(int(value.mapMode()));
-    hashCode = hashCode * 31 + qHash(value.isMapped());
+        return seed;
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.size());
+    seed = hash(seed, value.width());
+    seed = hash(seed, value.height());
+    seed = hash(seed, value.endTime());
+    seed = hash(seed, int(value.mapMode()));
+    seed = hash(seed, value.isMapped());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.fieldType());
+    seed = hash(seed, value.fieldType());
 #else
-    hashCode = hashCode * 31 + qHash(value.surfaceFormat());
-    hashCode = hashCode * 31 + qHash(value.isReadable());
+    seed = hash(seed, value.surfaceFormat());
+    seed = hash(seed, value.isReadable());
 #endif
-    hashCode = hashCode * 31 + qHash(value.startTime());
-    hashCode = hashCode * 31 + qHash(int(value.handleType()));
-    hashCode = hashCode * 31 + qHash(value.isReadable());
-    hashCode = hashCode * 31 + qHash(value.isWritable());
-    hashCode = hashCode * 31 + qHash(int(value.pixelFormat()));
-    hashCode = hashCode * 31 + qHash(value.planeCount());
+    seed = hash(seed, value.startTime());
+    seed = hash(seed, int(value.handleType()));
+    seed = hash(seed, value.isReadable());
+    seed = hash(seed, value.isWritable());
+    seed = hash(seed, int(value.pixelFormat()));
+    seed = hash(seed, value.planeCount());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.mappedBytes());
-    hashCode = hashCode * 31 + qHash(value.bytesPerLine());
-    hashCode = hashCode * 31 + qHash(QByteArray(reinterpret_cast<const char*>(value.bits()), value.mappedBytes()));
+    seed = hash(seed, value.mappedBytes());
+    seed = hash(seed, value.bytesPerLine());
+    seed = hash(seed, QByteArray(reinterpret_cast<const char*>(value.bits()), value.mappedBytes()));
 #else
     for(int i=0; i< value.planeCount(); ++i){
-        hashCode = hashCode * 31 + qHash(value.mappedBytes(i));
-        hashCode = hashCode * 31 + qHash(value.bytesPerLine(i));
-        hashCode = hashCode * 31 + qHash(QByteArray(reinterpret_cast<const char*>(value.bits(i)), value.mappedBytes(i)));
+        seed = hash(seed, value.mappedBytes(i));
+        seed = hash(seed, value.bytesPerLine(i));
+        seed = hash(seed, QByteArray(reinterpret_cast<const char*>(value.bits(i)), value.mappedBytes(i)));
     }
 #endif
-    return hashCode;
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QVideoEncoderSettings& value){
+inline hash_type qHash(const QVideoEncoderSettings& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.encodingMode());
-    hashCode = hashCode * 31 + qHash(value.codec());
-    hashCode = hashCode * 31 + qHash(value.bitRate());
-    hashCode = hashCode * 31 + qHash(value.quality());
-    hashCode = hashCode * 31 + qHash(value.frameRate());
-    hashCode = hashCode * 31 + qHash(value.resolution());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.encodingMode());
+    seed = hash(seed, value.codec());
+    seed = hash(seed, value.bitRate());
+    seed = hash(seed, value.quality());
+    seed = hash(seed, value.frameRate());
+    seed = hash(seed, value.resolution());
+    return seed;
 }
 
-inline hash_type qHash(const QImageEncoderSettings& value){
+inline hash_type qHash(const QImageEncoderSettings& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.quality());
-    hashCode = hashCode * 31 + qHash(value.codec());
-    hashCode = hashCode * 31 + qHash(value.resolution());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.quality());
+    seed = hash(seed, value.codec());
+    seed = hash(seed, value.resolution());
+    return seed;
+}
+
+inline hash_type qHash(const QVideoSurfaceFormat& value, hash_type seed = 0){
+    return qHash(quintptr(reinterpret_cast<const QSharedDataPointer<QSharedData>&>(value).data()), seed);
+}
+
+inline hash_type qHash(const QCameraViewfinderSettings& value, hash_type seed = 0){
+    if(value.isNull())
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.resolution());
+    seed = hash(seed, value.minimumFrameRate());
+    seed = hash(seed, value.maximumFrameRate());
+    seed = hash(seed, value.pixelFormat());
+    seed = hash(seed, value.pixelAspectRatio());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QMediaTimeRange& value){
-    hash_type hashCode = qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.intervals());
-    hashCode = hashCode * 31 + qHash(value.latestTime());
-    hashCode = hashCode * 31 + qHash(value.earliestTime());
-    hashCode = hashCode * 31 + qHash(value.isContinuous());
-    return hashCode;
+inline hash_type qHash(const QMediaTimeRange& value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.intervals());
+    seed = hash(seed, value.latestTime());
+    seed = hash(seed, value.earliestTime());
+    seed = hash(seed, value.isContinuous());
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QMediaTimeInterval& value){
-    hash_type hashCode = qHash(value.start());
-    hashCode = hashCode * 31 + qHash(value.end());
-    hashCode = hashCode * 31 + qHash(value.isNormal());
-    return hashCode;
+inline hash_type qHash(const QMediaTimeInterval& value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.start());
+    seed = hash(seed, value.end());
+    seed = hash(seed, value.isNormal());
+    return seed;
 }
 
-inline hash_type qHash(const QMediaServiceProviderHint& value){
+inline hash_type qHash(const QMediaServiceProviderHint& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.codecs());
-    hashCode = hashCode * 31 + qHash(value.device());
-    hashCode = hashCode * 31 + qHash(int(value.features()));
-    hashCode = hashCode * 31 + qHash(value.mimeType());
-    hashCode = hashCode * 31 + qHash(value.cameraPosition());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.codecs());
+    seed = hash(seed, value.device());
+    seed = hash(seed, int(value.features()));
+    seed = hash(seed, value.mimeType());
+    seed = hash(seed, value.cameraPosition());
+    return seed;
 }
 
-inline hash_type qHash(const QMediaResource& value){
+inline hash_type qHash(const QMediaResource& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.url());
-    hashCode = hashCode * 31 + qHash(value.request());
-    hashCode = hashCode * 31 + qHash(value.dataSize());
-    hashCode = hashCode * 31 + qHash(value.language());
-    hashCode = hashCode * 31 + qHash(value.mimeType());
-    hashCode = hashCode * 31 + qHash(value.audioCodec());
-    hashCode = hashCode * 31 + qHash(value.resolution());
-    hashCode = hashCode * 31 + qHash(value.sampleRate());
-    hashCode = hashCode * 31 + qHash(value.videoCodec());
-    hashCode = hashCode * 31 + qHash(value.audioBitRate());
-    hashCode = hashCode * 31 + qHash(value.channelCount());
-    hashCode = hashCode * 31 + qHash(value.videoBitRate());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.url());
+    seed = hash(seed, value.request());
+    seed = hash(seed, value.dataSize());
+    seed = hash(seed, value.language());
+    seed = hash(seed, value.mimeType());
+    seed = hash(seed, value.audioCodec());
+    seed = hash(seed, value.resolution());
+    seed = hash(seed, value.sampleRate());
+    seed = hash(seed, value.videoCodec());
+    seed = hash(seed, value.audioBitRate());
+    seed = hash(seed, value.channelCount());
+    seed = hash(seed, value.videoBitRate());
+    return seed;
 }
 
-inline hash_type qHash(const QMediaContent& value){
+inline hash_type qHash(const QMediaContent& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.canonicalRequest());
-    hashCode = hashCode * 31 + qHash(value.canonicalUrl());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.canonicalRequest());
+    seed = hash(seed, value.canonicalUrl());
+    return seed;
 }
 
-inline hash_type qHash(const QCameraInfo& value){
+inline hash_type qHash(const QCameraInfo& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.deviceName());
-    hashCode = hashCode * 31 + qHash(value.description());
-    hashCode = hashCode * 31 + qHash(value.orientation());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.deviceName());
+    seed = hash(seed, value.description());
+    seed = hash(seed, value.orientation());
+    return seed;
 }
 
-inline hash_type qHash(const QCameraFocusZone& value){
-    hash_type hashCode = qHash(value.area());
-    hashCode = hashCode * 31 + qHash(value.status());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+inline hash_type qHash(const QCameraFocusZone& value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.area());
+    seed = hash(seed, value.status());
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 
-inline hash_type qHash(const QCamera::FrameRateRange& value){
-    hash_type hashCode = qHash(value.minimumFrameRate);
-    hashCode = hashCode * 31 + qHash(value.maximumFrameRate);
-    return hashCode;
+inline hash_type qHash(const QCamera::FrameRateRange& value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.minimumFrameRate);
+    seed = hash(seed, value.maximumFrameRate);
+    return seed;
 }
 
-inline hash_type qHash(const QAudioEncoderSettings& value){
+inline hash_type qHash(const QAudioEncoderSettings& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.codec());
-    hashCode = hashCode * 31 + qHash(value.bitRate());
-    hashCode = hashCode * 31 + qHash(value.quality());
-    hashCode = hashCode * 31 + qHash(value.sampleRate());
-    hashCode = hashCode * 31 + qHash(value.channelCount());
-    hashCode = hashCode * 31 + qHash(value.encodingMode());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.codec());
+    seed = hash(seed, value.bitRate());
+    seed = hash(seed, value.quality());
+    seed = hash(seed, value.sampleRate());
+    seed = hash(seed, value.channelCount());
+    seed = hash(seed, value.encodingMode());
+    return seed;
 }
 
-inline hash_type qHash(const QAudioDeviceInfo& value){
+inline hash_type qHash(const QAudioDeviceInfo& value, hash_type seed = 0){
     if(value.isNull())
-        return 0;
-    hash_type hashCode = qHash(value.deviceName());
-    hashCode = hashCode * 31 + qHash(value.preferredFormat());
-    hashCode = hashCode * 31 + qHash(value.supportedCodecs());
-    hashCode = hashCode * 31 + qHash(value.supportedByteOrders());
-    hashCode = hashCode * 31 + qHash(value.supportedSampleRates());
-    hashCode = hashCode * 31 + qHash(value.supportedChannelCounts());
-    hashCode = hashCode * 31 + qHash(value.supportedSampleTypes());
-    hashCode = hashCode * 31 + qHash(value.supportedSampleSizes());
-    return hashCode;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.deviceName());
+    seed = hash(seed, value.preferredFormat());
+    seed = hash(seed, value.supportedCodecs());
+    seed = hash(seed, value.supportedByteOrders());
+    seed = hash(seed, value.supportedSampleRates());
+    seed = hash(seed, value.supportedChannelCounts());
+    seed = hash(seed, value.supportedSampleTypes());
+    seed = hash(seed, value.supportedSampleSizes());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QAudioFormat& value){
-    hash_type hashCode = qHash(value.sampleRate());
+inline hash_type qHash(const QAudioFormat& value, hash_type seed){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.sampleRate());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    hashCode = hashCode * 31 + qHash(value.byteOrder());
-    hashCode = hashCode * 31 + qHash(value.sampleSize());
-    hashCode = hashCode * 31 + qHash(value.sampleType());
-    hashCode = hashCode * 31 + qHash(value.codec());
+    seed = hash(seed, value.byteOrder());
+    seed = hash(seed, value.sampleSize());
+    seed = hash(seed, value.sampleType());
+    seed = hash(seed, value.codec());
 #endif
-    hashCode = hashCode * 31 + qHash(value.channelCount());
-    hashCode = hashCode * 31 + qHash(value.bytesPerFrame());
-    return hashCode;
+    seed = hash(seed, value.channelCount());
+    seed = hash(seed, value.bytesPerFrame());
+    return seed;
 }
 
 #endif // QTJAMBIMULTIMEDIA_HASHES_H

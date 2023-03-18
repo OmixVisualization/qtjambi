@@ -45,6 +45,7 @@ rpp::pp::pp(pp_environment &__env) :
     iflevel = 0;
     _M_skipping[iflevel] = 0;
     _M_true_test[iflevel] = 0;
+    m_M_skipFile = false;
 }
 
 bool rpp::pp::is_absolute(std::string const &filename) const {

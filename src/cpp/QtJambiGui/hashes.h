@@ -56,145 +56,131 @@ inline bool operator <(const QColor& c1, const QColor& c2){
 }
 #endif
 
-inline hash_type qHash(const QPixmap &value)
+inline hash_type qHash(const QPixmap &value, hash_type seed = 0)
 {
-    return genericHash(value.handle());
+    return genericHash(value.handle(), seed);
 }
 
-inline hash_type qHash(const QCursor &cursor)
+inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(cursor.shape()));
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(cursor.shape()));
     if(cursor.shape()==Qt::BitmapCursor){
-#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
-        hashCode = hashCode * 31 + qHash(cursor.bitmap(Qt::ReturnByValue));
-        hashCode = hashCode * 31 + qHash(cursor.mask(Qt::ReturnByValue));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+        seed = hash(seed, cursor.bitmap(Qt::ReturnByValue));
+        seed = hash(seed, cursor.mask(Qt::ReturnByValue));
 #else
-        hashCode = hashCode * 31 + qHash(cursor.bitmap());
-        hashCode = hashCode * 31 + qHash(cursor.mask());
+        seed = hash(seed, cursor.bitmap());
+        seed = hash(seed, cursor.mask());
 #endif
-        hashCode = hashCode * 31 + qHash(cursor.pixmap());
-        hashCode = hashCode * 31 + qHash(cursor.hotSpot());
+        seed = hash(seed, cursor.pixmap());
+        seed = hash(seed, cursor.hotSpot());
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QPixelFormat &value)
+inline hash_type qHash(const QPixelFormat &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QColor &color)
+inline hash_type qHash(const QColor &color, hash_type seed = 0)
 {
-    return qHash(quint64(color.rgba64()));
+    return qHash(quint64(color.rgba64()), seed);
 }
 
-inline hash_type qHash(const QBrush &brush)
+inline hash_type qHash(const QBrush &brush, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(brush.style()));
-    hashCode = hashCode * 31 + qHash(brush.color());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(brush.style()));
+    seed = hash(seed, brush.color());
+    return seed;
 }
 
 #if QT_VERSION >= 0x050000
-inline hash_type qHash(const QGradient &gradient)
+inline hash_type qHash(const QGradient &gradient, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(gradient.interpolationMode()));
-    hashCode = hashCode * 31 + qHash(int(gradient.type()));
-    hashCode = hashCode * 31 + qHash(int(gradient.spread()));
-    hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, int(gradient.interpolationMode()));
+    seed = hash(seed, int(gradient.type()));
+    seed = hash(seed, int(gradient.spread()));
+    seed = hash(seed, int(gradient.coordinateMode()));
     for(const QGradientStop& stop : gradient.stops()){
-        hashCode = hashCode * 31 + qHash(stop.first);
-        hashCode = hashCode * 31 + qHash(stop.second);
+        seed = hash(seed, stop.first);
+        seed = hash(seed, stop.second);
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QLinearGradient &gradient)
+inline hash_type qHash(const QLinearGradient &gradient, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(gradient.interpolationMode()));
-    hashCode = hashCode * 31 + qHash(int(gradient.type()));
-    hashCode = hashCode * 31 + qHash(int(gradient.spread()));
-    hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
-    hashCode = hashCode * 31 + qHash(gradient.start().x());
-    hashCode = hashCode * 31 + qHash(gradient.start().y());
-    hashCode = hashCode * 31 + qHash(gradient.finalStop().x());
-    hashCode = hashCode * 31 + qHash(gradient.finalStop().y());
-    for(const QGradientStop& stop : gradient.stops()){
-        hashCode = hashCode * 31 + qHash(stop.first);
-        hashCode = hashCode * 31 + qHash(stop.second);
-    }
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, gradient.start().x());
+    seed = hash(seed, gradient.start().y());
+    seed = hash(seed, gradient.finalStop().x());
+    seed = hash(seed, gradient.finalStop().y());
+    seed = hash(seed, static_cast<const QGradient &>(gradient));
+    return seed;
 }
 
-inline hash_type qHash(const QRadialGradient &gradient)
+inline hash_type qHash(const QRadialGradient &gradient, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(gradient.interpolationMode()));
-    hashCode = hashCode * 31 + qHash(int(gradient.type()));
-    hashCode = hashCode * 31 + qHash(int(gradient.spread()));
-    hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
-    hashCode = hashCode * 31 + qHash(gradient.center().x());
-    hashCode = hashCode * 31 + qHash(gradient.center().y());
-    hashCode = hashCode * 31 + qHash(gradient.centerRadius());
-    hashCode = hashCode * 31 + qHash(gradient.focalPoint().x());
-    hashCode = hashCode * 31 + qHash(gradient.focalPoint().y());
-    hashCode = hashCode * 31 + qHash(gradient.focalRadius());
-    hashCode = hashCode * 31 + qHash(gradient.radius());
-    for(const QGradientStop& stop : gradient.stops()){
-        hashCode = hashCode * 31 + qHash(stop.first);
-        hashCode = hashCode * 31 + qHash(stop.second);
-    }
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, gradient.center().x());
+    seed = hash(seed, gradient.center().y());
+    seed = hash(seed, gradient.centerRadius());
+    seed = hash(seed, gradient.focalPoint().x());
+    seed = hash(seed, gradient.focalPoint().y());
+    seed = hash(seed, gradient.focalRadius());
+    seed = hash(seed, gradient.radius());
+    seed = hash(seed, static_cast<const QGradient &>(gradient));
+    return seed;
 }
 
-inline hash_type qHash(const QConicalGradient &gradient)
+inline hash_type qHash(const QConicalGradient &gradient, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(gradient.interpolationMode()));
-    hashCode = hashCode * 31 + qHash(int(gradient.type()));
-    hashCode = hashCode * 31 + qHash(int(gradient.spread()));
-    hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
-    hashCode = hashCode * 31 + qHash(gradient.angle());
-    hashCode = hashCode * 31 + qHash(gradient.center().x());
-    hashCode = hashCode * 31 + qHash(gradient.center().y());
-    for(const QGradientStop& stop : gradient.stops()){
-        hashCode = hashCode * 31 + qHash(stop.first);
-        hashCode = hashCode * 31 + qHash(stop.second);
-    }
-    return hashCode;
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, gradient.angle());
+    seed = hash(seed, gradient.center().x());
+    seed = hash(seed, gradient.center().y());
+    seed = hash(seed, static_cast<const QGradient &>(gradient));
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QRegion &region)
+inline hash_type qHash(const QRegion &region, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(region.rectCount());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, region.rectCount());
     for(const QRect& rect : region)
-        hashCode = hashCode * 31 + qHash(rect);
-    return hashCode;
+        seed = hash(seed, rect);
+    return seed;
 }
 
-inline hash_type qHash(const QPolygon &polygon)
+inline hash_type qHash(const QPolygon &polygon, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(polygon.size());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, polygon.size());
     for (int i=0; i<polygon.size(); ++i)
-        hashCode = hashCode * 31 + qHash(polygon.at(i));
-    return hashCode;
+        seed = hash(seed, polygon.at(i));
+    return seed;
 }
 
-inline hash_type qHash(const QPalette &palette)
+inline hash_type qHash(const QPalette &palette, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
+    QtPrivate::QHashCombine hash;
     for (int role=0;role<int(QPalette::NColorRoles);++role) {
         for (int group=0;group<int(QPalette::NColorGroups);++group) {
-            hashCode = hashCode * 31 + qHash(palette.color(QPalette::ColorGroup(group), QPalette::ColorRole(role)));
+            seed = hash(seed, palette.color(QPalette::ColorGroup(group), QPalette::ColorRole(role)));
         }
     }
-    return hashCode;
+    return seed;
 }
 
 #if QT_VERSION < 0x050300
-inline hash_type qHash(const QFont &font)
+inline hash_type qHash(const QFont &font, hash_type seed = 0)
 {
+    QtPrivate::QHashCombine hash;
     hash_type hashCode = font.pixelSize();
     hashCode = hashCode * 31 + font.weight();
     hashCode = hashCode * 31 + int(font.style());
@@ -202,554 +188,526 @@ inline hash_type qHash(const QFont &font)
     hashCode = hashCode * 31 + int(font.styleHint());
     hashCode = hashCode * 31 + int(font.styleStrategy());
     hashCode = hashCode * 31 + int(font.fixedPitch());
-    hashCode = hashCode * 31 + qHash(font.family());
-    hashCode = hashCode * 31 + qHash(font.pointSize());
+    seed = hash(seed, font.family());
+    seed = hash(seed, font.pointSize());
     hashCode = hashCode * 31 + int(font.underline());
     hashCode = hashCode * 31 + int(font.overline());
     hashCode = hashCode * 31 + int(font.strikeOut());
     hashCode = hashCode * 31 + int(font.kerning());
-    return hashCode;
+    return seed;
 }
 #endif
 
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QMatrix &matrix)
+inline hash_type qHash(const QMatrix &matrix, hash_type seed) noexcept
 {
-    hash_type hashCode = qHash(matrix.m11());
-    hashCode = hashCode * 31 + qHash(matrix.m12());
-    hashCode = hashCode * 31 + qHash(matrix.m21());
-    hashCode = hashCode * 31 + qHash(matrix.m22());
-    hashCode = hashCode * 31 + qHash(matrix.dx());
-    hashCode = hashCode * 31 + qHash(matrix.dy());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, matrix.m11());
+    seed = hash(seed, matrix.m12());
+    seed = hash(seed, matrix.m21());
+    seed = hash(seed, matrix.m22());
+    seed = hash(seed, matrix.dx());
+    seed = hash(seed, matrix.dy());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QImage &image)
+inline hash_type qHash(const QImage &image, hash_type seed = 0)
 {
     if(image.isNull())
-        return 0;
-    return qHash(image.cacheKey());
+        return seed;
+    return qHash(image.cacheKey(), seed);
 }
 
-inline hash_type qHash(const QPen &pen)
+inline hash_type qHash(const QPen &pen, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(pen.style()));
-    hashCode = hashCode * 31 + qHash(int(pen.capStyle()));
-    hashCode = hashCode * 31 + qHash(int(pen.joinStyle()));
-    hashCode = hashCode * 31 + qHash(pen.width());
-    hashCode = hashCode * 31 + qHash(pen.brush());
-    hashCode = hashCode * 31 + qHash(pen.isCosmetic());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(pen.style()));
+    seed = hash(seed, int(pen.capStyle()));
+    seed = hash(seed, int(pen.joinStyle()));
+    seed = hash(seed, pen.width());
+    seed = hash(seed, pen.brush());
+    seed = hash(seed, pen.isCosmetic());
+    return seed;
 }
 
-#if QT_VERSION < 0x050600
-inline int qHash(const QTransform &transform)
+inline hash_type qHash(const QPolygonF &polygon, hash_type seed = 0)
 {
-    int hashCode = int(transform.m11());
-    hashCode = hashCode * 31 + int(transform.m12());
-    hashCode = hashCode * 31 + int(transform.m13());
-
-    hashCode = hashCode * 31 + int(transform.m21());
-    hashCode = hashCode * 31 + int(transform.m22());
-    hashCode = hashCode * 31 + int(transform.m23());
-
-    hashCode = hashCode * 31 + int(transform.m31());
-    hashCode = hashCode * 31 + int(transform.m32());
-    hashCode = hashCode * 31 + int(transform.m33());
-
-    return hashCode;
-}
-#endif
-
-inline hash_type qHash(const QPolygonF &polygon)
-{
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(polygon.size());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, polygon.size());
     for (int i=0; i<polygon.size(); ++i){
-        hashCode = hashCode * 31 + qHash(polygon.at(i).x());
-        hashCode = hashCode * 31 + qHash(polygon.at(i).y());
+        seed = hash(seed, polygon.at(i).x());
+        seed = hash(seed, polygon.at(i).y());
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QVector2D &vec)
+inline hash_type qHash(const QVector2D &vec, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(vec.x());
-    hashCode = hashCode * 31 + qHash(vec.y());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, vec.x());
+    seed = hash(seed, vec.y());
+    return seed;
 }
 
-inline hash_type qHash(const QVector3D &vec)
+inline hash_type qHash(const QVector3D &vec, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(vec.x());
-    hashCode = hashCode * 31 + qHash(vec.y());
-    hashCode = hashCode * 31 + qHash(vec.z());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, vec.x());
+    seed = hash(seed, vec.y());
+    seed = hash(seed, vec.z());
+    return seed;
 }
 
-inline hash_type qHash(const QVector4D &vec)
+inline hash_type qHash(const QVector4D &vec, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(vec.x());
-    hashCode = hashCode * 31 + qHash(vec.y());
-    hashCode = hashCode * 31 + qHash(vec.z());
-    hashCode = hashCode * 31 + qHash(vec.w());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, vec.x());
+    seed = hash(seed, vec.y());
+    seed = hash(seed, vec.z());
+    seed = hash(seed, vec.w());
+    return seed;
 }
 
-/*
-inline int qHash(const QInputMethodEvent::Attribute &attr)
-{
-    int hashCode = 1;
-    hashCode = hashCode * 31 + qHash((qint32)attr.type);
-    hashCode = hashCode * 31 + qHash(attr.start);
-    hashCode = hashCode * 31 + qHash(attr.length);
-    hashCode = hashCode * 31 + qHash((qint32)attr.value.type());
-    hashCode = hashCode * 31 + qHash((qintptr)attr.value.data());
-    return hashCode;
-}*/
-
-inline hash_type qHash(const QFontMetrics &value)
+inline hash_type qHash(const QFontMetrics &value, hash_type seed = 0)
 {
     struct FontMetrics{
         QExplicitlySharedDataPointer<void*> p;
     };
     const FontMetrics* fontMetrics = reinterpret_cast<const FontMetrics* >(&value);
 
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(quintptr(fontMetrics->p.data()));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, quintptr(fontMetrics->p.data()));
+    return seed;
 }
 
-inline hash_type qHash(const QFontMetricsF &value)
+inline hash_type qHash(const QFontMetricsF &value, hash_type seed = 0)
 {
     struct FontMetricsF{
         QExplicitlySharedDataPointer<void*> p;
     };
     const FontMetricsF* fontMetrics = reinterpret_cast<const FontMetricsF* >(&value);
 
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(quintptr(fontMetrics->p.data()));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, quintptr(fontMetrics->p.data()));
+    return seed;
 }
 
-inline hash_type qHash(const QGlyphRun &value)
+inline hash_type qHash(const QGlyphRun &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.rawFont());
-    hashCode = hashCode * 31 + qHash(value.glyphIndexes());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.rawFont());
+    seed = hash(seed, value.glyphIndexes());
     auto positions = value.positions();
-    hashCode = hashCode * 31 + qHash(positions.size());
+    seed = hash(seed, positions.size());
     for (int i=0; i<positions.size(); ++i){
-        hashCode = hashCode * 31 + qHash(positions.at(i).x());
-        hashCode = hashCode * 31 + qHash(positions.at(i).y());
+        seed = hash(seed, positions.at(i).x());
+        seed = hash(seed, positions.at(i).y());
     }
-    hashCode = hashCode * 31 + qHash(value.overline());
-    hashCode = hashCode * 31 + qHash(value.underline());
-    hashCode = hashCode * 31 + qHash(value.strikeOut());
-    hashCode = hashCode * 31 + qHash(value.isRightToLeft());
-    hashCode = hashCode * 31 + qHash(int(value.flags()));
-    hashCode = hashCode * 31 + qHash(value.boundingRect());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
+    seed = hash(seed, value.overline());
+    seed = hash(seed, value.underline());
+    seed = hash(seed, value.strikeOut());
+    seed = hash(seed, value.isRightToLeft());
+    seed = hash(seed, int(value.flags()));
+    seed = hash(seed, value.boundingRect());
+    seed = hash(seed, value.isEmpty());
+    return seed;
 }
 
-inline hash_type qHash(const QAccessible::State &value)
+inline hash_type qHash(const QAccessible::State &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x2 &value)
+inline hash_type qHash(const QMatrix2x2 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x3 &value)
+inline hash_type qHash(const QMatrix2x3 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x4 &value)
+inline hash_type qHash(const QMatrix2x4 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x2 &value)
+inline hash_type qHash(const QMatrix3x2 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x3 &value)
+inline hash_type qHash(const QMatrix3x3 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x4 &value)
+inline hash_type qHash(const QMatrix3x4 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x2 &value)
+inline hash_type qHash(const QMatrix4x2 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x3 &value)
+inline hash_type qHash(const QMatrix4x3 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x4 &value)
+inline hash_type qHash(const QMatrix4x4 &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QOpenGLDebugMessage &value)
+inline hash_type qHash(const QOpenGLDebugMessage &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.source()));
-    hashCode = hashCode * 31 + qHash(int(value.type()));
-    hashCode = hashCode * 31 + qHash(int(value.severity()));
-    hashCode = hashCode * 31 + qHash(value.id());
-    hashCode = hashCode * 31 + qHash(value.message());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.source()));
+    seed = hash(seed, int(value.type()));
+    seed = hash(seed, int(value.severity()));
+    seed = hash(seed, value.id());
+    seed = hash(seed, value.message());
+    return seed;
 }
 
-inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value)
+inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.samples());
-    hashCode = hashCode * 31 + qHash(value.mipmap());
-    hashCode = hashCode * 31 + qHash(int(value.attachment()));
-    hashCode = hashCode * 31 + qHash(value.textureTarget());
-    hashCode = hashCode * 31 + qHash(value.internalTextureFormat());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.samples());
+    seed = hash(seed, value.mipmap());
+    seed = hash(seed, int(value.attachment()));
+    seed = hash(seed, value.textureTarget());
+    seed = hash(seed, value.internalTextureFormat());
+    return seed;
 }
 #else
-inline hash_type qHash(const QEventPoint &value)
+inline hash_type qHash(const QEventPoint &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(quintptr(value.device()));
-    hashCode = hashCode * 31 + qHash(value.ellipseDiameters());
-    hashCode = hashCode * 31 + qHash(value.globalGrabPosition().x());
-    hashCode = hashCode * 31 + qHash(value.globalGrabPosition().y());
-    hashCode = hashCode * 31 + qHash(value.globalLastPosition().x());
-    hashCode = hashCode * 31 + qHash(value.globalLastPosition().y());
-    hashCode = hashCode * 31 + qHash(value.globalPosition().x());
-    hashCode = hashCode * 31 + qHash(value.globalPosition().y());
-    hashCode = hashCode * 31 + qHash(value.globalPressPosition().x());
-    hashCode = hashCode * 31 + qHash(value.globalPressPosition().y());
-    hashCode = hashCode * 31 + qHash(value.grabPosition().x());
-    hashCode = hashCode * 31 + qHash(value.grabPosition().y());
-    hashCode = hashCode * 31 + qHash(value.id());
-    hashCode = hashCode * 31 + qHash(value.isAccepted());
-    hashCode = hashCode * 31 + qHash(value.lastPosition().x());
-    hashCode = hashCode * 31 + qHash(value.lastPosition().y());
-    hashCode = hashCode * 31 + qHash(value.lastTimestamp());
-    hashCode = hashCode * 31 + qHash(value.normalizedPosition().x());
-    hashCode = hashCode * 31 + qHash(value.normalizedPosition().y());
-    hashCode = hashCode * 31 + qHash(value.position().x());
-    hashCode = hashCode * 31 + qHash(value.position().y());
-    hashCode = hashCode * 31 + qHash(value.pressPosition().x());
-    hashCode = hashCode * 31 + qHash(value.pressPosition().y());
-    hashCode = hashCode * 31 + qHash(value.pressTimestamp());
-    hashCode = hashCode * 31 + qHash(value.pressure());
-    hashCode = hashCode * 31 + qHash(value.rotation());
-    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition().x());
-    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition().y());
-    hashCode = hashCode * 31 + qHash(value.sceneLastPosition().x());
-    hashCode = hashCode * 31 + qHash(value.sceneLastPosition().y());
-    hashCode = hashCode * 31 + qHash(value.scenePosition().x());
-    hashCode = hashCode * 31 + qHash(value.scenePosition().y());
-    hashCode = hashCode * 31 + qHash(value.scenePressPosition().x());
-    hashCode = hashCode * 31 + qHash(value.scenePressPosition().y());
-    hashCode = hashCode * 31 + qHash(value.state());
-    hashCode = hashCode * 31 + qHash(value.timeHeld());
-    hashCode = hashCode * 31 + qHash(value.timestamp());
-    hashCode = hashCode * 31 + qHash(value.uniqueId());
-    hashCode = hashCode * 31 + qHash(value.velocity());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, quintptr(value.device()));
+    seed = hash(seed, value.ellipseDiameters());
+    seed = hash(seed, value.globalGrabPosition().x());
+    seed = hash(seed, value.globalGrabPosition().y());
+    seed = hash(seed, value.globalLastPosition().x());
+    seed = hash(seed, value.globalLastPosition().y());
+    seed = hash(seed, value.globalPosition().x());
+    seed = hash(seed, value.globalPosition().y());
+    seed = hash(seed, value.globalPressPosition().x());
+    seed = hash(seed, value.globalPressPosition().y());
+    seed = hash(seed, value.grabPosition().x());
+    seed = hash(seed, value.grabPosition().y());
+    seed = hash(seed, value.id());
+    seed = hash(seed, value.isAccepted());
+    seed = hash(seed, value.lastPosition().x());
+    seed = hash(seed, value.lastPosition().y());
+    seed = hash(seed, value.lastTimestamp());
+    seed = hash(seed, value.normalizedPosition().x());
+    seed = hash(seed, value.normalizedPosition().y());
+    seed = hash(seed, value.position().x());
+    seed = hash(seed, value.position().y());
+    seed = hash(seed, value.pressPosition().x());
+    seed = hash(seed, value.pressPosition().y());
+    seed = hash(seed, value.pressTimestamp());
+    seed = hash(seed, value.pressure());
+    seed = hash(seed, value.rotation());
+    seed = hash(seed, value.sceneGrabPosition().x());
+    seed = hash(seed, value.sceneGrabPosition().y());
+    seed = hash(seed, value.sceneLastPosition().x());
+    seed = hash(seed, value.sceneLastPosition().y());
+    seed = hash(seed, value.scenePosition().x());
+    seed = hash(seed, value.scenePosition().y());
+    seed = hash(seed, value.scenePressPosition().x());
+    seed = hash(seed, value.scenePressPosition().y());
+    seed = hash(seed, value.state());
+    seed = hash(seed, value.timeHeld());
+    seed = hash(seed, value.timestamp());
+    seed = hash(seed, value.uniqueId());
+    seed = hash(seed, value.velocity());
+    return seed;
 }
 
-inline hash_type qHash(const QPageRanges::Range &value)
+inline hash_type qHash(const QPageRanges::Range &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QPageRanges &value)
+inline hash_type qHash(const QPageRanges &value, hash_type seed = 0)
 {
-    return qHash(value.toRangeList());
+    return qHash(value.toRangeList(), seed);
 }
 
 #endif
 
-hash_type qHash(const QTextFormat &value);
+hash_type qHash(const QTextFormat &value, hash_type seed = 0);
 
-inline hash_type qHash(const QTextLayout::FormatRange &value)
+inline hash_type qHash(const QTextLayout::FormatRange &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.start);
-    hashCode = hashCode * 31 + qHash(value.length);
-    hashCode = hashCode * 31 + qHash(value.format);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.start);
+    seed = hash(seed, value.length);
+    seed = hash(seed, value.format);
+    return seed;
 }
 
-inline hash_type qHash(const QPageSize &value)
+inline hash_type qHash(const QPageSize &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.key());
-    hashCode = hashCode * 31 + qHash(int(value.id()));
-    hashCode = hashCode * 31 + qHash(int(value.definitionUnits()));
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.windowsId());
-    hashCode = hashCode * 31 + qHash(value.definitionSize());
-    hashCode = hashCode * 31 + qHash(value.sizePoints());
-    hashCode = hashCode * 31 + qHash(value.rectPoints());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.key());
+    seed = hash(seed, int(value.id()));
+    seed = hash(seed, int(value.definitionUnits()));
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.windowsId());
+    seed = hash(seed, value.definitionSize());
+    seed = hash(seed, value.sizePoints());
+    seed = hash(seed, value.rectPoints());
+    return seed;
 }
 
-inline hash_type qHash(const QPageLayout &value)
+inline hash_type qHash(const QPageLayout &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.pageSize());
-    hashCode = hashCode * 31 + qHash(int(value.mode()));
-    hashCode = hashCode * 31 + qHash(int(value.orientation()));
-    hashCode = hashCode * 31 + qHash(int(value.units()));
-    hashCode = hashCode * 31 + qHash(value.margins());
-    hashCode = hashCode * 31 + qHash(value.marginsPoints());
-    hashCode = hashCode * 31 + qHash(value.minimumMargins());
-    hashCode = hashCode * 31 + qHash(value.fullRect());
-    hashCode = hashCode * 31 + qHash(value.fullRectPoints());
-    hashCode = hashCode * 31 + qHash(value.paintRect());
-    hashCode = hashCode * 31 + qHash(value.paintRectPoints());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.pageSize());
+    seed = hash(seed, int(value.mode()));
+    seed = hash(seed, int(value.orientation()));
+    seed = hash(seed, int(value.units()));
+    seed = hash(seed, value.margins());
+    seed = hash(seed, value.marginsPoints());
+    seed = hash(seed, value.minimumMargins());
+    seed = hash(seed, value.fullRect());
+    seed = hash(seed, value.fullRectPoints());
+    seed = hash(seed, value.paintRect());
+    seed = hash(seed, value.paintRectPoints());
+    return seed;
 }
 
-inline hash_type qHash(const QPainterPath::Element &value)
+inline hash_type qHash(const QPainterPath::Element &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.type));
-    hashCode = hashCode * 31 + qHash(value.x);
-    hashCode = hashCode * 31 + qHash(value.y);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.type));
+    seed = hash(seed, value.x);
+    seed = hash(seed, value.y);
+    return seed;
 }
 
-inline hash_type qHash(const QPainterPath &value)
+inline hash_type qHash(const QPainterPath &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.fillRule()));
-    hashCode = hashCode * 31 + qHash(value.elementCount());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.fillRule()));
+    seed = hash(seed, value.elementCount());
     for(int i=0; i<value.elementCount(); ++i){
-        hashCode = hashCode * 31 + qHash(value.elementAt(i));
+        seed = hash(seed, value.elementAt(i));
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QTextOption::Tab &value)
+inline hash_type qHash(const QTextOption::Tab &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextOption &value)
+inline hash_type qHash(const QTextOption &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.alignment()));
-    hashCode = hashCode * 31 + qHash(int(value.textDirection()));
-    hashCode = hashCode * 31 + qHash(int(value.wrapMode()));
-    hashCode = hashCode * 31 + qHash(int(value.flags()));
-    hashCode = hashCode * 31 + qHash(int(value.useDesignMetrics()));
-    hashCode = hashCode * 31 + qHash(value.tabStopDistance());
-    hashCode = hashCode * 31 + qHash(value.tabArray());
-    hashCode = hashCode * 31 + qHash(value.tabs());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.alignment()));
+    seed = hash(seed, int(value.textDirection()));
+    seed = hash(seed, int(value.wrapMode()));
+    seed = hash(seed, int(value.flags()));
+    seed = hash(seed, int(value.useDesignMetrics()));
+    seed = hash(seed, value.tabStopDistance());
+    seed = hash(seed, value.tabArray());
+    seed = hash(seed, value.tabs());
+    return seed;
 }
 
-inline hash_type qHash(const QStaticText &value)
+inline hash_type qHash(const QStaticText &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.textFormat()));
-    hashCode = hashCode * 31 + qHash(int(value.performanceHint()));
-    hashCode = hashCode * 31 + qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.textWidth());
-    hashCode = hashCode * 31 + qHash(value.textOption());
-    hashCode = hashCode * 31 + qHash(value.size());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.textFormat()));
+    seed = hash(seed, int(value.performanceHint()));
+    seed = hash(seed, value.text());
+    seed = hash(seed, value.textWidth());
+    seed = hash(seed, value.textOption());
+    seed = hash(seed, value.size());
+    return seed;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-inline hash_type qHash(const QColorSpace &value)
+inline hash_type qHash(const QColorSpace &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(hash_type(value.primaries()));
-    hashCode = hashCode * 31 + qHash(hash_type(value.transferFunction()));
-    hashCode = hashCode * 31 + qHash(value.gamma());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, hash_type(value.primaries()));
+    seed = hash(seed, hash_type(value.transferFunction()));
+    seed = hash(seed, value.gamma());
+    seed = hash(seed, value.isValid());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QSurfaceFormat &value)
+inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(value.swapBehavior()));
-    hashCode = hashCode * 31 + qHash(int(value.profile()));
-    hashCode = hashCode * 31 + qHash(int(value.renderableType()));
-    hashCode = hashCode * 31 + qHash(int(value.options()));
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(value.swapBehavior()));
+    seed = hash(seed, int(value.profile()));
+    seed = hash(seed, int(value.renderableType()));
+    seed = hash(seed, int(value.options()));
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    hashCode = hashCode * 31 + qHash(value.colorSpace());
+    seed = hash(seed, value.colorSpace());
 #else
-    hashCode = hashCode * 31 + qHash(int(value.colorSpace()));
+    seed = hash(seed, int(value.colorSpace()));
 #endif
-    hashCode = hashCode * 31 + qHash(value.depthBufferSize());
-    hashCode = hashCode * 31 + qHash(value.stencilBufferSize());
-    hashCode = hashCode * 31 + qHash(value.redBufferSize());
-    hashCode = hashCode * 31 + qHash(value.greenBufferSize());
-    hashCode = hashCode * 31 + qHash(value.blueBufferSize());
-    hashCode = hashCode * 31 + qHash(value.alphaBufferSize());
-    hashCode = hashCode * 31 + qHash(value.samples());
-    hashCode = hashCode * 31 + qHash(value.hasAlpha());
-    hashCode = hashCode * 31 + qHash(value.majorVersion());
-    hashCode = hashCode * 31 + qHash(value.minorVersion());
-    hashCode = hashCode * 31 + qHash(value.stereo());
-    hashCode = hashCode * 31 + qHash(value.swapInterval());
-    return hashCode;
+    seed = hash(seed, value.depthBufferSize());
+    seed = hash(seed, value.stencilBufferSize());
+    seed = hash(seed, value.redBufferSize());
+    seed = hash(seed, value.greenBufferSize());
+    seed = hash(seed, value.blueBufferSize());
+    seed = hash(seed, value.alphaBufferSize());
+    seed = hash(seed, value.samples());
+    seed = hash(seed, value.hasAlpha());
+    seed = hash(seed, value.majorVersion());
+    seed = hash(seed, value.minorVersion());
+    seed = hash(seed, value.stereo());
+    seed = hash(seed, value.swapInterval());
+    return seed;
 }
 
-inline hash_type qHash(const QQuaternion &value)
+inline hash_type qHash(const QQuaternion &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QPixmapCache::Key &value)
+inline hash_type qHash(const QPixmapCache::Key &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextFragment &value)
+inline hash_type qHash(const QTextFragment &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.length());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.length());
+    return seed;
 }
 
-inline hash_type qHash(const QTextBlock::iterator &value)
+inline hash_type qHash(const QTextBlock::iterator &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextBlock &value)
+inline hash_type qHash(const QTextBlock &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.blockNumber());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.blockNumber());
+    return seed;
 }
 
-inline hash_type qHash(const QTextCursor &value)
+inline hash_type qHash(const QTextCursor &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.anchor());
-    hashCode = hashCode * 31 + qHash(value.selectedText());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.anchor());
+    seed = hash(seed, value.selectedText());
+    return seed;
 }
 
-hash_type qHash(const QTextLength &value);
+hash_type qHash(const QTextLength &value, hash_type seed = 0);
 
-inline hash_type qHash(const QTextFormat &value)
+inline hash_type qHash(const QTextFormat &value, hash_type seed)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.objectIndex());
-    hashCode = hashCode * 31 + qHash(value.objectType());
-    hashCode = hashCode * 31 + qHash(value.propertyCount());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.objectIndex());
+    seed = hash(seed, value.objectType());
+    seed = hash(seed, value.propertyCount());
     QMap<int, QVariant> properties = value.properties();
     for(int key : properties.keys()){
-        hashCode = hashCode * 31 + qHash(key);
+        seed = hash(seed, key);
         const QVariant& variant = properties[key];
         switch(variant.userType()){
         case QMetaType::Bool:
-            hashCode = hashCode * 31 + qHash(variant.toBool());
+            seed = hash(seed, variant.toBool());
             break;
         case QMetaType::Int:
-            hashCode = hashCode * 31 + qHash(variant.toInt());
+            seed = hash(seed, variant.toInt());
             break;
         case QMetaType::Float:
-            hashCode = hashCode * 31 + qHash(variant.toFloat());
+            seed = hash(seed, variant.toFloat());
             break;
         case QMetaType::Double:
-            hashCode = hashCode * 31 + qHash(variant.toDouble());
+            seed = hash(seed, variant.toDouble());
             break;
         case QMetaType::QString:
-            hashCode = hashCode * 31 + qHash(variant.toString());
+            seed = hash(seed, variant.toString());
             break;
         case QMetaType::QColor:
-            hashCode = hashCode * 31 + qHash(variant.value<QColor>());
+            seed = hash(seed, variant.value<QColor>());
             break;
         case QMetaType::QPen:
-            hashCode = hashCode * 31 + qHash(variant.value<QPen>());
+            seed = hash(seed, variant.value<QPen>());
             break;
         case QMetaType::QTextLength:
-            hashCode = hashCode * 31 + qHash(variant.value<QTextLength>());
+            seed = hash(seed, variant.value<QTextLength>());
             break;
         default:
             if(variant.userType()==qMetaTypeId<QList<QTextLength>>()){
-                hashCode = hashCode * 31 + qHash(variant.value<QList<QTextLength>>());
+                seed = hash(seed, variant.value<QList<QTextLength>>());
             }
             break;
         }
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QTextFrame &value)
+inline hash_type qHash(const QTextFrame &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.parentFrame());
-    hashCode = hashCode * 31 + qHash(value.firstPosition());
-    hashCode = hashCode * 31 + qHash(value.lastPosition());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.parentFrame());
+    seed = hash(seed, value.firstPosition());
+    seed = hash(seed, value.lastPosition());
+    return seed;
 }
 
-inline hash_type qHash(const QTextFrame::iterator &value)
+inline hash_type qHash(const QTextFrame::iterator &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextLength &value)
+inline hash_type qHash(const QTextLength &value, hash_type seed)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.rawValue());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.rawValue());
+    return seed;
 }
 
-inline hash_type qHash(const QTextTableCell &value)
+inline hash_type qHash(const QTextTableCell &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.firstPosition());
-    hashCode = hashCode * 31 + qHash(value.lastPosition());
-    hashCode = hashCode * 31 + qHash(value.row());
-    hashCode = hashCode * 31 + qHash(value.column());
-    hashCode = hashCode * 31 + qHash(value.rowSpan());
-    hashCode = hashCode * 31 + qHash(value.columnSpan());
-    hashCode = hashCode * 31 + qHash(value.tableCellFormatIndex());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.firstPosition());
+    seed = hash(seed, value.lastPosition());
+    seed = hash(seed, value.row());
+    seed = hash(seed, value.column());
+    seed = hash(seed, value.rowSpan());
+    seed = hash(seed, value.columnSpan());
+    seed = hash(seed, value.tableCellFormatIndex());
+    return seed;
 }
 
-inline hash_type qHash(const QAbstractTextDocumentLayout::Selection &value)
+inline hash_type qHash(const QAbstractTextDocumentLayout::Selection &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.cursor);
-    hashCode = hashCode * 31 + qHash(value.format);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.cursor);
+    seed = hash(seed, value.format);
+    return seed;
 }
 
 inline bool operator==(const QAbstractTextDocumentLayout::Selection &v1, const QAbstractTextDocumentLayout::Selection &v2){
@@ -757,22 +715,23 @@ inline bool operator==(const QAbstractTextDocumentLayout::Selection &v1, const Q
             && v1.format==v2.format;
 }
 
-inline hash_type qHash(const QRgba64 &value)
+inline hash_type qHash(const QRgba64 &value, hash_type seed = 0)
 {
-    return qHash(value.operator unsigned long long());
+    return qHash(value.operator unsigned long long(), seed);
 }
 
 inline bool operator==(const QRgba64 &v1, const QRgba64 &v2){
     return v1.operator unsigned long long()==v2.operator unsigned long long();
 }
 
-inline hash_type qHash(const QAbstractTextDocumentLayout::PaintContext &value)
+inline hash_type qHash(const QAbstractTextDocumentLayout::PaintContext &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.cursorPosition);
-    hashCode = hashCode * 31 + qHash(value.palette);
-    hashCode = hashCode * 31 + qHash(value.clip);
-    hashCode = hashCode * 31 + qHash(value.selections);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.cursorPosition);
+    seed = hash(seed, value.palette);
+    seed = hash(seed, value.clip);
+    seed = hash(seed, value.selections);
+    return seed;
 }
 
 inline bool operator==(const QAbstractTextDocumentLayout::PaintContext &v1, const QAbstractTextDocumentLayout::PaintContext &v2){

@@ -41,6 +41,9 @@ namespace Java{
                 QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getMessage))
     }
+    namespace QtNetwork{
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(QTcpSocket,)
+    }
 }
 
 #endif // UTILS_P_H

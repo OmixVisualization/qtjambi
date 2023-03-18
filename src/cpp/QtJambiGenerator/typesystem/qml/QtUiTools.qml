@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.widgets.tools"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtUiTools"
     module: "qtjambi.uitools"
     description: "Classes for loading QWidget based forms created in Qt Designer dynamically, at runtime."

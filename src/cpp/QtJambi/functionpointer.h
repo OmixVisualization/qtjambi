@@ -31,6 +31,7 @@
 #define QTJAMBI_FUNCTIONPOINTER_H
 
 #include "global.h"
+#include "qtjambiapi.h"
 #include <QtCore/QVector>
 #include <QtCore/QQueue>
 #include <QtCore/QHash>
@@ -120,17 +121,12 @@ union storage
     typename std::decay<Callable>::type callable;
 };
 
-template<typename Ret, typename... Args>
-struct fn{
-    typedef Ret(*type)(Args...);
-};
-
 template<ushort count, typename Callable, typename Ret, typename... Args>
-void setInitialFunction(QQueue<typename fn<Ret, Args...>::type>& freeFunctions);
+void setInitialFunction(QQueue<typename QtJambiAPI::FunctionType<Ret, Args...>::type>& freeFunctions);
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
 class CallableHash{
-    typedef typename fn<Ret,Args...>::type Fn;
+    typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
 
     CallableHash();
 public:
@@ -190,7 +186,7 @@ private:
 
 template<ushort n, ushort count, typename Callable, typename Ret, typename... Args>
 struct CallableHashInitializer{
-    typedef typename fn<Ret,Args...>::type Fn;
+    typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
 
     static Ret call(Args...args){
 #if Q_CC_MSVC && !defined(QT_DEBUG)
@@ -208,7 +204,7 @@ struct CallableHashInitializer{
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
 struct CallableHashInitializer<count, count, Callable, Ret, Args...>{
-    typedef typename fn<Ret,Args...>::type Fn;
+    typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
     static void initialize(QQueue<Fn>&){}
 };
 
@@ -235,9 +231,9 @@ CallableHash<count,Callable,Ret,Args...>& CallableHash<count,Callable,Ret,Args..
 
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
-typename fn<Ret,Args...>::type functionPointer(Callable&& c, hash_type hash, std::function<void()>* deleterFunction, std::function<const Callable*(Ret(*)(Args...))>* reverseFunctionGetter)
+typename QtJambiAPI::FunctionType<Ret,Args...>::type functionPointer(Callable&& c, hash_type hash, std::function<void()>* deleterFunction, std::function<const Callable*(Ret(*)(Args...))>* reverseFunctionGetter)
 {
-    typedef typename fn<Ret,Args...>::type Fn;
+    typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
     CallableHash<count,Callable,Ret,Args...>& callables = CallableHash<count,Callable,Ret,Args...>::instance();
     QMutexLocker locker(functionPointerLock());
     Fn fn = callables.functionOf(hash);

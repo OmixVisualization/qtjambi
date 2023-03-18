@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.designer"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtDesigner"
     module: "qtjambi.designer"
     description: "Classes for loading QWidget based forms created in Qt Designer dynamically, at runtime."
@@ -72,291 +72,6 @@ TypeSystem{
     Rejection{
         className: ""
         functionName: "qt_extension"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "toString"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "propertyMap"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "domPixmap"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "addItem"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "applyProperties"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "applyTabStops"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "computeProperties"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "create"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createActionRefDom"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createConnections"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createCustomWidgets"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createDom"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createProperty"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "createResources"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "initialize"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "layoutInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadButtonExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadComboBoxExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadItemViewExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadListWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadTreeWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "loadTableWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveButtonExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveComboBoxExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveItemViewExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveListWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveTreeWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveTableWidgetExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveBrush"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveButtonExtraInfo"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveButtonGroups"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveColorGroup"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveConnections"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveCustomWidgets"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveDom"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveResources"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveTabStops"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveResource"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "saveText"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "toVariant"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "setIconProperty"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "setPixmapProperty"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "setupBrush"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "setupColorGroup"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "domPropertyToIcon"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "domPropertyToPixmap"
-    }
-    
-    Rejection{
-        className: "QAbstractFormBuilder"
-        functionName: "iconToDomProperty"
-    }
-    
-    Rejection{
-        className: "QFormBuilder"
-        functionName: "addItem"
-    }
-    
-    Rejection{
-        className: "QFormBuilder"
-        functionName: "applyProperties"
-    }
-    
-    Rejection{
-        className: "QFormBuilder"
-        functionName: "create"
-    }
-    
-    Rejection{
-        className: "QFormBuilder"
-        functionName: "createConnections"
-    }
-    
-    Rejection{
-        className: "QDesignerFormWindowToolInterface"
-        functionName: "loadFromDom"
-    }
-    
-    Rejection{
-        className: "QDesignerFormWindowToolInterface"
-        functionName: "saveToDom"
-    }
-    
-    Rejection{
-        className: "QDesignerFormWindowInterface"
-        functionName: "resourceSet"
-    }
-    
-    Rejection{
-        className: "QDesignerFormWindowInterface"
-        functionName: "setResourceSet"
     }
     
     Rejection{
@@ -402,14 +117,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QAbstractFormBuilder::DomPropertyHash"
-    }
-    
-    Rejection{
-        className: "QDesignerDnDItemInterface"
-    }
-    
-    Rejection{
         className: "QDesignerExtraInfoExtension"
     }
     
@@ -417,8 +124,36 @@ TypeSystem{
         className: "QResourceBuilder"
     }
     
-    Rejection{
-        className: "QDesignerDnDItemInterface"
+    InterfaceType{
+        name: "QDesignerDnDItemInterface"
+        ExtraIncludes{
+            Include{
+                fileName: "QtDesigner/private/ui4_p.h"
+                location: Include.Global
+                suppressed: true
+            }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "domUi()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.@Nullable QtObject"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content:  "DomUI* %out = Java::QtUIC::DomUI::isInstanceOf(%env, %in) ? reinterpret_cast<DomUI*>(QtJambiAPI::convertJavaObjectToNative(%env, %in)) : nullptr;"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, Java::QtUIC::DomUI::getClass(%env));"}
+                }
+            }
+        }
     }
     
     InterfaceType{
@@ -612,29 +347,49 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "promotion()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "settingsManager()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
         name: "QDesignerWidgetBoxInterface"
-    }
-    
-    EnumType{
-        name: "QDesignerWidgetBoxInterface::Category::Type"
-    }
-    
-    ValueType{
-        name: "QDesignerWidgetBoxInterface::Category"
-    }
-    
-    EnumType{
-        name: "QDesignerWidgetBoxInterface::Widget::Type"
-    }
-    
-    ValueType{
-        name: "QDesignerWidgetBoxInterface::Widget"
+
+        ValueType{
+            name: "Category"
+            EnumType{
+                name: "Type"
+            }
+        }
+
+        ValueType{
+            name: "Widget"
+            EnumType{
+                name: "Type"
+            }
+        }
+
         ModifyFunction{
-            signature: "operator=(QDesignerWidgetBoxInterface::Widget)"
-            remove: RemoveFlag.All
+            signature: "dropWidgets(QList<QDesignerDnDItemInterface*>,QPoint)"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
         }
     }
     
@@ -684,6 +439,56 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractFormBuilder"
+        Rejection{className: "DomPropertyHash"}
+        Rejection{functionName: "toString"}
+        Rejection{functionName: "propertyMap"}
+        Rejection{functionName: "domPixmap"}
+        Rejection{functionName: "addItem"}
+        Rejection{functionName: "applyProperties"}
+        Rejection{functionName: "applyTabStops"}
+        Rejection{functionName: "computeProperties"}
+        Rejection{functionName: "create"}
+        Rejection{functionName: "createActionRefDom"}
+        Rejection{functionName: "createConnections"}
+        Rejection{functionName: "createCustomWidgets"}
+        Rejection{functionName: "createDom"}
+        Rejection{functionName: "createProperty"}
+        Rejection{functionName: "createResources"}
+        Rejection{functionName: "initialize"}
+        Rejection{functionName: "layoutInfo"}
+        Rejection{functionName: "loadButtonExtraInfo"}
+        Rejection{functionName: "loadComboBoxExtraInfo"}
+        Rejection{functionName: "loadExtraInfo"}
+        Rejection{functionName: "loadItemViewExtraInfo"}
+        Rejection{functionName: "loadListWidgetExtraInfo"}
+        Rejection{functionName: "loadTreeWidgetExtraInfo"}
+        Rejection{functionName: "loadTableWidgetExtraInfo"}
+        Rejection{functionName: "saveButtonExtraInfo"}
+        Rejection{functionName: "saveComboBoxExtraInfo"}
+        Rejection{functionName: "saveExtraInfo"}
+        Rejection{functionName: "saveItemViewExtraInfo"}
+        Rejection{functionName: "saveListWidgetExtraInfo"}
+        Rejection{functionName: "saveTreeWidgetExtraInfo"}
+        Rejection{functionName: "saveTableWidgetExtraInfo"}
+        Rejection{functionName: "saveBrush"}
+        Rejection{functionName: "saveButtonExtraInfo"}
+        Rejection{functionName: "saveButtonGroups"}
+        Rejection{functionName: "saveColorGroup"}
+        Rejection{functionName: "saveConnections"}
+        Rejection{functionName: "saveCustomWidgets"}
+        Rejection{functionName: "saveDom"}
+        Rejection{functionName: "saveResources"}
+        Rejection{functionName: "saveTabStops"}
+        Rejection{functionName: "saveResource"}
+        Rejection{functionName: "saveText"}
+        Rejection{functionName: "toVariant"}
+        Rejection{functionName: "setIconProperty"}
+        Rejection{functionName: "setPixmapProperty"}
+        Rejection{functionName: "setupBrush"}
+        Rejection{functionName: "setupColorGroup"}
+        Rejection{functionName: "domPropertyToIcon"}
+        Rejection{functionName: "domPropertyToPixmap"}
+        Rejection{functionName: "iconToDomProperty"}
         ExtraIncludes{
             Include{
                 fileName: "QtDesigner/private/ui4_p.h"
@@ -858,16 +663,14 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QDesignerFormWindowCursorInterface::MoveOperation"
-    }
-    
-    EnumType{
-        name: "QDesignerFormWindowCursorInterface::MoveMode"
-    }
-    
     InterfaceType{
         name: "QDesignerFormWindowCursorInterface"
+        EnumType{
+            name: "MoveOperation"
+        }
+        EnumType{
+            name: "MoveMode"
+        }
         ModifyFunction{
             signature: "setWidgetProperty(QWidget*,QString,QVariant)"
             ModifyArgument{
@@ -881,6 +684,17 @@ TypeSystem{
     
     ObjectType{
         name: "QDesignerFormWindowInterface"
+        Rejection{functionName: "resourceSet"}
+        Rejection{functionName: "setResourceSet"}
+
+        EnumType{
+            name: "FeatureFlag"
+        }
+
+        EnumType{
+            name: "ResourceFileSaveMode"
+        }
+
         InjectCode{
             target: CodeClass.ShellDeclaration
             position: Position.End
@@ -893,6 +707,12 @@ TypeSystem{
         ModifyFunction{
             signature: "cursor() const"
             rename: "cursorInterface"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
         ModifyFunction{
             signature: "registerTool(QDesignerFormWindowToolInterface *)"
@@ -980,26 +800,10 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QDesignerFormWindowInterface::FeatureFlag"
-        flags: "QDesignerFormWindowInterface::Feature"
-    }
-    
-    EnumType{
-        name: "QDesignerFormWindowInterface::ResourceFileSaveMode"
-    }
-    
-    EnumType{
-        name: "QDesignerIntegrationInterface::ResourceFileWatcherBehaviour"
-    }
-    
-    EnumType{
-        name: "QDesignerIntegrationInterface::FeatureFlag"
-        flags: "QDesignerIntegrationInterface::Feature"
-    }
-    
     ObjectType{
         name: "QDesignerFormWindowToolInterface"
+        Rejection{functionName: "loadFromDom"}
+        Rejection{functionName: "saveToDom"}
         ModifyFunction{
             signature: "handleEvent(QWidget*,QWidget*,QEvent*)"
             ModifyArgument{
@@ -1015,6 +819,13 @@ TypeSystem{
     
     ObjectType{
         name: "QDesignerIntegrationInterface"
+
+        EnumType{
+            name: "ResourceFileWatcherBehaviour"
+        }
+        EnumType{
+            name: "FeatureFlag"
+        }
         ModifyFunction{
             signature: "createResourceBrowser(QWidget*)"
             ModifyArgument{
@@ -1040,12 +851,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QDesignerLayoutDecorationExtension::InsertMode"
-    }
-    
     InterfaceType{
         name: "QDesignerLayoutDecorationExtension"
+
+        EnumType{
+            name: "InsertMode"
+        }
         ModifyFunction{
             signature: "insertWidget(QWidget*,std::pair<int,int>)"
             ModifyArgument{
@@ -1109,6 +920,15 @@ TypeSystem{
                 ReferenceCount{
                     variableName: "__rcObjects"
                     action: ReferenceCount.Take
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "item(QObject*)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -1200,6 +1020,15 @@ TypeSystem{
                 }
                 DefineOwnership{
                     codeClass: CodeClass.Shell
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "item(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
                     ownership: Ownership.Ignore
                 }
             }
@@ -1306,6 +1135,10 @@ TypeSystem{
     
     ObjectType{
         name: "QFormBuilder"
+        Rejection{functionName: "addItem"}
+        Rejection{functionName: "applyProperties"}
+        Rejection{functionName: "create"}
+        Rejection{functionName: "createConnections"}
         ExtraIncludes{
             Include{
                 fileName: "QtDesigner/private/ui4_p.h"
@@ -1358,6 +1191,34 @@ TypeSystem{
     
     InterfaceType{
         name: "QDesignerPromotionInterface"
+
+        ValueType{
+            name: "PromotedClass"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtDesigner/QDesignerWidgetDataBaseItemInterface"
+                    location: Include.Global
+                }
+            }
+            ModifyField{
+                name: "baseItem"
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+            ModifyField{
+                name: "promotedItem"
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
         ModifyFunction{
             signature: "addPromotedClass(QString,QString,QString,QString*)"
             ModifyArgument{
@@ -1392,28 +1253,6 @@ TypeSystem{
                 ArrayType{
                     minLength: 1
                 }
-            }
-        }
-    }
-    
-    ValueType{
-        name: "QDesignerPromotionInterface::PromotedClass"
-        ExtraIncludes{
-            Include{
-                fileName: "QtDesigner/QDesignerWidgetDataBaseItemInterface"
-                location: Include.Global
-            }
-        }
-        ModifyField{
-            name: "baseItem"
-            ReferenceCount{
-                action: ReferenceCount.Ignore
-            }
-        }
-        ModifyField{
-            name: "promotedItem"
-            ReferenceCount{
-                action: ReferenceCount.Ignore
             }
         }
     }
@@ -1525,6 +1364,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerFormEditorPluginInterface*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*Dom*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QList<Dom*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QList<QDesignerDnDItemInterface*'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QDesigner*::*."}
 }

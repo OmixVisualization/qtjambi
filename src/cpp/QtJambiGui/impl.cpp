@@ -201,22 +201,22 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_
 
 hash_type qHash(const QColorVector &value, hash_type seed = 0)
 {
-    hash_type hashCode = seed;
+    QtPrivate::QHashCombine hash;
     if(!value.isNull()){
-        hashCode = hashCode * 31 + qHash(value.x);
-        hashCode = hashCode * 31 + qHash(value.y);
-        hashCode = hashCode * 31 + qHash(value.z);
+        seed = hash(seed, value.x);
+        seed = hash(seed, value.y);
+        seed = hash(seed, value.z);
     }
-    return hashCode;
+    return seed;
 }
 
 hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
 {
-    hash_type hashCode = seed;
-    hashCode = hashCode * 31 + qHash(value.r);
-    hashCode = hashCode * 31 + qHash(value.g);
-    hashCode = hashCode * 31 + qHash(value.b);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.r);
+    seed = hash(seed, value.g);
+    seed = hash(seed, value.b);
+    return seed;
 }
 #endif
 
@@ -227,18 +227,18 @@ hash_type qHash(const QColorTransform &value, hash_type seed)
 #else
     QColorTransformPrivate* p = QColorTransformPrivate::get(value);
 #endif
-    hash_type hashCode = seed;
+    QtPrivate::QHashCombine hash;
     if(p){
-        hashCode = hashCode * 31 + qHash(p->colorMatrix);
-        hashCode = hashCode * 31 + qHash(bool(p->colorSpaceIn));
+        seed = hash(seed, p->colorMatrix);
+        seed = hash(seed, bool(p->colorSpaceIn));
         if(p->colorSpaceIn){
-            hashCode = hashCode * 31 + qHash(*reinterpret_cast<const QColorSpace*>(&p->colorSpaceIn));
+            seed = hash(seed, *reinterpret_cast<const QColorSpace*>(&p->colorSpaceIn));
         }
-        hashCode = hashCode * 31 + qHash(bool(p->colorSpaceOut));
+        seed = hash(seed, bool(p->colorSpaceOut));
         if(p->colorSpaceOut){
-            hashCode = hashCode * 31 + qHash(*reinterpret_cast<const QColorSpace*>(&p->colorSpaceOut));
+            seed = hash(seed, *reinterpret_cast<const QColorSpace*>(&p->colorSpaceOut));
         }
     }
-    return hashCode;
+    return seed;
 }
 #endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)

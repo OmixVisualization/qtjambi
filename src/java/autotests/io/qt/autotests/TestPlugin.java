@@ -50,7 +50,6 @@ import io.qt.gui.QIconEngine;
 import io.qt.gui.QIconEnginePlugin;
 import io.qt.gui.QImageIOHandler;
 import io.qt.gui.QImageIOPlugin;
-import io.qt.widgets.QDialog;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsObject;
 import io.qt.widgets.QGraphicsWidget;
@@ -129,10 +128,9 @@ public class TestPlugin extends ApplicationInitializer {
 		Assert.assertTrue(plugin instanceof QGraphicsWidget);
     }
     
-//    @Test
+    @Test
     public void testLoadPluginLibrary() {
 		Assume.assumeTrue("macos only", QOperatingSystemVersion.current().isAnyOfType(OSType.MacOS));
-		new QDialog().exec();
 		for(String path : QCoreApplication.libraryPaths()) {
 			QFileInfo file = new QFileInfo(path+"/designer/libcustomwidgets.dylib");
 			if(file.exists()) {

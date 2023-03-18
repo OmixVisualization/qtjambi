@@ -175,6 +175,20 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool check
     }
 }
 
+void QtJambiScope::addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent){
+    if(persistent){
+        addFinalAction([nativeId](){
+            if(JniEnvironment env{200}){
+                InvalidateAfterUse::invalidate(env, nativeId);
+            }
+        });
+    }else{
+        addFinalAction([env, nativeId](){
+            InvalidateAfterUse::invalidate(env, nativeId);
+        });
+    }
+}
+
 void QtJambiScope::addFinalAction(std::function<void()>&& action){
     if(!d)
         d = new QtJambiScopePrivate();

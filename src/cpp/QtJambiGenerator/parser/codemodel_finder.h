@@ -61,12 +61,12 @@ class CodeModelFinder: protected DefaultVisitor {
         };
 
     public:
-        CodeModelFinder(CodeModel *model, Binder *binder);
+        CodeModelFinder(CodeModelPtr model, Binder *binder);
         virtual ~CodeModelFinder();
 
         ScopeModelItem resolveScope(NameAST *name, ScopeModelItem scope);
 
-        inline CodeModel *model() const { return _M_model; }
+        inline CodeModelPtr model() const { return _M_model; }
 
     protected:
         virtual void visitName(NameAST *node);
@@ -75,7 +75,7 @@ class CodeModelFinder: protected DefaultVisitor {
         ScopeModelItem changeCurrentScope(ScopeModelItem scope);
 
     private:
-        CodeModel *_M_model;
+        CodeModelPtr _M_model;
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         NameCompiler name_cc;

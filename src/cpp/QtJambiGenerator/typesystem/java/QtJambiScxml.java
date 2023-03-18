@@ -47,7 +47,7 @@ class QScxmlStateMachine___ {
     public static io.qt.core.QMetaObject.Slot1<Boolean> onEntry(io.qt.core.QObject object, String slot){
         io.qt.core.QMetaMethod method = object.metaObject().method(slot);
         if(method==null || !method.isValid())
-            throw new io.qt.QNoSuchSlotException(object, slot);
+            throw new QNoSuchSlotException(object, slot);
         return (isEnteringState) -> {
             if (isEnteringState && !object.isDisposed())
                 method.invoke(object);
@@ -60,7 +60,7 @@ class QScxmlStateMachine___ {
     public static io.qt.core.QMetaObject.Slot1<Boolean> onExit(io.qt.core.QObject object, String slot){
         io.qt.core.QMetaMethod method = object.metaObject().method(slot);
         if(method==null || !method.isValid())
-            throw new io.qt.QNoSuchSlotException(object, slot);
+            throw new QNoSuchSlotException(object, slot);
         return (isEnteringState) -> {
             if (!isEnteringState && !object.isDisposed())
                 method.invoke(object);

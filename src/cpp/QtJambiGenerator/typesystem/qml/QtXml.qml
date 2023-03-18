@@ -31,37 +31,13 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.xml"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtXml"
     module: "qtjambi.xml"
     description: "C++ implementations of SAX and DOM."
-    Rejection{
-        className: "QXmlAttributes::Attribute"
-    }
-    
-    Rejection{
-        className: "QDomNode"
-        fieldName: "impl"
-    }
-    
-    EnumType{
-        name: "QDomNode::NodeType"
-    }
-    
-    EnumType{
-        name: "QDomNode::EncodingPolicy"
-    }
-    
-    EnumType{
-        name: "QDomImplementation::InvalidDataPolicy"
-    }
     
     ValueType{
         name: "QDomAttr"
-        ModifyFunction{
-            signature: "operator=(QDomAttr)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "nodeType()const"
             remove: RemoveFlag.All
@@ -71,10 +47,6 @@ TypeSystem{
     ValueType{
         name: "QDomCDATASection"
         ModifyFunction{
-            signature: "operator=(QDomCDATASection)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
@@ -82,10 +54,6 @@ TypeSystem{
     
     ValueType{
         name: "QDomCharacterData"
-        ModifyFunction{
-            signature: "operator=(QDomCharacterData)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "nodeType()const"
             remove: RemoveFlag.All
@@ -95,38 +63,29 @@ TypeSystem{
     ValueType{
         name: "QDomComment"
         ModifyFunction{
-            signature: "operator=(QDomComment)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
-    }
-
-    EnumType{
-        name: "QDomDocument::ParseOption"
-        flags: "QDomDocument::ParseOptions"
-        since: [6,5]
-    }
-
-    ValueType{
-        name: "QDomDocument::ParseResult"
-        ModifyFunction{
-            signature: "operator bool() const"
-            rename: "success"
-        }
-        since: [6,5]
     }
     
     ValueType{
         name: "QDomDocument"
-        ModifyFunction{
-            signature: "nodeType()const"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "ParseOption"
+            since: [6,5]
+        }
+
+        ValueType{
+            name: "ParseResult"
+            ModifyFunction{
+                signature: "operator bool() const"
+                rename: "success"
+            }
+            since: [6,5]
         }
         ModifyFunction{
-            signature: "operator=(QDomDocument)"
+            signature: "nodeType()const"
             remove: RemoveFlag.All
         }
         InjectCode{
@@ -141,6 +100,28 @@ TypeSystem{
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+        }
+        ModifyFunction{
+            signature: "setContent(QIODevice*, QDomDocument::ParseOptions)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcContent"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.5
+        }
+        ModifyFunction{
+            signature: "setContent(QXmlStreamReader*, QDomDocument::ParseOptions)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcContent"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.5
         }
         ModifyFunction{
             signature: "setContent(QIODevice*, bool, QString*, int*, int*)"
@@ -186,6 +167,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -236,6 +218,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -286,6 +269,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -337,6 +321,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -381,6 +366,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -424,6 +410,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -467,6 +454,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -511,6 +499,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -562,6 +551,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QDomDocument$Result"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast<jstring>(%env, errorMsg), errorLine, errorColumn);"}
@@ -577,20 +567,12 @@ TypeSystem{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(QDomDocumentFragment)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDomDocumentType"
         ModifyFunction{
             signature: "nodeType()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QDomDocumentType)"
             remove: RemoveFlag.All
         }
     }
@@ -601,10 +583,6 @@ TypeSystem{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(QDomEntity)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -613,33 +591,30 @@ TypeSystem{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(QDomEntityReference)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDomImplementation"
-        ModifyFunction{
-            signature: "operator=(QDomImplementation)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "InvalidDataPolicy"
         }
     }
     
     ValueType{
         name: "QDomNamedNodeMap"
-        ModifyFunction{
-            signature: "operator=(QDomNamedNodeMap)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDomNode"
-        ModifyFunction{
-            signature: "operator=(QDomNode)"
-            remove: RemoveFlag.All
+
+        Rejection{fieldName: "impl"}
+
+        EnumType{
+            name: "NodeType"
+        }
+
+        EnumType{
+            name: "EncodingPolicy"
         }
         ModifyFunction{
             signature: "attributes()const"
@@ -649,20 +624,12 @@ TypeSystem{
     
     ValueType{
         name: "QDomNodeList"
-        ModifyFunction{
-            signature: "operator=(const QDomNodeList &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDomNotation"
         ModifyFunction{
             signature: "nodeType()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QDomNotation)"
             remove: RemoveFlag.All
         }
     }
@@ -673,20 +640,12 @@ TypeSystem{
             signature: "nodeType()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(QDomProcessingInstruction)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDomText"
         ModifyFunction{
             signature: "nodeType()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QDomText &)"
             remove: RemoveFlag.All
         }
     }
@@ -697,6 +656,9 @@ TypeSystem{
     
     ValueType{
         name: "QXmlAttributes"
+        Rejection{
+            className: "Attribute"
+        }
         ModifyFunction{
             signature: "index(const QLatin1String&) const"
             Remove{
@@ -707,26 +669,10 @@ TypeSystem{
             Remove{
             }
         }
-        ModifyFunction{
-            signature: "operator=(const QXmlAttributes &)"
-            remove: RemoveFlag.All
-            since: [5, 12]
-        }
     }
     
-    ValueType{
+    ObjectType{
         name: "QXmlNamespaceSupport"
-        CustomConstructor{
-            Text{content: "QXmlNamespaceSupport *clone = new(placement) QXmlNamespaceSupport;\n"+
-                          "if(copy){\n"+
-                          "    clone->setPrefix(\"\", copy->uri(\"\"));\n"+
-                          "\n"+
-                          "    QStringList prefixes = copy->prefixes();\n"+
-                          "    for (int i=0; i<prefixes.size(); ++i)\n"+
-                          "        clone->setPrefix(prefixes.at(i), copy->uri(prefixes.at(i)));\n"+
-                          "}\n"+
-                          "return clone;"}
-        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiXml.java"
@@ -765,6 +711,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QXmlNamespaceSupport$ProcessedName"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QXmlNamespaceSupport$ProcessedName::newInstance(%env, qtjambi_cast<jstring>(%env, __qt_%3), qtjambi_cast<jstring>(%env, __qt_%4));"}
@@ -796,6 +743,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QXmlNamespaceSupport$SplitName"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtXml::QXmlNamespaceSupport$SplitName::newInstance(%env, qtjambi_cast<jstring>(%env, __qt_%2), qtjambi_cast<jstring>(%env, __qt_%3));"}
@@ -811,26 +759,22 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator=(QDomElement)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setAttribute(const QString &, unsigned int)"
+            signature: "setAttribute(const QString &, uint)"
             Remove{
             }
         }
         ModifyFunction{
-            signature: "setAttribute(const QString &, unsigned long long)"
+            signature: "setAttribute(const QString &, qulonglong)"
             Remove{
             }
         }
         ModifyFunction{
-            signature: "setAttributeNS(const QString, const QString &, unsigned int)"
+            signature: "setAttributeNS(const QString, const QString &, uint)"
             Remove{
             }
         }
         ModifyFunction{
-            signature: "setAttributeNS(const QString, const QString &, unsigned long long)"
+            signature: "setAttributeNS(const QString, const QString &, qulonglong)"
             Remove{
             }
         }
@@ -894,6 +838,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.xml.QXmlEntityResolver$ResolvedEntity"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jobject java_inputSource = qtjambi_cast<jobject>(%env, __qt_%3);\n"+
@@ -1125,11 +1070,23 @@ TypeSystem{
             }
             InjectCode{
                 target: CodeClass.Shell
-                ImportFile{
-                    name: ":/io/qtjambi/generator/typesystem/QtJambiXml.java"
-                    quoteAfterLine: "class QXmlReader_parse___"
-                    quoteBeforeLine: "}// class"
-                }
+                Text{content: String.raw`
+JniEnvironment __jni_env{300};
+jmethodID method_id = __shell_javaMethod(10);
+if(__jni_env && method_id) {
+    bool  __qt_return_value = false;
+    if(jobject __java_this = __shell()->getJavaObjectLocalRef(__jni_env)){
+        jobject __java_input0 = qtjambi_cast<jobject>(__jni_env, &input0);
+        QTJAMBI_INVALIDATE_AFTER_USE(__jni_env, __java_input0);
+        jboolean __java_return_value = __jni_env->CallBooleanMethod(__java_this, method_id, __java_input0);
+        JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
+        __qt_return_value = bool(__java_return_value);
+    } else {
+        __shell()->warnForMethod("QXmlReader::parse(const QXmlInputSource& input)");
+    }
+    return __qt_return_value;
+}
+`}
             }
         }
         ModifyFunction{
@@ -1169,7 +1126,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Boolean"
+                    modifiedType: "java.lang.@Nullable Boolean"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell

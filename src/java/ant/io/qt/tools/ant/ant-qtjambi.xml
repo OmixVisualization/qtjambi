@@ -46,27 +46,33 @@
         classname="io.qt.tools.ant.InitializeBuildTask"/>
     <taskdef name="qtjambi-resolve-path"
         classname="io.qt.tools.ant.ResolvePathTask"/>
-
     <!-- Added due to dash in name -->
+    <taskdef name="stringreplace"
+         classname="io.qt.tools.ant.StringReplaceTask"/>
+    <taskdef name="dependencies-to-classpath"
+         classname="io.qt.tools.ant.DependenciesToClassPathTask"/>
+    <taskdef name="select-modules"
+         classname="io.qt.tools.ant.JavaModuleSelectorTask"/>
+    <taskdef name="foreach-version"
+         classname="io.qt.tools.ant.ForeachVersionTask"/>
+    <taskdef name="foreach-native"
+         classname="io.qt.tools.ant.ForeachNativeTask"/>
+    <taskdef name="gpg"
+         classname="io.qt.tools.ant.GPGTask"/>
+    <taskdef name="aidl"
+         classname="io.qt.tools.ant.AidlTask"/>
+    <taskdef name="if"
+         classname="io.qt.tools.ant.IfTask"/>
+    <taskdef name="trycatch"
+         classname="io.qt.tools.ant.TryCatchTask"/>
+    <taskdef name="create-function-pointer-qrc"
+         classname="io.qt.tools.ant.CreateFunctionPointerQrcTask"/>
+
     <typedef name="directory"
          classname="io.qt.tools.ant.Directory"/>
     <typedef name="file"
          classname="io.qt.tools.ant.File"/>
-    <typedef name="stringreplace"
-         classname="io.qt.tools.ant.StringReplaceTask"/>
-    <typedef name="dependencies-to-classpath"
-         classname="io.qt.tools.ant.DependenciesToClassPathTask"/>
-    <typedef name="select-modules"
-         classname="io.qt.tools.ant.JavaModuleSelectorTask"/>
-    <typedef name="foreach-version"
-         classname="io.qt.tools.ant.ForeachVersionTask"/>
-    <typedef name="foreach-native"
-         classname="io.qt.tools.ant.ForeachNativeTask"/>
-    <typedef name="gpg"
-         classname="io.qt.tools.ant.GPGTask"/>
-    <typedef name="aidl"
-         classname="io.qt.tools.ant.AidlTask"/>
-    <typedef name="create-function-pointer-qrc"
-         classname="io.qt.tools.ant.CreateFunctionPointerQrcTask"/>
+    <componentdef name="less"
+         classname="io.qt.tools.ant.IsLessThan"/>
 </antlib>
 

@@ -981,6 +981,19 @@ void ModifyFunction::setIsPaintMethod(bool newIsPaintMethod)
     emit isPaintMethodChanged();
 }
 
+bool ModifyFunction::noKotlinGetter() const
+{
+    return m_noKotlinGetter;
+}
+
+void ModifyFunction::setNoKotlinGetter(bool newNoKotlinGetter)
+{
+    if (m_noKotlinGetter == newNoKotlinGetter)
+        return;
+    m_noKotlinGetter = newNoKotlinGetter;
+    emit noKotlinGetterChanged();
+}
+
 RemoveFlag::Entries Remove::getCodeClass() const
 {
     return codeClass;
@@ -1057,6 +1070,19 @@ void ModifyField::setRename(const QString &newRename)
         return;
     rename = newRename;
     emit renameChanged();
+}
+
+bool ModifyField::noKotlinGetter() const
+{
+    return m_noKotlinGetter;
+}
+
+void ModifyField::setNoKotlinGetter(bool newNoKotlinGetter)
+{
+    if (m_noKotlinGetter == newNoKotlinGetter)
+        return;
+    m_noKotlinGetter = newNoKotlinGetter;
+    emit noKotlinGetterChanged();
 }
 
 const QString &RejectEnumValue::getName() const
@@ -1239,4 +1265,56 @@ void Implements::setInterface(const QString &newInterface)
         return;
     interface = newInterface;
     emit interfaceChanged();
+}
+
+QString Delegate::name() const
+{
+    return m_name;
+}
+
+void Delegate::setName(const QString &newName)
+{
+    if (m_name == newName)
+        return;
+    m_name = newName;
+    emit nameChanged();
+}
+
+bool Delegate::isDeprecated() const
+{
+    return m_isDeprecated;
+}
+
+void Delegate::setDeprecated(bool newIsDeprecated)
+{
+    if (m_isDeprecated == newIsDeprecated)
+        return;
+    m_isDeprecated = newIsDeprecated;
+    emit isDeprecatedChanged();
+}
+
+AccessModifications Delegate::access() const
+{
+    return m_access;
+}
+
+void Delegate::setAccess(const AccessModifications &newAccess)
+{
+    if (m_access == newAccess)
+        return;
+    m_access = newAccess;
+    emit accessChanged();
+}
+
+bool Delegate::isSelfReturning() const
+{
+    return m_isSelfReturning;
+}
+
+void Delegate::setIsSelfReturning(bool newIsSelfReturning)
+{
+    if (m_isSelfReturning == newIsSelfReturning)
+        return;
+    m_isSelfReturning = newIsSelfReturning;
+    emit isSelfReturningChanged();
 }

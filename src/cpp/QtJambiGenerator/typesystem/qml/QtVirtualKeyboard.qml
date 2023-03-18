@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.keyboard"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtVirtualKeyboard"
     module: "qtjambi.virtualkeyboard"
     description: "A framework for implementing different input methods as well as a QML virtual keyboard. Supports localized keyboard layouts and custom visual themes."
@@ -45,15 +45,6 @@ TypeSystem{
     
     ObjectType{
         name: "QVirtualKeyboardExtensionPlugin"
-        ModifyFunction{
-            signature: "registerTypes(const char *) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -76,7 +67,6 @@ TypeSystem{
     
     EnumType{
         name: "QVirtualKeyboardInputEngine::ReselectFlag"
-        flags: "QVirtualKeyboardInputEngine::ReselectFlags"
     }
     
     EnumType{

@@ -151,7 +151,9 @@ class TokenStream {
         { return index++; }
 
         inline int lookAhead(std::size_t i = 0) const
-        { return tokens[index + i].kind; }
+        {
+            return tokens[index + i].kind;
+        }
 
         inline int kind(std::size_t i) const
         { return tokens[i].kind; }
@@ -187,11 +189,12 @@ class LocationManager {
     public:
         LocationManager(TokenStream &__token_stream,
                         LocationTable &__location_table,
-                        LocationTable &__line_table):
+                        LocationTable &__line_table,
+                        QMap<QString,QStringList>& requiredFeatures):
                 token_stream(__token_stream),
                 location_table(__location_table),
                 line_table(__line_table),
-                _M_requiredFeatures() {}
+                _M_requiredFeatures(requiredFeatures) {}
 
         void positionAt(std::size_t offset, int *line, int *column,
                         QString *filename) const;
@@ -206,7 +209,7 @@ class LocationManager {
         LocationTable &location_table;
         LocationTable &line_table;
     private:
-        QMap<QString,QStringList> _M_requiredFeatures;
+        QMap<QString,QStringList>& _M_requiredFeatures;
 };
 
 class Lexer {

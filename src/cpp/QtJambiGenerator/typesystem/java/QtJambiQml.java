@@ -31,81 +31,81 @@
 
 class __QQmlComponent extends QQmlComponent{
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setData(String data, io.qt.core.QUrl baseUrl){
         setData(new io.qt.core.QByteArray(data), baseUrl);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setData(byte[] data, io.qt.core.QUrl baseUrl){
         setData(new io.qt.core.QByteArray(data), baseUrl);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <T extends io.qt.core.QObject> T create(Class<T> type){
         return create(type, (io.qt.qml.QQmlContext)null);
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public <T extends io.qt.core.QObject> T create(Class<T> type, io.qt.qml.QQmlContext context){
         String packageName = type.getName();
         int idx = packageName.lastIndexOf('.');
         if(idx>0){
             packageName = packageName.substring(0, idx);
         }
-        io.qt.QtUtilities.initializePackage(packageName);
+        QtUtilities.initializePackage(packageName);
         return type.cast(create(context));
     }
 }// class
 
 class __QJSValue extends QJSValue{
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(java.lang.String name, String value){
         setProperty(name, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(java.lang.String name, boolean value){
         setProperty(name, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(java.lang.String name, double value){
         setProperty(name, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(java.lang.String name, int value){
         setProperty(name, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(java.lang.String name, QJSValue.SpecialValue value){
         setProperty(name, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(int arrayIndex, String value){
         setProperty(arrayIndex, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(int arrayIndex, boolean value){
         setProperty(arrayIndex, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(int arrayIndex, double value){
         setProperty(arrayIndex, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(int arrayIndex, int value){
         setProperty(arrayIndex, new QJSValue(value));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final void setProperty(int arrayIndex, QJSValue.SpecialValue value){
         setProperty(arrayIndex, new QJSValue(value));
     }
@@ -151,17 +151,17 @@ class __QtQml__ extends QtQml{
 
 class QQmlProperty__{
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot0 slot){
         return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot1<?> slot){
         return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     private final boolean connectNotifySignal(io.qt.core.QMetaObject.AbstractSlot slot, io.qt.core.QMetaMethod metaMethod){
         if(metaMethod!=null && metaMethod.isValid()) {
             io.qt.core.QObject qobject = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
@@ -175,93 +175,60 @@ class QQmlProperty__{
 
 class QJSEngine__{
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final QJSValue newQMetaObject(Class<?> type) {
         return newQMetaObject(io.qt.core.QMetaObject.forType(type));
     }
 }// class
 
 class QJSEngine_6_{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> T fromScriptValue(QJSValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
         return fromScriptValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
     }
-    
-    @io.qt.QtUninvokable
-    public final <T> T fromScriptValue(QJSValue value, io.qt.core.QMetaType type) {
-        return fromScriptValue(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(value), QtJambi_LibraryUtilities.internal.checkedNativeId(type));
-    }
-    
-    private static native <T> T fromScriptValue(long thisId, long valueId, long typeId);
-    
-    @io.qt.QtUninvokable
-    public final <T> QJSValue toScriptValue(T value) {
-        return toScriptValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
-    }
-    
-    private static native QJSValue toScriptValue(long thisId, Object value);
 }// class
 
 class QJSEngine_61_{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> T fromManagedValue(QJSManagedValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
         return fromManagedValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
     }
-    
-    @io.qt.QtUninvokable
-    public final <T> T fromManagedValue(QJSManagedValue value, io.qt.core.QMetaType type) {
-        return fromManagedValue(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(value), QtJambi_LibraryUtilities.internal.checkedNativeId(type));
-    }
-    
-    private static native <T> T fromManagedValue(long thisId, long valueId, long typeId);
-    
-    @io.qt.QtUninvokable
-    public final <T> QJSManagedValue toManagedValue(T value) {
-        return toManagedValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
-    }
-    
-    private static native QJSManagedValue toManagedValue(long thisId, Object value);
-    
 }// class
 
 class QJSEngine_63_{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final <T> T fromVariant(Object variant, Class<T> type, io.qt.core.QMetaType...instantiations) {
         return fromVariant(variant, io.qt.core.QMetaType.fromType(type, instantiations));
     }
-    
-    @io.qt.QtUninvokable
-    public final <T> T fromVariant(Object variant, io.qt.core.QMetaType type) {
-        return fromVariant(QtJambi_LibraryUtilities.internal.nativeId(this), variant, QtJambi_LibraryUtilities.internal.checkedNativeId(type));
-    }
-    
-    private static native <T> T fromVariant(long thisId, Object variant, long typeId);
-    
 }// class
 
 class QQmlEngine__{
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int qmlTypeId)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T extends io.qt.QtObjectInterface> T singletonInstance(Class<T> type, int qmlTypeId) {
-        io.qt.core.QObject object = singletonInstance(QtJambi_LibraryUtilities.internal.nativeId(this), qmlTypeId).toQObject();
+    @QtUninvokable
+    public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, int qmlTypeId) {
+        io.qt.core.QObject object = singletonInstance(qmlTypeId).toQObject();
         if(object!=null)
             return object.qt_metacast(type);
         return null;
     }
-    
+
+}// class
+
+class QQmlEngine_65_{
+
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int qmlTypeId)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance-1">QQmlEngine::singletonInstance(QAnyStringView,QAnyStringView)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final QJSValue singletonInstance(int qmlTypeId) {
-        return singletonInstance(QtJambi_LibraryUtilities.internal.nativeId(this), qmlTypeId);
+    @QtUninvokable
+    public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, java.lang.@NonNull String moduleName, java.lang.@NonNull String typeName) {
+        io.qt.core.QObject object = singletonInstance(moduleName, typeName).toQObject();
+        if(object!=null)
+            return object.qt_metacast(type);
+        return null;
     }
-    
-    @io.qt.QtUninvokable
-    private static native QJSValue singletonInstance(long __this__nativeId, int qmlTypeId);
     
 }// class
 
@@ -301,36 +268,4 @@ class QQmlIncubationController__{
 }// class
 
 class QQmlIncubationController_native__{
-}// class
-
-class QJSPrimitiveValue__{
-    @io.qt.QtUninvokable
-    @Deprecated
-    public final io.qt.qml.QJSPrimitiveValue modulo(io.qt.qml.QJSPrimitiveValue rhs){
-        return mod(rhs);
-    }
-    
-    @io.qt.QtUninvokable
-    @Deprecated
-    public final io.qt.qml.QJSPrimitiveValue multiplied(io.qt.qml.QJSPrimitiveValue rhs){
-        return times(rhs);
-    }
-    
-    @io.qt.QtUninvokable
-    @Deprecated
-    public final io.qt.qml.QJSPrimitiveValue added(io.qt.qml.QJSPrimitiveValue rhs){
-        return plus(rhs);
-    }
-    
-    @io.qt.QtUninvokable
-    @Deprecated
-    public final io.qt.qml.QJSPrimitiveValue divided(io.qt.qml.QJSPrimitiveValue rhs){
-        return div(rhs);
-    }
-    
-    @io.qt.QtUninvokable
-    @Deprecated
-    public final io.qt.qml.QJSPrimitiveValue substracted(io.qt.qml.QJSPrimitiveValue rhs){
-        return minus(rhs);
-    }
 }// class

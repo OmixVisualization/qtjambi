@@ -939,7 +939,10 @@ void QClassPathEngine::setFileName(const QString &fileName)
 {
     if (fileName==QClassPathEngine::fileName())
         return;
-    m_engines.clear();
+    {
+        QMutexLocker locker(&m_mutex);
+        m_engines.clear();
+    }
     if(JniEnvironment env{600}){
         QLatin1String fileNamePrefix1("classpath:");
         QLatin1String fileNamePrefix2("/:classpath:");
@@ -1100,12 +1103,11 @@ QString QClassPathEngine::fileName(FileName file) const {
         engines = m_engines;
     }
     if(QAbstractFileEngine* afe = engines.value(0)){
-        if (QFSFileEngine* fsf = dynamic_cast<QFSFileEngine*>(afe)){
-            return fsf->fileName(file);
-        }
         QString classPathEntry;
         if (engines.size() == 1) {
-            if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
+            /*if (QFSFileEngine* fsf = dynamic_cast<QFSFileEngine*>(afe)){
+                return fsf->fileName(file);
+            }else*/ if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
                 classPathEntry = cpe->classPathEntryName();
             else{
                 if(JniEnvironment env{200}){
@@ -1350,8 +1352,9 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
                 ) {
             file = QFileInfo(file.absolutePath() + "/" + fileName);
             if(file.exists()){
+                QFSEntryEngine* engine = new QFSEntryEngine(file.absoluteFilePath(), urlPath);
                 QMutexLocker locker(&m_mutex);
-                m_engines << new QFSEntryEngine(file.absoluteFilePath(), urlPath);
+                m_engines << engine;
                 return true;
 #ifdef Q_OS_ANDROID
             }else if(urlPath=="file:/"){

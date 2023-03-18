@@ -34,6 +34,9 @@
 
 #include <QtCore/QtCore>
 #include <QtJambi/Global>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && QT_CONFIG(permissions)
+#include <QtCore/QPermission>
+#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
 bool operator==(QByteArrayView, QByteArray);
@@ -49,9 +52,9 @@ hash_type genericHash(const T &value, hash_type seed = 0)
     return qHashBits(&value, sizeof(T), seed);
 }
 
-inline hash_type qHash(const QAbstractEventDispatcher::TimerInfo &value)
+inline hash_type qHash(const QAbstractEventDispatcher::TimerInfo &value, hash_type seed = 0)
 {
-    return genericHash<QAbstractEventDispatcher::TimerInfo>(value);
+    return genericHash(value, seed);
 }
 
 inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbstractEventDispatcher::TimerInfo &v2){
@@ -61,22 +64,23 @@ inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbs
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-inline hash_type qHash(const QMetaType &value)
+inline hash_type qHash(const QMetaType &value, hash_type seed = 0)
 {
-    return qHash(value.id());
+    return qHash(value.id(), seed);
 }
 #endif
 
-inline hash_type qHash(const QSizeF &size)
+inline hash_type qHash(const QSizeF &size, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(qint64(size.width()));
-    hashCode = hashCode * 31 + qHash(qint64(size.height()));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, qint64(size.width()));
+    seed = hash(seed, qint64(size.height()));
+    return seed;
 }
 
-inline hash_type qHash(const QByteArrayMatcher &value)
+inline hash_type qHash(const QByteArrayMatcher &value, hash_type seed = 0)
 {
-    return qHash(value.pattern());
+    return qHash(value.pattern(), seed);
 }
 
 inline bool operator==(const QByteArrayMatcher &value1, const QByteArrayMatcher &value2)
@@ -84,9 +88,9 @@ inline bool operator==(const QByteArrayMatcher &value1, const QByteArrayMatcher 
     return value1.pattern()==value2.pattern();
 }
 
-inline hash_type qHash(const QCalendar &value)
+inline hash_type qHash(const QCalendar &value, hash_type seed = 0)
 {
-    return qHash(value.name());
+    return qHash(value.name(), seed);
 }
 
 inline bool operator==(const QCalendar &value1, const QCalendar &value2)
@@ -94,9 +98,9 @@ inline bool operator==(const QCalendar &value1, const QCalendar &value2)
     return value1.name()==value2.name();
 }
 
-inline hash_type qHash(const QCalendar::YearMonthDay &value)
+inline hash_type qHash(const QCalendar::YearMonthDay &value, hash_type seed = 0)
 {
-    return genericHash(value);
+    return genericHash(value, seed);
 }
 
 inline bool operator==(const QCalendar::YearMonthDay &value1, const QCalendar::YearMonthDay &value2)
@@ -104,9 +108,9 @@ inline bool operator==(const QCalendar::YearMonthDay &value1, const QCalendar::Y
     return value1.year==value2.year && value1.month==value2.month && value1.day==value2.day;
 }
 
-inline hash_type qHash(const QCborError &value)
+inline hash_type qHash(const QCborError &value, hash_type seed = 0)
 {
-    return qHash(QCborError::Code(value));
+    return qHash(QCborError::Code(value), seed);
 }
 
 inline bool operator==(const QCborError &value1, const QCborError &value2)
@@ -114,11 +118,12 @@ inline bool operator==(const QCborError &value1, const QCborError &value2)
     return QCborError::Code(value1)==QCborError::Code(value2);
 }
 
-inline hash_type qHash(const QCborParserError &value)
+inline hash_type qHash(const QCborParserError &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.offset);
-    hashCode = hashCode * 31 + qHash(value.error);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.offset);
+    seed = hash(seed, value.error);
+    return seed;
 }
 
 inline bool operator==(const QCborParserError &value1, const QCborParserError &value2)
@@ -126,13 +131,14 @@ inline bool operator==(const QCborParserError &value1, const QCborParserError &v
     return value1.offset==value2.offset && value1.error==value2.error;
 }
 
-inline hash_type qHash(const QOperatingSystemVersion &value)
+inline hash_type qHash(const QOperatingSystemVersion &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.majorVersion());
-    hashCode = hashCode * 31 + qHash(value.minorVersion());
-    hashCode = hashCode * 31 + qHash(value.microVersion());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.majorVersion());
+    seed = hash(seed, value.minorVersion());
+    seed = hash(seed, value.microVersion());
+    return seed;
 }
 
 inline bool operator==(const QOperatingSystemVersion &value1, const QOperatingSystemVersion &value2)
@@ -144,13 +150,14 @@ inline bool operator==(const QOperatingSystemVersion &value1, const QOperatingSy
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
-inline hash_type qHash(const QOperatingSystemVersionBase &value)
+inline hash_type qHash(const QOperatingSystemVersionBase &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.type());
-    hashCode = hashCode * 31 + qHash(value.majorVersion());
-    hashCode = hashCode * 31 + qHash(value.minorVersion());
-    hashCode = hashCode * 31 + qHash(value.microVersion());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.type());
+    seed = hash(seed, value.majorVersion());
+    seed = hash(seed, value.minorVersion());
+    seed = hash(seed, value.microVersion());
+    return seed;
 }
 
 inline bool operator==(const QOperatingSystemVersionBase &value1, const QOperatingSystemVersionBase &value2)
@@ -162,9 +169,9 @@ inline bool operator==(const QOperatingSystemVersionBase &value1, const QOperati
 }
 
 #ifdef QFACTORYLOADER_P_H
-inline hash_type qHash(const QPluginParsedMetaData &value)
+inline hash_type qHash(const QPluginParsedMetaData &value, hash_type seed = 0)
 {
-    return qHash(*reinterpret_cast<const QCborValue*>(&value));
+    return qHash(*reinterpret_cast<const QCborValue*>(&value), seed);
 }
 
 inline bool operator==(const QPluginParsedMetaData &value1, const QPluginParsedMetaData &value2)
@@ -174,13 +181,14 @@ inline bool operator==(const QPluginParsedMetaData &value1, const QPluginParsedM
 #endif
 #endif
 
-inline hash_type qHash(const QCollator &value)
+inline hash_type qHash(const QCollator &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.locale());
-    hashCode = hashCode * 31 + qHash(value.caseSensitivity());
-    hashCode = hashCode * 31 + qHash(value.numericMode());
-    hashCode = hashCode * 31 + qHash(value.ignorePunctuation());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.locale());
+    seed = hash(seed, value.caseSensitivity());
+    seed = hash(seed, value.numericMode());
+    seed = hash(seed, value.ignorePunctuation());
+    return seed;
 }
 
 inline bool operator==(const QCollator &value1, const QCollator &value2)
@@ -191,20 +199,22 @@ inline bool operator==(const QCollator &value1, const QCollator &value2)
             && value1.ignorePunctuation()==value2.ignorePunctuation();
 }
 
-inline hash_type qHash(const QDeadlineTimer &value)
+inline hash_type qHash(const QDeadlineTimer &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.timerType());
-    hashCode = hashCode * 31 + qHash(value._q_data().first);
-    hashCode = hashCode * 31 + qHash(value._q_data().second);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.timerType());
+    seed = hash(seed, value._q_data().first);
+    seed = hash(seed, value._q_data().second);
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QSize &size)
+inline hash_type qHash(const QSize &size, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(size.width());
-    hashCode = hashCode * 31 + qHash(size.height());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, size.width());
+    seed = hash(seed, size.height());
+    return seed;
 }
 #else
 
@@ -218,11 +228,12 @@ bool operator==(const QFuture<T> &f1, const QFuture<T> &f2) {
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
-inline hash_type qHash(const QPointF &point)
+inline hash_type qHash(const QPointF &point, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(point.x());
-    hashCode = hashCode * 31 + qHash(point.y());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, point.x());
+    seed = hash(seed, point.y());
+    return seed;
 }
 #else
 inline hash_type qHash(const QPointF &point, QHashDummyValue, hash_type seed = 0)
@@ -231,324 +242,348 @@ inline hash_type qHash(const QPointF &point, QHashDummyValue, hash_type seed = 0
 }
 #endif
 
-inline hash_type qHash(const QFutureInterfaceBase &value)
+inline hash_type qHash(const QFutureInterfaceBase &value, hash_type seed = 0)
 {
-    return qHash(quintptr(&value.resultStoreBase()));
+    return qHash(quintptr(&value.resultStoreBase()), seed);
 }
 
 template<class T>
-inline hash_type qHash(const QFuture<T> &value)
+inline hash_type qHash(const QFuture<T> &value, hash_type seed = 0)
 {
     struct Future{
         QFutureInterfaceBase d;
     };
-    return qHash(reinterpret_cast<const Future*>(&value)->d);
+    return qHash(reinterpret_cast<const Future*>(&value)->d, seed);
 }
 
-inline hash_type qHash(const QFileInfo &fileInfo)
+inline hash_type qHash(const QFileInfo &fileInfo, hash_type seed = 0)
 {
-    return qHash(fileInfo.absoluteFilePath());
+    return qHash(fileInfo.absoluteFilePath(), seed);
 }
 
-inline hash_type qHash(const QDir &dir)
+inline hash_type qHash(const QDir &dir, hash_type seed = 0)
 {
-    return qHash(dir.absolutePath());
+    return qHash(dir.absolutePath(), seed);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QRect &rect)
+inline hash_type qHash(const QRect &rect, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(rect.left());
-    hashCode = hashCode * 31 + qHash(rect.top());
-    hashCode = hashCode * 31 + qHash(rect.right());
-    hashCode = hashCode * 31 + qHash(rect.bottom());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, rect.left());
+    seed = hash(seed, rect.top());
+    seed = hash(seed, rect.right());
+    seed = hash(seed, rect.bottom());
+    return seed;
 }
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-inline hash_type qHash(const QRectF &rect)
+inline hash_type qHash(const QRectF &rect, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(rect.left());
-    hashCode = hashCode * 31 + qHash(rect.top());
-    hashCode = hashCode * 31 + qHash(rect.right());
-    hashCode = hashCode * 31 + qHash(rect.bottom());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, rect.left());
+    seed = hash(seed, rect.top());
+    seed = hash(seed, rect.right());
+    seed = hash(seed, rect.bottom());
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QPoint &point)
+inline hash_type qHash(const QPoint &point, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(point.x());
-    hashCode = hashCode * 31 + qHash(point.y());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, point.x());
+    seed = hash(seed, point.y());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QLineF &line)
+inline hash_type qHash(const QLineF &line, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(line.p1().x());
-    hashCode = hashCode * 31 + qHash(line.p1().y());
-    hashCode = hashCode * 31 + qHash(line.p2().x());
-    hashCode = hashCode * 31 + qHash(line.p2().y());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, line.p1().x());
+    seed = hash(seed, line.p1().y());
+    seed = hash(seed, line.p2().x());
+    seed = hash(seed, line.p2().y());
+    return seed;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QPartialOrdering &value)
+inline hash_type qHash(const QPartialOrdering &value, hash_type seed = 0)
 {
-    return qHash(reinterpret_cast<const qint8&>(value));
+    return qHash(reinterpret_cast<const qint8&>(value), seed);
 }
 
-inline hash_type qHash(const QItemSelectionRange &value)
+inline hash_type qHash(const QItemSelectionRange &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.topLeft());
-    hashCode = hashCode * 31 + qHash(value.bottomRight());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.topLeft());
+    seed = hash(seed, value.bottomRight());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QJsonValueRef &value)
+inline hash_type qHash(const QJsonValueRef &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(value.type()));
-    switch(value.type()){
-    case QJsonValue::Null:    hashCode = hashCode * 31; break;
-    case QJsonValue::Bool:    hashCode = hashCode * 31 + qHash(value.toBool()); break;
-    case QJsonValue::Double:    hashCode = hashCode * 31 + qHash(value.toDouble()); break;
-    case QJsonValue::String:    hashCode = hashCode * 31 + qHash(value.toString()); break;
-    case QJsonValue::Array:    hashCode = hashCode * 31 + qHash(value.toArray()); break;
-    case QJsonValue::Object:    hashCode = hashCode * 31 + qHash(value.toObject()); break;
+    switch (value.type()) {
+    case QJsonValue::Null:
+        return qHash(nullptr, seed);
+    case QJsonValue::Bool:
+        return qHash(value.toBool(), seed);
+    case QJsonValue::Double:
+        return qHash(value.toDouble(), seed);
+    case QJsonValue::String:
+        return qHash(value.toString(), seed);
+    case QJsonValue::Array:
+        return qHash(value.toArray(), seed);
+    case QJsonValue::Object:
+        return qHash(value.toObject(), seed);
     default: break;
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QItemSelection &value)
+inline hash_type qHash(const QItemSelection &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.size());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.size());
     for(const QItemSelectionRange& r : value){
-        hashCode = hashCode * 31 + qHash(r);
+        seed = hash(seed, r);
     }
-    return hashCode;
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
-hash_type qHash(const QJsonObject &value);
-hash_type qHash(const QJsonArray &value);
+hash_type qHash(const QJsonObject &value, hash_type seed = 0);
+hash_type qHash(const QJsonArray &value, hash_type seed = 0);
 
-inline hash_type qHash(const QJsonValue &value)
+inline hash_type qHash(const QJsonValue &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(int(value.type()));
-    switch(value.type()){
-    case QJsonValue::Null:    hashCode = hashCode * 31; break;
-    case QJsonValue::Bool:    hashCode = hashCode * 31 + qHash(value.toBool()); break;
-    case QJsonValue::Double:    hashCode = hashCode * 31 + qHash(value.toDouble()); break;
-    case QJsonValue::String:    hashCode = hashCode * 31 + qHash(value.toString()); break;
-    case QJsonValue::Array:    hashCode = hashCode * 31 + qHash(value.toArray()); break;
-    case QJsonValue::Object:    hashCode = hashCode * 31 + qHash(value.toObject()); break;
+    switch (value.type()) {
+    case QJsonValue::Null:
+        return qHash(nullptr, seed);
+    case QJsonValue::Bool:
+        return qHash(value.toBool(), seed);
+    case QJsonValue::Double:
+        return qHash(value.toDouble(), seed);
+    case QJsonValue::String:
+        return qHash(value.toString(), seed);
+    case QJsonValue::Array:
+        return qHash(value.toArray(), seed);
+    case QJsonValue::Object:
+        return qHash(value.toObject(), seed);
     default: break;
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QJsonObject &value)
+inline hash_type qHash(const QJsonObject &object, hash_type seed)
 {
-    hash_type hashCode = qHash(value.keys().size());
-    for(const QString& key : value.keys()){
-        hashCode = hashCode * 31 + qHash(key);
-//        hashCode = hashCode * 31 + qHash(value[key]);
+    QtPrivate::QHashCombine hash;
+    for (auto it = object.begin(), end = object.end(); it != end; ++it) {
+        const QString key = it.key();
+        const QJsonValue value = it.value();
+        seed = hash(seed, QPair<const QString&, const QJsonValue&>(key, value));
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QJsonArray &value)
+inline hash_type qHash(const QJsonArray &array, hash_type seed)
 {
-    hash_type hashCode = qHash(value.size());
-    for(const QJsonValue& r : value){
-        hashCode = hashCode * 31 + qHash(r);
-    }
-    return hashCode;
+    return qHashRange(array.begin(), array.end(), seed);
 }
 #endif
 
-inline hash_type qHash(const QJsonDocument &value)
+inline hash_type qHash(const QJsonDocument &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.isArray());
-    hashCode = hashCode * 31 + qHash(value.isObject());
-    hashCode = hashCode * 31 + qHash(value.isNull());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isArray());
+    seed = hash(seed, value.isObject());
+    seed = hash(seed, value.isNull());
+    seed = hash(seed, value.isEmpty());
     if(value.isArray()){
-        hashCode = hashCode * 31 + qHash(value.array());
+        seed = hash(seed, value.array());
     }else if(value.isObject()){
-        hashCode = hashCode * 31 + qHash(value.object());
+        seed = hash(seed, value.object());
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QEasingCurve &curve)
+inline hash_type qHash(const QEasingCurve &curve, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(curve.amplitude());
-    hashCode = hashCode * 31 + qHash(curve.period());
-    hashCode = hashCode * 31 + qHash(curve.overshoot());
-    hashCode = hashCode * 31 + qHash(int(curve.type()));
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, curve.amplitude());
+    seed = hash(seed, curve.period());
+    seed = hash(seed, curve.overshoot());
+    seed = hash(seed, int(curve.type()));
     if(curve.type()==QEasingCurve::Custom){
-        hashCode = hashCode * 31 + qHash(qint64( reinterpret_cast<const void*>(curve.customType() )));
+        seed = hash(seed, qint64( reinterpret_cast<const void*>(curve.customType() )));
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QLine &line)
+inline hash_type qHash(const QLine &line, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(line.p1());
-    hashCode = hashCode * 31 + qHash(line.p2());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, line.p1());
+    seed = hash(seed, line.p2());
+    return seed;
 }
 
-inline hash_type qHash(const QMargins &value)
+inline hash_type qHash(const QMargins &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.top());
-    hashCode = hashCode * 31 + qHash(value.right());
-    hashCode = hashCode * 31 + qHash(value.bottom());
-    hashCode = hashCode * 31 + qHash(value.left());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.top());
+    seed = hash(seed, value.right());
+    seed = hash(seed, value.bottom());
+    seed = hash(seed, value.left());
+    return seed;
 }
 
-inline hash_type qHash(const QMarginsF &value)
+inline hash_type qHash(const QMarginsF &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.top());
-    hashCode = hashCode * 31 + qHash(value.right());
-    hashCode = hashCode * 31 + qHash(value.bottom());
-    hashCode = hashCode * 31 + qHash(value.left());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.top());
+    seed = hash(seed, value.right());
+    seed = hash(seed, value.bottom());
+    seed = hash(seed, value.left());
+    return seed;
 }
 
-inline hash_type qHash(const QXmlStreamAttribute &value)
+inline hash_type qHash(const QXmlStreamAttribute &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.namespaceUri());
-    hashCode = hashCode * 31 + qHash(value.prefix());
-    hashCode = hashCode * 31 + qHash(value.qualifiedName());
-    hashCode = hashCode * 31 + qHash(value.value());
-    hashCode = hashCode * 31 + qHash(value.isDefault());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.namespaceUri());
+    seed = hash(seed, value.prefix());
+    seed = hash(seed, value.qualifiedName());
+    seed = hash(seed, value.value());
+    seed = hash(seed, value.isDefault());
+    return seed;
 }
 
-inline hash_type qHash(const QXmlStreamAttributes &value)
+inline hash_type qHash(const QXmlStreamAttributes &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.size());
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.size());
     for(const QXmlStreamAttribute& a : value){
-        hashCode = hashCode * 31 + qHash(a);
+        seed = hash(seed, a);
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QTimeZone &value)
+inline hash_type qHash(const QTimeZone &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.id());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.id());
+    return seed;
 }
 
 #if QT_CONFIG(processenvironment)
-inline hash_type qHash(const QProcessEnvironment &value)
+inline hash_type qHash(const QProcessEnvironment &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.keys().size());
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.keys().size());
     for(const QString& key : value.keys()){
-        hashCode = hashCode * 31 + qHash(key);
-        hashCode = hashCode * 31 + qHash(value.value(key));
+        seed = hash(seed, key);
+        seed = hash(seed, value.value(key));
     }
-    return hashCode;
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QXmlStreamEntityDeclaration &value)
+inline hash_type qHash(const QXmlStreamEntityDeclaration &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.notationName());
-    hashCode = hashCode * 31 + qHash(value.publicId());
-    hashCode = hashCode * 31 + qHash(value.systemId());
-    hashCode = hashCode * 31 + qHash(value.value());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.notationName());
+    seed = hash(seed, value.publicId());
+    seed = hash(seed, value.systemId());
+    seed = hash(seed, value.value());
+    return seed;
 }
 
-inline hash_type qHash(const QXmlStreamNamespaceDeclaration &value)
+inline hash_type qHash(const QXmlStreamNamespaceDeclaration &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.namespaceUri());
-    hashCode = hashCode * 31 + qHash(value.prefix());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.namespaceUri());
+    seed = hash(seed, value.prefix());
+    return seed;
 }
 
-inline hash_type qHash(const QXmlStreamNotationDeclaration &value)
+inline hash_type qHash(const QXmlStreamNotationDeclaration &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.publicId());
-    hashCode = hashCode * 31 + qHash(value.systemId());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.publicId());
+    seed = hash(seed, value.systemId());
+    return seed;
 }
 
-hash_type qHash(const QMetaMethod &value);
+hash_type qHash(const QMetaMethod &value, hash_type seed = 0);
 
-inline hash_type qHash(const QStorageInfo &value)
+inline hash_type qHash(const QStorageInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.rootPath());
-    hashCode = hashCode * 31 + qHash(value.device());
-    hashCode = hashCode * 31 + qHash(value.isRoot());
-    hashCode = hashCode * 31 + qHash(value.isReady());
-    hashCode = hashCode * 31 + qHash(value.isValid());
-    hashCode = hashCode * 31 + qHash(value.blockSize());
-    hashCode = hashCode * 31 + qHash(value.subvolume());
-    hashCode = hashCode * 31 + qHash(value.isReadOnly());
-    hashCode = hashCode * 31 + qHash(value.displayName());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.rootPath());
+    seed = hash(seed, value.device());
+    seed = hash(seed, value.isRoot());
+    seed = hash(seed, value.isReady());
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.blockSize());
+    seed = hash(seed, value.subvolume());
+    seed = hash(seed, value.isReadOnly());
+    seed = hash(seed, value.displayName());
+    return seed;
 }
 
-inline hash_type qHash(const QElapsedTimer &value)
+inline hash_type qHash(const QElapsedTimer &value, hash_type seed = 0)
 {
     struct ElapsedTimer{
         qint64 t1;
         qint64 t2;
     };
     const ElapsedTimer* t = reinterpret_cast<const ElapsedTimer*>(&value);
-    hash_type hashCode = qHash(t->t1);
-    hashCode = hashCode * 31 + qHash(t->t2);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, t->t1);
+    seed = hash(seed, t->t2);
+    return seed;
 }
 
-inline hash_type qHash(const QMetaObject &value)
+inline hash_type qHash(const QMetaObject &value, hash_type seed = 0)
 {
-    return qHash(qintptr(&value));
+    return qHash(qintptr(&value), seed);
 }
 
-inline hash_type qHash(const QMetaEnum &value)
-{
-    if(!value.isValid())
-        return 0;
-    hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + hash_type(value.enclosingMetaObject()->indexOfEnumerator(value.name()));
-    return result;
-}
-
-inline hash_type qHash(const QMetaMethod &value)
+inline hash_type qHash(const QMetaEnum &value, hash_type seed = 0)
 {
     if(!value.isValid())
-        return 0;
-    hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + hash_type(value.methodIndex());
-    return result;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.enclosingMetaObject());
+    seed = hash(seed, value.enclosingMetaObject()->indexOfEnumerator(value.name()));
+    return seed;
 }
 
-inline hash_type qHash(const QMetaProperty &value)
+inline hash_type qHash(const QMetaMethod &value, hash_type seed)
 {
     if(!value.isValid())
-        return 0;
-    hash_type prime = 31;
-    hash_type result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + hash_type(value.propertyIndex());
-    return result;
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.enclosingMetaObject());
+    seed = hash(seed, value.methodIndex());
+    return seed;
+}
+
+inline hash_type qHash(const QMetaProperty &value, hash_type seed = 0)
+{
+    if(!value.isValid())
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.enclosingMetaObject());
+    seed = hash(seed, value.propertyIndex());
+    return seed;
 }
 
 inline bool operator==(const QMetaEnum &value1, const QMetaEnum &value2)
@@ -607,5 +642,83 @@ struct QtJambiStringList{
 #endif
 };
 #endif //QTJAMBI_GENERATOR_RUNNING
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_CONFIG(permissions)
+inline size_t qHash(const QBluetoothPermission &, size_t seed = 0)
+{
+    return qHash(QString("QBluetoothPermission"), seed);
+}
+inline bool operator==(const QBluetoothPermission &, const QBluetoothPermission &){return true;}
+
+inline size_t qHash(const QCameraPermission &, size_t seed = 0)
+{
+    return qHash(QString("QCameraPermission"), seed);
+}
+inline bool operator==(const QCameraPermission &, const QCameraPermission &){return true;}
+
+inline size_t qHash(const QMicrophonePermission &, size_t seed = 0)
+{
+    return qHash(QString("QMicrophonePermission"), seed);
+}
+inline bool operator==(const QMicrophonePermission &, const QMicrophonePermission &){return true;}
+
+inline size_t qHash(const QContactsPermission &value, size_t seed = 0)
+{
+    return qHashMulti(seed, QString("QContactsPermission"), value.accessMode());
+}
+inline bool operator==(const QContactsPermission &v1, const QContactsPermission &v2){return v1.accessMode()==v2.accessMode();}
+
+inline size_t qHash(const QCalendarPermission &value, size_t seed = 0)
+{
+    return qHashMulti(seed, QString("QCalendarPermission"), value.accessMode());
+}
+inline bool operator==(const QCalendarPermission &v1, const QCalendarPermission &v2){return v1.accessMode()==v2.accessMode();}
+
+inline size_t qHash(const QLocationPermission &value, size_t seed = 0)
+{
+    return qHashMulti(seed, QString("QLocationPermission"), value.accuracy(), value.availability());
+}
+inline bool operator==(const QLocationPermission &v1, const QLocationPermission &v2){
+    return v1.accuracy()==v2.accuracy() && v1.availability()==v2.availability();
+}
+
+inline size_t qHash(const QPermission &value, size_t seed = 0)
+{
+    if(value.type()==QMetaType::fromType<QBluetoothPermission>()){
+        seed = qHash(value.value<QBluetoothPermission>().value(), seed);
+    }else if(value.type()==QMetaType::fromType<QCalendarPermission>()){
+        seed = qHash(value.value<QCalendarPermission>().value(), seed);
+    }else if(value.type()==QMetaType::fromType<QCameraPermission>()){
+        seed = qHash(value.value<QCameraPermission>().value(), seed);
+    }else if(value.type()==QMetaType::fromType<QContactsPermission>()){
+        seed = qHash(value.value<QContactsPermission>().value(), seed);
+    }else if(value.type()==QMetaType::fromType<QLocationPermission>()){
+        seed = qHash(value.value<QLocationPermission>().value(), seed);
+    }else if(value.type()==QMetaType::fromType<QMicrophonePermission>()){
+        seed = qHash(value.value<QMicrophonePermission>().value(), seed);
+    }
+    return qHash(value.status(), seed);
+}
+inline bool operator==(const QPermission &v1, const QPermission &v2){
+    if(v1.status()==v2.status()){
+        if(v1.type()==QMetaType::fromType<QBluetoothPermission>() && v2.type()==QMetaType::fromType<QBluetoothPermission>()){
+            return v1.value<QBluetoothPermission>().value()==v2.value<QBluetoothPermission>().value();
+        }else if(v1.type()==QMetaType::fromType<QCalendarPermission>() && v2.type()==QMetaType::fromType<QCalendarPermission>()){
+            return v1.value<QCalendarPermission>().value()==v2.value<QCalendarPermission>().value();
+        }else if(v1.type()==QMetaType::fromType<QCameraPermission>() && v2.type()==QMetaType::fromType<QCameraPermission>()){
+            return v1.value<QCameraPermission>().value()==v2.value<QCameraPermission>().value();
+        }else if(v1.type()==QMetaType::fromType<QContactsPermission>() && v2.type()==QMetaType::fromType<QContactsPermission>()){
+            return v1.value<QContactsPermission>().value()==v2.value<QContactsPermission>().value();
+        }else if(v1.type()==QMetaType::fromType<QLocationPermission>() && v2.type()==QMetaType::fromType<QLocationPermission>()){
+            return v1.value<QLocationPermission>().value()==v2.value<QLocationPermission>().value();
+        }else if(v1.type()==QMetaType::fromType<QMicrophonePermission>() && v2.type()==QMetaType::fromType<QMicrophonePermission>()){
+            return v1.value<QMicrophonePermission>().value()==v2.value<QMicrophonePermission>().value();
+        }
+    }
+    return false;
+}
+#endif
+#endif
 
 #endif // QTJAMBICORE_HASHES_H

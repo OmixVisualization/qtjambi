@@ -44,11 +44,12 @@ struct RenderState{
 };
 #endif
 
-inline hash_type qHash(const QSGMaterialShader::RenderState &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGMaterialShader::RenderState &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.dirtyStates());
-    hashCode = hashCode * 31 + qHash(quintptr(reinterpret_cast<const RenderState&>(value).m_data));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.dirtyStates());
+    seed = hash(seed, quintptr(reinterpret_cast<const RenderState&>(value).m_data));
+    return seed;
 }
 inline bool operator==(const QSGMaterialShader::RenderState &value1, const QSGMaterialShader::RenderState &value2)
 {
@@ -59,11 +60,12 @@ inline bool operator==(const QSGMaterialShader::RenderState &value1, const QSGMa
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtQuick/QSGMaterialRhiShader>
 
-inline hash_type qHash(const QSGMaterialRhiShader::RenderState &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGMaterialRhiShader::RenderState &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.dirtyStates());
-    hashCode = hashCode * 31 + qHash(quintptr(reinterpret_cast<const RenderState&>(value).m_data));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.dirtyStates());
+    seed = hash(seed, quintptr(reinterpret_cast<const RenderState&>(value).m_data));
+    return seed;
 }
 inline bool operator==(const QSGMaterialRhiShader::RenderState &value1, const QSGMaterialRhiShader::RenderState &value2)
 {
@@ -71,15 +73,16 @@ inline bool operator==(const QSGMaterialRhiShader::RenderState &value1, const QS
             && reinterpret_cast<const RenderState&>(value1).m_data==reinterpret_cast<const RenderState&>(value2).m_data;
 }
 
-inline hash_type qHash(const QSGMaterialRhiShader::GraphicsPipelineState &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGMaterialRhiShader::GraphicsPipelineState &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.blendEnable);
-    hashCode = hashCode * 31 + qHash(value.srcColor);
-    hashCode = hashCode * 31 + qHash(value.dstColor);
-    hashCode = hashCode * 31 + qHash(value.colorWrite);
-    hashCode = hashCode * 31 + qHash(value.blendConstant);
-    hashCode = hashCode * 31 + qHash(value.cullMode);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.blendEnable);
+    seed = hash(seed, value.srcColor);
+    seed = hash(seed, value.dstColor);
+    seed = hash(seed, value.colorWrite);
+    seed = hash(seed, value.blendConstant);
+    seed = hash(seed, value.cullMode);
+    return seed;
 }
 inline bool operator==(const QSGMaterialRhiShader::GraphicsPipelineState &value1, const QSGMaterialRhiShader::GraphicsPipelineState &value2)
 {
@@ -92,18 +95,19 @@ inline bool operator==(const QSGMaterialRhiShader::GraphicsPipelineState &value1
 }
 #else
 
-inline hash_type qHash(const QSGMaterialShader::GraphicsPipelineState &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGMaterialShader::GraphicsPipelineState &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.blendEnable);
-    hashCode = hashCode * 31 + qHash(value.srcColor);
-    hashCode = hashCode * 31 + qHash(value.dstColor);
-    hashCode = hashCode * 31 + qHash(value.colorWrite);
-    hashCode = hashCode * 31 + qHash(value.blendConstant);
-    hashCode = hashCode * 31 + qHash(value.cullMode);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.blendEnable);
+    seed = hash(seed, value.srcColor);
+    seed = hash(seed, value.dstColor);
+    seed = hash(seed, value.colorWrite);
+    seed = hash(seed, value.blendConstant);
+    seed = hash(seed, value.cullMode);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-    hashCode = hashCode * 31 + qHash(value.polygonMode);
+    seed = hash(seed, value.polygonMode);
 #endif
-    return hashCode;
+    return seed;
 }
 inline bool operator==(const QSGMaterialShader::GraphicsPipelineState &value1, const QSGMaterialShader::GraphicsPipelineState &value2)
 {
@@ -120,15 +124,16 @@ inline bool operator==(const QSGMaterialShader::GraphicsPipelineState &value1, c
 
 #endif
 
-inline hash_type qHash(const QSGGeometry::ColoredPoint2D &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGGeometry::ColoredPoint2D &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.x);
-    hashCode = hashCode * 31 + qHash(value.y);
-    hashCode = hashCode * 31 + qHash(value.r);
-    hashCode = hashCode * 31 + qHash(value.g);
-    hashCode = hashCode * 31 + qHash(value.b);
-    hashCode = hashCode * 31 + qHash(value.a);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.x);
+    seed = hash(seed, value.y);
+    seed = hash(seed, value.r);
+    seed = hash(seed, value.g);
+    seed = hash(seed, value.b);
+    seed = hash(seed, value.a);
+    return seed;
 }
 inline bool operator==(const QSGGeometry::ColoredPoint2D &value1, const QSGGeometry::ColoredPoint2D &value2)
 {
@@ -140,13 +145,14 @@ inline bool operator==(const QSGGeometry::ColoredPoint2D &value1, const QSGGeome
             && value1.a==value2.a;
 }
 
-inline hash_type qHash(const QSGGeometry::TexturedPoint2D &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGGeometry::TexturedPoint2D &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.x);
-    hashCode = hashCode * 31 + qHash(value.y);
-    hashCode = hashCode * 31 + qHash(value.tx);
-    hashCode = hashCode * 31 + qHash(value.ty);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.x);
+    seed = hash(seed, value.y);
+    seed = hash(seed, value.tx);
+    seed = hash(seed, value.ty);
+    return seed;
 }
 inline bool operator==(const QSGGeometry::TexturedPoint2D &value1, const QSGGeometry::TexturedPoint2D &value2)
 {
@@ -156,11 +162,12 @@ inline bool operator==(const QSGGeometry::TexturedPoint2D &value1, const QSGGeom
             && value1.ty==value2.ty;
 }
 
-inline hash_type qHash(const QSGGeometry::Point2D &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGGeometry::Point2D &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.x);
-    hashCode = hashCode * 31 + qHash(value.y);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.x);
+    seed = hash(seed, value.y);
+    return seed;
 }
 inline bool operator==(const QSGGeometry::Point2D &value1, const QSGGeometry::Point2D &value2)
 {
@@ -168,14 +175,15 @@ inline bool operator==(const QSGGeometry::Point2D &value1, const QSGGeometry::Po
             && value1.y==value2.y;
 }
 
-inline hash_type qHash(const QSGGeometry::Attribute &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGGeometry::Attribute &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.position);
-    hashCode = hashCode * 31 + qHash(value.tupleSize);
-    hashCode = hashCode * 31 + qHash(value.type);
-    hashCode = hashCode * 31 + qHash(value.isVertexCoordinate);
-    hashCode = hashCode * 31 + qHash(int(value.attributeType));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position);
+    seed = hash(seed, value.tupleSize);
+    seed = hash(seed, value.type);
+    seed = hash(seed, value.isVertexCoordinate);
+    seed = hash(seed, int(value.attributeType));
+    return seed;
 }
 inline bool operator==(const QSGGeometry::Attribute &value1, const QSGGeometry::Attribute &value2)
 {
@@ -186,14 +194,15 @@ inline bool operator==(const QSGGeometry::Attribute &value1, const QSGGeometry::
             && value1.attributeType==value2.attributeType;
 }
 
-inline hash_type qHash(const QSGGeometry::AttributeSet &value, hash_type hashCode = 0)
+inline hash_type qHash(const QSGGeometry::AttributeSet &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.stride);
-    hashCode = hashCode * 31 + qHash(value.count);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.stride);
+    seed = hash(seed, value.count);
     for(int i=0; i<value.count; ++i){
-        hashCode = hashCode * 31 + qHash(value.attributes[i]);
+        seed = hash(seed, value.attributes[i]);
     }
-    return hashCode;
+    return seed;
 }
 inline bool operator==(const QSGGeometry::AttributeSet &value1, const QSGGeometry::AttributeSet &value2)
 {
@@ -210,11 +219,12 @@ inline bool operator==(const QSGGeometry::AttributeSet &value1, const QSGGeometr
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 #include <QtQuick/QQuickWindow>
-inline hash_type qHash(const QQuickWindow::GraphicsStateInfo &value, hash_type hashCode = 0)
+inline hash_type qHash(const QQuickWindow::GraphicsStateInfo &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(value.currentFrameSlot);
-    hashCode = hashCode * 31 + qHash(value.framesInFlight);
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.currentFrameSlot);
+    seed = hash(seed, value.framesInFlight);
+    return seed;
 }
 inline bool operator==(const QQuickWindow::GraphicsStateInfo &value1, const QQuickWindow::GraphicsStateInfo &value2)
 {
@@ -227,19 +237,21 @@ inline bool operator==(const QQuickWindow::GraphicsStateInfo &value1, const QQui
 #include <QtQuick/QQuickGraphicsDevice>
 #include <QtQuick/QQuickGraphicsConfiguration>
 
-inline hash_type qHash(const QQuickGraphicsDevice &value, hash_type hashCode = 0)
+inline hash_type qHash(const QQuickGraphicsDevice &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(*reinterpret_cast<quintptr const*>(&value));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, *reinterpret_cast<quintptr const*>(&value));
+    return seed;
 }
 inline bool operator==(const QQuickGraphicsDevice &value1, const QQuickGraphicsDevice &value2)
 {
     return *reinterpret_cast<quintptr const*>(&value1)==*reinterpret_cast<quintptr const*>(&value2);
 }
-inline hash_type qHash(const QQuickGraphicsConfiguration &value, hash_type hashCode = 0)
+inline hash_type qHash(const QQuickGraphicsConfiguration &value, hash_type seed = 0)
 {
-    hashCode = hashCode * 31 + qHash(*reinterpret_cast<quintptr const*>(&value));
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, *reinterpret_cast<quintptr const*>(&value));
+    return seed;
 }
 inline bool operator==(const QQuickGraphicsConfiguration &value1, const QQuickGraphicsConfiguration &value2)
 {
@@ -250,30 +262,31 @@ inline bool operator==(const QQuickGraphicsConfiguration &value1, const QQuickGr
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
 #include <QtQuick/private/qquickrendertarget_p.h>
-inline hash_type qHash(const QQuickRenderTarget &value, hash_type hashCode = 0)
+inline hash_type qHash(const QQuickRenderTarget &value, hash_type seed = 0)
 {
     const QQuickRenderTargetPrivate* p = QQuickRenderTargetPrivate::get(&value);
     if(!p){
-        return hashCode;
+        return seed;
     }
-    hashCode = hashCode * 31 + qHash(int(p->type));
-    hashCode = hashCode * 31 + qHash(p->pixelSize);
-    hashCode = hashCode * 31 + qHash(p->sampleCount);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(p->type));
+    seed = hash(seed, p->pixelSize);
+    seed = hash(seed, p->sampleCount);
     switch(p->type){
     case QQuickRenderTargetPrivate::Type::NativeTexture:
-        hashCode = hashCode * 31 + qHash(p->u.nativeTexture.layout);
-        hashCode = hashCode * 31 + qHash(p->u.nativeTexture.object);
+        seed = hash(seed, p->u.nativeTexture.layout);
+        seed = hash(seed, p->u.nativeTexture.object);
         break;
     case QQuickRenderTargetPrivate::Type::RhiRenderTarget:
-        hashCode = hashCode * 31 + qHash(p->u.rhiRt);
+        seed = hash(seed, p->u.rhiRt);
         break;
     default:
         break;
     }
-    return hashCode;
+    return seed;
 }
 #else
-hash_type qHash(const QQuickRenderTarget &value, hash_type hashCode = 0);
+hash_type qHash(const QQuickRenderTarget &value, hash_type seed = 0);
 #endif
 
 #endif

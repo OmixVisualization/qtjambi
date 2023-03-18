@@ -51,7 +51,9 @@
 #include "codemodel.h"
 #include "type_compiler.h"
 #include "name_compiler.h"
+#include "class_compiler.h"
 #include "declarator_compiler.h"
+#include "typesystem/typedatabase.h"
 
 #include <string>
 
@@ -64,17 +66,18 @@ typedef void (*MessageHandler)(const std::string &s);
 
 class Binder: protected DefaultVisitor {
     public:
-        Binder(CodeModel *__model, LocationManager &__location, Control *__control = nullptr);
+        Binder(uint qtVersionMajor, uint qtVersionMinor, uint qtVersionPatch, const TS::TypeDatabase& database,
+        CodeModelPtr __model, LocationManager &__location, Control *__control = nullptr);
         virtual ~Binder();
 
         inline TokenStream *tokenStream() const { return _M_token_stream; }
-        inline CodeModel *model() const { return _M_model; }
+        inline CodeModelPtr model() const { return _M_model; }
         ScopeModelItem currentScope();
 
-        FileModelItem run(AST *node);
+        void run(AST *node);
 
 // utils
-        TypeInfo qualifyType(const TypeInfo &type, const QStringList &context) const;
+        TypeInfo qualifyType(TypeInfo type, const QStringList &context) const;
 
         static void installMessageHandler(MessageHandler handler);
 
@@ -111,6 +114,8 @@ class Binder: protected DefaultVisitor {
         FunctionDefinitionModelItem changeCurrentFunction(FunctionDefinitionModelItem item);
         TemplateParameterList changeTemplateParameters(TemplateParameterList templateParameters);
 
+        bool changeIsTemplate(bool currentIsTemplate);
+
         void declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_declarator);
 
         void applyStorageSpecifiers(const ListNode<std::size_t> *storage_specifiers, MemberModelItem item);
@@ -119,26 +124,31 @@ class Binder: protected DefaultVisitor {
         void updateItemPosition(CodeModelItem item, AST *node);
 
     private:
-        CodeModel *_M_model;
+        CodeModelPtr _M_model;
         LocationManager &_M_location;
         TokenStream *_M_token_stream;
         Control *_M_control;
 
         CodeModel::FunctionType _M_current_function_type;
         CodeModel::AccessPolicy _M_current_access;
-        FileModelItem _M_current_file;
         NamespaceModelItem _M_current_namespace;
         ClassModelItem _M_current_class;
         FunctionDefinitionModelItem _M_current_function;
         EnumModelItem _M_current_enum;
         QStringList _M_context;
+        bool _M_current_is_template;
         TemplateParameterList _M_current_template_parameters; // ### check me
         QMap<QString, QString> _M_qualified_types;
         QMap<QString, int> _M_anonymous_enums;
+        uint m_qtVersionMajor;
+        uint m_qtVersionMinor;
+        uint m_qtVersionPatch;
+        const TS::TypeDatabase& m_database;
 
         static MessageHandler _M_message_handler;
 
     protected:
+        ClassCompiler class_cc;
         TypeCompiler type_cc;
         NameCompiler name_cc;
         DeclaratorCompiler decl_cc;

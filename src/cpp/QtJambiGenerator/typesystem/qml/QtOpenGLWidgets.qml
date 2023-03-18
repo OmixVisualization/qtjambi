@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.opengl.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtOpenGLWidgets"
     module: "qtjambi.openglwidgets"
     description: "This library provides a widget for rendering OpenGL graphics."

@@ -148,7 +148,7 @@ bool TypeDatabase::isSuppressedWarning(const QString &s) {
     return false;
 }
 
-PrimitiveTypeEntry *TypeDatabase::findPrimitiveType(const QString &name) {
+PrimitiveTypeEntry *TypeDatabase::findPrimitiveType(const QString &name) const{
     QList<TypeEntry *> entries = findTypes(name);
 
     for(TypeEntry *entry : entries) {
@@ -159,7 +159,7 @@ PrimitiveTypeEntry *TypeDatabase::findPrimitiveType(const QString &name) {
     return nullptr;
 }
 
-ComplexTypeEntry *TypeDatabase::findComplexType(const QString &name) {
+ComplexTypeEntry *TypeDatabase::findComplexType(const QString &name) const {
     TypeEntry *entry = findType(name);
     if (entry && entry->isComplex())
         return static_cast<ComplexTypeEntry *>(entry);
@@ -167,7 +167,7 @@ ComplexTypeEntry *TypeDatabase::findComplexType(const QString &name) {
         return nullptr;
 }
 
-FunctionalTypeEntry *TypeDatabase::findFunctionalType(const QString &name) {
+FunctionalTypeEntry *TypeDatabase::findFunctionalType(const QString &name) const {
     TypeEntry *entry = findType(name);
     if (entry && entry->isFunctional())
         return static_cast<FunctionalTypeEntry *>(entry);
@@ -175,7 +175,7 @@ FunctionalTypeEntry *TypeDatabase::findFunctionalType(const QString &name) {
         return nullptr;
 }
 
-FunctionalTypeEntry *TypeDatabase::findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using) {
+FunctionalTypeEntry *TypeDatabase::findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using) const {
     for(QList<TypeEntry *> entries : m_entries){
         for(TypeEntry *entry : entries){
             if (entry && entry->isFunctional())
@@ -184,7 +184,7 @@ FunctionalTypeEntry *TypeDatabase::findFunctionalTypeByUsing(const QString &cont
                 if(!fentry->getUsing().isEmpty()){
                     if(( fentry->getUsing()==_using
                             || QString::fromUtf8(QMetaObject::normalizedSignature(qPrintable(fentry->getUsing())))==_using )
-                            && fentry->name().startsWith(containingClassName+"::")){
+                            && (containingClassName.isEmpty() || fentry->name().startsWith(containingClassName+"::"))){
                         return fentry;
                     }
                 }
@@ -194,7 +194,7 @@ FunctionalTypeEntry *TypeDatabase::findFunctionalTypeByUsing(const QString &cont
     return nullptr;
 }
 
-ObjectTypeEntry *TypeDatabase::findObjectType(const QString &name) {
+ObjectTypeEntry *TypeDatabase::findObjectType(const QString &name) const {
     TypeEntry *entry = findType(name);
     if (entry && entry->isObject())
         return static_cast<ObjectTypeEntry *>(entry);
@@ -202,7 +202,7 @@ ObjectTypeEntry *TypeDatabase::findObjectType(const QString &name) {
         return nullptr;
 }
 
-NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) {
+NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) const {
     TypeEntry *entry = findType(name);
     if (entry && entry->isNamespace())
         return static_cast<NamespaceTypeEntry *>(entry);
@@ -211,13 +211,13 @@ NamespaceTypeEntry *TypeDatabase::findNamespaceType(const QString &name) {
 }
 
 void TypeDatabase::addType(TypeEntry *e) {
-    if(e->qualifiedCppName()=="QVariant" && !e->isVariant()){
+    if(e->qualifiedCppName()=="QVariant" && !e->isQVariant()){
         m_entries["QtJambiVariant"].append(e);
         m_qvariantType = dynamic_cast<ComplexTypeEntry*>(e);
     }else if(e->qualifiedCppName()=="QString" && !e->isQString()){
         m_entries["QtJambiString"].append(e);
         m_qstringType = dynamic_cast<ComplexTypeEntry*>(e);
-    }else if(e->qualifiedCppName()=="QChar" && !e->isChar()){
+    }else if(e->qualifiedCppName()=="QChar" && !e->isQChar()){
         m_entries["QtJambiChar"].append(e);
         m_qcharType = dynamic_cast<ComplexTypeEntry*>(e);
     }else{
@@ -231,6 +231,8 @@ void TypeDatabase::addType(TypeEntry *e) {
             m_typeSystemsByQtLibrary[tsentry->qtLibrary()] = tsentry;
         }else if(!tsentry->targetName().isEmpty()){
             m_typeSystemsByQtLibrary[tsentry->targetName()] = tsentry;
+        }else{
+            m_otherTypeSystems << tsentry;
         }
     }
     if(!m_pixmapType && e->qualifiedCppName()==QLatin1String("QPixmap")){
@@ -239,6 +241,12 @@ void TypeDatabase::addType(TypeEntry *e) {
     if(!m_bitmapType && e->qualifiedCppName()==QLatin1String("QBitmap")){
         m_bitmapType = dynamic_cast<ComplexTypeEntry*>(e);
     }
+}
+
+QList<TypeSystemTypeEntry*> TypeDatabase::typeSystems() const{
+    QList<TypeSystemTypeEntry*> result = m_otherTypeSystems;
+    result << m_typeSystemsByQtLibrary.values();
+    return result;
 }
 
 void TypeDatabase::initialize(const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectory, const QVersionNumber& qtVersion, bool generate) {
@@ -1015,7 +1023,9 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(entry);
         }
         addType(new ContainerTypeEntry("QQmlListProperty", ContainerTypeEntry::QQmlListPropertyContainer));
-        addType(new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer));
+        ContainerTypeEntry* pair = new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer);
+        addType(pair);
+        m_entries["std::pair"].append(pair);
         addType(new ContainerTypeEntry("std::atomic", ContainerTypeEntry::std_atomic));
         addType(new ContainerTypeEntry("std::optional", ContainerTypeEntry::std_optional));
         {
@@ -1043,13 +1053,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(etype);
         }
         addType(new QMetaObjectConnectionTypeEntry());
-
-        ObjectTypeEntry* glsync = new ObjectTypeEntry("__GLsync");
-        glsync->setTargetLangName("GLsync");
-        glsync->setTargetTypeSystem("io.qt.gui");
-        glsync->setTargetLangPackage("io.qt.gui.gl");
-        glsync->setCodeGeneration(TypeEntry::GenerateNothing);
-        addType(glsync);
+        addType(new GLsyncTypeEntry());
     }
     if(!parseFile(filename, importInputDirectoryList, typeystemDirectory, generate)){
         std::exit(-1);
@@ -1107,7 +1111,7 @@ const QStringList &TypeDatabase::rebuildClasses() const
     return m_rebuildClasses;
 }
 
-TypeSystemTypeEntry *TypeDatabase::findTypeSystem(const QString &name){
+TypeSystemTypeEntry *TypeDatabase::findTypeSystem(const QString &name) const{
     TypeEntry *entry = findType(name);
     if (entry && entry->isTypeSystem())
         return static_cast<TypeSystemTypeEntry *>(entry);
@@ -1115,7 +1119,7 @@ TypeSystemTypeEntry *TypeDatabase::findTypeSystem(const QString &name){
         return nullptr;
 }
 
-ContainerTypeEntry *TypeDatabase::findContainerType(const QString &name) {
+ContainerTypeEntry *TypeDatabase::findContainerType(const QString &name) const {
     QString template_name = name;
 
     auto pos = name.indexOf('<');
@@ -1128,7 +1132,7 @@ ContainerTypeEntry *TypeDatabase::findContainerType(const QString &name) {
     return nullptr;
 }
 
-IteratorTypeEntry *TypeDatabase::findIteratorType(const QString &name) {
+IteratorTypeEntry *TypeDatabase::findIteratorType(const QString &name) const {
     QString template_name = name;
 
     auto pos = name.indexOf('<');
@@ -1141,7 +1145,7 @@ IteratorTypeEntry *TypeDatabase::findIteratorType(const QString &name) {
     return nullptr;
 }
 
-IteratorTypeEntry *TypeDatabase::findIteratorType(const ComplexTypeEntry * container) {
+IteratorTypeEntry *TypeDatabase::findIteratorType(const ComplexTypeEntry * container) const {
     for(const QList<TypeEntry *>& list : m_entries){
         for(TypeEntry * entry : list){
             if(entry->isIterator()){
@@ -1155,7 +1159,7 @@ IteratorTypeEntry *TypeDatabase::findIteratorType(const ComplexTypeEntry * conta
     return nullptr;
 }
 
-PointerContainerTypeEntry *TypeDatabase::findPointerContainerType(const QString &name) {
+PointerContainerTypeEntry *TypeDatabase::findPointerContainerType(const QString &name) const {
     QString template_name = name;
 
     auto pos = name.indexOf('<');
@@ -1168,7 +1172,7 @@ PointerContainerTypeEntry *TypeDatabase::findPointerContainerType(const QString 
     return nullptr;
 }
 
-InitializerListTypeEntry *TypeDatabase::findInitializerListType(const QString &name) {
+InitializerListTypeEntry *TypeDatabase::findInitializerListType(const QString &name) const {
     QString template_name = name;
 
     auto pos = name.indexOf('<');
@@ -1181,7 +1185,7 @@ InitializerListTypeEntry *TypeDatabase::findInitializerListType(const QString &n
     return nullptr;
 }
 
-PrimitiveTypeEntry *TypeDatabase::findTargetLangPrimitiveType(const QString &java_name) {
+PrimitiveTypeEntry *TypeDatabase::findTargetLangPrimitiveType(const QString &java_name) const {
     for(QList<TypeEntry *> entries : m_entries) {
         for(TypeEntry *e : entries) {
             if (e && e->isPrimitive()) {
@@ -1385,10 +1389,11 @@ QString resolveFilePath(QString fileName, int opts, const QStringList &list) {
         }
         fileName = fileName+".qml";
     }
+    if(fileName.startsWith(":"))
+        return fileName;
     QFileInfo fileinfoAbs(fileName);
-    if(fileinfoAbs.isAbsolute()) {
-        qDebug() << "isAbsolute path: " << fileName;
-        return fileName.trimmed();
+    if(fileinfoAbs.exists()) {
+        return fileinfoAbs.absoluteFilePath();
     }
 
     for(const QString &s : list) {

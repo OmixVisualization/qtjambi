@@ -50,7 +50,7 @@ class QSGGeometry__{
 
     private static native void setPoint2D(long pointer, int index, Point2D value);
 
-    public static class VertexData<T extends io.qt.QtObjectInterface>{
+    public static class VertexData<T extends QtObjectInterface>{
         public VertexData(long pointer, int size) {
             super();
             this.pointer = pointer;
@@ -60,12 +60,12 @@ class QSGGeometry__{
         final long pointer;
         final int size;
 
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public T get(int index) {
             throw new UnsupportedOperationException();
         }
         
-        @io.qt.QtUninvokable
+        @QtUninvokable
         public void set(int index, T value) {
             throw new UnsupportedOperationException();
         }
